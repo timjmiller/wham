@@ -39,17 +39,15 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * The order is the same as the fleet catches.
 * There are indicators for whether to use the age composition in a given year.
 
-### Inputs:
+### Other Inputs:
 
 ## Weight-at-age:
 * Like ASAP weight-at-age are input and pointers are specified for them for fleet catches, relative abundance indices (if necessary), Spawning Stock Biomass, etc.
 * Future versions may include options for internal estimation of weight at age, like [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
 
-### Biological Reference Points:
-* The user specifies a percentage of unfished spawning biomass per recruit to make estimates of fishing mortality and SSB reference points.
-* Beverton-Holt and Ricker spawner-recruit models may be assumed. Traditional "alpha" and "beta" parameters or steepness and $$R_0$$ may be estimated.
-* Annual conditional reference points are estimated in case weight, maturity, natural mortality, or selectivity at age change over time. 
-* If a spawner-recruit model is assumed, MSY-based reference points are also estimated. Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in [Miller et al. 2016,](https://doi.org/10.1139/cjfas-2015-0339) and [Miller et al. 2018,](https://doi.org/10.1139/cjfas-2017-0124)
+## Maturity-at-age:
+* One matrix of annual maturity at age is input and used to estimate spawning stock biomass.
+
 
 ### Parameters:
 
@@ -57,3 +55,21 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * In general, this can be year- and age-specific. However, by default it is assumed known at the initial parameter values using the map argument in TMB.
 * It can also be treated as a random walk of random effects, or an allometric function of weight at age.
   
+### Ouput Estimates:
+
+* Annual abundance-at-age
+* Annual spawning stock biomass
+* Selectivity at age for each selectivity "block"
+* Natural mortality at age
+* Catchability for each relative abundance index, and catchability at age
+* Annual fully-selected fishing mortalty for each fleet
+* Annual fishing mortality at age for each fleet, and total F at age
+* Predicted catch for each fleet and corresponding age composition
+* Predicted indices and corresponding age composition
+* Estimates of unfished spawning biomass per recruit each year based on corresponding weight-, maturity-, and natural mortality-at-age.
+* Biological Reference Points:
+  * The user specifies a percentage of unfished spawning biomass per recruit to make estimates of fishing mortality and SSB reference points.
+  * Beverton-Holt and Ricker spawner-recruit models may be assumed. Traditional "alpha" and "beta" parameters or steepness and $$R_0$$ may be estimated.
+  * Annual conditional reference points are estimated in case weight, maturity, natural mortality, or selectivity at age change over time. 
+  * If a spawner-recruit model is assumed, MSY-based reference points are also estimated. 
+  * Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in [Miller et al. 2016,](https://doi.org/10.1139/cjfas-2015-0339) and [Miller et al. 2018,](https://doi.org/10.1139/cjfas-2017-0124)
