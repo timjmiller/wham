@@ -1,12 +1,9 @@
 ### WHAM: a state-space age-structured assessment model
 
-This repository has R and TMB code for a general model with many similarities to those in [Miller et al. 2016](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
-The model also has many similarities to ASAP [Legault and Restreppo]. Indeed, there are R functions provided to generate a WHAM input file (with some default settings) from an ASAP3 dat file, and many of the plotting functions for input data, results, and diagnostics are borrowed and modified from [ASAP](https://github.com/cmlegault/ASAPplots).
+This repository has R and TMB code for a general model with many similarities to those in [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
+The model also has many similarities to ASAP Legault and Restrepo (1999, Col. Vol. Sci. Pap. ICCAT 49(2): 246-253). Indeed, there are R functions provided to generate a WHAM input file (with some default settings) from an ASAP3 dat file, and many of the plotting functions for input data, results, and diagnostics are borrowed and modified from [ASAP](https://github.com/cmlegault/ASAPplots).
 The WHAM model can be configured to estimate a range of assessment models from a traditional statistical catch-at-age model with recruitments as (possibly penalized) fixed effects, SCAA with recruitments as random effects, or abundance at all ages treated as random effects.
 
-### Selectivity
-* A number of selectivity "blocks" is specified and a pointer to each fleet and index each year is specified.
-* Selectivity models for each block can be composed of age-specific parameters, logistic (increasing or decreasing), or double-logistic. 
 
 ### Observation model components:
 ## Aggregate relative abundance indices:
@@ -77,7 +74,11 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * Variance parameters for abundance at age
   * If transitions in abundance at age are stochastic, estimate between between 1 and n_ages corresponding variance parameters. 
 * Catchability is estimated on a logit scale with the user specifying upper and lower bounds.
-* Selectivity parameters are estimated on a logit scale with the user specifying upper and lower bounds.
+* Selectivity parameters: 
+* A set of selectivity "blocks" is specified and a pointer to each fleet and index each year is specified.
+* Selectivity models for each block can be composed of age-specific parameters, logistic (increasing or decreasing), or double-logistic. 
+* Parameters estimated on a logit scale with the user specifying upper and lower bounds.
+
 * Variance parameters for aggregate catch and indices
   * Fleet- or index-specific parameters may be estimated to scale corresponding input standard errors.
 * Variance parameters for age composition observations
