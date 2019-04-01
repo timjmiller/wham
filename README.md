@@ -39,6 +39,16 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * The order is the same as the fleet catches.
 * There are indicators for whether to use the age composition in a given year.
 
+### Hidden process model components:
+* Abundance at age:
+  * As mentioned above, the model can be configured to have no hidden processes (random effects), 
+  * or log-recruitment can be treated as a normal random variable,
+  * or all log-abundances at age can be treated as normal random variables. Abundances at age are currently conditionally independent of each other.
+* Natural mortality:
+  * can be assumed known at age, or estimated as fixed effects parameters.
+  * if an allometric function of size is estimated, the (log of the) exponential parameter can be estimated as a normal random effect with a prior based on Lorenzen's work.
+  * or annual log-natural mortality parameters can be treated as a normal random walk.
+
 ### Other Inputs:
 
 ## Weight-at-age:
@@ -46,15 +56,33 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * Future versions may include options for internal estimation of weight at age, like [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
 
 ## Maturity-at-age:
-* One matrix of annual maturity at age is input and used to estimate spawning stock biomass.
+* One matrix of annual maturity at age is input and used to estimate annual spawning stock biomass.
 
 
-### Parameters:
+### Parameter options:
 
-## Natural Mortality:
-* In general, this can be year- and age-specific. However, by default it is assumed known at the initial parameter values using the map argument in TMB.
-* It can also be treated as a random walk of random effects, or an allometric function of weight at age.
-  
+* Natural Mortality:
+  * In general, this can be year- and age-specific. However, by default it is assumed known at the initial parameter values using the map argument in TMB.
+  * It can also be treated as a random walk of random effects, or an allometric function of weight at age.
+* Variance parameters for natural mortality:
+  * If a random walk in annual natural mortality parameters, then corresponding variance parameters can be estimated.
+* Initial numbers at age:
+  * Estimate between 1 and n_ages age-specfic parameters
+  * Estimate an initial recruitment and an "initial F" and rest of numbers at age are based on equilibrium calculations.
+* Recruitment:
+  * Can be estimated as annual fixed effects, a random walk, or random effects around a mean (potentially related to spawning stock biomass)
+* Abundance at age:
+  * Numbers at age after recruitment can be deterministically determined by numbers at previous age in previous year (statistical catch-at-age)
+  * Transitions in abundance at age can be stochastic
+* Variance parameters for abundance at age
+  * If transitions in abundance at age are stochastic, estimate between between 1 and n_ages corresponding variance parameters. 
+* Catchability is estimated on a logit scale with the user specifying upper and lower bounds.
+* Selectivity parameters are estimated on a logit scale with the user specifying upper and lower bounds.
+* Variance parameters for aggregate catch and indices
+  * Fleet- or index-specific parameters may be estimated to scale corresponding input standard errors.
+* Variance parameters for age composition observations
+  * Depends on models assumed, but parameters for each age composition set (i.e., fleet or index) can be estimated.
+    
 ### Ouput Estimates:
 
 * Annual abundance-at-age
@@ -72,4 +100,4 @@ The WHAM model can be configured to estimate a range of assessment models from a
   * Beverton-Holt and Ricker spawner-recruit models may be assumed. Traditional "alpha" and "beta" parameters or steepness and $$R_0$$ may be estimated.
   * Annual conditional reference points are estimated in case weight, maturity, natural mortality, or selectivity at age change over time. 
   * If a spawner-recruit model is assumed, MSY-based reference points are also estimated. 
-  * Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in [Miller et al. 2016,](https://doi.org/10.1139/cjfas-2015-0339) and [Miller et al. 2018,](https://doi.org/10.1139/cjfas-2017-0124)
+  * Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in [Miller et al. 2016](https://doi.org/10.1139/cjfas-2015-0339) and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
