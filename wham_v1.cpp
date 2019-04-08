@@ -235,7 +235,7 @@ Type objective_function<Type>::operator() ()
       if(a==0) NAA(0,0) = exp(log_N1_pars(0));
       else 
       {
-        if(a == n_ages-1) NAA(0,a) = NAA(0,a-1)/(1.0 + exp(-MAA(0,a) - exp(log_N1_pars(1))));
+        if(a == n_ages-1) NAA(0,a) = NAA(0,a-1)/(1.0 + exp(-MAA(0,a) - exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1)));
         else NAA(0,a) = NAA(0,a-1)* exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1));
       }
     }
@@ -603,10 +603,9 @@ Type objective_function<Type>::operator() ()
       log_FMSY(y) = log_FMSY_iter(y,n-1);
       log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, sel, mat, waassb, fracyr_SSB(y)));
       log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, sel, waacatch));
+      if(recruit_model == 3) log_R_MSY(y) = log((SR_a - 1/exp(log_SPR_MSY(y))) / SR_b); //bh
+      else log_R_MSY(y) = log(log(SR_a) + log_SPR_MSY(y)) - log(SR_b) - log_SPR_MSY(y); //ricker
     }
-    
-    if(recruit_model == 3) log_R_MSY = log((SR_a - 1/exp(log_SPR_MSY)) / SR_b); //bh
-    else log_R_MSY = log(log(SR_a) + log_SPR_MSY) - log(SR_b) - log_SPR_MSY; //ricker
     vector<Type> log_SSB_MSY = log_R_MSY + log_SPR_MSY;
     vector<Type> log_MSY = log_R_MSY + log_YPR_MSY;
     
