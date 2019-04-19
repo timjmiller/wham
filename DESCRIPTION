@@ -1,0 +1,40 @@
+Package: wham
+Title: Woods Hole Assessment Model (WHAM)
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Tim", "Miller", role = c("aut"),
+           email = "timothy.miller@noaa.gov"),
+    person("Brian", "Stock", role = c("aut", "cre"),
+           email = "brian.stock@noaa.gov"))
+Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
+  stock assessment model that can include environmental effects on population processes.
+  WHAM can be configured to estimate a range of assessment models from a traditional 
+  statistical catch-at-age (SCAA) model with recruitments as (possibly penalized) fixed 
+  effects, SCAA with recruitments as random effects, or abundance at all ages treated 
+  as random effects. WHAM is a generalization of the R and TMB code from Miller et al. 
+  (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM was also derived from 
+  ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file 
+  from an ASAP3 dat file. Many of the plotting functions for input data, results, and 
+  diagnostics are modified from ASAP.
+Depends:
+    R (>= 3.5.0)
+Imports:
+    TMB (>= 1.7.15),
+    plotrix (>= 3.7-5),
+    ellipse (>= 0.4.1),
+    Hmisc (>= 4.2-0),
+    gplots (>= 3.0.1.1),
+    fields (>= 9.6),
+    RColorBrewer (>= 1.1-2),
+    colorspace (>= 1.4-1),
+    mnormt (>= 1.5-5),
+    Deriv (>= 3.8.5)
+LinkingTo:
+    TMB, 
+    RcppEigen
+URL: https://github.com/timjmiller/wham
+BugReports: https://github.com/timjmiller/wham/issues
+License: GPL-3
+LazyData: true
+VignetteBuilder: knitr
+
