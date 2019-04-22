@@ -1,7 +1,9 @@
 
-fit.wham.fn = function(input, version="wham_v0", n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7)
+fit.wham.fn = function(input, version = "wham", n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7)
 {
-  mod <- TMB::MakeADFun(input$data,input$par, DLL=version, random = input$random, map = input$map)
+  wham.dir <- find.package("wham")
+  dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
+  mod <- TMB::MakeADFun(input$data,input$par, DLL = version, random = input$random, map = input$map)
   mod = fit.tmb.fn(mod, n.newton = n.newton, do.sdrep = do.sdrep)
   if(do.retro) mod$peels = retro.fn(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
   mod$years = input$years
@@ -35,7 +37,7 @@ fit.tmb.fn = function(model, n.newton=3, do.sdrep = TRUE)
   return(model)
 }
 
-peel.fit.fn = function(peel, model, do.sdrep = FALSE, version="wham_v0", n.newton = 3)
+peel.fit.fn = function(peel, model, do.sdrep = FALSE, version="wham", n.newton = 3)
 {
   out = list()
   print(peel)
