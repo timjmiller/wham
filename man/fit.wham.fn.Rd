@@ -4,8 +4,8 @@
 \alias{fit.wham.fn}
 \title{Fit WHAM model}
 \usage{
-fit.wham.fn(input, version = "wham", n.newton = 3, do.sdrep = TRUE,
-  do.retro = TRUE, n.peels = 7)
+fit.wham.fn(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
+  n.peels = 7)
 }
 \arguments{
 \item{input}{Named list with several components:
