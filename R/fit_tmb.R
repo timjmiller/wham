@@ -2,7 +2,7 @@
 #'
 #' Runs optimization on the TMB model using \code{\link[stats:nlminb]{stats::nlminb}}.
 #' If specified, takes additional Newton steps and calculates standard deviations.
-#' Internal function called by \code{\link{fit.wham.fn}}.
+#' Internal function called by \code{\link{fit_wham}}.
 #'
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
@@ -20,9 +20,9 @@
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}}}
 #'   }
 #'
-#' @seealso \code{\link{fit.wham.fn}}, \code{\link{retro.fn}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}
 #'
-fit.tmb.fn = function(model, n.newton=3, do.sdrep = TRUE)
+fit_tmb = function(model, n.newton=3, do.sdrep = TRUE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
   if(n.newton) for(i in 1:n.newton) { # Take a few extra newton steps

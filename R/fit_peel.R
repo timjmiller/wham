@@ -1,18 +1,18 @@
 #' Fit model peeling off \emph{i} years of data
 #'
-#' Internal function called by \code{\link{retro.fn}} for \emph{i} in 1--\code{n.peels}.
-#' Fits the model peeling off \emph{i} years of data (calls \code{\link{fit.tmb.fn}}).
+#' Internal function called by \code{\link{retro}} for \emph{i} in 1--\code{n.peels}.
+#' Fits the model peeling off \emph{i} years of data (calls \code{\link{fit_tmb}}).
 #'
 #' @param peel Integer, number of years of data to remove before model fitting.
-#' @param model Output from \code{\link{fit.tmb.fn}}.
+#' @param model Output from \code{\link{fit_tmb}}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.
 #' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.
 #'
-#' @return \code{out}, output of \code{\link{fit.tmb.fn}} for peel \emph{i}
+#' @return \code{out}, output of \code{\link{fit_tmb}} for peel \emph{i}
 #'
-#' @seealso \code{\link{fit.wham.fn}}, \code{\link{retro.fn}}, \code{\link{fit.tmb.fn}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}
 #'
-peel.fit.fn = function(peel, model, do.sdrep = FALSE, n.newton = 3)
+fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
 {
   out = list()
   print(peel)
@@ -25,6 +25,6 @@ peel.fit.fn = function(peel, model, do.sdrep = FALSE, n.newton = 3)
   if("log_NAA" %in% model$random) temp$map$log_NAA = factor(log_NAA_na_ind)
   temp$map$F_devs = factor(F_devs_na_ind)
   temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map)
-  out = fit.tmb.fn(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton)
+  out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton)
   return(out)
 }

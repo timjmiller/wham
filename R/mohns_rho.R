@@ -1,20 +1,20 @@
 #' Calculate Mohn's rho for a WHAM model with peels
 #'
-#' @param model A fit WHAM model, output from \code{\link{fit.wham.fn}} with \code{do.retro = TRUE}.
+#' @param model A fit WHAM model, output from \code{\link{fit_wham}} with \code{do.retro = TRUE}.
 #'
 #' @return \code{rho}, a vector of Mohn's rho
 #'
 #' @export
 #'
-#' @seealso \code{\link{fit.wham.fn}}, \code{\link{retro.fn}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}
 #'
 #' @examples
 #' \dontrun{
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit.wham.fn(input) # using default values: do.retro = T, n.peels = 7
-#' rho.fn(mod) # calculate rho
+#' mod = fit_wham(input) # using default values: do.retro = T, n.peels = 7
+#' mohns_rho(mod) # calculate Mohn's rho
 #' }
-rho.fn = function(model)
+mohns_rho = function(model)
 {
   npeels = length(model$peels)
   ny = model$env$data$n_years_model

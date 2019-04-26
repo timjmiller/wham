@@ -1,6 +1,6 @@
 #' Extract retrospective results for plotting
 #'
-#' @param model A fit WHAM model, output from \code{\link{fit.wham.fn}} with \code{do.retro = TRUE}.
+#' @param model A fit WHAM model, output from \code{\link{fit_wham}} with \code{do.retro = TRUE}.
 #'
 #' @return a named list with the components:
 #'   \describe{
@@ -11,15 +11,15 @@
 #'
 #' @export
 #'
-#' @seealso \code{\link{fit.wham.fn}}, \code{\link{retro.fn}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}
 #'
 #' @examples
 #' \dontrun{
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit.wham.fn(input) # using default values: do.retro = T, n.peels = 7
-#' x = retro.res.fn(mod) # get retrospective results
+#' mod = fit_wham(input) # using default values: do.retro = T, n.peels = 7
+#' x = retro_res(mod) # get retrospective results
 #' }
-retro.res.fn = function(model) #get time series for retro plots
+retro_res = function(model) #get time series for retro plots
 {
   npeels = length(model$peels)
   ny = model$env$data$n_years_model
