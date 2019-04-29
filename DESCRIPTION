@@ -5,7 +5,11 @@ Authors@R: c(
     person("Tim", "Miller", role = c("aut"),
            email = "timothy.miller@noaa.gov"),
     person("Brian", "Stock", role = c("aut", "cre"),
-           email = "brian.stock@noaa.gov"))
+           email = "brian.stock@noaa.gov"),
+    person("Liz", "Brooks", role = c("ctb"),
+           email = "liz.brooks@noaa.gov"),
+    person("Chris", "Legault", role = c("ctb"),
+           email = "chris.legault@noaa.gov"))
 Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
   stock assessment model that can include environmental effects on population processes.
   WHAM can be configured to estimate a range of assessment models from a traditional 
@@ -15,7 +19,7 @@ Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structu
   (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM was also derived from 
   ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file 
   from an ASAP3 dat file. Many of the plotting functions for input data, results, and 
-  diagnostics are modified from ASAP.
+  diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks.
 Depends:
     R (>= 3.5.0)
 Imports:
