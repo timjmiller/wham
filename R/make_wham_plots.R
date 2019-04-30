@@ -2,17 +2,17 @@
 #'
 #' Generates many output plots for a fit WHAM model.
 #'
-#' \code{out.type = 'html'} is the default, makes an html file viewable in any
+#' \code{out.type = 'pdf'} makes one pdf file of all plots (default). In the future,
+#' \code{out.type = 'html'} will be implemented, making an html file for viewing in a
 #' browser (tabs: 'input data', 'diagnostics', 'results', 'SPR / MSY', 'retro',
-#' and 'misc'). \code{out.type = 'pdf'} makes one pdf file of all plots.
-#' \code{out.type = 'png'} creates a subdirectory 'plots_png' in \code{dir} and
+#' and 'misc'). \code{out.type = 'png'} creates a subdirectory 'plots_png' in \code{dir} and
 #' saves .png files within.
 #'
 #' Plot functions are located in \code{wham_plots_tables.R}
 #'
 #' @param mod output from \code{\link{fit_wham}}
-#' @param dir character, directory to save plots to (default = \code{getwd()})
-#' @param out.type character, either 'html', 'pdf', or 'png' (default = 'html')
+#' @param dir.main character, directory to save plots to (default = \code{getwd()})
+#' @param out.type character, either 'html', 'pdf', or 'png' (only 'pdf' currently supported)
 #'
 #' @return NULL
 #'
@@ -26,12 +26,15 @@
 #' mod = fit_wham(input)
 #' make_wham_plots(mod)
 #' }
-make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
+make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?make_wham_plots")
   }
-  if(!dir.exists(dir)){
+  if(!dir.exists(dir.main)){
     stop("Output directory does not exist. Check 'dir' and try again.")
+  }
+  if(out.type != 'pdf'){
+    stop("Only pdf output is currently supported. Stay tuned for 'html' or 'png' plots")
   }
 
   graphics.off()     # close any open windows
@@ -39,21 +42,21 @@ make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
 
   if(out.type == 'pdf'){
     # PDF input_data
-    grDevices::cairo_pdf(filename=file.path(dir,"input_data.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main,"input_data.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.catch.by.fleet(mod)
-    plot.catch.age.comp.bubbles(mod)
+    for(i in 1:mod$env$data$n_fleets) plot.catch.age.comp.bubbles(mod, i=i)
     plot.index.input(mod)
-    plot.index.age.comp.bubbles(mod)
+    for(i in 1:mod$env$data$n_indices) plot.index.age.comp.bubbles(mod, i=i)
     plot.waa(mod,"ssb")
     plot.waa(mod,"jan1")
     plot.waa(mod,"totcatch")
-    plot.waa(mod,"fleets")
-    plot.waa(mod,"indices")
+    for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
+    for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
     plot.maturity(mod)
     dev.off()
 
     # PDF diagnostics
-    grDevices::cairo_pdf(filename=file.path(dir,"diagnostics.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main,"diagnostics.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     fit.summary.text.plot.fn(mod)
     plot.ll.table.fn(mod)
     plot.catch.4.panel(mod)
@@ -68,7 +71,7 @@ make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
     dev.off()
 
     # PDF results
-    grDevices::cairo_pdf(filename=file.path(dir,"results.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main,"results.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.fleet.sel.blocks(mod)
     plot.index.sel.blocks(mod)
     plot.SSB.F.trend(mod)
@@ -82,7 +85,7 @@ make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
     dev.off()
 
     # PDF SPR & MSY
-    grDevices::cairo_pdf(filename=file.path(dir, "spr_msy.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main, "spr_msy.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.SPR.table(mod)
     plot.annual.SPR.targets(mod)
     plot.FXSPR.annual(mod)
@@ -92,14 +95,14 @@ make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
     dev.off()
 
     # PDF retrospective
-    grDevices::cairo_pdf(filename=file.path(dir, "retro.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main, "retro.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.retro(mod, what = "SSB")
     plot.retro(mod, what = "Fbar")
     plot.retro(mod, what = "NAA")
     dev.off()
 
     # PDF misc
-    grDevices::cairo_pdf(filename=file.path(dir, "misc.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    grDevices::cairo_pdf(filename=file.path(dir.main, "misc.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot_catch_at_age_consistency(mod)
     plot_index_at_age_consistency(mod)
     plot_catch_curves_for_catch(mod)
@@ -108,22 +111,48 @@ make_wham_plots <- function(mod, dir = getwd(), out.type = 'html'){
   } # end PDF section
 
   if(out.type == 'png'){
-    dir.plots <- file.path(dir, "plots_png")
+    dir.plots <- file.path(dir.main, "plots_png")
     dir.create(dir.plots)
 
     # PNG input_data
     dir.data <- file.path(dir.plots, "input_data")
     dir.create(dir.data)
-    grDevices::cairo_PNG(filename=file.path(dir,"input_data.PNG"), family = "Times", height = 10, width = 10, onefile = TRUE)
+    png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=300)
     plot.catch.by.fleet(mod)
-    plot.catch.age.comp.bubbles(mod)
+    dev.off()
+    for(i in 1:mod$env$data$n_fleets){
+      png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=300)
+      plot.catch.age.comp.bubbles(mod, i=i)
+      dev.off()
+    }
+    png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=300)
     plot.index.input(mod)
-    plot.index.age.comp.bubbles(mod)
+    dev.off()
+    for(i in 1:mod$env$data$n_indices){
+      png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=300)
+      plot.index.age.comp.bubbles(mod, i=i)
+      dev.off()
+    }
+    png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=300)
     plot.waa(mod,"ssb")
+    dev.off()
+    png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=300)
     plot.waa(mod,"jan1")
+    dev.off()
+    png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=300)
     plot.waa(mod,"totcatch")
-    plot.waa(mod,"fleets")
-    plot.waa(mod,"indices")
+    dev.off()
+    for(i in 1:mod$env$data$n_fleets){
+      png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=300)
+      plot.waa(mod,"fleets", ind=i)
+      dev.off()
+    }
+    for(i in 1:mod$env$data$n_indices){
+      png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=300)
+      plot.waa(mod,"indices", ind=i)
+      dev.off()
+    }
+    png(file.path(dir.data,"maturity.png"),width=10,height=10,units="in",res=300)
     plot.maturity(mod)
     dev.off()
 

@@ -1143,7 +1143,7 @@ plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
 }
 
 # Bubble plots of catch age comps (set is.catch.flag to False to plot Discard age comps)
-plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c8caa")
+plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c8caa", i=1)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -1154,8 +1154,8 @@ plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
   n_ages = length(ages)
 	par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
   n_fleets = dat$n_fleets
-	for (i in 1:n_fleets)
-	{
+	# for (i in 1:n_fleets)
+	# {
 		acomp.obs <- dat$catch_paa[i,,]
 		catch.yrs <- which(dat$use_catch_paa[,i] == 1)
 		my.title <- "Age Comps for Catch for Fleet "
@@ -1177,7 +1177,7 @@ plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 			legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=T , col='black', pt.bg = bubble.col)
 			title (paste0(my.title,i), outer=TRUE, line=-1)
 		} # end catch.yrs test
-	}   #end loop n_fleets
+	# }   #end loop n_fleets
   par(origpar)
 }
 
@@ -1228,7 +1228,7 @@ plot.index.input <- function(mod, plot.colors)
 
 #------------------------------------
 # Bubble plots of index age comps
-plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c8c8caa")
+plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c8c8caa", i=1)
 {
   origpar <- par(no.readonly = TRUE)
   par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
@@ -1240,8 +1240,8 @@ plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c
   if(missing(ages.lab)) ages.lab = mod$ages.lab
 	n_ages <- length(ages)
 
-	for (i in 1:n_indices)
-	{
+	# for (i in 1:n_indices)
+	# {
 		acomp.obs <- dat$index_paa[i,,]
 		index.yrs <- which(dat$use_index_paa[,i] == 1)
 		my.title <- "Age Comps for Index "
@@ -1264,12 +1264,12 @@ plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c
 			legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=TRUE, col='black', pt.bg = bubble.col)
 			title (paste0(my.title,i), outer=T, line=-1)
 		} # end index.yrs test
-	}   #end loop n_fleets
+	# }   #end loop n_fleets
 	par(origpar)
 }
 
 #------------------------------------
-plot.waa <- function(mod,type="ssb",plot.colors)
+plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
@@ -1279,15 +1279,17 @@ plot.waa <- function(mod,type="ssb",plot.colors)
   point = switch(type,
     ssb = dat$waa_pointer_ssb,
     jan1 = dat$waa_pointer_jan1,
-    fleets = dat$waa_pointer_fleets,
-    indices = dat$waa_pointer_indices,
+    fleets = dat$waa_pointer_fleets[ind],
+    indices = dat$waa_pointer_indices[ind],
     totcatch = dat$waa_pointer_totcatch
   )
   labs = switch(type,
     ssb = "SSB",
     jan1 = "January 1 Biomass",
-    fleets = paste0("Fleet ", 1:dat$n_fleets),
-    indices = paste0("Index ", 1:dat$n_indices),
+    fleets = paste0("Fleet ", ind),
+    indices = paste0("Index ", ind),
+    # fleets = paste0("Fleet ", 1:dat$n_fleets),
+    # indices = paste0("Index ", 1:dat$n_indices),
     totcatch = "Total Catch"
   )
   waa = dat$waa[point,,]
