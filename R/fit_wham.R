@@ -36,7 +36,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
   mod <- TMB::MakeADFun(input$data,input$par, DLL = "wham", random = input$random, map = input$map)
-  mod = fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep)
+  mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep)
   if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
   mod$years = input$years
   mod$ages.lab = input$ages.lab
