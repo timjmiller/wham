@@ -1,0 +1,221 @@
+---
+title: "WHAM example: Southern New England Mid-Atlantic Yellowtail Flounder"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SNEMA_yellowtail_flounder}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+knitr::opts_knit$set(root.dir = "/home/brian/Documents/wham_analysis/ex_SNEMA_ytl")
+```
+
+In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
+
+1. Prepare `wham`, data, and model settings
+
+2. Fit several (slightly different) WHAM models
+
+3. Compare models by AIC and Mohn's rho (retrospective analysis)
+
+4. Project the best model
+
+5. Review plots of input data, diagnostics, and results.
+
+## 1. Prepare `wham`
+
+We assume you already have `wham` and dependencies installed. If not, see the README. Open R and load the `wham` package:
+
+```{r}
+library(wham)
+```
+
+For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+```{r, eval=FALSE}
+wham.dir <- find.package("wham")
+file.path(wham.dir, "example_scripts")
+```
+
+You can run this entire example script with:
+```{r, eval=FALSE}
+source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+```
+
+Let's create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output
+write.dir <- "/home/brian/Documents/wham_analysis/ex_SNEMA_ytl" # modify
+dir.create(write.dir)
+setwd(write.dir)
+```
+
+WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
+
+Copy `ASAP_SNEMAYT.dat` to our analysis directory:
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+```
+
+Confirm you are in the working directory and it has the `ASAP_SNEMAYT.dat` file:
+```{r}
+list.files()
+```
+
+Read the ASAP3 .dat file into R:
+```{r eval=FALSE}
+asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
+```
+
+Convert `asap3` to an input list for `wham`. Here we specify the model name and stock-recruit model (1 = random walk, 2 = random about mean (default), 3 = Beverton-Holt, 4 = Ricker):
+```{r eval=FALSE}
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
+```
+
+Now we have some modifications to make to `input` before running `wham`:
+```{r echo=FALSE, eval=FALSE}
+input$data$Fbar_ages = 4:5 # what does this do?
+
+# Make one or more selectivity blocks with age-specific parameters
+age.specific = 1:3 # 3 age-specific blocks
+not.age.specific = (1:input$data$n_selblocks)[-age.specific]
+input = set_age_sel0(input, age.specific)
+input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages + 3:6)] = Inf
+input$par$logit_selpars[1,5] = Inf
+input$par$logit_selpars[2,4] = Inf
+input$par$logit_selpars[3,2] = Inf
+input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
+input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
+input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
+input$map$logit_selpars = factor(input$map$logit_selpars)
+base = input
+```
+
+## 2. Fit `wham` models
+
+The first model, `m1`, is a statistical catch-at-age model with random effects for recruitment and index observation error variances fixed:
+```{r eval=FALSE}
+temp = base
+temp$random = "log_R"
+temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
+temp$data$random_recruitment = 1
+m1 <- fit_wham(temp)
+```
+
+By default, `fit_wham` uses 3 extra Newton steps to encourage convergence (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE}
+load("/home/brian/Documents/wham_analysis/ex_SNEMA_ytl/ex1_models.RData")
+m1 = mods$m1
+m2 = mods$m2
+m3 = mods$m3
+m4 = mods$m4
+```
+
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum gradiet should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
+```{r}
+m1$opt$convergence
+max(m1$final_gradient)
+```
+
+The second model, `m2`, is like the first, but changes the age composition likelihoods to logistic normal:
+```{r eval=FALSE}
+temp = base
+temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
+temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
+temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
+temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
+temp$par$index_paa_pars = rep(0, temp$data$n_indices)
+temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
+temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+temp$random = "log_R"
+temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
+temp$data$random_recruitment = 1
+m2 <- fit_wham(temp)
+```
+
+Check that `m2` converged:
+```{r}
+m2$opt$convergence
+max(m2$final_gradient)
+```
+
+The third, `m3`, is a full state-space model where abundance is the state vector:
+```{r eval=FALSE}
+temp = base
+temp$data$use_NAA_re = 1
+temp$data$random_recruitment = 0
+temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
+temp$random = "log_NAA"
+m3 <- fit_wham(temp)
+```
+
+Check that `m3` converged:
+```{r}
+m3$opt$convergence
+max(m3$final_gradient)
+```
+
+The last, `m4`, is like `m3`, but changes the age composition likelihoods to logistic normal:
+```{r eval=FALSE}
+temp = base
+temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
+temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
+temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
+temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
+temp$par$index_paa_pars = rep(0, temp$data$n_indices)
+temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
+temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+temp$data$use_NAA_re = 1
+temp$data$random_recruitment = 0
+temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
+temp$random = "log_NAA"
+m4 <- fit_wham(temp)
+```
+
+Check that `m4` converged:
+```{r}
+m4$opt$convergence
+max(m4$final_gradient)
+```
+
+Store all models together in one (named) list:
+```{r eval=FALSE}
+mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
+```
+
+Since the retrospective analyses take a few minutes to run, you may want to save the output for later use:
+```{r eval=FALSE}
+save("mods", file="ex1_models.RData")
+```
+
+## 3. Compare models
+
+We can compare the four models using AIC and Mohn's rho:
+```{r}
+res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+res$tab
+res$best
+```
+
+By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`.
+
+## 4. Project the best model
+
+We can do a 3-year projection for the best model, `m4`:
+```{r eval=FALSE}
+m4 <- project_wham(m4, n.years = 3)
+```
+
+## 5. Plot input data, diagnostics, and results
+
+```{r eval=FALSE}
+make_wham_plots(mod=m4, out.type='pdf')
+```
