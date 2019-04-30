@@ -164,6 +164,7 @@ get.RMSEs.fn <- function(model)
 }
 RMSE.table.fn <- function(model)
 {
+  origpar <- par(no.readonly = TRUE)
   RMSEs = get.RMSEs.fn(model)
 	par(mfrow=c(1,1), oma=rep(2,4), mar=c(0,0,1,0))
 	max.txt<-16
@@ -194,7 +195,7 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   res$ll = -mod$opt$obj
   res$np = length(mod$opt$par)
   res$aic = 2*(mod$opt$obj + res$np)
-  #rho = rho.fn(mod) #if no peels, then this will be NULL
+  #rho = mohns_rho(mod) #if no peels, then this will be NULL
   tcol <- col2rgb('black')
   black.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
   tcol <- col2rgb('red')
@@ -213,6 +214,7 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     x_line = -1
     y_line = 3
   }
+  origpar <- par(no.readonly = TRUE)
   par(mar = c(5,5,1,1), oma = c(1,1,1,1), mfrow = c(1,3))
   if(do.tex | do.png)
   {
@@ -365,7 +367,8 @@ plot.fleet.stdresids.fn = function(mod,years, fleet.names = NULL, plot.colors)
 
 plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors)
 {
-	par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
   years <- mod$years
   dat = mod$env$data
   pred_catch = mod$rep$pred_catch
@@ -400,7 +403,8 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.
 
 plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors)
 {
-	par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
   years <- mod$years
   dat = mod$env$data
   pred_index = aperm(mod$rep$pred_IAA, c(2,1,3))
@@ -440,7 +444,8 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.
 
 plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors)
 {
-	par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
   years <- mod$years
   dat = mod$env$data
   pred_NAA = mod$rep$pred_NAA
@@ -476,6 +481,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.co
 
 plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors)
 {
+  origpar <- par(no.readonly = TRUE)
   ages = mod$ages
 	n.ages <- length(ages)
   if(missing(plot.colors)) plot.colors = mypalette(n.ages)
@@ -495,7 +501,7 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors)
   if(do.tex) cairo_pdf(paste0(od, "NAA_res_barplot_stacked_",i,".pdf"), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = paste0(od, "NAA_res_barplot_stacked_",i,'.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 	par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
-	barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
+	lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
 	  scales = list(x=list(at = x.at, labels = x.lab), alternating = FALSE),
 	  key = list(text = list(lab = as.character(ages)), rectangles = list(col = plot.colors), columns = n.ages, title = "Age"))
   if(do.tex | do.png) dev.off()
@@ -504,7 +510,8 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors)
 
 plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors)
 {
-	par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
   years = mod$years
   ages = 1:mod$env$data$n_ages
   ages.lab = mod$ages.lab
@@ -541,7 +548,8 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors
 
 plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors)
 {
-	par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
   years = mod$years
   ages = 1:mod$env$data$n_ages
   ages.lab = mod$ages.lab
@@ -593,7 +601,8 @@ multinomial.pearson.fn = function(mod, ind = 1)
 
 plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa")
 {
-	par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
   dat = mod$env$data
   if(missing(ages)) ages = 1:dat$n_ages
   if(missing(ages.lab)) ages.lab = mod$ages.lab
@@ -638,7 +647,8 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 
 plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa")
 {
-	par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
   dat = mod$env$data
   if(missing(ages)) ages = 1:dat$n_ages
   if(missing(ages.lab)) ages.lab = mod$ages.lab
@@ -685,7 +695,8 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 
 plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors)
 {
-	par(mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(1,1))
 	cc<-0
   dat = mod$env$data
   if(missing(ages)) ages = 1:dat$n_ages
@@ -727,7 +738,8 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors)
 
 plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors)
 {
-	par(mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(1,1))
 	cc<-0
   dat = mod$env$data
   if(missing(ages)) ages = 1:dat$n_ages
@@ -769,7 +781,8 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors)
 
 plot.SSB.F.trend<-function(mod, alpha = 0.05)
 {
-	years <- mod$years
+  origpar <- par(no.readonly = TRUE)
+  years <- mod$years
   tcol <- col2rgb('black')
   tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
   std = summary(mod$sdrep)
@@ -812,7 +825,7 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
 
 plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors)
 {
-
+  origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   if(missing(ages)) ages = 1:dat$n_ages
   if(missing(ages.lab)) ages.lab = mod$ages.lab
@@ -836,13 +849,15 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors)
 	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
   axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
   box()
+  par(origpar)
 }  #end funciton
 #plot.SSB.AA(ssm)
 
 #------------------------------------
 plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = expression(10^6))
 {
-	par(mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(1,1))
   dat = mod$env$data
 	## stacked barplot of NAA
   if(missing(ages)) ages = 1:dat$n_ages
@@ -867,13 +882,14 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
 	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8 )
   axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
   box()
-
+  par(origpar)
 } # end function
 #plot.NAA(ssm)
 #------------------------------------
 #__annual estimates of Recruitment deviations (2 panel plot)____
 plot.recruitment.devs <- function(mod, age.recruit = 1, units = expression(10^3), save.plots = FALSE)
 {
+  origpar <- par(no.readonly = TRUE)
 	par(mfrow=c(2,1), mar=c(1,5,1,1), oma = c(4,1,1,0))
   dat = mod$env$data
 	years <- mod$years
@@ -894,7 +910,7 @@ plot.recruitment.devs <- function(mod, age.recruit = 1, units = expression(10^3)
 	  xlim = range(years), ylim=1.1*range(R.resids))
 	abline(h=0, lwd=1)
 	mtext(side = 1, outer = TRUE, "Year", line = 2)
-
+	par(origpar)
 } # end function
 #plot.recruitment.devs(ssm)
 
@@ -902,7 +918,8 @@ plot.recruitment.devs <- function(mod, age.recruit = 1, units = expression(10^3)
 plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05, scale.ssb = 1000, scale.recruits = 1000, age.recruit = 1,
   max.x, max.y, plot.colors)
 {
-	par(mfrow=c(1,1), mar = c(4,5,1,1), oma = c(1,1,1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(1,1), mar = c(4,5,1,1), oma = c(1,1,1,1))
 
   std <- summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov
@@ -933,7 +950,7 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
 	  tcov <- cov[c(ssb.ind[x],R.ind[x+age.recruit]),c(ssb.ind[x],R.ind[x+age.recruit])]
 	  tsd <- std[c(ssb.ind[x],R.ind[x+age.recruit]),2]
     tcor = tcov/(tsd %*% t(tsd))
-	  el <- exp(ellipse(tcor, level = 1-alpha, scale = tsd, centre = c(log(SR[x,2]),log(SR[x,3]))))
+	  el <- exp(ellipse::ellipse(tcor, level = 1-alpha, scale = tsd, centre = c(log(SR[x,2]),log(SR[x,3]))))
 	  return(el)
 	})
   if(missing(max.y)) max.y <- max(sapply(ci.regs, function(x) max(x[,2])))
@@ -973,13 +990,14 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
   }
   points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
   text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
-
+  par(origpar)
 }  #end function
 
 #------------------------------------
 plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1, ssb.units = 'mt', recruits.units = expression(10^3))
 {
-	par(mar = c(5,5,1,5), oma = c(0,0,0,1), family='serif')
+  origpar <- par(no.readonly = TRUE)
+  par(mar = c(5,5,1,5), oma = c(0,0,0,1), family='serif')
   years = mod$years
   nyrs <- length(years)
   std = summary(mod$sdrep)
@@ -1010,14 +1028,14 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
 	mtext(side = 4, as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))), line = 3, col='navyblue')
 	mtext(side = 2, as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
 		list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), line = 3)
-
-	par(family="")
+	par(origpar)
 }  # end function
 #plot.SARC.R.SSB(ssm, ssm.aux)
 
 plot.fleet.F <- function(mod, plot.colors)
 {
-	par(mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(1,1))
   years = mod$years
   nyrs <- length(years)
 	n_fleets <- mod$env$data$n_fleets
@@ -1034,13 +1052,14 @@ plot.fleet.F <- function(mod, plot.colors)
 
 	leg.names <- paste0("Fleet ",i)
 	legend('topleft', legend=leg.names, col=plot.colors,lwd=rep(2, n_fleets), lty=seq(1, n_fleets), horiz=TRUE, bty='n')
-
+	par(origpar)
 }   # end function
 #plot.fleet.F(ssm,ssm.aux)
 
 #------------------------------------
 plot.cv <- function(mod)
 {
+  origpar <- par(no.readonly = TRUE)
 	par(mfrow=c(1,1), mar=c(4,4,2,2))
   years = mod$years
   nyrs <- length(years)
@@ -1063,7 +1082,7 @@ plot.cv <- function(mod)
 	lines(years, ssb.cv, lwd=2, col="blue")
 	lines(years, full.f.cv, lwd=2, col="green3")
 	legend('top', legend=c("Recruits", "SSB", "Full F"), col=c("black", "blue", "green3"), lty=rep(1,3), lwd=rep(2,3), horiz=T)
-
+  par(origpar)
 }  # end function
 #------------------------------------
 
@@ -1098,7 +1117,8 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors)
 #--------Data Plots------------------
 plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
 {
-	par(mfrow = c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow = c(1,1))
   dat = mod$env$data
   years = mod$years
   nyrs = length(years)
@@ -1119,11 +1139,13 @@ plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
     box(lwd = 2)
 		legend('top', legend=paste0("Fleet ",1:n_fleets), horiz=TRUE, pch=15, col=plot.colors)
 	}
+	par(origpar)
 }
 
 # Bubble plots of catch age comps (set is.catch.flag to False to plot Discard age comps)
 plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c8caa")
 {
+  origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   years = mod$years
   nyrs = length(years)
@@ -1156,12 +1178,14 @@ plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 			title (paste0(my.title,i), outer=TRUE, line=-1)
 		} # end catch.yrs test
 	}   #end loop n_fleets
+  par(origpar)
 }
 
 #------------------------------------
 plot.index.input <- function(mod, plot.colors)
 {
-	par(mfrow=c(2,1), mar = c(1,1,1,1), oma = c(4,4,2,0))
+  origpar <- par(no.readonly = TRUE)
+  par(mfrow=c(2,1), mar = c(1,1,1,1), oma = c(4,4,2,0))
   years = mod$years
   nyrs = length(years)
   dat = mod$env$data
@@ -1198,7 +1222,7 @@ plot.index.input <- function(mod, plot.colors)
 	for (i in 1:n_indices) lines(years,log.rescaled[,i],col=plot.colors[i])
 	mtext(side = 2, "Rescaled Log(Indices)", outer = FALSE, line = 3)
 	mtext(side = 1, "Year", outer = FALSE, line = 3)
-	par(mfrow=c(1,1))
+	par(origpar)
 }
 #plot.index.input(ssm)
 
@@ -1206,7 +1230,8 @@ plot.index.input <- function(mod, plot.colors)
 # Bubble plots of index age comps
 plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c8c8caa")
 {
-	par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
   years = mod$years
   nyrs = length(years)
   dat = mod$env$data
@@ -1240,12 +1265,13 @@ plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c
 			title (paste0(my.title,i), outer=T, line=-1)
 		} # end index.yrs test
 	}   #end loop n_fleets
-	par(mfrow=c(1,1))
+	par(origpar)
 }
 
 #------------------------------------
 plot.waa <- function(mod,type="ssb",plot.colors)
 {
+  origpar <- par(no.readonly = TRUE)
   years = mod$years
   nyrs = length(years)
   dat = mod$env$data
@@ -1278,13 +1304,14 @@ plot.waa <- function(mod,type="ssb",plot.colors)
 		}
 		title(main = paste0("Annual Weight-at-Age for ", labs[i]))
 	}  # end k-loop
-	par(mfrow=c(1,1))
+	par(origpar)
 }  # end function
 
 #------------------------------------
 plot.maturity <- function(mod, ages.lab, plot.colors)
 {
-	dat = mod$env$data
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
   years = mod$years
   n_years = length(years)
   ages = 1:dat$n_ages
@@ -1302,7 +1329,7 @@ plot.maturity <- function(mod, ages.lab, plot.colors)
 		legend('topleft', horiz=FALSE, legend=c("First Year", "Last Year"), pch=c(1,1), col=c(plot.colors[1], plot.colors[n_years]))
 	}
 	title(main="Maturity", outer=FALSE)
-	par(mfrow=c(1,1))
+	par(origpar)
 }
 
 #-------SSB/R -----------------------------
@@ -1345,7 +1372,8 @@ get_YPR = function(F, M, sel, waacatch, at.age = FALSE)
 
 plot.SPR.table <- function(mod, nyrs.ave = 5)
 {
-	spr.targ.values <- seq(0.2, 0.8, 0.05)
+  origpar <- par(no.readonly = TRUE)
+  spr.targ.values <- seq(0.2, 0.8, 0.05)
 	n.spr <- length(spr.targ.values)
   dat = mod$env$data
 	n_ages<- dat$n_ages
@@ -1420,19 +1448,15 @@ plot.SPR.table <- function(mod, nyrs.ave = 5)
 		text(x=9, y=seq(n.spr,1, by=-1), labels=round(ypr.spr.vals,4), cex=1.0, pos=4, font=1)
 	}
 	title (paste("SPR Target Reference Points (Years Avg = ", nyrs.ave,")", sep=""), outer=TRUE, line=-1)
-
-	#if (save.plots) savePlot(paste(od, "SPR_Target_Table.", plotf, sep=''), type=plotf)
-
-
-  par(mfrow=c(1,1))
+  par(origpar)
 	#write.csv( spr.target.table, file=paste(od,"SPR_Target_Table.csv", sep=""),  row.names=F)
-
 } # end function
 
 #------------------------------------
 plot.annual.SPR.targets <- function(mod)
 {
-	spr.targ.values <- seq(0.2, 0.5, by=0.1)
+  origpar <- par(no.readonly = TRUE)
+  spr.targ.values <- seq(0.2, 0.5, by=0.1)
 	n.spr <- length(spr.targ.values)
   dat = mod$env$data
   n_ages = dat$n_ages
@@ -1513,15 +1537,15 @@ plot.annual.SPR.targets <- function(mod)
   mtext(side=2, outer = TRUE, "Frequency", line = 1)
 	title (main=expression(paste("Frequencies of Annual YPR(",italic(F)["%SPR"], ") Reference Points")), outer = TRUE, line=0, cex.main = 2)
 
-	par(mfrow = c(1,1))
+	par(origpar)
 } # end function
 
 plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units = "thousands", scale.ssb = 1,
 	scale.recruits = 1, age.recruit = 1, plot.colors)
 {
+  origpar <- par(no.readonly = TRUE)
   if(mod$env$data$recruit_model == 3 & mod$env$data$use_steepness != 1) #B-H stock recruit function with alpha/beta
   {
-    require(Deriv)
     par(mfrow=c(1,1))
     std = summary(mod$sdrep)
     ssb.ind = which(rownames(std) == "log_SSB")
@@ -1562,15 +1586,12 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     lines(seq.ssb, exp(pred.lR), col=plot.colors[1], lwd=2)
     polygon(c(seq.ssb,rev(seq.ssb)), exp(c(ci.pred.lR[,1],rev(ci.pred.lR[,2]))), col = tcol, border = "transparent")
   }
+  par(origpar)
 }
 
 plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 {
-  if(!require(mnormt))
-  {
-    install.packages("mnormt")
-    require(mnormt)
-  }
+  origpar <- par(no.readonly = TRUE)
   percentSPR = mod$env$data$percentSPR
 	n_ages = mod$env$data$n_ages
   years = mod$years
@@ -1634,16 +1655,16 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
   abline(h=1, lty = 2, col = 'red')
   mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
 
-  log.rel.ssb.rel.F.ci.regs <- lapply(1:n_years, function(x) return(exp(ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha))))
+  log.rel.ssb.rel.F.ci.regs <- lapply(1:n_years, function(x) return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha))))
 
   p.ssb.lo.f.lo <- sapply(status.years, function(x)
-    sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
   p.ssb.lo.f.hi <- sapply(status.years, function(x)
-    sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
   p.ssb.hi.f.lo <- sapply(status.years, function(x)
-    sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
   p.ssb.hi.f.hi <- sapply(status.years, function(x)
-    sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
 
   vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
   if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs[status.years], function(x) max(x[,1])),2)
@@ -1669,19 +1690,14 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
   legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
   text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
   for(i in status.years) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
-  par(mfrow=c(1,1))
+  par(origpar)
 
   return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
-
 }  # end function
 
 plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 {
-  if(!require(mnormt))
-  {
-    install.packages("mnormt")
-    require(mnormt)
-  }
+  origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   n_ages = dat$n_ages
   years = mod$years
@@ -1742,16 +1758,16 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')
 
-    log.rel.ssb.rel.F.ci.regs <- lapply(1:n_years, function(x) return(exp(ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha))))
+    log.rel.ssb.rel.F.ci.regs <- lapply(1:n_years, function(x) return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha))))
 
 	  p.ssb.lo.f.lo <- sapply(status.years, function(x)
-      sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+      mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
     p.ssb.lo.f.hi <- sapply(status.years, function(x)
-      sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+      mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
 	  p.ssb.hi.f.lo <- sapply(status.years, function(x)
-      sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+      mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
     p.ssb.hi.f.hi <- sapply(status.years, function(x)
-      sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+      mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
 	  vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
 	  if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs[status.years], function(x) max(x[,1])),2)
 	  if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs[status.years], function(x) max(x[,2])),2)
@@ -1776,16 +1792,16 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
     text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
 	  text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
 	  for(i in status.years) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
-    par(mfrow=c(1,1))
+    par(origpar)
 
     return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
-
 	}
 }  # end function
 
 #------------------------------------
 plot.yield.curves <- function(mod, nyrs.ave = 5)
 {
+  origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
 	n_ages = dat$n_ages
   years = mod$years
@@ -1855,13 +1871,14 @@ plot.yield.curves <- function(mod, nyrs.ave = 5)
 	colnames(ypr.table) <- c("Full.F", "YPR", "SPR")
 	#write.csv(ypr.table, file=paste(od,"YPR_Table.csv", sep=""), row.names=F)
 
-
+  par(origpar)
 } # end function
 
 #------------------------------------
 #------------------------------------
 plot.exp.spawn <- function(mod, nyrs.ave = 5)
 {
+  origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   n_ages = dat$n_ages
   years = mod$years
@@ -1939,12 +1956,12 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
 	exp.spawn.table<- as.data.frame(cbind(F.range, expected.spawners, pr))
 	colnames(exp.spawn.table) <- c("Full.F", "Exp.Spawn", "SPR")
 	#write.csv(exp.spawn.table, file=paste(od,"Exp.Spawn.Table.csv", sep=""), row.names=F)
-  stop()
-
+  par(origpar)
 } # end function
 
 plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB")
 {
+  origpar <- par(no.readonly = TRUE)
   years = mod$years
 	n_years <- length(years)
   npeels = length(mod$peels)
@@ -1987,7 +2004,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB")
     if(missing(y.lab)) y.lab = bquote(paste("Mohn's ", rho, "(",.(what),")"))
     if(what == "NAA") rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
     else rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1)] - 1)
-    rho.vals = rho.fn(mod)
+    rho.vals = mohns_rho(mod)
 
     if(what == "NAA")
     {
@@ -2021,6 +2038,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB")
       rho.plot <- round(rho.vals[what],3)
       legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
     }
+    par(origpar)
     return(rho.vals)
   }
 }
@@ -2070,7 +2088,8 @@ makecohorts <- function(mat)
 # assumes matrix has ages as columns and that cohorts are in rows
 plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE)
 {
-	nc <- NCOL(matcoh)
+	origpar <- par(no.readonly = TRUE)
+  nc <- NCOL(matcoh)
 	my.cor <- cor(matcoh,use="pairwise.complete.obs")
 	my.cor.round <- round(my.cor,2)
 	on.exit(par(origpar))
@@ -2311,7 +2330,8 @@ calc_Z_cohort <- function(cohmat)
 plot_catch_curves_for_catch <- function(mod,first.age=-999)
 {
 	# create catch curve plots for catch by fleet
-	on.exit(par(origpar))
+  origpar <- par(no.readonly = TRUE)
+  on.exit(par(origpar))
 	par(oma=c(1,1,1,1),mar=c(4,4,1,0.5))
   lastyr <- max(mod$years)
   dat = mod$env$data
@@ -2375,7 +2395,7 @@ plot_catch_curves_for_catch <- function(mod,first.age=-999)
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-		errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
+		Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 
 		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1," Predicted"))
@@ -2386,7 +2406,7 @@ plot_catch_curves_for_catch <- function(mod,first.age=-999)
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
 
-		errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
+		Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 
     # write out .csv files for Z, one file for each fleet
@@ -2405,7 +2425,8 @@ plot_catch_curves_for_catch <- function(mod,first.age=-999)
 plot_catch_curves_for_index <- function(mod,first.age=-999)
 {
 	# create catch curve plots for each west coast style index
-	on.exit(par(origpar))
+  origpar <- par(no.readonly = TRUE)
+  on.exit(par(origpar))
   lastyr <- max(mod$years)
   dat = mod$env$data
   rep = mod$rep
@@ -2472,7 +2493,7 @@ plot_catch_curves_for_index <- function(mod,first.age=-999)
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-				errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
+				Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
 
         plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1," Predicted"))
@@ -2483,7 +2504,7 @@ plot_catch_curves_for_index <- function(mod,first.age=-999)
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
 
-				errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
+				Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
 			}
 

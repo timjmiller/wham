@@ -2,6 +2,7 @@
 
 export(compare_wham_models)
 export(fit_wham)
+export(make_wham_plots)
 export(mohns_rho)
 export(prepare_wham_input)
 export(project_wham)
