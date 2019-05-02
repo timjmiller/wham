@@ -1,47 +1,43 @@
-#' Make WHAM plots
+#' Plot WHAM output
 #'
 #' Generates many output plots for a fit WHAM model.
 #'
-#' \code{out.type = 'pdf'} makes one pdf file of all plots (default). In the future,
-#' \code{out.type = 'html'} will be implemented, making an html file for viewing in a
-#' browser (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro',
-#' and 'misc'). \code{out.type = 'png'} creates a subdirectory 'plots_png' in \code{dir} and
-#' saves .png files within.
+#' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'}
+#' creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
+#' \code{out.type = 'html'} (default) makes an html file for viewing these .png files in a browser
+#' (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 #'
 #' Plot functions are located in \code{wham_plots_tables.R}
 #'
 #' @param mod output from \code{\link{fit_wham}}
 #' @param dir.main character, directory to save plots to (default = \code{getwd()})
-#' @param out.type character, either 'html', 'pdf', or 'png' (only 'pdf' currently supported)
+#' @param out.type character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})
 #'
 #' @return NULL
 #'
 #' @export
 #'
-#' @seealso \code{\link{fit_wham}}, \code{wham_plots_tables}
+#' @seealso \code{\link{fit_wham}}, \code{\link{wham_html}}, \code{wham_plots_tables}
 #'
 #' @examples
 #' \dontrun{
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
 #' mod = fit_wham(input)
-#' make_wham_plots(mod)
+#' plot_wham_output(mod)
 #' }
-make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
+plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
   if(!out.type %in% c('html', 'pdf', 'png')){
-    stop("out.type must be one of 'html', 'pdf', or 'png'. See ?make_wham_plots")
+    stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
   if(!dir.exists(dir.main)){
-    stop("Output directory does not exist. Check 'dir' and try again.")
+    stop("Output directory does not exist. Check 'dir.main' and try again.")
   }
-  # if(out.type != 'pdf'){
-  #   stop("Only pdf output is currently supported. Stay tuned for 'html' or 'png' plots")
-  # }
 
-  graphics.off()     # close any open windows
-  origpar = par()
+  cat("Generating plot files... Please wait ~30 seconds...\n")
+  graphics.off() # close any open windows
 
   if(out.type == 'pdf'){
-    # PDF input_data
+    # PDF input_data -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"input_data.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.catch.by.fleet(mod)
     for(i in 1:mod$env$data$n_fleets) plot.catch.age.comp.bubbles(mod, i=i)
@@ -55,7 +51,7 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.maturity(mod)
     dev.off()
 
-    # PDF diagnostics
+    # PDF diagnostics -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"diagnostics.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     fit.summary.text.plot.fn(mod)
     plot.ll.table.fn(mod)
@@ -70,7 +66,7 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     #plot.recruitment.devs(mod)
     dev.off()
 
-    # PDF results
+    # PDF results -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"results.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     for(i in 1:mod$env$data$n_fleets) plot.fleet.sel.blocks(mod, use.i=i)
     for(i in 1:mod$env$data$n_indices) plot.index.sel.blocks(mod, use.i=i)
@@ -87,7 +83,7 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.M(mod)
     dev.off()
 
-    # PDF reference points
+    # PDF reference points -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main, "ref_points.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot.SPR.table(mod, plot=TRUE)
     plot.SPR.table(mod, plot=FALSE)
@@ -99,29 +95,31 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.yield.curves(mod, plot=FALSE)
     dev.off()
 
-    # PDF retrospective
-    grDevices::cairo_pdf(filename=file.path(dir.main, "retro.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
-    plot.retro(mod, what = "SSB")
-    plot.retro(mod, what = "Fbar")
-    plot.retro(mod, what = "NAA")
-    dev.off()
+    # PDF retrospective -----------------
+    if(!is.null(mod$peels)){
+      grDevices::cairo_pdf(filename=file.path(dir.main, "retro.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
+      plot.retro(mod, what = "SSB")
+      plot.retro(mod, what = "Fbar")
+      plot.retro(mod, what = "NAA")
+      dev.off()
+    }
 
-    # PDF misc
+    # PDF misc -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main, "misc.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     plot_catch_at_age_consistency(mod)
     plot_index_at_age_consistency(mod)
     plot_catch_curves_for_catch(mod)
     plot_catch_curves_for_index(mod)
     dev.off()
-  } # end PDF section
+  } # end PDF section =============================================================
 
   if(out.type %in% c('png','html')){
     dir.plots <- file.path(dir.main, "plots_png")
-    dir.create(dir.plots)
+    dir.create(dir.plots, showWarnings = FALSE)
 
-    # PNG input_data
+    # PNG input_data -----------------
     dir.data <- file.path(dir.plots, "input_data")
-    dir.create(dir.data)
+    dir.create(dir.data, showWarnings = FALSE)
     png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=300)
     plot.catch.by.fleet(mod)
     dev.off()
@@ -161,9 +159,9 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.maturity(mod)
     dev.off()
 
-    # PNG diagnostics
+    # PNG diagnostics -----------------
     dir.diag <- file.path(dir.plots, "diagnostics")
-    dir.create(dir.diag)
+    dir.create(dir.diag, showWarnings = FALSE)
     png(file.path(dir.diag,"summary_text.png"),width=10,height=10,units="in",res=300)
     fit.summary.text.plot.fn(mod)
     dev.off()
@@ -184,9 +182,9 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.NAA.res(mod, do.png = TRUE, od=dir.diag)
     #plot.recruitment.devs(mod)
 
-    # PNG results
+    # PNG results -----------------
     dir.res <- file.path(dir.plots, "results")
-    dir.create(dir.res)
+    dir.create(dir.res, showWarnings = FALSE)
     for(i in 1:mod$env$data$n_fleets){
       plot.fleet.sel.blocks(mod, do.png=TRUE, use.i=i, od=dir.res)
     }
@@ -227,9 +225,9 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     plot.M(mod)
     dev.off()
 
-    # PNG reference points
+    # PNG reference points -----------------
     dir.refpts <- file.path(dir.plots, "ref_points")
-    dir.create(dir.refpts)
+    dir.create(dir.refpts, showWarnings = FALSE)
 
     png(file.path(dir.refpts,"SPR_targets_ave_plot.png"),width=10,height=10,units="in",res=300)
     plot.SPR.table(mod, plot=TRUE)
@@ -250,23 +248,30 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
       dev.off()
     }
 
-    # PNG retrospective
-    dir.retro <- file.path(dir.plots, "retro")
-    dir.create(dir.retro)
-    plot.retro(mod, what = "SSB", od=dir.retro, do.png=TRUE)
-    plot.retro(mod, what = "Fbar", od=dir.retro, do.png=TRUE)
-    plot.retro(mod, what = "NAA", od=dir.retro, do.png=TRUE)
-    dev.off()
+    # PNG retrospective -----------------
+    if(!is.null(mod$peels)){
+      dir.retro <- file.path(dir.plots, "retro")
+      dir.create(dir.retro, showWarnings = FALSE)
+      plot.retro(mod, what = "SSB", od=dir.retro, do.png=TRUE)
+      plot.retro(mod, what = "Fbar", od=dir.retro, do.png=TRUE)
+      plot.retro(mod, what = "NAA", od=dir.retro, do.png=TRUE)
+      dev.off()
+    }
 
-    # PNG misc
+    # PNG misc -----------------
     dir.misc <- file.path(dir.plots, "misc")
-    dir.create(dir.misc)
+    dir.create(dir.misc, showWarnings = FALSE)
     plot_catch_at_age_consistency(mod, od=dir.misc, do.png=TRUE)
     plot_index_at_age_consistency(mod, od=dir.misc, do.png=TRUE)
     plot_catch_curves_for_catch(mod, od=dir.misc, do.png=TRUE)
     plot_catch_curves_for_index(mod, od=dir.misc, do.png=TRUE)
     dev.off()
-  } # end PNG section
+  } # end PNG section =====================================================
+
+  # uses png output, automatically opens in browser
+  if(out.type == 'html'){
+    wham_html(dir.main = dir.main)
+  }
 }
 
 

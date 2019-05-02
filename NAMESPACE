@@ -2,8 +2,8 @@
 
 export(compare_wham_models)
 export(fit_wham)
-export(make_wham_plots)
 export(mohns_rho)
+export(plot_wham_output)
 export(prepare_wham_input)
 export(project_wham)
 export(read_asap3_dat)
