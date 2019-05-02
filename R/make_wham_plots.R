@@ -72,8 +72,8 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
 
     # PDF results
     grDevices::cairo_pdf(filename=file.path(dir.main,"results.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
-    plot.fleet.sel.blocks(mod)
-    plot.index.sel.blocks(mod)
+    for(i in 1:mod$env$data$n_fleets) plot.fleet.sel.blocks(mod, use.i=i)
+    for(i in 1:mod$env$data$n_indices) plot.index.sel.blocks(mod, use.i=i)
     plot.SSB.F.trend(mod)
     plot.SSB.AA(mod, prop=FALSE)
     plot.SSB.AA(mod, prop=TRUE)
@@ -89,7 +89,8 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
 
     # PDF reference points
     grDevices::cairo_pdf(filename=file.path(dir.main, "ref_points.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
-    plot.SPR.table(mod)
+    plot.SPR.table(mod, plot=TRUE)
+    plot.SPR.table(mod, plot=FALSE)
     plot.annual.SPR.targets(mod)
     plot.FXSPR.annual(mod)
     plot.SR.pred.line(mod)
@@ -198,13 +199,13 @@ make_wham_plots <- function(mod, dir.main = getwd(), out.type = 'pdf'){
     png(file.path(dir.res,"SSB_at_age.png"),width=10,height=10,units="in",res=300)
     plot.SSB.AA(mod, prop=FALSE)
     dev.off()
-    png(file.path(dir.res,"SSB_proportion_at_age.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_at_age_proportion.png"),width=10,height=10,units="in",res=300)
     plot.SSB.AA(mod, prop=TRUE)
     dev.off()
     png(file.path(dir.res,"Numbers_at_age.png"),width=10,height=10,units="in",res=300)
     plot.NAA(mod, prop=FALSE)
     dev.off()
-    png(file.path(dir.res,"Numbers_proportion_at_age.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=300)
     plot.NAA(mod, prop=TRUE)
     dev.off()
     png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=300)

@@ -541,6 +541,14 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot
       box()
       lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
       title(paste("Year = ", years[j], sep=""), outer = FALSE)
+
+      # if 5x3 multipanel is full, save png and open new one
+      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+        dev.off()
+        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet",i,"_",letters[j/15],".pdf")), family = "Times", height = 10, width = 10)
+        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+      }
     }  #end loop on n_years
     if(length(years) %% 15 != 0) frame()
     if(do.tex | do.png) dev.off() else par(origpar)
@@ -586,6 +594,14 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot
       box()
       lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
       title(paste("Year = ", years[j], sep=""), outer = FALSE)
+
+      # if 5x3 multipanel is full, save png and open new one
+      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+        dev.off()
+        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index",i,"_",letters[j/15],".pdf")), family = "Times", height = 10, width = 10)
+        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+      }
     }  #end loop on n_years
     if(length(years) %% 15 != 0) frame()
 		if(do.tex | do.png) dev.off() else par(origpar)
@@ -2237,12 +2253,12 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, o
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 		cob.cor <- plotcoh(cob.coh,mytitle=paste(title1," Observed", sep=""))
-		if(do.tex | do.png) dev.off() else par(origpar)
+		if(do.tex | do.png) dev.off()
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 		cpr.cor <- plotcoh(cpr.coh,mytitle=paste(title1," Predicted", sep=""))
-		if(do.tex | do.png) dev.off() else par(origpar)
+		if(do.tex | do.png) dev.off()
 
 		cat.corr[[i]] <- list(cob.cor,cpr.cor)
 	}
@@ -2361,12 +2377,12 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, o
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_index",ind,".pdf")), family = "Times", height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 			iob.cor <- plotcoh(iob.coh,mytitle=paste(title1," Observed", sep=""),mylabels)
-			if(do.tex | do.png) dev.off() else par(origpar)
+			if(do.tex | do.png) dev.off()
 
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_index",ind,".pdf")), family = "Times", height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 			ipr.cor <- plotcoh(ipr.coh,mytitle=paste(title1," Predicted", sep=""),mylabels)
-			if(do.tex | do.png) dev.off() else par(origpar)
+			if(do.tex | do.png) dev.off()
 
 			index.corr[[ind]] <- list(iob.cor,ipr.cor)
 		}
@@ -2419,8 +2435,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 {
 	# create catch curve plots for catch by fleet
   origpar <- par(no.readonly = TRUE)
-	par(oma=c(1,1,1,1),mar=c(4,4,1,0.5))
-  lastyr <- max(mod$years)
+	lastyr <- max(mod$years)
   dat = mod$env$data
   rep = mod$rep
 	cohort <- (min(mod$years) - dat$n_ages-1):(lastyr+dat$n_ages-1)
@@ -2474,9 +2489,9 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		z.pr <- calc_Z_cohort(cpr.coh)
 
 		# make the plots
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_obs_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_curves_obs_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-		par(mfrow=c(2,1))
+		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_fleet",i,"_obs.pdf")), family = "Times", height = 10, width = 10)
+		if(do.png) png(filename = file.path(od, paste0("catch_curves_fleet",i,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+		par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
 		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1," Observed"))
 		grid(col = gray(0.7))
 		for (j in 1:NROW(cob.coh))
@@ -2486,10 +2501,11 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		}
 		Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
-		if(do.tex | do.png) dev.off() else par(origpar)
+		if(do.tex | do.png) dev.off()
 
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_pred_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_curves_pred_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_fleet",i,"_pred.pdf")), family = "Times", height = 10, width = 10)
+		if(do.png) png(filename = file.path(od, paste0("catch_curves_fleet",i,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+		par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
 		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1," Predicted"))
 		grid(col = gray(0.7))
 		for (j in 1:length(cob.coh[,1]))
@@ -2497,9 +2513,9 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-
 		Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
+		if(do.tex | do.png) dev.off()
 
     # write out .csv files for Z, one file for each fleet
 		colnames(z.ob) <-c("Z.obs","low.80%", "high.80%")
@@ -2507,8 +2523,8 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 		colnames(z.pr) <-c("Z.pred","low.80%", "high.80%")
 		#write.csv(z.pr, file=paste(od,"Z.Pr.Fleet.",i,".csv", sep=""), row.names=cohort)
-		if(do.tex | do.png) dev.off() else par(origpar)
 	}
+  if(!(do.tex | do.png)) par(origpar)
 }
 #plot_catch_curves_for_catch(ssm)
 
@@ -2573,12 +2589,12 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 			z.pr <- calc_Z_cohort(ipr.coh)
 
 			# make the plots
-			par(mfrow=c(2,1))
 			if(!(all(is.na(iob.coh)) & all(is.na(ipr.coh))))
 			{
-			  if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_obs_index",ind,".pdf")), family = "Times", height = 10, width = 10)
-			  if(do.png) png(filename = file.path(od, paste0("catch_curves_obs_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-				plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)",
+			  if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_index",ind,"_obs.pdf")), family = "Times", height = 10, width = 10)
+			  if(do.png) png(filename = file.path(od, paste0("catch_curves_index",ind,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+			  par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
+			  plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)",
           main=paste0(title1," Observed"))
 				grid(col = gray(0.7))
 				for (i in 1:length(iob.coh[,1]))
@@ -2588,21 +2604,21 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 				}
 				Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
-				if(do.tex | do.png) dev.off() else par(origpar)
+				if(do.tex | do.png) dev.off()
 
-				if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_pred_index",ind,".pdf")), family = "Times", height = 10, width = 10)
-				if(do.png) png(filename = file.path(od, paste0("catch_curves_pred_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-        plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1," Predicted"))
+				if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_index",ind,"_pred.pdf")), family = "Times", height = 10, width = 10)
+				if(do.png) png(filename = file.path(od, paste0("catch_curves_index",ind,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+				par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
+				plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1," Predicted"))
 				grid(col = gray(0.7))
 				for (i in 1:NROW(iob.coh))
 				{
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-
 				Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
-				if(do.tex | do.png) dev.off() else par(origpar)
+				if(do.tex | do.png) dev.off()
 			}
 
 			# write out .csv files for Z, one file for each fleet
@@ -2612,9 +2628,8 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 			colnames(z.pr) <-c("Z.pred","low.80%", "high.80%")
 			#write.csv(z.pr, file=paste(od,"Z.Pr.Index.",ind,".csv", sep=""), row.names=cohort)
 		}
-
 	}   # end loop over n_indices
-	# par(origpar)
+	if(!(do.tex | do.png)) par(origpar)
 }
 #plot_catch_curves_for_index(ssm)
 
