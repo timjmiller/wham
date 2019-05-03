@@ -12,6 +12,7 @@
 #' @param mod output from \code{\link{fit_wham}}
 #' @param dir.main character, directory to save plots to (default = \code{getwd()})
 #' @param out.type character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})
+#' @param res resolution to save .png files (dpi)
 #'
 #' @return NULL
 #'
@@ -25,7 +26,7 @@
 #' mod = fit_wham(input)
 #' plot_wham_output(mod)
 #' }
-plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
+plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72){
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
@@ -120,52 +121,52 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
     # PNG input_data -----------------
     dir.data <- file.path(dir.plots, "input_data")
     dir.create(dir.data, showWarnings = FALSE)
-    png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=res)
     plot.catch.by.fleet(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=300)
+      png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=res)
       plot.catch.age.comp.bubbles(mod, i=i)
       dev.off()
     }
-    png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=res)
     plot.index.input(mod)
     dev.off()
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=300)
+      png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=res)
       plot.index.age.comp.bubbles(mod, i=i)
       dev.off()
     }
-    png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res)
     plot.waa(mod,"ssb")
     dev.off()
-    png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res)
     plot.waa(mod,"jan1")
     dev.off()
-    png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=res)
     plot.waa(mod,"totcatch")
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=300)
+      png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res)
       plot.waa(mod,"fleets", ind=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=300)
+      png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res)
       plot.waa(mod,"indices", ind=i)
       dev.off()
     }
-    png(file.path(dir.data,"maturity.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.data,"maturity.png"),width=10,height=10,units="in",res=res)
     plot.maturity(mod)
     dev.off()
 
     # PNG diagnostics -----------------
     dir.diag <- file.path(dir.plots, "diagnostics")
     dir.create(dir.diag, showWarnings = FALSE)
-    png(file.path(dir.diag,"summary_text.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.diag,"summary_text.png"),width=10,height=10,units="in",res=res)
     fit.summary.text.plot.fn(mod)
     dev.off()
-    png(file.path(dir.diag,"likelihood.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.diag,"likelihood.png"),width=10,height=10,units="in",res=res)
     plot.ll.table.fn(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
@@ -191,37 +192,37 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
     for(i in 1:mod$env$data$n_indices){
       plot.index.sel.blocks(mod, do.png=TRUE, use.i=i, od=dir.res)
     }
-    png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res)
     plot.SSB.F.trend(mod)
     dev.off()
-    png(file.path(dir.res,"SSB_at_age.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_at_age.png"),width=10,height=10,units="in",res=res)
     plot.SSB.AA(mod, prop=FALSE)
     dev.off()
-    png(file.path(dir.res,"SSB_at_age_proportion.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_at_age_proportion.png"),width=10,height=10,units="in",res=res)
     plot.SSB.AA(mod, prop=TRUE)
     dev.off()
-    png(file.path(dir.res,"Numbers_at_age.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"Numbers_at_age.png"),width=10,height=10,units="in",res=res)
     plot.NAA(mod, prop=FALSE)
     dev.off()
-    png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=res)
     plot.NAA(mod, prop=TRUE)
     dev.off()
-    png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=res)
     plot.recr.ssb.yr(mod, loglog=FALSE)
     dev.off()
-    png(file.path(dir.res,"SSB_Rec_loglog.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_Rec_loglog.png"),width=10,height=10,units="in",res=res)
     plot.recr.ssb.yr(mod, loglog=TRUE)
     dev.off()
-    png(file.path(dir.res,"SSB_Rec_time.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"SSB_Rec_time.png"),width=10,height=10,units="in",res=res)
     plot.SARC.R.SSB(mod)
     dev.off()
-    png(file.path(dir.res,"F_byfleet.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"F_byfleet.png"),width=10,height=10,units="in",res=res)
     plot.fleet.F(mod)
     dev.off()
-    png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res)
     plot.cv(mod)
     dev.off()
-    png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res)
     plot.M(mod)
     dev.off()
 
@@ -229,10 +230,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
     dir.refpts <- file.path(dir.plots, "ref_points")
     dir.create(dir.refpts, showWarnings = FALSE)
 
-    png(file.path(dir.refpts,"SPR_targets_ave_plot.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.refpts,"SPR_targets_ave_plot.png"),width=10,height=10,units="in",res=res)
     plot.SPR.table(mod, plot=TRUE)
     dev.off()
-    png(file.path(dir.refpts,"SPR_targets_ave_table.png"),width=10,height=10,units="in",res=300)
+    png(file.path(dir.refpts,"SPR_targets_ave_table.png"),width=10,height=10,units="in",res=res)
     plot.SPR.table(mod, plot=FALSE)
     dev.off()
     plot.annual.SPR.targets(mod, od=dir.refpts, do.png=TRUE)
@@ -240,10 +241,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html'){
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=FALSE)
     if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
-      png(file.path(dir.refpts,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=300)
+      png(file.path(dir.refpts,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=res)
       plot.SR.pred.line(mod)
       dev.off()
-      png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=300)
+      png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=res)
       plot.MSY.annual(mod)
       dev.off()
     }

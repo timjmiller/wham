@@ -39,8 +39,10 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE){
     mohns_rho(x)
   }))[ ,c("R","SSB","Fbar")]
   rho <- round(rho, 4)
+  colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
   # apply(rho, 1, function(y) mean(abs(y)))
-  tab <- cbind(AIC = aic, rho = rho)
+  tab <- cbind(aic, rho)
+  colnames(tab) <- c("AIC", colnames(rho))
 
   best <- names(mods)[which(aic == min(aic))]
   ord <- order(aic)
@@ -49,5 +51,6 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE){
   tab <- tab[ord,]
   write.csv(tab, file = paste0(file.path(getwd(),fname),".csv"))
 
+  print(tab) # print to console
   return(list(aic=aic, rho=rho, best=best, tab=tab))
 }

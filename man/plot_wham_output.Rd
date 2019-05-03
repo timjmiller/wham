@@ -4,7 +4,8 @@
 \alias{plot_wham_output}
 \title{Plot WHAM output}
 \usage{
-plot_wham_output(mod, dir.main = getwd(), out.type = "html")
+plot_wham_output(mod, dir.main = getwd(), out.type = "html",
+  res = 72)
 }
 \arguments{
 \item{mod}{output from \code{\link{fit_wham}}}
@@ -12,6 +13,8 @@ plot_wham_output(mod, dir.main = getwd(), out.type = "html")
 \item{dir.main}{character, directory to save plots to (default = \code{getwd()})}
 
 \item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})}
+
+\item{res}{resolution to save .png files (dpi)}
 }
 \description{
 Generates many output plots for a fit WHAM model.

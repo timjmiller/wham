@@ -1,12 +1,25 @@
-### WHAM: a state-space age-structured assessment model
+## WHAM: a state-space age-structured assessment model
 
-This repository has R and TMB code for a general model with many similarities to those in [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
-The model also has many similarities to ASAP Legault and Restrepo (1999, Col. Vol. Sci. Pap. ICCAT 49(2): 246-253). Indeed, there are R functions provided to generate a WHAM input file (with some default settings) from an ASAP3 dat file, and many of the plotting functions for input data, results, and diagnostics are borrowed and modified from [ASAP](https://github.com/cmlegault/ASAPplots).
-The WHAM model can be configured to estimate a range of assessment models from a traditional statistical catch-at-age model with recruitments as (possibly penalized) fixed effects, SCAA with recruitments as random effects, or abundance at all ages treated as random effects.
+The Woods Hole Assessment Model (WHAM) is a state-space age-structured stock assessment model that can include environmental effects on population processes. WHAM can be configured to estimate a range of assessment models from a traditional statistical catch-at-age (SCAA) model with recruitments as (possibly penalized) fixed effects, SCAA with recruitments as random effects, or abundance at all ages treated as random effects. WHAM is a generalization of the R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1999](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
 
+### Installation and basic use
+
+Install WHAM:
+```
+# if you want vignettes
+devtools::install_github("timjmiller/wham", dependencies=TRUE, build = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
+
+# if you do NOT want vignettes
+devtools::install_github("timjmiller/wham", dependencies=TRUE)
+```
+
+View installed vignettes:
+```
+browseVignettes("wham")
+```
 
 ### Observation model components:
-## Aggregate relative abundance indices:
+#### Aggregate relative abundance indices:
 * These can be in numbers or biomass, determined by an indicator.
 * A normal distribution is assumed for the log-indices. 
 * Input standard errors for log-indices are year-specific, but index-specific scalars may be estimated.
@@ -15,28 +28,28 @@ The WHAM model can be configured to estimate a range of assessment models from a
 * The time of year the index occurs is specified for each year.
 * The selectivity "block" to use for an index is specified for each year.
   
-## Index age composition:
+#### Index age composition:
 * These can also be in numbers or biomass, determined by an indicator.
 * Several distribution assumptions available: multinomial, Dirichlet, Dirichlet-multinomial, logistic normal, two types of zero-one inflated logistic normal.
 * Effective sample sizes for multinomial are input and year-specific, but variance parameters may be estimated for other distributions.
 * The order is the same as the relative abundance indices.
 * There are indicators for whether to use the age composition in a given year.
   
-## Aggregate fleet catch:
+#### Aggregate fleet catch:
 * This is in biomass.
 * A normal distribution is assumed for the log-catch. 
 * Input standard errors for log-catch are year-specific, but fleet-specific scalars may be estimated.
 * There can be any number of fleets.
 * The selectivity "block" to use for an fleet is specified for each year.
   
-## Fleet age composition:
+#### Fleet age composition:
 * These can only be in numbers.
 * Same distribution assumptions as indices available: multinomial, Dirichlet, Dirichlet-multinomial, logistic normal, two types of zero-one inflated logistic normal.
 * Effective sample sizes for multinomial are input and year-specific, but variance parameters may be estimated for other distributions.
 * The order is the same as the fleet catches.
 * There are indicators for whether to use the age composition in a given year.
 
-### Hidden process model components:
+##### Hidden process model components:
 * Abundance at age:
   * As mentioned above, the model can be configured to have no hidden processes (random effects), 
   * or log-recruitment can be treated as a normal random variable,
@@ -48,7 +61,7 @@ The WHAM model can be configured to estimate a range of assessment models from a
 
 ### Other Inputs:
 
-## Weight-at-age:
+#### Weight-at-age:
 * Like ASAP weight-at-age are input and pointers are specified for them for fleet catches, relative abundance indices (if necessary), Spawning Stock Biomass, etc.
 * Future versions may include options for internal estimation of weight at age, like [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
 

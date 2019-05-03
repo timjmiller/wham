@@ -365,7 +365,7 @@ plot.fleet.stdresids.fn = function(mod,years, fleet.names = NULL, plot.colors)
   return(ggp)
 }
 
-plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors, od)
+plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
@@ -399,7 +399,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.
 	}
 }
 
-plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors, od)
+plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
@@ -439,7 +439,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.
   # par(origpar)
 }
 
-plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors, od)
+plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
@@ -476,7 +476,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.co
   # par(origpar)
 }
 
-plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors, od)
+plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   ages = mod$ages
@@ -505,7 +505,7 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors, od)
   # par(origpar)
 }
 
-plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors, od)
+plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
@@ -556,7 +556,7 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot
   # par(origpar)
 }
 
-plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, use.i, plot.colors, od)
+plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
@@ -623,7 +623,7 @@ multinomial.pearson.fn = function(mod, ind = 1)
 #mean(x < 0, na.rm = TRUE)
 
 plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
-                                       do.tex = FALSE, do.png = FALSE, use.i, od)
+                                       do.tex = FALSE, do.png = FALSE, res = 72, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -675,7 +675,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 }
 
 plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
-                                       do.tex = FALSE, do.png = FALSE, use.i, od)
+                                       do.tex = FALSE, do.png = FALSE, res = 72, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -728,7 +728,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
   # par(origpar)
 }
 
-plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, use.i, od)
+plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, res = 72, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1))
@@ -776,7 +776,7 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
   # par(origpar)
 }
 
-plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, use.i, od)
+plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, res = 72, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1))
@@ -1514,7 +1514,7 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 } # end function
 
 #------------------------------------
-plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, plot.colors, od)
+plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   spr.targ.values <- seq(0.2, 0.5, by=0.1)
@@ -1653,7 +1653,7 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
   }
 }
 
-plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.tex = FALSE, do.png = FALSE, od)
+plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   percentSPR = mod$env$data$percentSPR
@@ -1872,7 +1872,7 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 }  # end function
 
 #------------------------------------
-plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.png = FALSE, od)
+plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -2040,7 +2040,7 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
   par(origpar)
 } # end function
 
-plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", do.tex = FALSE, do.png = FALSE, od)
+plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
@@ -2226,7 +2226,7 @@ plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE)
 }
 #-------------------------------------------------------------------------------
 
-plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, od)
+plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
 	# create plots of ages vs each other (correctly lagged) on log scale for catch by fleet
 	cat.corr <- list()
@@ -2344,7 +2344,7 @@ convert_survey_to_at_age <- function(mod)
 }
 #-------------------------------------------------------------------------------
 
-plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, od)
+plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   dat = mod$env$data
 	# now loop through indices, check to make sure actually estimating proportions at age
@@ -2431,7 +2431,7 @@ calc_Z_cohort <- function(cohmat)
 }
 #-------------------------------------------------------------------------------
 
-plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, od)
+plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
 	# create catch curve plots for catch by fleet
   origpar <- par(no.readonly = TRUE)
@@ -2530,7 +2530,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 #-------------------------------------------------------------------------------
 
-plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, od)
+plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
 	# create catch curve plots for each west coast style index
   origpar <- par(no.readonly = TRUE)
