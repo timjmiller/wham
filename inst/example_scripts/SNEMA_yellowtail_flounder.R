@@ -2,14 +2,13 @@
 library(wham)
 
 # create directory for analysis
-write.dir <- "/media/brian/ExtraDrive1/brian/Documents/NRC/code/vign1"
+write.dir <- "/path/to/save/output"
 dir.create(write.dir)
 setwd(write.dir)
 
-# copy asap3 data file to directory
+# copy asap3 data file to working directory
 wham.dir <- find.package("wham")
-# file.copy(from=file.path(wham.dir,"extdata","SNEMA_ytl.dat"), to=write.dir, overwrite=FALSE)
-file.copy(from="/media/brian/ExtraDrive1/brian/Documents/wham/inst/extdata/ASAP_SNEMAYT.dat", to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
 
 # confirm you are in the working directory and it has the ASAP_SNEMAYT.dat file
 list.files()
@@ -42,10 +41,9 @@ temp$random = "log_R"
 temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
 temp$data$random_recruitment = 1
 m1 <- fit_wham(temp)
-# m1 <- MakeADFun(temp$data,temp$par,DLL="wham_v1", random = temp$random, map = temp$map)
-# m1 = fit.tmb.fn(m1, n.newton = 3)
-# m1$rep$selblocks
-# m1$sdrep
+
+# Check that m1 converged (m1$opt$convergence should be 0, and the maximum gradiet should be < 1e-06)
+check_convergence(m1)
 
 #Like m1, but change age comp likelihoods to logistic normal
 temp = base
@@ -60,9 +58,9 @@ temp$random = "log_R"
 temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
 temp$data$random_recruitment = 1
 m2 <- fit_wham(temp)
-# m2 <- MakeADFun(temp$data,temp$par,DLL="wham_v1", random = temp$random, map = temp$map)
-# m2 = fit.tmb.fn(m2, n.newton = 3)
-# m2$sdrep
+
+# Check that m2 converged
+check_convergence(m2)
 
 #full state-space model, abundance is the state vector
 temp = base
@@ -72,9 +70,9 @@ temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_r
 temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
 temp$random = "log_NAA"
 m3 <- fit_wham(temp)
-# m3 <- MakeADFun(temp$data,temp$par,DLL="wham_v1", random = temp$random, map = temp$map)
-# m3 = fit.tmb.fn(m3, n.newton = 3)
-# m3$sdrep
+
+# Check that m3 converged
+check_convergence(m3)
 
 #Like m3, but change age comp likelihoods to logistic normal
 temp = base
@@ -91,26 +89,20 @@ temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_r
 temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
 temp$random = "log_NAA"
 m4 <- fit_wham(temp)
-# m4 <- MakeADFun(temp$data,temp$par,DLL="wham_v1", random = temp$random, map = temp$map)
-# m4 = fit.tmb.fn(m4, n.newton = 3)
-# m4$sdrep
 
-# load("/media/brian/ExtraDrive1/brian/Documents/NRC/code/ex1_ICES_mine/ex1_models.RData")
+# Check that m4 converged
+check_convergence(m4)
 
-# Compare models by AIC and Mohn's rho
+# Save list of all fit models
 mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
-res$tab
-
-# 3-year projection for best model
-res$best
-m4 <- project_wham(m4, n.years = 3)
-
-# Save list of (all) fit models
 save("mods", file="ex1_models.RData")
 
-# is this really projecting?
-# temp$data$use_indices[(temp$data$n_years_model-2):temp$data$n_years_model,] = 0
+# Compare models by AIC and Mohn's rho
+res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+res$best
+
+# 3-year projection for best model
+m4 <- project_wham(m4, n.years = 3)
 
 # WHAM output plots for best model
-make_wham_plots(mod=m4, out.type='pdf')
+plot_wham_output(mod=m4, out.type='html')

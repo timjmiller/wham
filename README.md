@@ -18,6 +18,18 @@ View installed vignettes:
 browseVignettes("wham")
 ```
 
+For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+```
+library(wham)
+wham.dir <- find.package("wham")
+file.path(wham.dir, "example_scripts")
+```
+
+You can run this entire example script with:
+```
+source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+```
+
 ### Observation model components:
 #### Aggregate relative abundance indices:
 * These can be in numbers or biomass, determined by an indicator.
