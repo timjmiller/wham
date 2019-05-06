@@ -2,7 +2,7 @@
 title: "WHAM example: Southern New England Mid-Atlantic Yellowtail Flounder"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{SNEMA_yellowtail_flounder}
+  %\VignetteIndexEntry{WHAM example: Southern New England Mid-Atlantic Yellowtail Flounder}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,7 +12,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-knitr::opts_knit$set(root.dir = "/home/brian/Documents/wham_analysis/ex_SNEMA_ytl")
+wham.dir <- find.package("wham")
+knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 
 In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
@@ -29,14 +30,14 @@ In this vignette we walk through an example using the `wham` (WHAM = the Woods H
 
 ## 1. Prepare `wham`
 
-We assume you already have `wham` and dependencies installed. If not, see the README. Open R and load the `wham` package:
+We assume you already have `wham` and dependencies installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). Open R and load the `wham` package:
 
 ```{r}
 library(wham)
 ```
 
 For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
-```{r, eval=FALSE}
+```{r}
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
 ```
@@ -49,7 +50,7 @@ source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
 Let's create a directory for this analysis:
 ```{r, eval=FALSE}
 # choose a location to save output
-write.dir <- "/home/brian/Documents/wham_analysis/ex_SNEMA_ytl" # modify
+write.dir <- "/path/to/save/output" # modify
 dir.create(write.dir)
 setwd(write.dir)
 ```
@@ -77,8 +78,8 @@ Convert `asap3` to an input list for `wham`. Here we specify the model name and 
 input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
 ```
 
-Now we have some modifications to make to `input` before running `wham`:
-```{r echo=FALSE, eval=FALSE}
+Now we have some modifications to make to `input` before running `wham`. **Need to either explain or hide this step**
+```{r eval=FALSE}
 input$data$Fbar_ages = 4:5 # what does this do?
 
 # Make one or more selectivity blocks with age-specific parameters
@@ -109,17 +110,23 @@ m1 <- fit_wham(temp)
 
 By default, `fit_wham` uses 3 extra Newton steps to encourage convergence (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
 
-```{r echo=FALSE, message=FALSE, warnings=FALSE}
-load("/home/brian/Documents/wham_analysis/ex_SNEMA_ytl/ex1_models.RData")
-m1 = mods$m1
-m2 = mods$m2
-m3 = mods$m3
-m4 = mods$m4
+```{r include=FALSE}
+data(vign1_m1_conv)
+data(vign1_m2_conv)
+data(vign1_m3_conv)
+data(vign1_m4_conv)
+data(vign1_res)
 ```
 
 We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum gradiet should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
-```{r}
+```{r eval=FALSE}
 check_convergence(m1)
+```
+
+```{r echo=FALSE}
+cat("The model appears converged: mod$opt$convergence == 0\n")
+cat("Maximum gradient component:",formatC(vign1_m1_conv$maxgr, format = "e", digits = 2),"\n")
+cat("Max gradient parameter:",vign1_m1_conv$maxgr_par,"\n")
 ```
 
 The second model, `m2`, is like the first, but changes the age composition likelihoods to logistic normal:
@@ -139,8 +146,14 @@ m2 <- fit_wham(temp)
 ```
 
 Check that `m2` converged:
-```{r}
+```{r eval=FALSE}
 check_convergence(m2)
+```
+
+```{r echo=FALSE}
+cat("The model appears converged: mod$opt$convergence == 0\n")
+cat("Maximum gradient component:",formatC(vign1_m2_conv$maxgr, format = "e", digits = 2),"\n")
+cat("Max gradient parameter:",vign1_m2_conv$maxgr_par,"\n")
 ```
 
 The third, `m3`, is a full state-space model where abundance is the state vector:
@@ -155,8 +168,14 @@ m3 <- fit_wham(temp)
 ```
 
 Check that `m3` converged:
-```{r}
+```{r eval=FALSE}
 check_convergence(m3)
+```
+
+```{r echo=FALSE}
+cat("The model appears converged: mod$opt$convergence == 0\n")
+cat("Maximum gradient component:",formatC(vign1_m3_conv$maxgr, format = "e", digits = 2),"\n")
+cat("Max gradient parameter:",vign1_m3_conv$maxgr_par,"\n")
 ```
 
 The last, `m4`, is like `m3`, but changes the age composition likelihoods to logistic normal:
@@ -178,8 +197,14 @@ m4 <- fit_wham(temp)
 ```
 
 Check that `m4` converged:
-```{r}
+```{r eval=FALSE}
 check_convergence(m4)
+```
+
+```{r echo=FALSE}
+cat("The model appears converged: mod$opt$convergence == 0\n")
+cat("Maximum gradient component:",formatC(vign1_m4_conv$maxgr, format = "e", digits = 2),"\n")
+cat("Max gradient parameter:",vign1_m4_conv$maxgr_par,"\n")
 ```
 
 Store all models together in one (named) list:
@@ -195,9 +220,20 @@ save("mods", file="ex1_models.RData")
 ## 3. Compare models
 
 We can compare the four models using AIC and Mohn's rho:
-```{r}
+```{r eval=FALSE}
 res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+```
+
+```{r echo=FALSE}
+vign1_res$tab
+```
+
+```{r eval=FALSE}
 res$best
+```
+
+```{r echo=FALSE}
+vign1_res$best
 ```
 
 By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`.
@@ -217,7 +253,7 @@ There are 3 options for plotting WHAM output. The default (`out.type='html'`) cr
 plot_wham_output(mod=m4, out.type='html')
 ```
 
-![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](html_screenshot.png){ width=75% }
+![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png){ width=75% }
 
 Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). Setting `out.type='png'` saves the plots as `.png` files organized into 6 subdirectories.
 
@@ -229,29 +265,29 @@ Many plots are generated---here we display some examples:
 
 ### Diagnostics
 
-![](./plots/Index_4panel_2.png){ width=45% }![](./plots/likelihood.png){ width=45% }
+![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/likelihood.png){ width=45% }
 
-![Fit to Index 1 age composition data.](./plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](./plots/Catch_age_comp_resids_index1.png){ width=45% }
+![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_resids_index1.png){ width=45% }
 
 ### Input Data
 
-![](./plots/catch_by_fleet.png){width=45%}![](./plots/index.png){width=45%}
+![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/index.png){width=45%}
 
 ### Results
 
-![](./plots/SSB_F_trend.png){width=45%}![](./plots/SSB_at_age_proportion.png){width=45%}
+![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_at_age_proportion.png){width=45%}
 
-![](./plots/SSB_Rec_loglog.png){width=45%}![](./plots/Selectivity_fleet1.png){width=45%}
+![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_Rec_loglog.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Selectivity_fleet1.png){width=45%}
 
 ### Reference Points
 
-![](./plots/Kobe_status.png){width=45%}![](./plots/FSPR_relative.png){width=45%}
+![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/FSPR_relative.png){width=45%}
 
 ### Retrospective
 
-![](./plots/SSB_retro.png){width=45%}![](./plots/SSB_retro_relative.png){width=45%}
+![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro_relative.png){width=45%}
 
 ### Misc
 
-![](./plots/catch_curves_fleet1_obs.png){width=45%}![](./plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
+![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
 
