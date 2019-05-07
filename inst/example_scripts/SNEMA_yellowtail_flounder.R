@@ -3,7 +3,7 @@ library(wham)
 
 # create directory for analysis, E.g.,
 #write.dir <- "/path/to/save/output"
-if(!exists("write.dir")) write.dir = ""
+if(!exists("write.dir")) write.dir = getwd()
 dir.create(write.dir)
 setwd(write.dir)
 
