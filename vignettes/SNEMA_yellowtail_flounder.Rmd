@@ -78,9 +78,8 @@ Convert `asap3` to an input list for `wham`. Here we specify the model name and 
 input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
 ```
 
-Now we have some modifications to make to `input` before running `wham`. **Need to either explain or hide this step**
+Now we have some modifications to make to `input` that are specific to SNEMA yellowtail flounder prior to fitting the wham model. Specifically, we will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. The set_age_sel0 function will change data, map, and parameter settings for specified selectivity blocks to use age-specific parameterizations. It also fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergencse. However, an initial fit with all selectivity paramerers freely estimated can be useful in determining which age(s) to fix parameters at 1. The selectivity parameters are estimated on the logit scale so setting the estimated parameter to -Inf or Inf results in the transformed selectivity parameter at the lower or upper bound, respectively (e.g. 0 or 1). In the code below, the ages to fix selectivity at 1 have already been determined for us.
 ```{r eval=FALSE}
-input$data$Fbar_ages = 4:5 # what does this do?
 
 # Make one or more selectivity blocks with age-specific parameters
 age.specific = 1:3 # 3 age-specific blocks
@@ -90,6 +89,7 @@ input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages
 input$par$logit_selpars[1,5] = Inf
 input$par$logit_selpars[2,4] = Inf
 input$par$logit_selpars[3,2] = Inf
+# Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
 input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
 input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
 input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
@@ -99,7 +99,7 @@ base = input
 
 ## 2. Fit `wham` models
 
-The first model, `m1`, is a statistical catch-at-age model with random effects for recruitment and index observation error variances fixed:
+The first model, `m1`, is a statistical catch-at-age model, but with log-recruitment estimated as iid random effects around a mean log-recruitment. Variance of the random effects is estimated.
 ```{r eval=FALSE}
 temp = base
 temp$random = "log_R"
@@ -108,7 +108,7 @@ temp$data$random_recruitment = 1
 m1 <- fit_wham(temp)
 ```
 
-By default, `fit_wham` uses 3 extra Newton steps to encourage convergence (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
+By default, `fit_wham` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
 
 ```{r include=FALSE}
 data(vign1_m1_conv)
@@ -118,7 +118,7 @@ data(vign1_m4_conv)
 data(vign1_res)
 ```
 
-We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum gradiet should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
 ```{r eval=FALSE}
 check_convergence(m1)
 ```
@@ -129,7 +129,7 @@ cat("Maximum gradient component:",formatC(vign1_m1_conv$maxgr, format = "e", dig
 cat("Max gradient parameter:",vign1_m1_conv$maxgr_par,"\n")
 ```
 
-The second model, `m2`, is like the first, but changes the age composition likelihoods to logistic normal:
+The second model, `m2`, is like the first, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
 ```{r eval=FALSE}
 temp = base
 temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
@@ -156,7 +156,7 @@ cat("Maximum gradient component:",formatC(vign1_m2_conv$maxgr, format = "e", dig
 cat("Max gradient parameter:",vign1_m2_conv$maxgr_par,"\n")
 ```
 
-The third, `m3`, is a full state-space model where abundance is the state vector:
+The third, `m3`, is a full state-space model where abundances at all ages are random effects:
 ```{r eval=FALSE}
 temp = base
 temp$data$use_NAA_re = 1
@@ -178,7 +178,7 @@ cat("Maximum gradient component:",formatC(vign1_m3_conv$maxgr, format = "e", dig
 cat("Max gradient parameter:",vign1_m3_conv$maxgr_par,"\n")
 ```
 
-The last, `m4`, is like `m3`, but changes the age composition likelihoods to logistic normal:
+The last, `m4`, is like `m3`, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
 ```{r eval=FALSE}
 temp = base
 temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
@@ -238,7 +238,7 @@ vign1_res$best
 
 By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`.
 
-## 4. Project the best model
+## 4. Project the best model **(Not exactly, but this should be added to the model)**
 
 We can do a 3-year projection for the best model, `m4`:
 ```{r eval=FALSE}

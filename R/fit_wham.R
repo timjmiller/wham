@@ -8,8 +8,8 @@
 #'     \item{\code{input$data}}{Data to fit the assessment model to.}
 #'     \item{\code{input$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
 #'     \item{\code{input$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{input$random}}{Character vector defining the random effect parameters. See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{input$years}}{Numeric vector of the years to run the assessment for}
+#'     \item{\code{input$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{input$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
 #'     \item{\code{input$map.n}}{I don't know what this is.}
 #'     \item{\code{input$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
 #'     \item{\code{input$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}

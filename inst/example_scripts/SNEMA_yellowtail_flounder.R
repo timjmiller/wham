@@ -1,8 +1,9 @@
 # load wham
 library(wham)
 
-# create directory for analysis
-write.dir <- "/path/to/save/output"
+# create directory for analysis, E.g.,
+#write.dir <- "/path/to/save/output"
+if(!exists("write.dir")) write.dir = ""
 dir.create(write.dir)
 setwd(write.dir)
 
@@ -18,9 +19,6 @@ asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
 # asap3 <- read.asap3.dat.fn("ASAP_SNEMAYT.dat")
 input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
 
-# Modify Fbar_ages
-input$data$Fbar_ages = 4:5
-
 # Make one or more selectivity blocks with age-specific parameters
 age.specific = 1:3 # 3 age-specific blocks
 not.age.specific = (1:input$data$n_selblocks)[-age.specific]
@@ -29,13 +27,14 @@ input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages
 input$par$logit_selpars[1,5] = Inf
 input$par$logit_selpars[2,4] = Inf
 input$par$logit_selpars[3,2] = Inf
+# Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
 input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
 input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
 input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
 input$map$logit_selpars = factor(input$map$logit_selpars)
 base = input
 
-#SCAA, but with random effects for recruitment and index observation error variances fixed
+#SCAA, but with random effects for recruitment
 temp = base
 temp$random = "log_R"
 temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
