@@ -35,7 +35,7 @@ check_convergence <- function(mod, ret=FALSE){
   }
   cat("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n")
   cat("Max gradient parameter:",res$maxgr_par,"\n")
-  if("sdrep" in names(mod)){
+  if("sdrep" %in% names(mod)){
     res$is_sdrep = mod$is_sdrep
     if(res$is_sdrep){ 
       res$na_sdrep = mod$na_sdrep
