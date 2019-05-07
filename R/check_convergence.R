@@ -10,8 +10,11 @@
 #'     \item{\code{$convergence}}{From \code{\link[stats:nlminb]{stats::nlminb}}, "0 indicates successful convergence for nlminb"}
 #'     \item{\code{$maxgr}}{Max absolute gradient value, from `max(abs(mod$gr(mod$opt$par)))`}
 #'     \item{\code{$maxgr_par}}{Name of parameter with max gradient}
-#'     \item{\code{$is_sdrep}}{If TMB:sdreport() was performed for this model, this indicates whether it performed without error}
-#'     \item{\code{$na_sdrep}}{If TMB:sdreport() was performed without error for this model, this indicates which (if any) components of the diagonal of the inverted hessian were returned as NA}
+#'     \item{\code{$is_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+#'     for this model, this indicates whether it performed without error}
+#'     \item{\code{$na_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+#'     without error for this model, this indicates which (if any) components of the
+#'     diagonal of the inverted hessian were returned as NA}
 #'   }
 #'
 #' @export
@@ -37,14 +40,14 @@ check_convergence <- function(mod, ret=FALSE){
   cat("Max gradient parameter:",res$maxgr_par,"\n")
   if("sdrep" %in% names(mod)){
     res$is_sdrep = mod$is_sdrep
-    if(res$is_sdrep){ 
+    if(res$is_sdrep){
       res$na_sdrep = mod$na_sdrep
-      if(!length(res$na_sdrep)) cat("TMB:sdreport() was performed for this model successfully")
-      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible")
+      if(!length(res$na_sdrep)) cat("TMB:sdreport() was performed for this model successfully\n")
+      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
     }
-    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible")
+    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
   }
-  else cat("TMB:sdreport() was not performed for this model")
+  else cat("TMB:sdreport() was not performed for this model\n")
 
   if(ret) return(res)
 }

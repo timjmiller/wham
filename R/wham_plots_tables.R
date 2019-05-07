@@ -1284,7 +1284,7 @@ plot.index.input <- function(mod, plot.colors)
 
 #------------------------------------
 # Bubble plots of index age comps
-plot.index.age.comp.bubbles <- function(model, ages, ages.lab, bubble.col = "#8c8c8caa", i=1)
+plot.index.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c8caa", i=1)
 {
   origpar <- par(no.readonly = TRUE)
   par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
@@ -2174,7 +2174,7 @@ makecohorts <- function(mat)
 
 # function to plot all ages by all ages of data by cohorts
 # assumes matrix has ages as columns and that cohorts are in rows
-plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE)
+plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE, mod)
 {
 	origpar <- par(no.readonly = TRUE)
   nc <- NCOL(matcoh)
@@ -2252,12 +2252,12 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, r
 		# make the plots
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-		cob.cor <- plotcoh(cob.coh,mytitle=paste(title1," Observed", sep=""))
+		cob.cor <- plotcoh(cob.coh,mytitle=paste(title1," Observed", sep=""),mod=mod)
 		if(do.tex | do.png) dev.off()
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_fleet",i,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-		cpr.cor <- plotcoh(cpr.coh,mytitle=paste(title1," Predicted", sep=""))
+		cpr.cor <- plotcoh(cpr.coh,mytitle=paste(title1," Predicted", sep=""),mod=mod)
 		if(do.tex | do.png) dev.off()
 
 		cat.corr[[i]] <- list(cob.cor,cpr.cor)
@@ -2376,12 +2376,12 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, r
 			# make the plots
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_index",ind,".pdf")), family = "Times", height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-			iob.cor <- plotcoh(iob.coh,mytitle=paste(title1," Observed", sep=""),mylabels)
+			iob.cor <- plotcoh(iob.coh,mytitle=paste(title1," Observed", sep=""),mylabels,mod=mod)
 			if(do.tex | do.png) dev.off()
 
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_index",ind,".pdf")), family = "Times", height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_index",ind,".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-			ipr.cor <- plotcoh(ipr.coh,mytitle=paste(title1," Predicted", sep=""),mylabels)
+			ipr.cor <- plotcoh(ipr.coh,mytitle=paste(title1," Predicted", sep=""),mylabels,mod=mod)
 			if(do.tex | do.png) dev.off()
 
 			index.corr[[ind]] <- list(iob.cor,ipr.cor)
