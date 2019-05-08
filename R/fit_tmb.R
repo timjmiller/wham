@@ -41,7 +41,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep = TRUE)
   {
     model$sdrep <- try(TMB::sdreport(model))
     model$is_sdrep = !is.character(model$sdrep)
-    if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep)[,2]))
+    if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2]))
     else model$na_sdrep = NA
   }
   return(model)
