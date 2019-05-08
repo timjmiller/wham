@@ -39,12 +39,12 @@ check_convergence <- function(mod, ret=FALSE){
     res$is_sdrep = mod$is_sdrep
     if(res$is_sdrep){ 
       res$na_sdrep = mod$na_sdrep
-      if(!length(res$na_sdrep)) cat("TMB:sdreport() was performed for this model successfully")
-      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible")
+      if(!(res$na_sdrep)) cat("TMB:sdreport() was performed successfully for this model\n")
+      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
     }
-    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible")
+    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
   }
-  else cat("TMB:sdreport() was not performed for this model")
+  else cat("TMB:sdreport() was not performed for this model\n")
 
   if(ret) return(res)
 }

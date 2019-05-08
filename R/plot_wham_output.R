@@ -134,6 +134,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     dev.off()
     for(i in 1:mod$env$data$n_indices){
       png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=res)
+      print(ls())
       plot.index.age.comp.bubbles(mod, i=i)
       dev.off()
     }

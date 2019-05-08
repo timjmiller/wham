@@ -219,7 +219,7 @@ save("mods", file="ex1_models.RData")
 
 ## 3. Compare models
 
-We can compare the four models using AIC and Mohn's rho:
+We can compare models using AIC and Mohn's rho:
 ```{r eval=FALSE}
 res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
 ```
@@ -236,7 +236,7 @@ res$best
 vign1_res$best
 ```
 
-By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`.
+By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. The models with that treat the age composition observations can be compared though to evaluate whether stochasticity in abundances at age provides better performance.
 
 ## 4. Project the best model **(Not exactly, but this should be added to the model)**
 
