@@ -27,6 +27,7 @@ file.path(wham.dir, "example_scripts")
 
 You can run this entire example script with:
 ```
+write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
 source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
 ```
 
