@@ -1697,12 +1697,18 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
 	  plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
 	  grid(col = gray(0.7))
-	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+    polyy = exp(c(ci[,1],rev(ci[,2])))
+    polyx = c(years,rev(years))
+    polyx = polyx[!is.na(polyy)]
+    polyy = polyy[!is.na(polyy)]
+    polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
 	}
   mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
+  stop()
+  
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = "Times", height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+  if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10, height = 10, res = 1, units = "in", family = "Times")
   par(mfrow=c(1,2))
   rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSB.t,1][1:n_years]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
@@ -1731,7 +1737,6 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   abline(h=1, lty = 2, col = 'red')
   mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
   if(do.tex | do.png) dev.off() else par(origpar)
-
   log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
     if(is.na(rel.f.vals[x])) return(maxtrix(NA,100,2))
     else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
