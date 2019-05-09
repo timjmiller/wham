@@ -15,7 +15,6 @@ knitr::opts_chunk$set(
 wham.dir <- find.package("wham")
 knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
-
 In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
 
 1. Prepare `wham`, data, and model settings
@@ -125,9 +124,7 @@ check_convergence(m1)
 ```
 
 ```{r echo=FALSE}
-cat("The model appears converged: mod$opt$convergence == 0\n")
-cat("Maximum gradient component:",formatC(vign1_m1_conv$maxgr, format = "e", digits = 2),"\n")
-cat("Max gradient parameter:",vign1_m1_conv$maxgr_par,"\n")
+cat(vign1_m1_conv, sep = "\n")
 ```
 
 The second model, `m2`, is like the first, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
@@ -152,9 +149,7 @@ check_convergence(m2)
 ```
 
 ```{r echo=FALSE}
-cat("The model appears converged: mod$opt$convergence == 0\n")
-cat("Maximum gradient component:",formatC(vign1_m2_conv$maxgr, format = "e", digits = 2),"\n")
-cat("Max gradient parameter:",vign1_m2_conv$maxgr_par,"\n")
+cat(vign1_m2_conv, sep = "\n")
 ```
 
 The third, `m3`, is a full state-space model where abundances at all ages are random effects:
@@ -174,9 +169,7 @@ check_convergence(m3)
 ```
 
 ```{r echo=FALSE}
-cat("The model appears converged: mod$opt$convergence == 0\n")
-cat("Maximum gradient component:",formatC(vign1_m3_conv$maxgr, format = "e", digits = 2),"\n")
-cat("Max gradient parameter:",vign1_m3_conv$maxgr_par,"\n")
+cat(vign1_m3_conv, sep = "\n")
 ```
 
 The last, `m4`, is like `m3`, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
@@ -203,9 +196,7 @@ check_convergence(m4)
 ```
 
 ```{r echo=FALSE}
-cat("The model appears converged: mod$opt$convergence == 0\n")
-cat("Maximum gradient component:",formatC(vign1_m4_conv$maxgr, format = "e", digits = 2),"\n")
-cat("Max gradient parameter:",vign1_m4_conv$maxgr_par,"\n")
+cat(vign1_m4_conv, sep = "\n")
 ```
 
 Store all models together in one (named) list:
@@ -239,14 +230,7 @@ vign1_res$best
 
 By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. The models with that treat the age composition observations can be compared though to evaluate whether stochasticity in abundances at age provides better performance.
 
-## 4. Project the best model **(Not exactly, but this should be added to the model)**
-
-We can do a 3-year projection for the best model, `m4`:
-```{r eval=FALSE}
-m4 <- project_wham(m4, n.years = 3)
-```
-
-## 5. Plot input data, diagnostics, and results
+## 4. Plot input data, diagnostics, and results
 
 There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
 
@@ -292,3 +276,40 @@ Many plots are generated---here we display some examples:
 
 ![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
 
+```{r eval = FALSE, include = FALSE}
+#if you need to regenerate the data used in this vignette
+#define source directory: wham.source.dir = "/home/tmiller2/work/wham/wham"
+for(i in paste0("m",1:4)){
+  check_convergence(get(i), f = "temp.txt")
+  eval(parse(text = paste0("vign1_", i, '_conv = readLines("temp.txt")')))
+  eval(parse(text = paste0("save(vign1_", i, '_conv, file = "', wham.source.dir, "/data/vign1_",i,'_conv.RData")')))
+}
+vign1_res = res
+save(vign1_res, file = paste0(wham.source.dir, "/data/vign1_res.RData"))
+
+plot_wham_output(mod=m4, out.type='png')
+file.names = c(
+  "input_data/catch_age_comp_fleet1",
+  "diagnostics/Catch_age_comp_index1",
+  "diagnostics/Catch_age_comp_resids_index1",
+  "misc/catch_at_age_consistency_obs_fleet1",
+  "input_data/catch_by_fleet",
+  "misc/catch_curves_fleet1_obs",
+  "ref_points/FSPR_relative",
+  "input_data/index",
+  "diagnostics/Index_4panel_2",
+  "ref_points/Kobe_status",
+  "diagnostics/likelihood",
+  "results/Selectivity_fleet1",
+  "ref_points/SPR_targets_ave_plot",
+  "results/SSB_at_age_proportion",
+  "results/SSB_F_trend",
+  "results/SSB_Rec_loglog",
+  "retro/SSB_retro",
+  "retro/SSB_retro_relative",
+  "input_data/weight_at_age_fleet1"
+)
+file.names = paste0(getwd(), "/plots_png/", file.names, ".png")
+file.copy(file.names, paste0(wham.source.dir, "/vignettes/plots"), overwrite = TRUE)
+copy
+```

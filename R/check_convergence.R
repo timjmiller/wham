@@ -25,29 +25,30 @@
 #' mod = fit_wham(input) # using default values
 #' check_convergence(mod)
 #' }
-check_convergence <- function(mod, ret=FALSE){
+check_convergence <- function(mod, ret=FALSE, f = ""){
+  app = f != ""
   res <- list()
   res$convergence <- mod$opt$convergence
   res$maxgr <- max(abs(mod$final_gradient))
   res$maxgr_par <- names(mod$par)[which.max(mod$final_gradient)]
   # print to screen
   if(res$convergence == 0){
-    cat("stats:nlminb thinks the model has converged: mod$opt$convergence == 0\n")
+    cat("stats:nlminb thinks the model has converged: mod$opt$convergence == 0\n", file = f)
   } else {
-    cat("stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0\n")
+    cat("stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0\n", file = f, append = app)
   }
-  cat("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n")
-  cat("Max gradient parameter:",res$maxgr_par,"\n")
+  cat("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n", file = f, append = app)
+  cat("Max gradient parameter:",res$maxgr_par,"\n", file = f, append = app)
   if("sdrep" %in% names(mod)){
     res$is_sdrep = mod$is_sdrep
     if(res$is_sdrep){
       res$na_sdrep = mod$na_sdrep
-      if(!(res$na_sdrep)) cat("TMB:sdreport() was performed successfully for this model\n")
-      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
+      if(!(res$na_sdrep)) cat("TMB:sdreport() was performed successfully for this model\n", file = f, append = app)
+      else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n", file = f, append = app)
     }
-    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")
+    else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n", file = f, append = app)
   }
-  else cat("TMB:sdreport() was not performed for this model\n")
+  else cat("TMB:sdreport() was not performed for this model\n", file = f, append = app)
 
   if(ret) return(res)
 }
