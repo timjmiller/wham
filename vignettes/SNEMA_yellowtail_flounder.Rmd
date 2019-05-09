@@ -311,5 +311,4 @@ file.names = c(
 )
 file.names = paste0(getwd(), "/plots_png/", file.names, ".png")
 file.copy(file.names, paste0(wham.source.dir, "/vignettes/plots"), overwrite = TRUE)
-copy
 ```
