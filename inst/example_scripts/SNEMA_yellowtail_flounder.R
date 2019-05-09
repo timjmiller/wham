@@ -100,8 +100,5 @@ save("mods", file="ex1_models.RData")
 res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
 res$best
 
-# 3-year projection for best model
-m4 <- project_wham(m4, n.years = 3)
-
 # WHAM output plots for best model
 plot_wham_output(mod=m4, out.type='html')
