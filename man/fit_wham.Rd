@@ -5,7 +5,7 @@
 \title{Fit WHAM model}
 \usage{
 fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
-  n.peels = 7)
+  n.peels = 7, do.osa = TRUE)
 }
 \arguments{
 \item{input}{Named list with several components:
