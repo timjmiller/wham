@@ -4,7 +4,7 @@
 \alias{check_convergence}
 \title{Check convergence of WHAM model}
 \usage{
-check_convergence(mod, ret = FALSE)
+check_convergence(mod, ret = FALSE, f = "")
 }
 \arguments{
 \item{mod}{output from \code{\link{fit_wham}}}
