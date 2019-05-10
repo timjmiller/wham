@@ -47,7 +47,10 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
     # options("mc.cores"=2)
     # suppressWarnings(OSA2<-oneStepPredict(obj,"obs2","keep", discrete=FALSE, parallel=TRUE))
-    OSA2 <- TMB::oneStepPredict(mod, "obsvec", "keep", discrete=FALSE, parallel=FALSE)
+    OSA2 <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+                                data.term.indicator="keep",
+                                method="oneStepGaussian",
+                                discrete=FALSE, parallel=FALSE)
     OSArep$residual = OSA2$residual;
     input$data$obs$residual = OSA2$residual;
     mod$osa = input$data$obs
