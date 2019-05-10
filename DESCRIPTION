@@ -32,7 +32,9 @@ Imports:
     RColorBrewer (>= 1.1-2),
     colorspace (>= 1.4-1),
     mnormt (>= 1.5-5),
-    Deriv (>= 3.8.5)
+    Deriv (>= 3.8.5),
+    tidyr (>= 0.8.3),
+    dplyr (>= 0.8.0)
 LinkingTo:
     TMB, 
     RcppEigen

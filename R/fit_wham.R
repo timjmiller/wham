@@ -31,13 +31,28 @@
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
 #' mod = fit_wham(input) # using default values
 #' }
-fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7)
+fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE)
 {
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
   mod <- TMB::MakeADFun(input$data,input$par, DLL = "wham", random = input$random, map = input$map)
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep)
   if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
+  if(do.osa){
+    OSArep <- mod$report()
+    OSArep$predSd[] = 1
+    OSArep$residual = NA
+    # require(parallel, quietly=TRUE);
+    cat("Doing OSA residuals...\n");
+
+    # options("mc.cores"=2)
+    # suppressWarnings(OSA2<-oneStepPredict(obj,"obs2","keep", discrete=FALSE, parallel=TRUE))
+    OSA2 <- TMB::oneStepPredict(mod, "obsvec", "keep", discrete=FALSE, parallel=FALSE)
+    OSArep$residual = OSA2$residual;
+    input$data$obs$residual = OSA2$residual;
+    mod$osa = input$data$obs
+    mod$OSArep = OSArep
+  }
   mod$years = input$years
   mod$ages.lab = input$ages.lab
   mod$model_name = input$model_name

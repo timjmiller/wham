@@ -1,4 +1,4 @@
-template <class Type> 
+template <class Type>
 Type square(Type x){return x*x;}
 #define see(object) std::cout << #object ":\n" << object << "\n";
 
@@ -11,7 +11,7 @@ matrix<Type> extract_matrix_array3(array<Type> a, int index) //matrix has to be 
   for(int i = 0; i < nr; i++) for(int j = 0; j < nc; j++) mat(i,j) = a(index,i,j);
   return mat;
 }
-  
+
 
 template<class Type>
 Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
@@ -20,9 +20,25 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
   int dim = obs.size();
   Type N = obs.sum();
   Type ll = lgamma(N + 1.0);
-  for(int a = 0; a < dim; a++) 
-  { 
+  for(int a = 0; a < dim; a++)
+  {
     ll += -lgamma(obs(a) + 1.0);
+    if(obs(a)>0) ll += obs(a) * log(pred(a));
+  }
+  if(do_log == 1) return ll;
+  else return exp(ll);
+}
+
+template<class Type>
+Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, int do_log, vector<Type> t_keep)
+{
+  //multinomial
+  int dim = obs.size();
+  Type N = obs.sum();
+  Type ll = lgamma(N + 1.0);
+  for(int a = 0; a < dim; a++)
+  {
+    ll += t_keep(a) * -lgamma(obs(a) + 1.0);
     if(obs(a)>0) ll += obs(a) * log(pred(a));
   }
   if(do_log == 1) return ll;
@@ -37,10 +53,10 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
   Type N = obs.sum();
   Type ll = lgamma(N + 1.0);
   Type tot_pred = 0.0;
-  for(int a = 0; a < dim; a++) 
-  { 
+  for(int a = 0; a < dim; a++)
+  {
     ll += -lgamma(obs(a) + 1.0);
-    if(obs(a)>0) 
+    if(obs(a)>0)
     {
       ll += obs(a) * log(pred(a));
       tot_pred += pred(a);
@@ -63,7 +79,7 @@ vector<Type> rmultinom(Type N, vector<Type> p)
   for(int i = 0; i < Nint; i++)
   {
     Type y = runif(0.0,1.0);
-    for(int a = 0; a < dim; a++) if(y < p.head(a+1).sum()) 
+    for(int a = 0; a < dim; a++) if(y < p.head(a+1).sum())
     {
       x(a) += 1.0;
       break;
@@ -80,7 +96,7 @@ vector<Type> rdirichlet(vector<Type> p, Type phi)
   return obs;
 }
 template <class Type>
-Type ddirichlet(vector<Type> obs, vector<Type>p, Type phi, int do_log) 
+Type ddirichlet(vector<Type> obs, vector<Type>p, Type phi, int do_log)
 {
   int n = obs.size();
   Type ll = lgamma(phi);
@@ -99,6 +115,18 @@ Type ddirmultinom(vector<Type> obs, vector<Type> p,  Type phi, int do_log)
   if(do_log == 1) return ll;
   else return exp(ll);
 }
+
+template<class Type> // modified for osa residuals
+Type ddirmultinom_osa(vector<Type> obs, vector<Type> p,  Type phi, int do_log, vector<Type> t_keep)
+{
+  int dim = obs.size();
+  Type N = obs.sum();
+  Type ll = lgamma(N + 1.0) + lgamma(phi) - lgamma(N + phi);
+  for(int a = 0; a < dim; a++) ll += t_keep(a) * (-lgamma(obs(a) + 1.0) + lgamma(obs(a) + phi * p(a)) - lgamma(phi * p(a)));
+  if(do_log == 1) return ll;
+  else return exp(ll);
+}
+
 template<class Type>
 vector<Type> rdirmultinom(Type N, vector<Type> p, Type phi) //dirichlet generated from iid gammas
 {
@@ -119,25 +147,25 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
 {
   Type ll = 0.0;
   if(age_comp_model == 1) //multinomial
-  { 
+  {
     vector<Type> temp_n = Neff * paa_obs;
     ll = mydmultinom(temp_n, paa_pred, 1);
   }
   if(age_comp_model == 2) //dirichlet-multinomial
-  { 
+  {
     vector<Type> temp_n = Neff * paa_obs;
     ll = ddirmultinom(temp_n, paa_pred, exp(age_comp_pars(0)),1);
-  } 
+  }
   if(age_comp_model == 3) //dirichlet
   {
     Type obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0;
-    for(int a = aref-1; a < n_ages; a++) 
+    for(int a = aref-1; a < n_ages; a++)
     {
       obs_2 += paa_obs(a);
       pred_2 += paa_pred(a);
     }
     ll = lgamma(exp(age_comp_pars(0)));
-    for(int a = 0; a < aref-1; a++) 
+    for(int a = 0; a < aref-1; a++)
     {
       pred += paa_pred(a);
       obs += paa_obs(a);
@@ -150,7 +178,7 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
       //else pooling with next age
     }
     //add in the last age class(es).
-    ll += -lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2); 
+    ll += -lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2);
   }
   if(age_comp_model == 4) //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
   {
@@ -161,14 +189,14 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
     p0 = 1.0/(1.0 + exp(exp(age_comp_pars(1))*(X - age_comp_pars(0)))); //prob of zero declines with proportion caught
     sd = exp(age_comp_pars(2));
     int last_pos = 0;
-    pos_obs_sum = sum(paa_obs); 
+    pos_obs_sum = sum(paa_obs);
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
     {
       pos_pred_sum += paa_pred(a);
       last_pos = a;
     }
     //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum; 
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
     pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
     for(int a = 0; a < n_ages; a++)
     {
@@ -191,12 +219,12 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
   if(age_comp_model == 5) //logistic normal. Pool zero observations with adjacent age classes.
   {
     Type mu = 0.0, sd = 0.0, obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0, y = 0.0;
-    for(int a = aref-1; a < n_ages; a++) 
+    for(int a = aref-1; a < n_ages; a++)
     {
       obs_2 += paa_obs(a);
       pred_2 += paa_pred(a);
     }
-    for(int a = 0; a < aref-1; a++) 
+    for(int a = 0; a < aref-1; a++)
     {
       pred += paa_pred(a);
       obs += paa_obs(a);
@@ -216,20 +244,20 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
   if(age_comp_model == 6) //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
   {
     vector<Type> p0(n_ages);
-    Type n_e = 0.0, mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0; 
+    Type n_e = 0.0, mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
     Type pos_pred_sum = 0.0, y = 0.0;
     n_e = exp(age_comp_pars(0));
     p0 = exp(n_e * log(1.0-paa_pred + Type(1.0e-15))); //prob of zero declines with proportion caught
     sd = exp(age_comp_pars(1));
     int last_pos = 0;
-    pos_obs_sum = sum(paa_obs); 
+    pos_obs_sum = sum(paa_obs);
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
     {
       pos_pred_sum += paa_pred(a);
       last_pos = a;
     }
     //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum; 
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
     pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
     for(int a = 0; a < n_ages; a++)
     {
@@ -251,18 +279,18 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
   }
   if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
   {
-    Type mu = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0; 
+    Type mu = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
     Type pos_pred_sum = 0.0, y = 0.0;
     Type sd = exp(age_comp_pars(0));
     int last_pos = 0;
-    pos_obs_sum = sum(paa_obs); 
+    pos_obs_sum = sum(paa_obs);
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
     {
       pos_pred_sum += paa_pred(a);
       last_pos = a;
     }
     //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum; 
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
     pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
     for(int a = 0; a < n_ages; a++)
     {
@@ -284,30 +312,202 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
 }
 
 template<class Type>
+Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vector<Type> paa_obs, vector<Type> paa_pred, vector<Type> age_comp_pars, int aref, vector<Type> t_keep)
+{
+  Type ll = 0.0;
+  if(age_comp_model == 1) //multinomial
+  {
+    vector<Type> temp_n = Neff * paa_obs;
+    ll = mydmultinom_osa(temp_n, paa_pred, 1, t_keep);
+  }
+  if(age_comp_model == 2) //dirichlet-multinomial
+  {
+    vector<Type> temp_n = Neff * paa_obs;
+    ll = ddirmultinom_osa(temp_n, paa_pred, exp(age_comp_pars(0)),1, t_keep);
+  }
+  if(age_comp_model == 3) //dirichlet
+  {
+    Type obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0;
+    for(int a = aref-1; a < n_ages; a++)
+    {
+      obs_2 += paa_obs(a);
+      pred_2 += paa_pred(a);
+    }
+    ll = lgamma(exp(age_comp_pars(0)));
+    for(int a = 0; a < aref-1; a++)
+    {
+      pred += paa_pred(a);
+      obs += paa_obs(a);
+      if(paa_obs(a) > Type(1.0e-15))
+      {
+        ll +=  t_keep(a) * (-lgamma(exp(age_comp_pars(0)) * pred) + (exp(age_comp_pars(0)) * pred - 1.0) * log(obs));
+        pred = 0.0;
+        obs = 0.0;
+      }
+      //else pooling with next age
+    }
+    //add in the last age class(es).
+    ll += t_keep(n_ages-1) * (-lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2));
+  }
+  if(age_comp_model == 4) //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
+  {
+    vector<Type> X(n_ages), p0(n_ages);
+    Type mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
+    Type pos_pred_sum = 0.0, y = 0.0;
+    X = log(paa_pred + Type(1.0e-15)) - log(1.0 - paa_pred + Type(1.0e-15));
+    p0 = 1.0/(1.0 + exp(exp(age_comp_pars(1))*(X - age_comp_pars(0)))); //prob of zero declines with proportion caught
+    sd = exp(age_comp_pars(2));
+    int last_pos = 0;
+    pos_obs_sum = sum(paa_obs);
+    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
+    {
+      pos_pred_sum += paa_pred(a);
+      last_pos = a;
+    }
+    //logistic applies only to proportions of non-zero observations
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
+    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
+    for(int a = 0; a < n_ages; a++)
+    {
+      if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
+      else
+      {
+        ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
+        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
+        {
+          pos_pred = paa_pred(a)/pos_pred_sum;
+          pos_obs = paa_obs(a)/pos_obs_sum;
+          y = log(pos_obs) - log(pos_obs_l);
+          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
+          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
+        }
+      }
+    }
+    ll -= log(pos_obs_l); //add in the last observed age class(es).
+  }
+  if(age_comp_model == 5) //logistic normal. Pool zero observations with adjacent age classes.
+  {
+    Type mu = 0.0, sd = 0.0, obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0, y = 0.0;
+    for(int a = aref-1; a < n_ages; a++)
+    {
+      obs_2 += paa_obs(a);
+      pred_2 += paa_pred(a);
+    }
+    for(int a = 0; a < aref-1; a++)
+    {
+      pred += paa_pred(a);
+      obs += paa_obs(a);
+      if(paa_obs(a) > Type(1.0e-15))
+      {
+        sd = exp(age_comp_pars(0)-0.5*log(Neff));
+        y = log(obs) - log(obs_2);
+        mu = log(pred + Type(1.0e-15)) - log(pred_2 + Type(1.0e-15));
+        ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(obs));
+        pred = 0.0;
+        obs = 0.0;
+      }
+      //else pooling with next age
+    }
+    for(int a = aref-1; a < n_ages; a++)
+    {
+      ll -= t_keep(a) * log(obs_2); //add in the last age class(es).
+    }
+  }
+  if(age_comp_model == 6) //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
+  {
+    vector<Type> p0(n_ages);
+    Type n_e = 0.0, mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
+    Type pos_pred_sum = 0.0, y = 0.0;
+    n_e = exp(age_comp_pars(0));
+    p0 = exp(n_e * log(1.0-paa_pred + Type(1.0e-15))); //prob of zero declines with proportion caught
+    sd = exp(age_comp_pars(1));
+    int last_pos = 0;
+    pos_obs_sum = sum(paa_obs);
+    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
+    {
+      pos_pred_sum += paa_pred(a);
+      last_pos = a;
+    }
+    //logistic applies only to proportions of non-zero observations
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
+    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
+    for(int a = 0; a < n_ages; a++)
+    {
+      if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
+      else
+      {
+        ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
+        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
+        {
+          pos_pred = paa_pred(a)/pos_pred_sum;
+          pos_obs = paa_obs(a)/pos_obs_sum;
+          y = log(pos_obs) - log(pos_obs_l);
+          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
+          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
+        }
+      }
+    }
+    ll -= log(pos_obs_l); //add in the last observed age class(es).
+  }
+  if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
+  {
+    Type mu = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
+    Type pos_pred_sum = 0.0, y = 0.0;
+    Type sd = exp(age_comp_pars(0));
+    int last_pos = 0;
+    pos_obs_sum = sum(paa_obs);
+    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
+    {
+      pos_pred_sum += paa_pred(a);
+      last_pos = a;
+    }
+    //logistic applies only to proportions of non-zero observations
+    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
+    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
+    for(int a = 0; a < n_ages; a++)
+    {
+      if(paa_obs(a) > Type(1.0e-15))
+      {
+        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
+        {
+          pos_pred = paa_pred(a)/pos_pred_sum;
+          pos_obs = paa_obs(a)/pos_obs_sum;
+          y = log(pos_obs) - log(pos_obs_l);
+          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
+          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
+        }
+      }
+    }
+    ll -= log(pos_obs_l); //add in the last observed age class(es).
+  }
+  return ll;
+}
+
+template<class Type>
 vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vector<Type> paa_obs, vector<Type> paa_pred, vector<Type> age_comp_pars, int aref)
 {
   vector<Type> obs(n_ages);
   obs.setZero();
-  if(age_comp_model == 1) 
-  { 
+  if(age_comp_model == 1)
+  {
     //int N = CppAD::Integer(Neff);
     obs = rmultinom(Neff, paa_pred);
     obs = obs/obs.sum();// proportions
   }
   if(age_comp_model == 2) //dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
-  { 
+  {
     //int N = CppAD::Integer(Neff);
     obs = rdirmultinom(Neff,paa_pred,exp(age_comp_pars(0)));
     obs = obs/obs.sum();// proportions
-  } 
+  }
   if(age_comp_model == 3) //dirichlet generated from iid gammas
-  { 
+  {
     Type obs_2 = 0.0;
     vector<Type> best_obs = rdirichlet(paa_pred, exp(age_comp_pars(0)));
     obs_2 = best_obs.tail(n_ages-aref+1).sum(); // .tail last n_ages-aref+1 components
     for(int a = aref-1; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15)) obs(a) = obs_2;
     obs_2 = 0.0;
-    for(int a = 0; a < aref-1; a++) 
+    for(int a = 0; a < aref-1; a++)
     {
       obs_2 += best_obs(a);
       if(paa_obs(a) > Type(1.0e-15))
@@ -338,7 +538,7 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
       }
       vector<Type> pos_obs(n_pos);
       pos_obs.setZero();
-      for(int a = 0; a < n_pos-1; a++) 
+      for(int a = 0; a < n_pos-1; a++)
       {
         pos_obs(a) = exp(rnorm(log(pos_pred(a)) - log(pos_pred(n_pos-1)), sd));
       }
@@ -360,11 +560,11 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
     for(int a = 0; a < n_ages-1; a++) best_obs(a) = exp(rnorm(log(paa_pred(a)) - log(paa_pred(n_ages-1)), sd));
     best_obs = best_obs/(1.0 + best_obs.sum());
     best_obs(n_ages-1) = 1.0 - best_obs.sum();
-    
+
     Type obs_2 = best_obs.tail(n_ages-aref+1).sum(); // .tail last n_ages-aref+1 components
     for(int a = aref-1; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15)) obs(a) = obs_2;
     obs_2 = 0.0;
-    for(int a = 0; a < aref-1; a++) 
+    for(int a = 0; a < aref-1; a++)
     {
       obs_2 += best_obs(a);
       if(paa_obs(a) > Type(1.0e-15))
@@ -381,7 +581,7 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
     Type n_e = exp(age_comp_pars(0));
     vector<Type> p0 = exp(n_e * log(1.0-paa_pred + Type(1.0e-15))); //prob of zero declines with proportion caught
     Type sd = exp(age_comp_pars(1));
-    
+
     for(int a = 0; a < n_ages; a++) obs(a) = rbinom(Type(1.0), Type(1.0) - p0(a)); // generate instances of positive observations
     int n_pos = 0;
     for(int a = 0; a < n_ages; a++) if(obs(a) > 0.5) n_pos++;
@@ -396,7 +596,7 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
       }
       vector<Type> pos_obs(n_pos);
       pos_obs.setZero();
-      for(int a = 0; a < n_pos-1; a++) 
+      for(int a = 0; a < n_pos-1; a++)
       {
         pos_obs(a) = exp(rnorm(log(pos_pred(a)) - log(pos_pred(n_pos-1)), sd));
       }
@@ -413,7 +613,7 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
   if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
   {
     Type sd = exp(age_comp_pars(0));
-    
+
     int n_pos = 0;
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > 1.0e-15) n_pos++;
     if(n_pos>0)
@@ -427,7 +627,7 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
       }
       vector<Type> pos_obs(n_pos);
       pos_obs.setZero();
-      for(int a = 0; a < n_pos-1; a++) 
+      for(int a = 0; a < n_pos-1; a++)
       {
         pos_obs(a) = exp(rnorm(log(pos_pred(a)) - log(pos_pred(n_pos-1)), sd));
       }
@@ -449,23 +649,23 @@ matrix<Type> get_selblocks(int n_ages, int n_selblocks, matrix<Type> selpars, ve
 {
   int n_selpars = selpars.size();
   matrix<Type> selectivity_blocks(n_selblocks,n_ages);
-  for(int i = 0; i < n_selblocks; i++) 
+  for(int i = 0; i < n_selblocks; i++)
   {
     if (selblock_models(i)==1)
     { //proportions at age
-      for(int a = 0; a < n_ages; a++) 
+      for(int a = 0; a < n_ages; a++)
       {
         selectivity_blocks(i,a) = selpars(i,a);
       }
     }
     else
     { //logistic or double-logistic
-      if (selblock_models(i)==2) 
+      if (selblock_models(i)==2)
       { //increasing logistic
         Type a50_1 = selpars(i,n_ages); // a50 parameter
         Type k_1 = selpars(i,n_ages+1); //  1/slope
         Type age = 0.0;
-        for (int a = 0; a < n_ages; a++) 
+        for (int a = 0; a < n_ages; a++)
         {
           age += 1.0;
           selectivity_blocks(i,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
@@ -493,7 +693,7 @@ matrix<Type> get_selblocks(int n_ages, int n_selblocks, matrix<Type> selpars, ve
           Type a50_1 = selpars(i,n_ages); // a50 parameter
           Type k_1 = selpars(i,n_ages+1); //  1/slope
           Type age = 0.0;
-          for (int a = 0; a < n_ages; a++) 
+          for (int a = 0; a < n_ages; a++)
           {
             age += 1.0;
             selectivity_blocks(i,a) = 1.0/(1.0 + exp((age - a50_1)/k_1));
@@ -512,7 +712,7 @@ Type get_SPR(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> mat, vec
   int n_ages = M.size();
   Type SPR = 0.0, ntemp = 1.0;
   vector<Type> F(n_ages), Z(n_ages);
- 
+
   F = exp(log_F) * sel;
   Z = F + M;
   for(int age=0; age<n_ages-1; age++)
@@ -522,7 +722,7 @@ Type get_SPR(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> mat, vec
   }
   ntemp /= 1.0-exp(-Z(n_ages-1));
   SPR += ntemp * mat(n_ages-1) * waassb(n_ages-1) * exp(-fracyearSSB*Z(n_ages-1));
-  
+
   return SPR;
 }
 
@@ -532,7 +732,7 @@ vector<Type> get_SPRAA(Type log_F, vector<Type> M, vector<Type> sel, vector<Type
   int n_ages = M.size();
   Type ntemp = 1.0;
   vector<Type> F(n_ages), Z(n_ages), SPR(n_ages);
- 
+
   F = exp(log_F) * sel;
   Z = F + M;
   for(int age=0; age<n_ages-1; age++)
@@ -542,7 +742,7 @@ vector<Type> get_SPRAA(Type log_F, vector<Type> M, vector<Type> sel, vector<Type
   }
   ntemp /= 1.0-exp(-Z(n_ages-1));
   SPR(n_ages-1) = ntemp * mat(n_ages-1) * waassb(n_ages-1) * exp(-fracyearSSB*Z(n_ages-1));
-  
+
   return SPR;
 }
 
@@ -552,7 +752,7 @@ Type get_YPR(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> waacatch
   int n_ages = M.size();
   Type YPR = 0.0, ntemp = 1.0;
   vector<Type> F(n_ages), Z(n_ages);
- 
+
   F = exp(log_F) * sel;
   Z = F + M;
   for(int age=0; age<n_ages-1; age++)
@@ -562,7 +762,7 @@ Type get_YPR(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> waacatch
   }
   ntemp /= 1.0 - exp(-Z(n_ages-1));
   YPR += ntemp * F(n_ages-1) * waacatch(n_ages-1) * (1.0 - exp(-Z(n_ages-1)))/Z(n_ages-1);
-  
+
   return YPR;
 }
 template <class Type>
@@ -586,8 +786,8 @@ Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracy
 template<class Type>
 struct sr_yield {
   /* Data and parameter objects for yield calculation: */
-  Type SR_a; 
-  Type SR_b; 
+  Type SR_a;
+  Type SR_b;
   vector<Type> M;
   vector<Type> sel;
   vector<Type> mat;
@@ -595,7 +795,7 @@ struct sr_yield {
   vector<Type> waacatch;
   Type fracyearSSB;
   int sr_type;
-  
+
   /* Constructor */
   sr_yield(Type SR_a_, Type SR_b_,
   vector<Type> M_,
@@ -612,7 +812,7 @@ struct sr_yield {
     int n_ages = M.size();
     T YPR = 0, SPR = 0, ntemp = 1, R;
     vector<T> F(n_ages), Z(n_ages);
-   
+
     F = exp(log_F(0)) * sel.template cast<T>();
     Z = F + M.template cast<T>();
     for(int age=0; age<n_ages-1; age++)
@@ -624,7 +824,7 @@ struct sr_yield {
     ntemp /= 1 - exp(-Z(n_ages-1));
     YPR += ntemp * F(n_ages-1) * T(waacatch(n_ages-1)) * (1 - exp(-Z(n_ages-1)))/Z(n_ages-1);
     SPR += ntemp * T(mat(n_ages-1) * waassb(n_ages-1)) * exp(-T(fracyearSSB)*Z(n_ages-1));
-        
+
     //Type SPR = get_SPR(x, M, sel, mat, waassb, fracyearSSB);
     if(sr_type == 0) R = (T(SR_a) - 1/SPR) / T(SR_b); //beverton-holt
     if(sr_type == 1) R = log(T(SR_a) * SPR)/(T(SR_b) * SPR); //ricker
@@ -642,7 +842,7 @@ struct spr_F {
   vector<Type> mat;
   vector<Type> waassb;
   Type fracyearSSB;
-  
+
   /* Constructor */
   spr_F(
   vector<Type> M_,
@@ -658,7 +858,7 @@ struct spr_F {
     int n_ages = M.size();
     T SPR = 0, ntemp = 1;
     vector<T> F(n_ages), Z(n_ages);
-   
+
     F = exp(log_F(0)) * sel.template cast<T>();
     Z = F + M.template cast<T>();
     for(int age=0; age<n_ages-1; age++)
@@ -668,15 +868,15 @@ struct spr_F {
     }
     ntemp /= 1 - exp(-Z(n_ages-1));
     SPR += ntemp * T(mat(n_ages-1) * waassb(n_ages-1)) * exp(-T(fracyearSSB)*Z(n_ages-1));
-    
+
     return SPR;
   }
 };
 
 template <class Type>
-matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch, 
+matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
   matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0)
-{  
+{
   int n = 10;
   int ny = MAA.rows();
   int na = MAA.cols();
@@ -703,7 +903,7 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
       log_FXSPR_i(0) = log_FXSPR_iter(y,i);
       vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
       //matrix<Type> hess_sr_yield = autodiff::hessian(sprF,log_FXSPR_i);
-      log_FXSPR_iter(y,i+1) = log_FXSPR_iter(y,i) - (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0(y)))/grad_spr_F(0);// /hess_sr_yield(0,0); 
+      log_FXSPR_iter(y,i+1) = log_FXSPR_iter(y,i) - (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0(y)))/grad_spr_F(0);// /hess_sr_yield(0,0);
       res(y,5+i+1) = log_FXSPR_iter(y,i+1);
     }
     log_FXSPR(y) = log_FXSPR_iter(y,n-1);
@@ -723,9 +923,9 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
 
 /*
 template <class Type>
-matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch, 
+matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
   matrix<Type> mature, vector<Type> fracyr_SSB, vector<Type> log_SPR0, int recruit_model)
-{  
+{
   int n = 10;
   int ny = MAA.rows();
   int na = MAA.cols();
@@ -737,7 +937,7 @@ matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
   Type SR_a, SR_b;
   for(int y = 0; y < n_years_model; y++)
   {
-    for(int a = 0; a < n_ages; a++) 
+    for(int a = 0; a < n_ages; a++)
     {
       M(a) = MAA(y,a);
       sel(a) = FAA_tot(y,a)/FAA_tot(y,which_F_age-1); //have to look at FAA_tot to see where max F is.
@@ -755,7 +955,7 @@ matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
       SR_a = exp(log_SR_a(0));
       SR_b = exp(log_SR_b(0));
     }
-    if(recruit_model == 3) //Beverton-Holt selected 
+    if(recruit_model == 3) //Beverton-Holt selected
     {
       sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),0);
       for (int i=0; i<n-1; i++)
@@ -763,7 +963,7 @@ matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
         log_FMSY_i(0) = log_FMSY_iter(y,i);
         vector<Type> grad_sr_yield = autodiff::gradient(sryield,log_FMSY_i);
         matrix<Type> hess_sr_yield = autodiff::hessian(sryield,log_FMSY_i);
-        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0); 
+        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0);
       }
     }
     else //Ricker selected
@@ -774,18 +974,18 @@ matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
         log_FMSY_i(0) = log_FMSY_iter(y,i);
         vector<Type> grad_sr_yield = autodiff::gradient(sryield,log_FMSY_i);
         matrix<Type> hess_sr_yield = autodiff::hessian(sryield,log_FMSY_i);
-        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0); 
+        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0);
       }
     }
     log_FMSY(y) = log_FMSY_iter(y,n-1);
     log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, sel, mat, waassb, fracyr_SSB(y)));
     log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, sel, waacatch));
   }
-  
+
   if(recruit_model == 3) log_R_MSY = log((SR_a - 1/exp(log_SPR_MSY)) / SR_b); //bh
   else log_R_MSY = log(log(SR_a) + log_SPR_MSY) - log(SR_b) - log_SPR_MSY; //ricker
   vector<Type> log_SSB_MSY = log_R_MSY + log_SPR_MSY;
   vector<Type> log_MSY = log_R_MSY + log_YPR_MSY;
 }
-  
+
 */
