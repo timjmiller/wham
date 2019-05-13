@@ -70,7 +70,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
-  // DATA_IMATRIX(keep_I);
+  DATA_IMATRIX(keep_I);
   // DATA_IARRAY(keep_Cpaa);
   // DATA_IARRAY(keep_Ipaa);
 
@@ -497,8 +497,9 @@ Type objective_function<Type>::operator() ()
         Type mu = log(pred_indices(y,i));
         Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
         if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
-        nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
+        // nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
         // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
+        nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), mu, sig, 1);
         SIMULATE agg_indices(y,i) = exp(rnorm(mu, sig));
       }
       if(any_index_age_comp(i) == 1)
