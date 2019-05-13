@@ -427,7 +427,9 @@ Type objective_function<Type>::operator() ()
       Type mu = log(pred_catch(y,f));
       Type sig = agg_catch_sigma(y,f)*exp(log_catch_sig_scale(f));
       if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
-      nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
+      nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
+      // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
+      // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
       SIMULATE agg_catch(y,f) = exp(rnorm(mu, sig));
       log_pred_catch(y,f) = log(pred_catch(y,f));
       if(any_fleet_age_comp(f) == 1)
