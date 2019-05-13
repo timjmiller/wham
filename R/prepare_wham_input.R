@@ -208,31 +208,31 @@ prepare_wham_input <- function(asap3, recruit_model = 2, model_name = "WHAM for 
   tmp$type <- "logcatch"
   obs <- rbind(obs, tmp[, obs.colnames])
 
-  # 2. log index catch
-  x <- as.data.frame(data$agg_indices)
-  colnames(x) <- paste0("index_", 1:data$n_indices)
-  x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-  tmp <- tidyr::gather(x, fleet, val, -year)
-  tmp$val <- log(tmp$val) # shouldn't be any years with 0 catch... could make this robust later
-  tmp$age <- NA
-  tmp$type <- "logindex"
-  obs <- rbind(obs, tmp[, obs.colnames])
-
-  # 3. paa catch
-  dimnames(data$catch_paa) <- list(fleet=paste0("fleet_", 1:data$n_fleets),
-                                   year=1:data$n_years_catch,
-                                   age=1:data$n_ages)
-  x <- as.data.frame(dplyr::as.tbl_cube(data$catch_paa, met_name = "val"))
-  x$type <- "paacatch"
-  obs <- rbind(obs, x[, obs.colnames])
-
-  # 4. paa index
-  dimnames(data$index_paa) <- list(fleet=paste0("index_", 1:data$n_indices),
-                                   year=1:data$n_years_indices,
-                                   age=1:data$n_ages)
-  x <- as.data.frame(dplyr::as.tbl_cube(data$index_paa, met_name = "val"))
-  x$type <- "paaindex"
-  obs <- rbind(obs, x[, obs.colnames])
+  # # 2. log index catch
+  # x <- as.data.frame(data$agg_indices)
+  # colnames(x) <- paste0("index_", 1:data$n_indices)
+  # x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
+  # tmp <- tidyr::gather(x, fleet, val, -year)
+  # tmp$val <- log(tmp$val) # shouldn't be any years with 0 catch... could make this robust later
+  # tmp$age <- NA
+  # tmp$type <- "logindex"
+  # obs <- rbind(obs, tmp[, obs.colnames])
+  #
+  # # 3. paa catch
+  # dimnames(data$catch_paa) <- list(fleet=paste0("fleet_", 1:data$n_fleets),
+  #                                  year=1:data$n_years_catch,
+  #                                  age=1:data$n_ages)
+  # x <- as.data.frame(dplyr::as.tbl_cube(data$catch_paa, met_name = "val"))
+  # x$type <- "paacatch"
+  # obs <- rbind(obs, x[, obs.colnames])
+  #
+  # # 4. paa index
+  # dimnames(data$index_paa) <- list(fleet=paste0("index_", 1:data$n_indices),
+  #                                  year=1:data$n_years_indices,
+  #                                  age=1:data$n_ages)
+  # x <- as.data.frame(dplyr::as.tbl_cube(data$index_paa, met_name = "val"))
+  # x$type <- "paaindex"
+  # obs <- rbind(obs, x[, obs.colnames])
 
   # order by year, fleet, age, type
   o <- order(as.numeric(obs$year), obs$fleet, as.numeric(obs$age), obs$type)

@@ -70,9 +70,9 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
-  DATA_IMATRIX(keep_I);
-  DATA_IARRAY(keep_Cpaa);
-  DATA_IARRAY(keep_Ipaa);
+  // DATA_IMATRIX(keep_I);
+  // DATA_IARRAY(keep_Cpaa);
+  // DATA_IARRAY(keep_Ipaa);
 
   PARAMETER_VECTOR(mean_rec_pars);
   PARAMETER_VECTOR(logit_q);
@@ -440,16 +440,16 @@ Type objective_function<Type>::operator() ()
         }
         if(use_catch_paa(y,f) == 1)
         {
-          vector<Type> t_keep(n_ages);
+          // vector<Type> t_keep(n_ages);
           for(int a = 0; a < n_ages; a++)
           {
             pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
             t_pred_paa(a) = pred_catch_paa(y,f,a);
             t_paa(a) = catch_paa(f,y,a);
-            t_keep(a) = keep(keep_Cpaa(f,y,a));
+            // t_keep(a) = keep(keep_Cpaa(f,y,a));
           }
-          //nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
-          nll_catch_acomp(y,f) -= get_acomp_ll_osa(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f), t_keep);
+          nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
+          // nll_catch_acomp(y,f) -= get_acomp_ll_osa(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f), t_keep);
           SIMULATE
           {
             t_paa = sim_acomp(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
@@ -495,7 +495,8 @@ Type objective_function<Type>::operator() ()
         Type mu = log(pred_indices(y,i));
         Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
         if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
-        nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
+        nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
+        // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
         SIMULATE agg_indices(y,i) = exp(rnorm(mu, sig));
       }
       if(any_index_age_comp(i) == 1)
@@ -508,16 +509,16 @@ Type objective_function<Type>::operator() ()
         }
         if(use_index_paa(y,i) > 0)
         {
-          vector<Type> t_keep(n_ages);
+          // vector<Type> t_keep(n_ages);
           for(int a = 0; a < n_ages; a++)
           {
             pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
             t_pred_paa(a) = pred_index_paa(y,i,a);
             t_paa(a) = index_paa(i, y, a);
-            t_keep(a) = keep(keep_Ipaa(i,y,a));
+            // t_keep(a) = keep(keep_Ipaa(i,y,a));
           }
-          //nll_index_acomp(y,i) -= get_acomp_ll(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
-          nll_index_acomp(y,i) -= get_acomp_ll_osa(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i), t_keep);
+          nll_index_acomp(y,i) -= get_acomp_ll(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
+          // nll_index_acomp(y,i) -= get_acomp_ll_osa(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i), t_keep);
           SIMULATE
           {
             t_paa = sim_acomp(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
