@@ -30,16 +30,16 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
 }
 
 template<class Type>
-Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, int do_log, vector<Type> t_keep)
+Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, Type Neff, int do_log, vector<Type> t_keep)
 {
   //multinomial
   int dim = obs.size();
-  Type N = obs.sum();
+  Type N = Neff * obs.sum();
   Type ll = lgamma(N + 1.0);
   for(int a = 0; a < dim; a++)
   {
-    if(obs(a) <= 0) ll += t_keep(a) * -lgamma(obs(a) + 1.0);
-    if(obs(a) > 0) ll += t_keep(a) * (-lgamma(obs(a) + 1.0) + obs(a) * log(pred(a)));
+    if(obs(a) <= 0) ll += t_keep(a) * -lgamma(Neff*obs(a) + 1.0);
+    if(obs(a) > 0) ll += t_keep(a) * (-lgamma(Neff*obs(a) + 1.0) + Neff*obs(a) * log(pred(a)));
     // if(obs(a)>0) ll += t_keep(a)* obs(a) * log(pred(a));
   }
   if(do_log == 1) return ll;
@@ -318,8 +318,10 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
   Type ll = 0.0;
   if(age_comp_model == 1) //multinomial
   {
-    vector<Type> temp_n = Neff * paa_obs;
-    ll = mydmultinom_osa(temp_n, paa_pred, 1, t_keep);
+    // vector<Type> temp_n = Neff * paa_obs;
+    ll = mydmultinom_osa(paa_obs, paa_pred, Neff, 1, t_keep);
+    // vector<Type> temp_n = Neff * paa_obs;
+    // ll = mydmultinom_osa(temp_n, paa_pred, 1, t_keep);
   }
   if(age_comp_model == 2) //dirichlet-multinomial
   {
