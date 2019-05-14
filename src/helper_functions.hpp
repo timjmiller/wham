@@ -39,7 +39,7 @@ Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, int do_log, vector<Typ
   for(int a = 0; a < dim; a++)
   {
     ll += t_keep(a) * -lgamma(obs(a) + 1.0);
-    if(obs(a)>0) ll += obs(a) * log(pred(a));
+    if(obs(a)>0) ll += t_keep(a)* obs(a) * log(pred(a));
   }
   if(do_log == 1) return ll;
   else return exp(ll);
@@ -347,7 +347,7 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
       //else pooling with next age
     }
     //add in the last age class(es).
-    ll += t_keep(n_ages-1) * (-lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2));
+    ll += t_keep(aref-1) * (-lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2));
   }
   if(age_comp_model == 4) //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
   {
@@ -369,10 +369,12 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
     pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
     for(int a = 0; a < n_ages; a++)
     {
-      if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
+      if(paa_obs(a) < Type(1.0e-15)) ll += (log(p0(a) + Type(1.0e-15)));
+      // if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
       else
       {
-        ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
+        ll += (log(1.0 - p0(a) + Type(1.0e-15)));
+        // ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
         if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
         {
           pos_pred = paa_pred(a)/pos_pred_sum;
@@ -383,7 +385,7 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
         }
       }
     }
-    ll -= log(pos_obs_l); //add in the last observed age class(es).
+    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
   }
   if(age_comp_model == 5) //logistic normal. Pool zero observations with adjacent age classes.
   {
@@ -433,10 +435,12 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
     pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
     for(int a = 0; a < n_ages; a++)
     {
-      if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
+      if(paa_obs(a) < Type(1.0e-15)) ll += (log(p0(a) + Type(1.0e-15)));
+      // if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
       else
       {
-        ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
+        ll += (log(1.0 - p0(a) + Type(1.0e-15)));
+        // ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
         if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
         {
           pos_pred = paa_pred(a)/pos_pred_sum;
@@ -447,7 +451,7 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
         }
       }
     }
-    ll -= log(pos_obs_l); //add in the last observed age class(es).
+    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
   }
   if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
   {
@@ -478,7 +482,7 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
         }
       }
     }
-    ll -= log(pos_obs_l); //add in the last observed age class(es).
+    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
   }
   return ll;
 }

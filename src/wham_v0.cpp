@@ -71,7 +71,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
   DATA_IMATRIX(keep_I);
-  // DATA_IARRAY(keep_Cpaa);
+  DATA_IARRAY(keep_Cpaa);
   // DATA_IARRAY(keep_Ipaa);
 
   PARAMETER_VECTOR(mean_rec_pars);
@@ -429,7 +429,6 @@ Type objective_function<Type>::operator() ()
       if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
       nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
       // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
-      // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
       SIMULATE agg_catch(y,f) = exp(rnorm(mu, sig));
       log_pred_catch(y,f) = log(pred_catch(y,f));
       if(any_fleet_age_comp(f) == 1)
@@ -447,11 +446,12 @@ Type objective_function<Type>::operator() ()
           {
             pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
             t_pred_paa(a) = pred_catch_paa(y,f,a);
-            t_paa(a) = catch_paa(f,y,a);
-            // t_keep(a) = keep(keep_Cpaa(f,y,a));
+            // t_paa(a) = catch_paa(f,y,a);
+            t_paa(a) = obsvec(keep_Cpaa(f,y,a));
+            t_keep(a) = keep(keep_Cpaa(f,y,a));
           }
-          nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
-          // nll_catch_acomp(y,f) -= get_acomp_ll_osa(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f), t_keep);
+          // nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
+          nll_catch_acomp(y,f) -= get_acomp_ll_osa(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f), t_keep);
           SIMULATE
           {
             t_paa = sim_acomp(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));

@@ -31,7 +31,7 @@
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
 #' mod = fit_wham(input) # using default values
 #' }
-fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE)
+fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE))
 {
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
@@ -49,8 +49,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     # suppressWarnings(OSA2<-oneStepPredict(obj,"obs2","keep", discrete=FALSE, parallel=TRUE))
     OSA2 <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                 data.term.indicator="keep",
-                                method="oneStepGaussian",
-                                discrete=FALSE, parallel=FALSE)
+                                method=osa.opts$method,
+                                discrete=FALSE, parallel=osa.opts$parallel)
     OSArep$residual = OSA2$residual;
     input$data$obs$residual = OSA2$residual;
     mod$osa = input$data$obs
