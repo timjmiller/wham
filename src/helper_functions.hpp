@@ -39,7 +39,8 @@ Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, int do_log, vector<Typ
   for(int a = 0; a < dim; a++)
   {
     ll += t_keep(a) * -lgamma(obs(a) + 1.0);
-    if(obs(a)>0) ll += t_keep(a)* obs(a) * log(pred(a));
+    if(obs(a)>0) ll += obs(a) * log(pred(a));
+    // if(obs(a)>0) ll += t_keep(a)* obs(a) * log(pred(a));
   }
   if(do_log == 1) return ll;
   else return exp(ll);
