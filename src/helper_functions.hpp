@@ -482,7 +482,7 @@ Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vecto
         }
       }
     }
-    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
+    ll -= log(pos_obs_l); //add in the last observed age class(es).
   }
   return ll;
 }
