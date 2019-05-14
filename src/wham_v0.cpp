@@ -441,7 +441,7 @@ Type objective_function<Type>::operator() ()
         }
         if(use_catch_paa(y,f) == 1)
         {
-          // vector<Type> t_keep(n_ages);
+          vector<Type> t_keep(n_ages);
           for(int a = 0; a < n_ages; a++)
           {
             pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
