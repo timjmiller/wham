@@ -115,7 +115,8 @@ Type objective_function<Type>::operator() ()
   array<Type> QAA(n_years_model,n_indices,n_ages);
   matrix<Type> selblocks(n_selblocks,n_ages);
   vector<Type> q(n_indices);
-  vector<Type> t_paa(n_ages), t_pred_paa(n_ages);
+  vector<Type> t_paa(n_ages);
+  vector<Type> t_pred_paa(n_ages);
   matrix<Type> selpars(n_selblocks,n_ages+6);
   //Type SR_a, SR_b, SR_R0, SR_h;
   for(int i = 0; i < n_selblocks; i++) for(int j = 0; j < n_ages + 6; j++)
