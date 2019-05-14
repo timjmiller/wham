@@ -3,6 +3,10 @@
 #' Fits the compiled WHAM model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}} and
 #' \code{\link[stats:nlminb]{stats::nlminb}}. Runs retrospective analysis if specified.
 #'
+#' Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
+#' can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
+#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}).
+#'
 #' @param input Named list with several components:
 #'   \describe{
 #'     \item{\code{input$data}}{Data to fit the assessment model to.}
@@ -18,13 +22,17 @@
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
 #' @param do.retro T/F, do retrospective analysis? Default = \code{TRUE}.
 #' @param n.peels integer, number of peels to use in retrospective analysis. Default = \code{7}.
-
+#' @param do.osa T/F, Calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
+#'   as \code{mod$osa$residual}.
+#' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
+#'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
+#'
 #' @return \code{mod}, a fit TMB model
 #'
 #' @useDynLib wham
 #' @export
 #'
-#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}
+#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}
 #'
 #' @examples
 #' \dontrun{
@@ -39,25 +47,16 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep)
   if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
   if(do.osa){
-    OSArep <- mod$report()
-    OSArep$predSd[] = 1
-    OSArep$residual = NA
-    # require(parallel, quietly=TRUE);
     cat("Doing OSA residuals...\n");
-
-    # options("mc.cores"=2)
-    # suppressWarnings(OSA2<-oneStepPredict(obj,"obs2","keep", discrete=FALSE, parallel=TRUE))
-    OSA2 <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+    OSA <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                 data.term.indicator="keep",
                                 method=osa.opts$method,
                                 discrete=FALSE, parallel=osa.opts$parallel)
-    OSArep$residual = OSA2$residual;
-    input$data$obs$residual = OSA2$residual;
-    mod$osa = input$data$obs
-    mod$OSArep = OSArep
+    input$data$obs$residual <- OSA$residual;
+    mod$osa <- input$data$obs
   }
-  mod$years = input$years
-  mod$ages.lab = input$ages.lab
-  mod$model_name = input$model_name
+  mod$years <- input$years
+  mod$ages.lab <- input$ages.lab
+  mod$model_name <- input$model_name
   return(mod)
 }
