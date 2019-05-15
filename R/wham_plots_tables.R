@@ -1,10 +1,10 @@
-plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, plot.colors, od){
+plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   if("logcatch" %in% mod$osa$type){
     dat <- subset(mod$osa, type=="logcatch")
     n.fleets <- length(table(dat$fleet))
-    if(missing(plot.colors)) plot.colors = mypalette(n.fleets)
+    plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
       if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_fleet",f,".pdf")), family = "Times", height = 10, width = 10)
@@ -57,7 +57,7 @@ plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, pl
   if("logindex" %in% mod$osa$type){
     dat <- subset(mod$osa, type=="logindex")
     n.fleets <- length(table(dat$fleet))
-    if(missing(plot.colors)) plot.colors = mypalette(n.fleets)
+    plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
       if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_index",f,".pdf")), family = "Times", height = 10, width = 10)
