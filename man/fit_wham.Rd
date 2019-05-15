@@ -5,7 +5,8 @@
 \title{Fit WHAM model}
 \usage{
 fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
-  n.peels = 7)
+  n.peels = 7, do.osa = TRUE, osa.opts = list(method =
+  "oneStepGeneric", parallel = TRUE))
 }
 \arguments{
 \item{input}{Named list with several components:
@@ -27,20 +28,46 @@ fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
 \item{do.retro}{T/F, do retrospective analysis? Default = \code{TRUE}.}
 
 \item{n.peels}{integer, number of peels to use in retrospective analysis. Default = \code{7}.}
+
+\item{do.osa}{T/F, Calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
+as \code{mod$osa$residual}.}
+
+\item{osa.opts}{list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
+Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
 }
 \value{
-\code{mod}, a fit TMB model
+a fit TMB model with additional output if specified:
+  \describe{
+    \item{\code{$rep}}{List of derived quantity estimates (see examples)}
+    \item{\code{$sdrep}}{Parameter estimates (and standard errors if \code{do.sdrep=TRUE})}
+    \item{\code{$peels}}{Retrospective analysis (if \code{do.retro=TRUE})}
+    \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa=TRUE})}
+  }
 }
 \description{
 Fits the compiled WHAM model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}} and
 \code{\link[stats:nlminb]{stats::nlminb}}. Runs retrospective analysis if specified.
 }
+\details{
+Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
+can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
+implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). Additional OSA residual options
+are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. For example,
+to use the (much faster, ~1 sec instead of 2 min) full Gaussian approximation instead of the (default)
+generic method, you can use \code{osa.opts=list(method="fullGaussian")}.
+}
 \examples{
 \dontrun{
 data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
 mod = fit_wham(input) # using default values
+mod = fit_wham(input, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
+
+names(mod$rep) # list of derived quantities
+mod$rep$SSB # get SSB estimates (weight, not numbers)
+m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
+m1$rep$F[,1] # get F estimates for fleet 1
 }
 }
 \seealso{
-\code{\link{fit_tmb}}, \code{\link{retro}}
+\code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}
 }
