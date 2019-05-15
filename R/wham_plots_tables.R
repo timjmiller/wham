@@ -1,3 +1,113 @@
+plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, plot.colors, od){
+  origpar <- par(no.readonly = TRUE)
+  years <- mod$years
+  if("logcatch" %in% mod$osa$type){
+    dat <- subset(mod$osa, type=="logcatch")
+    n.fleets <- length(table(dat$fleet))
+    if(missing(plot.colors)) plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_fleet",f,".pdf")), family = "Times", height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSAresid_catch_4panel_fleet",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = "Times")
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(mod$osa$residual)))
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 1. trend vs. year
+      plot(years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 2. trend vs. fitted val
+      plot(log(mod$rep$pred_catch[,f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 3. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+
+      # 4. QQ plot modified from car:::qqPlot.default
+      ord.x <- tmp$residual[order(tmp$residual)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+
+  if("logindex" %in% mod$osa$type){
+    dat <- subset(mod$osa, type=="logindex")
+    n.fleets <- length(table(dat$fleet))
+    if(missing(plot.colors)) plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_index",f,".pdf")), family = "Times", height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSAresid_catch_4panel_index",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = "Times")
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(mod$osa$residual)))
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 1. trend vs. year
+      plot(years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 2. trend vs. fitted val
+      plot(log(mod$rep$pred_indices[,f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 3. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+
+      # 4. QQ plot modified from car:::qqPlot.default
+      ord.x <- tmp$residual[order(tmp$residual)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("OSA residual diagnostics: Index ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+}
+
 mypalette = function(n){
   palette.fn <- colorRampPalette(c("dodgerblue","green","red"), space = "Lab")
   palette.fn(n)
@@ -1705,7 +1815,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 	}
   mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
-  
+
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   par(mfrow=c(1,2))

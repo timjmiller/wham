@@ -5,7 +5,10 @@
 #'
 #' Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
 #' can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
-#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}).
+#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). Additional OSA residual options
+#' are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. For example,
+#' to use the (much faster, ~1 sec instead of 2 min) full Gaussian approximation instead of the (default)
+#' generic method, you can use \code{osa.opts=list(method="fullGaussian")}.
 #'
 #' @param input Named list with several components:
 #'   \describe{
@@ -27,7 +30,13 @@
 #' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
 #'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
 #'
-#' @return \code{mod}, a fit TMB model
+#' @return a fit TMB model with additional output if specified:
+#'   \describe{
+#'     \item{\code{$rep}}{List of derived quantity estimates (see examples)}
+#'     \item{\code{$sdrep}}{Parameter estimates (and standard errors if \code{do.sdrep=TRUE})}
+#'     \item{\code{$peels}}{Retrospective analysis (if \code{do.retro=TRUE})}
+#'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa=TRUE})}
+#'   }
 #'
 #' @useDynLib wham
 #' @export
@@ -38,6 +47,12 @@
 #' \dontrun{
 #' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
 #' mod = fit_wham(input) # using default values
+#' mod = fit_wham(input, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
+#'
+#' names(mod$rep) # list of derived quantities
+#' mod$rep$SSB # get SSB estimates (weight, not numbers)
+#' m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
+#' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE))
 {
