@@ -13,9 +13,29 @@
 #'     \item{= 4}{Ricker}
 #'   }
 #'
+#' \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+#' the same years as the fisheries data. It must be a named list with the following components:
+#'   \describe{
+#'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
+#'     \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
+#'     \item{$sigma}{Observation standard error (vector if 1D, matrix if multivariate). Same length as \code{mean}.}
+#'     \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
+#'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
+#'     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
+#'     \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
+#'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
+#'     \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive.}
+#'     \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
+#'     "growth" = growth, "mortality" = natural mortality.}
+#'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
+#'     specific to the \code{where} process:}
+#'     }
+#'   }
+#'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
+#' @param ecov (optional) named list of environmental covariate data and parameters (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -38,7 +58,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3, recruit_model = 2, model_name = "WHAM for unnamed stock"){
+prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unnamed stock", ecov=NULL){
   asap3 = asap3$dat
   which_indices <- which(asap3$use_index ==1)
   asap3$n_indices = length(which_indices)
@@ -192,6 +212,31 @@ prepare_wham_input <- function(asap3, recruit_model = 2, model_name = "WHAM for 
   data$simulate_state = 1 #simulate any state variables
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
 
+  # add in environmental covariate data
+  if(is.null(ecov)){
+    data$Ecov_obs <- matrix(0, nrow=1, ncol=1)
+    data$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
+    data$n_Ecov <- 0
+    data$use_Ecov_obs <- matrix(0, nrow=1, ncol=1)
+    data$Ecov_year <- 0
+    data$Ecov_lag <- 0
+    data$Ecov_model <- 0
+    data$Ecov_where <- 0
+    data$Ecov_how <- 0
+  } else {
+    data$Ecov_obs <- ecov$mean
+    data$Ecov_obs_sigma <- ecov$sigma
+    data$n_Ecov <- ifelse(is.vector(ecov$mean), 1, dim(ecov$mean)[2]) # num of covariates (not data points)
+    data$use_Ecov_obs <- 1*ecov$use_obs # convert T/F to 1/0
+    data$Ecov_year <- ecov$year
+    data$Ecov_lag <- ecov$lag
+    data$Ecov_model <- match(ecov$process_model, c("rw", "ar1"))
+    data$Ecov_where <- match(ecov$where, c('recruit','growth','mortality'))
+    if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+  }
+
   # add vector of all observations for one step ahead residuals ==========================
   # 4 components: fleet catch (log), index catch (log), paa catch, paa index
   obs.colnames <- c("year","fleet","age","type","val")
@@ -279,6 +324,12 @@ prepare_wham_input <- function(asap3, recruit_model = 2, model_name = "WHAM for 
   par$log_R_sigma = 0
   par$log_catch_sig_scale = rep(0, data$n_fleets)
   par$log_index_sig_scale = rep(0, data$n_indices)
+
+  # add environmental covariate parameters
+  PARAMETER_VECTOR(Ecov1);
+  PARAMETER_VECTOR(log_Ecov_sigma);
+  PARAMETER_VECTOR(Ecov_beta);
+  PARAMETER_MATRIX(Ecov);
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
