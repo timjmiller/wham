@@ -67,6 +67,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(Fbar_ages);
   DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
   DATA_SCALAR(percentSPR); //percentage to use for SPR-based reference points
+
+  // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
@@ -74,6 +76,23 @@ Type objective_function<Type>::operator() ()
   DATA_IARRAY(keep_Cpaa);
   // DATA_IARRAY(keep_Ipaa);
 
+  // data for environmental covariate(s), Ecov
+  DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
+  DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
+  DATA_MATRIX(Ecov_obs);
+  DATA_MATRIX(Ecov_obs_sigma);
+  DATA_IVECTOR(Ecov_lag);
+  DATA_IVECTOR(Ecov_how); // 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
+  DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = growth, 3 = mortality
+  DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
+  DATA_IVECTOR(n_Ecov_pars); // RW: 1 par (sig), AR1: 2 par (phi, sig)
+  DATA_INTEGER(Ecov_recruit); // Ecov index to use for recruitment
+  DATA_INTEGER(Ecov_growth); // Ecov index to use for growth
+  DATA_INTEGER(Ecov_mortality); // Ecov index to use for mortality
+  DATA_INTEGER(year1_Ecov); // first year Ecov
+  DATA_INTEGER(year1_model); // first year model
+
+  // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
   PARAMETER_VECTOR(logit_q);
   PARAMETER_VECTOR(log_F1);
@@ -92,6 +111,11 @@ Type objective_function<Type>::operator() ()
   PARAMETER(log_R_sigma);
   PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
   PARAMETER_VECTOR(log_index_sig_scale) //n_indices
+
+  // parameters - environmental covariate ("Ecov")
+  PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 1 par (sig), AR1: 3 par (mu, phi, sig); ncol = N_ecov
+  PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
+  PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
 
   Type nll= 0.0; //negative log-likelihood
   vector<int> any_index_age_comp(n_indices);
@@ -138,6 +162,82 @@ Type objective_function<Type>::operator() ()
   }
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
+  // Environmental covariate process model(s)
+  // int n_years_Ecov = Ecov_obs.rows(); // should modify to allow diff # obs for diff Ecovs
+  matrix<Type> Ecov_x(n_years_model, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
+  Type nll_Ecov = 0.0;
+
+  if(Ecov_model == 0){ // no Ecov
+    for(int y = 0; y < n_years_model; y++) Ecov_x(y,1) = Type(0); // set Ecov_x = vector of 1s
+  } else { // yes Ecov
+    for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
+      // Ecov model option 1: RW
+      if(Ecov_model(i) == 1){
+        Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
+        Ecov_sig = exp(Ecov_process_pars(0,i));
+
+        Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
+        nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
+        for(int y = 1; y < n_years_model; ++y){
+          nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
+          Ecov_x(y,i) = Ecov_re(y,i);
+        }
+
+        // Type Ecov1; // initial year value ("given a fixed effect x_1", pg 1262, Miller et al. 2016)
+        // Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
+        // Ecov1 = Ecov_process_pars(0);
+        // Ecov_sig = exp(Ecov_process_pars(1));
+
+        // Ecov_y(0) = Ecov1;
+        // nll_Ecov -= dnorm(Ecov_y(0), Ecov1, Ecov_sig, 1);
+        // // nll_Ecov -= -(half * (log(two*M_PI) + square(Ecov(0,i) - Ecov1(i))/sigma2_Ecov(i)) + log_Ecov_sigma(i));
+        // for(int y = 1; y < n_years_Ecov - 1; y++)
+        // {
+        //   Ecov_y(y) = Ecov_re(y-1); // Ecov_re is one shorter than Ecov_y bc first value is Ecov1, fixed effect
+        //   nll_Ecov -= dnorm(Ecov_re(y), Ecov_re(y-1), Ecov_sig, 1);
+        //   // nll_Ecov -= -(half * (log(two*M_PI) + square(Ecov(y,i) - Ecov(y-1,i))/sigma2_Ecov(i)) + log_Ecov_sigma(i));
+        // }
+        // Ecov_y(n_years_Ecov-1) = Ecov_re(n_years_Ecov-2); // why does the last year not contribute to nll?
+      }
+
+      // Ecov model option 2: AR1
+      if(Ecov_model(i) == 2){
+        Type Ecov_mu; // mean
+        Type Ecov_phi; // autocorrelation
+        Type Ecov_sig; // conditional sd
+        Ecov_mu = Ecov_process_pars(0,i);
+        Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(1,i)));
+        Ecov_sig = exp(Ecov_process_pars(2,i));
+        for(int y = 0; y < n_years_model; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
+
+        nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
+        for(int y = 1; y < n_years_model; y++) nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+      }
+    } // end loop over Ecovs
+  }
+  nll += nll_Ecov;
+
+  // Environmental covariate observation model
+  Type nll_Ecov_obs = Type(0);
+  for(int i = 0; i < n_Ecov; i++){
+    for(int y = 0; y < n_years_model; y++){
+      if(Ecov_use_obs(y,i) == 1){
+        nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
+      }
+    }
+  }
+  nll += nll_Ecov_obs;
+
+  // don't think this is necessary bc ecov data will be same length as model NAA
+  // // Lag environmental covariate. Ecov_out(t) to be used for processes in year t.
+  // matrix<Type> Ecov_out(n_years_model-1, n_Ecov);
+  // for(int i=0; i < n_Ecov; i++){
+  //   for(int y=0; y < n_years_model-1; y++){
+  //     Ecov_out(y,i) = Ecov_x
+  //   }
+  // }
+
+  // Natural mortality estimation
   if(use_M_re == 1)
   {
     vector<Type> sigma_M(n_M_re);
@@ -325,27 +425,50 @@ Type objective_function<Type>::operator() ()
   vector<Type> nll_recruit(n_years_model-1);
   nll_recruit.setZero();
 
+  // Population model (get NAA, numbers-at-age, for all years)
   for(int y = 1; y < n_years_model; y++)
   {
-    //expected recruitment
-    if(recruit_model == 1) pred_NAA(y,0) = NAA(y-1,0); //random walkNAA(y,1)
+    // Expected recruitment
+    if(recruit_model == 1) pred_NAA(y,0) = NAA(y-1,0) * exp(Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)); // random walk
     else
     {
-      if(recruit_model == 2) pred_NAA(y,0) = exp(mean_rec_pars(0)); //random about mean
-      else //BH stock recruit
+      if(recruit_model == 2) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)); // random about mean
+      else
       {
-        if(recruit_model == 3) //BH stock recruit
+        if(recruit_model == 3) // BH stock recruit
         {
-          if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
-          else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(1 + exp(log_SR_b(0))*SSB(y-1));
+          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)) * SSB(y-1)/(1 + exp(log_SR_b(0))*SSB(y-1));
+          }
+          if(Ecov_how(Ecov_recruit-1) == 2) // "limiting" = carrying capacity
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1))*SSB(y-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(1 + exp(log_SR_b(0) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1))*SSB(y-1));
+          }
+          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(exp(Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)) + exp(log_SR_b(y-1))*SSB(y-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(exp(Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)) + exp(log_SR_b(0))*SSB(y-1));
+          }
         }
-        else //Ricker stock recruit
+        else // recruit_model = 4, Ricker stock recruit
         {
-          if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1));
-          else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1));
+          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1));
+          }
+          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1) * (1 + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1) * (1 + Ecov_beta(Ecov_recruit-1) * Ecov_x(y-1,Ecov_recruit-1)));
+          }
         }
       }
     }
+
     //expected numbers at age after recruitment
     for(int a = 1; a < n_ages-1; a++) pred_NAA(y,a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
     pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
@@ -670,6 +793,10 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_indices);
   REPORT(pred_index_paa);
   REPORT(pred_IAA);
+  REPORT(Ecov_x);
+  REPORT(Ecov_process_pars);
+  REPORT(Ecov_re);
+  REPORT(Ecov_beta);
 
   ADREPORT(log_F);
   ADREPORT(log_FAA);
@@ -681,8 +808,14 @@ Type objective_function<Type>::operator() ()
   ADREPORT(pred_IAA);
   ADREPORT(log_index_resid);
   ADREPORT(log_catch_resid);
+  ADREPORT(Ecov_x);
+  ADREPORT(Ecov_process_pars);
+  ADREPORT(Ecov_re);
+  ADREPORT(Ecov_beta);
 
   REPORT(nll);
+  REPORT(nll_Ecov);
+  REPORT(nll_Ecov_obs);
 
   return nll;
 }

@@ -18,7 +18,7 @@
 #'   \describe{
 #'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
 #'     \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
-#'     \item{$sigma}{Observation standard error (vector if 1D, matrix if multivariate). Same length as \code{mean}.}
+#'     \item{$sigma}{Observation standard error (vector if 1D, covariance matrix if multivariate). Same length as \code{mean}.}
 #'     \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
 #'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
 #'     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
@@ -214,27 +214,68 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
   # add in environmental covariate data
   if(is.null(ecov)){
-    data$Ecov_obs <- matrix(0, nrow=1, ncol=1)
+    data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     data$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
-    data$n_Ecov <- 0
+    data$n_Ecov <- 1
     data$use_Ecov_obs <- matrix(0, nrow=1, ncol=1)
     data$Ecov_year <- 0
+    data$year1_Ecov <- ecov$year[1]
+    data$year1_model <- asap3$year1
     data$Ecov_lag <- 0
     data$Ecov_model <- 0
-    data$Ecov_where <- 0
-    data$Ecov_how <- 0
+    data$Ecov_where <- 1
+    data$Ecov_how <- 1
+    data$Ecov_recruit <- 1
+    data$Ecov_growth <- 1
+    data$Ecov_mortality <- 1
   } else {
-    data$Ecov_obs <- ecov$mean
-    data$Ecov_obs_sigma <- ecov$sigma
-    data$n_Ecov <- ifelse(is.vector(ecov$mean), 1, dim(ecov$mean)[2]) # num of covariates (not data points)
-    data$use_Ecov_obs <- 1*ecov$use_obs # convert T/F to 1/0
+    if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean}
+    else{
+      warning("Ecov mean is not a matrix. Coercing to a matrix...")
+      data$Ecov_obs <- as.matrix(ecov$mean)
+    }
+    if(class(ecov$sigma) == "matrix") {data$Ecov_obs_sigma <- ecov$sigma}
+    else{
+      warning("Ecov sigma is not a matrix. Coercing to a matrix...")
+      data$Ecov_obs_sigma <- as.matrix(ecov$sigma)
+    }
+    if(!identical(dim(data$Ecov_obs_sigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
+    if(class(ecov$use_obs) == "matrix") {data$Ecov_use_obs <- ecov$use_obs}
+    else{
+      warning("Ecov_use_obs is not a matrix with same dimensions as Ecov mean. Coercing to a matrix...")
+      data$Ecov_use_obs <- as.matrix(as.integer(ecov$use_obs))
+    }
+    if(!identical(dim(data$Ecov_use_obs), dim(data$Ecov_obs))) stop("Dimensions of Ecov_use_obs != dimensions of Ecov mean")
+    data$n_Ecov <- dim(data$Ecov_obs)[2] # num of covariates
     data$Ecov_year <- ecov$year
+    data$year1_Ecov <- ecov$year[1]
+    data$year1_model <- asap3$year1
     data$Ecov_lag <- ecov$lag
-    data$Ecov_model <- match(ecov$process_model, c("rw", "ar1"))
-    data$Ecov_where <- match(ecov$where, c('recruit','growth','mortality'))
-    if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
-    if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
-    if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    if(data$year1_Ecov != (data$year1_model - data$Ecov_lag + 1)){
+      warning(paste0("1st Ecov year is not equal to 1st model year + 1 - lag.
+      One fewer observation is required of the environmental covariate, so it
+      should begin with the second model year (adjusted for any lag).
+      Ex: Ecov in year t affects recruitment in year t+1 (lag = 1):
+             --> Model year 1 = 1973, end = 2011
+             --> Ecov year 1 = 1973, end = 2010"))
+    }
+    if(dim(data$Ecov_obs)[1] != data$n_years_model-1){
+      warning(paste0("# of Ecov observations is not equal to # of model years - 1 as expected.
+      The 1st Ecov observation will affect the 2nd model year, and therefore one fewer observation is required.
+      Ex: Ecov in year t affects recruitment in year t+1 (lag = 1):
+             --> Model year 1 = 1973, end = 2011
+             --> Ecov year 1 = 1973, end = 2010"))
+    }
+    data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
+    data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
+    data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
+    data$Ecov_recruit <- which(data$Ecov_where == 1) # ecov index to use for recruitment?
+    data$Ecov_growth <- which(data$Ecov_where == 2) # ecov index to use for growth?
+    data$Ecov_mortality <- which(data$Ecov_where == 3) # ecov index to use for mortality?
+    data$Ecov_how <- ecov$how
+    # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    # if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
   }
 
   # add vector of all observations for one step ahead residuals ==========================
@@ -326,10 +367,10 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   par$log_index_sig_scale = rep(0, data$n_indices)
 
   # add environmental covariate parameters
-  PARAMETER_VECTOR(Ecov1);
-  PARAMETER_VECTOR(log_Ecov_sigma);
-  PARAMETER_VECTOR(Ecov_beta);
-  PARAMETER_MATRIX(Ecov);
+  # PARAMETER_VECTOR(Ecov1);
+  # PARAMETER_VECTOR(log_Ecov_sigma);
+  # PARAMETER_VECTOR(Ecov_beta);
+  # PARAMETER_MATRIX(Ecov);
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
