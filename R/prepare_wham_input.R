@@ -212,14 +212,15 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   data$simulate_state = 1 #simulate any state variables
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
 
+  model_years <- asap3$year1 + 1:asap3$n_years - 1
   # add in environmental covariate data
   if(is.null(ecov)){
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     data$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
     data$n_Ecov <- 1
     data$use_Ecov_obs <- matrix(0, nrow=1, ncol=1)
-    data$Ecov_year <- 0
-    data$year1_Ecov <- ecov$year[1]
+    data$Ecov_year <- matrix(0, nrow=1, ncol=1)
+    data$year1_Ecov <- 0
     data$year1_model <- asap3$year1
     data$Ecov_lag <- 0
     data$Ecov_model <- 0
@@ -246,26 +247,46 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       data$Ecov_use_obs <- as.matrix(as.integer(ecov$use_obs))
     }
     if(!identical(dim(data$Ecov_use_obs), dim(data$Ecov_obs))) stop("Dimensions of Ecov_use_obs != dimensions of Ecov mean")
+    if(length(ecov$year) != dim(data$Ecov_obs)[1]) stop("Ecov year is not the same length as # rows in Ecov mean")
+    data$Ecov_year <- as.numeric(ecov$year)
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num of covariates
-    data$Ecov_year <- ecov$year
     data$year1_Ecov <- ecov$year[1]
     data$year1_model <- asap3$year1
+    end_model <- tail(model_years,1)
+    end_Ecov <- tail(ecov$year,1)
+
+    # check that Ecov year vector doesn't have missing gaps
+    if(all(diff(model_years)!=1)) stop("Ecov years not continuous")
+
+    # pad Ecov if it starts after model year1 - max(lag)
+    if(data$year1_Ecov > data$year1_model - max(ecov$lag)){
+      warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
+      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
+      data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs_sigma)
+      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
+      data$Ecov_year <- c(seq(data$year1_model - max(ecov$lag), data$year1_Ecov-1), data$Ecov_year)
+      data$year1_Ecov <- data$year1_model - max(ecov$lag)
+    }
+
+    # pad Ecov if it ends before last model year
+    if(end_Ecov < end_model){
+      warning("Ecov last year is before model last year. Padding Ecov...")
+      data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      data$Ecov_obs_sigma <- rbind(data$Ecov_obs_sigma, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov, end_model))
+      end_Ecov <- end_model
+    }
+
+    # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
+    data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- rep(NA, data$n_Ecov)
+    for(i in 1:data$n_Ecov){
+      data$ind_Ecov_out_start[i] <- which(data$Ecov_year==data$year1_model)-ecov$lag[i]-1 # -1 is for cpp indexing
+      data$ind_Ecov_out_end[i] <- which(data$Ecov_year==end_model)-ecov$lag[i]-1 # -1 is for cpp indexing
+    }
+
+    if(!identical(length(ecov$lag), length(ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
     data$Ecov_lag <- ecov$lag
-    if(data$year1_Ecov != (data$year1_model - data$Ecov_lag + 1)){
-      warning(paste0("1st Ecov year is not equal to 1st model year + 1 - lag.
-      One fewer observation is required of the environmental covariate, so it
-      should begin with the second model year (adjusted for any lag).
-      Ex: Ecov in year t affects recruitment in year t+1 (lag = 1):
-             --> Model year 1 = 1973, end = 2011
-             --> Ecov year 1 = 1973, end = 2010"))
-    }
-    if(dim(data$Ecov_obs)[1] != data$n_years_model-1){
-      warning(paste0("# of Ecov observations is not equal to # of model years - 1 as expected.
-      The 1st Ecov observation will affect the 2nd model year, and therefore one fewer observation is required.
-      Ex: Ecov in year t affects recruitment in year t+1 (lag = 1):
-             --> Model year 1 = 1973, end = 2011
-             --> Ecov year 1 = 1973, end = 2010"))
-    }
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
     data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
@@ -276,7 +297,27 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
-  }
+
+    cat(paste0("Please check that the environmental covariates have been loaded
+and interpreted correctly.
+
+Model years: ", data$year1_model, " to ", end_model,"
+
+"))
+    for(i in 1:data$n_Ecov){
+      years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
+      cat(paste0("Ecov ",i,": ",ecov$label[i],"
+Effect on: ", c('recruitment','growth','mortality')[data$Ecov_where[i]],"
+Years:
+"))
+cat(years, fill=TRUE)
+lastyr <- tail(years,1)
+cat(paste0("Lag: ",data$Ecov_lag[i],"
+Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",years[1+data$Ecov_lag[i]],"
+    ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
+"))
+      }
+    }
 
   # add vector of all observations for one step ahead residuals ==========================
   # 4 components: fleet catch (log), index catch (log), paa catch, paa index
@@ -367,10 +408,12 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   par$log_index_sig_scale = rep(0, data$n_indices)
 
   # add environmental covariate parameters
-  # PARAMETER_VECTOR(Ecov1);
-  # PARAMETER_VECTOR(log_Ecov_sigma);
-  # PARAMETER_VECTOR(Ecov_beta);
-  # PARAMETER_MATRIX(Ecov);
+  # PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 1 par (sig), AR1: 3 par (mu, phi, sig); ncol = N_ecov
+  # PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
+  # PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  par$Ecov_re = matrix(0, data$n_years_model-1, data$n_Ecov)
+  par$Ecov_beta = rep(0, data$n_Ecov)
+  par$Ecov_process_pars = rep(0, data$n_Ecov)
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
@@ -384,7 +427,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   map$log_b = factor(rep(NA,length(par$log_b)))
   random = character()
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
-  return(list(data=data, par = par, map = map, random = random, years = asap3$year1 + 1:asap3$n_years - 1,
+  return(list(data=data, par = par, map = map, random = random, years = model_years,
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
 }
 
