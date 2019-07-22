@@ -116,9 +116,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_index_sig_scale) //n_indices
 
   // parameters - environmental covariate ("Ecov")
-  PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
   PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
 
   Type nll= 0.0; //negative log-likelihood
   vector<int> any_index_age_comp(n_indices);

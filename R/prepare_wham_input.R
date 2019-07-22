@@ -291,9 +291,9 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
     data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
-    data$Ecov_recruit <- which(data$Ecov_where == 1) # ecov index to use for recruitment?
-    data$Ecov_growth <- which(data$Ecov_where == 2) # ecov index to use for growth?
-    data$Ecov_mortality <- which(data$Ecov_where == 3) # ecov index to use for mortality?
+    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # ecov index to use for recruitment?
+    data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # ecov index to use for growth?
+    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # ecov index to use for mortality?
     data$Ecov_how <- ecov$how
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
@@ -418,7 +418,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   for(i in 1:data$n_Ecov) tmp[3,i] <- ifelse(data$Ecov_model[i]==1, NA, 0)
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
-  map$Ecov_process_pars = tmp
+  map$Ecov_process_pars = factor(tmp)
 
   # turn off Ecov beta pars if no Ecov
   if(data$Ecov_model[1] == 0) map$Ecov_beta <- factor(rep(NA,length(par$Ecov_beta)))
