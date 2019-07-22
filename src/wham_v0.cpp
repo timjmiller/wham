@@ -78,6 +78,7 @@ Type objective_function<Type>::operator() ()
 
   // data for environmental covariate(s), Ecov
   DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
+  DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
   DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
   DATA_MATRIX(Ecov_obs);
   DATA_MATRIX(Ecov_obs_sigma);
@@ -165,11 +166,11 @@ Type objective_function<Type>::operator() ()
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
   // Environmental covariate process model(s)
-  int n_years_Ecov = Ecov_obs.rows();
   matrix<Type> Ecov_x(n_years_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
+  matrix<Type> Ecov_out(n_years_model, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Type nll_Ecov = 0.0;
 
-  if(Ecov_model == 0){ // no Ecov
+  if(Ecov_model(1) == 0){ // no Ecov
     for(int y = 0; y < n_years_model; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
   } else { // yes Ecov
     for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
@@ -184,7 +185,7 @@ Type objective_function<Type>::operator() ()
         nll_Ecov -= dnorm(Ecov_re(0,i), Ecov1, Ecov_sig, 1);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
-        for(int y = 1; y < n_years_model; ++y){
+        for(int y = 1; y < n_years_Ecov; ++y){
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           Ecov_x(y,i) = Ecov_re(y,i);
         }
@@ -236,7 +237,7 @@ Type objective_function<Type>::operator() ()
 
   // Lag environmental covariates
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
-  matrix<Type> Ecov_out(n_years_model, n_Ecov);
+  // matrix<Type> Ecov_out(n_years_model, n_Ecov);
   for(int i=0; i < n_Ecov; i++){
     int ct = 0;
     for(int y=ind_Ecov_out_start(i); y < ind_Ecov_out_end(i)+1; y++){

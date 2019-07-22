@@ -250,6 +250,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(length(ecov$year) != dim(data$Ecov_obs)[1]) stop("Ecov year is not the same length as # rows in Ecov mean")
     data$Ecov_year <- as.numeric(ecov$year)
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num of covariates
+    data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model
     data$year1_Ecov <- ecov$year[1]
     data$year1_model <- asap3$year1
     end_model <- tail(model_years,1)
@@ -408,12 +409,19 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   par$log_index_sig_scale = rep(0, data$n_indices)
 
   # add environmental covariate parameters
-  # PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 1 par (sig), AR1: 3 par (mu, phi, sig); ncol = N_ecov
-  # PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
-  # PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
-  par$Ecov_re = matrix(0, data$n_years_model-1, data$n_Ecov)
-  par$Ecov_beta = rep(0, data$n_Ecov)
-  par$Ecov_process_pars = rep(0, data$n_Ecov)
+  par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
+  par$Ecov_beta = rep(0, data$n_Ecov) # one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
+
+  # turn off 3rd Ecov par if it's a RW
+  tmp <- matrix(0, 3, data$n_Ecov)
+  for(i in 1:data$n_Ecov) tmp[3,i] <- ifelse(data$Ecov_model[i]==1, NA, 0)
+  ind.notNA <- which(!is.na(tmp))
+  tmp[ind.notNA] <- 1:length(ind.notNA)
+  map$Ecov_process_pars = tmp
+
+  # turn off Ecov beta pars if no Ecov
+  if(data$Ecov_model[1] == 0) map$Ecov_beta <- factor(rep(NA,length(par$Ecov_beta)))
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
