@@ -250,7 +250,6 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(length(ecov$year) != dim(data$Ecov_obs)[1]) stop("Ecov year is not the same length as # rows in Ecov mean")
     data$Ecov_year <- as.numeric(ecov$year)
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num of covariates
-    data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model
     data$year1_Ecov <- ecov$year[1]
     data$year1_model <- asap3$year1
     end_model <- tail(model_years,1)
@@ -275,9 +274,10 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_obs_sigma <- rbind(data$Ecov_obs_sigma, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov, end_model))
+      data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
       end_Ecov <- end_model
     }
+    data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- rep(NA, data$n_Ecov)
@@ -309,7 +309,7 @@ Model years: ", data$year1_model, " to ", end_model,"
       years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
       cat(paste0("Ecov ",i,": ",ecov$label[i],"
 Effect on: ", c('recruitment','growth','mortality')[data$Ecov_where[i]],"
-Years:
+In model years:
 "))
 cat(years, fill=TRUE)
 lastyr <- tail(years,1)
@@ -383,7 +383,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   data$obs <- obs
   data$obsvec <- obs$val
 
-  par = list(mean_rec_pars = 10)
+  par = list(mean_rec_pars = numeric(c(0,1,2,2)[recruit_model]))
+  if(recruit_model==2) mean_rec_pars = 10
   par$logit_q = rep(-8, data$n_indices)
   par$log_F1 = rep(-2, data$n_fleets)
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)

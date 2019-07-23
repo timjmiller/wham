@@ -170,7 +170,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> Ecov_out(n_years_model, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Type nll_Ecov = 0.0;
 
-  if(Ecov_model(1) == 0){ // no Ecov
+  if(Ecov_model(0) == 0){ // no Ecov
     for(int y = 0; y < n_years_model; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
   } else { // yes Ecov
     for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
@@ -215,10 +215,10 @@ Type objective_function<Type>::operator() ()
         Ecov_mu = Ecov_process_pars(0,i);
         Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(1,i)));
         Ecov_sig = exp(Ecov_process_pars(2,i));
-        for(int y = 0; y < n_years_model; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
+        for(int y = 0; y < n_years_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
 
         nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        for(int y = 1; y < n_years_model; y++) nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+        for(int y = 1; y < n_years_Ecov; y++) nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
       }
     } // end loop over Ecovs
   }
@@ -806,6 +806,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_process_pars);
   REPORT(Ecov_re);
   REPORT(Ecov_beta);
+  REPORT(mean_rec_pars);
 
   ADREPORT(log_F);
   ADREPORT(log_FAA);
@@ -821,6 +822,7 @@ Type objective_function<Type>::operator() ()
   ADREPORT(Ecov_process_pars);
   ADREPORT(Ecov_re);
   ADREPORT(Ecov_beta);
+  ADREPORT(mean_rec_pars);
 
   REPORT(nll);
   REPORT(nll_Ecov);
