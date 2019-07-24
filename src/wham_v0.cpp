@@ -86,7 +86,6 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(Ecov_how); // 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = growth, 3 = mortality
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
-  DATA_IVECTOR(n_Ecov_pars); // RW: 1 par (sig), AR1: 2 par (phi, sig)
   DATA_INTEGER(Ecov_recruit); // Ecov index to use for recruitment
   DATA_INTEGER(Ecov_growth); // Ecov index to use for growth
   DATA_INTEGER(Ecov_mortality); // Ecov index to use for mortality

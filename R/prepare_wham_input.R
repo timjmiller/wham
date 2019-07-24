@@ -218,7 +218,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     data$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
     data$n_Ecov <- 1
-    data$use_Ecov_obs <- matrix(0, nrow=1, ncol=1)
+    data$Ecov_use_obs <- matrix(0, nrow=1, ncol=1)
     data$Ecov_year <- matrix(0, nrow=1, ncol=1)
     data$year1_Ecov <- 0
     data$year1_model <- asap3$year1
@@ -229,6 +229,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_recruit <- 1
     data$Ecov_growth <- 1
     data$Ecov_mortality <- 1
+    data$n_years_Ecov <- 1
+    data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
   } else {
     if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean}
     else{
@@ -289,7 +291,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(!identical(length(ecov$lag), length(ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
     data$Ecov_lag <- ecov$lag
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
-    data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
+  #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
     data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # ecov index to use for recruitment?
     data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # ecov index to use for growth?
@@ -318,7 +320,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
     ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
 "))
       }
-    }
+    } # end load Ecov
 
   # add vector of all observations for one step ahead residuals ==========================
   # 4 components: fleet catch (log), index catch (log), paa catch, paa index
@@ -421,8 +423,12 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_process_pars = factor(tmp)
 
-  # turn off Ecov beta pars if no Ecov
-  if(data$Ecov_model[1] == 0) map$Ecov_beta <- factor(rep(NA,length(par$Ecov_beta)))
+  # turn off Ecov pars if no Ecov (re, beta, process)
+  if(data$Ecov_model[1] == 0){
+    map$Ecov_re <- factor(rep(NA,length(par$Ecov_re)))
+    map$Ecov_beta <- factor(rep(NA,length(par$Ecov_beta)))
+    map$Ecov_process_pars <- factor(rep(NA,length(par$Ecov_process_pars)))
+  }
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
