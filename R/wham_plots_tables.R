@@ -116,6 +116,10 @@ mypalette = function(n){
 fit.summary.text.plot.fn <- function(mod){
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet", "ZI-logistic normal(1)","logistic normal(1)","ZI-logistic normal(2)","logistic normal(2)")
   selmods = c("Age-specific", "Logistic(+)", "Double-Logistic", "Logistic(-)")
+  recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
+  env.mod <- c("RW", "AR1")
+  env.where <- c('Recruitment','Growth','Mortality')
+  env.how <- c("controlling", "limiting", "lethal", "masking", "directive")
   fleet_selblocks = lapply(1:mod$env$data$n_fleets, function(x) unique(mod$env$data$selblock_pointer_fleets[,x]))
   index_selblocks = lapply(1:mod$env$data$n_indices, function(x) unique(mod$env$data$selblock_pointer_indices[,x]))
   plot(1:10,1:10,type='n',axes=F,xlab="",ylab="")
@@ -126,6 +130,12 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5, paste0("Fleet Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_fleets], collapse = ", ")))
   text(5,nl <- nl-0.5,paste0("Number of indices: ", mod$env$data$n_indices))
   text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
+  text(5,nl <- nl-0.5,paste0("Recruitment model: ", recs[mod$env$data$recruit_model]))
+  if(!all(mod$env$data$Ecov_model == 0)){
+    for(ec in 1:mod$env$data$n_Ecov) text(5,nl <- nl-0.5, paste0("Environmental effect ", ec,": ", mod$env$data$Ecov_label[ec]," (",env.mod[mod$env$data$Ecov_model[ec]],") on ",env.where[mod$env$data$Ecov_where[ec]], " (", env.how[mod$env$data$Ecov_how[ec]],")"))
+  } else {
+    text(5,nl <- nl-0.5, "Environmental effects: none")
+  }
   text(5,nl <- nl-0.5,paste0("Number of Selectivity blocks: ", mod$env$data$n_selblocks))
   text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
   for(i in 1:length(fleet_selblocks)) text(5,nl <- nl-0.5, paste0("Fleet ", i, " Selectivity Blocks: ", paste(fleet_selblocks[i], collapse = ", ")))
@@ -1739,7 +1749,7 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     l.ab = std[a.b.ind,1]
     a.b.cov = mod$sdrep$cov.fixed[a.b.ind,a.b.ind]
     lR.fn = function(la, lb, S) la  + log(S) - log(1 + exp(lb)*S)
-    dlR.dp = Deriv(lR.fn, x = c("la","lb"))
+    dlR.dp = Deriv::Deriv(lR.fn, x = c("la","lb"))
     seq.ssb <- seq(0, max(SR[,2]), length.out=300)
     sd.pred.lR = sapply(seq.ssb, function(x)
     {
@@ -2758,5 +2768,49 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 	if(!(do.tex | do.png)) par(origpar)
 }
 #plot_catch_curves_for_index(ssm)
+
+#-------------------------------------------------------------------------------
+plot.ecov <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FALSE, od){
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  years <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov)
+
+  ecov.pred = mod$rep$Ecov_x
+  ecov.obs = dat$Ecov_obs
+  ecov.obs.sig = dat$Ecov_obs_sigma
+
+  # default: don't plot the padded entries that weren't used in ecov likelihood
+  if(!plot.pad){
+    ecov.use = dat$Ecov_use_obs
+    ecov.obs[ecov.use == 0] <- NA
+    ecov.obs.sig[ecov.use == 0] <- NA
+  }
+  ecov.res = (ecov.obs - ecov.pred) / ecov.obs.sig # standard residual (obs - pred)
+
+  if(!missing(use.i)) ecovs <- use.i
+  else ecovs <- 1:dat$n_Ecov
+  plot.colors = mypalette(dat$n_Ecov)
+  for (i in ecovs)
+  {
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+
+    m <- rbind(c(1,1), c(2,3))
+    layout(m)
+    par(mar=c(4,4,2,0), oma=c(0,0,0.5,0.5))
+
+    ecov.low <- ecov.obs[,i] - 1.96 * ecov.obs.sig[,i]
+    ecov.high <- ecov.obs[,i] + 1.96 * ecov.obs.sig[,i]
+    plot(years, ecov.obs[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab=dat$Ecov_label[i],
+         ylim=c(0.9*min(ecov.low,na.rm=T), 1.1*max(ecov.high,na.rm=T)))
+    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    arrows(years, ecov.low, years, ecov.high, length=0)
+    title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")
+    abline(h=0)
+    hist(ecov.res[,i], breaks=10, plot=T, xlab="Std. Residual", ylab="Probability Density", freq=F, main=NULL)
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }
+}
 
 #-------------------------------------------------------------------------------

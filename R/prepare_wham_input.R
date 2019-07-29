@@ -231,6 +231,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_mortality <- 1
     data$n_years_Ecov <- 1
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
+    data$Ecov_label <- "none"
   } else {
     if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean}
     else{
@@ -256,6 +257,10 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$year1_model <- asap3$year1
     end_model <- tail(model_years,1)
     end_Ecov <- tail(ecov$year,1)
+    if(length(ecov$label) == data$n_Ecov) {data$Ecov_label <- ecov$label}
+    else{
+      warning("Number of Ecov labels not equal to number of Ecovs")
+    }
 
     # check that Ecov year vector doesn't have missing gaps
     if(all(diff(model_years)!=1)) stop("Ecov years not continuous")
@@ -386,7 +391,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   data$obsvec <- obs$val
 
   par = list(mean_rec_pars = numeric(c(0,1,2,2)[recruit_model]))
-  if(recruit_model==2) mean_rec_pars = 10
+  if(recruit_model==2) par$mean_rec_pars = 10
+  if(recruit_model==4) par$mean_rec_pars[2] = -10
   par$logit_q = rep(-8, data$n_indices)
   par$log_F1 = rep(-2, data$n_fleets)
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)

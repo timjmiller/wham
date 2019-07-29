@@ -818,10 +818,6 @@ Type objective_function<Type>::operator() ()
   ADREPORT(log_index_resid);
   ADREPORT(log_catch_resid);
   ADREPORT(Ecov_x);
-  ADREPORT(Ecov_process_pars);
-  ADREPORT(Ecov_re);
-  ADREPORT(Ecov_beta);
-  ADREPORT(mean_rec_pars);
 
   REPORT(nll);
   REPORT(nll_Ecov);

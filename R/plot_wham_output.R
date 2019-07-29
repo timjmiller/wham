@@ -30,8 +30,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
+  if(dir.exists(dir.main)){
+    warning("Output directory already exists. Potentially overwriting previously saved output...")
+  }
   if(!dir.exists(dir.main)){
-    stop("Output directory does not exist. Check 'dir.main' and try again.")
+    dir.create(dir.main, showWarnings = FALSE)
+    # stop("Output directory does not exist. Check 'dir.main' and try again.")
   }
 
   cat("Generating plot files... Please wait ~30 seconds...\n")
@@ -58,6 +62,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.ll.table.fn(mod)
     plot.catch.4.panel(mod)
     plot.index.4.panel(mod)
+    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod)
     plot.NAA.4.panel(mod)
     plot.catch.age.comp(mod)
     plot.catch.age.comp.resids(mod)
@@ -77,6 +82,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.SSB.AA(mod, prop=TRUE)
     plot.NAA(mod, prop=FALSE)
     plot.NAA(mod, prop=TRUE)
+    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+      plot.SR.pred.line(mod)
+    }
     plot.recr.ssb.yr(mod, loglog=FALSE)
     plot.recr.ssb.yr(mod, loglog=TRUE)
     plot.SARC.R.SSB(mod)
@@ -91,8 +99,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.SPR.table(mod, plot=FALSE)
     plot.annual.SPR.targets(mod)
     plot.FXSPR.annual(mod)
-    plot.SR.pred.line(mod)
-    plot.MSY.annual(mod)
+    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+      plot.MSY.annual(mod)
+    }
     plot.yield.curves(mod, plot=TRUE)
     plot.yield.curves(mod, plot=FALSE)
     dev.off()
@@ -180,6 +189,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       plot.index.age.comp(mod, do.png = TRUE, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, use.i=i, od=dir.diag)
     }
+    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, od=dir.diag)
     plot.osa.residuals.catch(mod, do.png=TRUE, res=res, od=dir.diag)
@@ -209,6 +219,11 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=res)
     plot.NAA(mod, prop=TRUE)
     dev.off()
+    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+      png(file.path(dir.res,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=res)
+      plot.SR.pred.line(mod)
+      dev.off()
+    }
     png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=res)
     plot.recr.ssb.yr(mod, loglog=FALSE)
     dev.off()
@@ -243,9 +258,6 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=FALSE)
     if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
-      png(file.path(dir.refpts,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=res)
-      plot.SR.pred.line(mod)
-      dev.off()
       png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=res)
       plot.MSY.annual(mod)
       dev.off()
