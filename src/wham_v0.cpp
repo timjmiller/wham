@@ -226,7 +226,7 @@ Type objective_function<Type>::operator() ()
   // Environmental covariate observation model
   Type nll_Ecov_obs = Type(0);
   for(int i = 0; i < n_Ecov; i++){
-    for(int y = 0; y < n_years_model; y++){
+    for(int y = 0; y < n_years_Ecov; y++){
       if(Ecov_use_obs(y,i) == 1){
         nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
       }
@@ -237,9 +237,9 @@ Type objective_function<Type>::operator() ()
   // Lag environmental covariates
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
   // matrix<Type> Ecov_out(n_years_model, n_Ecov);
-  for(int i=0; i < n_Ecov; i++){
+  for(int i = 0; i < n_Ecov; i++){
     int ct = 0;
-    for(int y=ind_Ecov_out_start(i); y < ind_Ecov_out_end(i)+1; y++){
+    for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1; y++){
       Ecov_out(ct,i) = Ecov_x(y,i);
       ct++;
     }
