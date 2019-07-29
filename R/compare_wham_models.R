@@ -11,6 +11,7 @@
 #'
 #' @return a list with the following components:
 #'   \describe{
+#'     \item{\code{daic}}{Vector of delta-AIC by model}
 #'     \item{\code{aic}}{Vector of AIC by model}
 #'     \item{\code{rho}}{Matrix of Mohn's rho by model}
 #'     \item{\code{best}}{Name of best model (lowest AIC)}
@@ -32,7 +33,7 @@
 #' @export
 compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
-  aic <- NULL
+  aic <- daic <- NULL
   if(calc.aic){
     if(sum(mapply(function(x) x$env$data$Ecov_model==0, mods)) %in% c(0,length(mods))){
       ecov.obs <- lapply(mods, function(x) x$env$data$Ecov_use_obs)
@@ -43,9 +44,12 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
              models fit to the same data.")
       }
       aic <- sapply(mods, function(x){
-        2*(x$opt$obj + length(x$opt$par))
+        k = length(x$opt$par)
+        2*(x$opt$obj + k) # AIC
+        # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
       })
       aic <- round(aic, 1)
+      daic <- aic - min(aic)
     } else {
       stop("Env covariate in some model(s) but not all. Cannot compare AIC
            for models with different data (here, some have environmental data
@@ -56,7 +60,7 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
   if(calc.rho){
     if(any(mapply(function(x) is.null(x$peels), mods))){
       stop("Not all models have peels --> Cannot compare Mohn's rho.
-           Set 'calc.rho = FALSE' to compare only AIC, or re-run models
+           Set 'calc.rho = FALSE' to compare only AICc, or re-run models
            with 'fit_wham(do.retro = TRUE)'.")
     }
     rho <- t(sapply(mods, function(x){
@@ -66,8 +70,8 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
     colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
     # apply(rho, 1, function(y) mean(abs(y)))
   }
-  tab <- cbind(aic, rho)
-  colnames(tab) <- c("AIC", colnames(rho))
+  tab <- cbind(daic, aic, rho)
+  colnames(tab) <- c("dAIC","AIC", colnames(rho))
 
   best <- names(mods)[which(aic == min(aic))]
   ord <- order(aic)
@@ -77,5 +81,5 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
   write.csv(tab, file = paste0(file.path(getwd(),fname),".csv"))
 
   print(tab) # print to console
-  return(list(aic=aic, rho=rho, best=best, tab=tab))
+  return(list(daic=daic, aic=aic, rho=rho, best=best, tab=tab))
 }
