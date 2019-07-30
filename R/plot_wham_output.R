@@ -69,7 +69,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.index.age.comp(mod)
     plot.index.age.comp.resids(mod)
     plot.NAA.res(mod)
-    plot.osa.residuals.catch(mod)
+    if(!is.null(mod$osa)) plot.osa.residuals.catch(mod)
     #plot.recruitment.devs(mod)
     dev.off()
 
@@ -192,7 +192,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, od=dir.diag)
-    plot.osa.residuals.catch(mod, do.png=TRUE, res=res, od=dir.diag)
+    if(!is.null(mod$osa)) plot.osa.residuals.catch(mod, do.png=TRUE, res=res, od=dir.diag)
     #plot.recruitment.devs(mod)
 
     # PNG results -----------------

@@ -2801,8 +2801,12 @@ plot.ecov <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FAL
 
     ecov.low <- ecov.obs[,i] - 1.96 * ecov.obs.sig[,i]
     ecov.high <- ecov.obs[,i] + 1.96 * ecov.obs.sig[,i]
+    y.min <- ifelse(min(ecov.low,na.rm=T) < 0, 1.1*min(ecov.low,na.rm=T), 0.9*min(ecov.low,na.rm=T))
+    y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
+    if(max(ecov.obs[,i]) > y.max) y.max <- max(ecov.obs[,i])
+    if(min(ecov.obs[,i]) < y.min) y.min <- min(ecov.obs[,i])
     plot(years, ecov.obs[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab=dat$Ecov_label[i],
-         ylim=c(0.9*min(ecov.low,na.rm=T), 1.1*max(ecov.high,na.rm=T)))
+         ylim=c(y.min, y.max))
     lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
     arrows(years, ecov.low, years, ecov.high, length=0)
     title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
