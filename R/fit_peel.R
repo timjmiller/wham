@@ -18,6 +18,12 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
   print(peel)
   temp = model
   n_years = temp$dat$n_years_catch = temp$dat$n_years_indices = temp$dat$n_years_model = temp$dat$n_years_model - peel
+  if(temp$dat$Ecov_model != 0){
+    temp$dat$n_years_Ecov = model$dat$n_years_Ecov - peel
+    Ecov_re_na_ind = rbind(matrix(1:(temp$dat$n_years_Ecov*temp$dat$n_Ecov), nrow=temp$dat$n_years_Ecov, ncol=temp$dat$n_Ecov), matrix(rep(NA, peel*temp$dat$n_Ecov), nrow=peel))
+    temp$map$Ecov_re = factor(Ecov_re_na_ind)
+    temp$dat$ind_Ecov_out_end = model$dat$ind_Ecov_out_end - peel
+  }
   log_NAA_na_ind = rbind(matrix(1:(temp$dat$n_ages*(n_years-1)), n_years-1), matrix(rep(NA, peel*temp$dat$n_ages), peel))
   F_devs_na_ind = rbind(matrix(1:(temp$dat$n_fleets * (n_years-1)), n_years-1), matrix(rep(NA, peel * temp$dat$n_fleets), peel))
   log_R_na_ind = c(1:(n_years-1), rep(NA, peel))
