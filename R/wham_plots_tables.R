@@ -434,15 +434,15 @@ plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, re
   x$Ecov = factor(x$Ecov)
   levels(x$Ecov) = mod$env$data$Ecov_label
   names(plot.colors) = levels(x$Ecov)
-  ggp = ggplot(x, aes(x=Year, y = Stdres, color=Ecov)) +
-    geom_line(size=1.1) +
-    geom_ribbon(aes(ymin=lo, ymax=hi, fill=Ecov), alpha=0.3, linetype = 0) +
-    ylab("Standardized residual") +
+  ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=Ecov)) +
+    ggplot2::geom_line(size=1.1) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=Ecov), alpha=0.3, linetype = 0) +
+    ggplot2::ylab("Standardized residual") +
     # expand_limits(y=0) +
-    theme_bw() +
-    scale_color_manual(values=plot.colors) +
-    scale_fill_manual(values=plot.colors) +
-    facet_wrap(~Ecov, ncol=1)
+    ggplot2::theme_bw() +
+    ggplot2::scale_color_manual(values=plot.colors) +
+    ggplot2::scale_fill_manual(values=plot.colors) +
+    ggplot2::facet_wrap(~Ecov, ncol=1)
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_ecov_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_ecov_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
@@ -480,15 +480,15 @@ plot.index.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALS
   x$Index = factor(x$Index)
   names(plot.colors)= levels(x$Index)
   if(!is.null(index.names)) levels(x$Index) = index.names
-  ggp = ggplot(x, aes(x=Year, y = Stdres, color=Index)) +
-    geom_line(size=1.1) +
-    geom_ribbon(aes(ymin=lo, ymax=hi, fill=Index), alpha=0.3, linetype = 0) +
-    ylab("Standardized residual") +
-    expand_limits(y=0) +
-    theme_bw() +
-    scale_color_manual(values=plot.colors) +
-    scale_fill_manual(values=plot.colors) +
-    facet_wrap(~Index, ncol=1)
+  ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=Index)) +
+    ggplot2::geom_line(size=1.1) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=Index), alpha=0.3, linetype = 0) +
+    ggplot2::ylab("Standardized residual") +
+    ggplot2::expand_limits(y=0) +
+    ggplot2::theme_bw() +
+    ggplot2::scale_color_manual(values=plot.colors) +
+    ggplot2::scale_fill_manual(values=plot.colors) +
+    ggplot2::facet_wrap(~Index, ncol=1)
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_index_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_log_index_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
@@ -525,15 +525,15 @@ plot.fleet.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALS
   x$Fleet = factor(x$Fleet)
   if(!is.null(fleet.names)) levels(x$Fleet) = fleet.names
   names(plot.colors)= levels(x$Fleet)
-  ggp = ggplot(x, aes(x=Year, y = Stdres, color=Fleet)) +
-    geom_line(size=1.1) +
-    scale_color_manual(values=plot.colors) +
-    scale_fill_manual(values=plot.colors) +
-    geom_ribbon(aes(ymin=lo, ymax=hi, fill=Fleet), alpha=0.3, linetype = 0) +
-    ylab("Standardized residual") +
-    expand_limits(y=0) +
-    theme_bw() +
-    facet_wrap(~Fleet, ncol=1)
+  ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=Fleet)) +
+    ggplot2::geom_line(size=1.1) +
+    ggplot2::scale_color_manual(values=plot.colors) +
+    ggplot2::scale_fill_manual(values=plot.colors) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=Fleet), alpha=0.3, linetype = 0) +
+    ggplot2::ylab("Standardized residual") +
+    ggplot2::expand_limits(y=0) +
+    ggplot2::theme_bw() +
+    ggplot2::facet_wrap(~Fleet, ncol=1)
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_catch_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_log_catch_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
