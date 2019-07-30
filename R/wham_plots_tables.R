@@ -404,8 +404,55 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   # par(origpar)
 }
 
-plot.index.stdresids.fn = function(mod,years, index.names = NULL, plot.colors)
+plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
+  origpar <- par(no.readonly = TRUE)
+  ny = mod$env$data$n_years_Ecov
+  ni = mod$env$data$n_Ecov
+  if(missing(years)) years = mod$years
+  if(missing(plot.colors)) plot.colors = mypalette(ni)
+  temp = summary(mod$sdrep)
+  ind = rownames(temp) == "Ecov_resid"
+  templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
+  temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
+  temp = matrix(temp[ind,1], ny, ni)
+  x = data.frame(Ecov = integer(),
+    Year = numeric(),
+    Stdres = numeric(),
+    lo = numeric(),
+    hi = numeric())
+  for(i in 1:ni)
+  {
+    ind = which(mod$env$data$Ecov_use_obs[,i] == 1)
+    td = data.frame(Ecov = rep(i,length(ind)),
+      Year = years[ind],
+      Stdres = temp[ind,i],
+      lo = templo[ind,i],
+      hi = temphi[ind,i])
+    x <- rbind(x, td)
+  }
+  x$Ecov = factor(x$Ecov)
+  levels(x$Ecov) = mod$env$data$Ecov_label
+  names(plot.colors) = levels(x$Ecov)
+  ggp = ggplot(x, aes(x=Year, y = Stdres, color=Ecov)) +
+    geom_line(size=1.1) +
+    geom_ribbon(aes(ymin=lo, ymax=hi, fill=Ecov), alpha=0.3, linetype = 0) +
+    ylab("Standardized residual") +
+    # expand_limits(y=0) +
+    theme_bw() +
+    scale_color_manual(values=plot.colors) +
+    scale_fill_manual(values=plot.colors) +
+    facet_wrap(~Ecov, ncol=1)
+  if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_ecov_time.pdf")), family = "Times", height = 10, width = 10)
+  if(do.png) png(filename = file.path(od, paste0("Residuals_ecov_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+  print(ggp)
+  if(do.tex | do.png) dev.off() else par(origpar)
+  # return(ggp)
+}
+
+plot.index.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
+{
+  origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_indices
   if(missing(years)) years = mod$years
@@ -434,19 +481,24 @@ plot.index.stdresids.fn = function(mod,years, index.names = NULL, plot.colors)
   names(plot.colors)= levels(x$Index)
   if(!is.null(index.names)) levels(x$Index) = index.names
   ggp = ggplot(x, aes(x=Year, y = Stdres, color=Index)) +
-    geom_line() +
+    geom_line(size=1.1) +
     geom_ribbon(aes(ymin=lo, ymax=hi, fill=Index), alpha=0.3, linetype = 0) +
     ylab("Standardized residual") +
     expand_limits(y=0) +
     theme_bw() +
     scale_color_manual(values=plot.colors) +
     scale_fill_manual(values=plot.colors) +
-    facet_wrap(~Index)
-  return(ggp)
+    facet_wrap(~Index, ncol=1)
+  if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_index_time.pdf")), family = "Times", height = 10, width = 10)
+  if(do.png) png(filename = file.path(od, paste0("Residuals_log_index_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+  print(ggp)
+  if(do.tex | do.png) dev.off() else par(origpar)
+  # return(ggp)
 }
 
-plot.fleet.stdresids.fn = function(mod,years, fleet.names = NULL, plot.colors)
+plot.fleet.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
+  origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_fleets
   if(missing(years)) years = mod$years
@@ -474,15 +526,19 @@ plot.fleet.stdresids.fn = function(mod,years, fleet.names = NULL, plot.colors)
   if(!is.null(fleet.names)) levels(x$Fleet) = fleet.names
   names(plot.colors)= levels(x$Fleet)
   ggp = ggplot(x, aes(x=Year, y = Stdres, color=Fleet)) +
-    geom_line() +
+    geom_line(size=1.1) +
     scale_color_manual(values=plot.colors) +
     scale_fill_manual(values=plot.colors) +
     geom_ribbon(aes(ymin=lo, ymax=hi, fill=Fleet), alpha=0.3, linetype = 0) +
     ylab("Standardized residual") +
     expand_limits(y=0) +
     theme_bw() +
-    facet_wrap(~Fleet)
-  return(ggp)
+    facet_wrap(~Fleet, ncol=1)
+  if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_catch_time.pdf")), family = "Times", height = 10, width = 10)
+  if(do.png) png(filename = file.path(od, paste0("Residuals_log_catch_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+  print(ggp)
+  if(do.tex | do.png) dev.off() else par(origpar)
+  # return(ggp)
 }
 
 plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.i, plot.colors, od)
