@@ -33,7 +33,7 @@
 #' @export
 compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
-  aic <- daic <- NULL
+  aic.tab <- aic <- daic <- NULL
   if(calc.aic){
     if(sum(mapply(function(x) x$env$data$Ecov_model==0, mods)) %in% c(0,length(mods))){
       ecov.obs <- lapply(mods, function(x) x$env$data$Ecov_use_obs)
@@ -55,6 +55,8 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
            for models with different data (here, some have environmental data
            and some do not).")
     }
+    aic.tab <- cbind(daic, aic)
+    colnames(aic.tab) <- c("dAIC","AIC")
   }
   rho <- NULL
   if(calc.rho){
@@ -70,14 +72,17 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
     colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
     # apply(rho, 1, function(y) mean(abs(y)))
   }
-  tab <- cbind(daic, aic, rho)
-  colnames(tab) <- c("dAIC","AIC", colnames(rho))
+  tab <- cbind(aic.tab, rho)
 
-  best <- names(mods)[which(aic == min(aic))]
-  ord <- order(aic)
-  aic <- aic[ord]
-  rho <- rho[ord,]
-  tab <- tab[ord,]
+  best <- NULL
+  if(calc.aic) best <- names(mods)[which(aic == min(aic))]
+  if(sort){
+    ord <- order(aic)
+    daic <- daic[ord]
+    aic <- aic[ord]
+    rho <- rho[ord,]
+    tab <- tab[ord,]
+  }
   write.csv(tab, file = paste0(file.path(getwd(),fname),".csv"))
 
   print(tab) # print to console

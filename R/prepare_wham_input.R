@@ -4,13 +4,23 @@
 #' prepares the data and parameter settings for \code{\link{fit_wham}}.
 #' By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}.
 #'
-#' \code{recruit_model} specifies the stock-recruit model. See lines 269-304 and 324-338
+#' \code{recruit_model} specifies the stock-recruit model. See lines 442-476
 #' in \code{wham.cpp} to see implementation.
 #'   \describe{
 #'     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
 #'     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
+#'   }
+#'
+#' \code{ecov$how} specifies HOW the environmental covariate affects the \code{ecov$where} process.
+#" Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
+#'   \describe{
+#'     \item{= 1}{"controlling" (dens-indep mortality)}
+#'     \item{= 2}{"limiting" (carrying capacity, e.g. Ecov determines amount of suitable habitat)}
+#'     \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some Ecov value)}
+#'     \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
+#'     \item{= 5}{"directive" (e.g. behavioral)}
 #'   }
 #'
 #' \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
@@ -28,8 +38,7 @@
 #'     \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
 #'     "growth" = growth, "mortality" = natural mortality.}
 #'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
-#'     specific to the \code{where} process:}
-#'     }
+#'     specific to the \code{where} process.}
 #'   }
 #'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
@@ -48,7 +57,7 @@
 #'     \item{\code{model_name}}{Character, name of stock/model (specified in call to \code{prepare_wham_input})}
 #'   }
 #'
-#' @seealso \code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}
+#' @seealso \code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}, \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}
 #'
 #' @examples
 #' \dontrun{
@@ -225,7 +234,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_lag <- 0
     data$Ecov_model <- 0
     data$Ecov_where <- 1
-    data$Ecov_how <- 1
+    data$Ecov_how <- 0
     data$Ecov_recruit <- 1
     data$Ecov_growth <- 1
     data$Ecov_mortality <- 1
@@ -297,10 +306,21 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_lag <- ecov$lag
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
+    if(!ecov$where %in% c('recruit')){
+      stop("Sorry, only Ecov effects on Recruitment currently implemented.
+      Set ecov$where = 'recruit'.")}
     data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
     data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # ecov index to use for recruitment?
     data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # ecov index to use for growth?
     data$Ecov_mortality <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # ecov index to use for mortality?
+    
+    if(!ecov$how %in% c(0,1,2,4)){
+      stop("Sorry, only Ecov effects on Recruitment currently implemented.
+      Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")}
+    if(recruit_model == 4 & ecov$how == 2){
+      stop("'Limiting' Ecov effect on Ricker recruitment not implemented.
+      Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
+      Or set recruit_model = 3 (Bev-Holt).")}
     data$Ecov_how <- ecov$how
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
@@ -315,7 +335,8 @@ Model years: ", data$year1_model, " to ", end_model,"
     for(i in 1:data$n_Ecov){
       years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
       cat(paste0("Ecov ",i,": ",ecov$label[i],"
-Effect on: ", c('recruitment','growth','mortality')[data$Ecov_where[i]],"
+",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how+1]," effect on: ", c('recruitment','growth','mortality')[data$Ecov_where[i]],"
+
 In model years:
 "))
 cat(years, fill=TRUE)
@@ -439,6 +460,13 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_process_pars = factor(tmp)
+
+  # turn off only Ecov_beta to fit Ecov process model without effect on population
+  tmp <- par$Ecov_beta
+  for(i in 1:data$n_Ecov) tmp[i] <- ifelse(data$Ecov_how[i]==0, NA, 0)
+  ind.notNA <- which(!is.na(tmp))
+  tmp[ind.notNA] <- 1:length(ind.notNA)
+  map$Ecov_beta = factor(tmp)
 
   # turn off Ecov pars if no Ecov (re, beta, process)
   if(data$Ecov_model[1] == 0){

@@ -84,7 +84,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(Ecov_obs);
   DATA_MATRIX(Ecov_obs_sigma);
   DATA_IVECTOR(Ecov_lag);
-  DATA_IVECTOR(Ecov_how); // 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
+  DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = growth, 3 = mortality
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
   DATA_INTEGER(Ecov_recruit); // Ecov index to use for recruitment
@@ -439,14 +439,27 @@ Type objective_function<Type>::operator() ()
   for(int y = 1; y < n_years_model; y++)
   {
     // Expected recruitment
-    if(recruit_model == 1) pred_NAA(y,0) = NAA(y-1,0) * exp(Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)); // random walk
+    if(recruit_model == 1) // random walk
+    {
+      if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = NAA(y-1,0); 
+      if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = NAA(y-1,0) * exp(Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)); // random walk
+    }
     else
     {
-      if(recruit_model == 2) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)); // random about mean
+      if(recruit_model == 2) // random about mean
+      {
+        if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = exp(mean_rec_pars(0));
+        if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
+      }
       else
       {
         if(recruit_model == 3) // BH stock recruit
         {
+          if(Ecov_how(Ecov_recruit-1) == 0) // fit Ecov but NO effect
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(1 + exp(log_SR_b(0))*SSB(y-1));
+          }          
           if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
           {
             if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
@@ -465,6 +478,11 @@ Type objective_function<Type>::operator() ()
         }
         else // recruit_model = 4, Ricker stock recruit
         {
+          if(Ecov_how(Ecov_recruit-1) == 0) // fit Ecov but NO effect
+          {
+            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1));
+            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1));
+          }          
           if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
           {
             if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
