@@ -70,9 +70,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.index.age.comp.resids(mod)
     plot.NAA.res(mod)
     if(!is.null(mod$osa)) plot.osa.residuals(mod)
-    plot.fleet.stdresids.fn(mod)
-    plot.index.stdresids.fn(mod)
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod)
+    plot.all.stdresids.fn(mod)
+    # plot.fleet.stdresids.fn(mod)
+    # plot.index.stdresids.fn(mod)
+    # if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod)
     #plot.recruitment.devs(mod)
     dev.off()
 
@@ -196,9 +197,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.NAA.4.panel(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, od=dir.diag)
     if(!is.null(mod$osa)) plot.osa.residuals(mod, do.png=TRUE, res=res, od=dir.diag)
-    plot.fleet.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
-    plot.index.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
+    plot.all.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
+    # plot.fleet.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
+    # plot.index.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
+    # if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
     #plot.recruitment.devs(mod)
 
     # PNG results -----------------

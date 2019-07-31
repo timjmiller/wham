@@ -460,9 +460,121 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   # par(origpar)
 }
 
+plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, res = 72, od)
+{
+  # load Ecov residuals
+  xe <- NULL
+  if(!all(mod$env$data$Ecov_model == 0)){
+    ny = mod$env$data$n_years_Ecov
+    ni = mod$env$data$n_Ecov
+    years = mod$years
+    temp = summary(mod$sdrep)
+    ind = rownames(temp) == "Ecov_resid"
+    templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
+    temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
+    temp = matrix(temp[ind,1], ny, ni)
+    xe = data.frame(Label = integer(),
+      Year = numeric(),
+      Stdres = numeric(),
+      lo = numeric(),
+      hi = numeric())
+    for(i in 1:ni)
+    {
+      ind = which(mod$env$data$Ecov_use_obs[,i] == 1)
+      td = data.frame(Label = rep(i,length(ind)),
+        Year = years[ind],
+        Stdres = temp[ind,i],
+        lo = templo[ind,i],
+        hi = temphi[ind,i])
+      xe <- rbind(xe, td)
+    }
+    xe$row = xe$Label
+    xe$Label = factor(xe$Label)
+    levels(xe$Label) = mod$env$data$Ecov_label
+    xe$type = "Ecov"
+  }
+
+  # load Index residuals
+  ny = mod$env$data$n_years_model
+  ni = mod$env$data$n_indices
+  temp = summary(mod$sdrep)
+  ind = rownames(temp) == "log_index_resid"
+  templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
+  temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
+  temp = matrix(temp[ind,1], ny, ni)
+  xi = data.frame(Label = integer(),
+    Year = numeric(),
+    Stdres = numeric(),
+    lo = numeric(),
+    hi = numeric())
+  for(i in 1:ni)
+  {
+    ind = which(mod$env$data$use_indices[,i] == 1)
+    td = data.frame(Label = rep(i,length(ind)),
+      Year = years[ind],
+      Stdres = temp[ind,i],
+      lo = templo[ind,i],
+      hi = temphi[ind,i])
+    xi <- rbind(xi, td)
+  }
+  xi$row = xi$Label
+  xi$Label = factor(xi$Label)
+  levels(xi$Label) = paste0("Index ",1:length(table(xi$Label)))
+  xi$type = "Index"
+  # if(!is.null(index.names)) levels(x$Index) = index.names
+
+  # load catch data (fleet)
+  ny = mod$env$data$n_years_model
+  ni = mod$env$data$n_fleets
+  if(missing(years)) years = mod$years
+  temp = summary(mod$sdrep)
+  ind = rownames(temp) == "log_catch_resid"
+  templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
+  temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
+  temp = matrix(temp[ind,1], ny, ni)
+  xc = data.frame(Label = integer(),
+    Year = numeric(),
+    Stdres = numeric(),
+    lo = numeric(),
+    hi = numeric())
+  for(i in 1:ni)
+  {
+    td = data.frame(Label = rep(i,ny),
+      Year = years,
+      Stdres = temp[,i],
+      lo = templo[,i],
+      hi = temphi[,i])
+    xc <- rbind(xc, td)
+  }
+  xc$row = xc$Label
+  xc$Label = factor(xc$Label)
+  levels(xc$Label) = paste0("Fleet ",1:length(table(xc$Label)))
+  xc$type = "Catch"
+  # if(!is.null(fleet.names)) levels(xc$Fleet) = fleet.names
+
+  x <- rbind(xe, xi, xc)
+  x$row = factor(x$row)
+
+  ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=type)) +
+    ggplot2::geom_line(size=1.1) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=type), alpha=0.3, linetype = 0) +
+    ggplot2::ylab("Standardized residual") +
+    # expand_limits(y=0) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "none") +
+    # ggplot2::scale_color_manual(values=plot.colors) +
+    # ggplot2::scale_fill_manual(values=plot.colors) +
+    # ggplot2::facet_wrap(~Ecov, ncol=1)
+    ggplot2::facet_grid(type ~ row)
+  if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_time.pdf")), family = "Times", height = 10, width = 10)
+  if(do.png) png(filename = file.path(od, paste0("Residuals_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+  print(ggp)
+  if(do.tex | do.png) dev.off()
+  # return(ggp)
+}
+
 plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_Ecov
   ni = mod$env$data$n_Ecov
   if(missing(years)) years = mod$years
@@ -502,13 +614,12 @@ plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, re
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_ecov_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_ecov_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(do.tex | do.png) dev.off()
   # return(ggp)
 }
 
 plot.index.stdresids.fn = function(mod, years, index.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_indices
   if(missing(years)) years = mod$years
@@ -548,13 +659,12 @@ plot.index.stdresids.fn = function(mod, years, index.names = NULL, do.tex = FALS
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_index_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_log_index_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(do.tex | do.png) dev.off()
   # return(ggp)
 }
 
 plot.fleet.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_fleets
   if(missing(years)) years = mod$years
@@ -593,7 +703,7 @@ plot.fleet.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALS
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_log_catch_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_log_catch_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   print(ggp)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(do.tex | do.png) dev.off()
   # return(ggp)
 }
 
