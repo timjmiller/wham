@@ -1,4 +1,4 @@
-plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
+plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   if("logcatch" %in% mod$osa$type){
@@ -12,7 +12,7 @@ plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
-      ylim.max <- max(abs(range(mod$osa$residual)))
+      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -65,7 +65,7 @@ plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
-      ylim.max <- max(abs(range(mod$osa$residual)))
+      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -103,6 +103,62 @@ plot.osa.residuals.catch <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od
       lines(z, lower, lty=2, col=plot.colors[f])
 
       title (paste0("OSA residual diagnostics: Index ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+
+  if(!all(mod$env$data$Ecov_model == 0)){
+    dat <- subset(mod$osa, type=="ecov")
+    n.fleets <- length(table(dat$fleet))
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov)
+      tmp$pred <- mod$rep$Ecov_x[,f]
+      tmp <- subset(tmp, !is.nan(dat$residual))
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_ecov_4panel_",f,".pdf")), family = "Times", height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSAresid_ecov_4panel_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = "Times")
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
+      ylims <- c(-ylim.max, ylim.max)
+
+      # 1. trend vs. year
+      plot(tmp$year, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 2. trend vs. fitted val
+      plot(tmp$pred, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Predicted ", mod$env$data$Ecov_label[f]), ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+
+      # 3. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+
+      # 4. QQ plot modified from car:::qqPlot.default
+      ord.x <- tmp$residual[order(tmp$residual)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("OSA residual diagnostics: Ecov ",f," (",mod$env$data$Ecov_label[f],")"), outer=T, line=-1)
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
