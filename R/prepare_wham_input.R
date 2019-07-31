@@ -353,7 +353,16 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   tmp$type <- "logindex"
   obs <- rbind(obs, tmp[, obs.colnames])
 
-  # 3. paa catch
+  # 3. Ecov
+  x <- as.data.frame(data$Ecov_obs)
+  colnames(x) <- paste0("ecov_", 1:data$n_Ecov)
+  x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
+  tmp <- tidyr::gather(x, fleet, val, -year)
+  tmp$age <- NA
+  tmp$type <- "ecov"
+  obs <- rbind(obs, tmp[, obs.colnames])
+
+  # # 4. paa catch
   # dimnames(data$catch_paa) <- list(fleet=paste0("fleet_", 1:data$n_fleets),
   #                                  year=1:data$n_years_catch,
   #                                  age=1:data$n_ages)
@@ -361,7 +370,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # x$type <- "paacatch"
   # obs <- rbind(obs, x[, obs.colnames])
 
-  # # 4. paa index
+  # # 5. paa index
   # dimnames(data$index_paa) <- list(fleet=paste0("index_", 1:data$n_indices),
   #                                  year=1:data$n_years_indices,
   #                                  age=1:data$n_ages)
@@ -377,6 +386,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   obs$ind <- 1:dim(obs)[1]
   data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
   data$keep_I <- matrix(subset(obs, type=='logindex')$ind, nrow=data$n_years_indices, ncol=data$n_indices, byrow=TRUE)
+  data$keep_E <- matrix(subset(obs, type=='ecov')$ind, nrow=data$n_years_Ecov, ncol=data$n_Ecov, byrow=TRUE)
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_catch, data$n_ages))
   for(i in 1:data$n_fleets) data$keep_Cpaa[i,,] <- matrix(subset(obs, type=='paacatch' & fleet==paste0("fleet_",i))$ind, nrow=data$n_years_catch, ncol=data$n_ages, byrow=TRUE)
   data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_indices, data$n_ages))
@@ -384,6 +394,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # subtract 1 bc TMB indexes from 0
   data$keep_C <- data$keep_C - 1
   data$keep_I <- data$keep_I - 1
+  data$keep_E <- data$keep_E - 1
   data$keep_Cpaa <- data$keep_Cpaa - 1
   data$keep_Ipaa <- data$keep_Ipaa - 1
 

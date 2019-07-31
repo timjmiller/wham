@@ -450,7 +450,7 @@ plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, re
   # return(ggp)
 }
 
-plot.index.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
+plot.index.stdresids.fn = function(mod, years, index.names = NULL, do.tex = FALSE, do.png = FALSE, res = 72, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
   ny = mod$env$data$n_years_model

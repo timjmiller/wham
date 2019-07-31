@@ -73,6 +73,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
   DATA_IMATRIX(keep_I);
+  DATA_IMATRIX(keep_E); // Ecov
   DATA_IARRAY(keep_Cpaa);
   // DATA_IARRAY(keep_Ipaa);
 
@@ -228,7 +229,8 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < n_Ecov; i++){
     for(int y = 0; y < n_years_Ecov; y++){
       if(Ecov_use_obs(y,i) == 1){
-        nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
+        // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
+        nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
       }
     }
   }
