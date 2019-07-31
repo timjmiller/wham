@@ -1,8 +1,8 @@
 ---
-title: "WHAM example: Southern New England Mid-Atlantic Yellowtail Flounder"
+title: "WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example: Southern New England Mid-Atlantic Yellowtail Flounder}
+  %\VignetteIndexEntry{WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,0 +1,314 @@
+---
+title: "WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+wham.dir <- find.package("wham")
+knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+```
+In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
+
+1. Prepare `wham`, data, and model settings
+
+2. Fit several (slightly different) WHAM models
+
+3. Compare models by AIC and Mohn's rho (retrospective analysis)
+
+4. Project the best model
+
+5. Review plots of input data, diagnostics, and results.
+
+## 1. Prepare `wham`
+
+We assume you already have `wham` and dependencies installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). Open R and load the `wham` package:
+
+```{r}
+library(wham)
+```
+
+For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+```{r}
+wham.dir <- find.package("wham")
+file.path(wham.dir, "example_scripts")
+```
+
+You can run this entire example script with:
+```{r, eval=FALSE}
+write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
+source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+```
+
+Let's create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output
+write.dir <- "/path/to/save/output" # modify
+dir.create(write.dir)
+setwd(write.dir)
+```
+
+WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
+
+Copy `ASAP_SNEMAYT.dat` to our analysis directory:
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+```
+
+Confirm you are in the working directory and it has the `ASAP_SNEMAYT.dat` file:
+```{r}
+list.files()
+```
+
+Read the ASAP3 .dat file into R:
+```{r eval=FALSE}
+asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
+```
+
+Convert `asap3` to an input list for `wham`. Here we specify the model name and stock-recruit model (1 = random walk, 2 = random about mean (default), 3 = Beverton-Holt, 4 = Ricker):
+```{r eval=FALSE}
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
+```
+
+Now we have some modifications to make to `input` that are specific to SNEMA yellowtail flounder prior to fitting the wham model. Specifically, we will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. The set_age_sel0 function will change data, map, and parameter settings for specified selectivity blocks to use age-specific parameterizations. It also fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergencse. However, an initial fit with all selectivity paramerers freely estimated can be useful in determining which age(s) to fix parameters at 1. The selectivity parameters are estimated on the logit scale so setting the estimated parameter to -Inf or Inf results in the transformed selectivity parameter at the lower or upper bound, respectively (e.g. 0 or 1). In the code below, the ages to fix selectivity at 1 have already been determined for us.
+```{r eval=FALSE}
+
+# Make one or more selectivity blocks with age-specific parameters
+age.specific = 1:3 # 3 age-specific blocks
+not.age.specific = (1:input$data$n_selblocks)[-age.specific]
+input = set_age_sel0(input, age.specific)
+input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages + 3:6)] = Inf
+input$par$logit_selpars[1,5] = Inf
+input$par$logit_selpars[2,4] = Inf
+input$par$logit_selpars[3,2] = Inf
+# Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
+input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
+input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
+input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
+input$map$logit_selpars = factor(input$map$logit_selpars)
+base = input
+```
+
+## 2. Fit `wham` models
+
+The first model, `m1`, is a statistical catch-at-age model, but with log-recruitment estimated as iid random effects around a mean log-recruitment. Variance of the random effects is estimated.
+```{r eval=FALSE}
+temp = base
+temp$random = "log_R"
+temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
+temp$data$random_recruitment = 1
+m1 <- fit_wham(temp)
+```
+
+By default, `fit_wham` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
+
+```{r include=FALSE}
+data(vign1_m1_conv)
+data(vign1_m2_conv)
+data(vign1_m3_conv)
+data(vign1_m4_conv)
+data(vign1_res)
+```
+
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
+```{r eval=FALSE}
+check_convergence(m1)
+```
+
+```{r echo=FALSE}
+cat(vign1_m1_conv, sep = "\n")
+```
+
+The second model, `m2`, is like the first, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
+```{r eval=FALSE}
+temp = base
+temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
+temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
+temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
+temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
+temp$par$index_paa_pars = rep(0, temp$data$n_indices)
+temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
+temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+temp$random = "log_R"
+temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
+temp$data$random_recruitment = 1
+m2 <- fit_wham(temp)
+```
+
+Check that `m2` converged:
+```{r eval=FALSE}
+check_convergence(m2)
+```
+
+```{r echo=FALSE}
+cat(vign1_m2_conv, sep = "\n")
+```
+
+The third, `m3`, is a full state-space model where abundances at all ages are random effects:
+```{r eval=FALSE}
+temp = base
+temp$data$use_NAA_re = 1
+temp$data$random_recruitment = 0
+temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
+temp$random = "log_NAA"
+m3 <- fit_wham(temp)
+```
+
+Check that `m3` converged:
+```{r eval=FALSE}
+check_convergence(m3)
+```
+
+```{r echo=FALSE}
+cat(vign1_m3_conv, sep = "\n")
+```
+
+The last, `m4`, is like `m3`, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
+```{r eval=FALSE}
+temp = base
+temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
+temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
+temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
+temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
+temp$par$index_paa_pars = rep(0, temp$data$n_indices)
+temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
+temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+temp$data$use_NAA_re = 1
+temp$data$random_recruitment = 0
+temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
+temp$random = "log_NAA"
+m4 <- fit_wham(temp)
+```
+
+Check that `m4` converged:
+```{r eval=FALSE}
+check_convergence(m4)
+```
+
+```{r echo=FALSE}
+cat(vign1_m4_conv, sep = "\n")
+```
+
+Store all models together in one (named) list:
+```{r eval=FALSE}
+mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
+```
+
+Since the retrospective analyses take a few minutes to run, you may want to save the output for later use:
+```{r eval=FALSE}
+save("mods", file="ex1_models.RData")
+```
+
+## 3. Compare models
+
+We can compare models using AIC and Mohn's rho:
+```{r eval=FALSE}
+res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+```
+
+```{r echo=FALSE}
+vign1_res$tab
+```
+
+```{r eval=FALSE}
+res$best
+```
+
+```{r echo=FALSE}
+vign1_res$best
+```
+
+By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. The models with that treat the age composition observations can be compared though to evaluate whether stochasticity in abundances at age provides better performance.
+
+## 4. Plot input data, diagnostics, and results
+
+There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
+
+```{r eval=FALSE}
+plot_wham_output(mod=m4, out.type='html')
+```
+
+![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png){ width=75% }
+
+Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). Setting `out.type='png'` saves the plots as `.png` files organized into 6 subdirectories.
+
+```{r eval=FALSE}
+plot_wham_output(mod=m4, out.type='png')
+```
+
+Many plots are generated---here we display some examples:
+
+### Diagnostics
+
+![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/likelihood.png){ width=45% }
+
+![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_resids_index1.png){ width=45% }
+
+### Input Data
+
+![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/index.png){width=45%}
+
+### Results
+
+![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_at_age_proportion.png){width=45%}
+
+![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_Rec_loglog.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Selectivity_fleet1.png){width=45%}
+
+### Reference Points
+
+![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/FSPR_relative.png){width=45%}
+
+### Retrospective
+
+![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro_relative.png){width=45%}
+
+### Misc
+
+![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
+
+```{r eval = FALSE, include = FALSE}
+#if you need to regenerate the data used in this vignette
+#define source directory: wham.source.dir = "/home/tmiller2/work/wham/wham"
+for(i in paste0("m",1:4)){
+  check_convergence(get(i), f = "temp.txt")
+  eval(parse(text = paste0("vign1_", i, '_conv = readLines("temp.txt")')))
+  eval(parse(text = paste0("save(vign1_", i, '_conv, file = "', wham.source.dir, "/data/vign1_",i,'_conv.RData")')))
+}
+vign1_res = res
+save(vign1_res, file = paste0(wham.source.dir, "/data/vign1_res.RData"))
+
+plot_wham_output(mod=m4, out.type='png')
+file.names = c(
+  "input_data/catch_age_comp_fleet1",
+  "diagnostics/Catch_age_comp_index1",
+  "diagnostics/Catch_age_comp_resids_index1",
+  "misc/catch_at_age_consistency_obs_fleet1",
+  "input_data/catch_by_fleet",
+  "misc/catch_curves_fleet1_obs",
+  "ref_points/FSPR_relative",
+  "input_data/index",
+  "diagnostics/Index_4panel_2",
+  "ref_points/Kobe_status",
+  "diagnostics/likelihood",
+  "results/Selectivity_fleet1",
+  "ref_points/SPR_targets_ave_plot",
+  "results/SSB_at_age_proportion",
+  "results/SSB_F_trend",
+  "results/SSB_Rec_loglog",
+  "retro/SSB_retro",
+  "retro/SSB_retro_relative",
+  "input_data/weight_at_age_fleet1"
+)
+file.names = paste0(getwd(), "/plots_png/", file.names, ".png")
+file.copy(file.names, paste0(wham.source.dir, "/vignettes/plots"), overwrite = TRUE)
+```
