@@ -1478,6 +1478,8 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
       points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
       text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
     } else { # na lims but correct max.x and max.y already calculated for untransformed plot SSB-Rec
+      max.y <- max(SR[,3])
+      max.x <- max(SR[,2])
       plot(log(SR[,2]), log(SR[,3]), type='n', col='black',
         xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
         ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
