@@ -1181,14 +1181,26 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
 	ssb.cv <- std[ssb.ind,2]
   log.ssb.ci <- log.ssb + cbind(qnorm(1-alpha/2)*ssb.cv, -qnorm(1-alpha/2)*ssb.cv)
   ssb.ci = exp(log.ssb.ci)/1000
-	plot(years, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
-	axis(1, labels = FALSE)
-	axis(2)
-	box()
-	mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
-	grid(col = gray(0.7))
-	polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
-	n_ages = mod$env$data$n_ages
+  no.ssb.ci <- all(is.na(ssb.ci))
+  if(!no.ssb.ci){ # have CI
+  	plot(years, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
+  	axis(1, labels = FALSE)
+  	axis(2)
+  	box()
+  	mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+  	grid(col = gray(0.7))
+  	polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+	} else { # no CI but plot SSB trend
+    plot(years, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
+    axis(1, labels = FALSE)
+    axis(2)
+    box()
+    mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    # polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  }
+  # F trend
+  n_ages = mod$env$data$n_ages
 	faa.ind <- which(rownames(std) == "log_FAA_tot")
 	log.faa <- matrix(std[faa.ind,1], length(years), n_ages)
 	faa.cv <- matrix(std[faa.ind,2], length(years), n_ages)
@@ -1199,14 +1211,26 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   full.f.cv <- faa.cv[full.f.ind]
   log.f.ci <- log.full.f + cbind(qnorm(1-alpha/2)*full.f.cv, -qnorm(1-alpha/2)*full.f.cv)
   full.f = exp(log.full.f)
-	plot(years, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(exp(log.f.ci))), axes = FALSE)
-	axis(1)
-	axis(2)
-	box()
-	mtext(side = 1, "Year", outer = FALSE, line = 3)
-	mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
-	grid(col = gray(0.7))
-	polygon(c(years,rev(years)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
+  no.f.ci <- all(is.na(log.f.ci))
+  if(!no.f.ci){ # have CI
+  	plot(years, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(exp(log.f.ci))), axes = FALSE)
+  	axis(1)
+  	axis(2)
+  	box()
+  	mtext(side = 1, "Year", outer = FALSE, line = 3)
+  	mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
+  	grid(col = gray(0.7))
+  	polygon(c(years,rev(years)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
+  } else { # CI all NA
+    plot(years, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(full.f)), axes = FALSE)
+    axis(1)
+    axis(2)
+    box()
+    mtext(side = 1, "Year", outer = FALSE, line = 3)
+    mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    # polygon(c(years,rev(years)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
+  }
   par(origpar)
 }  #end function
 
@@ -1907,7 +1931,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 7
   plot.colors = mypalette(n.spr)
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_annual_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_annual_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-	par(mfrow=c(1,2), mar=c(4,5,2,1))
+	par(mfrow=c(2,1), mar=c(4,5,2,1))
 	plot(years, f.spr[,1], type='n', xlab="Years", ylab=expression(paste("Full ",italic(F)["%SPR"])), lwd=2, ylim=c(0,1.2*max(f.spr)))
 	for (i in 1:n.spr) lines(years, f.spr[,i], lwd=2, col=plot.colors[i])
 	legend('top', legend= sapply(spr.targ.values, function(x) as.expression(bquote(italic(F)[paste(.(x*100),"%")]))), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
@@ -2050,7 +2074,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-  par(mfrow=c(1,2))
+  par(mfrow=c(2,1))
   rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSB.t,1][1:n_years]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
@@ -2168,7 +2192,7 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 		  grid(col = gray(0.7))
 		  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 		}
-    par(mfrow=c(1,2))
+    par(mfrow=c(2,1))
     rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSBMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)

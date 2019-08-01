@@ -82,10 +82,12 @@ for(m in 1:n.mods){
   input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
   input$map$logit_selpars = factor(input$map$logit_selpars)
 
-  # turn on random effects for recruitment
-  input$random = "log_R"
-  input$map = input$map[!(names(input$map) %in% c("log_R_sigma", "mean_rec_pars"))]
-  input$data$random_recruitment = 1
+  # full state-space model, abundance is the state vector
+  input$data$use_NAA_re = 1
+  input$data$random_recruitment = 0
+  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
+  input$random = "log_NAA"
 
   # fit model
   mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)

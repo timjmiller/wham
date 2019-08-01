@@ -15,24 +15,27 @@ knitr::opts_chunk$set(
 wham.dir <- find.package("wham")
 knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
-In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
+In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-1. Prepare `wham`, data, and model settings
+This is the 2nd `wham` example and we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
 
-2. Fit several (slightly different) WHAM models
+In example 2, we demonstrate how to specify and run WHAM with varying
 
-3. Compare models by AIC and Mohn's rho (retrospective analysis)
+- recruitment models (random, Bev-Holt, Ricker)
 
-4. Project the best model
+- environmental covariate (Cold Pool Index, CPI) process models (random walk, AR1), and
 
-5. Review plots of input data, diagnostics, and results.
+- how the CPI affects recruitment (controlling or limiting)
+
+As in [example 1](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R), we check that each model converges (`check_convergence`), plot diagnostics, results, and reference points (`plot_wham_output`), and compare models using AIC and Mohn's rho (`compare_wham_models`).
 
 ## 1. Prepare `wham`
 
-We assume you already have `wham` and dependencies installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). Open R and load the `wham` package:
+Open R and load the `wham` package:
 
 ```{r}
 library(wham)
+library(tidyverse)
 ```
 
 For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
@@ -44,7 +47,7 @@ file.path(wham.dir, "example_scripts")
 You can run this entire example script with:
 ```{r, eval=FALSE}
 write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
-source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex2_CPI_recruitment_SNEMA_yellowtail.R"))
 ```
 
 Let's create a directory for this analysis:
@@ -57,21 +60,56 @@ setwd(write.dir)
 
 WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
 
-Copy `ASAP_SNEMAYT.dat` to our analysis directory:
+Copy `ASAP_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=FALSE)
 ```
 
-Confirm you are in the working directory and it has the `ASAP_SNEMAYT.dat` file:
+Confirm you are in the correct directory and it has the required data files:
 ```{r}
 list.files()
 ```
 
-Read the ASAP3 .dat file into R:
-```{r eval=FALSE}
+Read the ASAP3 .dat file into R and convert to input list for wham:
+```{r}
 asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
 ```
+
+Load the environmental covariate (Cold Pool Index, CPI) data into R:
+```{r}
+env.dat <- read.csv("CPI.csv", header=T)
+```
+
+We generally abbreviate 'environmental covariate' as `Ecov` in the code. In this example, the `Ecov` data file has columns for observations (`CPI`), standard error (`CPI_sigma`), and year (`Year`). Observations and year are always required. Standard error can be treated as fixed/data with yearly values (as here) or one overall value shared among years. It can also be estimated as a parameter(s), likewise either as yearly values or one overall value.
+```{r}
+head(env.dat)
+```
+
+Now we specify the 7 models with varying recruitment, CPI process model, and how CPI affects recruitment:
+```{r}
+df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
+                      Ecov_process = c('ar1','ar1','ar1','ar1','rw','ar1','ar1'),
+                      Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
+n.mods <- dim(df.mods)[1]
+df.mods$Model <- paste0("m",1:n.mods)
+df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+
+# look at model table
+df.mods
+```
+
+
+
+# Model  Recruit_mod  Ecov_mod     Ecov_how
+#    m1       Random       ar1          ---
+#    m2       Random       ar1  Controlling
+#    m3     Bev-Holt       ar1          ---
+#    m4     Bev-Holt       ar1     Limiting
+#    m5     Bev-Holt        rw     Limiting
+#    m6     Bev-Holt       ar1  Controlling
+#    m7       Ricker       ar1  Controlling
 
 Convert `asap3` to an input list for `wham`. Here we specify the model name and stock-recruit model (1 = random walk, 2 = random about mean (default), 3 = Beverton-Holt, 4 = Ricker):
 ```{r eval=FALSE}

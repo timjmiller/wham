@@ -35,7 +35,7 @@ We assume you already have `wham` and dependencies installed. If not, see the [R
 library(wham)
 ```
 
-For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+For a clean, runnable `.R` script, look at `ex1_SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
 ```{r}
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
@@ -44,7 +44,7 @@ file.path(wham.dir, "example_scripts")
 You can run this entire example script with:
 ```{r, eval=FALSE}
 write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
-source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
 ```
 
 Let's create a directory for this analysis:
@@ -250,31 +250,31 @@ Many plots are generated---here we display some examples:
 
 ### Diagnostics
 
-![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/likelihood.png){ width=45% }
+![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png){ width=45% }
 
-![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_resids_index1.png){ width=45% }
+![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index1.png){ width=45% }
 
 ### Input Data
 
-![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/index.png){width=45%}
+![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png){width=45%}
 
 ### Results
 
-![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_at_age_proportion.png){width=45%}
+![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion.png){width=45%}
 
-![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_Rec_loglog.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Selectivity_fleet1.png){width=45%}
+![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet1.png){width=45%}
 
 ### Reference Points
 
-![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/FSPR_relative.png){width=45%}
+![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png){width=45%}
 
 ### Retrospective
 
-![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro_relative.png){width=45%}
+![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro_relative.png){width=45%}
 
 ### Misc
 
-![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
+![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
 
 ```{r eval = FALSE, include = FALSE}
 #if you need to regenerate the data used in this vignette
@@ -310,5 +310,5 @@ file.names = c(
   "input_data/weight_at_age_fleet1"
 )
 file.names = paste0(getwd(), "/plots_png/", file.names, ".png")
-file.copy(file.names, paste0(wham.source.dir, "/vignettes/plots"), overwrite = TRUE)
+file.copy(file.names, paste0(wham.source.dir, "/vignettes/ex1_plots"), overwrite = TRUE)
 ```
