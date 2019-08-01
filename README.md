@@ -11,6 +11,11 @@ devtools::install_github("timjmiller/wham", dependencies=TRUE, build = TRUE, bui
 
 # if you do NOT want vignettes
 devtools::install_github("timjmiller/wham", dependencies=TRUE)
+
+# if you're having problems with dependencies not installing:
+to.install <- c("TMB","plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2"))
+new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 ```
 
 View installed vignettes:

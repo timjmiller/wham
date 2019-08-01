@@ -391,7 +391,7 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     y_line = 3
   }
   origpar <- par(no.readonly = TRUE)
-  par(mar = c(5,5,1,1), oma = c(1,1,1,1), mfrow = c(1,3))
+  par(mar = c(5,5,1,1), oma = c(1,1,1,1), mfrow = c(3,1))
   if(do.tex | do.png)
   {
     fn = paste0(out.dir, '/SSB')
@@ -402,15 +402,30 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   temp = summary(mod$sdrep)
   temp = temp[rownames(temp) == "log_SSB",]
   temp = exp(cbind(temp, temp[,1] + qnorm(0.975)*cbind(-temp[,2],temp[,2])))/1000
-  plot(years,temp[,1], type = 'n', ylim = c(0,max(temp[,4])), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
-  lines(years,temp[,1], lwd = 2)
-  polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
-  box(lwd = 2)
-  mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-  mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)
+  max.y <- max(temp[,4])
+  na.lim <- is.na(max.y)
+  if(!na.lim){
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+    mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)
+  } else {
+    max.y <- max(temp[,1])
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    # polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+    mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)    
+  }
   if(do.tex | do.png) dev.off() else par(origpar)
 
   if(do.tex | do.png)
@@ -425,15 +440,30 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   templo = exp(array(temp[ind,1] - qnorm(0.975)*temp[ind,2], dim = c(ny, na)))
   temphi = exp(array(temp[ind,1] + qnorm(0.975)*temp[ind,2], dim = c(ny, na)))
   temp = exp(array(temp[ind,1], dim = c(ny, 8)))
-  plot(years,temp[,1], type = 'n', ylim = c(0,max(temphi[,1])), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
-  lines(years,temp[,1], lwd = 2)
-  polygon(c(years,rev(years)), c(templo[,1],rev(temphi[,1])), col = black.poly, border = "transparent")
-  box(lwd = 2)
-  if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-  mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)
+  max.y <- max(temphi[,1])
+  na.lim <- is.na(max.y)
+  if(!na.lim){
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    polygon(c(years,rev(years)), c(templo[,1],rev(temphi[,1])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+    mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)
+  } else {
+    max.y <- max(temp[,1])
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    # polygon(c(years,rev(years)), c(templo[,1],rev(temphi[,1])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+    mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)    
+  }
   if(do.tex | do.png) dev.off() else par(origpar)
 
   if(do.tex | do.png)
@@ -446,16 +476,32 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   temp = summary(mod$sdrep)
   temp = temp[rownames(temp) == "log_Fbar",]
   temp = exp(cbind(temp, temp[,1] + qnorm(0.975)*cbind(-temp[,2],temp[,2])))
-  plot(years,temp[,1], type = 'n', ylim = c(0,max(temp[,4])), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
-  lines(years,temp[,1], lwd = 2)
-  polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
-  box(lwd = 2)
-  if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
-  ar = c(min(mod$env$data$Fbar_ages), max(mod$env$data$Fbar_ages))
-  mtext(side = 2, paste0("Average F (",ar[1],"-",ar[2],")"), cex = 2, outer = use_outer, line = y_line)
+  max.y <- max(temp[,4])
+  na.lim <- is.na(max.y)
+  if(!na.lim){
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
+    ar = c(min(mod$env$data$Fbar_ages), max(mod$env$data$Fbar_ages))
+    mtext(side = 2, paste0("Average F (",ar[1],"-",ar[2],")"), cex = 2, outer = use_outer, line = y_line)
+  } else {
+    max.y <- max(temp[,1])
+    plot(years,temp[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
+    axis(1, lwd = 2, cex.axis = 1.5)
+    axis(2, lwd = 2, cex.axis = 1.5)
+    grid(col = gray(0.7))
+    lines(years,temp[,1], lwd = 2)
+    # polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
+    box(lwd = 2)
+    if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
+    ar = c(min(mod$env$data$Fbar_ages), max(mod$env$data$Fbar_ages))
+    mtext(side = 2, paste0("Average F (",ar[1],"-",ar[2],")"), cex = 2, outer = use_outer, line = y_line)
+  }
   if(do.tex | do.png) dev.off() else par(origpar)
   # par(origpar)
 }
@@ -1332,8 +1378,8 @@ plot.recruitment.devs <- function(mod, age.recruit = 1, units = expression(10^3)
 #plot.recruitment.devs(ssm)
 
 #scatter plot of SSB, R with 2-digit year as symbol (lag by 1 year)
-plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05, scale.ssb = 1000, scale.recruits = 1000, age.recruit = 1,
-  max.x, max.y, plot.colors, loglog=FALSE)
+plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05, 
+  scale.ssb = 1000, scale.recruits = 1000, age.recruit = 1, plot.colors, loglog=FALSE)
 {
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1), mar = c(4,5,1,1), oma = c(1,1,1,1))
@@ -1370,47 +1416,80 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
 	  el <- exp(ellipse::ellipse(tcor, level = 1-alpha, scale = tsd, centre = c(log(SR[x,2]),log(SR[x,3]))))
 	  return(el)
 	})
-  if(missing(max.y)) max.y <- max(sapply(ci.regs, function(x) max(x[,2])))
-  if(missing(max.x)) max.x <- max(sapply(ci.regs, function(x) max(x[,1])))
+  # if(missing(max.y)) max.y <- max(sapply(ci.regs, function(x) max(x[,2])))
+  # if(missing(max.x)) max.x <- max(sapply(ci.regs, function(x) max(x[,1])))
+  max.y <- max(sapply(ci.regs, function(x) max(x[,2])))
+  max.x <- max(sapply(ci.regs, function(x) max(x[,1])))
+  na.lims <- any(is.na(c(max.y,max.x))) # check for na lims
 
 	if(!loglog){ # untransformed SSB and Rec
-  	plot(SR[,2], SR[,3], type='n', col='black',
-  		xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
-  		ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
-  			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max.y), xlim=c(0,max.x), axes = FALSE)
-  	grid(col = gray(0.7), lty = 2)
-  	axis(1)
-  	axis(2)
-  	box()
-  	lines(SR[,2], SR[,3], col = gray(0.7), lwd =2)
-  	for(i in 1:length(ci.regs))
-    {
-      tcol <- col2rgb(plot.colors[i])
-      poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-      polygon(ci.regs[[i]][,1],ci.regs[[i]][,2], border = poly)
+    if(!na.lims){
+    	plot(SR[,2], SR[,3], type='n', col='black',
+    		xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
+    		ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
+    			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max.y), xlim=c(0,max.x), axes = FALSE)
+    	grid(col = gray(0.7), lty = 2)
+    	axis(1)
+    	axis(2)
+    	box()
+    	lines(SR[,2], SR[,3], col = gray(0.7), lwd =2)
+    	for(i in 1:length(ci.regs))
+      {
+        tcol <- col2rgb(plot.colors[i])
+        poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+        polygon(ci.regs[[i]][,1],ci.regs[[i]][,2], border = poly)
+      }
+      points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
+      text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
+    } else { # NA lims
+      max.y <- max(SR[,3])
+      max.x <- max(SR[,2])
+      plot(SR[,2], SR[,3], type='n', col='black',
+        xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
+        ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
+          list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max.y), xlim=c(0,max.x), axes = FALSE)
+      grid(col = gray(0.7), lty = 2)
+      axis(1)
+      axis(2)
+      box()
+      lines(SR[,2], SR[,3], col = gray(0.7), lwd =2)
+      points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
+      text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
     }
-    points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
-    text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
 	}
 
 	if(loglog){ # log(SSB) and log(Rec)
-  	plot(log(SR[,2]), log(SR[,3]), type='n', col='black',
-  		xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
-  		ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
-  			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(log(min(SR[,3])), log(max.y)), xlim=c(log(min(SR[,2])),log(max.x)), axes = FALSE)
-  	grid(col = gray(0.7), lty = 2)
-  	axis(1)
-  	axis(2)
-  	box()
-  	lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
-  	for(i in 1:length(ci.regs))
-    {
-      tcol <- col2rgb(plot.colors[i])
-      poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-      polygon(log(ci.regs[[i]][,1]),log(ci.regs[[i]][,2]), border = poly)
+    if(!na.lims){
+    	plot(log(SR[,2]), log(SR[,3]), type='n', col='black',
+    		xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
+    		ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
+    			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(log(min(SR[,3])), log(max.y)), xlim=c(log(min(SR[,2])),log(max.x)), axes = FALSE)
+    	grid(col = gray(0.7), lty = 2)
+    	axis(1)
+    	axis(2)
+    	box()
+    	lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
+    	for(i in 1:length(ci.regs))
+      {
+        tcol <- col2rgb(plot.colors[i])
+        poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+        polygon(log(ci.regs[[i]][,1]),log(ci.regs[[i]][,2]), border = poly)
+      }
+      points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
+      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
+    } else { # na lims but correct max.x and max.y already calculated for untransformed plot SSB-Rec
+      plot(log(SR[,2]), log(SR[,3]), type='n', col='black',
+        xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
+        ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
+          list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(log(min(SR[,3])), log(max.y)), xlim=c(log(min(SR[,2])),log(max.x)), axes = FALSE)
+      grid(col = gray(0.7), lty = 2)
+      axis(1)
+      axis(2)
+      box()
+      lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
+      points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
+      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)      
     }
-    points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
-    text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
 	}
   par(origpar)
 }  #end function
@@ -1500,10 +1579,14 @@ plot.cv <- function(mod)
   log.full.f <- log.faa[full.f.ind]
   full.f.cv <- faa.cv[full.f.ind]
 
-	plot(years, R.cv, type='l', lwd=2, col='black', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, full.f.cv)))
-	lines(years, ssb.cv, lwd=2, col="blue")
-	lines(years, full.f.cv, lwd=2, col="green3")
-	legend('top', legend=c("Recruits", "SSB", "Full F"), col=c("black", "blue", "green3"), lty=rep(1,3), lwd=rep(2,3), horiz=T)
+  any.na <- any(is.na(c(R.cv, faa.cv, full.f.cv)))
+
+  if(!any.na){
+  	plot(years, R.cv, type='l', lwd=2, col='black', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, full.f.cv)))
+  	lines(years, ssb.cv, lwd=2, col="blue")
+  	lines(years, full.f.cv, lwd=2, col="green3")
+  	legend('top', legend=c("Recruits", "SSB", "Full F"), col=c("black", "blue", "green3"), lty=rep(1,3), lwd=rep(2,3), horiz=T)
+  }
   par(origpar)
 }  # end function
 #------------------------------------
@@ -2053,7 +2136,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_absolute.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_absolute.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-  par(mfrow = c(1,3), mar = c(2,5,1,1), oma = c(4,2,1,1))
+  par(mfrow = c(3,1), mar = c(2,5,1,1), oma = c(4,2,1,1))
   for(i in 1:3)
   {
     t.ind <- inds[[i]]
