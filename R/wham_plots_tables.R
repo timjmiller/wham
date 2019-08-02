@@ -2292,13 +2292,15 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
     if(do.tex | do.png) dev.off() else par(origpar)
 
     # 2-panel SSB_MSY and F_MSY
-    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_2panel_SSB_F.pdf")), family = "Times", height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("MSY_2panel_SSB_F.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mfrow=c(2,1))
     rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSBMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-		plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,5), type = 'l')
+    na.ci <- any(is.na(ci))
+		if(!na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),1)), type = 'l')
+    if(na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals))), type = 'l')
 	  grid(col = gray(0.7))
 	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
 	  abline(h=1, lty = 2)
