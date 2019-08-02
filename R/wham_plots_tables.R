@@ -2123,6 +2123,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   log.faa <- matrix(std[inds$faa,1], n_years, n_ages)
   age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
   inds$full.f <- (age.full.f-1)*n_years + 1:n_years  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
+  na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
   ylabs <- c(
     bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
     bquote(italic(F)[paste(.(percentSPR), "%")]),
@@ -2136,6 +2137,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     return(t(K) %*% tcov %*% K)
   })
 
+  # FSPR absolute --------------------------------------------------
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_absolute.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_absolute.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   par(mfrow = c(3,1), mar = c(2,5,1,1), oma = c(4,2,1,1))
@@ -2146,7 +2148,8 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     vals <- std[t.ind,1][1:n_years]
     cv <- std[t.ind,2][1:n_years]
     ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-	  plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
+	  if(!na.sd[i]) plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
+    if(na.sd[i]) plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
 	  grid(col = gray(0.7))
     polyy = exp(c(ci[,1],rev(ci[,2])))
     polyx = c(years,rev(years))
@@ -2157,6 +2160,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
 
+  # FSPR relative --------------------------------------------------
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   par(mfrow=c(2,1))
@@ -2176,8 +2180,10 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$F.t,1][1:n_years]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
   ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  plot(years, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+  if(!na.sd["full.f"]) plot(years, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
     ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
+  if(na.sd["full.f"]) plot(years, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+    ylim = c(0,max(exp(rel.f.vals),1, na.rm = TRUE)), type = 'l')
   grid(col = gray(0.7))
   polyy = exp(c(ci[,1],rev(ci[,2])))
   polyx = c(years,rev(years))
@@ -2187,50 +2193,51 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   abline(h=1, lty = 2, col = 'red')
   mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
   if(do.tex | do.png) dev.off() else par(origpar)
-  log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
-    if(is.na(rel.f.vals[x])) return(maxtrix(NA,100,2))
-    else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
-    })
 
-  p.ssb.lo.f.lo <- sapply(status.years, function(x)
-    mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-  p.ssb.lo.f.hi <- sapply(status.years, function(x)
-    mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-  p.ssb.hi.f.lo <- sapply(status.years, function(x)
-    mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-  p.ssb.hi.f.hi <- sapply(status.years, function(x)
-    mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+  # Kobe plot - only if sdreport was successful ---------------------------
+  if(!mod$na_sdrep){
+    log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
+      if(is.na(rel.f.vals[x])) return(maxtrix(NA,100,2))
+      else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
+      })
+    p.ssb.lo.f.lo <- sapply(status.years, function(x)
+      mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    p.ssb.lo.f.hi <- sapply(status.years, function(x)
+      mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    p.ssb.hi.f.lo <- sapply(status.years, function(x)
+      mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    p.ssb.hi.f.hi <- sapply(status.years, function(x)
+      mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
 
-  vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
-  if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),2)
-  if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),2)
+    vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
+    if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),2)
+    if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),2)
 
-  if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = "Times", height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-  par(mfrow = c(1,1))
-  plot(vals[status.years,1],vals[status.years,2], ylim = c(0,max.y), xlim = c(0,max.x), xlab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])),
-    ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),type = 'n')
-  lims = par("usr")
-  tcol <- col2rgb('red')
-  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-  tcol <- col2rgb('green')
-  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-  tcol <- col2rgb('yellow')
-  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-  polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-  legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n")
-  legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n")
-  legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n")
-  legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
-  text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
-  for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
-  if(do.tex | do.png) dev.off() else par(origpar)
-
-  # par(origpar)
-  return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
+    if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    par(mfrow = c(1,1))
+    plot(vals[status.years,1],vals[status.years,2], ylim = c(0,max.y), xlim = c(0,max.x), xlab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])),
+      ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),type = 'n')
+    lims = par("usr")
+    tcol <- col2rgb('red')
+    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+    tcol <- col2rgb('green')
+    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+    tcol <- col2rgb('yellow')
+    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+    polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n")
+    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n")
+    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n")
+    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
+    text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
+    for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
+    if(do.tex | do.png) dev.off() else par(origpar)
+    return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
+  } else { return(NULL) }
 }  # end function
 
 plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
