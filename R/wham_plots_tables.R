@@ -2240,7 +2240,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   } else { return(NULL) }
 }  # end function
 
-plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
+plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -2272,6 +2272,9 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
 	    return(t(K) %*% tcov %*% K)
 	  })
 
+    # 4-panel MSY plot
+    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_4panel_F_SSB_R.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("MSY_4panel_F_SSB_R.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mfrow=c(2,2))
     for(i in 1:4)
     {
@@ -2280,10 +2283,17 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
       vals <- std[t.ind,1][1:n_years]
   	  cv <- std[t.ind,2][1:n_years]
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-		  plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci))), type = 'l')
+      na.ci <- any(is.na(ci))
+		  if(!na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci))), type = 'l')
+      if(na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals))), type = 'l')
 		  grid(col = gray(0.7))
 		  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 		}
+    if(do.tex | do.png) dev.off() else par(origpar)
+
+    # 2-panel SSB_MSY and F_MSY
+    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_2panel_SSB_F.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("MSY_2panel_SSB_F.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mfrow=c(2,1))
     rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSBMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
@@ -2297,51 +2307,15 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y)
     rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$FMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
     ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-		plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+    na.ci <- any(is.na(ci))
+		if(!na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
       ylim = c(0,max(exp(ci),1)), type = 'l')
+    if(na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+      ylim = c(0,max(exp(rel.f.vals),1)), type = 'l')
 	  grid(col = gray(0.7))
 	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')
-
-    log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
-      if(is.na(rel.f.vals[x])) return(maxtrix(NA,100,2))
-      else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
-      })
-	  p.ssb.lo.f.lo <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-    p.ssb.lo.f.hi <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-	  p.ssb.hi.f.lo <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-    p.ssb.hi.f.hi <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-	  vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
-	  if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),2)
-	  if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),2)
-    dev.off()
-	  par(mfrow = c(1,1))
-	  plot(vals[status.years,1],vals[status.years,2], ylim = c(0,max.y), xlim = c(0,max.x), xlab = expression(paste('SSB/',SSB[MSY])), ylab = expression(paste(italic(F),'/', italic(F)[MSY])),type = 'n')
-    lims = par("usr")
-    tcol <- col2rgb('red')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-    tcol <- col2rgb('green')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-    tcol <- col2rgb('yellow')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-    polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n")
-    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n")
-    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n")
-    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
-    text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
-	  text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
-	  for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
-    par(origpar)
-
-    return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
+    if(do.tex | do.png) dev.off() else par(origpar)
 	}
 }  # end function
 

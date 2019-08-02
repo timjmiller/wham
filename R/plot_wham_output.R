@@ -267,7 +267,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=FALSE)
     if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
       png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=res)
-      plot.MSY.annual(mod)
+      plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE)
       dev.off()
     }
 
