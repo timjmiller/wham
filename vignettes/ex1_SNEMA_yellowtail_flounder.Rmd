@@ -19,13 +19,19 @@ In this vignette we walk through an example using the `wham` (WHAM = the Woods H
 
 1. Prepare `wham`, data, and model settings
 
-2. Fit several (slightly different) WHAM models
+2. Fit several (slightly different) WHAM models:
+
+  - m1: statistical catch-at-age (SCAA) model, but with recruitment estimated as random effects; multinomial age-compositions
+  
+  - m2: as m1, but with logistic normal age-compositions
+  
+  - m3: full state-space model (numbers at all ages are random effects), multinomial age-compositions
+  
+  - m4: full state-space model, logistic normal age-compositions
 
 3. Compare models by AIC and Mohn's rho (retrospective analysis)
 
-4. Project the best model
-
-5. Review plots of input data, diagnostics, and results.
+4. Review plots of input data, diagnostics, and results.
 
 ## 1. Prepare `wham`
 
@@ -228,7 +234,7 @@ res$best
 vign1_res$best
 ```
 
-By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. The models with that treat the age composition observations can be compared though to evaluate whether stochasticity in abundances at age provides better performance.
+By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance.
 
 ## 4. Plot input data, diagnostics, and results
 

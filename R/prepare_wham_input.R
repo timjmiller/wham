@@ -13,7 +13,7 @@
 #'     \item{= 4}{Ricker}
 #'   }
 #'
-#' \code{ecov$how} specifies HOW the environmental covariate affects the \code{ecov$where} process.
+#' \code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
 #" Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
 #'   \describe{
 #'     \item{= 1}{"controlling" (dens-indep mortality)}
@@ -23,7 +23,7 @@
 #'     \item{= 5}{"directive" (e.g. behavioral)}
 #'   }
 #'
-#' \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+#' \code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 #' the same years as the fisheries data. It must be a named list with the following components:
 #'   \describe{
 #'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
@@ -44,7 +44,7 @@
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
-#' @param ecov (optional) named list of environmental covariate data and parameters (see details)
+#' @param Ecov (optional) named list of environmental covariate data and parameters (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -67,7 +67,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unnamed stock", ecov=NULL){
+prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unnamed stock", Ecov=NULL){
   asap3 = asap3$dat
   which_indices <- which(asap3$use_index ==1)
   asap3$n_indices = length(which_indices)
@@ -223,7 +223,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
   model_years <- asap3$year1 + 1:asap3$n_years - 1
   # add in environmental covariate data
-  if(is.null(ecov)){
+  if(is.null(Ecov)){
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     data$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
     data$n_Ecov <- 1
@@ -242,31 +242,31 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
     data$Ecov_label <- "none"
   } else {
-    if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean}
+    if(class(Ecov$mean) == "matrix") {data$Ecov_obs <- Ecov$mean}
     else{
       warning("Ecov mean is not a matrix. Coercing to a matrix...")
-      data$Ecov_obs <- as.matrix(ecov$mean)
+      data$Ecov_obs <- as.matrix(Ecov$mean)
     }
-    if(class(ecov$sigma) == "matrix") {data$Ecov_obs_sigma <- ecov$sigma}
+    if(class(Ecov$sigma) == "matrix") {data$Ecov_obs_sigma <- Ecov$sigma}
     else{
       warning("Ecov sigma is not a matrix. Coercing to a matrix...")
-      data$Ecov_obs_sigma <- as.matrix(ecov$sigma)
+      data$Ecov_obs_sigma <- as.matrix(Ecov$sigma)
     }
     if(!identical(dim(data$Ecov_obs_sigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
-    if(class(ecov$use_obs) == "matrix") {data$Ecov_use_obs <- ecov$use_obs}
+    if(class(Ecov$use_obs) == "matrix") {data$Ecov_use_obs <- Ecov$use_obs}
     else{
       warning("Ecov_use_obs is not a matrix with same dimensions as Ecov mean. Coercing to a matrix...")
-      data$Ecov_use_obs <- as.matrix(as.integer(ecov$use_obs))
+      data$Ecov_use_obs <- as.matrix(as.integer(Ecov$use_obs))
     }
     if(!identical(dim(data$Ecov_use_obs), dim(data$Ecov_obs))) stop("Dimensions of Ecov_use_obs != dimensions of Ecov mean")
-    if(length(ecov$year) != dim(data$Ecov_obs)[1]) stop("Ecov year is not the same length as # rows in Ecov mean")
-    data$Ecov_year <- as.numeric(ecov$year)
+    if(length(Ecov$year) != dim(data$Ecov_obs)[1]) stop("Ecov year is not the same length as # rows in Ecov mean")
+    data$Ecov_year <- as.numeric(Ecov$year)
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num of covariates
-    data$year1_Ecov <- ecov$year[1]
+    data$year1_Ecov <- Ecov$year[1]
     data$year1_model <- asap3$year1
     end_model <- tail(model_years,1)
-    end_Ecov <- tail(ecov$year,1)
-    if(length(ecov$label) == data$n_Ecov) {data$Ecov_label <- ecov$label}
+    end_Ecov <- tail(Ecov$year,1)
+    if(length(Ecov$label) == data$n_Ecov) {data$Ecov_label <- Ecov$label}
     else{
       warning("Number of Ecov labels not equal to number of Ecovs")
     }
@@ -275,13 +275,13 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(all(diff(model_years)!=1)) stop("Ecov years not continuous")
 
     # pad Ecov if it starts after model year1 - max(lag)
-    if(data$year1_Ecov > data$year1_model - max(ecov$lag)){
+    if(data$year1_Ecov > data$year1_model - max(Ecov$lag)){
       warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
-      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
-      data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs_sigma)
-      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
-      data$Ecov_year <- c(seq(data$year1_model - max(ecov$lag), data$year1_Ecov-1), data$Ecov_year)
-      data$year1_Ecov <- data$year1_model - max(ecov$lag)
+      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
+      data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs_sigma)
+      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
+      data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag), data$year1_Ecov-1), data$Ecov_year)
+      data$year1_Ecov <- data$year1_model - max(Ecov$lag)
     }
 
     # pad Ecov if it ends before last model year
@@ -298,33 +298,33 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- rep(NA, data$n_Ecov)
     for(i in 1:data$n_Ecov){
-      data$ind_Ecov_out_start[i] <- which(data$Ecov_year==data$year1_model)-ecov$lag[i]-1 # -1 is for cpp indexing
-      data$ind_Ecov_out_end[i] <- which(data$Ecov_year==end_model)-ecov$lag[i]-1 # -1 is for cpp indexing
+      data$ind_Ecov_out_start[i] <- which(data$Ecov_year==data$year1_model)-Ecov$lag[i]-1 # -1 is for cpp indexing
+      data$ind_Ecov_out_end[i] <- which(data$Ecov_year==end_model)-Ecov$lag[i]-1 # -1 is for cpp indexing
     }
 
-    if(!identical(length(ecov$lag), length(ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
-    data$Ecov_lag <- ecov$lag
-    data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
+    if(!identical(length(Ecov$lag), length(Ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
+    data$Ecov_lag <- Ecov$lag
+    data$Ecov_model <- sapply(Ecov$process_model, match, c("rw", "ar1"))
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
-    if(!ecov$where %in% c('recruit')){
+    if(!Ecov$where %in% c('recruit')){
       stop("Sorry, only Ecov effects on Recruitment currently implemented.
-      Set ecov$where = 'recruit'.")}
-    data$Ecov_where <- sapply(ecov$where, match, c('recruit','growth','mortality'))
-    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # ecov index to use for recruitment?
-    data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # ecov index to use for growth?
-    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # ecov index to use for mortality?
-    
-    if(!ecov$how %in% c(0,1,2,4)){
+      Set Ecov$where = 'recruit'.")}
+    data$Ecov_where <- sapply(Ecov$where, match, c('recruit','growth','mortality'))
+    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
+    data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # Ecov index to use for growth?
+    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # Ecov index to use for mortality?
+
+    if(!Ecov$how %in% c(0,1,2,4)){
       stop("Sorry, only Ecov effects on Recruitment currently implemented.
-      Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")}
-    if(recruit_model == 4 & ecov$how == 2){
+      Set Ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")}
+    if(recruit_model == 4 & Ecov$how == 2){
       stop("'Limiting' Ecov effect on Ricker recruitment not implemented.
-      Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
+      Either set Ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
       Or set recruit_model = 3 (Bev-Holt).")}
-    data$Ecov_how <- ecov$how
-    # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
-    # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
-    # if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
+    data$Ecov_how <- Ecov$how
+    # if(Ecov$where=="recruit") data$Ecov_how <- match(Ecov$how, c('type1','type2','type3'))
+    # if(Ecov$where=='growth') data$Ecov_how <- match(Ecov$how, c('type1','type2','type3'))
+    # if(Ecov$where=='mortality') data$Ecov_how <- match(Ecov$how, c('type1','type2','type3'))
 
     cat(paste0("Please check that the environmental covariates have been loaded
 and interpreted correctly.
@@ -334,7 +334,7 @@ Model years: ", data$year1_model, " to ", end_model,"
 "))
     for(i in 1:data$n_Ecov){
       years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
-      cat(paste0("Ecov ",i,": ",ecov$label[i],"
+      cat(paste0("Ecov ",i,": ",Ecov$label[i],"
 ",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how+1]," effect on: ", c('recruitment','growth','mortality')[data$Ecov_where[i]],"
 
 In model years:
@@ -342,8 +342,8 @@ In model years:
 cat(years, fill=TRUE)
 lastyr <- tail(years,1)
 cat(paste0("Lag: ",data$Ecov_lag[i],"
-Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",years[1+data$Ecov_lag[i]],"
-    ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
+Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",years[1+data$Ecov_lag[i]],"
+    ",Ecov$label[i]," in ",lastyr," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
 "))
       }
     } # end load Ecov
@@ -376,11 +376,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
 
   # 3. Ecov
   x <- as.data.frame(data$Ecov_obs)
-  colnames(x) <- paste0("ecov_", 1:data$n_Ecov)
+  colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
   x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
   tmp <- tidyr::gather(x, fleet, val, -year)
   tmp$age <- NA
-  tmp$type <- "ecov"
+  tmp$type <- "Ecov"
   obs <- rbind(obs, tmp[, obs.colnames])
 
   # # 4. paa catch
@@ -407,7 +407,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   obs$ind <- 1:dim(obs)[1]
   data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
   data$keep_I <- matrix(subset(obs, type=='logindex')$ind, nrow=data$n_years_indices, ncol=data$n_indices, byrow=TRUE)
-  data$keep_E <- matrix(subset(obs, type=='ecov')$ind, nrow=data$n_years_Ecov, ncol=data$n_Ecov, byrow=TRUE)
+  data$keep_E <- matrix(subset(obs, type=='Ecov')$ind, nrow=data$n_years_Ecov, ncol=data$n_Ecov, byrow=TRUE)
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_catch, data$n_ages))
   for(i in 1:data$n_fleets) data$keep_Cpaa[i,,] <- matrix(subset(obs, type=='paacatch' & fleet==paste0("fleet_",i))$ind, nrow=data$n_years_catch, ncol=data$n_ages, byrow=TRUE)
   data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_indices, data$n_ages))
@@ -451,7 +451,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
 
   # add environmental covariate parameters
   par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
-  par$Ecov_beta = rep(0, data$n_Ecov) # one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  par$Ecov_beta = rep(0, data$n_Ecov) # one for each Ecov, beta_R in eqns 4-5, Miller et al. (2016)
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
 
   # turn off 3rd Ecov par if it's a RW

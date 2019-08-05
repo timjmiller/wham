@@ -45,7 +45,7 @@ df.mods
 for(m in 1:n.mods){
   # set up environmental covariate data and model options
   # see ?prepare_wham_input
-  ecov <- list(
+  Ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
     sigma = as.matrix(env.dat$CPI_sigma),
@@ -56,16 +56,16 @@ for(m in 1:n.mods){
     where = "recruit", # CPI affects population via recruitment
     how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
 
-  # (not used in this vignette) can set ecov = NULL to fit model without ecov data
-  if(is.na(df.mods$Ecov_process[m])) ecov = NULL 
+  # (not used in this vignette) can set Ecov = NULL to fit model without Ecov data
+  if(is.na(df.mods$Ecov_process[m])) Ecov = NULL
 
-  # generate wham input from ASAP3 and ecov data
+  # generate wham input from ASAP3 and Ecov data
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "SNEMA Yellowtail Flounder with CPI effects on R",
-                              ecov = ecov)
+                              Ecov = Ecov)
 
   # builds off model m1 in example 1:
-  #   SCAA, but with random effects for recruitment and index observation error variances fixed  
+  #   SCAA, but with random effects for recruitment and index observation error variances fixed
 
   # make one or more selectivity blocks with age-specific parameters
   age.specific = 1:3 # 3 age-specific blocks

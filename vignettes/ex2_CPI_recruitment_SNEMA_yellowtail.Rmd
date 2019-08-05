@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 2nd `wham` example and we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
+This is the 2nd `wham` example, which builds off model `m3` from example 1 (full state-space model, numbers at all ages are random effects, multinomial age-compositions). We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
 
 In example 2, we demonstrate how to specify and run WHAM with varying
 
@@ -38,7 +38,7 @@ library(wham)
 library(tidyverse)
 ```
 
-For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+For a clean, runnable `.R` script, look at `ex2_CPI_recruitment_SNEMA_yellowtail.R` in the `example_scripts` folder of the `wham` package install:
 ```{r}
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
@@ -58,7 +58,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
+WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided, `ASAP_SNEMAYT.dat`.
 
 Copy `ASAP_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
@@ -87,7 +87,9 @@ We generally abbreviate 'environmental covariate' as `Ecov` in the code. In this
 head(env.dat)
 ```
 
-Now we specify the 7 models with varying recruitment, CPI process model, and how CPI affects recruitment:
+## 2. Specify models
+
+Now we specify how the 7 models treat recruitment, the CPI process, and how CPI affects recruitment:
 ```{r}
 df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
                       Ecov_process = c('ar1','ar1','ar1','ar1','rw','ar1','ar1'),
@@ -95,196 +97,99 @@ df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+```
 
-# look at model table
+Look at the model table
+```{r}
 df.mods
 ```
 
+You specify the options for modeling recruitment and environmental covariate using the `prepare_wham_input` function. WHAM provides 4 options for recruitment (`recruit_model`): 1) random walk, 2) random about mean, 3) Beverton-Holt, and 4) Ricker. 
 
+The environmental covariate options are fed to `prepare_wham_input` as a list, `Ecov`. You can set `Ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `Ecov` data even for models without an `Ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data). We accomplish this by setting `Ecov$how = 0`, instead of 1-5. There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We next must specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. Then, the options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 1) "controlling" (dens-indep mortality), 2) "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 3) "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  4) "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 5) "directive" (e.g. behavioral). Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
 
-# Model  Recruit_mod  Ecov_mod     Ecov_how
-#    m1       Random       ar1          ---
-#    m2       Random       ar1  Controlling
-#    m3     Bev-Holt       ar1          ---
-#    m4     Bev-Holt       ar1     Limiting
-#    m5     Bev-Holt        rw     Limiting
-#    m6     Bev-Holt       ar1  Controlling
-#    m7       Ricker       ar1  Controlling
-
-Convert `asap3` to an input list for `wham`. Here we specify the model name and stock-recruit model (1 = random walk, 2 = random about mean (default), 3 = Beverton-Holt, 4 = Ricker):
+Options are described in the `prepare_wham_input` help page.
 ```{r eval=FALSE}
-input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
+?prepare_wham_input
 ```
 
-Now we have some modifications to make to `input` that are specific to SNEMA yellowtail flounder prior to fitting the wham model. Specifically, we will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. The set_age_sel0 function will change data, map, and parameter settings for specified selectivity blocks to use age-specific parameterizations. It also fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergencse. However, an initial fit with all selectivity paramerers freely estimated can be useful in determining which age(s) to fix parameters at 1. The selectivity parameters are estimated on the logit scale so setting the estimated parameter to -Inf or Inf results in the transformed selectivity parameter at the lower or upper bound, respectively (e.g. 0 or 1). In the code below, the ages to fix selectivity at 1 have already been determined for us.
-```{r eval=FALSE}
-
-# Make one or more selectivity blocks with age-specific parameters
-age.specific = 1:3 # 3 age-specific blocks
-not.age.specific = (1:input$data$n_selblocks)[-age.specific]
-input = set_age_sel0(input, age.specific)
-input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages + 3:6)] = Inf
-input$par$logit_selpars[1,5] = Inf
-input$par$logit_selpars[2,4] = Inf
-input$par$logit_selpars[3,2] = Inf
-# Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
-input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
-input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
-input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
-input$map$logit_selpars = factor(input$map$logit_selpars)
-base = input
-```
-
-## 2. Fit `wham` models
-
-The first model, `m1`, is a statistical catch-at-age model, but with log-recruitment estimated as iid random effects around a mean log-recruitment. Variance of the random effects is estimated.
-```{r eval=FALSE}
-temp = base
-temp$random = "log_R"
-temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
-temp$data$random_recruitment = 1
-m1 <- fit_wham(temp)
-```
-
-By default, `fit_wham` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
-
-```{r include=FALSE}
-data(vign1_m1_conv)
-data(vign1_m2_conv)
-data(vign1_m3_conv)
-data(vign1_m4_conv)
-data(vign1_res)
-```
-
-We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
-```{r eval=FALSE}
-check_convergence(m1)
-```
-
-```{r echo=FALSE}
-cat(vign1_m1_conv, sep = "\n")
-```
-
-The second model, `m2`, is like the first, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
-```{r eval=FALSE}
-temp = base
-temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
-temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
-temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
-temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
-temp$par$index_paa_pars = rep(0, temp$data$n_indices)
-temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
-temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-temp$random = "log_R"
-temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
-temp$data$random_recruitment = 1
-m2 <- fit_wham(temp)
-```
-
-Check that `m2` converged:
-```{r eval=FALSE}
-check_convergence(m2)
-```
-
-```{r echo=FALSE}
-cat(vign1_m2_conv, sep = "\n")
-```
-
-The third, `m3`, is a full state-space model where abundances at all ages are random effects:
-```{r eval=FALSE}
-temp = base
-temp$data$use_NAA_re = 1
-temp$data$random_recruitment = 0
-temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
-temp$random = "log_NAA"
-m3 <- fit_wham(temp)
-```
-
-Check that `m3` converged:
-```{r eval=FALSE}
-check_convergence(m3)
-```
-
-```{r echo=FALSE}
-cat(vign1_m3_conv, sep = "\n")
-```
-
-The last, `m4`, is like `m3`, but changes all the age composition likelihoods to logistic normal with estimated observation error variances:
-```{r eval=FALSE}
-temp = base
-temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
-temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
-temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
-temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
-temp$par$index_paa_pars = rep(0, temp$data$n_indices)
-temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
-temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-temp$data$use_NAA_re = 1
-temp$data$random_recruitment = 0
-temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
-temp$random = "log_NAA"
-m4 <- fit_wham(temp)
-```
-
-Check that `m4` converged:
-```{r eval=FALSE}
-check_convergence(m4)
-```
-
-```{r echo=FALSE}
-cat(vign1_m4_conv, sep = "\n")
-```
-
-Store all models together in one (named) list:
-```{r eval=FALSE}
-mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
-```
-
-Since the retrospective analyses take a few minutes to run, you may want to save the output for later use:
-```{r eval=FALSE}
-save("mods", file="ex1_models.RData")
-```
-
-## 3. Compare models
-
-We can compare models using AIC and Mohn's rho:
-```{r eval=FALSE}
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
-```
-
-```{r echo=FALSE}
-vign1_res$tab
-```
+## 3. Run the models
 
 ```{r eval=FALSE}
-res$best
+for(m in 1:n.mods){
+  # set up environmental covariate data and model options
+  Ecov <- list(
+    label = "CPI",
+    mean = as.matrix(env.dat$CPI),
+    sigma = as.matrix(env.dat$CPI_sigma),
+    year = env.dat$Year,
+    use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+    lag = 1, # CPI in year t affects recruitment in year t+1
+    process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
+    where = "recruit", # CPI affects population via recruitment
+    how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+
+  # (not used in this vignette) can set Ecov = NULL to fit model without ecov data
+  if(is.na(df.mods$Ecov_process[m])) Ecov = NULL 
+
+  # generate wham input from ASAP3 and Ecov data
+  input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
+                              model_name = "SNEMA Yellowtail Flounder with CPI effects on R",
+                              Ecov = Ecov)
+
+  # builds off model m3 from example 1
+  # make one or more selectivity blocks with age-specific parameters
+  age.specific = 1:3 # 3 age-specific blocks
+  not.age.specific = (1:input$data$n_selblocks)[-age.specific]
+  input = set_age_sel0(input, age.specific)
+  input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages + 3:6)] = Inf
+  input$par$logit_selpars[1,5] = Inf
+  input$par$logit_selpars[2,4] = Inf
+  input$par$logit_selpars[3,2] = Inf
+
+  # Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
+  input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
+  input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
+  input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
+  input$map$logit_selpars = factor(input$map$logit_selpars)
+
+  # full state-space model, abundance is the state vector
+  input$data$use_NAA_re = 1
+  input$data$random_recruitment = 0
+  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
+  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
+  input$random = "log_NAA"
+
+  # fit model
+  mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
+
+  # output plots (default = HTML with PNG files organized in folders)
+  plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='html')
+
+  # save model
+  saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
+}
 ```
 
-```{r echo=FALSE}
-vign1_res$best
+## 4. Check for convergence and plot output
+
+Collect all models into a list.
+```{r eval=FALSE}
+mod.list <- paste0(df.mods$Model,".rds")
+mods <- lapply(mod.list, readRDS)
 ```
 
-By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. The models with that treat the age composition observations can be compared though to evaluate whether stochasticity in abundances at age provides better performance.
-
-## 4. Plot input data, diagnostics, and results
+There is no indication that any of the models failed to converge.
+```{r eval=FALSE}
+for(m in 1:n.mods) check_convergence(mods[[m]])
+```
 
 There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
-
 ```{r eval=FALSE}
-plot_wham_output(mod=m4, out.type='html')
+for(m in 1:n.mods) plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(), df.mods$Model[m]), out.type='html')
 ```
 
-![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png){ width=75% }
-
-Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). Setting `out.type='png'` saves the plots as `.png` files organized into 6 subdirectories.
-
-```{r eval=FALSE}
-plot_wham_output(mod=m4, out.type='png')
-```
-
-Many plots are generated---here we display some examples:
+Many plots are generated---here we display some examples where the models differ:
 
 ### Diagnostics
 
@@ -309,6 +214,39 @@ Many plots are generated---here we display some examples:
 ### Retrospective
 
 ![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro_relative.png){width=45%}
+
+
+## 5. Compare models
+
+```{r include=FALSE}
+data(vign2_res)
+```
+
+Calculate AIC and Mohn's rho. Note that we can compare models with and without a CPI effect on recruitment using AIC because we still fit the CPI data in the models without the effect.
+```{r eval=FALSE}
+df.aic <- compare_wham_models(mods, sort=FALSE)$tab
+df.mods <- cbind(df.mods, df.aic)
+
+# make results table prettier
+rownames(df.mods) <- NULL
+df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
+df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
+df.mods <- df.mods[order(df.mods$dAIC),]
+```
+
+Look at the results table
+```{r eval=FALSE}
+df.mods
+```
+
+```{r echo=FALSE}
+vign2_res
+```
+
+Save the results table
+```{r eval=FALSE}
+save("df.mods", file="ex2_res.RData")
+```
 
 ### Misc
 
