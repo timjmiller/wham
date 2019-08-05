@@ -49,7 +49,7 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
         # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
       })
       aic <- round(aic, 1)
-      daic <- aic - min(aic)
+      daic <- round(aic - min(aic), 1)
     } else {
       stop("Env covariate in some model(s) but not all. Cannot compare AIC
            for models with different data (here, some have environmental data
