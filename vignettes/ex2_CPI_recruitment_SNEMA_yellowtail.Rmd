@@ -106,9 +106,26 @@ df.mods
 
 You specify the options for modeling recruitment and environmental covariate using the `prepare_wham_input` function. WHAM provides 4 options for recruitment (`recruit_model`): 1) random walk, 2) random about mean, 3) Beverton-Holt, and 4) Ricker. 
 
-The environmental covariate options are fed to `prepare_wham_input` as a list, `Ecov`. You can set `Ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `Ecov` data even for models without an `Ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data). We accomplish this by setting `Ecov$how = 0`, instead of 1-5. There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We next must specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. Then, the options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 1) "controlling" (dens-indep mortality), 2) "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 3) "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  4) "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 5) "directive" (e.g. behavioral). Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
+The environmental covariate options are fed to `prepare_wham_input` as a list, `Ecov`:
+```{r eval=FALSE}
+  m=1 # example for first model
+  Ecov <- list(
+    label = "CPI",
+    mean = as.matrix(env.dat$CPI),
+    sigma = as.matrix(env.dat$CPI_sigma),
+    year = env.dat$Year,
+    use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+    process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
+    where = "recruit", # CPI affects population via recruitment
+    how = df.mods$Ecov_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+    lag = 1) # CPI in year t affects recruitment in year t+1
+```
 
-Options are described in the `prepare_wham_input` help page.
+There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We next must specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 1) "controlling" (dens-indep mortality), 2) "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 3) "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  4) "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 5) "directive" (e.g. behavioral). Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
+
+You can set `Ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `Ecov` data even for models without an `Ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `Ecov$how = 0`.
+
+Options are described in the `prepare_wham_input` help page. Not all `Ecov$how` options are implemented for every recruitment model.
 ```{r eval=FALSE}
 ?prepare_wham_input
 ```
@@ -171,7 +188,7 @@ for(m in 1:n.mods){
 }
 ```
 
-## 4. Check for convergence and plot output
+## 4. Check for convergence
 
 Collect all models into a list.
 ```{r eval=FALSE}
@@ -179,42 +196,10 @@ mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
 ```
 
-There is no indication that any of the models failed to converge.
+There is no indication that any of the models failed to converge. In addition, SE estimates are calculable for all models (invertible Hessian, `TMB::sdrep()` succeeds).
 ```{r eval=FALSE}
 for(m in 1:n.mods) check_convergence(mods[[m]])
 ```
-
-There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
-```{r eval=FALSE}
-for(m in 1:n.mods) plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(), df.mods$Model[m]), out.type='html')
-```
-
-Many plots are generated---here we display some examples where the models differ:
-
-### Diagnostics
-
-![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/likelihood.png){ width=45% }
-
-![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Catch_age_comp_resids_index1.png){ width=45% }
-
-### Input Data
-
-![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/index.png){width=45%}
-
-### Results
-
-![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_at_age_proportion.png){width=45%}
-
-![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_Rec_loglog.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Selectivity_fleet1.png){width=45%}
-
-### Reference Points
-
-![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/FSPR_relative.png){width=45%}
-
-### Retrospective
-
-![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/SSB_retro_relative.png){width=45%}
-
 
 ## 5. Compare models
 
@@ -222,20 +207,20 @@ Many plots are generated---here we display some examples where the models differ
 data(vign2_res)
 ```
 
-Calculate AIC and Mohn's rho. Note that we can compare models with and without a CPI effect on recruitment using AIC because we still fit the CPI data in the models without the effect.
+Calculate AIC and Mohn's rho using `compare_wham_models`. Note that we can compare models with and without a CPI effect on recruitment using AIC because we also fit the CPI data in the models without the effect.
 ```{r eval=FALSE}
 df.aic <- compare_wham_models(mods, sort=FALSE)$tab
 df.mods <- cbind(df.mods, df.aic)
+```
 
+Print the results table. `m4` has the lowest AIC (Bev-Holt recruitment, CPI modeled as AR1, *limiting* effect of CPI on recruitment).
+```{r eval=FALSE}
 # make results table prettier
 rownames(df.mods) <- NULL
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
 df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
 df.mods <- df.mods[order(df.mods$dAIC),]
-```
 
-Look at the results table
-```{r eval=FALSE}
 df.mods
 ```
 
@@ -243,48 +228,48 @@ df.mods
 vign2_res
 ```
 
-Save the results table
+Save the results table.
 ```{r eval=FALSE}
 save("df.mods", file="ex2_res.RData")
 ```
 
-### Misc
+#### Recruitment: random / Bev-Holt / Ricker
 
-![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_curves_fleet1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/plots/catch_at_age_consistency_obs_fleet1.png){width=45%}
+Beverton-Holt recruitment was preferred over Ricker and random (`m4` and `m6` lower AIC than `m7` and `m2`).
 
-```{r eval = FALSE, include = FALSE}
-#if you need to regenerate the data used in this vignette
-#define source directory: wham.source.dir = "/home/tmiller2/work/wham/wham"
-for(i in paste0("m",1:4)){
-  check_convergence(get(i), f = "temp.txt")
-  eval(parse(text = paste0("vign1_", i, '_conv = readLines("temp.txt")')))
-  eval(parse(text = paste0("save(vign1_", i, '_conv, file = "', wham.source.dir, "/data/vign1_",i,'_conv.RData")')))
-}
-vign1_res = res
-save(vign1_res, file = paste0(wham.source.dir, "/data/vign1_res.RData"))
+![Bev-Holt fit from the best fit model, m4](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_fit_m4.png){ width=60% }
 
-plot_wham_output(mod=m4, out.type='png')
-file.names = c(
-  "input_data/catch_age_comp_fleet1",
-  "diagnostics/Catch_age_comp_index1",
-  "diagnostics/Catch_age_comp_resids_index1",
-  "misc/catch_at_age_consistency_obs_fleet1",
-  "input_data/catch_by_fleet",
-  "misc/catch_curves_fleet1_obs",
-  "ref_points/FSPR_relative",
-  "input_data/index",
-  "diagnostics/Index_4panel_2",
-  "ref_points/Kobe_status",
-  "diagnostics/likelihood",
-  "results/Selectivity_fleet1",
-  "ref_points/SPR_targets_ave_plot",
-  "results/SSB_at_age_proportion",
-  "results/SSB_F_trend",
-  "results/SSB_Rec_loglog",
-  "retro/SSB_retro",
-  "retro/SSB_retro_relative",
-  "input_data/weight_at_age_fleet1"
-)
-file.names = paste0(getwd(), "/plots_png/", file.names, ".png")
-file.copy(file.names, paste0(wham.source.dir, "/vignettes/plots"), overwrite = TRUE)
+#### CPI effect on recruitment
+
+Models with CPI effects on recruitment (`m2`, `m4-7`) were strongly supported by AIC over models without CPI effects (`m1` and `m3` highest AIC).
+
+There was weak evidence that the Cold Pool *limits* recruitment, as opposed to *controls* recruitment (`m4` vs. `m6`). This aligns with the hypothesis that the CPI indicates the amount of suitable habitat for juvenile yellowtail flounder. In contrast, a controlling effect causes density-independent mortality.
+
+Fitting the CPI with an AR1 model was strongly preferred over a random walk (`m4` vs. `m5`).
+
+## Results
+
+There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
+```{r eval=FALSE}
+for(m in 1:n.mods) plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(), df.mods$Model[m]), out.type='html')
 ```
+
+#### Stock status
+
+All models estimated a very high (99%) probability of the stock currently experiencing overfishing ($F > F_{40\%}$). All of the models with a stock-recruit function, either Bev-Holt or Ricker, estimated a high (88-98%) probability of the stock not being overfished ($SSB > 0.5 \: SSB_{40\%}$). The base model, `m1`, which modeled recruitment as independent from CPI and SSB, estimated a much higher probability that the stock is overfished (89%).
+
+![Stock status from the best model, m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m4.png){ width=45% }![Stock status from m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m1.png){ width=45% }
+
+Compared to the analogous model without a CPI effect on recruitment (`m3`), the model with CPI (`m4`) estimates relative stock status higher in recent decades and lower in earlier decades.
+
+![Relative stock status trend without CPI, m3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/FSPR_relative_m3.png){ width=45% }![Relative stock status trend with CPI m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/FSPR_relative_m4.png){ width=45% }
+
+#### Cold Pool Index (CPI)
+
+Note that the `Ecov` is estimated for all model years (plus lag, 1972-2016), even though we only had CPI data for 1973-2011. Extremely poor recruitment in 2014-2015 leads the model to estimate that CPI was high in 2013-2014.
+
+![CPI from best model, m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Ecov_1_m4.png){ width=45% }![Recruitment from best model, m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_time_m4.png){ width=45% }
+
+This occurs whether the CPI is modeled as an AR1 or RW process (`m5` shows similar CPI trend). It does not occur in model `m3`, which does not include a relationship between recruitment and the CPI.
+
+![CPI from m5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Ecov_1_m5.png){ width=45% }![CPI from m3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Ecov_1_m3.png){ width=45% }
