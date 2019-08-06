@@ -4,7 +4,8 @@
 \alias{compare_wham_models}
 \title{Compare WHAM models}
 \usage{
-compare_wham_models(mods, fname = "model_comparison", sort = TRUE)
+compare_wham_models(mods, fname = "model_comparison", sort = TRUE,
+  calc.rho = TRUE, calc.aic = TRUE)
 }
 \arguments{
 \item{mods}{(named) list of fit WHAM models. If no names are given, "m1", "m2", ...
@@ -13,10 +14,13 @@ will be used.}
 \item{fname}{character, filename to save CSV results table (.csv will be appended). Default = "model_comparison".}
 
 \item{sort}{T/F, sort by AIC? Default = TRUE.}
+
+\item{mohns.rho}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
 }
 \value{
 a list with the following components:
   \describe{
+    \item{\code{daic}}{Vector of delta-AIC by model}
     \item{\code{aic}}{Vector of AIC by model}
     \item{\code{rho}}{Matrix of Mohn's rho by model}
     \item{\code{best}}{Name of best model (lowest AIC)}

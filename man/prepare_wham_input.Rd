@@ -5,7 +5,7 @@
 \title{Prepare input data and parameters for WHAM model}
 \usage{
 prepare_wham_input(asap3, recruit_model = 2,
-  model_name = "WHAM for unnamed stock")
+  model_name = "WHAM for unnamed stock", Ecov = NULL)
 }
 \arguments{
 \item{asap3}{list containing data and parameters (output from \code{\link{read_asap3_dat}})}
@@ -13,6 +13,8 @@ prepare_wham_input(asap3, recruit_model = 2,
 \item{recruit_model}{numeric, option to specify stock-recruit model (see details)}
 
 \item{model_name}{character, name of stock/model}
+
+\item{Ecov}{(optional) named list of environmental covariate data and parameters (see details)}
 }
 \value{
 a named list with the following components:
@@ -32,13 +34,40 @@ prepares the data and parameter settings for \code{\link{fit_wham}}.
 By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}.
 }
 \details{
-\code{recruit_model} specifies the stock-recruit model. See lines 269-304 and 324-338
+\code{recruit_model} specifies the stock-recruit model. See lines 442-476
 in \code{wham.cpp} to see implementation.
   \describe{
     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
     \item{= 3}{Beverton-Holt}
     \item{= 4}{Ricker}
+  }
+
+\code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
+  \describe{
+    \item{= 1}{"controlling" (dens-indep mortality)}
+    \item{= 2}{"limiting" (carrying capacity, e.g. Ecov determines amount of suitable habitat)}
+    \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some Ecov value)}
+    \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
+    \item{= 5}{"directive" (e.g. behavioral)}
+  }
+
+\code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+the same years as the fisheries data. It must be a named list with the following components:
+  \describe{
+    \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
+    \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
+    \item{$sigma}{Observation standard error (vector if 1D, covariance matrix if multivariate). Same length as \code{mean}.}
+    \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
+    \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
+    Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
+    \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
+    I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
+    \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive.}
+    \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
+    "growth" = growth, "mortality" = natural mortality.}
+    \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
+    specific to the \code{where} process.}
   }
 }
 \examples{
@@ -50,5 +79,5 @@ mod = fit_wham(input)
 
 }
 \seealso{
-\code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}
+\code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}, \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}
 }

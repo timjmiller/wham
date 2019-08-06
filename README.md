@@ -7,7 +7,7 @@ The Woods Hole Assessment Model (WHAM) is a state-space age-structured stock ass
 Install WHAM:
 ```
 # if you want vignettes
-devtools::install_github("timjmiller/wham", dependencies=TRUE, build = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
+devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
 
 # if you do NOT want vignettes
 devtools::install_github("timjmiller/wham", dependencies=TRUE)
@@ -23,7 +23,7 @@ View installed vignettes:
 browseVignettes("wham")
 ```
 
-For a clean, runnable `.R` script, look at `SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+For a clean, runnable `.R` script, look at `ex1_SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
 ```
 library(wham)
 wham.dir <- find.package("wham")
@@ -33,7 +33,7 @@ file.path(wham.dir, "example_scripts")
 You can run this entire example script with:
 ```
 write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
-source(file.path(wham.dir, "example_scripts", "SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
 ```
 
 ### Observation model components:

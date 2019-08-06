@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 wham.dir <- find.package("wham")
 knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
-In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
+In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
 This is the 2nd `wham` example, which builds off model `m3` from example 1 (full state-space model, numbers at all ages are random effects, multinomial age-compositions). We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
 
@@ -33,13 +33,13 @@ As in [example 1](https://github.com/timjmiller/wham/blob/master/inst/example_sc
 
 Open R and load the `wham` package:
 
-```{r}
+```{r message=FALSE}
 library(wham)
 library(tidyverse)
 ```
 
 For a clean, runnable `.R` script, look at `ex2_CPI_recruitment_SNEMA_yellowtail.R` in the `example_scripts` folder of the `wham` package install:
-```{r}
+```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
 ```
@@ -58,7 +58,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided, `ASAP_SNEMAYT.dat`.
+WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided, `ASAP_SNEMAYT.dat`. We will also need a data file with an environmental covariate, the Cold Pool Index, `CPI.csv`.
 
 Copy `ASAP_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
@@ -104,7 +104,7 @@ Look at the model table
 df.mods
 ```
 
-You specify the options for modeling recruitment and environmental covariate using the `prepare_wham_input` function. WHAM provides 4 options for recruitment (`recruit_model`): 1) random walk, 2) random about mean, 3) Beverton-Holt, and 4) Ricker. 
+We specify the options for modeling recruitment and any environmental covariate(s) using the `prepare_wham_input` function. WHAM provides 4 options for recruitment (`recruit_model`): 1) random walk, 2) random about mean, 3) Beverton-Holt, and 4) Ricker. 
 
 The environmental covariate options are fed to `prepare_wham_input` as a list, `Ecov`:
 ```{r eval=FALSE}
@@ -117,11 +117,11 @@ The environmental covariate options are fed to `prepare_wham_input` as a list, `
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
     where = "recruit", # CPI affects population via recruitment
-    how = df.mods$Ecov_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+    how = df.mods$Ecov_how[m], # 0 = no effect, 1 = controlling, 2 = limiting, 4 = masking
     lag = 1) # CPI in year t affects recruitment in year t+1
 ```
 
-There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We next must specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 1) "controlling" (dens-indep mortality), 2) "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 3) "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  4) "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 5) "directive" (e.g. behavioral). Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
+There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We must next specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 1) "controlling" (dens-indep mortality), 2) "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 3) "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  4) "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 5) "directive" (e.g. behavioral). Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
 
 You can set `Ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `Ecov` data even for models without an `Ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `Ecov$how = 0`.
 
@@ -196,7 +196,7 @@ mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
 ```
 
-There is no indication that any of the models failed to converge. In addition, SE estimates are calculable for all models (invertible Hessian, `TMB::sdrep()` succeeds).
+There is no indication that any of the models failed to converge. In addition, SE estimates are calculable for all models (invertible Hessian, `TMB::sdreport()` succeeds).
 ```{r eval=FALSE}
 for(m in 1:n.mods) check_convergence(mods[[m]])
 ```
