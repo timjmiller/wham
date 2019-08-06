@@ -53,7 +53,8 @@ in \code{wham.cpp} to see implementation.
   }
 
 \code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
-the same years as the fisheries data. It must be a named list with the following components:
+the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
+Otherwise, it must be a named list with the following components:
   \describe{
     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
     \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
@@ -63,7 +64,7 @@ the same years as the fisheries data. It must be a named list with the following
     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
     \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
-    \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive.}
+    \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive, NA = do not fit}
     \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
     "growth" = growth, "mortality" = natural mortality.}
     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are

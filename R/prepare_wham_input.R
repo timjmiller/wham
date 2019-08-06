@@ -24,7 +24,8 @@
 #'   }
 #'
 #' \code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
-#' the same years as the fisheries data. It must be a named list with the following components:
+#' the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
+#' Otherwise, it must be a named list with the following components:
 #'   \describe{
 #'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
 #'     \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
@@ -34,7 +35,7 @@
 #'     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
 #'     \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
 #'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
-#'     \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive.}
+#'     \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive, NA = do not fit}
 #'     \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
 #'     "growth" = growth, "mortality" = natural mortality.}
 #'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
@@ -268,7 +269,9 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     end_Ecov <- tail(Ecov$year,1)
     if(length(Ecov$label) == data$n_Ecov) {data$Ecov_label <- Ecov$label}
     else{
-      warning("Number of Ecov labels not equal to number of Ecovs")
+      warning("Number of Ecov labels not equal to number of Ecovs
+              Setting Ecov labels = 'Ecov 1', 'Ecov 2', ...")
+      data$Ecov_label = paste0("Ecov ",1:data$n_Ecov)
     }
 
     # check that Ecov year vector doesn't have missing gaps
@@ -304,7 +307,15 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
     if(!identical(length(Ecov$lag), length(Ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
     data$Ecov_lag <- Ecov$lag
+    if(!all(Ecov$process_model %in% c(NA,"rw", "ar1"))){
+      stop("Ecov$process_model must be 'rw' (random walk), 'ar1', or NA (do not fit)")}
+    if(is.na(Ecov$process_model) && Ecov$how !=0){
+      stop("Ecov$process_model not chosen (NA) but Ecov$how specified.
+       Either 1) choose an Ecov process model ('rw' or 'ar1'),
+              2) turn off Ecov (set Ecov$how = 0 and Ecov$process_model = NA),
+           or 3) fit Ecov but with no effect on population (Ecov$how = 0, Ecov$process_model 'rw' or 'ar1').")}
     data$Ecov_model <- sapply(Ecov$process_model, match, c("rw", "ar1"))
+
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     if(!Ecov$where %in% c('recruit')){
       stop("Sorry, only Ecov effects on Recruitment currently implemented.
@@ -455,11 +466,10 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
 
   # turn off 3rd Ecov par if it's a RW
-  tmp <- matrix(0, 3, data$n_Ecov)
-  for(i in 1:data$n_Ecov) tmp[3,i] <- ifelse(data$Ecov_model[i]==1, NA, 0)
-  ind.notNA <- which(!is.na(tmp))
-  tmp[ind.notNA] <- 1:length(ind.notNA)
-  map$Ecov_process_pars = factor(tmp)
+  tmp.pars <- matrix(0, 3, data$n_Ecov)
+  for(i in 1:data$n_Ecov) tmp.pars[3,i] <- ifelse(data$Ecov_model[i]==1, NA, 0)
+  ind.notNA <- which(!is.na(tmp.pars))
+  tmp.pars[ind.notNA] <- 1:length(ind.notNA)
 
   # turn off only Ecov_beta to fit Ecov process model without effect on population
   tmp <- par$Ecov_beta
@@ -468,12 +478,16 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_beta = factor(tmp)
 
-  # turn off Ecov pars if no Ecov (re, beta, process)
-  if(data$Ecov_model[1] == 0){
-    map$Ecov_re <- factor(rep(NA,length(par$Ecov_re)))
-    map$Ecov_beta <- factor(rep(NA,length(par$Ecov_beta)))
-    map$Ecov_process_pars <- factor(rep(NA,length(par$Ecov_process_pars)))
+  # turn off Ecov pars if no Ecov (re, process)
+  # for any Ecov_model = NA, Ecov$how must be 0 and beta is already turned off
+  data$Ecov_model[is.na(data$Ecov_model)] = 0 # turn any NA into 0
+  tmp.re <- par$Ecov_re # matrix of 0s
+  for(i in 1:data$n_Ecov){
+    tmp.pars[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,3), tmp.pars[,i])
+    tmp.re[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,data$n_years_Ecov), tmp.re[,i])
   }
+  map$Ecov_process_pars = factor(tmp.pars)
+  map$Ecov_re = factor(tmp.re)
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
