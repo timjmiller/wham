@@ -385,6 +385,7 @@ Type objective_function<Type>::operator() ()
   ADREPORT(log_SPR0);
   if(recruit_model > 2) //BH or Ricker SR
   {
+	vector<Type> SR_h_tf(SR_h.size()); //different transformations for BH and Ricker
     if(recruit_model == 3) //BH stock recruit
     {
       if(use_steepness == 1)
@@ -401,6 +402,7 @@ Type objective_function<Type>::operator() ()
         SR_h = exp(log_SR_a) * exp(log_SPR0)/(4.0 + exp(log_SR_a + log_SPR0));
         SR_R0 = (exp(log_SR_a) - 1/exp(log_SPR0)) / exp(log_SR_b);
       }
+      SR_h_tf = log(SR_h - 0.2) - log(1 - SR_h);
     }
     if(recruit_model>3) //Ricker stock recruit
     {
@@ -418,16 +420,17 @@ Type objective_function<Type>::operator() ()
         SR_h = 0.2 * exp(0.8*log(exp(log_SR_a) * exp(log_SPR0)));
         SR_R0 = log(exp(log_SR_a + log_SPR0))/(exp(log_SR_b + log_SPR0));
       }
+      SR_h_tf = log(SR_h - 0.2);
     }
     ADREPORT(log_SR_a);
     ADREPORT(log_SR_b);
-    vector<Type> logit_SR_h = log(SR_h - 0.2) - log(1 - SR_h);
+    //vector<Type> logit_SR_h = log(SR_h - 0.2) - log(1 - SR_h);
     vector<Type> log_SR_R0 = log(SR_R0);
-    ADREPORT(logit_SR_h);
+    ADREPORT(SR_h_tf);
     ADREPORT(log_SR_R0);
     REPORT(log_SR_a);
     REPORT(log_SR_b);
-    REPORT(logit_SR_h);
+    REPORT(SR_h_tf);
     REPORT(log_SR_R0);
   }
   matrix<Type> nll_NAA(n_years_model-1,n_ages);
