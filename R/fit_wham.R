@@ -29,6 +29,7 @@
 #'   as \code{mod$osa$residual}.
 #' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
 #'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
+#' @param model (optional), a previously fit wham model.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -54,24 +55,33 @@
 #' m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
-fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE))
+fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL)
 {
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
-  mod <- TMB::MakeADFun(input$data,input$par, DLL = "wham", random = input$random, map = input$map)
+  if(missing(model)){ 
+    mod <- TMB::MakeADFun(input$data,input$par, DLL = "wham", random = input$random, map = input$map)
+  } else {mod = model}
+  
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep)
-  if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
-  if(do.osa){
-    cat("Doing OSA residuals...\n");
-    OSA <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
-                                data.term.indicator="keep",
-                                method=osa.opts$method,
-                                discrete=FALSE, parallel=osa.opts$parallel)
-    input$data$obs$residual <- OSA$residual;
-    mod$osa <- input$data$obs
-  }
   mod$years <- input$years
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
+
+  # only if no error
+  if(is.null(mod$err)){
+    if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
+    if(do.osa){
+      cat("Doing OSA residuals...\n");
+      OSA <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+                                  data.term.indicator="keep",
+                                  method=osa.opts$method,
+                                  discrete=FALSE, parallel=osa.opts$parallel)
+      input$data$obs$residual <- OSA$residual;
+      mod$osa <- input$data$obs
+    }
+  } else warning(paste("","** Did not do sdrep, retro, or OSA residual analyses. **",
+    "Error during Newton steps. Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
+
   return(mod)
 }

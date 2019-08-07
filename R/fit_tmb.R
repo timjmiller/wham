@@ -25,24 +25,42 @@
 fit_tmb = function(model, n.newton=3, do.sdrep = TRUE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
-  if(n.newton) for(i in 1:n.newton) { # Take a few extra newton steps
-    g <- as.numeric(model$gr(model$opt$par))
-    h <- stats::optimHess(model$opt$par, model$fn, model$gr)
-    model$opt$par <- model$opt$par - solve(h, g)
-    model$opt$objective <- model$fn(model$opt$par)
+
+  test <- TMBhelper::Check_Identifiable(model)
+  if(length(test$WhichBad) > 0){
+    bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
+    bad.par.grep <- grep(bad.par, test$BadParams$Param)
+    model$badpar <- test$BadParams[bad.par.grep,]
+    warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
+      "them from the model by setting input$par at their MLE and input$map = NA.","",
+      paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
   }
+
+  if(n.newton){
+    tryCatch(for(i in 1:n.newton) { # Take a few extra newton steps
+      g <- as.numeric(model$gr(model$opt$par))
+      h <- stats::optimHess(model$opt$par, model$fn, model$gr)
+      model$opt$par <- model$opt$par - solve(h, g)
+      model$opt$objective <- model$fn(model$opt$par)
+    }, error = function(e) {err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
+  }
+  if(exists("err")) model$err <- err # store error message to print out in fit_wham
+
   model$date = Sys.time()
   model$dir = getwd()
   model$rep <- model$report()
   model$TMB_version = packageVersion("TMB")
   model$parList = model$env$parList()
   model$final_gradient = model$gr()
-  if(do.sdrep)
+
+  # only do sdrep if no error
+  if(do.sdrep & !exists("err"))
   {
     model$sdrep <- try(TMB::sdreport(model))
     model$is_sdrep = !is.character(model$sdrep)
     if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2]))
     else model$na_sdrep = NA
   }
+
   return(model)
 }
