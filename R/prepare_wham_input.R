@@ -318,7 +318,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     if(!Ecov$where %in% c('recruit')){
-      stop("Sorry, only Ecov effects on Recruitment currently implemented.
+      stop("Sorry, only Ecov effects on recruitment currently implemented.
       Set Ecov$where = 'recruit'.")}
     data$Ecov_where <- sapply(Ecov$where, match, c('recruit','growth','mortality'))
     data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
@@ -326,12 +326,17 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$Ecov_mortality <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # Ecov index to use for mortality?
 
     if(!Ecov$how %in% c(0,1,2,4)){
-      stop("Sorry, only Ecov effects on Recruitment currently implemented.
+      stop("Sorry, only Ecov effects on recruitment currently implemented.
       Set Ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")}
-    if(recruit_model == 4 & Ecov$how == 2){
+    if(recruit_model == 1 & data$Ecov_recruit != 0){
+      stop("Random walk recruitment cannot have an Ecov effect on recruitment.
+      Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
+    }
+    if(recruit_model == 4 & Ecov$how[data$Ecov_recruit] == 2){
       stop("'Limiting' Ecov effect on Ricker recruitment not implemented.
       Either set Ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
-      Or set recruit_model = 3 (Bev-Holt).")}
+      Or set recruit_model = 3 (Bev-Holt).")
+    }
     data$Ecov_how <- Ecov$how
     # if(Ecov$where=="recruit") data$Ecov_how <- match(Ecov$how, c('type1','type2','type3'))
     # if(Ecov$where=='growth') data$Ecov_how <- match(Ecov$how, c('type1','type2','type3'))
