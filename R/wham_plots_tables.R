@@ -108,7 +108,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
   }
 
   if(!all(mod$env$data$Ecov_model == 0)){
-    dat <- subset(mod$osa, type=="ecov")
+    dat <- subset(mod$osa, type=="Ecov")
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
@@ -424,7 +424,7 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     # polygon(c(years,rev(years)), c(temp[,3],rev(temp[,4])), col = black.poly, border = "transparent")
     box(lwd = 2)
     mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-    mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)    
+    mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)
   }
   if(do.tex | do.png) dev.off() else par(origpar)
 
@@ -462,7 +462,7 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     # polygon(c(years,rev(years)), c(templo[,1],rev(temphi[,1])), col = black.poly, border = "transparent")
     box(lwd = 2)
     if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-    mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)    
+    mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)
   }
   if(do.tex | do.png) dev.off() else par(origpar)
 
@@ -1378,7 +1378,7 @@ plot.recruitment.devs <- function(mod, age.recruit = 1, units = expression(10^3)
 #plot.recruitment.devs(ssm)
 
 #scatter plot of SSB, R with 2-digit year as symbol (lag by 1 year)
-plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05, 
+plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05,
   scale.ssb = 1000, scale.recruits = 1000, age.recruit = 1, plot.colors, loglog=FALSE)
 {
   origpar <- par(no.readonly = TRUE)
@@ -1490,7 +1490,7 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
       box()
       lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
       points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
-      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)      
+      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
     }
 	}
   par(origpar)
