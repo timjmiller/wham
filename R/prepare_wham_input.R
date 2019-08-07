@@ -471,7 +471,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
 
   # turn off 3rd Ecov par if it's a RW
-  tmp.pars <- matrix(0, 3, data$n_Ecov)
+  tmp.pars <- par$Ecov_process_pars
   for(i in 1:data$n_Ecov) tmp.pars[3,i] <- ifelse(data$Ecov_model[i]==1, NA, 0)
   ind.notNA <- which(!is.na(tmp.pars))
   tmp.pars[ind.notNA] <- 1:length(ind.notNA)
@@ -486,13 +486,17 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # turn off Ecov pars if no Ecov (re, process)
   # for any Ecov_model = NA, Ecov$how must be 0 and beta is already turned off
   data$Ecov_model[is.na(data$Ecov_model)] = 0 # turn any NA into 0
-  tmp.re <- par$Ecov_re # matrix of 0s
+  tmp.re <- matrix(1:length(par$Ecov_re), data$n_years_Ecov, data$n_Ecov, byrow=FALSE)
   for(i in 1:data$n_Ecov){
     tmp.pars[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,3), tmp.pars[,i])
     tmp.re[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,data$n_years_Ecov), tmp.re[,i])
   }
-  map$Ecov_process_pars = factor(tmp.pars)
+  ind.notNA <- which(!is.na(tmp.re))
+  tmp.re[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_re = factor(tmp.re)
+  ind.notNA <- which(!is.na(tmp.pars))
+  tmp.pars[ind.notNA] <- 1:length(ind.notNA)
+  map$Ecov_process_pars = factor(tmp.pars)
 
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
