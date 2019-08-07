@@ -364,12 +364,12 @@ Type objective_function<Type>::operator() ()
   //get predicted numbers at age
   vector<Type> M(n_ages), mat(n_ages), waassb(n_ages), log_SPR0(n_years_model);
   int nh = 1, na = n_years_model;
-  if(use_steepness != 0)
+  /*if(use_steepness != 0)
   {
     nh = n_years_model;
     na = 1;
-  }
-  vector<Type> log_SR_a(na), log_SR_b(na), SR_h(nh), SR_R0(nh);
+  }*/
+  vector<Type> log_SR_a(na), log_SR_b(na), SR_h(na), SR_R0(na);
 
   for(int y = 0; y < n_years_model; y++)
   {
@@ -399,6 +399,22 @@ Type objective_function<Type>::operator() ()
       {
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
+      }
+      for(int y = 0; y < n_years_model; y++)
+      {
+        // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
+        if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
+        {
+          log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+        }
+        // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
+        if(Ecov_how(Ecov_recruit-1) == 2 | Ecov_how(Ecov_recruit-1) == 4)
+        {
+          log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+        }
+      }
+      if(use_steepness != 1)
+      {
         SR_h = exp(log_SR_a) * exp(log_SPR0)/(4.0 + exp(log_SR_a + log_SPR0));
         SR_R0 = (exp(log_SR_a) - 1/exp(log_SPR0)) / exp(log_SR_b);
       }
@@ -417,6 +433,20 @@ Type objective_function<Type>::operator() ()
       {
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
+      }
+      for(int y = 0; y < n_years_model; y++)
+      {
+        if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+        {
+          log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+        }
+        if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+        { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
+          log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+        }
+      }
+      if(use_steepness != 1)
+      {
         SR_h = 0.2 * exp(0.8*log(exp(log_SR_a) * exp(log_SPR0)));
         SR_R0 = log(exp(log_SR_a + log_SPR0))/(exp(log_SR_b + log_SPR0));
       }
@@ -444,8 +474,7 @@ Type objective_function<Type>::operator() ()
     // Expected recruitment
     if(recruit_model == 1) // random walk
     {
-      if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = NAA(y-1,0); 
-      if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = NAA(y-1,0) * exp(Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)); // random walk
+      pred_NAA(y,0) = NAA(y-1,0);
     }
     else
     {
@@ -458,44 +487,11 @@ Type objective_function<Type>::operator() ()
       {
         if(recruit_model == 3) // BH stock recruit
         {
-          if(Ecov_how(Ecov_recruit-1) == 0) // fit Ecov but NO effect
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(1 + exp(log_SR_b(0))*SSB(y-1));
-          }          
-          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)) * SSB(y-1)/(1 + exp(log_SR_b(0))*SSB(y-1));
-          }
-          if(Ecov_how(Ecov_recruit-1) == 2) // "limiting" = carrying capacity
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1))*SSB(y-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(1 + exp(log_SR_b(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1))*SSB(y-1));
-          }
-          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(exp(Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)) + exp(log_SR_b(y-1))*SSB(y-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1)/(exp(Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)) + exp(log_SR_b(0))*SSB(y-1));
-          }
+          pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
         }
         else // recruit_model = 4, Ricker stock recruit
         {
-          if(Ecov_how(Ecov_recruit-1) == 0) // fit Ecov but NO effect
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1));
-          }          
-          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
-          }
-          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
-          {
-            if(use_steepness == 1) pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1) * (1 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)));
-            else pred_NAA(y,0) = exp(log_SR_a(0)) * SSB(y-1) * exp(-exp(log_SR_b(0)) * SSB(y-1) * (1 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1)));
-          }
+          pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1));
         }
       }
     }
@@ -739,16 +735,8 @@ Type objective_function<Type>::operator() ()
         waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
         mat(a) = mature(y,a);
       }
-      if(use_steepness == 1)
-      {
-        SR_a = exp(log_SR_a(y));
-        SR_b = exp(log_SR_b(y));
-      }
-      else
-      {
-        SR_a = exp(log_SR_a(0));
-        SR_b = exp(log_SR_b(0));
-      }
+      SR_a = exp(log_SR_a(y));
+      SR_b = exp(log_SR_b(y));
       if(recruit_model == 3) //Beverton-Holt selected
       {
         sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),0);
@@ -804,7 +792,7 @@ Type objective_function<Type>::operator() ()
   int n_Fbar_ages = Fbar_ages.size();
   for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_Fbar_ages; a++) Fbar(y) += FAA_tot(y,Fbar_ages(a)-1)/n_Fbar_ages;
 
-  matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.array(); 
+  matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.array();
   vector<Type> log_Fbar = log(Fbar);
   matrix<Type> log_NAA_rep = log(NAA.array());
 
