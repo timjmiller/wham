@@ -70,7 +70,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.index.age.comp.resids(mod)
     plot.NAA.res(mod)
     if(!is.null(mod$osa)) plot.osa.residuals(mod)
-    plot.all.stdresids.fn(mod)
+    if(mod$is_sdrep) plot.all.stdresids.fn(mod)
     # plot.fleet.stdresids.fn(mod)
     # plot.index.stdresids.fn(mod)
     # if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod)
@@ -81,19 +81,21 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     grDevices::cairo_pdf(filename=file.path(dir.main,"results.pdf"), family = "Times", height = 10, width = 10, onefile = TRUE)
     for(i in 1:mod$env$data$n_fleets) plot.fleet.sel.blocks(mod, use.i=i)
     for(i in 1:mod$env$data$n_indices) plot.index.sel.blocks(mod, use.i=i)
-    plot.SSB.F.trend(mod)
+    if(mod$is_sdrep) plot.SSB.F.trend(mod)
     plot.SSB.AA(mod, prop=FALSE)
     plot.SSB.AA(mod, prop=TRUE)
     plot.NAA(mod, prop=FALSE)
     plot.NAA(mod, prop=TRUE)
-    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
       plot.SR.pred.line(mod)
     }
-    plot.recr.ssb.yr(mod, loglog=FALSE)
-    plot.recr.ssb.yr(mod, loglog=TRUE)
-    plot.SARC.R.SSB(mod)
+    if(mod$is_sdrep){
+      plot.recr.ssb.yr(mod, loglog=FALSE)
+      plot.recr.ssb.yr(mod, loglog=TRUE)
+      plot.SARC.R.SSB(mod)
+      plot.cv(mod)
+    }
     plot.fleet.F(mod)
-    plot.cv(mod)
     plot.M(mod)
     dev.off()
 
@@ -102,8 +104,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.SPR.table(mod, plot=TRUE)
     plot.SPR.table(mod, plot=FALSE)
     plot.annual.SPR.targets(mod)
-    plot.FXSPR.annual(mod)
-    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+    if(mod$is_sdrep) plot.FXSPR.annual(mod)
+    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
       plot.MSY.annual(mod)
     }
     plot.yield.curves(mod, plot=TRUE)
@@ -197,7 +199,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.NAA.4.panel(mod, do.png = TRUE, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, od=dir.diag)
     if(!is.null(mod$osa)) plot.osa.residuals(mod, do.png=TRUE, res=res, od=dir.diag)
-    plot.all.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
+    if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
     # plot.fleet.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
     # plot.index.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
     # if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.stdresids.fn(mod, do.png=TRUE, res=res, od=dir.diag)
@@ -212,9 +214,11 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     for(i in 1:mod$env$data$n_indices){
       plot.index.sel.blocks(mod, do.png=TRUE, use.i=i, od=dir.res)
     }
-    png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res)
-    plot.SSB.F.trend(mod)
-    dev.off()
+    if(mod$is_sdrep){
+      png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res)
+      plot.SSB.F.trend(mod)
+      dev.off()
+    }
     png(file.path(dir.res,"SSB_at_age.png"),width=10,height=10,units="in",res=res)
     plot.SSB.AA(mod, prop=FALSE)
     dev.off()
@@ -227,26 +231,29 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=res)
     plot.NAA(mod, prop=TRUE)
     dev.off()
-    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
       png(file.path(dir.res,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=res)
       plot.SR.pred.line(mod)
       dev.off()
     }
-    png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=res)
-    plot.recr.ssb.yr(mod, loglog=FALSE)
-    dev.off()
-    png(file.path(dir.res,"SSB_Rec_loglog.png"),width=10,height=10,units="in",res=res)
-    plot.recr.ssb.yr(mod, loglog=TRUE)
-    dev.off()
-    png(file.path(dir.res,"SSB_Rec_time.png"),width=10,height=10,units="in",res=res)
-    plot.SARC.R.SSB(mod)
-    dev.off()
+    if(mod$is_sdrep){
+      png(file.path(dir.res,"SSB_Rec.png"),width=10,height=10,units="in",res=res)
+      plot.recr.ssb.yr(mod, loglog=FALSE)
+      dev.off()
+      png(file.path(dir.res,"SSB_Rec_loglog.png"),width=10,height=10,units="in",res=res)
+      plot.recr.ssb.yr(mod, loglog=TRUE)
+      dev.off()
+      png(file.path(dir.res,"SSB_Rec_time.png"),width=10,height=10,units="in",res=res)
+      plot.SARC.R.SSB(mod)
+      dev.off()
+      png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res)
+      plot.cv(mod)
+      dev.off()
+    }
     png(file.path(dir.res,"F_byfleet.png"),width=10,height=10,units="in",res=res)
     plot.fleet.F(mod)
     dev.off()
-    png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res)
-    plot.cv(mod)
-    dev.off()
+
     png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res)
     plot.M(mod)
     dev.off()
@@ -262,10 +269,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.SPR.table(mod, plot=FALSE)
     dev.off()
     plot.annual.SPR.targets(mod, od=dir.refpts, do.png=TRUE)
-    plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE)
+    if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=FALSE)
-    if(mod$env$data$recruit_model == 3){ # these only work if Bev-Holt S-R was fit
+    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
       png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=res)
       plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE)
       dev.off()
