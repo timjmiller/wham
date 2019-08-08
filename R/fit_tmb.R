@@ -62,6 +62,9 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
     model$is_sdrep = !is.character(model$sdrep)
     if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2]))
     else model$na_sdrep = NA
+  } else {
+    model$is_sdrep = FALSE
+    model$na_sdrep = NA
   }
 
   return(model)
