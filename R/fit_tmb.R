@@ -67,8 +67,8 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
   model$parList = model$env$parList()
   model$final_gradient = model$gr()
 
-  # only do sdrep if no error
-  if(do.sdrep & !exists("err"))
+  # if(do.sdrep & !exists("err")) # only do sdrep if no error
+  if(do.sdrep) # only do sdrep if no error
   {
     model$sdrep <- try(TMB::sdreport(model))
     model$is_sdrep = !is.character(model$sdrep)
