@@ -31,6 +31,6 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
   if("log_NAA" %in% model$random) temp$map$log_NAA = factor(log_NAA_na_ind)
   temp$map$F_devs = factor(F_devs_na_ind)
   temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map)
-  out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton)
+  out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
   return(out)
 }

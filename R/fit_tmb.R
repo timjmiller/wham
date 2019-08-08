@@ -7,7 +7,7 @@
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
-#'
+#' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
 #' @return \code{model}, appends the following:
 #'   \describe{
 #'     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
@@ -20,20 +20,22 @@
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}}}
 #'   }
 #'
-#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
 #'
-fit_tmb = function(model, n.newton=3, do.sdrep = TRUE)
+fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
 
-  test <- TMBhelper::Check_Identifiable(model)
-  if(length(test$WhichBad) > 0){
-    bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
-    bad.par.grep <- grep(bad.par, test$BadParams$Param)
-    model$badpar <- test$BadParams[bad.par.grep,]
-    warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
-      "them from the model by setting input$par at their MLE and input$map = NA.","",
-      paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
+  if(do.check){
+    test <- TMBhelper::Check_Identifiable(model)
+    if(length(test$WhichBad) > 0){
+      bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
+      bad.par.grep <- grep(bad.par, test$BadParams$Param)
+      model$badpar <- test$BadParams[bad.par.grep,]
+      warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
+        "them from the model by setting input$par at their MLE and input$map = NA.","",
+        paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
+    }
   }
 
   if(n.newton){
