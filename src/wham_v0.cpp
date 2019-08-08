@@ -442,7 +442,7 @@ Type objective_function<Type>::operator() ()
         }
         if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
         { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-          log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
         }
       }
       if(use_steepness != 1)

@@ -508,12 +508,12 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
 
 plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
+  years = mod$years
   # load Ecov residuals
   xe <- NULL
   if(!all(mod$env$data$Ecov_model == 0)){
     ny = mod$env$data$n_years_Ecov
     ni = mod$env$data$n_Ecov
-    years = mod$years
     temp = summary(mod$sdrep)
     ind = rownames(temp) == "Ecov_resid"
     templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
@@ -2283,9 +2283,9 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
       vals <- std[t.ind,1][1:n_years]
   	  cv <- std[t.ind,2][1:n_years]
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-      na.ci <- any(is.na(ci))
-		  if(!na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci))), type = 'l')
-      if(na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals))), type = 'l')
+      na.ci <- all(is.na(ci))
+		  if(!na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+      if(na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
 		  grid(col = gray(0.7))
 		  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 		}
@@ -2298,9 +2298,9 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
     rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSBMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-    na.ci <- any(is.na(ci))
-		if(!na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),1)), type = 'l')
-    if(na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals))), type = 'l')
+    na.ci <- all(is.na(ci))
+		if(!na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+    if(na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
 	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
 	  abline(h=1, lty = 2)
@@ -2309,11 +2309,11 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
     rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$FMSY,1][1:n_years]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
     ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-    na.ci <- any(is.na(ci))
+    na.ci <- all(is.na(ci))
 		if(!na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(ci),1)), type = 'l')
+      ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
     if(na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(rel.f.vals),1)), type = 'l')
+      ylim = c(0,max(exp(rel.f.vals),na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
 	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')

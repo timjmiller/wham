@@ -26,20 +26,8 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
 
-  if(do.check){
-    test <- TMBhelper::Check_Identifiable(model)
-    if(length(test$WhichBad) > 0){
-      bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
-      bad.par.grep <- grep(bad.par, test$BadParams$Param)
-      model$badpar <- test$BadParams[bad.par.grep,]
-      warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
-        "them from the model by setting input$par at their MLE and input$map = NA.","",
-        paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
-    }
-  }
-
-  if(n.newton){
-    tryCatch(for(i in 1:n.newton) { # Take a few extra newton steps
+  if(n.newton){ # Take a few extra newton steps
+    tryCatch(for(i in 1:n.newton) { 
       g <- as.numeric(model$gr(model$opt$par))
       h <- stats::optimHess(model$opt$par, model$fn, model$gr)
       model$opt$par <- model$opt$par - solve(h, g)
@@ -47,6 +35,30 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
     }, error = function(e) {err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
   }
   if(exists("err")) model$err <- err # store error message to print out in fit_wham
+
+  if(do.check){
+    ParHat = model$env$last.par.best[-c(model$env$random)]
+    Gr = model$gr(ParHat)
+    if(any(Gr > 0.01)){
+      df <- data.frame(param = names(ParHat),
+                       MLE = ParHat,
+                       gr.at.MLE = Gr)
+      ind.hi <- which(Gr > 0.01)
+      model$badpar <- df[ind.hi,]
+      warning(paste("","Some parameter(s) have high gradients at the MLE:","",
+        paste(capture.output(print(model$badpar)), collapse = "\n"), sep="\n"))
+    } else {
+      test <- TMBhelper::Check_Identifiable(model)
+      if(length(test$WhichBad) > 0){
+        bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
+        bad.par.grep <- grep(bad.par, test$BadParams$Param)
+        model$badpar <- test$BadParams[bad.par.grep,]
+        warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
+          "them from the model by setting input$par at their MLE and input$map = NA.","",
+          paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
+      }
+    }
+  }
 
   model$date = Sys.time()
   model$dir = getwd()

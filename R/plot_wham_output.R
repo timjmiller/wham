@@ -272,11 +272,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=TRUE)
     plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, plot=FALSE)
-    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
-      png(file.path(dir.refpts,"MSY_annual.png"),width=10,height=10,units="in",res=res)
-      plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE)
-      dev.off()
-    }
+    if(mod$env$data$recruit_model == 3 & mod$is_sdrep) plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE)
 
     # PNG retrospective -----------------
     if(!is.null(mod$peels)){
