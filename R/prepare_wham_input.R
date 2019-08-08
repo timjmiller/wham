@@ -488,8 +488,8 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   data$Ecov_model[is.na(data$Ecov_model)] = 0 # turn any NA into 0
   tmp.re <- matrix(1:length(par$Ecov_re), data$n_years_Ecov, data$n_Ecov, byrow=FALSE)
   for(i in 1:data$n_Ecov){
-    tmp.pars[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,3), tmp.pars[,i])
-    tmp.re[,i] <- ifelse(data$Ecov_model[i]==0, rep(NA,data$n_years_Ecov), tmp.re[,i])
+    tmp.pars[,i] <- if(data$Ecov_model[i]==0) rep(NA,3) else tmp.pars[,i]
+    tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,data$n_years_Ecov) else tmp.re[,i]
   }
   ind.notNA <- which(!is.na(tmp.re))
   tmp.re[ind.notNA] <- 1:length(ind.notNA)
