@@ -428,10 +428,21 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
   data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
+ 
   data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
-  data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
+  # data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
+  xl <- apply(data$use_indices,1,function(r) which(r==1))
+  Col <- unlist(xl)
+  Row <- rep(1:data$n_years_indices, times=sapply(xl, length))
+  data$keep_I[cbind(Row,Col)] <- subset(obs, type=='logindex')$ind
+ 
   data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
-  data$keep_E[data$Ecov_use_obs==1] <- subset(obs, type=='Ecov')$ind
+  # data$keep_E[data$Ecov_use_obs==1] <- subset(obs, type=='Ecov')$ind
+  xl <- apply(data$Ecov_use_obs,1,function(r) which(r==1))
+  Col <- unlist(xl)
+  Row <- rep(1:data$n_years_Ecov, times=sapply(xl, length))
+  data$keep_E[cbind(Row,Col)] <- subset(obs, type=='Ecov')$ind  
+
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_catch, data$n_ages))
   for(i in 1:data$n_fleets) data$keep_Cpaa[i,,] <- matrix(subset(obs, type=='paacatch' & fleet==paste0("fleet_",i))$ind, nrow=data$n_years_catch, ncol=data$n_ages, byrow=TRUE)
   data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_indices, data$n_ages))
@@ -445,6 +456,9 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
 
   data$obs <- obs
   data$obsvec <- obs$val
+
+  # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
+  # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
 
   par = list(mean_rec_pars = numeric(c(0,1,2,2)[recruit_model]))
   if(recruit_model==2) par$mean_rec_pars = 10
