@@ -382,22 +382,28 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
 
   # 2. log index catch
   x <- as.data.frame(data$agg_indices)
+  x[data$use_indices==0] <- NA # only include index data to fit in obsvec
   colnames(x) <- paste0("index_", 1:data$n_indices)
   x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
   tmp <- tidyr::gather(x, fleet, val, -year)
-  tmp$val <- log(tmp$val) # shouldn't be any years with 0 catch... could make this robust later
+  tmp <- tmp[complete.cases(tmp),]
+  tmp$val <- log(tmp$val) # all obs of 0 catch should have use_indices==0, turned to NA, and already removed
   tmp$age <- NA
   tmp$type <- "logindex"
   obs <- rbind(obs, tmp[, obs.colnames])
 
   # 3. Ecov
-  x <- as.data.frame(data$Ecov_obs)
-  colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
-  x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-  tmp <- tidyr::gather(x, fleet, val, -year)
-  tmp$age <- NA
-  tmp$type <- "Ecov"
-  obs <- rbind(obs, tmp[, obs.colnames])
+  if(!all(data$Ecov_use_obs==0)){
+    x <- as.data.frame(data$Ecov_obs)
+    x[data$Ecov_use_obs==0] <- NA # only include index data to fit in obsvec
+    colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
+    x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
+    tmp <- tidyr::gather(x, fleet, val, -year)
+    tmp <- tmp[complete.cases(tmp),]
+    tmp$age <- NA
+    tmp$type <- "Ecov"
+    obs <- rbind(obs, tmp[, obs.colnames])
+}
 
   # # 4. paa catch
   # dimnames(data$catch_paa) <- list(fleet=paste0("fleet_", 1:data$n_fleets),
@@ -422,8 +428,10 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
   data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
-  data$keep_I <- matrix(subset(obs, type=='logindex')$ind, nrow=data$n_years_indices, ncol=data$n_indices, byrow=TRUE)
-  data$keep_E <- matrix(subset(obs, type=='Ecov')$ind, nrow=data$n_years_Ecov, ncol=data$n_Ecov, byrow=TRUE)
+  data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
+  data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
+  data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
+  data$keep_E[data$Ecov_use_obs==1] <- subset(obs, type=='Ecov')$ind
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_catch, data$n_ages))
   for(i in 1:data$n_fleets) data$keep_Cpaa[i,,] <- matrix(subset(obs, type=='paacatch' & fleet==paste0("fleet_",i))$ind, nrow=data$n_years_catch, ncol=data$n_ages, byrow=TRUE)
   data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_indices, data$n_ages))
