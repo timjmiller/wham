@@ -472,11 +472,11 @@ Type objective_function<Type>::operator() ()
       {
         if(recruit_model == 3) // BH stock recruit
         {
-          pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1)/(1 + exp(log_SR_b(y-1))*SSB(y-1));
+          pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
         }
         else // recruit_model = 4, Ricker stock recruit
         {
-          pred_NAA(y,0) = exp(log_SR_a(y-1)) * SSB(y-1) * exp(-exp(log_SR_b(y-1)) * SSB(y-1));
+          pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
         }
       }
     }
