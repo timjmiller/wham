@@ -277,14 +277,23 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     # check that Ecov year vector doesn't have missing gaps
     if(all(diff(model_years)!=1)) stop("Ecov years not continuous")
 
-    # pad Ecov if it starts after model year2 - max(lag)
-    if(data$year1_Ecov > data$year1_model - max(Ecov$lag) + 1){
-      warning("Ecov does not start by model year 2 - max(lag). Padding Ecov...")
-      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_obs)
-      data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_obs_sigma)
-      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_use_obs)
-      data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag)+1, data$year1_Ecov-1), data$Ecov_year)
-      data$year1_Ecov <- data$year1_model - max(Ecov$lag)+1
+    # # pad Ecov if it starts after model year2 - max(lag)
+    # if(data$year1_Ecov > data$year1_model - max(Ecov$lag) + 1){
+    #   warning("Ecov does not start by model year 2 - max(lag). Padding Ecov...")
+    #   data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_obs)
+    #   data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_obs_sigma)
+    #   data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)+1), ncol = data$n_Ecov), data$Ecov_use_obs)
+    #   data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag)+1, data$year1_Ecov-1), data$Ecov_year)
+    #   data$year1_Ecov <- data$year1_model - max(Ecov$lag)+1
+    # }
+    # pad Ecov if it starts after model year1 - max(lag)
+    if(data$year1_Ecov > data$year1_model - max(Ecov$lag)){
+      warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
+      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
+      data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs_sigma)
+      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
+      data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag), data$year1_Ecov-1), data$Ecov_year)
+      data$year1_Ecov <- data$year1_model - max(Ecov$lag)
     }
 
     # pad Ecov if it ends before last model year
