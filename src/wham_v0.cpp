@@ -186,25 +186,10 @@ Type objective_function<Type>::operator() ()
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 1; y < n_years_Ecov-1; y++){
+          Ecov_x(y,i) = Ecov_re(y-1,i);
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
-          Ecov_x(y,i) = Ecov_re(y,i);
         }
-
-        // Type Ecov1; // initial year value ("given a fixed effect x_1", pg 1262, Miller et al. 2016)
-        // Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
-        // Ecov1 = Ecov_process_pars(0);
-        // Ecov_sig = exp(Ecov_process_pars(1));
-
-        // Ecov_y(0) = Ecov1;
-        // nll_Ecov -= dnorm(Ecov_y(0), Ecov1, Ecov_sig, 1);
-        // // nll_Ecov -= -(half * (log(two*M_PI) + square(Ecov(0,i) - Ecov1(i))/sigma2_Ecov(i)) + log_Ecov_sigma(i));
-        // for(int y = 1; y < n_years_Ecov - 1; y++)
-        // {
-        //   Ecov_y(y) = Ecov_re(y-1); // Ecov_re is one shorter than Ecov_y bc first value is Ecov1, fixed effect
-        //   nll_Ecov -= dnorm(Ecov_re(y), Ecov_re(y-1), Ecov_sig, 1);
-        //   // nll_Ecov -= -(half * (log(two*M_PI) + square(Ecov(y,i) - Ecov(y-1,i))/sigma2_Ecov(i)) + log_Ecov_sigma(i));
-        // }
-        // Ecov_y(n_years_Ecov-1) = Ecov_re(n_years_Ecov-2); // why does the last year not contribute to nll?
+        Ecov_x(n_years_Ecov-1,i) = Ecov_re(n_years_Ecov-2,i);
       }
 
       // Ecov model option 2: AR1
