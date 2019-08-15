@@ -512,6 +512,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   for(i in 1:data$n_Ecov){
     tmp.pars[,i] <- if(data$Ecov_model[i]==0) rep(NA,3) else tmp.pars[,i]
     tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,data$n_years_Ecov) else tmp.re[,i]
+    if(data$Ecov_model[i]==1) tmp.re[data$n_years_Ecov,i] <- NA # if Ecov is a rw, last year of Ecov_re is not used bc Ecov_x[i] uses Ecov_re[i-1]
   }
   ind.notNA <- which(!is.na(tmp.re))
   tmp.re[ind.notNA] <- 1:length(ind.notNA)
