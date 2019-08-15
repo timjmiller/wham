@@ -185,7 +185,7 @@ Type objective_function<Type>::operator() ()
         nll_Ecov -= dnorm(Ecov_re(0,i), Ecov1, Ecov_sig, 1);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
-        for(int y = 1; y < n_years_Ecov; y++){
+        for(int y = 1; y < n_years_Ecov-1; y++){
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           Ecov_x(y,i) = Ecov_re(y,i);
         }
