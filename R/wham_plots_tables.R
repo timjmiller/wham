@@ -32,7 +32,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
-      ord.x <- tmp$residual[order(tmp$residual)]
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
       P <- ppoints(n)
       z <- qnorm(P, mean=0, sd=1)
@@ -68,8 +69,12 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
+      # make robust to missing years
+      tmp$year <- years[tmp$year]
+      tmp <- rbind(tmp[c("year","residual")], data.frame(year=years[!(years %in% tmp$year)], residual=rep(NA, length(years[!(years %in% tmp$year)]))))
+      tmp <- tmp[order(tmp$year),]
       # 1. trend vs. year
-      plot(years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+      plot(tmp$year, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -85,7 +90,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
-      ord.x <- tmp$residual[order(tmp$residual)]
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
       P <- ppoints(n)
       z <- qnorm(P, mean=0, sd=1)
@@ -113,7 +119,20 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
-      tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov)
+      tmp$year <- years[tmp$year] # year in osa is MODEL year, not Ecov year
+      # tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov) 
+      if(mod$env$data$year1_Ecov < mod$env$data$year1_model){
+        tmp <- rbind(data.frame(year=seq(mod$env$data$year1_Ecov, length.out=mod$env$data$year1_model-mod$env$data$year1_Ecov),
+                                fleet=names(table(dat$fleet))[f],
+                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA), tmp)
+      }
+      end_Ecov <- mod$env$data$year1_Ecov + mod$env$data$n_years_Ecov - 1
+      end_model <- mod$env$data$year1_model + mod$env$data$n_years_model - 1
+      if(end_Ecov > end_model){
+        tmp <- rbind(tmp, data.frame(year=seq(end_model+1, length.out=end_Ecov-end_model),
+                                fleet=names(table(dat$fleet))[f],
+                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA))
+      }
       tmp$pred <- mod$rep$Ecov_x[,f]
       tmp <- subset(tmp, !is.nan(dat$residual))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_ecov_4panel_",f,".pdf")), family = "Times", height = 10, width = 10)
@@ -141,7 +160,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
-      ord.x <- tmp$residual[order(tmp$residual)]
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
       P <- ppoints(n)
       z <- qnorm(P, mean=0, sd=1)
@@ -796,7 +816,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   pred_index = sapply(1:dat$n_indices, function(x)
   {
       if(dat$units_indices[x] == 2) apply(pred_index[x,,],1,sum)
-      else apply(pred_index[x,,] * waa[dat$waa_pointer_indices[x],,],1,sum)
+      else apply(pred_index[x,,] * dat$waa[dat$waa_pointer_indices[x],,],1,sum)
   })
   index = dat$agg_indices
   sigma = dat$agg_index_sigma
@@ -814,8 +834,9 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
 		lines(years, pred_index[,i], col=plot.colors[i], lwd=2)
 		log.ob.min <- log(index[,i])-1.96*sigma[,i]
 		log.ob.max <- log(index[,i])+1.96*sigma[,i]
-		plot(years, log(index[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Index)",
-			ylim=c(min(log.ob.min,log(pred_index[,i])), 1.1*max(log.ob.max,log(pred_index[,i]))))
+    y.min <- min(c(log.ob.min,log(pred_index[,i]))[is.finite(c(log.ob.min,log(pred_index[,i])))])
+    y.max <- 1.1*max(c(log.ob.max,log(pred_index[,i]))[is.finite(c(log.ob.max,log(pred_index[,i])))])
+		plot(years, log(index[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Index)", ylim=c(y.min, y.max))
 		lines(years, log(pred_index[,i]), col=plot.colors[i], lwd=2)
 		arrows(years, log.ob.min, years, log.ob.max, length=0)
 		title (paste0("Index ",i), outer=T, line=-1)
@@ -958,7 +979,7 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, u
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
     acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * waa[mod$env$data$waa_pointer_indices[i],,]
+    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
@@ -1079,7 +1100,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
     acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * waa[mod$env$data$waa_pointer_indices[i],,]
+    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_index",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")

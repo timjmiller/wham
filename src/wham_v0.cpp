@@ -74,7 +74,7 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(keep_C); // indices for catch obs, can loop years/fleets with keep(keep_C(y,f))
   DATA_IMATRIX(keep_I);
   DATA_IMATRIX(keep_E); // Ecov
-  DATA_IARRAY(keep_Cpaa);
+  // DATA_IARRAY(keep_Cpaa);
   // DATA_IARRAY(keep_Ipaa);
 
   // data for environmental covariate(s), Ecov
