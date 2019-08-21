@@ -233,7 +233,7 @@ res$best
 vign1_res$best
 ```
 
-By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance.
+By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, in this example the models with alternative likelihoods for the age composition observations are not technically comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. `m1` vs. `m3` (both multinomial) and `m2` vs. `m4` (both logistic normal).
 
 ## 4. Plot input data, diagnostics, and results
 

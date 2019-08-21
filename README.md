@@ -7,13 +7,15 @@ The Woods Hole Assessment Model (WHAM) is a state-space age-structured stock ass
 Install WHAM:
 ```
 # if you want vignettes
+# not sure why, but these look better if you *build using R Studio*
 devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
 
 # if you do NOT want vignettes
 devtools::install_github("timjmiller/wham", dependencies=TRUE)
 
 # if you're having problems with dependencies not installing:
-to.install <- c("TMB","plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2"))
+devtools::install_github("kaskr/adcomp/TMB", dependencies=TRUE)
+to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2"))
 new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```

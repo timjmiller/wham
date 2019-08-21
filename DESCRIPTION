@@ -38,7 +38,7 @@ Imports:
     ggplot2 (>= 3.2.0),
     TMBhelper (>= 1.1.0)
 Remotes: 
-    kaskr/TMB_contrib_R/TMBhelper
+    kaskr/TMB_contrib_R/TMBhelper,
     kaskr/adcomp/TMB
 LinkingTo:
     TMB, 
