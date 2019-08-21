@@ -288,7 +288,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     # }
     # pad Ecov if it starts after model year1 - max(lag)
     if(data$year1_Ecov > data$year1_model - max(Ecov$lag)){
-      warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
+      print("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
+      # warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
       data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
       data$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs_sigma)
       data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
@@ -298,7 +299,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
     # pad Ecov if it ends before last model year
     if(end_Ecov < end_model){
-      warning("Ecov last year is before model last year. Padding Ecov...")
+      print("Ecov last year is before model last year. Padding Ecov...")
+      # warning("Ecov last year is before model last year. Padding Ecov...")
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_obs_sigma <- rbind(data$Ecov_obs_sigma, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
@@ -439,7 +441,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
   data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
- 
+
   data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
   # data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
   # xl <- apply(data$use_indices,1,function(r) which(r==1))
@@ -447,14 +449,14 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_indices, times=sapply(xl, length))
   data$keep_I[cbind(Row,Col)] <- subset(obs, type=='logindex')$ind
- 
+
   data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
   # data$keep_E[data$Ecov_use_obs==1] <- subset(obs, type=='Ecov')$ind
   xl <- lapply(seq_len(nrow(data$Ecov_use_obs)), function(r) which(data$Ecov_use_obs[r,]==1))
   # xl <- apply(data$Ecov_use_obs,1,function(r) which(r==1))
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_Ecov, times=sapply(xl, length))
-  data$keep_E[cbind(Row,Col)] <- subset(obs, type=='Ecov')$ind  
+  data$keep_E[cbind(Row,Col)] <- subset(obs, type=='Ecov')$ind
 
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_catch, data$n_ages))
   for(i in 1:data$n_fleets) data$keep_Cpaa[i,,] <- matrix(subset(obs, type=='paacatch' & fleet==paste0("fleet_",i))$ind, nrow=data$n_years_catch, ncol=data$n_ages, byrow=TRUE)
