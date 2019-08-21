@@ -63,30 +63,29 @@ setwd(write.dir)
 
 WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
 
-Copy `ASAP_SNEMAYT.dat` to our analysis directory:
+Copy `ex1_SNEMAYT.dat` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
 ```
 
-Confirm you are in the working directory and it has the `ASAP_SNEMAYT.dat` file:
+Confirm you are in the working directory and it has the `ex1_SNEMAYT.dat` file:
 ```{r}
 list.files()
 ```
 
 Read the ASAP3 .dat file into R:
 ```{r eval=FALSE}
-asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
+asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 ```
 
 Convert `asap3` to an input list for `wham`. Here we specify the model name and stock-recruit model (1 = random walk, 2 = random about mean (default), 3 = Beverton-Holt, 4 = Ricker):
 ```{r eval=FALSE}
-input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder")
 ```
 
-Now we have some modifications to make to `input` that are specific to SNEMA yellowtail flounder prior to fitting the wham model. Specifically, we will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. The set_age_sel0 function will change data, map, and parameter settings for specified selectivity blocks to use age-specific parameterizations. It also fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergencse. However, an initial fit with all selectivity paramerers freely estimated can be useful in determining which age(s) to fix parameters at 1. The selectivity parameters are estimated on the logit scale so setting the estimated parameter to -Inf or Inf results in the transformed selectivity parameter at the lower or upper bound, respectively (e.g. 0 or 1). In the code below, the ages to fix selectivity at 1 have already been determined for us.
+Now, prior to fitting the wham model, we have some modifications to make to `input` that are specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. The `set_age_sel0` function will change data, map, and parameter settings for specified selectivity blocks to use age-specific parameterizations. It also fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. However, an initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix parameters at 1. The selectivity parameters are estimated on the logit scale so setting the estimated parameter to -Inf or Inf results in the transformed selectivity parameter at the lower or upper bound, respectively (e.g. 0 or 1). In the code below, the ages to fix selectivity at 1 have already been determined for us.
 ```{r eval=FALSE}
-
 # Make one or more selectivity blocks with age-specific parameters
 age.specific = 1:3 # 3 age-specific blocks
 not.age.specific = (1:input$data$n_selblocks)[-age.specific]
@@ -124,7 +123,7 @@ data(vign1_m4_conv)
 data(vign1_res)
 ```
 
-We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized.
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham` includes a `do.check` option to run Jim Thorson's useful function [TMBhelper::Check_Identifiable](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `?fit_wham`.
 ```{r eval=FALSE}
 check_convergence(m1)
 ```
@@ -258,7 +257,11 @@ Many plots are generated---here we display some examples:
 
 ![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_2.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png){ width=45% }
 
+![Conditional expected and posterior estimates of age-1 abundance (recruitment).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_1.png){ width=45% }![Conditional expected and posterior estimates of age-5 abundance.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_5.png){ width=45% }
+
 ![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index1.png){ width=45% }
+
+![One-step-ahead residuals Fleet 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_fleet1.png){ width=30% }![One-step-ahead residuals Index 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index1.png){ width=30% }![One-step-ahead residuals Index 2 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index2.png){ width=30% }
 
 ### Input Data
 

@@ -22,7 +22,7 @@
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
 #'
-fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=TRUE)
+fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
 

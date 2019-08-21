@@ -9,15 +9,14 @@ setwd(write.dir)
 
 # copy asap3 data file to working directory
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
 
 # confirm you are in the working directory and it has the ASAP_SNEMAYT.dat file
 list.files()
 
 # read asap3 data file and convert to input list for wham
-asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
-# asap3 <- read.asap3.dat.fn("ASAP_SNEMAYT.dat")
-input <- prepare_wham_input(asap3, recruit_model=2, model_name="SNEMA Yellowtail Flounder")
+asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder")
 
 # Make one or more selectivity blocks with age-specific parameters
 age.specific = 1:3 # 3 age-specific blocks

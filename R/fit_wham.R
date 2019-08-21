@@ -57,7 +57,7 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, 
-                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = TRUE)
+                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE)
 {
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )

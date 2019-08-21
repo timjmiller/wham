@@ -442,14 +442,16 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
  
   data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
   # data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
-  xl <- apply(data$use_indices,1,function(r) which(r==1))
+  # xl <- apply(data$use_indices,1,function(r) which(r==1))
+  xl <- lapply(seq_len(nrow(data$use_indices)), function(r) which(data$use_indices[r,]==1))
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_indices, times=sapply(xl, length))
   data$keep_I[cbind(Row,Col)] <- subset(obs, type=='logindex')$ind
  
   data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
   # data$keep_E[data$Ecov_use_obs==1] <- subset(obs, type=='Ecov')$ind
-  xl <- apply(data$Ecov_use_obs,1,function(r) which(r==1))
+  xl <- lapply(seq_len(nrow(data$Ecov_use_obs)), function(r) which(data$Ecov_use_obs[r,]==1))
+  # xl <- apply(data$Ecov_use_obs,1,function(r) which(r==1))
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_Ecov, times=sapply(xl, length))
   data$keep_E[cbind(Row,Col)] <- subset(obs, type=='Ecov')$ind  
