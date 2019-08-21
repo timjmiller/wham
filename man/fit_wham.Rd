@@ -6,7 +6,7 @@
 \usage{
 fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
   n.peels = 7, do.osa = TRUE, osa.opts = list(method =
-  "oneStepGeneric", parallel = TRUE))
+  "oneStepGeneric", parallel = TRUE), model = NULL, do.check = FALSE)
 }
 \arguments{
 \item{input}{Named list with several components:
@@ -34,6 +34,10 @@ as \code{mod$osa$residual}.}
 
 \item{osa.opts}{list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
 Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
+
+\item{model}{(optional), a previously fit wham model.}
+
+\item{do.check}{T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
 }
 \value{
 a fit TMB model with additional output if specified:

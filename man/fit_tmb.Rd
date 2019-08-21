@@ -4,7 +4,7 @@
 \alias{fit_tmb}
 \title{Fit TMB model using nlminb}
 \usage{
-fit_tmb(model, n.newton = 3, do.sdrep = TRUE)
+fit_tmb(model, n.newton = 3, do.sdrep = TRUE, do.check = FALSE)
 }
 \arguments{
 \item{model}{Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
@@ -12,6 +12,8 @@ fit_tmb(model, n.newton = 3, do.sdrep = TRUE)
 \item{n.newton}{Integer, number of additional Newton steps after optimization. Default = \code{3}.}
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
+
+\item{do.check}{T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
 }
 \value{
 \code{model}, appends the following:
@@ -32,5 +34,5 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by \code{\link{fit_wham}}.
 }
 \seealso{
-\code{\link{fit_wham}}, \code{\link{retro}}
+\code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
 }

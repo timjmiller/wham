@@ -39,6 +39,7 @@ Imports:
     TMBhelper (>= 1.1.0)
 Remotes: 
     kaskr/TMB_contrib_R/TMBhelper
+    kaskr/adcomp/TMB
 LinkingTo:
     TMB, 
     RcppEigen
