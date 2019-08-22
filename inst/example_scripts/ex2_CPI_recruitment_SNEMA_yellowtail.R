@@ -1,3 +1,11 @@
+# WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment
+# Replicate Miller et al 2016 results
+#   adds environmental covariate (CPI, treated as rw)
+#   uses 5 indices (ex 1: only 2 indices)
+#   only fit to 1973-2011 data (ex 1: 1973-2016)
+#   age compositions = 5, logistic normal pool zero obs (ex 1: 7, logistic normal missing zero obs)
+#   selectivity = logistic (ex 1: age-specific)
+
 # load wham
 library(wham)
 library(dplyr)
@@ -10,27 +18,27 @@ setwd(write.dir)
 
 # copy data files to working directory
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ASAP_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
 file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=FALSE)
 
-# confirm you are in the working directory and it has the ASAP_SNEMAYT.dat and CPI.csv files
+# confirm you are in the working directory and it has the ex2_SNEMAYT.dat and CPI.csv files
 list.files()
 
 # read asap3 data file and convert to input list for wham
-asap3 <- read_asap3_dat("ASAP_SNEMAYT.dat")
+asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
 
 # load env covariate, CPI (Cold Pool Index)
 env.dat <- read.csv("CPI.csv", header=T)
 
 # specify 7 models:
 # Model  Recruit_mod  Ecov_mod     Ecov_how
-#    m1       Random       ar1          ---
-#    m2       Random       ar1  Controlling
-#    m3     Bev-Holt       ar1          ---
-#    m4     Bev-Holt       ar1     Limiting
-#    m5     Bev-Holt        rw     Limiting
-#    m6     Bev-Holt       ar1  Controlling
-#    m7       Ricker       ar1  Controlling
+#    m1       Random        rw          ---
+#    m2       Random        rw  Controlling
+#    m3     Bev-Holt        rw          ---
+#    m4     Bev-Holt        rw     Limiting
+#    m5     Bev-Holt       ar1     Limiting
+#    m6     Bev-Holt        rw  Controlling
+#    m7       Ricker        rw  Controlling
 df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
                       Ecov_process = c('ar1','ar1','ar1','ar1','rw','ar1','ar1'),
                       Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)

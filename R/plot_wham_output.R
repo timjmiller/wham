@@ -118,6 +118,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       plot.retro(mod, what = "SSB")
       plot.retro(mod, what = "Fbar")
       plot.retro(mod, what = "NAA")
+      plot.retro(mod, what = "NAA_age", age=1)
       dev.off()
     }
 
@@ -281,6 +282,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       plot.retro(mod, what = "SSB", od=dir.retro, do.png=TRUE)
       plot.retro(mod, what = "Fbar", od=dir.retro, do.png=TRUE)
       plot.retro(mod, what = "NAA", od=dir.retro, do.png=TRUE)
+      plot.retro(mod, what = "NAA_age", age=1, od=dir.retro, do.png=TRUE)
       dev.off()
     }
 

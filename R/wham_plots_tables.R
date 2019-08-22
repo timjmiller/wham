@@ -2511,7 +2511,7 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
   par(origpar)
 } # end function
 
-plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", do.tex = FALSE, do.png = FALSE, res = 72, od)
+plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", age=NULL, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
@@ -2519,14 +2519,26 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
   npeels = length(mod$peels)
   if(npeels)
   {
+    if(what == "NAA_age") {
+      age.ind <- match(age, mod$ages.lab)
+      what.print <- paste0(what, age)
+    } else {
+      what.print <- what
+    }
+
     # standard retro plot
-    if(do.tex) cairo_pdf(file.path(od, paste0(what,"_retro.pdf")), family = "Times", height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(what,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    if(do.tex) cairo_pdf(file.path(od, paste0(what.print,"_retro.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(what.print,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     plot.colors = mypalette(npeels+1)
     tcol = col2rgb(plot.colors)
     tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
-    res = list(mod$rep[[what]])
-    res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
+    if(what == "NAA_age"){
+      res = list(mod$rep[["NAA"]])
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[["NAA"]])
+    } else {
+      res = list(mod$rep[[what]])
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])      
+    }
     if(what == "NAA")
     {
       par(mfcol = c(ceiling(NCOL(res[[1]])/2),2))
@@ -2542,7 +2554,20 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         }
       }
     }
-    else
+    if(what == "NAA_age") # only specified age
+    {
+      par(mfrow = c(1,1))
+      i = age.ind
+      y.range1 <- range(sapply(res, function(x) range(x[,i])))
+      plot(years,res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
+      grid(col = gray(0.7), lty = 2)
+      for (j in 1:npeels)
+      {
+        lines(years[1:(n_years-j)],res[[j+1]][,i], col = tcol[j+1])
+        points(years[n_years-j],res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
+      }
+    }
+    if(what %in% c("SSB","Fbar"))
     {
       if(missing(y.range1)) y.range1 <- range(sapply(res, function(x) range(x)))
       par(mfrow = c(1,1))
@@ -2557,11 +2582,11 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     if(do.tex | do.png) dev.off() else par(origpar)
 
     # relative retro plot
-    if(do.tex) cairo_pdf(file.path(od, paste0(what,"_retro_relative.pdf")), family = "Times", height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(what,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    if(do.tex) cairo_pdf(file.path(od, paste0(what.print,"_retro_relative.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(what.print,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     if(missing(y.lab)) y.lab = bquote(paste("Mohn's ", rho, "(",.(what),")"))
-    if(what == "NAA") rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
-    else rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1)] - 1)
+    if(what %in% c("NAA","NAA_age")) rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
+    if(what %in% c("SSB","Fbar")) rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1)] - 1)
     rho.vals = mohns_rho(mod)
 
     if(what == "NAA")
@@ -2582,7 +2607,23 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
       }
     }
-    else
+    if(what == "NAA_age")
+    {
+      par(mfrow = c(1,1))
+      i = age.ind
+      y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,i]))))
+      plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2)
+      grid(col = gray(0.7), lty = 2)
+      for (j in 1:npeels)
+      {
+        lines(years[1:(n_years-j)],rel.res[[j+1]][,i], col = tcol[j+1])
+        points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
+      }
+      rho.nm = ifelse(i==1, "R",paste0("N",mod$ages.lab[i]))
+      rho.plot <- round(rho.vals[rho.nm],3)
+      legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+    }    
+    if(what %in% c("SSB","Fbar"))
     {
       if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x))))
       par(mfrow = c(1,1))
