@@ -45,7 +45,7 @@ set_age_sel0 <- function(input, selblocks){
     if(sum(y >= 1e-5)) temp$map$logit_selpars[x,which(y >= 1e-5)] = n.par + 1:sum(y >= 1e-5)
     n.par = n.par + sum(y >= 1e-5)
   }
-  temp$map.n = temp$map$logit_selpars
+  # temp$map.n = temp$map$logit_selpars
   temp$map$logit_selpars = factor(temp$map$logit_selpars)
   return(temp)
 }

@@ -806,6 +806,8 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_re);
   REPORT(Ecov_beta);
   REPORT(mean_rec_pars);
+  REPORT(Ecov_obs_sigma);
+  REPORT(Ecov_obs_sigma_par);
 
   ADREPORT(log_F);
   ADREPORT(log_FAA);

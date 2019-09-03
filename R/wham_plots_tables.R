@@ -3153,7 +3153,7 @@ plot.ecov <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FAL
 
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
-  ecov.obs.sig = dat$Ecov_obs_sigma
+  ecov.obs.sig = mod$rep$Ecov_obs_sigma
 
   # default: don't plot the padded entries that weren't used in ecov likelihood
   if(!plot.pad){

@@ -267,7 +267,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(class(Ecov$sigma) == "matrix"){
       data$Ecov_obs_sigma_opt = 1
       par$Ecov_obs_sigma <- Ecov$sigma
-      if(!identical(dim(data$Ecov_obs_sigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
+      if(!identical(dim(par$Ecov_obs_sigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
     }
     if(class(Ecov$sigma) == 'numeric'){
       data$Ecov_obs_sigma_opt = 1
