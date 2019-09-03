@@ -29,7 +29,7 @@
 #'   \describe{
 #'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
 #'     \item{$mean}{Mean observations (matrix). Missing values = NA.}
-#'     \item{$sigma}{Observation standard error. Options:
+#'     \item{$logsigma}{Observation standard error (log). Options:
 #'       \describe{
 #'         \item{Matrix with same dimensions as \code{mean}}{Specified values (not estimated) for each time step }
 #'         \item{Single value per Ecov, matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
@@ -235,8 +235,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   # add in environmental covariate data
   if(is.null(Ecov)){
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
-    par$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
-    map$Ecov_obs_sigma <- factor(NA)
+    par$Ecov_obs_logsigma <- matrix(-2.3, nrow=1, ncol=1)
+    map$Ecov_obs_logsigma <- factor(NA)
     par$Ecov_obs_sigma_par <- matrix(0, nrow=1, ncol=1)
     map$Ecov_obs_sigma_par <- factor(NA)
     data$Ecov_obs_sigma_opt <- 1
@@ -265,43 +265,45 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num Ecovs
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
     if(class(Ecov$sigma) == "matrix"){
+      if(any(Ecov$sigma <= 0)) stop("Ecov_obs_sigma must be positive")
       data$Ecov_obs_sigma_opt = 1
-      par$Ecov_obs_sigma <- Ecov$sigma
-      if(!identical(dim(par$Ecov_obs_sigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
+      par$Ecov_obs_logsigma <- log(Ecov$sigma)
+      if(!identical(dim(par$Ecov_obs_logsigma), dim(data$Ecov_obs))) stop("Dimensions of Ecov mean != dimensions of Ecov sigma")
     }
     if(class(Ecov$sigma) == 'numeric'){
+      if(any(Ecov$sigma <= 0)) stop("Ecov_obs_sigma must be positive")
       data$Ecov_obs_sigma_opt = 1
       print("Ecov sigma is numeric. Coercing to a matrix...")
       # warning("Ecov sigma is not a matrix. Coercing to a matrix...")
-      if(length(Ecov$sigma) == data$n_Ecov) par$Ecov_obs_sigma <- matrix(rep(Ecov$sigma, each=n_Ecov_obs), ncol=data$n_Ecov)
-      if(length(Ecov$sigma) == n_Ecov_obs && data$n_Ecov == 1) par$Ecov_obs_sigma <- matrix(Ecov$sigma, ncol=1)
+      if(length(Ecov$sigma) == data$n_Ecov) par$Ecov_obs_logsigma <- matrix(rep(log(Ecov$sigma), each=n_Ecov_obs), ncol=data$n_Ecov)
+      if(length(Ecov$sigma) == n_Ecov_obs && data$n_Ecov == 1) par$Ecov_obs_logsigma <- matrix(log(Ecov$sigma), ncol=1)
       if(length(Ecov$sigma) != data$n_Ecov && length(Ecov$sigma) != n_Ecov_obs) stop("Ecov sigma is numeric but length is not equal to # of Ecovs or Ecov observations")
     }
     if(class(Ecov$sigma) == 'character'){
       if(Ecov$sigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
         data$Ecov_obs_sigma_opt = 2
-        par$Ecov_obs_sigma <- matrix(0.1, nrow=n_Ecov_obs, ncol=data$n_Ecov)
-        map$Ecov_obs_sigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
-        par$Ecov_obs_sigma_par <- matrix(0, nrow=2, ncol=data$n_Ecov)
+        par$Ecov_obs_logsigma <- matrix(-2.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
+        map$Ecov_obs_logsigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
+        par$Ecov_obs_sigma_par <- matrix(-2.3, nrow=2, ncol=data$n_Ecov)
         map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
       if(Ecov$sigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
         data$Ecov_obs_sigma_opt = 3
-        par$Ecov_obs_sigma <- matrix(0.1, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
-        map$Ecov_obs_sigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par$Ecov_obs_sigma_par <- matrix(0, nrow=2, ncol=data$n_Ecov)
+        par$Ecov_obs_logsigma <- matrix(-2.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
+        map$Ecov_obs_logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
+        par$Ecov_obs_sigma_par <- matrix(-2.3, nrow=2, ncol=data$n_Ecov)
         map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
       if(Ecov$sigma == 'est_re'){
         data$Ecov_obs_sigma_opt = 4
-        par$Ecov_obs_sigma <- matrix(0.1, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
-        map$Ecov_obs_sigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par$Ecov_obs_sigma_par <- matrix(c(rep(0.1, data$n_Ecov), rep(1, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
+        par$Ecov_obs_logsigma <- matrix(-2.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
+        map$Ecov_obs_logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
+        par$Ecov_obs_sigma_par <- matrix(c(rep(-2.3, data$n_Ecov), rep(-0.7, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
       }
     }
     if(data$Ecov_obs_sigma_opt == 1){ # Ecov sigma given, initialized at given values
-      map$Ecov_obs_sigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
-      par$Ecov_obs_sigma_par <- matrix(0, nrow=2, ncol=data$n_Ecov)
+      map$Ecov_obs_logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
+      par$Ecov_obs_sigma_par <- matrix(-2.3, nrow=2, ncol=data$n_Ecov)
       map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
     }
 
@@ -343,8 +345,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       print("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
       # warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
       data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
-      par$Ecov_obs_sigma <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), par$Ecov_obs_sigma)
-      map$Ecov_obs_sigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), map$Ecov_obs_sigma)
+      par$Ecov_obs_logsigma <- rbind(matrix(-2.3, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), par$Ecov_obs_logsigma)
+      map$Ecov_obs_logsigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), map$Ecov_obs_logsigma)
       data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
       data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag), data$year1_Ecov-1), data$Ecov_year)
       data$year1_Ecov <- data$year1_model - max(Ecov$lag)
@@ -355,8 +357,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       print("Ecov last year is before model last year. Padding Ecov...")
       # warning("Ecov last year is before model last year. Padding Ecov...")
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      par$Ecov_obs_sigma <- rbind(par$Ecov_obs_sigma, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      map$Ecov_obs_sigma <- rbind(map$Ecov_obs_sigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      par$Ecov_obs_logsigma <- rbind(par$Ecov_obs_logsigma, matrix(-2.3, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      map$Ecov_obs_logsigma <- rbind(map$Ecov_obs_logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
       end_Ecov <- end_model
@@ -600,7 +602,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
   map$log_R_sigma = factor(rep(NA, length(par$log_R_sigma)))
   map$log_b = factor(rep(NA,length(par$log_b)))
-  map$Ecov_obs_sigma <- factor(map$Ecov_obs_sigma)
+  map$Ecov_obs_logsigma <- factor(map$Ecov_obs_logsigma)
   map$Ecov_obs_sigma_par <- factor(map$Ecov_obs_sigma_par)
   random = character()
   if(missing(model_name)) model_name = "WHAM for unnamed stock"

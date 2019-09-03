@@ -120,7 +120,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
   PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
-  PARAMETER_MATRIX(Ecov_obs_sigma); // options: given (data), fixed effect(s), or random effects
+  PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
 
   Type nll= 0.0; //negative log-likelihood
@@ -214,14 +214,25 @@ Type objective_function<Type>::operator() ()
 
   // Environmental covariate observation model
   Type nll_Ecov_obs = Type(0);
+  Type nll_Ecov_obs_sig = Type(0); // Ecov obs sigma random effects (opt = 4)
+  matrix<Type> Ecov_obs_sigma(n_years_Ecov, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
+    if(Ecov_obs_sigma_opt == 4){
+      Type mu_logsigma = exp(Ecov_obs_sigma_par(0,i));
+      Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
+    }
     for(int y = 0; y < n_years_Ecov; y++){
+      Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
       if(Ecov_use_obs(y,i) == 1){
+        if(Ecov_obs_sigma_opt == 4){
+          nll_Ecov_obs_sig -= dnorm(Ecov_obs_sigma(y,i), mu_logsigma, sd_logsigma, 1);
+        }
         // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
       }
     }
   }
+  nll += nll_Ecov_obs_sig;
   nll += nll_Ecov_obs;
 
   // Lag environmental covariates
@@ -806,7 +817,6 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_re);
   REPORT(Ecov_beta);
   REPORT(mean_rec_pars);
-  REPORT(Ecov_obs_sigma);
   REPORT(Ecov_obs_sigma_par);
 
   ADREPORT(log_F);
@@ -821,6 +831,7 @@ Type objective_function<Type>::operator() ()
   ADREPORT(log_catch_resid);
   ADREPORT(Ecov_x);
   ADREPORT(Ecov_resid);
+  ADREPORT(Ecov_obs_sigma);
 
   REPORT(nll);
   REPORT(nll_Ecov);
