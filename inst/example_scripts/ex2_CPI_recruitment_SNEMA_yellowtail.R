@@ -95,7 +95,7 @@ for(m in 1:n.mods){
   input$data$random_recruitment = 0
   input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
   input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c("log_NAA","Ecov_re")
+  input$random = c(input$random, "log_NAA","Ecov_re")
 
   # ---------------------------------------------------------
   ## Fit model

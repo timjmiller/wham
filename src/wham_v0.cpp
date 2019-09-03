@@ -82,7 +82,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
   DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
   DATA_MATRIX(Ecov_obs);
-  DATA_MATRIX(Ecov_obs_sigma);
+  // DATA_MATRIX(Ecov_obs_sigma); // now in $par, either given (data), fixed effect(s), or random effects
   DATA_IVECTOR(Ecov_lag);
   DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = growth, 3 = mortality
@@ -94,6 +94,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(year1_model); // first year model
   DATA_IVECTOR(ind_Ecov_out_start); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
   DATA_IVECTOR(ind_Ecov_out_end); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
+  DATA_INTEGER(Ecov_obs_sigma_opt); // 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
@@ -119,6 +120,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
   PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
+  PARAMETER_MATRIX(Ecov_obs_sigma); // options: given (data), fixed effect(s), or random effects
+  PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
 
   Type nll= 0.0; //negative log-likelihood
   vector<int> any_index_age_comp(n_indices);
