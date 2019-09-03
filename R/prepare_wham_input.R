@@ -236,7 +236,9 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   if(is.null(Ecov)){
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     par$Ecov_obs_sigma <- matrix(0, nrow=1, ncol=1)
-    map$Ecov_obs_sigma <- matrix(NA, nrow=1, ncol=1)
+    map$Ecov_obs_sigma <- factor(NA)
+    par$Ecov_obs_sigma_par <- matrix(0, nrow=1, ncol=1)
+    map$Ecov_obs_sigma_par <- factor(NA)
     data$Ecov_obs_sigma_opt <- 1
     data$n_Ecov <- 1
     data$Ecov_use_obs <- matrix(0, nrow=1, ncol=1)
