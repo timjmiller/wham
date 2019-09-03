@@ -305,7 +305,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
         data$Ecov_obs_sigma_opt = 4
         par$Ecov_obs_logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
         map$Ecov_obs_logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par$Ecov_obs_sigma_par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-2, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
+        par$Ecov_obs_sigma_par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-0.5, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
         map$Ecov_obs_sigma_par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
       }
     }
