@@ -215,7 +215,7 @@ Type objective_function<Type>::operator() ()
   // Environmental covariate observation model
   Type nll_Ecov_obs = Type(0);
   Type nll_Ecov_obs_sig = Type(0); // Ecov obs sigma random effects (opt = 4)
-  matrix<Type> Ecov_obs_sigma = exp(Ecov_obs_logsigma);
+  matrix<Type> Ecov_obs_sigma(n_years_Ecov, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
     for(int y = 0; y < n_years_Ecov; y++){
       if(Ecov_use_obs(y,i) == 1){
@@ -224,6 +224,7 @@ Type objective_function<Type>::operator() ()
           Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
           nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma(y,i), mu_logsigma, sd_logsigma, 1);
         }
+        Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
         // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
       }
