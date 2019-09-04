@@ -1,3 +1,47 @@
+plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72, od){
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  years <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov)
+
+  ecov.pred = mod$rep$Ecov_x
+  ecov.obs = dat$Ecov_obs
+  # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
+  sdrep = summary(mod$sdrep)
+  ecov.obs.sig = matrix(sdrep[rownames(sdrep) %in% "Ecov_obs_sigma",1], ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+  ecov.use = dat$Ecov_use_obs
+  ecov.obs.sig[ecov.use == 0] <- NA
+  ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
+
+  # default: don't plot the padded entries that weren't used in ecov likelihood
+  if(!plot.pad) ecov.obs[ecov.use == 0] <- NA
+
+  plot.colors = mypalette(dat$n_Ecov)
+  for (i in 1:dat$n_Ecov)
+  {
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+
+    par(mar=c(4,4,1.5,0), oma=c(0,0,0.5,0.5))
+
+    ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
+    ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
+    ecov.low <- ecov.obs[,i] - 1.96 * ecov.obs.sig[,i]
+    ecov.high <- ecov.obs[,i] + 1.96 * ecov.obs.sig[,i]
+    y.min <- ifelse(min(ecov.low,na.rm=T) < 0, 1.1*min(ecov.low,na.rm=T), 0.9*min(ecov.low,na.rm=T))
+    y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
+    if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
+    if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
+    plot(years, ecov.obs[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
+         ylim=c(y.min, y.max))
+    polygon(c(years,rev(years)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    arrows(years, ecov.low, years, ecov.high, length=0)
+    points(years, ecov.obs[,i], pch=19)
+    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }
+}
+
 plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
@@ -3146,21 +3190,23 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 #plot_catch_curves_for_index(ssm)
 
 #-------------------------------------------------------------------------------
-plot.ecov <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FALSE, od){
+plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FALSE, od){
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   years <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov)
 
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
-  ecov.obs.sig = mod$rep$Ecov_obs_sigma
+  # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
+  sdrep = summary(mod$sdrep)
+  ecov.obs.sig = matrix(sdrep[rownames(sdrep) %in% "Ecov_obs_sigma",1], ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+  ecov.use = dat$Ecov_use_obs
+  ecov.obs.sig[ecov.use == 0] <- NA
+  ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
 
   # default: don't plot the padded entries that weren't used in ecov likelihood
-  if(!plot.pad){
-    ecov.use = dat$Ecov_use_obs
-    ecov.obs[ecov.use == 0] <- NA
-    ecov.obs.sig[ecov.use == 0] <- NA
-  }
+  if(!plot.pad) ecov.obs[ecov.use == 0] <- NA
+
   ecov.res = (ecov.obs - ecov.pred) / ecov.obs.sig # standard residual (obs - pred)
 
   if(!missing(use.i)) ecovs <- use.i
@@ -3168,26 +3214,32 @@ plot.ecov <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FAL
   plot.colors = mypalette(dat$n_Ecov)
   for (i in ecovs)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,"_diagnostic.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'_diagnostic.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 
     m <- rbind(c(1,1), c(2,3))
     layout(m)
     par(mar=c(4,4,2,0), oma=c(0,0,0.5,0.5))
 
+    ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
+    ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
     ecov.low <- ecov.obs[,i] - 1.96 * ecov.obs.sig[,i]
     ecov.high <- ecov.obs[,i] + 1.96 * ecov.obs.sig[,i]
     y.min <- ifelse(min(ecov.low,na.rm=T) < 0, 1.1*min(ecov.low,na.rm=T), 0.9*min(ecov.low,na.rm=T))
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years, ecov.obs[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab=dat$Ecov_label[i],
+    plot(years, ecov.obs[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
          ylim=c(y.min, y.max))
-    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    polygon(c(years,rev(years)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
+    points(years, ecov.obs[,i], pch=19)
+    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
     title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+
     plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")
     abline(h=0)
+
     hist(ecov.res[,i], breaks=10, plot=T, xlab="Std. Residual", ylab="Probability Density", freq=F, main=NULL)
     if(do.tex | do.png) dev.off() else par(origpar)
   }
