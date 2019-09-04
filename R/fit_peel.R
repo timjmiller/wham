@@ -32,6 +32,9 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
   if("log_R" %in% model$random) temp$map$log_R = factor(log_R_na_ind)
   if("log_NAA" %in% model$random) temp$map$log_NAA = factor(log_NAA_na_ind)
   temp$map$F_devs = factor(F_devs_na_ind)
+  if("Ecov_obs_logsigma" %in% model$random){
+    temp$map$Ecov_obs_logsigma = factor(rbind(head(matrix(as.numeric(as.character(temp$map$Ecov_obs_logsigma)), ncol=temp$dat$n_Ecov), -peel), matrix(NA, ncol=temp$dat$n_Ecov, nrow=peel)))
+  }
   temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map)
   out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
   return(out)
