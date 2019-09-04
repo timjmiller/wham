@@ -18,8 +18,8 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72,
   plot.colors = mypalette(dat$n_Ecov)
   for (i in 1:dat$n_Ecov)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 7, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 7*144, res = 144, pointsize = 12, family = "Times")
 
     par(mar=c(4,4,1.5,0), oma=c(0,0,0.5,0.5))
 
