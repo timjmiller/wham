@@ -16,7 +16,6 @@ fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
   \item{\code{input$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
   \item{\code{input$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
   \item{\code{input$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
-  \item{\code{input$map.n}}{I don't know what this is.}
   \item{\code{input$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
   \item{\code{input$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
 }}

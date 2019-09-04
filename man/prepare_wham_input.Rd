@@ -57,8 +57,16 @@ the same years as the fisheries data. It can be \code{NULL} if no environmental 
 Otherwise, it must be a named list with the following components:
   \describe{
     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
-    \item{$mean}{Mean observations (vector if 1D, matrix if multivariate). Missing values = NA.}
-    \item{$sigma}{Observation standard error (vector if 1D, covariance matrix if multivariate). Same length as \code{mean}.}
+    \item{$mean}{Mean observations (matrix). Missing values = NA.}
+    \item{$logsigma}{Observation standard error (log). Options:
+      \describe{
+        \item{Matrix with same dimensions as \code{mean}}{Specified values (not estimated) for each time step }
+        \item{Single value per Ecov, numeric vector or matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
+        \item{Vector with estimate options for each Ecov, length = n.Ecov}{
+          \code{'est_1'}: Estimated, one value shared among time steps.
+          \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
+      }
+    }
     \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
