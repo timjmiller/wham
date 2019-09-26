@@ -69,10 +69,12 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
 
-  # only if no error
-  if(is.null(mod$err)){
-    if(do.retro) mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels)
-    if(do.osa){
+  if(do.retro) tryCatch(mod$peels = retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels),
+      error = function(e) {err <<- conditionMessage(e)})
+  if(exists("err")) mod$err_retro <- err # store error message
+
+  if(do.osa){
+    if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
       cat("Doing OSA residuals...\n");
       OSA <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                   data.term.indicator="keep",
@@ -80,9 +82,15 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                                   discrete=FALSE, parallel=osa.opts$parallel)
       input$data$obs$residual <- OSA$residual;
       mod$osa <- input$data$obs
-    }
-  } else warning(paste("","** Did not do sdrep, retro, or OSA residual analyses. **",
-    "Error during Newton steps. Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
+    } else warning(paste("","** Did not do OSA residual analyses. **",
+    "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
+  }
+
+  if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
+    "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
+
+  if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
+    paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))  
 
   return(mod)
 }
