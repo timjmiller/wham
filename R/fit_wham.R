@@ -76,10 +76,10 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   if(do.osa){
     if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
       cat("Doing OSA residuals...\n");
-      OSA <- TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+      OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                   data.term.indicator="keep",
                                   method=osa.opts$method,
-                                  discrete=FALSE, parallel=osa.opts$parallel)
+                                  discrete=FALSE, parallel=osa.opts$parallel))
       input$data$obs$residual <- OSA$residual;
       mod$osa <- input$data$obs
     } else warning(paste("","** Did not do OSA residual analyses. **",
