@@ -186,12 +186,14 @@ Type objective_function<Type>::operator() ()
 
         Ecov_x(0,i) = Ecov1;
         nll_Ecov -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
+        SIMULATE if(simulate_state == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 2; y < n_years_Ecov; y++){
-          Ecov_x(y,i) = Ecov_re(y,i);
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
+          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
+          Ecov_x(y,i) = Ecov_re(y,i);
         }
       }
 
@@ -203,12 +205,18 @@ Type objective_function<Type>::operator() ()
         Ecov_mu = Ecov_process_pars(0,i);
         Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(1,i)));
         Ecov_sig = exp(Ecov_process_pars(2,i));
-        for(int y = 0; y < n_years_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
 
         nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        for(int y = 1; y < n_years_Ecov; y++) nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+        SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+        for(int y = 1; y < n_years_Ecov; y++) 
+        {
+          nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
+        }
+        for(int y = 0; y < n_years_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
     } // end loop over Ecovs
+    if(simulate_state == 1) SIMULATE REPORT(Ecov_re);
   }
   nll += nll_Ecov;
 
@@ -223,15 +231,18 @@ Type objective_function<Type>::operator() ()
           Type mu_logsigma = Ecov_obs_sigma_par(0,i);
           Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
           nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma(y,i), mu_logsigma, sd_logsigma, 1);
+          SIMULATE Ecov_obs_logsigma(y,i) = rnorm(mu_logsigma, sd_logsigma);
         }
         Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
         // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
+        SIMULATE Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
       }
     }
   }
   nll += nll_Ecov_obs_sig;
   nll += nll_Ecov_obs;
+  SIMULATE REPORT(Ecov_obs);
 
   // Lag environmental covariates
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
@@ -811,6 +822,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_index_paa);
   REPORT(pred_IAA);
   REPORT(Ecov_x);
+  REPORT(Ecov_out);
   REPORT(Ecov_process_pars);
   REPORT(Ecov_re);
   REPORT(Ecov_beta);
