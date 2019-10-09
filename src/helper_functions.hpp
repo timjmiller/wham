@@ -928,71 +928,53 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
   return res;
 }
 
-/*
+/* calculate Catch at F */
+template<class Type>
+struct catch_F {
+  /* Data and parameter objects for calculation: */
+  vector<Type> M;
+  vector<Type> sel;
+  vector<Type> waacatch;
+  vector<Type> NAA;
+
+  /* Constructor */
+  catch_F(
+  vector<Type> M_,
+  vector<Type> sel_,
+  vector<Type> waacatch_,
+  vector<Type> NAA_) :
+    M(M_), sel(sel_), waacatch(waacatch_), NAA(NAA_) {}
+
+  template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
+  T operator()(vector<T> log_F) { //find such that it achieves required catch
+    int n_ages = M.size();
+    T Catch = 0;
+    vector<T> F(n_ages), Z(n_ages);
+
+    F = exp(log_F(0)) * sel.template cast<T>();
+    Z = F + M.template cast<T>();
+    for(int age=0; age<n_ages; age++)
+    {
+      Catch += T(waacatch(age)) * T(NAA(age)) * F(age) *(1 - exp(-Z(age)))/Z(age);
+    }
+    return Catch;
+  }
+};
+
 template <class Type>
-matrix<Type> get_MSY_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
-  matrix<Type> mature, vector<Type> fracyr_SSB, vector<Type> log_SPR0, int recruit_model)
+Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch)
 {
   int n = 10;
-  int ny = MAA.rows();
-  int na = MAA.cols();
-  matrix<Type> res(ny, 5+n);
-  vector<Type> log_FMSY(n_years_model), log_FMSY_i(1), waacatch(n_ages), sel(n_ages);
-  matrix<Type> log_FMSY_iter(n_years_model,n);
-  log_FMSY_iter.col(0).fill(log(0.2)); //starting value
-  vector<Type> log_YPR_MSY(n_years_model), log_SPR_MSY(n_years_model), log_R_MSY(n_years_model);
-  Type SR_a, SR_b;
-  for(int y = 0; y < n_years_model; y++)
+  vector<Type> log_F_i(1);
+  vector<Type> log_F_iter(n);
+  log_F_iter.fill(log(0.2)); //starting value
+  catch_F<Type> catchF(M, sel, waacatch, NAA);
+  for (int i=0; i<n-1; i++)
   {
-    for(int a = 0; a < n_ages; a++)
-    {
-      M(a) = MAA(y,a);
-      sel(a) = FAA_tot(y,a)/FAA_tot(y,which_F_age-1); //have to look at FAA_tot to see where max F is.
-      waassb(a) = waa(waa_pointer_ssb-1,y,a);
-      waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
-      mat(a) = mature(y,a);
-    }
-    if(use_steepness == 1)
-    {
-      SR_a = exp(log_SR_a(y));
-      SR_b = exp(log_SR_b(y));
-    }
-    else
-    {
-      SR_a = exp(log_SR_a(0));
-      SR_b = exp(log_SR_b(0));
-    }
-    if(recruit_model == 3) //Beverton-Holt selected
-    {
-      sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),0);
-      for (int i=0; i<n-1; i++)
-      {
-        log_FMSY_i(0) = log_FMSY_iter(y,i);
-        vector<Type> grad_sr_yield = autodiff::gradient(sryield,log_FMSY_i);
-        matrix<Type> hess_sr_yield = autodiff::hessian(sryield,log_FMSY_i);
-        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0);
-      }
-    }
-    else //Ricker selected
-    {
-      sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),1);
-      for (int i=0; i<n-1; i++)
-      {
-        log_FMSY_i(0) = log_FMSY_iter(y,i);
-        vector<Type> grad_sr_yield = autodiff::gradient(sryield,log_FMSY_i);
-        matrix<Type> hess_sr_yield = autodiff::hessian(sryield,log_FMSY_i);
-        log_FMSY_iter(y,i+1) = log_FMSY_iter(y,i) - grad_sr_yield(0)/hess_sr_yield(0,0);
-      }
-    }
-    log_FMSY(y) = log_FMSY_iter(y,n-1);
-    log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, sel, mat, waassb, fracyr_SSB(y)));
-    log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, sel, waacatch));
+    log_F_i(0) = log_F_iter(i);
+    vector<Type> grad_catch_F = autodiff::gradient(catchF,log_F_i);
+    log_F_iter(i+1) = log_F_iter(i) - (catchF(log_F_i) - Catch)/grad_catch_F(0);
   }
-
-  if(recruit_model == 3) log_R_MSY = log((SR_a - 1/exp(log_SPR_MSY)) / SR_b); //bh
-  else log_R_MSY = log(log(SR_a) + log_SPR_MSY) - log(SR_b) - log_SPR_MSY; //ricker
-  vector<Type> log_SSB_MSY = log_R_MSY + log_SPR_MSY;
-  vector<Type> log_MSY = log_R_MSY + log_YPR_MSY;
+  Type res = log_F_iter(n-1);
+  return res;
 }
-
-*/
