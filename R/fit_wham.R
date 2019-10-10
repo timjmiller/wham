@@ -10,7 +10,7 @@
 #' to use the (much faster, ~1 sec instead of 2 min) full Gaussian approximation instead of the (default)
 #' generic method, you can use \code{osa.opts=list(method="fullGaussian")}.
 #'
-#' @param input Named list with several components:
+#' @param input Named list with components:
 #'   \describe{
 #'     \item{\code{input$data}}{Data to fit the assessment model to.}
 #'     \item{\code{input$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
@@ -85,6 +85,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     } else warning(paste("","** Did not do OSA residual analyses. **",
     "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
   }
+  mod$input <- input
 
   if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
     "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
