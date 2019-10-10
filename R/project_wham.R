@@ -11,6 +11,13 @@
 #'     \item{Specify catch}{Provide \code{proj.opts$proj.catch}, a vector of aggregate catch with length = \code{n.yrs}. WHAM will calculate F to get specified catch.}
 #'   }
 #'
+#' \code{proj.opts$avg.yrs} controls which years will be averaged over in the projections.
+#' The following quantities are averaged:
+#'   \describe{
+#'     \item{Maturity (proportion at age)}
+#'     \item{}
+#'   }
+#'
 #' @param model a previously fit wham model
 #' @param proj.opts a named list with the following components:
 #'   \describe{
@@ -73,9 +80,8 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR
     capture.output(cat("  proj.F = ",proj.opts$proj.F)),
     capture.output(cat("  proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
-  # fix parameters at previously estimated values
-  # pad with NAs
-  input2 <- prepare_projection(model)
+  # fix parameters at previously estimated values, pad with NAs
+  input2 <- prepare_projection(model, proj.opts)
 
   # 'refit' model, just estimates derived quantities in projection years (with uncertainty)
   mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F)

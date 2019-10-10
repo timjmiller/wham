@@ -529,6 +529,10 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   data$obs <- obs
   data$obsvec <- obs$val
 
+  # projection data will always be modified by 'prepare_projection' 
+  data$do_proj <- 0
+  data$n_years_proj <- 0
+
   # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
   # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
 

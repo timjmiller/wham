@@ -96,6 +96,10 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(ind_Ecov_out_end); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
   DATA_INTEGER(Ecov_obs_sigma_opt); // 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
 
+  // data for projections
+  DATA_INTEGER(do_proj); // 1 = yes, 0 = no
+  DATA_INTEGER(n_years_proj); // number of years to project
+
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
   PARAMETER_VECTOR(logit_q);
