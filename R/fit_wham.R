@@ -24,12 +24,22 @@
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
 #' @param do.retro T/F, do retrospective analysis? Default = \code{TRUE}.
 #' @param n.peels integer, number of peels to use in retrospective analysis. Default = \code{7}.
-#' @param do.osa T/F, Calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
+#' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
 #'   as \code{mod$osa$residual}.
 #' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
 #'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
+#' @param do.proj T/F, do projections? Default = \code{TRUE}. Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
+#' @param proj.opts list of options for projections, passed to \code{\link{project_wham}}.
+#'   \describe{
+#'     \item{\code{$n.yrs}}{integer, number of years to project/forecast. Default = \code{3}.}
+#'     \item{\code{$use.lastF}}{T/F, use terminal year F for projections. Default = \code{TRUE}.}
+#'     \item{\code{$use.FXSPR}}{T/F, calculate F at X% SPR for projections.}
+#'     \item{\code{$proj.F}}{vector, user-specified fishing mortality for projections. Length must equal \code{n.yrs}.}
+#'     \item{\code{$proj.catch}}{vector, user-specified aggregate catch for projections. Length must equal \code{n.yrs}.}
+#'     \item{\code{$avg.yrs}}{vector, specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.}
+#'   }
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -42,7 +52,7 @@
 #' @useDynLib wham
 #' @export
 #'
-#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}
+#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}, \code{\link{project_wham}} 
 #'
 #' @examples
 #' \dontrun{
@@ -56,12 +66,13 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, 
-                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE)
+                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE,
+                    do.proj = TRUE, proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL))
 {
   # wham.dir <- find.package("wham")
   # dyn.load( paste0(wham.dir,"/libs/", TMB::dynlib(version)) )
   if(missing(model)){ 
-    mod <- TMB::MakeADFun(input$data,input$par, DLL = "wham", random = input$random, map = input$map)
+    mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map)
   } else {mod = model}
   
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
