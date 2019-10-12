@@ -975,6 +975,25 @@ Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type>
     vector<Type> grad_catch_F = autodiff::gradient(catchF,log_F_i);
     log_F_iter(i+1) = log_F_iter(i) - (catchF(log_F_i) - Catch)/grad_catch_F(0);
   }
-  Type res = log_F_iter(n-1);
+  Type res = exp(log_F_iter(n-1));
+  return res;
+}
+
+template <class Type>
+Type get_FXSPR(vector<Type> M, vector<Type> sel, int which_F_age, vector<Type> waacatch, vector<Type> waassb,
+  vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0)
+{
+  int n = 10;
+  vector<Type> log_FXSPR_i(1);
+  vector<Type> log_FXSPR_iter(n);
+  log_FXSPR_iter.fill(log(0.2)); //starting value
+  spr_F<Type> sprF(M, sel, mat, waassb, fracyr_SSB);
+  for (int i=0; i<n-1; i++)
+  {
+    log_FXSPR_i(0) = log_FXSPR_iter(i);
+    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
+    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0))/grad_spr_F(0);// /hess_sr_yield(0,0);
+  }
+  Type res = exp(log_FXSPR_iter(n-1));
   return res;
 }

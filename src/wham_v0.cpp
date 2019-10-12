@@ -99,6 +99,9 @@ Type objective_function<Type>::operator() ()
   // data for projections
   DATA_INTEGER(do_proj); // 1 = yes, 0 = no
   DATA_INTEGER(n_years_proj); // number of years to project
+  DATA_IVECTOR(avg_years_ind); // model year indices to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
+  DATA_INTEGER(proj_F_opt); // 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
+  DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
@@ -130,7 +133,7 @@ Type objective_function<Type>::operator() ()
   Type nll= 0.0; //negative log-likelihood
   vector<int> any_index_age_comp(n_indices);
   vector<int> any_fleet_age_comp(n_fleets);
-  vector<Type> SSB(n_years_model);
+  vector<Type> SSB(n_years_model + n_years_proj);
   matrix<Type> F(n_years_model,n_fleets);
   matrix<Type> log_F(n_years_model,n_fleets);
   array<Type> pred_CAA(n_years_model,n_fleets,n_ages);
@@ -140,12 +143,12 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_IAA(n_years_model,n_indices,n_ages);
   array<Type> pred_index_paa(n_years_model,n_indices,n_ages);
   matrix<Type> pred_indices(n_years_model,n_indices);
-  matrix<Type> NAA(n_years_model,n_ages);
-  matrix<Type> pred_NAA(n_years_model,n_ages);
+  matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
+  matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
   array<Type> FAA(n_years_model,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model,n_fleets,n_ages);
-  matrix<Type> FAA_tot(n_years_model,n_ages);
-  matrix<Type> ZAA(n_years_model,n_ages);
+  matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
+  matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
   array<Type> QAA(n_years_model,n_indices,n_ages);
   matrix<Type> selblocks(n_selblocks,n_ages);
   vector<Type> q(n_indices);
@@ -173,12 +176,12 @@ Type objective_function<Type>::operator() ()
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
   // Environmental covariate process model(s)
-  matrix<Type> Ecov_x(n_years_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
-  matrix<Type> Ecov_out(n_years_model, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
+  matrix<Type> Ecov_x(n_years_Ecov + n_years_proj, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
+  matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Type nll_Ecov = 0.0;
 
   if(Ecov_model(0) == 0){ // no Ecov
-    for(int y = 0; y < n_years_model; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
+    for(int y = 0; y < n_years_model + n_years_proj; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
   } else { // yes Ecov
     for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
       // Ecov model option 1: RW
@@ -194,7 +197,7 @@ Type objective_function<Type>::operator() ()
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
-        for(int y = 2; y < n_years_Ecov; y++){
+        for(int y = 2; y < n_years_Ecov + n_years_proj; y++){
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           Ecov_x(y,i) = Ecov_re(y,i);
@@ -212,12 +215,12 @@ Type objective_function<Type>::operator() ()
 
         nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
         SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
-        for(int y = 1; y < n_years_Ecov; y++) 
+        for(int y = 1; y < n_years_Ecov + n_years_proj; y++) 
         {
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
         }
-        for(int y = 0; y < n_years_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
+        for(int y = 0; y < n_years_Ecov + n_years_proj; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
     } // end loop over Ecovs
     if(simulate_state == 1) SIMULATE REPORT(Ecov_re);
@@ -253,13 +256,15 @@ Type objective_function<Type>::operator() ()
   // matrix<Type> Ecov_out(n_years_model, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
     int ct = 0;
-    for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1; y++){
+    for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
       Ecov_out(ct,i) = Ecov_x(y,i);
       ct++;
     }
   }
 
-  // Natural mortality estimation
+  // --------------------------------------------------------------------------
+  // Calculate mortality (M, F, then Z)
+  // Natural mortality process model
   if(use_M_re == 1)
   {
     vector<Type> sigma_M(n_M_re);
@@ -304,7 +309,8 @@ Type objective_function<Type>::operator() ()
   }
   //see(nll);
 
-  matrix<Type> MAA(n_years_model,n_ages);
+  // Construct mortality-at-age (MAA)
+  matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
   for(int i = 0; i < n_ages; i++)
   {
     if(M_model == 0) //M by age
@@ -319,7 +325,20 @@ Type objective_function<Type>::operator() ()
       else for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,i)));
     }
   }
+  if(do_proj == 1){ // add to MAA in projection years using average MAA over avg.yrs
+    matrix<Type> MAA_toavg(n_years_proj,n_ages);
+    for(int a = 0; a < n_ages; a++){
+      for(int i = 0; i < n_years_proj; i++){
+        MAA_toavg(i,a) = MAA(avg_years_ind(i),a);
+      }
+    }
+    vector<Type> MAA_proj = MAA_toavg.colwise().mean();
+    for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+      MAA.row(y) = MAA_proj;
+    }
+  }
 
+  // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
     q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
@@ -328,6 +347,8 @@ Type objective_function<Type>::operator() ()
       for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selblocks(selblock_pointer_indices(y,i)-1,a);
     }
   }
+
+  // Construct fishing mortality-at-age (FAA)
   FAA_tot.setZero();
   for(int f = 0; f < n_fleets; f++)
   {
@@ -351,11 +372,45 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
+  // Total mortality, Z = F + M
+  for(int y = 0; y < n_years_model; y++) ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
 
-  ZAA = FAA_tot + MAA;
+  // F in projection years
+  if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
+    // get selectivity using average over avg.yrs
+    matrix<Type> FAA_toavg(n_years_proj,n_ages);
+    for(int a = 0; a < n_ages; a++){
+      for(int i = 0; i < n_years_proj; i++){
+        FAA_toavg(i,a) = FAA_tot(avg_years_ind(i),a);
+      }
+    }
+    vector<Type> FAA_proj = FAA_toavg.colwise().mean();
+    vector<Type> sel_proj(n_ages);
+    for(int a = 0; a < n_ages; a++){
+      sel_proj(a) = FAA_proj(a)/FAA_proj(which_F_age-1);
+    }
 
+    if(proj_F_opt == 1){ // last year F (default)
+      for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+        FAA_tot.row(y) = FAA_tot.row(n_years_model-1);
+      }
+    }
+    if(proj_F_opt == 2){ // average F
+      for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+        FAA_tot.row(y) = FAA_proj;
+      }
+    }
+    if(proj_F_opt == 4){ // user-specified F
+      for(int i = 0; i < n_years_proj; i++){
+        FAA_tot.row(n_years_model + i) = proj_Fcatch(i) * sel_proj;
+      }
+    }
+  } // proj_F for options 3 and 5 calculated in pop model bc need NAA(y-1)
+
+  // ---------------------------------------------------------------------------------
+  // Set up population model
+  // Year 1 initialize population
   SSB.setZero();
-  //year 1
   for(int a = 0; a < n_ages; a++)
   {
     if(N1_model == 0) NAA(0,a) = exp(log_N1_pars(a));
@@ -372,18 +427,11 @@ Type objective_function<Type>::operator() ()
     pred_NAA(0,a) = NAA(0,a);
   }
 
-  //after year 1
-  //get predicted numbers at age
-  vector<Type> M(n_ages), mat(n_ages), waassb(n_ages), log_SPR0(n_years_model);
-  int nh = 1, na = n_years_model;
-  /*if(use_steepness != 0)
-  {
-    nh = n_years_model;
-    na = 1;
-  }*/
+  // get SPR0
+  vector<Type> M(n_ages), mat(n_ages), waacatch(n_ages), waassb(n_ages), log_SPR0(n_years_model + n_years_proj);
+  int nh = 1, na = n_years_model + n_years_proj;
   vector<Type> log_SR_a(na), log_SR_b(na), SR_h(na), SR_R0(na);
-
-  for(int y = 0; y < n_years_model; y++)
+  for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
     for(int a = 0; a < n_ages; a++)
     {
@@ -395,6 +443,8 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(log_SPR0);
   ADREPORT(log_SPR0);
+
+  // calculate stock-recruit parameters (steepness, R0, a, b)
   if(recruit_model > 2) //BH or Ricker SR
   {
 	vector<Type> SR_h_tf(SR_h.size()); //different transformations for BH and Ricker
@@ -412,7 +462,7 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      for(int y = 0; y < n_years_model; y++)
+      for(int y = 0; y < n_years_model + n_years_proj; y++)
       {
         // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
         if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
@@ -446,7 +496,7 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      for(int y = 0; y < n_years_model; y++)
+      for(int y = 0; y < n_years_model + n_years_proj; y++)
       {
         if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
         {
@@ -475,13 +525,14 @@ Type objective_function<Type>::operator() ()
     REPORT(SR_h_tf);
     REPORT(log_SR_R0);
   }
-  matrix<Type> nll_NAA(n_years_model-1,n_ages);
-  nll_NAA.setZero();
-  vector<Type> nll_recruit(n_years_model-1);
-  nll_recruit.setZero();
 
+  // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, for all years)
-  for(int y = 1; y < n_years_model; y++)
+  matrix<Type> nll_NAA(n_years_model-1 + n_years_proj,n_ages);
+  nll_NAA.setZero();
+  vector<Type> nll_recruit(n_years_model-1 + n_years_proj);
+  nll_recruit.setZero();
+  for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     // Expected recruitment
     if(recruit_model == 1) // random walk
@@ -505,6 +556,21 @@ Type objective_function<Type>::operator() ()
         {
           pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
         }
+      }
+    }
+
+    // calculate F and Z in projection years, here bc need NAA(y-1) if using F from catch
+    if(do_proj == 1){
+      if(y > n_years_model-1){
+        for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
+        for(int a = 0; a < n_ages; a++) waassb(a) = waa(waa_pointer_ssb-1, y, a);
+        if(proj_F_opt == 3){ // F at X% SPR
+          FAA_tot.row(y) = get_FXSPR(MAA.row(y), sel_proj, which_F_age, waacatch, waassb, mature.row(y), percentSPR, fracyr_SSB(y), log_SPR0(y)) * sel_proj;
+        }
+        if(proj_F_opt == 5){ // calculate F from user-specified catch 
+          FAA_tot.row(y) = get_F_from_Catch(proj_Fcatch(y-n_years_model), NAA.row(y-1), MAA.row(y-1), sel_proj, waacatch) * sel_proj;
+        }
+        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     }
 
@@ -540,7 +606,7 @@ Type objective_function<Type>::operator() ()
       for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a);
     }
     for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
-  }
+  } // end pop model loop
   if(use_NAA_re == 1)
   {
     REPORT(nll_NAA);
@@ -571,6 +637,8 @@ Type objective_function<Type>::operator() ()
   }
   //see(nll);
 
+  // ------------------------------------------------------------------------------
+  // Catch data likelihood
   matrix<Type> nll_agg_catch(n_years_catch,n_fleets), nll_catch_acomp(n_years_catch,n_fleets);
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
@@ -633,6 +701,8 @@ Type objective_function<Type>::operator() ()
   nll += nll_catch_acomp.sum();
   //see(nll);
 
+  // -----------------------------------------------------------------------------
+  // Index/survey data likelihood
   matrix<Type> nll_agg_indices(n_years_catch,n_indices), nll_index_acomp(n_years_catch,n_indices);
   nll_agg_indices.setZero();
   nll_index_acomp.setZero();
@@ -703,6 +773,29 @@ Type objective_function<Type>::operator() ()
   nll += nll_index_acomp.sum();
   //see(nll);
 
+  // -------------------------------------------------------------------
+  // Calculate catch in projection years
+  if(do_proj == 0){
+    vector<Type> catch_proj(1);
+    catch_proj.setZero();
+  }
+  if(do_proj == 1){
+    vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
+    catch_proj.setZero();
+    matrix<Type> CAA_proj(n_years_proj, n_ages);
+    CAA_proj.setZero();
+    for(int i = 0; i < n_years_proj; i++){
+      int yi = i + n_years_model;
+      for(int a = 0; a < n_ages; a++){
+        CAA_proj(i,a) =  NAA(yi,a) * FAA_tot(yi,a) * (1 - exp(-ZAA(yi,a)))/ZAA(yi,a);
+        waacatch(a) = waa(waa_pointer_totcatch-1, yi, a);
+        catch_proj(i) += waacatch(a) * CAA_proj(i,a);
+      }
+      log_catch_proj(i) = log(catch_proj(i));
+    }
+  }
+  REPORT(catch_proj);
+  ADREPORT(log_catch_proj);
 
   //////////////////////////////////////////
   //Still need to add in yearly vectors of biological inputs, make sure to calculate SR_a,SR_b vector or otherwise.
@@ -717,7 +810,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> log_Y_FXSPR = SPR_res.col(2);
   vector<Type> log_SPR_FXSPR = SPR_res.col(3);
   vector<Type> log_YPR_FXSPR = SPR_res.col(4);
-  matrix<Type> log_FXSPR_iter = SPR_res.block(0,5,n_years_model,10);
+  matrix<Type> log_FXSPR_iter = SPR_res.block(0,5,n_years_model + n_years_proj,10);
   REPORT(log_FXSPR_iter);
   REPORT(log_FXSPR);
   REPORT(log_SSB_FXSPR);
@@ -732,12 +825,12 @@ Type objective_function<Type>::operator() ()
   if(recruit_model > 2) //Beverton-Holt or Ricker selected
   {
     int n = 10;
-    vector<Type> log_FMSY(n_years_model), log_FMSY_i(1), waacatch(n_ages), sel(n_ages);
-    matrix<Type> log_FMSY_iter(n_years_model,n);
+    vector<Type> log_FMSY(n_years_model + n_years_proj), log_FMSY_i(1);
+    matrix<Type> log_FMSY_iter(n_years_model + n_years_proj,n);
     log_FMSY_iter.col(0).fill(log(0.2)); //starting value
-    vector<Type> log_YPR_MSY(n_years_model), log_SPR_MSY(n_years_model), log_R_MSY(n_years_model);
+    vector<Type> log_YPR_MSY(n_years_model + n_years_proj), log_SPR_MSY(n_years_model + n_years_proj), log_R_MSY(n_years_model + n_years_proj);
     Type SR_a, SR_b;
-    for(int y = 0; y < n_years_model; y++)
+    for(int y = 0; y < n_years_model + n_years_proj; y++)
     {
       for(int a = 0; a < n_ages; a++)
       {
@@ -799,10 +892,10 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.array());
   matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.array());
   vector<Type> log_SSB =  log(SSB);
-  vector<Type> Fbar(n_years_model);
+  vector<Type> Fbar(n_years_model + n_years_proj);
   Fbar.setZero();
   int n_Fbar_ages = Fbar_ages.size();
-  for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_Fbar_ages; a++) Fbar(y) += FAA_tot(y,Fbar_ages(a)-1)/n_Fbar_ages;
+  for(int y = 0; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_Fbar_ages; a++) Fbar(y) += FAA_tot(y,Fbar_ages(a)-1)/n_Fbar_ages;
 
   matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.array();
   vector<Type> log_Fbar = log(Fbar);

@@ -6,6 +6,7 @@
 #' Exactly one of these must be specified in \code{proj.opts}:
 #'   \describe{
 #'     \item{Use last year F (default)}{Set \code{proj.opts$use.lastF = TRUE}. WHAM will use F in the terminal model year for projections.}
+#'     \item{Use average F}{Set \code{proj.opts$use.avgF = TRUE}. WHAM will use F averaged over \code{proj.opts$avg.yrs} for projections (as is done for M-, maturity-, and weight-at-age).}
 #'     \item{Use F at X% SPR}{Set \code{proj.opts$use.FXSPR = TRUE}. WHAM will calculate F at X% SPR.}
 #'     \item{Specify F}{Provide \code{proj.opts$proj.F}, an F vector with length = \code{n.yrs}.}
 #'     \item{Specify catch}{Provide \code{proj.opts$proj.catch}, a vector of aggregate catch with length = \code{n.yrs}. WHAM will calculate F to get specified catch.}
@@ -14,8 +15,10 @@
 #' \code{proj.opts$avg.yrs} controls which years will be averaged over in the projections.
 #' The following quantities are averaged:
 #'   \describe{
-#'     \item{Maturity (proportion at age)}
-#'     \item{}
+#'     \item{Maturity-at-age}
+#'     \item{Weight-at-age}
+#'     \item{Natural mortality-at-age}
+#'     \item{Fishing mortality-at-age (if \code{proj.opts$use.avgF = TRUE})}
 #'   }
 #'
 #' @param model a previously fit wham model
@@ -62,7 +65,7 @@
 #' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
 #' tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
 #' }
-project_wham = function(model, proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL),
+project_wham = function(model, proj.opts=list(n.yrs=3, use.lastF=TRUE, use.avgF=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL),
                         n.newton=0, do.sdrep=TRUE)
 {
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
@@ -74,11 +77,12 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR
   F.opt.ct <- sum(proj.opts$use.lastF, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
-    "You have specified these in proj.opts:",
-    capture.output(cat("  use.lastF = ",proj.opts$use.lastF)),
-    capture.output(cat("  use.FXSPR = ",proj.opts$use.FXSPR)),
-    capture.output(cat("  proj.F = ",proj.opts$proj.F)),
-    capture.output(cat("  proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
+    "You have specified these in 'proj.opts':",
+    capture.output(cat("  $use.lastF = ",proj.opts$use.lastF)),
+    capture.output(cat("  $use.avgF = ",proj.opts$use.avgF)),
+    capture.output(cat("  $use.FXSPR = ",proj.opts$use.FXSPR)),
+    capture.output(cat("  $proj.F = ",proj.opts$proj.F)),
+    capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
   # fix parameters at previously estimated values, pad with NAs
   input2 <- prepare_projection(model, proj.opts)

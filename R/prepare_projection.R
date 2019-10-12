@@ -8,6 +8,7 @@
 #'   \describe{
 #'     \item{\code{$n.yrs}}{integer, number of years to project/forecast. Default = \code{3}.}
 #'     \item{\code{$use.lastF}}{T/F, use terminal year F for projections. Default = \code{TRUE}.}
+#'     \item{\code{$use.avgF}}{T/F, use average F for projections.}
 #'     \item{\code{$use.FXSPR}}{T/F, calculate F at X% SPR for projections.}
 #'     \item{\code{$proj.F}}{vector, user-specified fishing mortality for projections. Length must equal \code{n.yrs}.}
 #'     \item{\code{$proj.catch}}{vector, user-specified aggregate catch for projections. Length must equal \code{n.yrs}.}
@@ -29,13 +30,23 @@
 #'
 prepare_projection = function(model, proj.opts)
 {
+write.dir <- "/home/bstock/Documents/wham/sandbox/ex1"
+setwd(write.dir)
+load("ex1_models_project.RData")
+library(wham)
+model=mods$m4
+proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL)
+
   input1 <- model$input
+  avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
+  avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
 
   # modify data
   data <- input1$data; par <- input1$par; map <- input1$map; random <- input1$random;
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
-  
+  data$mature <- rbind(data$mature, avg_cols(data$mature[avg.yrs.ind,]))
+
 
 
   return(list(data=data, par = par, map = map, random = random, years = model_years,
