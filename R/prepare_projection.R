@@ -35,19 +35,45 @@ setwd(write.dir)
 load("ex1_models_project.RData")
 library(wham)
 model=mods$m4
-proj.opts=list(n.yrs=3, use.lastF=TRUE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL)
+proj.opts=list(n.yrs=3, use.lastF=TRUE, use.avgF=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL)
+if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)
 
   input1 <- model$input
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
 
-  # modify data
+  # add new data objects for projections
   data <- input1$data; par <- input1$par; map <- input1$map; random <- input1$random;
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
-  data$mature <- rbind(data$mature, avg_cols(data$mature[avg.yrs.ind,]))
+  data$avg_years_ind = proj.opts$avg.yrs
+  if(proj.opts$use.lastF) data$proj_F_opt = 1
+  if(proj.opts$use.avgF) data$proj_F_opt = 2
+  if(proj.opts$use.FXSPR) data$proj_F_opt = 3
+  if(!is.null(proj.opts$proj.F)){
+    data$proj_F_opt = 4
+    data$proj_Fcatch = proj.opts$proj.F
+  } 
+  if(!is.null(proj.opts$proj.catch)){
+    data$proj_F_opt = 5
+    data$proj_Fcatch = proj.opts$proj.catch
+  }
+  if(data$proj_F_opt %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
 
+  # modify data objects for projections (pad with average over avg.yrs)
+  data$mature <- rbind(data$mature, matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+  tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
+  tmp[,1:data$n_years_model,] <- data$waa
+  tmp[,seq(data$n_years_model,data$n_years_model+proj.opts$n.yrs),] <- toadd
+  
+  data$fracyr_SSB
 
+array(c(my.array, z), dim = c(dim(my.array)[1], dim(my.array)[2], 3))
+
+  # modify parameters for projections (pad)
+  par$Ecov_re
+  par$log_NAA
 
   return(list(data=data, par = par, map = map, random = random, years = model_years,
     ages.lab = input1$ages.lab, model_name = input1$model_name))
