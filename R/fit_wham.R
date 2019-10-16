@@ -12,13 +12,13 @@
 #'
 #' @param input Named list with components:
 #'   \describe{
-#'     \item{\code{input$data}}{Data to fit the assessment model to.}
-#'     \item{\code{input$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{input$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{input$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{input$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
-#'     \item{\code{input$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
-#'     \item{\code{input$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
+#'     \item{\code{$data}}{Data to fit the assessment model to.}
+#'     \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
+#'     \item{\code{$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
+#'     \item{\code{$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
@@ -31,14 +31,18 @@
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
 #' @param do.proj T/F, do projections? Default = \code{TRUE}. Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
-#' @param proj.opts list of options for projections, passed to \code{\link{project_wham}}.
-#'   \describe{
-#'     \item{\code{$n.yrs}}{integer, number of years to project/forecast. Default = \code{3}.}
-#'     \item{\code{$use.lastF}}{T/F, use terminal year F for projections. Default = \code{TRUE}.}
-#'     \item{\code{$use.FXSPR}}{T/F, calculate F at X% SPR for projections.}
-#'     \item{\code{$proj.F}}{vector, user-specified fishing mortality for projections. Length must equal \code{n.yrs}.}
-#'     \item{\code{$proj.catch}}{vector, user-specified aggregate catch for projections. Length must equal \code{n.yrs}.}
-#'     \item{\code{$avg.yrs}}{vector, specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.}
+#' @param proj.opts list of options for projections
+#'   \itemize{
+#'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
+#'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
+#'     \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+#'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
+#'     \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+#'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
+#'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'   }
 #'
 #' @return a fit TMB model with additional output if specified:
@@ -52,7 +56,7 @@
 #' @useDynLib wham
 #' @export
 #'
-#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}, \code{\link{project_wham}} 
+#' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}, \code{\link{project_wham}}
 #'
 #' @examples
 #' \dontrun{
@@ -65,17 +69,17 @@
 #' m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
-fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7, 
+fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE,
-                    do.proj = TRUE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, 
-                                              proj.F=NULL, proj.catch=NULL, avg.yrs=NULL, 
+                    do.proj = TRUE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
+                                              proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                               cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
 {
   # fit model
-  if(missing(model)){ 
+  if(missing(model)){
     mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map)
   } else {mod = model}
-  
+
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
   mod$years <- input$years
   mod$ages.lab <- input$ages.lab
@@ -108,9 +112,9 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   if(!is.null(mod$err) & do.proj) warning(paste("","** Error during Newton steps. **",
     "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
   if(!is.null(mod$err_retro) & do.proj) warning(paste("","** Error during retrospective analysis. **",
-    paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))  
+    paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   if(!is.null(mod$err_proj) & do.proj) warning(paste("","** Error during projections. **",
-    paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n')) 
+    paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
 
   return(mod)
 }

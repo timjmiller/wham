@@ -5,21 +5,20 @@
 #'
 #' @param model a previously fit wham model
 #' @param proj.opts a named list with the following components:
-#'   \describe{
-#'     \item{\code{$n.yrs}}{integer, number of years to project/forecast. Default = \code{3}.}
-#'     \item{\code{$use.lastF}}{T/F, use terminal year F for projections. Default = \code{TRUE}.}
-#'     \item{\code{$use.avgF}}{T/F, use average F for projections.}
-#'     \item{\code{$use.FXSPR}}{T/F, calculate F at X% SPR for projections.}
-#'     \item{\code{$proj.F}}{vector, user-specified fishing mortality for projections. Length must equal \code{n.yrs}.}
-#'     \item{\code{$proj.catch}}{vector, user-specified aggregate catch for projections. Length must equal \code{n.yrs}.}
-#'     \item{\code{$avg.yrs}}{vector, specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.}
-#'     \item{\code{$cont.Ecov}}{T/F, continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.}
-#'     \item{\code{$use.last.Ecov}}{T/F, use terminal year Ecov for projections.}
-#'     \item{\code{$avg.Ecov.yrs}}{vector, specify which years to average over the environmental covariate(s) for projections.}
-#'     \item{\code{$proj.Ecov}}{vector, user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.}
+#'   \itemize{
+#'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
+#'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
+#'     \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+#'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
+#'     \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+#'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
+#'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'   }
 #'
-#' @return same as \code{prepare_wham_input}, a list ready for \code{fit_wham}:
+#' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
 #'   \describe{
 #'     \item{\code{data}}{Named list of data, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'     \item{\code{par}}{Named list of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
@@ -38,13 +37,13 @@ prepare_projection = function(model, proj.opts)
 # write.dir <- "/home/bstock/Documents/wham/sandbox/ex3_projections"
 # setwd(write.dir)
 # model = readRDS("m6.rds")
-# proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, 
+# proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL,
 #                 avg.yrs=NULL, cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL)
 
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
   if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)
 
-  # check options for F/catch are valid 
+  # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
   F.opt.ct <- sum(proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
@@ -57,7 +56,7 @@ prepare_projection = function(model, proj.opts)
     capture.output(cat("  $proj.F = ",proj.opts$proj.F)),
     capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
-  # check Ecov options are valid 
+  # check Ecov options are valid
   input1 <- model$input
   data <- input1$data
   if(any(input1$data$Ecov_model > 0)){
@@ -77,7 +76,7 @@ prepare_projection = function(model, proj.opts)
         capture.output(cat("  $proj.Ecov = ",proj.opts$proj.Ecov)),"",sep='\n'))
       if(!is.null(proj.opts$avg.Ecov.yrs) & any(proj.opts$avg.Ecov.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
         "proj.opts$avg.Ecov.yrs is not a subset of model years.","",sep='\n'))
-    } 
+    }
   }
 
   # add new data objects for projections
@@ -91,7 +90,7 @@ prepare_projection = function(model, proj.opts)
   if(!is.null(proj.opts$proj.F)){
     data$proj_F_opt = 4
     data$proj_Fcatch = proj.opts$proj.F
-  } 
+  }
   if(!is.null(proj.opts$proj.catch)){
     data$proj_F_opt = 5
     data$proj_Fcatch = proj.opts$proj.catch
@@ -112,7 +111,7 @@ prepare_projection = function(model, proj.opts)
   par <- model$parList
   fill_vals <- function(x){as.factor(rep(NA, length(x)))}
   map <- lapply(par, fill_vals)
-  
+
   # pad parameters for projections: log_NAA and Ecov_re
   par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
   map$log_NAA <- as.factor(c(map$log_NAA, seq(1:(proj.opts$n.yrs*data$n_ages))))
@@ -127,7 +126,7 @@ prepare_projection = function(model, proj.opts)
           Ecov.proj[i,] <- avg_cols(model$rep$Ecov_re[avg.yrs.ind.Ecov,])
         }
         if(proj.opts$cont.Ecov){ # continue Ecov process
-          Ecov.proj[i,] <- rep(0, data$n_Ecov) 
+          Ecov.proj[i,] <- rep(0, data$n_Ecov)
         }
         # if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
         # }
@@ -141,7 +140,7 @@ prepare_projection = function(model, proj.opts)
   check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
   random <- input1$random[!sapply(input1$random, check_allNA)]
 
-  return(list(data=data, par = par, map = map, random = random, 
+  return(list(data=data, par = par, map = map, random = random,
     years = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
     ages.lab = input1$ages.lab, model_name = input1$model_name))
 }

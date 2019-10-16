@@ -6,18 +6,22 @@
 \usage{
 fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
   n.peels = 7, do.osa = TRUE, osa.opts = list(method =
-  "oneStepGeneric", parallel = TRUE), model = NULL, do.check = FALSE)
+  "oneStepGeneric", parallel = TRUE), model = NULL, do.check = FALSE,
+  do.proj = TRUE, proj.opts = list(n.yrs = 3, use.last.F = TRUE,
+  use.avg.F = FALSE, use.FXSPR = FALSE, proj.F = NULL, proj.catch = NULL,
+  avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov = FALSE, avg.Ecov.yrs =
+  NULL, proj.Ecov = NULL))
 }
 \arguments{
-\item{input}{Named list with several components:
+\item{input}{Named list with components:
 \describe{
-  \item{\code{input$data}}{Data to fit the assessment model to.}
-  \item{\code{input$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
-  \item{\code{input$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
-  \item{\code{input$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
-  \item{\code{input$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
-  \item{\code{input$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
-  \item{\code{input$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
+  \item{\code{$data}}{Data to fit the assessment model to.}
+  \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
+  \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
+  \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
+  \item{\code{$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
+  \item{\code{$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
+  \item{\code{$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
 }}
 
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{3}.}
@@ -28,7 +32,7 @@ fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
 
 \item{n.peels}{integer, number of peels to use in retrospective analysis. Default = \code{7}.}
 
-\item{do.osa}{T/F, Calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
+\item{do.osa}{T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
 as \code{mod$osa$residual}.}
 
 \item{osa.opts}{list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
@@ -37,6 +41,22 @@ Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
 \item{model}{(optional), a previously fit wham model.}
 
 \item{do.check}{T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
+
+\item{do.proj}{T/F, do projections? Default = \code{TRUE}. Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
+
+\item{proj.opts}{list of options for projections
+\itemize{
+  \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
+  \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
+  \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+  \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
+  \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
+  \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
+  \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+  \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
+  \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+  \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+}}
 }
 \value{
 a fit TMB model with additional output if specified:
@@ -72,5 +92,5 @@ m1$rep$F[,1] # get F estimates for fleet 1
 }
 }
 \seealso{
-\code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}
+\code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}, \code{\link{project_wham}}
 }
