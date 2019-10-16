@@ -64,6 +64,7 @@ prepare_projection = function(model, proj.opts)
     n.beyond <- data$n_years_Ecov-1-data$ind_Ecov_out_end
     end.beyond <- min(n.beyond, proj.opts$n.yrs)
     Ecov.proj <- matrix(rep(NA, (proj.opts$n.yrs-end.beyond)*dim(model$rep$Ecov_re)[2]), ncol=dim(model$rep$Ecov_re)[2], byrow=TRUE)
+    Ecov.map <- matrix(rep(NA, (proj.opts$n.yrs-end.beyond)*dim(model$rep$Ecov_re)[2]), ncol=dim(model$rep$Ecov_re)[2], byrow=TRUE)
     if(end.beyond == proj.opts$n.yrs){ print("Ecov already fit through projection years. Using fit Ecov for projections...")
     } else { # if Ecov proj options ARE necessary, check they are valid
       Ecov.opt.ct <- sum(proj.opts$cont.Ecov, proj.opts$use.last.Ecov, !is.null(proj.opts$avg.Ecov.yrs), !is.null(proj.opts$proj.Ecov))
@@ -114,18 +115,23 @@ prepare_projection = function(model, proj.opts)
 
   # pad parameters for projections: log_NAA and Ecov_re
   par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-  map$log_NAA <- as.factor(c(map$log_NAA, seq(1:(proj.opts$n.yrs*data$n_ages))))
+  tmp <- par$log_NAA
+  ind.NA <- which(is.na(tmp))
+  tmp[-ind.NA] <- NA
+  tmp[ind.NA] <- 1:length(ind.NA)
+  map$log_NAA = factor(tmp)
+
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
       for(i in 1:(proj.opts$n.yrs-end.beyond)){
-        if(proj.opts$use.last.Ecov){ # use last Ecov
+        if(proj.opts$use.last.Ecov){ # use last Ecov (pad Ecov_re but map to NA)
           Ecov.proj[i,] <- model$rep$Ecov_re[data$ind_Ecov_out_end+1+end.beyond,]
         }
-        if(!is.null(proj.opts$avg.Ecov.yrs)){ # use average Ecov
+        if(!is.null(proj.opts$avg.Ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
           avg.yrs.ind.Ecov <- match(proj.opts$avg.Ecov.yrs, input1$years)
           Ecov.proj[i,] <- avg_cols(model$rep$Ecov_re[avg.yrs.ind.Ecov,])
         }
-        if(proj.opts$cont.Ecov){ # continue Ecov process
+        if(proj.opts$cont.Ecov){ # continue Ecov process (pad Ecov_re and estimate)
           Ecov.proj[i,] <- rep(0, data$n_Ecov)
         }
         # if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
@@ -133,8 +139,13 @@ prepare_projection = function(model, proj.opts)
       }
     }
     par$Ecov_re <- rbind(model$rep$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
-    map$Ecov_re <- as.factor(c(map$Ecov_re, seq(1:length(Ecov.proj))))
+    # map$Ecov_re <- as.factor(c(input1$map$Ecov_re, seq(1:length(Ecov.proj))))
   }
+  tmp <- par$Ecov_re
+  ind.0 <- which(tmp == 0)
+  tmp[-ind.0] <- NA
+  tmp[ind.0] <- 1:length(ind.0)
+  map$Ecov_re = factor(tmp)
 
   # remove random effects if they are not estimated (all mapped to NA)
   check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
