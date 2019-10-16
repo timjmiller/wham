@@ -99,7 +99,7 @@ Type objective_function<Type>::operator() ()
   // data for projections
   DATA_INTEGER(do_proj); // 1 = yes, 0 = no
   DATA_INTEGER(n_years_proj); // number of years to project
-  DATA_IVECTOR(avg_years_ind); // model year indices to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
+  DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
   DATA_INTEGER(proj_F_opt); // 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
 
@@ -776,8 +776,9 @@ Type objective_function<Type>::operator() ()
   // -------------------------------------------------------------------
   // Calculate catch in projection years
   if(do_proj == 0){
-    vector<Type> catch_proj(1);
+    vector<Type> catch_proj(1), log_catch_proj(1);
     catch_proj.setZero();
+    log_catch_proj.setZero();
   }
   if(do_proj == 1){
     vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
