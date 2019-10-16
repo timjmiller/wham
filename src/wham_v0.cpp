@@ -527,51 +527,9 @@ Type objective_function<Type>::operator() ()
       }
     }
 
-    // calculate F and Z in projection years, here bc need NAA(y-1) if using F from catch
-    if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
-      // get selectivity using average over avg.yrs
-      if(y > n_years_model-1){
-        for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
-        for(int a = 0; a < n_ages; a++) waassb(a) = waa(waa_pointer_ssb-1, y, a);
-        matrix<Type> FAA_toavg(n_years_proj,n_ages);
-        for(int a = 0; a < n_ages; a++){
-          for(int i = 0; i < n_years_proj; i++){
-            FAA_toavg(i,a) = FAA_tot(avg_years_ind(i),a);
-          }
-        }
-        vector<Type> FAA_proj = FAA_toavg.colwise().mean();
-        vector<Type> sel_proj(n_ages);
-        for(int a = 0; a < n_ages; a++) sel_proj(a) = FAA_proj(a)/FAA_proj(which_F_age-1);
-
-        if(proj_F_opt == 1){ // last year F (default)
-          for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
-            FAA_tot.row(y) = FAA_tot.row(n_years_model-1);
-          }
-        }
-        if(proj_F_opt == 2){ // average F
-          for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
-            FAA_tot.row(y) = FAA_proj;
-          }
-        }
-        if(proj_F_opt == 3){ // F at X% SPR
-          FAA_tot.row(y) = get_FXSPR(MAA.row(y), sel_proj, which_F_age, waacatch, waassb, mature.row(y), percentSPR, fracyr_SSB(y), log_SPR0(y)) * sel_proj;
-        }        
-        if(proj_F_opt == 4){ // user-specified F
-          for(int i = 0; i < n_years_proj; i++){
-            FAA_tot.row(n_years_model + i) = proj_Fcatch(i) * sel_proj;
-          }
-        }
-        if(proj_F_opt == 5){ // calculate F from user-specified catch 
-          FAA_tot.row(y) = get_F_from_Catch(proj_Fcatch(y-n_years_model), NAA.row(y-1), MAA.row(y-1), sel_proj, waacatch) * sel_proj;
-        }
-        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);        
-      }
-    } // end proj F
-
-    //expected numbers at age after recruitment
+    // calculate NAA and pred_NAA, numbers at age after recruitment
     for(int a = 1; a < n_ages-1; a++) pred_NAA(y,a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
     pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
-
     if(use_NAA_re == 1) //random effects NAA, state-space model for all numbers at age
     {
       for(int a = 0; a < n_ages; a++)
@@ -599,6 +557,48 @@ Type objective_function<Type>::operator() ()
       //when random effects not used for all numbers at age, survival is deterministic.
       for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a);
     }
+
+    // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
+    if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
+      // get selectivity using average over avg.yrs
+      if(y > n_years_model-1){
+        for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
+        for(int a = 0; a < n_ages; a++) waassb(a) = waa(waa_pointer_ssb-1, y, a);
+        matrix<Type> FAA_toavg(n_years_proj,n_ages);
+        for(int a = 0; a < n_ages; a++){
+          for(int i = 0; i < n_years_proj; i++){
+            FAA_toavg(i,a) = FAA_tot(avg_years_ind(i),a);
+          }
+        }
+        vector<Type> FAA_proj = FAA_toavg.colwise().mean();
+        vector<Type> sel_proj(n_ages);
+        for(int a = 0; a < n_ages; a++) sel_proj(a) = FAA_proj(a)/FAA_proj(which_F_age-1);
+        vector<Type> M = MAA.row(y);
+        vector<Type> NAA_y = NAA.row(y);
+
+        if(proj_F_opt == 1){ // last year F (default)
+          FAA_tot.row(y) = FAA_tot.row(n_years_model-1);
+        }
+        if(proj_F_opt == 2){ // average F
+          FAA_tot.row(y) = FAA_proj;
+        }
+        if(proj_F_opt == 3){ // F at X% SPR
+          vector<Type> mat = mature.row(y);
+          Type fracyr_SSB_y = fracyr_SSB(y);
+          Type log_SPR0_y = log_SPR0(y);
+          FAA_tot.row(y) = get_FXSPR(M, sel_proj, which_F_age, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
+        }        
+        if(proj_F_opt == 4){ // user-specified F
+          FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
+        }
+        if(proj_F_opt == 5){ // calculate F from user-specified catch 
+          Type thecatch = proj_Fcatch(y-n_years_model);
+          FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
+        }
+        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);        
+      }
+    } // end proj F
+
     for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
   if(use_NAA_re == 1)
