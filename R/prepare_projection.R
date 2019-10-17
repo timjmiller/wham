@@ -121,6 +121,7 @@ prepare_projection = function(model, proj.opts)
   tmp[-ind.NA] <- NA
   tmp[ind.NA] <- 1:length(ind.NA)
   map$log_NAA = factor(tmp)
+  par$log_NAA[ind.NA] <- 10  
 
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
