@@ -532,6 +532,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   # projection data will always be modified by 'prepare_projection' 
   data$do_proj <- 0
   data$n_years_proj <- 0
+  data$n_years_proj_Ecov <- 0
   data$avg_years_ind <- 0
   data$proj_F_opt <- 0
   data$proj_Fcatch <- 0

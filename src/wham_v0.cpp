@@ -99,6 +99,7 @@ Type objective_function<Type>::operator() ()
   // data for projections
   DATA_INTEGER(do_proj); // 1 = yes, 0 = no
   DATA_INTEGER(n_years_proj); // number of years to project
+  DATA_INTEGER(n_years_proj_Ecov); // number of years to project Ecov
   DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
   DATA_INTEGER(proj_F_opt); // 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
@@ -176,7 +177,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
   // Environmental covariate process model(s)
-  matrix<Type> Ecov_x(n_years_Ecov + n_years_proj, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
+  matrix<Type> Ecov_x(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
   matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Type nll_Ecov = 0.0;
 
@@ -197,7 +198,7 @@ Type objective_function<Type>::operator() ()
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
-        for(int y = 2; y < n_years_Ecov + n_years_proj; y++){
+        for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           Ecov_x(y,i) = Ecov_re(y,i);
@@ -215,12 +216,12 @@ Type objective_function<Type>::operator() ()
 
         nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
         SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
-        for(int y = 1; y < n_years_Ecov + n_years_proj; y++) 
+        for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
         {
           nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
         }
-        for(int y = 0; y < n_years_Ecov + n_years_proj; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
+        for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
     } // end loop over Ecovs
     if(simulate_state == 1) SIMULATE REPORT(Ecov_re);

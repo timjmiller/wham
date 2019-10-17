@@ -83,6 +83,7 @@ prepare_projection = function(model, proj.opts)
   # add new data objects for projections
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
+  data$n_years_proj_Ecov = proj.opts$n.yrs-end.beyond
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
   if(proj.opts$use.last.F) data$proj_F_opt = 1
