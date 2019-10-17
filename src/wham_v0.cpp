@@ -892,7 +892,7 @@ Type objective_function<Type>::operator() ()
   int n_Fbar_ages = Fbar_ages.size();
   for(int y = 0; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_Fbar_ages; a++) Fbar(y) += FAA_tot(y,Fbar_ages(a)-1)/n_Fbar_ages;
 
-  matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.array();
+  matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.block(0,0,n_years_Ecov,n_Ecov).array();
   vector<Type> log_Fbar = log(Fbar);
   matrix<Type> log_NAA_rep = log(NAA.array());
 
