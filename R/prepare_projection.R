@@ -112,19 +112,31 @@ prepare_projection = function(model, proj.opts)
   # initialize pars at previously estimated values
   par <- model$parList
   fill_vals <- function(x){as.factor(rep(NA, length(x)))}
+  map <- input1$map
   # map <- lapply(par, fill_vals)
 
-  # pad parameters for projections: log_NAA and Ecov_re
-  par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-  par$log_NAA[which(is.na(par$log_NAA))] <- 10 
-  # tmp <- par$log_NAA
-  # ind.NA <- which(is.na(tmp))
-  # tmp[-ind.NA] <- NA
-  # tmp[ind.NA] <- 1:length(ind.NA)
-  # map$log_NAA = factor(tmp)
-  # par$log_NAA[ind.NA] <- 10  
+  # pad parameters for projections: log_NAA / log_R and Ecov_re
+  if(data$use_NAA_re == 1){
+    par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    # par$log_NAA[which(is.na(par$log_NAA))] <- 10 
+    tmp <- par$log_NAA
+    ind.NA <- which(is.na(tmp))
+    tmp[-ind.NA] <- NA
+    tmp[ind.NA] <- 1:length(ind.NA)
+    # map$log_NAA = factor(tmp)
+    par$log_NAA[ind.NA] <- 10 
+  }
+  if(data$random_recruitment == 1){
+    par$log_R <- c(par$log_R, rep(NA, proj.opts$n.yrs))
+    # par$log_R[which(is.na(par$log_R))] <- 10 
+    tmp <- par$log_R
+    ind.NA <- which(is.na(tmp))
+    tmp[-ind.NA] <- NA
+    tmp[ind.NA] <- 1:length(ind.NA)
+    # map$log_R = factor(tmp)
+    par$log_R[ind.NA] <- 10 
+  }
 
-  map <- input1$map
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
       for(i in 1:(proj.opts$n.yrs-end.beyond)){

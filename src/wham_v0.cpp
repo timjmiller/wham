@@ -786,7 +786,7 @@ Type objective_function<Type>::operator() ()
         waacatch(a) = waa(waa_pointer_totcatch-1, yi, a);
         catch_proj(i) += waacatch(a) * CAA_proj(i,a);
       }
-      log_catch_proj(i) = log(catch_proj(i));
+      log_catch_proj(i) = log(catch_proj(i) + Type(1.0e-15));
     }
     REPORT(catch_proj);
     ADREPORT(log_catch_proj);
