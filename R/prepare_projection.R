@@ -111,7 +111,7 @@ prepare_projection = function(model, proj.opts)
 
   # initialize pars at previously estimated values
   par <- model$parList
-  fill_vals <- function(x){as.factor(rep(NA, length(x)))}
+  # fill_vals <- function(x){as.factor(rep(NA, length(x)))}
   map <- input1$map
   # map <- lapply(par, fill_vals)
 
@@ -153,15 +153,26 @@ prepare_projection = function(model, proj.opts)
         # if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
         # }
       }
+      par$Ecov_re <- rbind(par$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
+
+      # pad map$Ecov_re
+      tmp.re <- matrix(1:length(par$Ecov_re), dim(par$Ecov_re)[1], data$n_Ecov, byrow=FALSE)
+      for(i in 1:data$n_Ecov){
+        tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,dim(par$Ecov_re)[1]) else tmp.re[,i]
+        if(data$Ecov_model[i]==1) tmp.re[1,i] <- NA # if Ecov is a rw, first year of Ecov_re is not used bc Ecov_x[1] uses Ecov1 (fixed effect)
+        if(!proj.opts$cont.Ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,i] <- NA
+      }
+      ind.notNA <- which(!is.na(tmp.re))
+      tmp.re[ind.notNA] <- 1:length(ind.notNA)
+      map$Ecov_re = factor(tmp.re)
     }
-    par$Ecov_re <- rbind(model$rep$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
-    # map$Ecov_re <- as.factor(c(input1$map$Ecov_re, seq(1:length(Ecov.proj))))
   }
-  tmp <- par$Ecov_re
-  ind.0 <- which(tmp == 0)
-  tmp[-ind.0] <- NA
-  tmp[ind.0] <- 1:length(ind.0)
-  map$Ecov_re = factor(tmp)
+  # tmp <- par$Ecov_re
+  # ind.0 <- which(par$Ecov_re == 0)
+  # # tmp[-ind.0] <- NA
+  # # tmp[ind.0] <- 1:length(ind.0)
+  # tmp[ind.0] <- 1:length(ind.0) + max(as.numeric(map$Ecov_re))
+  # map$Ecov_re = factor(tmp)
 
   # # remove random effects if they are not estimated (all mapped to NA)
   # check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
