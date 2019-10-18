@@ -156,6 +156,8 @@ Type objective_function<Type>::operator() ()
   vector<Type> t_paa(n_ages);
   vector<Type> t_pred_paa(n_ages);
   matrix<Type> selpars(n_selblocks,n_ages+6);
+  int n_toavg = avg_years_ind.size();
+  
   //Type SR_a, SR_b, SR_R0, SR_h;
   for(int i = 0; i < n_selblocks; i++) for(int j = 0; j < n_ages + 6; j++)
   {
@@ -327,9 +329,9 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(do_proj == 1){ // add to MAA in projection years using average MAA over avg.yrs
-    matrix<Type> MAA_toavg(n_years_proj,n_ages);
+    matrix<Type> MAA_toavg(n_toavg,n_ages);
     for(int a = 0; a < n_ages; a++){
-      for(int i = 0; i < n_years_proj; i++){
+      for(int i = 0; i < n_toavg; i++){
         MAA_toavg(i,a) = MAA(avg_years_ind(i),a);
       }
     }
@@ -565,9 +567,9 @@ Type objective_function<Type>::operator() ()
       if(y > n_years_model-1){
         for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
         for(int a = 0; a < n_ages; a++) waassb(a) = waa(waa_pointer_ssb-1, y, a);
-        matrix<Type> FAA_toavg(n_years_proj,n_ages);
+        matrix<Type> FAA_toavg(n_toavg, n_ages);
         for(int a = 0; a < n_ages; a++){
-          for(int i = 0; i < n_years_proj; i++){
+          for(int i = 0; i < n_toavg; i++){
             FAA_toavg(i,a) = FAA_tot(avg_years_ind(i),a);
           }
         }
