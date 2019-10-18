@@ -109,20 +109,22 @@ prepare_projection = function(model, proj.opts)
   for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
   data$waa <- tmp
 
-  # initialize and fix pars at previously estimated values
+  # initialize pars at previously estimated values
   par <- model$parList
   fill_vals <- function(x){as.factor(rep(NA, length(x)))}
-  map <- lapply(par, fill_vals)
+  # map <- lapply(par, fill_vals)
 
   # pad parameters for projections: log_NAA and Ecov_re
   par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-  tmp <- par$log_NAA
-  ind.NA <- which(is.na(tmp))
-  tmp[-ind.NA] <- NA
-  tmp[ind.NA] <- 1:length(ind.NA)
-  map$log_NAA = factor(tmp)
-  par$log_NAA[ind.NA] <- 10  
+  par$log_NAA[which(is.na(par$log_NAA))] <- 10 
+  # tmp <- par$log_NAA
+  # ind.NA <- which(is.na(tmp))
+  # tmp[-ind.NA] <- NA
+  # tmp[ind.NA] <- 1:length(ind.NA)
+  # map$log_NAA = factor(tmp)
+  # par$log_NAA[ind.NA] <- 10  
 
+  map <- input1$map
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
       for(i in 1:(proj.opts$n.yrs-end.beyond)){
@@ -149,11 +151,11 @@ prepare_projection = function(model, proj.opts)
   tmp[ind.0] <- 1:length(ind.0)
   map$Ecov_re = factor(tmp)
 
-  # remove random effects if they are not estimated (all mapped to NA)
-  check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
-  random <- input1$random[!sapply(input1$random, check_allNA)]
+  # # remove random effects if they are not estimated (all mapped to NA)
+  # check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
+  # random <- input1$random[!sapply(input1$random, check_allNA)]
 
-  return(list(data=data, par = par, map = map, random = random,
+  return(list(data=data, par = par, map = map, random = input1$random,
     years = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
     ages.lab = input1$ages.lab, model_name = input1$model_name))
 }
