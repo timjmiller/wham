@@ -109,12 +109,10 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts) # calls prepare_projection + fit_wham(do.proj=F)
 
   # error message reporting
-  if(!is.null(mod$err) & do.proj) warning(paste("","** Error during Newton steps. **",
+  if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
     "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
-  if(!is.null(mod$err_retro) & do.proj) warning(paste("","** Error during retrospective analysis. **",
+  if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
     paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
-  if(!is.null(mod$err_proj) & do.proj) warning(paste("","** Error during projections. **",
-    paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
 
   return(mod)
 }

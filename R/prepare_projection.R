@@ -46,7 +46,7 @@ prepare_projection = function(model, proj.opts)
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
-  F.opt.ct <- sum(proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
+  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
     "You have specified these in 'proj.opts':",

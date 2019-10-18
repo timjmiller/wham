@@ -103,5 +103,9 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   if(!is.null(model$err)) mod$err <- model$err # error messages
   if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
 
+  # print error message
+  if(!is.null(mod$err_proj)) warning(paste("","** Error during projections. **",
+    paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
+
   return(mod)
 }
