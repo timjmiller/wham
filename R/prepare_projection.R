@@ -167,11 +167,8 @@ prepare_projection = function(model, proj.opts)
       for(i in 1:data$n_Ecov){
         tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,dim(par$Ecov_re)[1]) else tmp.re[,i]
         if(data$Ecov_model[i]==1) tmp.re[1,i] <- NA # if Ecov is a rw, first year of Ecov_re is not used bc Ecov_x[1] uses Ecov1 (fixed effect)
-        if(!proj.opts$cont.Ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,i] <- NA
       }
-      if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to fix Ecov_re
-        tmp.re[end.beyond + 1:proj.opts$n.yrs,] <- NA
-      }
+      if(!proj.opts$cont.Ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,] <- NA
       ind.notNA <- which(!is.na(tmp.re))
       tmp.re[ind.notNA] <- 1:length(ind.notNA)
       data$Ecov_use_re[ind.notNA] <- 1
