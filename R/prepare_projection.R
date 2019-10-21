@@ -145,7 +145,7 @@ prepare_projection = function(model, proj.opts)
         }
         if(!is.null(proj.opts$avg.Ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
           avg.yrs.ind.Ecov <- match(proj.opts$avg.Ecov.yrs, input1$years)
-          Ecov.proj[i,] <- avg_cols(model$rep$Ecov_re[avg.yrs.ind.Ecov,])
+          Ecov.proj[i,] <- avg_cols(as.matrix(model$rep$Ecov_re[avg.yrs.ind.Ecov,]))
         }
         if(proj.opts$cont.Ecov){ # continue Ecov process (pad Ecov_re and estimate)
           Ecov.proj[i,] <- rep(0, data$n_Ecov)
