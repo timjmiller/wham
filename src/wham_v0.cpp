@@ -204,7 +204,7 @@ Type objective_function<Type>::operator() ()
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           Ecov_x(y,i) = Ecov_re(y,i);
         }
       }
@@ -223,7 +223,7 @@ Type objective_function<Type>::operator() ()
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
         {
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
         }
         for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
