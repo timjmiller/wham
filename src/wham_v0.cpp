@@ -95,6 +95,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(ind_Ecov_out_start); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
   DATA_IVECTOR(ind_Ecov_out_end); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
   DATA_INTEGER(Ecov_obs_sigma_opt); // 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
+  DATA_IMATRIX(Ecov_use_re); // 0/1: use Ecov_re? If yes, add to nll. (n_years_Ecov + n_years_proj_Ecov) x n_Ecov
 
   // data for projections
   DATA_INTEGER(do_proj); // 1 = yes, 0 = no
@@ -181,7 +182,8 @@ Type objective_function<Type>::operator() ()
   // Environmental covariate process model(s)
   matrix<Type> Ecov_x(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
   matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
-  Type nll_Ecov = 0.0;
+  matrix<Type> nll_Ecov(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // nll contribution each Ecov_re
+  nll_Ecov.setZero();
 
   if(Ecov_model(0) == 0){ // no Ecov
     for(int y = 0; y < n_years_model + n_years_proj; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
@@ -195,13 +197,13 @@ Type objective_function<Type>::operator() ()
         Ecov1 = Ecov_process_pars(1,i);
 
         Ecov_x(0,i) = Ecov1;
-        nll_Ecov -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
+        nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
         SIMULATE if(simulate_state == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
-          nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
+          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           Ecov_x(y,i) = Ecov_re(y,i);
         }
@@ -216,19 +218,25 @@ Type objective_function<Type>::operator() ()
         Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(1,i)));
         Ecov_sig = exp(Ecov_process_pars(2,i));
 
-        nll_Ecov -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
+        nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
         SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
         {
-          nll_Ecov -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
         }
         for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
+
+      // add to nll if estimated (option in projection years to fix Ecov at last or average value)
+      for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++){
+        if(Ecov_use_re(y,i) == 1){
+          nll += nll_Ecov(y,i);
+        }
+      }
     } // end loop over Ecovs
     if(simulate_state == 1) SIMULATE REPORT(Ecov_re);
   }
-  nll += nll_Ecov;
 
   // Environmental covariate observation model
   Type nll_Ecov_obs = Type(0);

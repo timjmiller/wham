@@ -365,6 +365,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       end_Ecov <- end_model
     }
     data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
+    data$Ecov_use_re <- matrix(1, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- rep(NA, data$n_Ecov)
