@@ -150,8 +150,14 @@ prepare_projection = function(model, proj.opts)
         if(proj.opts$cont.Ecov){ # continue Ecov process (pad Ecov_re and estimate)
           Ecov.proj[i,] <- rep(0, data$n_Ecov)
         }
-        # if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
-        # }
+        if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
+          for(j in 1:data$n_Ecov){ 
+            #random walk
+            if(data$Ecov_model(j) == 1) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j]
+            #AR(1)
+            if(data$Ecov_model(j) == 2) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j] - par$Ecov_mu[j] 
+          }
+        }
       }
       par$Ecov_re <- rbind(par$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
 
@@ -161,6 +167,9 @@ prepare_projection = function(model, proj.opts)
         tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,dim(par$Ecov_re)[1]) else tmp.re[,i]
         if(data$Ecov_model[i]==1) tmp.re[1,i] <- NA # if Ecov is a rw, first year of Ecov_re is not used bc Ecov_x[1] uses Ecov1 (fixed effect)
         if(!proj.opts$cont.Ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,i] <- NA
+      }
+      if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to fix Ecov_re
+        tmp.re[end.beyond + 1:proj.opts$n.yrs,] <- NA
       }
       ind.notNA <- which(!is.na(tmp.re))
       tmp.re[ind.notNA] <- 1:length(ind.notNA)

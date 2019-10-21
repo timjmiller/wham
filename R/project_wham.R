@@ -45,7 +45,7 @@
 #'     \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
 #'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-#'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$proj.Ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
