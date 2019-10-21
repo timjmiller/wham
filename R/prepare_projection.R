@@ -157,6 +157,7 @@ prepare_projection = function(model, proj.opts)
 
       # pad map$Ecov_re
       tmp.re <- matrix(1:length(par$Ecov_re), dim(par$Ecov_re)[1], data$n_Ecov, byrow=FALSE)
+      data$Ecov_use_re <- matrix(0, nrow=data$n_years_Ecov + data$n_years_proj_Ecov, ncol=data$n_Ecov)
       for(i in 1:data$n_Ecov){
         tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,dim(par$Ecov_re)[1]) else tmp.re[,i]
         if(data$Ecov_model[i]==1) tmp.re[1,i] <- NA # if Ecov is a rw, first year of Ecov_re is not used bc Ecov_x[1] uses Ecov1 (fixed effect)
@@ -164,6 +165,7 @@ prepare_projection = function(model, proj.opts)
       }
       ind.notNA <- which(!is.na(tmp.re))
       tmp.re[ind.notNA] <- 1:length(ind.notNA)
+      data$Ecov_use_re[ind.notNA] <- 1
       map$Ecov_re = factor(tmp.re)
     }
   }
