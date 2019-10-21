@@ -153,9 +153,9 @@ prepare_projection = function(model, proj.opts)
         if(!is.null(proj.opts$proj.Ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
           for(j in 1:data$n_Ecov){ 
             #random walk
-            if(data$Ecov_model(j) == 1) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j]
+            if(data$Ecov_model[j] == 1) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j]
             #AR(1)
-            if(data$Ecov_model(j) == 2) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j] - par$Ecov_mu[j] 
+            if(data$Ecov_model[j] == 2) Ecov.proj[i,j] <- proj.opts$proj.Ecov[i,j] - par$Ecov_process_pars[1,j] 
           }
         }
       }
