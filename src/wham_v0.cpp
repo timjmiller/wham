@@ -198,7 +198,7 @@ Type objective_function<Type>::operator() ()
 
         Ecov_x(0,i) = Ecov1;
         nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
-        SIMULATE if(simulate_state == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
+        SIMULATE if(simulate_state == 1 & Ecov_use_re(1,i) == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
@@ -219,7 +219,7 @@ Type objective_function<Type>::operator() ()
         Ecov_sig = exp(Ecov_process_pars(2,i));
 
         nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+        SIMULATE if(simulate_state == 1 & Ecov_use_re(0,i) == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
         {
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
