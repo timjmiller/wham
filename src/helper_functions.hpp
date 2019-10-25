@@ -980,7 +980,7 @@ Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type>
 }
 
 template <class Type>
-Type get_FXSPR(vector<Type> M, vector<Type> sel, int which_F_age, vector<Type> waacatch, vector<Type> waassb,
+Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<Type> waassb,
   vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0)
 {
   int n = 10;

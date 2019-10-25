@@ -153,6 +153,8 @@ asap3_to_wham <- function(asap3, recruit_model = 2, model_name)
   data$Fbar_ages = 1:data$n_ages
   data$simulate_state = 1 #simulate any state variables
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
+  data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  data$XSPR_R_avg_yrs = 1:n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 
   par = list(mean_rec_pars = 10)
   par$logit_q = rep(-8, data$n_indices)
