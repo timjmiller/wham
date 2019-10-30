@@ -223,14 +223,16 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   data$use_NAA_re = 0
   data$use_b_prior = 0
   data$random_recruitment = 0 #1 #make sure use_NAA_re = 0, recruitment is still a random effect.
-  data$which_F_age = data$n_ages #plus group by default used to define full F for BRPs
+  data$which_F_age = data$n_ages #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
   data$use_steepness = 0 #use regular SR parameterization by default, steepness still can be estimated as derived par.
   data$bias_correct_pe = 0 #bias correct log-normal process errors?
   data$bias_correct_oe = 0 #bias correct log-normal observation errors?
   data$Fbar_ages = 1:data$n_ages
   data$simulate_state = 1 #simulate any state variables
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
-
+  data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  data$XSPR_R_avg_yrs = 1:n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  
   model_years <- asap3$year1 + 1:asap3$n_years - 1
   # add in environmental covariate data
   if(is.null(Ecov)){

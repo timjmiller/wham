@@ -67,6 +67,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(Fbar_ages);
   DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
   DATA_SCALAR(percentSPR); //percentage to use for SPR-based reference points
+  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 
   // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
@@ -198,13 +200,13 @@ Type objective_function<Type>::operator() ()
 
         Ecov_x(0,i) = Ecov1;
         nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
-        SIMULATE if(simulate_state == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
+        SIMULATE if(simulate_state == 1 & Ecov_use_re(1,i) == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         Ecov_x(1,i) = Ecov_re(1,i);
         // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
         // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           Ecov_x(y,i) = Ecov_re(y,i);
         }
       }
@@ -219,11 +221,11 @@ Type objective_function<Type>::operator() ()
         Ecov_sig = exp(Ecov_process_pars(2,i));
 
         nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        SIMULATE if(simulate_state == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+        SIMULATE if(simulate_state == 1 & Ecov_use_re(0,i) == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
         {
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
         }
         for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
@@ -597,7 +599,7 @@ Type objective_function<Type>::operator() ()
           vector<Type> mat = mature.row(y);
           Type fracyr_SSB_y = fracyr_SSB(y);
           Type log_SPR0_y = log_SPR0(y);
-          FAA_tot.row(y) = get_FXSPR(M, sel_proj, which_F_age, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
+          FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
         }        
         if(proj_F_opt == 4){ // user-specified F
           FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
@@ -808,7 +810,17 @@ Type objective_function<Type>::operator() ()
   //calculate BRPs
   //First SPR-based proxies
   //Type percentSPR = 40;
-  vector<Type> predR = pred_NAA.col(0);
+  vector<Type> predR(pred_NAA.rows());
+  if(XSPR_R_opt == 1) predR = NAA.col(0);
+  if(XSPR_R_opt == 3) predR = pred_NAA.col(0);
+  if(XSPR_R_opt == 2 | XSPR_R_opt == 4) 
+  {
+    int nyr = XSPR_R_avg_yrs.size();
+    vector<Type> avg_Rs(nyr);
+    if(XSPR_R_opt == 2) for(int i = 0; i < nyr; i++) avg_Rs(i) = NAA(i-1,0);
+    if(XSPR_R_opt == 4) for(int i = 0; i < nyr; i++) avg_Rs(i) = pred_NAA(i-1,0);
+    predR.fill(avg_Rs.mean());
+  }
   matrix<Type> SPR_res = get_SPR_res(MAA, FAA_tot, which_F_age, waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, predR, fracyr_SSB, log_SPR0);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);

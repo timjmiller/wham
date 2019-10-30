@@ -99,6 +99,10 @@ prepare_projection = function(model, proj.opts)
   }
   if(data$proj_F_opt %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
 
+  #define age for full F in projections
+  FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
+  data$which_F_age = which(FAA_proj == max(FAA_proj))[1]
+
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
   data$mature <- rbind(data$mature, matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
