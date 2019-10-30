@@ -619,7 +619,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   random = character()
   if(data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
-  return(list(data=data, par = par, map = map, random = random, years = model_years,
+  return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
 }
 

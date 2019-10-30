@@ -82,6 +82,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
   mod$years <- input$years
+  mod$years_full <- input$years_full
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
 

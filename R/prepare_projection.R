@@ -187,6 +187,6 @@ prepare_projection = function(model, proj.opts)
   # random <- input1$random[!sapply(input1$random, check_allNA)]
 
   return(list(data=data, par = par, map = map, random = input1$random,
-    years = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
+    years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
     ages.lab = input1$ages.lab, model_name = input1$model_name))
 }

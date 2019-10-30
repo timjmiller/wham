@@ -2,6 +2,7 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72,
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   years <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov)
+  years_full <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov+dat$n_years_proj_Ecov)
 
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
@@ -15,13 +16,14 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72,
   # default: don't plot the padded entries that weren't used in ecov likelihood
   if(!plot.pad) ecov.obs[ecov.use == 0] <- NA
 
-  plot.colors = mypalette(dat$n_Ecov)
-  for (i in 1:dat$n_Ecov)
-  {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 7, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 7*144, res = 144, pointsize = 12, family = "Times")
+  ecov.res = (ecov.obs - ecov.pred[1:dat$n_years_Ecov,]) / ecov.obs.sig # standard residual (obs - pred)
 
-    par(mar=c(4,4,1.5,0), oma=c(0,0,0.5,0.5))
+  ecovs <- 1:dat$n_Ecov
+  plot.colors = mypalette(dat$n_Ecov)
+  for (i in ecovs)
+  {
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 
     ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
     ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
@@ -31,13 +33,15 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72,
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years, ecov.obs[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
          ylim=c(y.min, y.max))
-    polygon(c(years,rev(years)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
-    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
     title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    if(dat$n_years_proj_Ecov > 0) abline(v=tail(years,1), lty=2)
+
     if(do.tex | do.png) dev.off() else par(origpar)
   }
 }
@@ -177,8 +181,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
                                 fleet=names(table(dat$fleet))[f],
                                 age=NA, type="Ecov", val=NA, ind=NA, residual=NA))
       }
-      tmp$pred <- mod$rep$Ecov_x[,f]
-      tmp <- subset(tmp, !is.nan(dat$residual))
+      tmp$pred <- mod$rep$Ecov_x[1:dim(tmp)[1],f]
+      tmp <- subset(tmp, !is.nan(tmp$residual))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_ecov_4panel_",f,".pdf")), family = "Times", height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSAresid_ecov_4panel_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = "Times")
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
@@ -246,6 +250,9 @@ fit.summary.text.plot.fn <- function(mod){
   nl = 10
   text(5,nl <- nl-0.5,mod$model_name)
   text(5,nl <- nl-0.5,paste0("Model years: ", min(mod$years), "-", max(mod$years)))
+  proj.yrs <- tail(mod$years_full, mod$env$data$n_years_proj)
+  proj.txt <- ifelse(mod$env$data$do_proj == 0, "none", paste0(min(proj.yrs), "-", max(proj.yrs)))
+  text(5,nl <- nl-0.5,paste0("Projection years: ", proj.txt))
   text(5,nl <- nl-0.5,paste0("Number of fleets: ", mod$env$data$n_fleets))
   text(5,nl <- nl-0.5, paste0("Fleet Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_fleets], collapse = ", ")))
   text(5,nl <- nl-0.5,paste0("Number of indices: ", mod$env$data$n_indices))
@@ -822,10 +829,16 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  pred_catch = mod$rep$pred_catch
+  if(mod$env$data$n_fleets == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
+    pred_catch = rbind(mod$rep$pred_catch, as.matrix(mod$rep$catch_proj))
+    years_full = mod$years_full
+  } else {
+    pred_catch = mod$rep$pred_catch
+    years_full = years
+  }
   catch = dat$agg_catch
   sigma = dat$agg_catch_sigma
-  log_stdres = (log(catch)-log(pred_catch))/sigma
+  log_stdres = (log(catch)-log(pred_catch[1:dim(catch)[1],]))/sigma
   if(!missing(use.i)) fleets <- use.i
   else fleets <- 1:dat$n_fleets
   if(missing(plot.colors)) plot.colors = mypalette(dat$n_fleets)
@@ -834,14 +847,20 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
 		if(do.tex) cairo_pdf(file.path(od, paste0("Catch_4panel_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_4panel_fleet",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
-		plot(years, catch[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Total Catch",
-			ylim=c(0, 1.1*max(catch[,i])))
-		lines(years, pred_catch[,i], col=plot.colors[i], lwd=2)
+		plot(years_full, pred_catch[,i], col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab="Total Catch",
+			ylim=c(0, 1.1*max(c(catch[,i],pred_catch[,i]))))
+    points(years, catch[,i], col=plot.colors[i], pch=1)
+    if(mod$env$data$n_fleets == 1){
+      if(length(years_full) > length(years)){
+        abline(v=tail(years,1), lty=2, lwd=1)
+      }
+    }
 		log.ob.min <- log(catch[,i])-1.96*sigma[,i]
 		log.ob.max <- log(catch[,i])+1.96*sigma[,i]
-		plot(years, log(catch[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Total Catch)",
-			ylim=c(min(log.ob.min,log(pred_catch[,i])), 1.1*max(log.ob.max,log(pred_catch[,i]))))
-		lines(years, log(pred_catch[,i]), col=plot.colors[i], lwd=2)
+		plot(years_full, log(pred_catch[,i]), col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab="Ln(Total Catch)",
+			ylim=c(min(log.ob.min,log(pred_catch[,i]), na.rm=T), 1.1*max(log.ob.max,log(pred_catch[,i]), na.rm=T)))
+		points(years, log(catch[,i]), pch=1, col=plot.colors[i])
+    if(mod$env$data$n_fleets == 1) abline(v=tail(years,1), lty=2, lwd=1)
 		arrows(years, log.ob.min, years, log.ob.max, length=0)
 		title (paste0("Fleet ",i, " Catch"), outer=T, line=-1)
 		plot(years, log_stdres[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Log-scale Std. Residual")
@@ -860,7 +879,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   pred_index = sapply(1:dat$n_indices, function(x)
   {
       if(dat$units_indices[x] == 2) apply(pred_index[x,,],1,sum)
-      else apply(pred_index[x,,] * dat$waa[dat$waa_pointer_indices[x],,],1,sum)
+      else apply(pred_index[x,,] * dat$waa[dat$waa_pointer_indices[x],1:dat$n_years_indices,],1,sum)
   })
   index = dat$agg_indices
   sigma = dat$agg_index_sigma
@@ -897,11 +916,12 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.
   origpar <- par(no.readonly = TRUE)
   par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
   years <- mod$years
+  years_full = mod$years_full
   dat = mod$env$data
   pred_NAA = mod$rep$pred_NAA
   NAA = mod$rep$NAA
   sigma = exp(mod$parList$log_NAA_sigma[mod$env$data$NAA_sigma_pointers])
-  sigma = matrix(sigma, length(years), dat$n_ages, byrow = TRUE)
+  sigma = matrix(sigma, length(years_full), dat$n_ages, byrow = TRUE)
   log_stdres = (log(NAA)-log(pred_NAA))/sigma
   if(!missing(use.i)) ages <- use.i
   else ages <- 1:dat$n_ages
@@ -911,17 +931,19 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, use.
 		if(do.tex) cairo_pdf(file.path(od, paste0("NAA_4panel_",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("NAA_4panel_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
-		plot(years, NAA[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Abundance (1000s)",
+		plot(years_full, NAA[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Abundance (1000s)",
 			ylim=c(0, 1.1*max(NAA[,i])))
-		lines(years, pred_NAA[,i], col=plot.colors[i], lwd=2)
-		log.ob.min <- log(NAA[,i])-1.96*sigma[,i]
+		lines(years_full, pred_NAA[,i], col=plot.colors[i], lwd=2)
+		if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    log.ob.min <- log(NAA[,i])-1.96*sigma[,i]
 		log.ob.max <- log(NAA[,i])+1.96*sigma[,i]
-		plot(years, log(NAA[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Abundance)",
+		plot(years_full, log(NAA[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Abundance)",
 			ylim=c(min(log.ob.min,log(pred_NAA[,i])), 1.1*max(log.ob.max,log(pred_NAA[,i]))))
-		lines(years, log(pred_NAA[,i]), col=plot.colors[i], lwd=2)
-		arrows(years, log.ob.min, years, log.ob.max, length=0)
+		lines(years_full, log(pred_NAA[,i]), col=plot.colors[i], lwd=2)
+		arrows(years_full, log.ob.min, years_full, log.ob.max, length=0)
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
 		title (paste0("Conditional Expected and Posterior Estimates of Age ",i, " Abundance "), outer=T, line=-1)
-		plot(years, log_stdres[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Log-scale (Conditional) Std. Residual")
+		plot(years_full, log_stdres[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Log-scale (Conditional) Std. Residual")
 		abline(h=0)
 		hist(log_stdres[,i], plot=T, xlab="(Conditional) Std. Residual", ylab="Probability Density", freq=F, main=NULL)
 		if(do.tex | do.png) dev.off() else par(origpar)
@@ -935,7 +957,7 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, plot.col
   ages = mod$ages
 	n.ages <- length(ages)
   if(missing(plot.colors)) plot.colors = mypalette(n.ages)
-  years = mod$years
+  years = mod$years_full
 	n.yrs <- length(years)
   pred_NAA = mod$rep$pred_NAA
   NAA = mod$rep$NAA
@@ -1023,7 +1045,7 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, u
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
     acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],,]
+    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:mod$env$data$n_years_indices,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
@@ -1144,7 +1166,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
     acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],,]
+    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:dat$n_years_indices,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_index",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
@@ -1280,6 +1302,7 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 plot.SSB.F.trend<-function(mod, alpha = 0.05)
 {
   origpar <- par(no.readonly = TRUE)
+  years_full <- mod$years_full
   years <- mod$years
   tcol <- col2rgb('black')
   tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -1294,15 +1317,15 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   ssb.ci = exp(log.ssb.ci)/1000
   no.ssb.ci <- all(is.na(ssb.ci))
   if(!no.ssb.ci){ # have CI
-  	plot(years, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
+  	plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
   	axis(1, labels = FALSE)
   	axis(2)
   	box()
   	mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
   	grid(col = gray(0.7))
-  	polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  	polygon(c(years_full,rev(years_full)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
 	} else { # no CI but plot SSB trend
-    plot(years, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
     axis(1, labels = FALSE)
     axis(2)
     box()
@@ -1310,13 +1333,14 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
     grid(col = gray(0.7))
     # polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
   }
+  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   # F trend
   n_ages = mod$env$data$n_ages
 	faa.ind <- which(rownames(std) == "log_FAA_tot")
-	log.faa <- matrix(std[faa.ind,1], length(years), n_ages)
-	faa.cv <- matrix(std[faa.ind,2], length(years), n_ages)
+	log.faa <- matrix(std[faa.ind,1], length(years_full), n_ages)
+	faa.cv <- matrix(std[faa.ind,2], length(years_full), n_ages)
 	age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
-  full.f.ind = cbind(1:length(years), age.full.f)
+  full.f.ind = cbind(1:length(years_full), age.full.f)
 	#full.f.ind <- c(age.full.f[1], n_ages + cumsum(age.full.f[-1]))
   log.full.f <- log.faa[full.f.ind]
   full.f.cv <- faa.cv[full.f.ind]
@@ -1324,16 +1348,16 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   full.f = exp(log.full.f)
   no.f.ci <- all(is.na(log.f.ci))
   if(!no.f.ci){ # have CI
-  	plot(years, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(exp(log.f.ci))), axes = FALSE)
+  	plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(exp(log.f.ci))), axes = FALSE)
   	axis(1)
   	axis(2)
   	box()
   	mtext(side = 1, "Year", outer = FALSE, line = 3)
   	mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
   	grid(col = gray(0.7))
-  	polygon(c(years,rev(years)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
+  	polygon(c(years_full,rev(years_full)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
   } else { # CI all NA
-    plot(years, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(full.f)), axes = FALSE)
+    plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(full.f)), axes = FALSE)
     axis(1)
     axis(2)
     box()
@@ -1342,6 +1366,7 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
     grid(col = gray(0.7))
     # polygon(c(years,rev(years)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
   }
+  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   par(origpar)
 }  #end function
 
@@ -1354,7 +1379,8 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
 	n.ages <- length(ages)
   if(missing(plot.colors)) plot.colors = mypalette(n.ages)
 	years<-  mod$years
-	n.yrs <- length(years)
+  years_full <-  mod$years_full
+	n.yrs <- length(years_full)
   ssbfrac = dat$fracyr_SSB
 	ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * dat$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
 	ssb.max <- max(apply(ssb.aa,1,sum))
@@ -1363,15 +1389,17 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
 	if(!prop){ # plot SSB at age
   	barplot(t(ssb.aa), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab =paste('SSB at age (', "kmt", ')', sep = ''),
   		ylim = c(0,1.15*ssb.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
+    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
 	}
 	if(prop){ # plot *proportion* SSB at age
   	barplot(t(ssb.aa/apply(ssb.aa,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab ='Proportion SSB at age',
   		ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
+    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
 	}
   par(origpar)
@@ -1389,8 +1417,9 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
   if(missing(ages.lab)) ages.lab = mod$ages.lab
 	n.ages <- length(ages)
   if(missing(plot.colors)) plot.colors = mypalette(n.ages)
-  years = mod$years
-	n.yrs <-length(years)
+  years<-  mod$years
+  years_full <-  mod$years_full
+  n.yrs <- length(years_full)
 	NAA <- mod$rep$NAA
 	N.max=max(apply(NAA,1,sum))/scale
 
@@ -1399,15 +1428,17 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
   	barplot(t(NAA)/scale, beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab =as.expression(substitute(paste("January 1 numbers at age (", units, ")", sep = ''), list(units = units[[1]]))),
   		ylim = c(0,1.15*N.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
+    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
 	}
 	if(prop){ # plot *proportion* of numbers at age
   	barplot(t(NAA/apply(NAA,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab ='January 1 proportions at age', ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8 )
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years[seq(5,n.yrs,5)])
+    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
 	}
   par(origpar)
@@ -1567,14 +1598,15 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
   origpar <- par(no.readonly = TRUE)
   par(mar = c(5,5,1,5), oma = c(0,0,0,1), family='serif')
   years = mod$years
-  nyrs <- length(years)
+  years_full = mod$years_full
+  nyrs <- length(years_full)
   std = summary(mod$sdrep)
 	ssb.ind <- which(rownames(std) == "log_SSB")
 	log.ssb <- std[ssb.ind,1]
 	R <- mod$rep$NAA[,1]
 	ssb.plot <- exp(log.ssb[1:(nyrs-age.recruit)])/scale.ssb
 	recr.plot <- R[age.recruit + 1:(nyrs-age.recruit)]/scale.recruits
-	yr.text <- substr(years,3,4)
+	yr.text <- substr(years_full,3,4)
 
 	max.r <- max(recr.plot)
 	max.ssb <- max(ssb.plot)
@@ -1585,7 +1617,8 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
 	xr <-pretty(c(0,recr.plot/scale.recruits))
 	axis(2, at = xr, lab = xr )
 	axis(side=1, las=2, at=seq(0.5,nyrs-age.recruit-0.5, by=2),
-	labels=as.character(seq(years[1],years[nyrs-age.recruit], by=2)), cex=0.75, las=2)
+	labels=as.character(seq(years_full[1],years_full[nyrs-age.recruit], by=2)), cex=0.75, las=2)
+  if(length(years_full) > length(years)) abline(v=tail(years,1)-age.recruit, lty=2, lwd=1)
 
 	y.ssb <- (ssb.plot)*max.r/max.ssb
 	lines(seq(0.5,nyrs-age.recruit-0.5, by=1), y.ssb, lwd=2, col = 'navyblue')
@@ -1596,6 +1629,7 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
 	mtext(side = 4, as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))), line = 3, col='navyblue')
 	mtext(side = 2, as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
 		list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), line = 3)
+  if(length(years_full) > length(years)) abline(v=tail(years,1)-age.recruit, lty=2, lwd=1)
 	par(origpar)
 }  # end function
 #plot.SARC.R.SSB(ssm, ssm.aux)
@@ -1605,20 +1639,30 @@ plot.fleet.F <- function(mod, plot.colors)
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1))
   years = mod$years
-  nyrs <- length(years)
 	n_fleets <- mod$env$data$n_fleets
   if(missing(plot.colors)) plot.colors = mypalette(n_fleets)
-	for (i in 1:n_fleets)
-	{
-		if (i==1)
-		{
-		  plot(years, mod$rep$F[,i], xlab="Year", ylab="Full F", ylim=c(0,max(mod$rep$F)),	type='l', lty=1, lwd=2, col = plot.colors[i])
-		  grid(col = gray(0.7))
-		}
-		if (i>1) lines(years, mod$rep$F[,i],lty=i, lwd=2, col=plot.colors[i])
-	}
-
-	leg.names <- paste0("Fleet ",i)
+	if(n_fleets == 1){ # can calculate full F from FAA_tot in projection years if only one fleet
+    years_full = mod$years_full
+    nyrs <- length(years_full)
+    std <- summary(mod$sdrep)
+    faa.ind <- which(rownames(std) == "log_FAA_tot")
+    log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
+    full.f.ind <- cbind(1:nyrs, apply(log.faa,1, function(x) max(which(x == max(x)))))
+    log.full.f <- log.faa[full.f.ind]
+    plot(years_full, exp(log.full.f), xlab="Year", ylab="Full F", ylim=c(0,max(exp(log.full.f))), type='l', lty=1, lwd=2, col = plot.colors[i])
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    grid(col = gray(0.7))
+  } else { # multiple fleets, can't partition F in projection years to fleets
+    for(i in 1:n_fleets){
+  		if(i==1){
+  		  plot(years, mod$rep$F[,i], xlab="Year", ylab="Full F", ylim=c(0,max(mod$rep$F)),	type='l', lty=1, lwd=2, col = plot.colors[i])
+  		  grid(col = gray(0.7))
+  		} else {
+  		  lines(years, mod$rep$F[,i],lty=i, lwd=2, col=plot.colors[i])
+      }
+  	}
+  }
+	leg.names <- paste0("Fleet ",1:n_fleets)
 	legend('topleft', legend=leg.names, col=plot.colors,lwd=rep(2, n_fleets), lty=seq(1, n_fleets), horiz=TRUE, bty='n')
 	par(origpar)
 }   # end function
@@ -1630,7 +1674,8 @@ plot.cv <- function(mod)
   origpar <- par(no.readonly = TRUE)
 	par(mfrow=c(1,1), mar=c(4,4,2,2))
   years = mod$years
-  nyrs <- length(years)
+  years_full = mod$years_full
+  nyrs <- length(years_full)
 	std <- summary(mod$sdrep)
 	ssb.ind <- which(rownames(std) == "log_SSB")
 	log.ssb <- std[ssb.ind,1]
@@ -1649,9 +1694,10 @@ plot.cv <- function(mod)
   any.na <- any(is.na(c(R.cv, faa.cv, full.f.cv)))
 
   if(!any.na){
-  	plot(years, R.cv, type='l', lwd=2, col='black', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, full.f.cv)))
-  	lines(years, ssb.cv, lwd=2, col="blue")
-  	lines(years, full.f.cv, lwd=2, col="green3")
+  	plot(years_full, R.cv, type='l', lwd=2, col='black', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, full.f.cv)))
+  	lines(years_full, ssb.cv, lwd=2, col="blue")
+  	lines(years_full, full.f.cv, lwd=2, col="green3")
+    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
   	legend('top', legend=c("Recruits", "SSB", "Full F"), col=c("black", "blue", "green3"), lty=rep(1,3), lwd=rep(2,3), horiz=T)
   }
   par(origpar)
@@ -1667,7 +1713,8 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors)
 	n_ages <- length(ages)
 	meanMAA <- apply(mod$rep$MAA,2,mean)
   years = mod$years
-  n_years = length(years)
+  years_full = mod$years_full
+  n_years = length(years_full)
 	if(missing(plot.colors)) plot.colors = mypalette(n_years)
 	n.M.by.age <- lapply(1:n_ages, function(x) table(mod$rep$MAA[,x]))
 	plot(ages,meanMAA,lwd=2,xlab="Age",ylab="Natural Mortality Rate", ylim=c(0,1.1*(max(mod$rep$MAA))), type= 'n', xlim = c(min(ages)-0.5,max(ages)+1),
@@ -1844,7 +1891,7 @@ plot.index.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 {
   origpar <- par(no.readonly = TRUE)
-  years = mod$years
+  years = mod$years_full
   nyrs = length(years)
   dat = mod$env$data
   if(missing(plot.colors)) plot.colors = mypalette(dat$n_ages)
@@ -2039,6 +2086,8 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 7
   n_ages = dat$n_ages
   years = mod$years
   n_years = length(years)
+  years_full = mod$years_full
+  n_years_full = length(years_full)
 
   fec.age <- dat$waa[dat$waa_pointer_ssb,,]
 	mat.age <- dat$mature
@@ -2051,11 +2100,11 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 7
 	spr0 <- numeric()
 	F.start <- 0.11  # starting guess for optimization routine to find F_SPR%
 
-	f.spr <- matrix(NA, n_years, n.spr)
-	ypr.spr <- matrix(NA, n_years, n.spr)
-	conv <- matrix(NA, n_years, n.spr)
+	f.spr <- matrix(NA, n_years_full, n.spr)
+	ypr.spr <- matrix(NA, n_years_full, n.spr)
+	conv <- matrix(NA, n_years_full, n.spr)
 
-	for (j in 1:n_years)
+	for (j in 1:n_years_full)
 	{
     spr0[j] = get_SPR(F=0, M=M.age[j,], sel=sel.age[j,], mat=mat.age[j,], waassb=fec.age[j,], fracyrssb = spawn.time[j])
     #spr0.vals[j] <- s.per.recr(n_ages=n_ages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=0, sel.age=sel.age[j,],
@@ -2082,21 +2131,23 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 7
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_annual_time.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_annual_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 	par(mfrow=c(2,1), mar=c(4,5,2,1))
-	plot(years, f.spr[,1], type='n', xlab="Years", ylab=expression(paste("Full ",italic(F)["%SPR"])), lwd=2, ylim=c(0,1.2*max(f.spr)))
-	for (i in 1:n.spr) lines(years, f.spr[,i], lwd=2, col=plot.colors[i])
+	plot(years_full, f.spr[,1], type='n', xlab="Years", ylab=expression(paste("Full ",italic(F)["%SPR"])), lwd=2, ylim=c(0,1.2*max(f.spr)))
+	for (i in 1:n.spr) lines(years_full, f.spr[,i], lwd=2, col=plot.colors[i])
+  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
 	legend('top', legend= sapply(spr.targ.values, function(x) as.expression(bquote(italic(F)[paste(.(x*100),"%")]))), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
 	title (main=expression(paste("Annual ", italic(F)["%SPR"], " Reference Points")), line=1)
 	#if (save.plots) savePlot(paste(od, "Annual_FSPR.", plotf, sep=''), type=plotf)
-	plot(years, ypr.spr[,1], type='n', xlab="Years", ylab=expression(paste("YPR(",italic(F)["%SPR"],")")), lwd=2, ylim=c(0,1.2*max(ypr.spr)))
-	for (i in 1:n.spr) lines(years, ypr.spr[,i], lwd=2, col=plot.colors[i])
-	#legend('top', legend=c("YPR20%", "YPR30%", "YPR40%", "YPR50%"), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
+	plot(years_full, ypr.spr[,1], type='n', xlab="Years", ylab=expression(paste("YPR(",italic(F)["%SPR"],")")), lwd=2, ylim=c(0,1.2*max(ypr.spr)))
+	for (i in 1:n.spr) lines(years_full, ypr.spr[,i], lwd=2, col=plot.colors[i])
+	if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+  #legend('top', legend=c("YPR20%", "YPR30%", "YPR40%", "YPR50%"), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
 	title (main=expression(paste("Annual YPR(",italic(F)["%SPR"], ") Reference Points")), line=1)
 	if(do.tex | do.png) dev.off() else par(origpar)
 
 	if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_freq_annual_F.pdf")), family = "Times", height = 10, width = 10)
 	if(do.png) png(filename = file.path(od, paste0("FSPR_freq_annual_F.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 	par(mfrow=c(2,2))
-  f.hist = lapply(1:length(spr.targ.values), function(x) hist(f.spr[,x], plot = FALSE))
+  f.hist = lapply(1:length(spr.targ.values), function(x) hist(f.spr[1:n_years,x], plot = FALSE))
   par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
   for(i in 1:length(spr.targ.values))
   {
@@ -2109,11 +2160,11 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, res = 7
 
 	if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_freq_annual_YPR.pdf")), family = "Times", height = 10, width = 10)
 	if(do.png) png(filename = file.path(od, paste0("FSPR_freq_annual_YPR.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
-	ypr.hist = lapply(1:length(spr.targ.values), function(x) hist(ypr.spr[,x], plot = FALSE))
+	ypr.hist = lapply(1:length(spr.targ.values), function(x) hist(ypr.spr[1:n_years,x], plot = FALSE))
   par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
   for(i in 1:length(spr.targ.values))
   {
-    plot(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, xlab=bquote(paste("YPR(", italic(F)[paste(.(spr.targ.values[i]*100),"%")],")")), ylab="", type='h', lwd=2, ylim=c(0, max(f.hist[[i]]$counts)), col=plot.colors[i])
+    plot(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, xlab=bquote(paste("YPR(", italic(F)[paste(.(spr.targ.values[i]*100),"%")],")")), ylab="", type='h', lwd=2, ylim=c(0, max(ypr.hist[[i]]$counts)), col=plot.colors[i])
     lines(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, lwd=2, col=plot.colors[i])
   }
   mtext(side=2, outer = TRUE, "Frequency", line = 1)
@@ -2174,7 +2225,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   origpar <- par(no.readonly = TRUE)
   percentSPR = mod$env$data$percentSPR
 	n_ages = mod$env$data$n_ages
-  years = mod$years
+  years = mod$years_full
 	n_years = length(years)
   if(missing(status.years)) status.years = n_years
   tcol <- col2rgb('black')
@@ -2221,6 +2272,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
     polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
+    if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
 	}
   mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
@@ -2241,6 +2293,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
   abline(h=1, lty = 2)
   abline(h=0.5, lty = 2, col = 'red')
+  if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
 
   rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$F.t,1][1:n_years]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
@@ -2256,6 +2309,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   polyy = polyy[!is.na(polyy)]
   polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
   abline(h=1, lty = 2, col = 'red')
+  if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
   mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
   if(do.tex | do.png) dev.off() else par(origpar)
 
@@ -3194,6 +3248,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   years <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov)
+  years_full <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov+dat$n_years_proj_Ecov)
 
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
@@ -3207,7 +3262,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   # default: don't plot the padded entries that weren't used in ecov likelihood
   if(!plot.pad) ecov.obs[ecov.use == 0] <- NA
 
-  ecov.res = (ecov.obs - ecov.pred) / ecov.obs.sig # standard residual (obs - pred)
+  ecov.res = (ecov.obs - ecov.pred[1:dat$n_years_Ecov,]) / ecov.obs.sig # standard residual (obs - pred)
 
   if(!missing(use.i)) ecovs <- use.i
   else ecovs <- 1:dat$n_Ecov
@@ -3229,13 +3284,14 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years, ecov.obs[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
          ylim=c(y.min, y.max))
-    polygon(c(years,rev(years)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
-    lines(years, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
     title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    if(dat$n_years_proj_Ecov > 0) abline(v=tail(years,1), lty=2)
 
     plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")
     abline(h=0)
