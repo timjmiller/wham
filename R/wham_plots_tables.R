@@ -1387,9 +1387,9 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
 
 	par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
 	if(!prop){ # plot SSB at age
-  	barplot(t(ssb.aa), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab =paste('SSB at age (', "kmt", ')', sep = ''),
+  	res <- barplot(t(ssb.aa), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab =paste('SSB at age (', "kmt", ')', sep = ''),
   		ylim = c(0,1.15*ssb.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
     axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
@@ -1397,7 +1397,7 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
 	if(prop){ # plot *proportion* SSB at age
   	barplot(t(ssb.aa/apply(ssb.aa,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab ='Proportion SSB at age',
   		ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
     axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
@@ -1428,7 +1428,7 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
   	barplot(t(NAA)/scale, beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab =as.expression(substitute(paste("January 1 numbers at age (", units, ")", sep = ''), list(units = units[[1]]))),
   		ylim = c(0,1.15*N.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
     axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
@@ -1436,7 +1436,7 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
 	if(prop){ # plot *proportion* of numbers at age
   	barplot(t(NAA/apply(NAA,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab ='January 1 proportions at age', ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
   	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8 )
     axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
@@ -1618,7 +1618,6 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
 	axis(2, at = xr, lab = xr )
 	axis(side=1, las=2, at=seq(0.5,nyrs-age.recruit-0.5, by=2),
 	labels=as.character(seq(years_full[1],years_full[nyrs-age.recruit], by=2)), cex=0.75, las=2)
-  if(length(years_full) > length(years)) abline(v=tail(years,1)-age.recruit, lty=2, lwd=1)
 
 	y.ssb <- (ssb.plot)*max.r/max.ssb
 	lines(seq(0.5,nyrs-age.recruit-0.5, by=1), y.ssb, lwd=2, col = 'navyblue')
@@ -1629,7 +1628,7 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
 	mtext(side = 4, as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))), line = 3, col='navyblue')
 	mtext(side = 2, as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
 		list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), line = 3)
-  if(length(years_full) > length(years)) abline(v=tail(years,1)-age.recruit, lty=2, lwd=1)
+  if(length(years_full) > length(years)) abline(v=length(years)-age.recruit, lty=2, lwd=2)
 	par(origpar)
 }  # end function
 #plot.SARC.R.SSB(ssm, ssm.aux)
@@ -1649,7 +1648,7 @@ plot.fleet.F <- function(mod, plot.colors)
     log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
     full.f.ind <- cbind(1:nyrs, apply(log.faa,1, function(x) max(which(x == max(x)))))
     log.full.f <- log.faa[full.f.ind]
-    plot(years_full, exp(log.full.f), xlab="Year", ylab="Full F", ylim=c(0,max(exp(log.full.f))), type='l', lty=1, lwd=2, col = plot.colors[i])
+    plot(years_full, exp(log.full.f), xlab="Year", ylab="Full F", ylim=c(0,max(exp(log.full.f))), type='l', lty=1, lwd=2, col = plot.colors[1])
     if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
     grid(col = gray(0.7))
   } else { # multiple fleets, can't partition F in projection years to fleets
@@ -2225,9 +2224,20 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   origpar <- par(no.readonly = TRUE)
   percentSPR = mod$env$data$percentSPR
 	n_ages = mod$env$data$n_ages
-  years = mod$years_full
-	n_years = length(years)
-  if(missing(status.years)) status.years = n_years
+  years_full = mod$years_full
+	n_years_full = length(years_full)
+  years = mod$years
+  n_years = length(years)
+  if(missing(status.years)){
+    status.years = n_years
+    status.lwd = 1
+    if(mod$env$data$do_proj==1){
+      status.years <- c(status.years, n_years_full)
+      status.lwd <- c(2,1)
+    }
+  } else {
+    status.lwd <- rep(1, length(status.years))
+  }
   tcol <- col2rgb('black')
   tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
   std <- summary(mod$sdrep, "report")
@@ -2236,16 +2246,16 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 	inds$SSB.t <- which(rownames(std) == "log_SSB_FXSPR")
 	inds$ssb <- which(rownames(std) == "log_SSB")
 	inds$faa <- which(rownames(std) == "log_FAA_tot")
-  log.faa <- matrix(std[inds$faa,1], n_years, n_ages)
+  log.faa <- matrix(std[inds$faa,1], n_years_full, n_ages)
   age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
-  inds$full.f <- (age.full.f-1)*n_years + 1:n_years  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
+  inds$full.f <- (age.full.f-1)*n_years + 1:n_years_full  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
   na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
   ylabs <- c(
     bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
     bquote(italic(F)[paste(.(percentSPR), "%")]),
     bquote(paste('SSB(', italic(F)[paste(.(percentSPR), "%")],')')))
 	cov <- mod$sdrep$cov
-  log.rel.ssb.rel.F.cov <- lapply(1:n_years, function(x)
+  log.rel.ssb.rel.F.cov <- lapply(1:n_years_full, function(x)
   {
     K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
     ind <- c(inds$ssb[x],inds$SSB.t[x],inds$full.f[x],inds$F.t[x])
@@ -2261,18 +2271,18 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   {
     t.ind <- inds[[i]]
     t.ylab <- ylabs[i]
-    vals <- std[t.ind,1][1:n_years]
-    cv <- std[t.ind,2][1:n_years]
+    vals <- std[t.ind,1][1:n_years_full]
+    cv <- std[t.ind,2][1:n_years_full]
     ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-	  if(!na.sd[i]) plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
-    if(na.sd[i]) plot(years, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
+	  if(!na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
+    if(na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
 	  grid(col = gray(0.7))
     polyy = exp(c(ci[,1],rev(ci[,2])))
-    polyx = c(years,rev(years))
+    polyx = c(years_full,rev(years_full))
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
     polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
-    if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
+    if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
 	}
   mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
@@ -2281,13 +2291,13 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = "Times", height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
   par(mfrow=c(2,1))
-  rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSB.t,1][1:n_years]
+  rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  plot(years, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
+  plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
   grid(col = gray(0.7))
   polyy = exp(c(ci[,1],rev(ci[,2])))
-  polyx = c(years,rev(years))
+  polyx = c(years_full,rev(years_full))
   polyx = polyx[!is.na(polyy)]
   polyy = polyy[!is.na(polyy)]
   polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
@@ -2295,21 +2305,21 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   abline(h=0.5, lty = 2, col = 'red')
   if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
 
-  rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$F.t,1][1:n_years]
+  rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
   ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(!na.sd["full.f"]) plot(years, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+  if(!na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
     ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
-  if(na.sd["full.f"]) plot(years, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+  if(na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
     ylim = c(0,max(exp(rel.f.vals),1, na.rm = TRUE)), type = 'l')
   grid(col = gray(0.7))
   polyy = exp(c(ci[,1],rev(ci[,2])))
-  polyx = c(years,rev(years))
+  polyx = c(years_full,rev(years_full))
   polyx = polyx[!is.na(polyy)]
   polyy = polyy[!is.na(polyy)]
   polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
   abline(h=1, lty = 2, col = 'red')
-  if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
+  if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
   mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
   if(do.tex | do.png) dev.off() else par(origpar)
 
@@ -2348,25 +2358,26 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
     polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
     polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n")
-    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n")
-    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n")
-    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
-    text(vals[status.years,1],vals[status.years,2], substr(years[status.years],3,4))
-    for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1],log.rel.ssb.rel.F.ci.regs[[i]][,2])#, border = gray(0.7))
+    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", text.font=status.lwd)
+    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", text.font=status.lwd)
+    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", text.font=status.lwd)
+    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", text.font=status.lwd)
+    text(vals[status.years,1],vals[status.years,2], substr(years_full[status.years],3,4), font=status.lwd)
+    for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lwd=status.lwd[i])#, border = gray(0.7))
     if(do.tex | do.png) dev.off() else par(origpar)
     return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
   } else { return(NULL) }
 }  # end function
 
-plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.tex = FALSE, do.png = FALSE, res = 72, od)
+plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   n_ages = dat$n_ages
   years = mod$years
   n_years = length(years)
-  if(missing(status.years)) status.years = n_years
+  years_full = mod$years_full
+  n_years_full = length(years_full)
   std = summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov
 	if(dat$recruit_model == 3) #Beverton-Holt assumed in model fit
@@ -2379,11 +2390,11 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
 		inds$RMSY <- which(rownames(std) == "log_R_MSY")
 		inds$ssb <- which(rownames(std) == "log_SSB")
   	inds$faa <- which(rownames(std) == "log_FAA_tot")
-	  log.faa <- matrix(std[inds$faa,1], n_years, n_ages)
+	  log.faa <- matrix(std[inds$faa,1], n_years_full, n_ages)
 	  age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
-	  inds$full.f <- (age.full.f-1)*n_years + 1:n_years  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
+	  inds$full.f <- (age.full.f-1)*n_years_full + 1:n_years_full  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
 	  ylabs <- c(expression(MSY),expression(italic(F)[MSY]), expression(SSB[MSY]), expression(italic(R)[MSY]))
-	  log.rel.ssb.rel.F.cov <- lapply(1:n_years, function(x)
+	  log.rel.ssb.rel.F.cov <- lapply(1:n_years_full, function(x)
 	  {
 	    K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
 	    ind <- c(inds$ssb[x],inds$SSBMSY[x],inds$full.f[x],inds$FMSY[x])
@@ -2399,14 +2410,15 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
     {
       t.ind <- inds[[i]]
       t.ylab <- ylabs[i]
-      vals <- std[t.ind,1][1:n_years]
-  	  cv <- std[t.ind,2][1:n_years]
+      vals <- std[t.ind,1][1:n_years_full]
+  	  cv <- std[t.ind,2][1:n_years_full]
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
       na.ci <- all(is.na(ci))
-		  if(!na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-      if(na.ci) plot(years, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
+		  if(!na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+      if(na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
 		  grid(col = gray(0.7))
-		  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+		  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+      if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
 		}
     if(do.tex | do.png) dev.off() else par(origpar)
 
@@ -2414,28 +2426,30 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.te
     if(do.tex) cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mfrow=c(2,1))
-    rel.ssb.vals <- std[inds$ssb,1][1:n_years] - std[inds$SSBMSY,1][1:n_years]
+    rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSBMSY,1][1:n_years_full]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
-		if(!na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
+		if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+    if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
-	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
+	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
 	  abline(h=1, lty = 2)
 	  abline(h=0.5, lty = 2, col = 'red')
+    if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
 
-    rel.f.vals <- std[inds$full.f,1][1:n_years] - std[inds$FMSY,1][1:n_years]
+    rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$FMSY,1][1:n_years_full]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
     ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
-		if(!na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+		if(!na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
       ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+    if(na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
       ylim = c(0,max(exp(rel.f.vals),na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
-	  polygon(c(years,rev(years)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')
+    if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
     if(do.tex | do.png) dev.off() else par(origpar)
 	}
 }  # end function
@@ -2613,7 +2627,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 {
   origpar <- par(no.readonly = TRUE)
   years = mod$years
-	n_years <- length(years)
+	n_years <- length(years) # don't use projections
   npeels = length(mod$peels)
   if(npeels)
   {
@@ -2631,10 +2645,10 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     tcol = col2rgb(plot.colors)
     tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
     if(what == "NAA_age"){
-      res = list(mod$rep[["NAA"]])
+      res = list(head(mod$rep[["NAA"]],n_years))
       res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[["NAA"]])
     } else {
-      res = list(mod$rep[[what]])
+      res = list(head(mod$rep[[what]],n_years))
       res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])      
     }
     if(what == "NAA")
@@ -2842,14 +2856,15 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, r
 	cat.corr <- list()
   dat = mod$env$data
   rep = mod$rep
+  n_years = length(mod$years)
 	for (i in 1:dat$n_fleets)
 	{
 		if (dat$n_fleets == 1) title1 = "Catch"
 		if (dat$n_fleets >= 2) title1 = paste("Catch for Fleet ",i, sep="")
 
 		# get catch at age
-    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],,],1,sum)
-    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],,],1,sum)
+    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
@@ -2957,6 +2972,7 @@ convert_survey_to_at_age <- function(mod)
 plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, od)
 {
   dat = mod$env$data
+  n_years = length(mod$years)
 	# now loop through indices, check to make sure actually estimating proportions at age
 	# also need to use only the age range selected in the proportions
 	index.corr <- list()
@@ -3048,6 +3064,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 	lastyr <- max(mod$years)
   dat = mod$env$data
   rep = mod$rep
+  n_years = length(mod$years)
 	cohort <- (min(mod$years) - dat$n_ages-1):(lastyr+dat$n_ages-1)
 	ages <- 1:dat$n_ages
   my.col = rep(mypalette(5),50)
@@ -3058,8 +3075,8 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		if (dat$n_fleets >= 2) title1 = paste0("Catch for Fleet ",i)
 
 		# get catch at age
-    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],,],1,sum)
-    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],,],1,sum)
+    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
