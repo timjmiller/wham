@@ -258,7 +258,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res)
     plot.M(mod)
     dev.off()
-    plot.ecov(mod, do.png=TRUE, od=dir.res, res=res)
+    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod, do.png=TRUE, od=dir.res, res=res)
 
     # PNG reference points -----------------
     dir.refpts <- file.path(dir.plots, "ref_points")

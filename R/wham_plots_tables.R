@@ -1725,7 +1725,7 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors)
 	sapply(1:n_ages, function(x)
 	{
 		y <- sort(unique(mod$rep$MAA[,x]))
-		ind1 <- sapply(y, function(z) which(mod$rep$MAA[,x] == y)[1])
+		# ind1 <- sapply(y, function(z) which(mod$rep$MAA[,x] == y)[1])
 		segments(x-0.2, y, x+0.2, y, lwd = 2,col = plot.colors[1:length(y)])
 		text(x+0.2, y, paste('n =', table(mod$rep$MAA[,x])), pos = 4)
 	})
