@@ -177,7 +177,7 @@ prepare_projection = function(model, proj.opts)
       if(!proj.opts$cont.Ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,] <- NA
       ind.notNA <- which(!is.na(tmp.re))
       tmp.re[ind.notNA] <- 1:length(ind.notNA)
-      data$Ecov_use_re[ind.notNA] <- 1
+      data$Ecov_use_re[ind.notNA] <- 1 # don't want to add to NLL in projection years (= 0)
       map$Ecov_re = factor(tmp.re)
     }
   }

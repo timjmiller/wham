@@ -97,7 +97,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     }
     plot.fleet.F(mod)
     plot.M(mod)
-    plot.ecov(mod)
+    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod)
     dev.off()
 
     # PDF reference points -----------------
