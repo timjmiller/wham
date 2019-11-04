@@ -257,6 +257,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     data$n_years_Ecov <- 1
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
     data$Ecov_label <- "none"
+    data$Ecov_use_re <- matrix(0, nrow=1, ncol=1)
   } else {
     if(class(Ecov$mean) == "matrix") {data$Ecov_obs <- Ecov$mean} else{
       warning("Ecov mean is not a matrix. Coercing to a matrix...")
