@@ -78,6 +78,8 @@ prepare_projection = function(model, proj.opts)
       if(!is.null(proj.opts$avg.Ecov.yrs) & any(proj.opts$avg.Ecov.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
         "proj.opts$avg.Ecov.yrs is not a subset of model years.","",sep='\n'))
     }
+  } else { # need to create objects if no Ecov
+    end.beyond = proj.opts$n.yrs # effectively say that Ecov already extends # of proj years
   }
 
   # add new data objects for projections
