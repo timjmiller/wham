@@ -293,29 +293,29 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       if(Ecov$sigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
         data$Ecov_obs_sigma_opt = 2
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
-        map$Ecov_obs_logsigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
+        map.Ecov.obs.logsigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
         par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-        map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+        map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
       if(Ecov$sigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
         data$Ecov_obs_sigma_opt = 3
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
-        map$Ecov_obs_logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
+        map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
         par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-        map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+        map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
       if(Ecov$sigma == 'est_re'){
         data$Ecov_obs_sigma_opt = 4
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
-        map$Ecov_obs_logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
+        map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
         par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-0.5, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
-        map$Ecov_obs_sigma_par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
+        map.Ecov.obs.sigma.par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
       }
     }
     if(data$Ecov_obs_sigma_opt == 1){ # Ecov sigma given, initialized at given values
-      map$Ecov_obs_logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
+      map.Ecov.obs.logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
       par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-      map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+      map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
     }
 
     if(length(Ecov$year) != n_Ecov_obs) stop("Ecov year is not the same length as # rows in Ecov mean")
@@ -350,7 +350,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       # warning("Ecov does not start by model year 1 - max(lag). Padding Ecov...")
       data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_obs)
       par.Ecov.obs.logsigma <- rbind(matrix(-1.3, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), par.Ecov.obs.logsigma)
-      map$Ecov_obs_logsigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), map$Ecov_obs_logsigma)
+      map.Ecov.obs.logsigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), map.Ecov.obs.logsigma)
       data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max(Ecov$lag)), ncol = data$n_Ecov), data$Ecov_use_obs)
       data$Ecov_year <- c(seq(data$year1_model - max(Ecov$lag), data$year1_Ecov-1), data$Ecov_year)
       data$year1_Ecov <- data$year1_model - max(Ecov$lag)
@@ -362,7 +362,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
       # warning("Ecov last year is before model last year. Padding Ecov...")
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       par.Ecov.obs.logsigma <- rbind(par.Ecov.obs.logsigma, matrix(-1.3, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      map$Ecov_obs_logsigma <- rbind(map$Ecov_obs_logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      map.Ecov.obs.logsigma <- rbind(map.Ecov.obs.logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
       end_Ecov <- end_model
@@ -380,18 +380,21 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
     if(!identical(length(Ecov$lag), length(Ecov$label), data$n_Ecov)) stop("Length of Ecov_lag and Ecov_label vectors not equal to # Ecov")
     data$Ecov_lag <- Ecov$lag
     if(!all(Ecov$process_model %in% c(NA,"rw", "ar1"))){
-      stop("Ecov$process_model must be 'rw' (random walk), 'ar1', or NA (do not fit)")}
+      stop("Ecov$process_model must be 'rw' (random walk), 'ar1', or NA (do not fit)")
+    }
     if(is.na(Ecov$process_model) && Ecov$how !=0){
       stop("Ecov$process_model not chosen (NA) but Ecov$how specified.
        Either 1) choose an Ecov process model ('rw' or 'ar1'),
               2) turn off Ecov (set Ecov$how = 0 and Ecov$process_model = NA),
-           or 3) fit Ecov but with no effect on population (Ecov$how = 0, Ecov$process_model 'rw' or 'ar1').")}
+           or 3) fit Ecov but with no effect on population (Ecov$how = 0, Ecov$process_model 'rw' or 'ar1').")
+    }
     data$Ecov_model <- sapply(Ecov$process_model, match, c("rw", "ar1"))
 
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
     if(!Ecov$where %in% c('recruit')){
       stop("Sorry, only Ecov effects on recruitment currently implemented.
-      Set Ecov$where = 'recruit'.")}
+      Set Ecov$where = 'recruit'.")
+    }
     data$Ecov_where <- sapply(Ecov$where, match, c('recruit','growth','mortality'))
     data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
     data$Ecov_growth <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # Ecov index to use for growth?
@@ -399,7 +402,8 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
 
     if(!Ecov$how %in% c(0,1,2,4)){
       stop("Sorry, only Ecov effects on recruitment currently implemented.
-      Set Ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")}
+      Set Ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
+    }
     if(recruit_model == 1 & data$Ecov_recruit != 0){
       stop("Random walk recruitment cannot have an Ecov effect on recruitment.
       Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
@@ -434,8 +438,8 @@ cat(paste0("Lag: ",data$Ecov_lag[i],"
 Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",years[1+data$Ecov_lag[i]],"
     ",Ecov$label[i]," in ",lastyr," affects ", c('recruitment','growth','mortality')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
 "))
-      }
-    } # end load Ecov
+    }
+  } # end load Ecov
 
   # add vector of all observations for one step ahead residuals ==========================
   # 4 components: fleet catch (log), index catch (log), paa catch, paa index
@@ -617,8 +621,8 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
   map$log_R_sigma = factor(rep(NA, length(par$log_R_sigma)))
   map$log_b = factor(rep(NA,length(par$log_b)))
-  map$Ecov_obs_logsigma <- factor(map$Ecov_obs_logsigma)
-  map$Ecov_obs_sigma_par <- factor(map$Ecov_obs_sigma_par)
+  map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
+  map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
   random = character()
   if(data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
