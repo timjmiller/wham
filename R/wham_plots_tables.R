@@ -2248,7 +2248,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 	inds$faa <- which(rownames(std) == "log_FAA_tot")
   log.faa <- matrix(std[inds$faa,1], n_years_full, n_ages)
   age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
-  inds$full.f <- (age.full.f-1)*n_years + 1:n_years_full  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
+  inds$full.f <- (age.full.f-1)*n_years_full + 1:n_years_full  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
   na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
   ylabs <- c(
     bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
