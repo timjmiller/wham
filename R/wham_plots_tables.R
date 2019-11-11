@@ -168,7 +168,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
       tmp$year <- years[tmp$year] # year in osa is MODEL year, not Ecov year
-      # tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov) 
+      # tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov)
       if(mod$env$data$year1_Ecov < mod$env$data$year1_model){
         tmp <- rbind(data.frame(year=seq(mod$env$data$year1_Ecov, length.out=mod$env$data$year1_model-mod$env$data$year1_Ecov),
                                 fleet=names(table(dat$fleet))[f],
@@ -599,7 +599,7 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, res = 72, 
     {
       ind = which(mod$env$data$Ecov_use_obs[,i] == 1)
       td = data.frame(Label = rep(i,length(ind)),
-        Year = years[ind],
+        Year = mod$input$data$Ecov_year[ind],
         Stdres = temp[ind,i],
         lo = templo[ind,i],
         hi = temphi[ind,i])
@@ -671,10 +671,11 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, res = 72, 
 
   x <- rbind(xe, xi, xc)
   x$row = factor(x$row)
+  x$type = factor(x$type)
 
   ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=type)) +
-    ggplot2::geom_line(size=1.1) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=type), alpha=0.3, linetype = 0) +
+    ggplot2::geom_line(size=1.1) +
     ggplot2::ylab("Standardized residual") +
     # expand_limits(y=0) +
     ggplot2::theme_bw() +
@@ -2326,17 +2327,19 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   # Kobe plot - only if sdreport was successful ---------------------------
   if(!mod$na_sdrep){
     log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
-      if(is.na(rel.f.vals[x])) return(maxtrix(NA,100,2))
+      if(is.na(rel.f.vals[x])) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
       })
-    p.ssb.lo.f.lo <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-    p.ssb.lo.f.hi <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-    p.ssb.hi.f.lo <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
-    p.ssb.hi.f.hi <- sapply(status.years, function(x)
-      mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[x],rel.f.vals[x]), varcov = log.rel.ssb.rel.F.cov[[x]]))
+    p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.years))
+    for(i in 1:length(status.years)){
+      check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[status.years[i]]])==0
+      if(!any(check.zero.sd)){
+        p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.lo.f.hi[i] <- mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.hi.f.lo[i] <- mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.hi.f.hi[i] <- mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+      }
+    }
 
     vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
     if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),2)
@@ -2649,7 +2652,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
       res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[["NAA"]])
     } else {
       res = list(head(mod$rep[[what]],n_years))
-      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])      
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
     }
     if(what == "NAA")
     {
@@ -2734,7 +2737,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
       rho.nm = ifelse(i==1, "R",paste0("N",mod$ages.lab[i]))
       rho.plot <- round(rho.vals[rho.nm],3)
       legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-    }    
+    }
     if(what %in% c("SSB","Fbar"))
     {
       if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x))))
