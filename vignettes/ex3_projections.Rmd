@@ -146,22 +146,22 @@ You have two options for projecting a WHAM model:
 
 ```{r eval=FALSE}
 # don't run
-mod <- fit_wham(input, do.proj=FALSE)
+mod <- fit_wham(input) # default do.proj=FALSE
 mod_proj <- project_wham(mod)
 ```
 
-2. Add projections with initial model fit (default `do.proj = TRUE`)
+2. Add projections with initial model fit (`do.proj = TRUE`)
 
 ```{r eval=FALSE}
 # don't run
-mod_proj <- fit_wham(input)
+mod_proj <- fit_wham(input, do.proj = TRUE)
 ```
 
 The two code blocks above are equivalent; when `do.proj = TRUE`, `fit_wham` fits the model without projections and then calls `project_wham` to add them. In this example we choose option #1 because we are going to add several different projections to the same model, `mod`. We will save each projected model in a list, `mod_proj`.
 
 ```{r eval=FALSE}
 # run
-mod <- fit_wham(input, do.proj=FALSE)
+mod <- fit_wham(input)
 saveRDS(mod, file="m6.rds") # save unprojected model
 mod_proj <- list()
 ```

@@ -68,7 +68,7 @@ input$random = c(input$random, "log_NAA","Ecov_re")
 
 # ---------------------------------------------------------
 ## Fit model without projections
-mod <- fit_wham(input, do.proj=FALSE)
+mod <- fit_wham(input) # default do.proj=FALSE
 saveRDS(mod, file="m6.rds")
 # mod <- readRDS("m6.rds")
 
