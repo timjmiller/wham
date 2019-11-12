@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd):
+Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
 - full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
 
@@ -63,7 +63,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
+We need the same data files as in [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -87,7 +87,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 ## 2. Specify model
 
-Setup model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd):
+Setup model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
 - full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
 
@@ -190,7 +190,7 @@ WHAM implements four options for handling the environmental covariate(s) in the 
 
 - Specify Ecov. Provide `proj.Ecov`, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (`proj.opts$n.yrs`) x the number of Ecovs (`ncols(Ecov$mean)`).
 
-Note that for all options, if the original model fit the Ecov in years beyond the population model, WHAM will use these already-fit Ecov values for the projections. If the Ecov model extended at least `proj.opts$n.yrs` years beyond the population model, then none of the above need be specified.
+Note that for all options, **if the original model fit the Ecov in years beyond the population model, WHAM will use these already-fit Ecov values for the projections**. If the Ecov model extended at least `proj.opts$n.yrs` years beyond the population model, then none of the above need be specified.
 
 ```{r eval=FALSE}
 # 5 years, use average Ecov from 1992-1996
