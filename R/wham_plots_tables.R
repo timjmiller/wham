@@ -830,7 +830,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  if(mod$env$data$n_fleets == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
+  if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
     pred_catch = rbind(mod$rep$pred_catch, as.matrix(mod$rep$catch_proj))
     years_full = mod$years_full
   } else {
