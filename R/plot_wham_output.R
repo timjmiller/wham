@@ -30,9 +30,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
-  if(dir.exists(dir.main)){
-    warning("Output directory already exists. Potentially overwriting previously saved output...")
-  }
+  # if(dir.exists(dir.main)){
+  #   warning("Output directory already exists. Potentially overwriting previously saved output...")
+  # }
   if(!dir.exists(dir.main)){
     dir.create(dir.main, showWarnings = FALSE)
     # stop("Output directory does not exist. Check 'dir.main' and try again.")
