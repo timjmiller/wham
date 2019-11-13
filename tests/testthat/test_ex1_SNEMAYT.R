@@ -11,6 +11,7 @@ context("Ex 1: SNEMA yellowtail")
 
 test_that("Ex 1 works",{
 # get results to check NLL and par estimates
+path_to_examples <- system.file("extdata", package="wham")
 ex1_test_results <- readRDS(file.path(path_to_examples,"ex1_test_results.rds"))
 
 # read asap3 data file and convert to input list for wham
@@ -38,7 +39,7 @@ temp$random = c(temp$random, "log_R")
 temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
 temp$data$random_recruitment = 1
 # m1 <- fit_wham(temp, do.retro=F, do.osa=F)
-m1 <- fit_wham(temp)
+m1 <- suppressWarnings(fit_wham(temp))
 
 # Check that m1 converged
 m1_check <- check_convergence(m1, ret=TRUE)
@@ -61,10 +62,10 @@ temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars")
 temp$random = c(temp$random, "log_R")
 temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
 temp$data$random_recruitment = 1
-m2 <- fit_wham(temp)
+m2 <- suppressWarnings(fit_wham(temp))
 
 # Check that m2 converged
-check_convergence(m2)
+m2_check <- check_convergence(m2, ret=TRUE)
 expect_equal(m2_check$convergence, 0) # opt$convergence should be 0
 expect_false(m2_check$na_sdrep) # sdrep should succeed
 expect_lt(m2_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
@@ -79,10 +80,10 @@ temp$data$random_recruitment = 0
 temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
 temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
 temp$random = c(temp$random, "log_NAA")
-m3 <- fit_wham(temp)
+m3 <- suppressWarnings(fit_wham(temp))
 
 # Check that m3 converged
-check_convergence(m3)
+m3_check <- check_convergence(m3, ret=TRUE)
 expect_equal(m3_check$convergence, 0) # opt$convergence should be 0
 expect_false(m3_check$na_sdrep) # sdrep should succeed
 expect_lt(m3_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
@@ -104,10 +105,10 @@ temp$data$random_recruitment = 0
 temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
 temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
 temp$random = c(temp$random, "log_NAA")
-m4 <- fit_wham(temp)
+m4 <- suppressWarnings(fit_wham(temp))
 
 # Check that m4 converged
-check_convergence(m4)
+m4_check <- check_convergence(m4, ret=TRUE)
 expect_equal(m4_check$convergence, 0) # opt$convergence should be 0
 expect_false(m4_check$na_sdrep) # sdrep should succeed
 expect_lt(m4_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
