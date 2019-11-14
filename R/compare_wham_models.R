@@ -31,7 +31,7 @@
 #' }
 #'
 #' @export
-compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE){
+compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, fdir=getwd()){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
   aic.tab <- aic <- daic <- NULL
   if(calc.aic){
@@ -83,7 +83,7 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
     rho <- rho[ord,]
     tab <- tab[ord,]
   }
-  write.csv(tab, file = paste0(file.path(getwd(),fname),".csv"))
+  write.csv(tab, file = paste0(file.path(fdir,fname),".csv"))
 
   print(tab) # print to console
   return(list(daic=daic, aic=aic, rho=rho, best=best, tab=tab))

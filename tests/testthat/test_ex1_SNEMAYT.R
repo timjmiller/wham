@@ -124,16 +124,14 @@ nll <- sapply(mods, function(x) x$opt$obj)
 expect_equal(nll, ex1_test_results$nll, tolerance=1e-6, scale=1)
 
 # Compare models by AIC and Mohn's rho
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+tmp.dir <- tempdir(check=TRUE)
+res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.dir)
 
 # WHAM output plots for best model with projections
-plot_wham_output(mod=m4, out.type='html')
+plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
 
 # remove files created during testing
-unlink("wham_output.html")
-unlink("model_comparison.csv")
-unlink(file.path(getwd(),"html"), recursive=TRUE)
-unlink(file.path(getwd(),"plots_png"), recursive=TRUE)
+unlink(tmp.dir, recursive=TRUE)
 
 # # save objects to test against in future
 # ex1_test_results <- list(nll=nll,
