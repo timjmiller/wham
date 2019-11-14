@@ -9,6 +9,7 @@
 #   - Plots of input data, diagnostics, and results
 
 # btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
+# 19.7 min
 
 context("Ex 1: SNEMA yellowtail")
 
