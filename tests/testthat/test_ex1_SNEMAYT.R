@@ -7,6 +7,9 @@
 #       m4: full state-space model, logistic normal age-compositions
 #   - Compare models by AIC and Mohn’s rho (retrospective analysis)
 #   - Plots of input data, diagnostics, and results
+
+# btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
+
 context("Ex 1: SNEMA yellowtail")
 
 test_that("Ex 1 works",{
@@ -45,7 +48,7 @@ m1 <- suppressWarnings(fit_wham(temp))
 m1_check <- check_convergence(m1, ret=TRUE)
 expect_equal(m1_check$convergence, 0) # opt$convergence should be 0
 expect_false(m1_check$na_sdrep) # sdrep should succeed
-expect_lt(m1_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m1_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m1 parameter values
 expect_equal(as.numeric(m1$opt$par), ex1_test_results$m1par, tolerance=1e-3)
@@ -68,7 +71,7 @@ m2 <- suppressWarnings(fit_wham(temp))
 m2_check <- check_convergence(m2, ret=TRUE)
 expect_equal(m2_check$convergence, 0) # opt$convergence should be 0
 expect_false(m2_check$na_sdrep) # sdrep should succeed
-expect_lt(m2_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m2_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m2 parameter values
 expect_equal(as.numeric(m2$opt$par), ex1_test_results$m2par, tolerance=1e-3)
@@ -86,7 +89,7 @@ m3 <- suppressWarnings(fit_wham(temp))
 m3_check <- check_convergence(m3, ret=TRUE)
 expect_equal(m3_check$convergence, 0) # opt$convergence should be 0
 expect_false(m3_check$na_sdrep) # sdrep should succeed
-expect_lt(m3_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m3_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m3 parameter values
 expect_equal(as.numeric(m3$opt$par), ex1_test_results$m3par, tolerance=1e-3)
@@ -111,7 +114,7 @@ m4 <- suppressWarnings(fit_wham(temp))
 m4_check <- check_convergence(m4, ret=TRUE)
 expect_equal(m4_check$convergence, 0) # opt$convergence should be 0
 expect_false(m4_check$na_sdrep) # sdrep should succeed
-expect_lt(m4_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m4_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m4 parameter values
 expect_equal(as.numeric(m4$opt$par), ex1_test_results$m4par, tolerance=1e-3)
@@ -131,7 +134,7 @@ res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.d
 plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
 
 # remove files created during testing
-unlink(tmp.dir, recursive=TRUE)
+teardown(unlink(tmp.dir, recursive=TRUE))
 
 # # save objects to test against in future
 # ex1_test_results <- list(nll=nll,
