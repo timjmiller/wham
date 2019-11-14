@@ -7,11 +7,10 @@
 #   selectivity = logistic (ex 1: age-specific)
 
 # btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
-# btime <- Sys.time(); devtools::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex2_CPI_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
+# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex2_CPI_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
+# 12 min
 
 context("Ex 2: CPI on yellowtail recruitment")
-
-setup(tmp.dir <- tempdir(check=TRUE))
 
 test_that("Ex 2 works",{
 # get results to check NLL and par estimates
@@ -26,8 +25,9 @@ df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
                       Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- dplyr::select(df.mods, Model, everything()) # moves Model to first col
+df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model to first col
 
+tmp.dir <- tempdir(check=TRUE)
 mods <- list()
 for(m in 1:n.mods){
   env <- list(
@@ -79,7 +79,7 @@ for(m in 1:n.mods){
   expect_false(mcheck$na_sdrep) # sdrep should succeed
   expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
   expect_equal(as.numeric(mods[[m]]$opt$par), ex2_test_results$pars[[m]], tolerance=1e-3) # parameter values
-  expect_equal(mods[[m]]$opt$obj, ex2_test_results$nll[m], tolerance=1e-6) # nll
+  expect_equal(as.numeric(mods[[m]]$opt$obj), ex2_test_results$nll[m], tolerance=1e-6) # nll
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
 # mods <- lapply(mod.list, readRDS)
@@ -90,6 +90,6 @@ for(m in 1:n.mods){
 
 })
 
-# remove files created during testing
-teardown(unlink(tmp.dir, recursive=TRUE))
+# # remove files created during testing
+# teardown(unlink(tmp.dir, recursive=TRUE))
 

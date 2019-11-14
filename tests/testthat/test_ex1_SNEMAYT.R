@@ -134,9 +134,6 @@ res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.d
 # WHAM output plots for best model with projections
 plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
 
-# remove files created during testing
-teardown(unlink(tmp.dir, recursive=TRUE))
-
 # # save objects to test against in future
 # ex1_test_results <- list(nll=nll,
 #                          m1par=as.numeric(m1$opt$par),
@@ -146,3 +143,7 @@ teardown(unlink(tmp.dir, recursive=TRUE))
 # saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
 # save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
 })
+
+# # remove files created during testing
+# teardown(unlink(tmp.dir, recursive=TRUE))
+
