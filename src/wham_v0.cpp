@@ -13,7 +13,9 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_fleets);
   DATA_INTEGER(n_indices);
   DATA_INTEGER(n_selblocks);
-  DATA_IVECTOR(selblock_models);
+  DATA_IVECTOR(selblock_models); // for each block: 1 = age-specific, 2 = logistic, 3 = double-logistic, 4 = logistic (declining)
+  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
+  DATA_IVECTOR(n_selpars);
   DATA_IMATRIX(selblock_pointer_fleets);
   DATA_IMATRIX(selblock_pointer_indices);
   DATA_IVECTOR(age_comp_model_fleets);
@@ -114,7 +116,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(F_devs);
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
   PARAMETER_VECTOR(log_NAA_sigma);
-  PARAMETER_MATRIX(logit_selpars); //n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
+  PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
+  PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years
+  PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_VECTOR(index_paa_pars);
   PARAMETER_MATRIX(log_NAA);
@@ -154,21 +158,13 @@ Type objective_function<Type>::operator() ()
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
   matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
   array<Type> QAA(n_years_model,n_indices,n_ages);
-  matrix<Type> selblocks(n_selblocks,n_ages);
+  vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages; 
   vector<Type> q(n_indices);
   vector<Type> t_paa(n_ages);
   vector<Type> t_pred_paa(n_ages);
-  matrix<Type> selpars(n_selblocks,n_ages+6);
   int n_toavg = avg_years_ind.size();
   
   //Type SR_a, SR_b, SR_R0, SR_h;
-  for(int i = 0; i < n_selblocks; i++) for(int j = 0; j < n_ages + 6; j++)
-  {
-    selpars(i,j) = selpars_lower(i,j) +  (selpars_upper(i,j)-selpars_lower(i,j))/(1.0+exp(-logit_selpars(i,j)));
-  }
-  REPORT(selpars);
-  selblocks = get_selblocks(n_ages, n_selblocks, selpars, selblock_models);
-
   for(int i = 0; i < n_indices; i++)
   {
     any_index_age_comp(i) = 0;
@@ -181,7 +177,46 @@ Type objective_function<Type>::operator() ()
   }
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
-  // Environmental covariate process model(s)
+  // Selectivity --------------------------------------------------------------
+  vector<matrix<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
+  vector<matrix<Type> > selpars(n_selblocks); // selectivity parameter matrices for each block, nyears x npars
+  int istart = 0;
+  for(int b = 0; b < n_selblocks; b++){
+    // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
+    matrix<Type> tmp(n_years_model, n_selpars(b));
+    for(int j=0; j<n_selpars(b); j++){
+      tmp.col(j) = selpars_re(seqN(istart,n_years_model)); 
+      istart += n_years_model;
+    }
+    selpars_re_mats(b) = tmp; // nyears x npars for this block
+
+    // likelihood of RE sel devs (if turned on)
+    if(selblock_models_re(b) > 1){ 
+      Type sigma; // sd selectivity deviations (fixed effect)
+      Type rho; // among-par correlation selectivity deviations (fixed effect)
+      Type rho_y; // among-year correlation selectivity deviations (fixed effect)
+      sigma = exp(sel_repars(b,0));
+      rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
+      rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
+      // 2D AR1 process on selectivity parameter deviations
+      nll += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(selpars_re_mats(b));
+      SIMULATE if(simulate_state == 1) SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5)).simulate(selpars_re_mats(b));
+    }
+
+    // get selpars = mean + deviations
+    array<Type> tmp1(n_years_model, n_selpars(b));
+    int jstart = 0;
+    if(selblock_models(b) == 2) jstart = n_ages;
+    if(selblock_models(b) == 3) jstart = n_ages + 2;
+    for(int j=jstart; j<n_selpars(b); j++){ // transform from logit-scale
+      tmp1.col(j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).col(j).array()));
+    }
+    selpars(b) = tmp1.matrix();
+  }
+  REPORT(selpars);
+  selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
+
+  // Environmental covariate process model --------------------------------------
   matrix<Type> Ecov_x(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
   matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   matrix<Type> nll_Ecov(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // nll contribution each Ecov_re
@@ -240,7 +275,7 @@ Type objective_function<Type>::operator() ()
     if(simulate_state == 1) SIMULATE REPORT(Ecov_re);
   }
 
-  // Environmental covariate observation model
+  // Environmental covariate observation model -------------------------------------
   Type nll_Ecov_obs = Type(0);
   Type nll_Ecov_obs_sig = Type(0); // Ecov obs sigma random effects (opt = 4)
   matrix<Type> Ecov_obs_sigma(n_years_Ecov, n_Ecov);
@@ -264,7 +299,7 @@ Type objective_function<Type>::operator() ()
   nll += nll_Ecov_obs;
   SIMULATE REPORT(Ecov_obs);
 
-  // Lag environmental covariates
+  // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
   // matrix<Type> Ecov_out(n_years_model, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
@@ -357,7 +392,7 @@ Type objective_function<Type>::operator() ()
     q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
     for(int y = 0; y < n_years_model; y++)
     {
-      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selblocks(selblock_pointer_indices(y,i)-1,a);
+      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
     }
   }
 
@@ -369,7 +404,7 @@ Type objective_function<Type>::operator() ()
     F(0,f) = exp(log_F(0,f));
     for(int a = 0; a < n_ages; a++)
     {
-      FAA(0,f,a) = F(0,f) * selblocks(selblock_pointer_fleets(0,f)-1,a);
+      FAA(0,f,a) = F(0,f) * selAA(selblock_pointer_fleets(0,f)-1)(0,a);
       log_FAA(0,f,a) = log(FAA(0,f,a));
       FAA_tot(0,a) = FAA_tot(0,a) + FAA(0,f,a);
     }
@@ -379,7 +414,7 @@ Type objective_function<Type>::operator() ()
       F(y,f) = exp(log_F(y,f));
       for(int a = 0; a < n_ages; a++)
       {
-        FAA(y,f,a) = F(y,f) * selblocks(selblock_pointer_fleets(y,f)-1,a);
+        FAA(y,f,a) = F(y,f) * selAA(selblock_pointer_fleets(y,f)-1)(y,a);
         log_FAA(y,f,a) = log(FAA(y,f,a));
         FAA_tot(y,a) = FAA_tot(y,a) + FAA(y,f,a);
       }
@@ -921,7 +956,7 @@ Type objective_function<Type>::operator() ()
   REPORT(NAA);
   REPORT(pred_NAA);
   REPORT(SSB);
-  REPORT(selblocks);
+  REPORT(selAA);
   REPORT(MAA);
   REPORT(q);
   REPORT(QAA);

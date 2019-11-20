@@ -2,6 +2,10 @@ template <class Type>
 Type square(Type x){return x*x;}
 #define see(object) std::cout << #object ":\n" << object << "\n";
 
+// transformation to ensure correlation parameters are between -1 and 1
+template <class Type>
+Type rho_trans(Type x){return Type(2)/(Type(1) + exp(-Type(2) * x)) - Type(1);}
+
 template<class Type>
 matrix<Type> extract_matrix_array3(array<Type> a, int index) //matrix has to be the last two dims of the 3d array
 {
@@ -652,65 +656,66 @@ vector<Type> sim_acomp(int year, int n_ages, Type Neff, int age_comp_model, vect
 }
 
 template <class Type>
-matrix<Type> get_selblocks(int n_ages, int n_selblocks, matrix<Type> selpars, vector<int> selblock_models)
+vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
 {
-  int n_selpars = selpars.size();
-  matrix<Type> selectivity_blocks(n_selblocks,n_ages);
-  for(int i = 0; i < n_selblocks; i++)
+  vector<matrix<Type> > selAA(n_selblocks);
+  for(int b = 0; b < n_selblocks; b++)
   {
-    if (selblock_models(i)==1)
-    { //proportions at age
-      for(int a = 0; a < n_ages; a++)
-      {
-        selectivity_blocks(i,a) = selpars(i,a);
-      }
-    }
+    matrix<Type> tmp(n_years, n_ages);
+    if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
     { //logistic or double-logistic
-      if (selblock_models(i)==2)
+      if(selblock_models(b) == 2)
       { //increasing logistic
-        Type a50_1 = selpars(i,n_ages); // a50 parameter
-        Type k_1 = selpars(i,n_ages+1); //  1/slope
-        Type age = 0.0;
-        for (int a = 0; a < n_ages; a++)
+        for(int y = 0; y < n_years; y++)
         {
-          age += 1.0;
-          selectivity_blocks(i,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
+          Type a50 = selpars(b)(y,0); // a50 parameter in year y
+          Type k = selpars(b)(y,1); //  1/slope in year y
+          Type age = 0.0;
+          for(int a = 0; a < n_ages; a++)
+          {
+            age += 1.0;
+            tmp(y,a) = 1.0/(1.0 + exp(-(age - a50)/k));
+          }
+          for(int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,n_ages-1);
         }
-        for (int a = 0; a < n_ages; a++) selectivity_blocks(i,a) = selectivity_blocks(i,a)/selectivity_blocks(i,n_ages-1);
       }
       else
       { //double logistic
-        if(selblock_models(i) == 3)
+        if(selblock_models(b) == 3)
         {
-          Type a50_1 = selpars(i,n_ages+2); // a50 parameter
-          Type k_1 = selpars(i,n_ages+3); //  1/slope
-          Type a50_2 = selpars(i,n_ages+4);
-          Type k_2 = selpars(i,n_ages+5);
-          Type age = 0.0;
-          for (int a = 0; a < n_ages; a++)
-          {
-            age += 1.0;
-   	        selectivity_blocks(i,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
-            selectivity_blocks(i,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
+          for(int y = 0; y < n_years; y++)
+          {          
+            Type a50_1 = selpars(b)(y,0); // a50 parameter in year y
+            Type k_1 = selpars(b)(y,1); //  1/slope in year y
+            Type a50_2 = selpars(b)(y,2);
+            Type k_2 = selpars(b)(y,3);
+            Type age = 0.0;
+            for (int a = 0; a < n_ages; a++)
+            {
+              age += 1.0;
+     	        tmp(y,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
+              tmp(y,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
+            }
           }
         }
         else //model 4: declining logistic
         {
-          Type a50_1 = selpars(i,n_ages); // a50 parameter
-          Type k_1 = selpars(i,n_ages+1); //  1/slope
+          Type a50 = selpars(b)(y,0); // a50 parameter in year y
+          Type k = selpars(b)(y,1); //  1/slope in year y
           Type age = 0.0;
           for (int a = 0; a < n_ages; a++)
           {
             age += 1.0;
-            selectivity_blocks(i,a) = 1.0/(1.0 + exp((age - a50_1)/k_1));
+            tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
           }
-          for (int a = 0; a < n_ages; a++) selectivity_blocks(i,a) = selectivity_blocks(i,a)/selectivity_blocks(i,0);
+          for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
         }
       }
     }
+    selAA(b) = tmp;
   }
-  return selectivity_blocks;
+  return selAA;
 }
 
 template <class Type>

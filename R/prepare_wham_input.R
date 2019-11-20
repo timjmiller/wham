@@ -49,11 +49,23 @@
 #'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
 #'     specific to the \code{where} process.}
 #'   }
+#' 
+#' \code{sel_re} specifies random effects on selectivity. If \code{NULL}, selectivity parameters in all blocks are constant
+#' over time and uncorrelated. To specify random effects, \code{sel_re} should be a vector with length equal to the number of blocks.
+#' Each entry of \code{sel_re} must be one of the following options, where the selectivity parameters:
+#'   \describe{
+#'     \item{= "none"}{(default) are constant and uncorrelated}
+#'     \item{= "iid"}{vary by year and age/par, but uncorrelated}
+#'     \item{= "ar1"}{correlated by age/par (AR1), but not year}
+#'     \item{= "ar1_y"}{correlated by year (AR1), but not age/par}
+#'     \item{= "2dar1"}{correlated by year and age/par (2D AR1)}
+#'   }
 #'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
 #' @param Ecov (optional) named list of environmental covariate data and parameters (see details)
+#' @param sel_re (optional) vector specifying selectivity random effects (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -76,7 +88,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unnamed stock", Ecov=NULL){
+prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unnamed stock", Ecov=NULL, sel_re=NULL){
   asap3 = asap3$dat
   which_indices <- which(asap3$use_index ==1)
   asap3$n_indices = length(which_indices)
@@ -99,8 +111,13 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   data$n_indices <- asap3$n_indices
   data$n_selblocks <- asap3$n_fleet_sel_blocks + asap3$n_indices
   data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)
-  #data$selblock_types <- c(asap3$sel_block_option, asap3$index_sel_option)
-  n_selpars <- sum(sapply(data$selblock_models, function(x) if(x==1) data$n_ages else if(x==2) 2 else if(x==3) 4))
+  if(is.null(sel_re)) data$selblock_models_re <- rep(1, data$n_selblocks) # default: no RE on selectivity parameters
+  if(!is.null(sel_re)){
+    if(length(sel_re) != data$n_selblocks) stop("Length of sel_re must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
+    if(!all(sel_re %in% c("none","iid","ar1","ar1_y","2dar1"))) stop("Each sel_re entry must be one of the following: 'none','iid','ar1','ar1_y','2dar1'")
+    data$selblock_models_re <- match(sel_re, c("none","iid","ar1","ar1_y","2dar1"))
+  }
+  data$n_selpars <- c(data$n_ages,2,4,2)[data$selblock_models] # num selpars per block
   data$selblock_pointer_fleets = cbind(sapply(asap3$sel_block_assign, function(x) return(x)))
   data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
   data$age_comp_model_fleets = rep(1, data$n_fleets) #multinomial by default
@@ -557,10 +574,18 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
   if(data$N1_model == 0) par$log_N1_pars = rep(10,data$n_ages)
   par$log_NAA_sigma = rep(0, data$n_NAA_sigma)
+  
+  # selectivity pars
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] = -10
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars>0] = 10
-  # print(par$logit_selpars)
+  par$selpars_re <- rep(0, sum(data$n_selpars)*data$n_years_model) # length = sum(n_selpars)*n_years
+  par$sel_repars <- matrix(0, nrow=data$n_selblocks, ncol=3)
+  par$sel_repars[,1] <- log(0.1) # start sigma at 0.1, rho at 0
+  for(b in 1:data$n_selblocks){
+    if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 1 # if ar1 over ages, fix rho_y = 1 (all years share age-varying selectivity)
+    if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 1 # if ar1 over years, fix rho = 1 (all ages share year-varying selectivity)
+  }
   n_catch_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
   n_index_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
@@ -623,8 +648,33 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   map$log_b = factor(rep(NA,length(par$log_b)))
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
+  
+  # map selectivity RE
+  tmp.sel.repars <- par$sel_repars
+  for(b in 1:data$n_selblocks){
+    if(data$selblock_models_re[b] == 1) tmp.sel.repars[b,] <- rep(NA,3) # no RE pars to estimate
+    if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2:3] <- rep(NA,2) # estimate sigma
+    if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- NA # estimate sigma, rho
+    if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,2] <- NA # estimate sigma, rho_y
+  }
+  ind.notNA <- which(!is.na(tmp.sel.repars))
+  tmp.sel.repars[ind.notNA] <- 1:length(ind.notNA)
+  map$sel_repars = factor(tmp.sel.repars)
+
+  tmp.sel.re <- par$selpars_re
+  istart <- 1
+  for(b in 1:data$n_selblocks){
+    iend <- istart + data$n_years_model*data$n_selpars[b] - 1
+    if(data$selblock_models_re[b] == 1) tmp.sel.re[istart:iend] <- NA # no RE on selectivity
+    istart <- istart + data$n_years_model*data$n_selpars[b]
+  }
+  ind.notNA <- which(!is.na(tmp.sel.re))
+  tmp.sel.re[ind.notNA] <- 1:length(ind.notNA)
+  map$selpars_re = factor(tmp.sel.re)
+
   random = character()
   if(data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
+  if(any(data$selblock_models_re > 1)) random = c(random, "selpars_re")
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
   return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
