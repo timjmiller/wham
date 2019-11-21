@@ -49,7 +49,7 @@
 #'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
 #'     specific to the \code{where} process.}
 #'   }
-#' 
+#'
 #' \code{sel_re} specifies random effects on selectivity. If \code{NULL}, selectivity parameters in all blocks are constant
 #' over time and uncorrelated. To specify random effects, \code{sel_re} should be a vector with length equal to the number of blocks.
 #' Each entry of \code{sel_re} must be one of the following options, where the selectivity parameters:
@@ -211,9 +211,9 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   for(i in (1:asap3$n_indices)) phase_selpars[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,2]
   for(i in 1:data$n_selblocks)
   {
-    if(data$selblock_model[i] == 1) phase_selpars[i,data$n_ages + 1:6] = -1
-    if(data$selblock_model[i] %in% c(2,3)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
-    if(data$selblock_model[i] == 4) phase_selpars[i,data$n_ages + 1:2] = -1
+    if(data$selblock_models[i] == 1) phase_selpars[i,data$n_ages + 1:6] = -1
+    if(data$selblock_models[i] %in% c(2,3)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
+    if(data$selblock_models[i] == 4) phase_selpars[i,data$n_ages + 1:2] = -1
   }
   # print(selpars_ini)
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 6)
@@ -249,7 +249,7 @@ prepare_wham_input <- function(asap3, recruit_model=2, model_name="WHAM for unna
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   data$XSPR_R_avg_yrs = 1:data$n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-  
+
   model_years <- asap3$year1 + 1:asap3$n_years - 1
   # add in environmental covariate data
   if(is.null(Ecov)){
@@ -554,7 +554,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   data$obs <- obs
   data$obsvec <- obs$val
 
-  # projection data will always be modified by 'prepare_projection' 
+  # projection data will always be modified by 'prepare_projection'
   data$do_proj <- 0
   data$n_years_proj <- 0
   data$n_years_proj_Ecov <- 0
@@ -574,7 +574,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
   if(data$N1_model == 0) par$log_N1_pars = rep(10,data$n_ages)
   par$log_NAA_sigma = rep(0, data$n_NAA_sigma)
-  
+
   # selectivity pars
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] = -10
@@ -648,7 +648,7 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
   map$log_b = factor(rep(NA,length(par$log_b)))
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
-  
+
   # map selectivity RE
   tmp.sel.repars <- par$sel_repars
   for(b in 1:data$n_selblocks){

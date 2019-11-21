@@ -6,6 +6,8 @@
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
+  using namespace density; // necessary to use AR1, SCALE, SEPARABLE
+
   DATA_INTEGER(n_years_catch);
   DATA_INTEGER(n_years_indices);
   DATA_INTEGER(n_years_model);
@@ -158,12 +160,12 @@ Type objective_function<Type>::operator() ()
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
   matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
   array<Type> QAA(n_years_model,n_indices,n_ages);
-  vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages; 
+  vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages;
   vector<Type> q(n_indices);
   vector<Type> t_paa(n_ages);
   vector<Type> t_pred_paa(n_ages);
   int n_toavg = avg_years_ind.size();
-  
+
   //Type SR_a, SR_b, SR_R0, SR_h;
   for(int i = 0; i < n_indices; i++)
   {
@@ -178,20 +180,20 @@ Type objective_function<Type>::operator() ()
   vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
   // Selectivity --------------------------------------------------------------
-  vector<matrix<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
+  vector<array<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
   vector<matrix<Type> > selpars(n_selblocks); // selectivity parameter matrices for each block, nyears x npars
   int istart = 0;
   for(int b = 0; b < n_selblocks; b++){
     // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
-    matrix<Type> tmp(n_years_model, n_selpars(b));
+    array<Type> tmp(n_years_model, n_selpars(b));
     for(int j=0; j<n_selpars(b); j++){
-      tmp.col(j) = selpars_re(seqN(istart,n_years_model)); 
+      tmp.col(j) = selpars_re.segment(istart,n_years_model);
       istart += n_years_model;
     }
     selpars_re_mats(b) = tmp; // nyears x npars for this block
 
     // likelihood of RE sel devs (if turned on)
-    if(selblock_models_re(b) > 1){ 
+    if(selblock_models_re(b) > 1){
       Type sigma; // sd selectivity deviations (fixed effect)
       Type rho; // among-par correlation selectivity deviations (fixed effect)
       Type rho_y; // among-year correlation selectivity deviations (fixed effect)
@@ -199,19 +201,30 @@ Type objective_function<Type>::operator() ()
       rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       // 2D AR1 process on selectivity parameter deviations
-      nll += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(selpars_re_mats(b));
-      SIMULATE if(simulate_state == 1) SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5)).simulate(selpars_re_mats(b));
+      nll += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(tmp);
+      // SIMULATE if(simulate_state == 1){
+      //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5)).simulate(tmp);
+      //   int istart1 = 0;
+      //   for(int b1=0; b1<b; b1++) istart1 += n_years_model * n_selpars(b1);
+      //   for(int j=0; j<n_selpars(b); j++){
+      //     selpars_re.segment(istart1,n_years_model) = tmp.col(j);
+      //     istart1 += n_years_model;
+      //   }
+      // }
     }
 
     // get selpars = mean + deviations
-    array<Type> tmp1(n_years_model, n_selpars(b));
+    matrix<Type> tmp1(n_years_model, n_selpars(b));
     int jstart = 0;
     if(selblock_models(b) == 2) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2;
     for(int j=jstart; j<n_selpars(b); j++){ // transform from logit-scale
-      tmp1.col(j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).col(j).array()));
+      for(int i=0; i<n_years_model; i++){
+        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b)(i,j)));
+      }
+      // tmp1.col(j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).matrix().col(j)));
     }
-    selpars(b) = tmp1.matrix();
+    selpars(b) = tmp1;
   }
   REPORT(selpars);
   selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
@@ -257,7 +270,7 @@ Type objective_function<Type>::operator() ()
 
         nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
         SIMULATE if(simulate_state == 1 & Ecov_use_re(0,i) == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
-        for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++) 
+        for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
         {
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
@@ -635,15 +648,15 @@ Type objective_function<Type>::operator() ()
           Type fracyr_SSB_y = fracyr_SSB(y);
           Type log_SPR0_y = log_SPR0(y);
           FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
-        }        
+        }
         if(proj_F_opt == 4){ // user-specified F
           FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
         }
-        if(proj_F_opt == 5){ // calculate F from user-specified catch 
+        if(proj_F_opt == 5){ // calculate F from user-specified catch
           Type thecatch = proj_Fcatch(y-n_years_model);
           FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
         }
-        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);        
+        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
 
@@ -848,7 +861,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> predR(pred_NAA.rows());
   if(XSPR_R_opt == 1) predR = NAA.col(0);
   if(XSPR_R_opt == 3) predR = pred_NAA.col(0);
-  if(XSPR_R_opt == 2 | XSPR_R_opt == 4) 
+  if(XSPR_R_opt == 2 | XSPR_R_opt == 4)
   {
     int nyr = XSPR_R_avg_yrs.size();
     vector<Type> avg_Rs(nyr);

@@ -685,7 +685,7 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
         if(selblock_models(b) == 3)
         {
           for(int y = 0; y < n_years; y++)
-          {          
+          {
             Type a50_1 = selpars(b)(y,0); // a50 parameter in year y
             Type k_1 = selpars(b)(y,1); //  1/slope in year y
             Type a50_2 = selpars(b)(y,2);
@@ -701,15 +701,18 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
         }
         else //model 4: declining logistic
         {
-          Type a50 = selpars(b)(y,0); // a50 parameter in year y
-          Type k = selpars(b)(y,1); //  1/slope in year y
-          Type age = 0.0;
-          for (int a = 0; a < n_ages; a++)
+          for(int y = 0; y < n_years; y++)
           {
-            age += 1.0;
-            tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
+            Type a50 = selpars(b)(y,0); // a50 parameter in year y
+            Type k = selpars(b)(y,1); //  1/slope in year y
+            Type age = 0.0;
+            for (int a = 0; a < n_ages; a++)
+            {
+              age += 1.0;
+              tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
+            }
+            for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
           }
-          for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
         }
       }
     }
