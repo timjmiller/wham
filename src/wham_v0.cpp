@@ -220,7 +220,7 @@ Type objective_function<Type>::operator() ()
     if(selblock_models(b) == 3) jstart = n_ages + 2;
     for(int j=jstart; j<(jstart+n_selpars(b)); j++){ // transform from logit-scale
       for(int i=0; i<n_years_model; i++){
-        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b)(i,j)));
+        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b)(i,j-jstart)));
       }
       // tmp1.col(j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).matrix().col(j)));
     }
