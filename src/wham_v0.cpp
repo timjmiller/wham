@@ -18,6 +18,10 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(selblock_models); // for each block: 1 = age-specific, 2 = logistic, 3 = double-logistic, 4 = logistic (declining)
   DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
   DATA_IVECTOR(n_selpars);
+  DATA_IMATRIX(selpars_est); // n_blocks x (n_pars + n_ages), is the selpar estimated in this block?
+  DATA_IVECTOR(n_selpars_est); // of the selpars, how many are actually estimated (not fixed at 0 or 1)
+  DATA_IVECTOR(n_years_selblocks); // for each block, number of years the block covers
+  DATA_IMATRIX(selblock_years); // n_years_model x n_selblocks, = 1 if block covers year, = 0 if not
   DATA_IMATRIX(selblock_pointer_fleets);
   DATA_IMATRIX(selblock_pointer_indices);
   DATA_IVECTOR(age_comp_model_fleets);
@@ -119,7 +123,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
   PARAMETER_VECTOR(log_NAA_sigma);
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
-  PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years
+  PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_VECTOR(index_paa_pars);
@@ -182,18 +186,27 @@ Type objective_function<Type>::operator() ()
   // Selectivity --------------------------------------------------------------
   vector<array<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
   vector<matrix<Type> > selpars(n_selblocks); // selectivity parameter matrices for each block, nyears x npars
+  Type nll_sel = Type(0);
   int istart = 0;
+  int ct = 0;
   for(int b = 0; b < n_selblocks; b++){
-    // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
-    array<Type> tmp(n_years_model, n_selpars(b));
-    for(int j=0; j<n_selpars(b); j++){
-      tmp.col(j) = selpars_re.segment(istart,n_years_model);
-      istart += n_years_model;
-    }
-    selpars_re_mats(b) = tmp; // nyears x npars for this block
+    array<Type> tmp2(n_years_model,n_selpars(b));
+    tmp2.setZero();
+    selpars_re_mats(b) = tmp2;
 
-    // likelihood of RE sel devs (if turned on)
+    int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
+    if(selblock_models(b) == 2) jstart = n_ages;
+    if(selblock_models(b) == 3) jstart = n_ages + 2;
+
     if(selblock_models_re(b) > 1){
+      // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
+      array<Type> tmp(n_years_selblocks(b), n_selpars_est(b));
+      for(int j=0; j<n_selpars_est(b); j++){
+        tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
+        istart += n_years_selblocks(b);
+      }
+      
+      // likelihood of RE sel devs (if turned on)
       Type sigma; // sd selectivity deviations (fixed effect)
       Type rho; // among-par correlation selectivity deviations (fixed effect)
       Type rho_y; // among-year correlation selectivity deviations (fixed effect)
@@ -201,7 +214,7 @@ Type objective_function<Type>::operator() ()
       rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       // 2D AR1 process on selectivity parameter deviations
-      nll += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(tmp);
+      nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(tmp);
       // SIMULATE if(simulate_state == 1){
       //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5)).simulate(tmp);
       //   int istart1 = 0;
@@ -211,23 +224,34 @@ Type objective_function<Type>::operator() ()
       //     istart1 += n_years_model;
       //   }
       // }
+
+      // construct deviations array with full dimensions (n_years_model instead of n_years_selblocks, n_selpars instead of n_selpars_est)
+      for(int j=0; j<n_selpars(b); j++){
+        for(int y=0; y<n_years_model; y++){
+          if(selblock_years(y,b) == 1 & selpars_est(b,j+jstart) > 0){
+            selpars_re_mats(b)(y,j) = selpars_re(ct);
+            ct++;
+          }
+        }
+      }
     }
 
     // get selpars = mean + deviations
     matrix<Type> tmp1(n_years_model, n_selpars(b));
-    int jstart = 0;
-    if(selblock_models(b) == 2) jstart = n_ages;
-    if(selblock_models(b) == 3) jstart = n_ages + 2;
     for(int j=jstart; j<(jstart+n_selpars(b)); j++){ // transform from logit-scale
       for(int i=0; i<n_years_model; i++){
-        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).matrix()(i,j-jstart)));
+        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-(logit_selpars(b,j) + selpars_re_mats(b).matrix()(i,j-jstart))));
       }
-      // tmp1.col(j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-logit_selpars(b,j) + selpars_re_mats(b).matrix().col(j)));
     }
     selpars(b) = tmp1;
   }
   REPORT(selpars);
+  REPORT(sel_repars);
+  REPORT(selpars_re);
+  REPORT(logit_selpars);
+  REPORT(nll_sel);
   selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
+  nll += nll_sel;
 
   // Environmental covariate process model --------------------------------------
   matrix<Type> Ecov_x(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
