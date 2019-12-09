@@ -165,7 +165,7 @@ Mean selectivity parameters can be initialized at different values from the ASAP
 `"ar1_y"` | autoregressive-1 (correlated across years) | $\sigma^2$, $\rho_y$
 `"2dar1"` | 2D AR1 (correlated across both years and ages/parameters) | $\sigma^2$, $\rho_a$, $\rho_y$
 
-```{r}
+```{r, eval=F}
 mods <- vector("list",n.mods) # store models in a list
 selAA <- vector("list",n.mods) # save selectivity-at-age for block 1 for each model
 for(m in 1:n.mods){
@@ -203,7 +203,7 @@ for(m in 1:n.mods){
 	saveRDS(mods[[m]], file=paste0("m",m,".rds"))
 
 	# save selectivity-at-age for block 1 (fleet)
-	selAA[[m]] <- mod$report()$selAA[[1]]
+	selAA[[m]] <- mods[[m]]$report()$selAA[[1]]
 }
 ```
 
