@@ -13,15 +13,6 @@
 #'     \item{= 4}{Ricker}
 #'   }
 #'
-#' \code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
-#" Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
-#'   \describe{
-#'     \item{= 1}{"controlling" (dens-indep mortality)}
-#'     \item{= 2}{"limiting" (carrying capacity, e.g. Ecov determines amount of suitable habitat)}
-#'     \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some Ecov value)}
-#'     \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
-#'     \item{= 5}{"directive" (e.g. behavioral)}
-#'   }
 #'
 #' \code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 #' the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
@@ -50,22 +41,40 @@
 #'     specific to the \code{where} process.}
 #'   }
 #'
-#' \code{sel_re} specifies random effects on selectivity. If \code{NULL}, selectivity parameters in all blocks are constant
-#' over time and uncorrelated. To specify random effects, \code{sel_re} should be a vector with length equal to the number of blocks.
-#' Each entry of \code{sel_re} must be one of the following options, where the selectivity parameters:
+#' \code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
+#" Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
 #'   \describe{
-#'     \item{= "none"}{(default) are constant and uncorrelated}
-#'     \item{= "iid"}{vary by year and age/par, but uncorrelated}
-#'     \item{= "ar1"}{correlated by age/par (AR1), but not year}
-#'     \item{= "ar1_y"}{correlated by year (AR1), but not age/par}
-#'     \item{= "2dar1"}{correlated by year and age/par (2D AR1)}
+#'     \item{= 1}{"controlling" (dens-indep mortality)}
+#'     \item{= 2}{"limiting" (carrying capacity, e.g. Ecov determines amount of suitable habitat)}
+#'     \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some Ecov value)}
+#'     \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
+#'     \item{= 5}{"directive" (e.g. behavioral)}
+#'   }
+#'
+#' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
+#' If \code{NULL}, selectivity options from the ASAP data file are used. \code{selectivity} is a list with the following entries:
+#'   \describe{
+#'     \item{= $model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
+#'     \item{= $re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
+#'                  If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
+#'                  Each entry of \code{selectivity$re} must be one of the following options, where the selectivity parameters are:
+#'                  \describe{
+#'                    \item{= "none"}{(default) are constant and uncorrelated}
+#'                    \item{= "iid"}{vary by year and age/par, but uncorrelated}
+#'                    \item{= "ar1"}{correlated by age/par (AR1), but not year}
+#'                    \item{= "ar1_y"}{correlated by year (AR1), but not age/par}
+#'                    \item{= "2dar1"}{correlated by year and age/par (2D AR1)}
+#'                  }
+#'                 }
+#'     \item{= $initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
+#'     \item{= $fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
 #'   }
 #'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
 #' @param Ecov (optional) named list of environmental covariate data and parameters (see details)
-#' @param sel_re (optional) vector specifying selectivity random effects (see details)
+#' @param selectivity (optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
