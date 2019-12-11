@@ -45,7 +45,10 @@ for(m in 1:n.mods){
   # source("/home/bstock/Documents/wham/R/prepare_wham_input.R")
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              Ecov = env)
+                              Ecov = env,
+                              selectivity=list(model=rep("logistic",6),
+                                               initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
+                                               fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))))
 
   # age comp logistic normal pool obs (not multinomial, the default)
   input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
@@ -56,11 +59,6 @@ for(m in 1:n.mods){
   n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
   input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
-
-  # selectivity = logistic, not age-specific
-  #   2 pars per block instead of n.ages
-  #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
-  input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
 
   # full state-space model, abundance is the state vector
   input$data$use_NAA_re = 1

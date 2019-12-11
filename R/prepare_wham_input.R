@@ -4,15 +4,13 @@
 #' prepares the data and parameter settings for \code{\link{fit_wham}}.
 #' By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}.
 #'
-#' \code{recruit_model} specifies the stock-recruit model. See lines 442-476
-#' in \code{wham.cpp} to see implementation.
+#' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} to see implementation.
 #'   \describe{
 #'     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
 #'     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
 #'   }
-#'
 #'
 #' \code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 #' the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
@@ -22,23 +20,23 @@
 #'     \item{$mean}{Mean observations (matrix). Missing values = NA.}
 #'     \item{$logsigma}{Observation standard error (log). Options:
 #'       \describe{
-#'         \item{Matrix with same dimensions as \code{mean}}{Specified values (not estimated) for each time step }
+#'         \item{Matrix with same dimensions as \code{$mean}}{Specified values (not estimated) for each time step }
 #'         \item{Single value per Ecov, numeric vector or matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
 #'         \item{Vector with estimate options for each Ecov, length = n.Ecov}{
 #'           \code{'est_1'}: Estimated, one value shared among time steps.
 #'           \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
 #'       }
 #'     }
-#'     \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
-#'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
+#'     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
+#'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
 #'     Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
 #'     \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
 #'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
-#'     \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive, NA = do not fit}
-#'     \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
-#'     "growth" = growth, "mortality" = natural mortality.}
-#'     \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
-#'     specific to the \code{where} process.}
+#'     \item{$process_model}{Process model for the environmental covariate. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
+#'     \item{$where}{Where does the environmental covariate affect the population? \code{"recuit"} = recruitment,
+#'     \code{"growth"} = growth, \code{"mortality"} = natural mortality.}
+#'     \item{$how}{How does the environmental covariate affect the \code{$where} process? These options are
+#'     specific to the \code{$where} process.}
 #'   }
 #'
 #' \code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
@@ -54,20 +52,20 @@
 #' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
 #' If \code{NULL}, selectivity options from the ASAP data file are used. \code{selectivity} is a list with the following entries:
 #'   \describe{
-#'     \item{= $model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
-#'     \item{= $re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
+#'     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
+#'     \item{$re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
 #'                  If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
 #'                  Each entry of \code{selectivity$re} must be one of the following options, where the selectivity parameters are:
 #'                  \describe{
-#'                    \item{= "none"}{(default) are constant and uncorrelated}
-#'                    \item{= "iid"}{vary by year and age/par, but uncorrelated}
-#'                    \item{= "ar1"}{correlated by age/par (AR1), but not year}
-#'                    \item{= "ar1_y"}{correlated by year (AR1), but not age/par}
-#'                    \item{= "2dar1"}{correlated by year and age/par (2D AR1)}
+#'                    \item{"none"}{(default) are constant and uncorrelated}
+#'                    \item{"iid"}{vary by year and age/par, but uncorrelated}
+#'                    \item{"ar1"}{correlated by age/par (AR1), but not year}
+#'                    \item{"ar1_y"}{correlated by year (AR1), but not age/par}
+#'                    \item{"2dar1"}{correlated by year and age/par (2D AR1)}
 #'                  }
 #'                 }
-#'     \item{= $initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
-#'     \item{= $fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
+#'     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
+#'     \item{$fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
 #'   }
 #'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
@@ -123,7 +121,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
     if(!all(selectivity$model %in% c("age-specific","logistic","double-logistic","decreasing-logistic"))) stop("Each model entry must be one of the following: 'age-specific','logistic','double-logistic','decreasing-logistic'")
-    data$selblock_models <- match(selectivity$model, c("age-specific","logistic","double-logistic","decreasing-logistic"))    
+    data$selblock_models <- match(selectivity$model, c("age-specific","logistic","double-logistic","decreasing-logistic"))
   }
   if(is.null(selectivity$re)) data$selblock_models_re <- rep(1, data$n_selblocks) # default: no RE on selectivity parameters
   if(!is.null(selectivity$re)){
@@ -227,7 +225,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   selpars_ini = matrix(NA, data$n_selblocks, data$n_ages + 6)
   if(is.null(selectivity$initial_pars)) {
     for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
-    for(i in (1:asap3$n_indices)) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]    
+    for(i in (1:asap3$n_indices)) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
   } else {
     if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list")
     if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
@@ -235,7 +233,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
       if(length(selectivity$initial_pars[[b]]) != data$n_selpars[b]) stop(paste0("Length of vector ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",data$n_selpars[b]))
       if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] = selectivity$initial_pars[[b]]
       if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] = selectivity$initial_pars[[b]]  
+      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] = selectivity$initial_pars[[b]]
     }
   }
 
@@ -251,7 +249,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     for(b in 1:data$n_selblocks){
       if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] = -1
       if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] = -1
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]  
+      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
     }
   }
   for(i in 1:data$n_selblocks){
@@ -259,7 +257,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     if(data$selblock_models[i] %in% c(2,4)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
     if(data$selblock_models[i] == 3) phase_selpars[i,data$n_ages + 1:2] = -1
   }
-  
+
   # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
   age_specific <- which(data$selblock_models==1)
   for(b in age_specific){
@@ -655,12 +653,12 @@ Ex: ",Ecov$label[i]," in ",years[1]," affects ", c('recruitment','growth','morta
     par$selpars_re <- matrix(0)
     map$selpars_re <- factor(NA)
   }
-  
+
   par$sel_repars <- matrix(0, nrow=data$n_selblocks, ncol=3)
   par$sel_repars[,1] <- log(0.1) # start sigma at 0.1, rho at 0
   for(b in 1:data$n_selblocks){
-    if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 0 # if ar1 over ages only, fix rho_y = 0 
-    if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 0 # if ar1 over years only, fix rho = 0 
+    if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 0 # if ar1 over ages only, fix rho_y = 0
+    if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 0 # if ar1 over years only, fix rho = 0
     # check if only 1 estimated sel par (e.g. because all but 1 age is fixed), can't estimate rho
     if(data$n_selpars_est[b] < 2) par$sel_repars[b,2] <- 0
   }

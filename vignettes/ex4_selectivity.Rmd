@@ -139,7 +139,7 @@ asap3$dat$index_sel_ini # index sel initial values (col1), estimation phase (-1 
 
 When we specify the WHAM model with `prepare_wham_input`, we can overwrite the selectivity options from the ASAP data file with the optional list argument `selectivity`. The selectivity model is chosen via `selectivity$model`:
 
-Model | `$model` | No. Parameters ($a$)
+Model | `selectivity$model` | No. Parameters
 --- | --- | ---
 Age-specific | `"age-specific"` | `n_ages`
 Logistic (increasing) | `"logistic"` | 2
@@ -157,13 +157,15 @@ $$R_{y,y^*} = \rho_y^{\vert y - y^* \vert}$$
 
 Mean selectivity parameters can be initialized at different values from the ASAP file with `selectivity$initial_pars`. Parameters can be fixed at their initial values by specifying `selectivity$fix_pars`. Finally, we specify any time-varying (random effects) on selectivity parameters in the following ways (`selectivity$re`):
 
-`$re` | Deviations from mean | Estimated parameters 
+`selectivity$re` | Deviations from mean | Estimated parameters 
 --- | --- | ---
 `"none"` | time-constant (no deviation) | 
 `"iid"` | independent, identically-distributed | $\sigma^2$
 `"ar1"` | autoregressive-1 (correlated across ages/parameters) | $\sigma^2$, $\rho_a$
 `"ar1_y"` | autoregressive-1 (correlated across years) | $\sigma^2$, $\rho_y$
 `"2dar1"` | 2D AR1 (correlated across both years and ages/parameters) | $\sigma^2$, $\rho_a$, $\rho_y$
+
+Now we can run the above models in a loop:
 
 ```{r, eval=F}
 mods <- vector("list",n.mods) # store models in a list
@@ -270,7 +272,7 @@ print(ggplot(df, aes(x=Year, y=Age, fill=Selectivity)) +
 	scale_fill_viridis())
 ```
 
-![Selectivity-at-age for block 1, all models.](https://raw.githubusercontent.com/timjmiller/wham/selectivity/vignettes/ex4_plots/selAA.png){ width=90% }
+![Selectivity-at-age for block 1, all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }
 
 #### A note on convergence
 

@@ -4,17 +4,19 @@
 \alias{prepare_wham_input}
 \title{Prepare input data and parameters for WHAM model}
 \usage{
-prepare_wham_input(asap3, recruit_model = 2,
-  model_name = "WHAM for unnamed stock", Ecov = NULL)
+prepare_wham_input(asap3, model_name = "WHAM for unnamed stock",
+  recruit_model = 2, Ecov = NULL, selectivity = NULL)
 }
 \arguments{
 \item{asap3}{list containing data and parameters (output from \code{\link{read_asap3_dat}})}
 
-\item{recruit_model}{numeric, option to specify stock-recruit model (see details)}
-
 \item{model_name}{character, name of stock/model}
 
+\item{recruit_model}{numeric, option to specify stock-recruit model (see details)}
+
 \item{Ecov}{(optional) named list of environmental covariate data and parameters (see details)}
+
+\item{selectivity}{(optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)}
 }
 \value{
 a named list with the following components:
@@ -34,13 +36,39 @@ prepares the data and parameter settings for \code{\link{fit_wham}}.
 By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}.
 }
 \details{
-\code{recruit_model} specifies the stock-recruit model. See lines 442-476
-in \code{wham.cpp} to see implementation.
+\code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} to see implementation.
   \describe{
     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
     \item{= 3}{Beverton-Holt}
     \item{= 4}{Ricker}
+  }
+
+\code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
+Otherwise, it must be a named list with the following components:
+  \describe{
+    \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
+    \item{$mean}{Mean observations (matrix). Missing values = NA.}
+    \item{$logsigma}{Observation standard error (log). Options:
+      \describe{
+        \item{Matrix with same dimensions as \code{$mean}}{Specified values (not estimated) for each time step }
+        \item{Single value per Ecov, numeric vector or matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
+        \item{Vector with estimate options for each Ecov, length = n.Ecov}{
+          \code{'est_1'}: Estimated, one value shared among time steps.
+          \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
+      }
+    }
+    \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
+    \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
+    Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
+    \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
+    I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
+    \item{$process_model}{Process model for the environmental covariate. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
+    \item{$where}{Where does the environmental covariate affect the population? \code{"recuit"} = recruitment,
+    \code{"growth"} = growth, \code{"mortality"} = natural mortality.}
+    \item{$how}{How does the environmental covariate affect the \code{$where} process? These options are
+    specific to the \code{$where} process.}
   }
 
 \code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
@@ -52,31 +80,23 @@ in \code{wham.cpp} to see implementation.
     \item{= 5}{"directive" (e.g. behavioral)}
   }
 
-\code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
-the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
-Otherwise, it must be a named list with the following components:
+\code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
+If \code{NULL}, selectivity options from the ASAP data file are used. \code{selectivity} is a list with the following entries:
   \describe{
-    \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
-    \item{$mean}{Mean observations (matrix). Missing values = NA.}
-    \item{$logsigma}{Observation standard error (log). Options:
-      \describe{
-        \item{Matrix with same dimensions as \code{mean}}{Specified values (not estimated) for each time step }
-        \item{Single value per Ecov, numeric vector or matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
-        \item{Vector with estimate options for each Ecov, length = n.Ecov}{
-          \code{'est_1'}: Estimated, one value shared among time steps.
-          \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
-      }
-    }
-    \item{$year}{Years corresponding to observations (vector of same length as \code{mean} and \code{sigma})}
-    \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{mean} and \code{sigma}.
-    Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
-    \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
-    I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
-    \item{$process_model}{Process model for the environmental covariate. "rw" = random walk, "ar1" = 1st order autoregressive, NA = do not fit}
-    \item{$where}{Where does the environmental covariate affect the population? "recuit" = recruitment,
-    "growth" = growth, "mortality" = natural mortality.}
-    \item{$how}{How does the environmental covariate affect the \code{where} process? These options are
-    specific to the \code{where} process.}
+    \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
+    \item{$re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
+                 If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
+                 Each entry of \code{selectivity$re} must be one of the following options, where the selectivity parameters are:
+                 \describe{
+                   \item{"none"}{(default) are constant and uncorrelated}
+                   \item{"iid"}{vary by year and age/par, but uncorrelated}
+                   \item{"ar1"}{correlated by age/par (AR1), but not year}
+                   \item{"ar1_y"}{correlated by year (AR1), but not age/par}
+                   \item{"2dar1"}{correlated by year and age/par (2D AR1)}
+                 }
+                }
+    \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
+    \item{$fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
   }
 }
 \examples{

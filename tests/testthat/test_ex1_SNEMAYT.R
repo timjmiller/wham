@@ -20,22 +20,10 @@ ex1_test_results <- readRDS(file.path(path_to_examples,"ex1_test_results.rds"))
 
 # read asap3 data file and convert to input list for wham
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-input <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder")
-
-# Make one or more selectivity blocks with age-specific parameters
-age.specific = 1:3 # 3 age-specific blocks
-not.age.specific = (1:input$data$n_selblocks)[-age.specific]
-input = set_age_sel0(input, age.specific)
-input$par$logit_selpars[not.age.specific,c(1:input$data$n_ages,input$data$n_ages + 3:6)] = Inf
-input$par$logit_selpars[1,5] = Inf
-input$par$logit_selpars[2,4] = Inf
-input$par$logit_selpars[3,2] = Inf
-# Now redefine the map argument for the selectivity parameters to estimate only selectivity parameters without initial values at lower and upper bounds.
-input$map$logit_selpars = matrix(input$map$logit_selpars, input$data$n_selblocks, input$data$n_ages + 6)
-input$map$logit_selpars[is.infinite(input$par$logit_selpars)] = NA
-input$map$logit_selpars[!is.infinite(input$par$logit_selpars)] = 1:sum(!is.infinite(input$par$logit_selpars))
-input$map$logit_selpars = factor(input$map$logit_selpars)
-base = input
+base <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+						selectivity=list(model=rep("age-specific",3),
+										initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+										fix_pars=list(5,4,2)))
 
 #SCAA, but with random effects for recruitment
 temp = base
@@ -52,6 +40,7 @@ expect_false(m1_check$na_sdrep) # sdrep should succeed
 expect_lt(m1_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m1 parameter values
+# order of logit_selpars changed when modifying prepare_wham_input for time-varying selectivity
 expect_equal(as.numeric(m1$opt$par), ex1_test_results$m1par, tolerance=1e-3)
 
 #Like m1, but change age comp likelihoods to logistic normal
@@ -134,14 +123,14 @@ res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.d
 # WHAM output plots for best model with projections
 plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
 
-# # save objects to test against in future
-# ex1_test_results <- list(nll=nll,
-#                          m1par=as.numeric(m1$opt$par),
-#                          m2par=as.numeric(m2$opt$par),
-#                          m3par=as.numeric(m3$opt$par),
-#                          m4par=as.numeric(m4$opt$par))
-# saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
-# save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
+# save objects to test against in future
+ex1_test_results <- list(nll=nll,
+                         m1par=as.numeric(m1$opt$par),
+                         m2par=as.numeric(m2$opt$par),
+                         m3par=as.numeric(m3$opt$par),
+                         m4par=as.numeric(m4$opt$par))
+saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
+save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
 })
 
 # # remove files created during testing
