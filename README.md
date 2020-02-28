@@ -135,3 +135,15 @@ source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R")
   * Annual conditional reference points are estimated in case weight, maturity, natural mortality, or selectivity at age change over time. 
   * If a spawner-recruit model is assumed, MSY-based reference points are also estimated. 
   * Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in [Miller et al. 2016](https://doi.org/10.1139/cjfas-2015-0339) and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124).
+
+### NOAA Disclaimer
+
+This repository is a scientific product and is not official communication of the National Oceanic and
+Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is
+provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of
+Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed
+by all applicable Federal law. Any reference to specific commercial products, processes, or services by service
+mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or
+favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a
+DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by
+DOC or the United States Government.
