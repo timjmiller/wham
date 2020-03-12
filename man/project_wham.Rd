@@ -4,10 +4,14 @@
 \alias{project_wham}
 \title{Project a fit WHAM model}
 \usage{
-project_wham(model, proj.opts = list(n.yrs = 3, use.last.F = TRUE,
-  use.avg.F = FALSE, use.FXSPR = FALSE, proj.F = NULL, proj.catch = NULL,
-  avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov = FALSE, avg.Ecov.yrs =
-  NULL, proj.Ecov = NULL), n.newton = 3, do.sdrep = TRUE)
+project_wham(
+  model,
+  proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
+    proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov =
+    FALSE, avg.Ecov.yrs = NULL, proj.Ecov = NULL),
+  n.newton = 3,
+  do.sdrep = TRUE
+)
 }
 \arguments{
 \item{model}{a previously fit wham model}

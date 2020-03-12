@@ -45,7 +45,7 @@ for(m in 1:n.mods){
   # source("/home/bstock/Documents/wham/R/prepare_wham_input.R")
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              Ecov = env,
+                              ecov = env,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))))
@@ -65,7 +65,7 @@ for(m in 1:n.mods){
   input$data$random_recruitment = 0
   input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
   input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA","Ecov_re")
+  input$random = c(input$random, "log_NAA")
 
   # ---------------------------------------------------------
   ## Fit model

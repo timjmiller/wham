@@ -4,13 +4,21 @@
 \alias{fit_wham}
 \title{Fit WHAM model}
 \usage{
-fit_wham(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE,
-  n.peels = 7, do.osa = TRUE, osa.opts = list(method =
-  "oneStepGeneric", parallel = TRUE), model = NULL, do.check = FALSE,
-  do.proj = FALSE, proj.opts = list(n.yrs = 3, use.last.F = TRUE,
-  use.avg.F = FALSE, use.FXSPR = FALSE, proj.F = NULL, proj.catch = NULL,
-  avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov = FALSE, avg.Ecov.yrs =
-  NULL, proj.Ecov = NULL))
+fit_wham(
+  input,
+  n.newton = 3,
+  do.sdrep = TRUE,
+  do.retro = TRUE,
+  n.peels = 7,
+  do.osa = TRUE,
+  osa.opts = list(method = "oneStepGeneric", parallel = TRUE),
+  model = NULL,
+  do.check = FALSE,
+  do.proj = FALSE,
+  proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
+    proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov =
+    FALSE, avg.Ecov.yrs = NULL, proj.Ecov = NULL)
+)
 }
 \arguments{
 \item{input}{Named list with components:

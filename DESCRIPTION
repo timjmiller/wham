@@ -48,7 +48,7 @@ BugReports: https://github.com/timjmiller/wham/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Encoding: UTF-8
 Suggests: 
     knitr,

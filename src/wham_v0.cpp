@@ -59,12 +59,15 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_NAA_sigma);
   DATA_IVECTOR(NAA_sigma_pointers);
   DATA_INTEGER(recruit_model);
-  DATA_INTEGER(n_M_re);
-  DATA_IVECTOR(MAA_pointer); //n_ages
-  DATA_IVECTOR(M_sigma_par_pointer); //n_M_re
+  DATA_INTEGER(n_M_a);
+  // DATA_IVECTOR(MAA_pointer); //n_ages
+  // DATA_IVECTOR(M_sigma_par_pointer); //n_M_a
   DATA_INTEGER(M_model); //0: just age-specific M, 1: Lorenzen M decline with age/weight
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations
-  DATA_INTEGER(use_M_re);
+  // DATA_INTEGER(use_M_re);
+  DATA_INTEGER(M_re_model); // 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
+  DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If weight-at-age M, dim = 1.
+  DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_NAA_re);
   DATA_INTEGER(use_b_prior);
   DATA_INTEGER(random_recruitment);
@@ -95,7 +98,8 @@ Type objective_function<Type>::operator() ()
   // DATA_MATRIX(Ecov_obs_sigma); // now in $par, either given (data), fixed effect(s), or random effects
   DATA_IVECTOR(Ecov_lag);
   DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
-  DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = growth, 3 = mortality
+  DATA_IVECTOR(Ecov_poly); // polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
+  DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = mortality
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
   DATA_INTEGER(Ecov_recruit); // Ecov index to use for recruitment
   DATA_INTEGER(Ecov_growth); // Ecov index to use for growth
@@ -128,9 +132,10 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_VECTOR(index_paa_pars);
   PARAMETER_MATRIX(log_NAA);
-  PARAMETER_VECTOR(M_pars1);
-  PARAMETER_VECTOR(M_sigma_pars); //up to n_M_re
-  PARAMETER_MATRIX(M_re); //n_years-1 x n_M_re
+  PARAMETER(M0); // overall mean M
+  PARAMETER_VECTOR(M_a); // mean M-at-age deviations from M0, fixed effects, length = n_M_a (n_ages if age-specific M, 1 if using weight-at-age M)
+  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from M0 + M_a, dim = n_years-1 x n_M_a
+  PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
   PARAMETER(log_b);
   PARAMETER_VECTOR(log_R); //n_years-1, if used.
   PARAMETER(log_R_sigma);
@@ -139,7 +144,7 @@ Type objective_function<Type>::operator() ()
 
   // parameters - environmental covariate ("Ecov")
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
-  PARAMETER_VECTOR(Ecov_beta); // one for each ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  PARAMETER_MATRIX(Ecov_beta); // dim = n.poly x n.ecov, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
   PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
@@ -205,18 +210,21 @@ Type objective_function<Type>::operator() ()
         tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
         istart += n_years_selblocks(b);
       }
-      
+
       // likelihood of RE sel devs (if turned on)
       Type sigma; // sd selectivity deviations (fixed effect)
       Type rho; // among-par correlation selectivity deviations (fixed effect)
       Type rho_y; // among-year correlation selectivity deviations (fixed effect)
+      Type Sigma_sig_sel;
       sigma = exp(sel_repars(b,0));
       rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
+      Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
+
       // 2D AR1 process on selectivity parameter deviations
-      nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5))(tmp);
+      nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
       // SIMULATE if(simulate_state == 1){
-      //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5)).simulate(tmp);
+      //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel).simulate(tmp);
       //   int istart1 = 0;
       //   for(int b1=0; b1<b; b1++) istart1 += n_years_model * n_selpars(b1);
       //   for(int j=0; j<n_selpars(b); j++){
@@ -274,8 +282,6 @@ Type objective_function<Type>::operator() ()
         nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
         SIMULATE if(simulate_state == 1 & Ecov_use_re(1,i) == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         Ecov_x(1,i) = Ecov_re(1,i);
-        // Ecov_x(0,i) = Ecov_re(0,i); // initial year value (x_1, pg 1262, Miller et al. 2016)
-        // nll_Ecov -= dnorm(Ecov_x(0,i), Type(0), Type(1000), 1);
         for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
@@ -338,7 +344,6 @@ Type objective_function<Type>::operator() ()
 
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
-  // matrix<Type> Ecov_out(n_years_model, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
     int ct = 0;
     for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
@@ -347,67 +352,93 @@ Type objective_function<Type>::operator() ()
     }
   }
 
+  // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
+  matrix<Type> Ecov_lm(n_years_Ecov + n_years_proj, n_Ecov); // ecov linear model for each Ecov in each model year
+  Ecov_lm.setZero();
+  int n_poly = Ecov_beta.rows();
+  for(int i = 0; i < n_Ecov; i++){
+    // vector<int> poly_seq = seq(1,Ecov_poly(i));
+    for(int y = 0; y < n_years_model + n_years_proj; y++){
+      for(int j = 0; j < n_poly; j++){
+        Ecov_lm(y,i) += Ecov_beta(j,i) * pow(Ecov_out(y,i), j+1);
+      }
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
   // Natural mortality process model
-  if(use_M_re == 1)
+  if(M_re_model > 1) // random effects on M, M_re = 2D AR1 deviations on M(year,age)
   {
-    vector<Type> sigma_M(n_M_re);
-    for(int i = 0; i < n_M_re; i++) sigma_M(i) = exp(M_sigma_pars(M_sigma_par_pointer(i)-1));
-    matrix<Type> nll_M(n_years_model-1, n_M_re);
-    nll_M.setZero();
+    Type sigma_M = exp(M_repars(0));
+    Type rho_M_a = rho_trans(M_repars(1));
+    Type rho_M_y = rho_trans(M_repars(2));
+    Type Sigma_sig_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
+    // likelihood of M deviations, M_re
+    Type nll_M = Type(0);
+    nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M)(M_re); // must be array, not matrix!
+    // SIMULATE if(simulate_state == 1){
+    //   SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M).simulate(M_re);
+    //   REPORT(M_re);
+    // }
 
-    if(M_model == 0) for(int i = 0; i < n_M_re; i++)
-    {
-      Type mu = M_pars1(i);
-      if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-      nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
-      SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
-      for(int y = 1; y < n_years_model - 1; y++)
-      {
-        mu = M_re(y-1,i);
-        if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-        nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
-        SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
-      }
-    }
-    else
-    {
-      for(int i = 0; i < n_M_re; i++)
-      {
-        Type mu = M_pars1(i);
-        if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-        nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
-        SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
-      }
-      for(int i = 0; i < n_M_re; i++) for(int y = 1; y < n_years_model - 1; y++)
-      {
-        Type mu = M_re(y-1,i);
-        if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-        nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
-        SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
-      }
-    }
-    SIMULATE REPORT(M_re);
+    // if(M_model == 0) for(int i = 0; i < n_M_a; i++)
+    // {
+    //   Type mu = M_pars1(i);
+    //   if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
+    //   nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
+    //   SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
+    //   for(int y = 1; y < n_years_model - 1; y++)
+    //   {
+    //     mu = M_re(y-1,i);
+    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
+    //     nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
+    //     SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
+    //   }
+    // }
+    // else
+    // {
+    //   for(int i = 0; i < n_M_a; i++)
+    //   {
+    //     Type mu = M_pars1(i);
+    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
+    //     nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
+    //     SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
+    //   }
+    //   for(int i = 0; i < n_M_a; i++) for(int y = 1; y < n_years_model - 1; y++)
+    //   {
+    //     Type mu = M_re(y-1,i);
+    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
+    //     nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
+    //     SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
+    //   }
+    // }
+    // SIMULATE REPORT(M_re);
     REPORT(nll_M);
-    nll += nll_M.sum();
+    // nll += nll_M.sum();
+    nll += nll_M;
   }
   //see(nll);
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
-  for(int i = 0; i < n_ages; i++)
+  for(int a = 0; a < n_ages; a++)
   {
     if(M_model == 0) //M by age
     {
-      MAA(0,i) = exp(M_pars1(MAA_pointer(i)-1));
-      for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,MAA_pointer(i)-1));
+      // MAA(0,i) = exp(M_pars1(MAA_pointer(i)-1));
+      // for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,MAA_pointer(i)-1));
+      MAA(0,a) = exp(M0 + M_a(a));
+      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+      // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a) + M_re(y-1,a));
+      // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a));
     }
     else //M_model == 1, allometric function of weight
     {
-      MAA(0,i) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,0,i)));
-      if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,i)));
-      else for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,i)));
+      MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
+      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
   if(do_proj == 1){ // add to MAA in projection years using average MAA over avg.yrs
@@ -520,12 +551,14 @@ Type objective_function<Type>::operator() ()
         // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
         if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
         {
-          log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
         }
         // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
         if(Ecov_how(Ecov_recruit-1) == 2 | Ecov_how(Ecov_recruit-1) == 4)
         {
-          log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          // log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          log_SR_b(y) += Ecov_lm(y,Ecov_recruit-1);
         }
       }
       if(use_steepness != 1)
@@ -553,11 +586,13 @@ Type objective_function<Type>::operator() ()
       {
         if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
         {
-          log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
         }
         if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
         { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-          log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          // log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+          log_SR_b(y) += 1.0 + Ecov_lm(y,Ecov_recruit-1);
         }
       }
       if(use_steepness != 1)
@@ -597,7 +632,8 @@ Type objective_function<Type>::operator() ()
       if(recruit_model == 2) // random about mean
       {
         if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = exp(mean_rec_pars(0));
-        if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
+        // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
+        if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_lm(y,Ecov_recruit-1));
       }
       else
       {

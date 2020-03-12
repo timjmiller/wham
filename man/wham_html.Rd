@@ -4,8 +4,7 @@
 \alias{wham_html}
 \title{Create HTML file to view output plots in browser}
 \usage{
-wham_html(dir.main = NULL, title = "WHAM Output", width = 500,
-  openfile = TRUE)
+wham_html(dir.main = NULL, title = "WHAM Output", width = 500, openfile = TRUE)
 }
 \arguments{
 \item{dir.main}{directory to save html file (\code{\link{plot_wham_output}}
