@@ -368,6 +368,7 @@ Type objective_function<Type>::operator() ()
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
   // Natural mortality process model
+  Type nll_M = Type(0);
   if(M_re_model > 1) // random effects on M, M_re = 2D AR1 deviations on M(year,age)
   {
     Type sigma_M = exp(M_repars(0));
@@ -375,7 +376,6 @@ Type objective_function<Type>::operator() ()
     Type rho_M_y = rho_trans(M_repars(2));
     Type Sigma_sig_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
     // likelihood of M deviations, M_re
-    Type nll_M = Type(0);
     nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M)(M_re); // must be array, not matrix!
     // SIMULATE if(simulate_state == 1){
     //   SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M).simulate(M_re);
@@ -414,11 +414,11 @@ Type objective_function<Type>::operator() ()
     //   }
     // }
     // SIMULATE REPORT(M_re);
-    REPORT(nll_M);
+    
     // nll += nll_M.sum();
-    nll += nll_M;
   }
-  //see(nll);
+  REPORT(nll_M);
+  nll += nll_M;
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
