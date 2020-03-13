@@ -419,6 +419,9 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(nll_M);
   nll += nll_M;
+  REPORT(M_re);
+  REPORT(M0);
+  REPORT(M_a);
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
