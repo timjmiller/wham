@@ -434,6 +434,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     data$Ecov_model <- 0
     data$Ecov_where <- 1
     data$Ecov_how <- 0
+    data$Ecov_poly <- 1
     data$Ecov_recruit <- 1
     data$Ecov_growth <- 1
     data$Ecov_mortality <- 1
