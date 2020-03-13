@@ -62,7 +62,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_M_a);
   // DATA_IVECTOR(MAA_pointer); //n_ages
   // DATA_IVECTOR(M_sigma_par_pointer); //n_M_a
-  DATA_INTEGER(M_model); //0: just age-specific M, 1: Lorenzen M decline with age/weight
+  DATA_INTEGER(M_model); // 1: "constant", 2: "age-specific", 3: "weight-at-age"
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations
   // DATA_INTEGER(use_M_re);
   DATA_INTEGER(M_re_model); // 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
@@ -427,7 +427,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
   for(int a = 0; a < n_ages; a++)
   {
-    if(M_model == 0) //M by age
+    if(M_model < 3) // age-specific M (if constant M, M_a = 0 and mapped to NA)
     {
       // MAA(0,i) = exp(M_pars1(MAA_pointer(i)-1));
       // for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,MAA_pointer(i)-1));
@@ -436,7 +436,7 @@ Type objective_function<Type>::operator() ()
       // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a) + M_re(y-1,a));
       // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a));
     }
-    else //M_model == 1, allometric function of weight
+    else //M_model == 3, allometric function of weight
     {
       MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
       for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
