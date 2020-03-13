@@ -349,7 +349,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   M_first_est = 1
   M0_ini <- log(asap3$M[1,1])
   M_a_ini <- log(asap3$M[1,]) - M0_ini
-  M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
+  M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini + M0_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
