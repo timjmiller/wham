@@ -37,6 +37,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(waa_pointer_jan1);
   DATA_ARRAY(waa);
   DATA_MATRIX(agg_catch);
+  DATA_IMATRIX(use_agg_catch);
   DATA_MATRIX(agg_catch_sigma);
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages
   DATA_IMATRIX(use_catch_paa);
@@ -757,10 +758,10 @@ Type objective_function<Type>::operator() ()
 
   // ------------------------------------------------------------------------------
   // Catch data likelihood
-  matrix<Type> nll_agg_catch(n_years_catch,n_fleets), nll_catch_acomp(n_years_catch,n_fleets);
+  matrix<Type> nll_agg_catch(n_years_model,n_fleets), nll_catch_acomp(n_years_model,n_fleets);
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
-  for(int y = 0; y < n_years_catch; y++)
+  for(int y = 0; y < n_years_model; y++)
   {
     int acomp_par_count = 0;
     for(int f = 0; f < n_fleets; f++)
@@ -773,13 +774,16 @@ Type objective_function<Type>::operator() ()
         pred_catch(y,f) += waa(waa_pointer_fleets(f)-1,y,a) * pred_CAA(y,f,a);
         tsum += pred_CAA(y,f,a);
       }
-      Type mu = log(pred_catch(y,f));
-      Type sig = agg_catch_sigma(y,f)*exp(log_catch_sig_scale(f));
-      if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
-      nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
-      // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
-      SIMULATE agg_catch(y,f) = exp(rnorm(mu, sig));
-      log_pred_catch(y,f) = log(pred_catch(y,f));
+      if(use_agg_catch(y,f) == 1)
+      {
+        Type mu = log(pred_catch(y,f));
+        Type sig = agg_catch_sigma(y,f)*exp(log_catch_sig_scale(f));
+        if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+        nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
+        // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
+        SIMULATE agg_catch(y,f) = exp(rnorm(mu, sig));
+        log_pred_catch(y,f) = log(pred_catch(y,f));
+      }
       if(any_fleet_age_comp(f) == 1)
       {
         vector<Type> acomp_pars(n_age_comp_pars_fleets(f));

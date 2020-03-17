@@ -210,12 +210,14 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   data$agg_catch_sigma[which(data$agg_catch_sigma < 1e-15)] = 100
   data$agg_catch_sigma = sqrt(log(data$agg_catch_sigma^2 + 1))
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
+  data$use_agg_catch = matrix(1, data$n_years_model, data$n_fleets)
   for(i in 1:data$n_fleets)
   {
     temp = asap3$CAA_mats[[i]][,1:data$n_ages]
     temp[which(is.na(temp))] = 0
     temp[which(temp<0)] = 0
     data$catch_paa[i,,] = temp/apply(temp,1,sum)
+    for(y in 1:data$n_years_model) if(asap3$CAA_mats[[i]][y,data$n_ages+1] < 1e-15) data$use_agg_catch[y,i] = 0
   }
   data$catch_paa[is.na(data$catch_paa)] = 0
   data$use_catch_paa = matrix(1, data$n_years_model, data$n_fleets)
@@ -663,10 +665,12 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
 
   # 1. log fleet catch
   x <- as.data.frame(data$agg_catch)
+  x[data$use_agg_catch==0] <- NA # can't fit to fleets/years with 0 catch
   colnames(x) <- paste0("fleet_", 1:data$n_fleets)
   x$year <- 1:data$n_years_catch
   tmp <- tidyr::gather(x, fleet, val, -year)
-  tmp$val <- log(tmp$val) # shouldn't be any years with 0 catch... could make this robust later
+  tmp <- tmp[complete.cases(tmp),]  
+  tmp$val <- log(tmp$val) # all obs of 0 catch should have use_agg_catch==0, turned to NA, and removed
   tmp$age <- NA
   tmp$type <- "logcatch"
   obs <- rbind(obs, tmp[, obs.colnames])
