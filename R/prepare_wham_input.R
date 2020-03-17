@@ -458,37 +458,37 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     # Handle Ecov sigma options
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num Ecovs
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
-    if(class(ecov$sigma) == "matrix"){
-      if(any(ecov$sigma <= 0)) stop("ecov$sigma must be positive")
+    if(class(ecov$logsigma) == "matrix"){
+      # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
-      par.Ecov.obs.logsigma <- log(ecov$sigma)
-      if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$sigma")
+      par.Ecov.obs.logsigma <- ecov$logsigma
+      if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$logsigma")
     }
-    if(class(ecov$sigma) == 'numeric'){
-      if(any(ecov$sigma <= 0)) stop("ecov$sigma must be positive")
+    if(class(ecov$logsigma) == 'numeric'){
+      # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
-      print("ecov$sigma is numeric. Coercing to a matrix...")
+      print("ecov$logsigma is numeric. Coercing to a matrix...")
       # warning("Ecov sigma is not a matrix. Coercing to a matrix...")
-      if(length(ecov$sigma) == data$n_Ecov) par.Ecov.obs.logsigma <- matrix(rep(log(ecov$sigma), each=n_Ecov_obs), ncol=data$n_Ecov)
-      if(length(ecov$sigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(log(ecov$sigma), ncol=1)
-      if(length(ecov$sigma) != data$n_Ecov && length(ecov$sigma) != n_Ecov_obs) stop("ecov$sigma is numeric but length is not equal to # of ecovs or ecov observations")
+      if(length(ecov$logsigma) == data$n_Ecov) par.Ecov.obs.logsigma <- matrix(rep(ecov$logsigma, each=n_Ecov_obs), ncol=data$n_Ecov)
+      if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(ecov$logsigma, ncol=1)
+      if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
     }
-    if(class(ecov$sigma) == 'character'){
-      if(ecov$sigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
+    if(class(ecov$logsigma) == 'character'){
+      if(ecov$logsigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
         data$Ecov_obs_sigma_opt = 2
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
         map.Ecov.obs.logsigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
         par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
         map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
-      if(ecov$sigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
+      if(ecov$logsigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
         data$Ecov_obs_sigma_opt = 3
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
         map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
         par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
         map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
       }
-      if(ecov$sigma == 'est_re'){
+      if(ecov$logsigma == 'est_re'){
         data$Ecov_obs_sigma_opt = 4
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
         map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
@@ -607,12 +607,14 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     data$Ecov_poly <- rep(1,data$n_Ecov)
     ecov_str <- as.list(rep('linear',data$n_Ecov))
     if(!is.null(ecov$link_model)){
-      for(i in 1:data$n_Ecov){
-        ecov_str[[i]] <- strsplit(ecov$link_model[i],"-")[[1]]
-        if(!ecov_str[[i]][1] %in% c('linear','poly')) stop("Only 'linear' or 'poly-x' (x = 1, 2, ...) ecov link models implemented.")
-        if(ecov_str[[i]]=='linear') data$Ecov_poly[i] <- 1
-        if(ecov_str[[i]][1]=='poly') data$Ecov_poly[i] <- as.numeric(ecov_str[[i]][2])
-        ecov_str[[i]] = ecov$link_model[i]
+      if(!is.na(ecov$link_model)){
+        for(i in 1:data$n_Ecov){
+          ecov_str[[i]] <- strsplit(ecov$link_model[i],"-")[[1]]
+          if(!ecov_str[[i]][1] %in% c('linear','poly')) stop("Only 'linear' or 'poly-x' (x = 1, 2, ...) ecov link models implemented.")
+          if(ecov_str[[i]]=='linear') data$Ecov_poly[i] <- 1
+          if(ecov_str[[i]][1]=='poly') data$Ecov_poly[i] <- as.numeric(ecov_str[[i]][2])
+          ecov_str[[i]] = ecov$link_model[i]
+        }
       }
     }
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
