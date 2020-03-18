@@ -823,7 +823,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(data$M_re_model == 4) par$M_repars[2] <- 0 # if ar1 over years only, fix rho_a = 0
   if(data$M_re_model == 5) {par$M_repars[2] <- 0; par$M_repars[3] <- Inf}  # if rw over years, fix rho_a = 0 and rho_y = 1
   # check if only 1 estimated mean M (e.g. because weight-at-age M or if all but 1 age is fixed), can't estimate rho_a
-  if(data$n_M_est < 2) par$M_repars[2] <- 0
+  # if(data$n_M_est < 2) par$M_repars[2] <- 0
   par$log_b = log(0.305)
 
   par$log_R = rep(10, data$n_years_model-1) #/n_years_model-1, if used.
@@ -906,7 +906,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(data$M_re_model == 4) tmp <- c(1,NA,2) # estimate sigma, rho_y
   if(data$M_re_model == 5) tmp <- c(1,NA,NA) # rw_y: estimate sigma only (fix rho_a = 0, rho_y = 1)
   if(data$M_re_model == 6) tmp <- 1:3 # 2dar1: estimate all
-  if(data$n_M_est < 2) tmp[2] <- NA # can't estimate rho_a if M estimated for < 2 ages
+  # if(data$n_M_est < 2) tmp[2] <- NA # can't estimate rho_a if M estimated for < 2 ages
   map$M_repars = factor(tmp)
 
   # map$M_sigma_pars = factor(rep(NA, length(par$M_sigma_pars)))
