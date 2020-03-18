@@ -361,7 +361,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
         data$M_est = 0
         M_a_ini = 0
         M_re_ini = matrix(log(asap3$M[-1,1])-matrix(M0_ini,data$n_years_model-1,1,byrow=T), data$n_years_model-1, data$n_M_a)
-        if(is.null(M$initial_means) & length(unique(asap$M[1,])) > 1) warning("Constant or weight-at-age M specified (so only 1 mean M parameter),
+        if(is.null(M$initial_means) & length(unique(asap3$M[1,])) > 1) warning("Constant or weight-at-age M specified (so only 1 mean M parameter),
                                                                              but first row of MAA matrix has > 1 unique value.
                                                                              Initializing M at age-1 MAA values. To avoid this warning
                                                                              without changing ASAP file, specify M$initial_means.")
@@ -390,12 +390,14 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
       if(!all(M$est_ages %in% 1:data$n_M_a)) stop("All M$est_ages must be in 1:n.ages (if age-specific M) or 1 (if constant or weight-at-age M)")
       data$M_est[M$est_ages] = 1 # turn on estimation for specified M-at-age
       M_first_est <- M$est_ages[1]
-      if(is.null(M$initial_means)){
-        M0_ini <- log(asap3$M[1,M_first_est])
-        M_a_ini <- log(asap3$M[1,]) - M0_ini
-      } else {
-        M0_ini <- log(M$initial_means[M_first_est])
-        M_a_ini <- log(M$initial_means) - M0_ini
+      if(M$model == "age-specific"){
+        if(is.null(M$initial_means)){
+          M0_ini <- log(asap3$M[1,M_first_est])
+          M_a_ini <- log(asap3$M[1,]) - M0_ini
+        } else {
+          M0_ini <- log(M$initial_means[M_first_est])
+          M_a_ini <- log(M$initial_means) - M0_ini
+        }
       }
       M_re_ini[] = 0 # if estimating mean M for any ages, initialize yearly deviations at 0
     }
