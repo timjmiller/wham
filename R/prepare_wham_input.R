@@ -914,7 +914,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$log_NAA_sigma = factor(rep(NA, length(par$log_NAA_sigma)))
   map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
   map$log_R_sigma = factor(rep(NA, length(par$log_R_sigma)))
-  map$log_b = factor(rep(NA,length(par$log_b)))
+  if(data$M_model != 3) map$log_b = factor(rep(NA,length(par$log_b)))
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
 
