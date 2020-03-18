@@ -428,7 +428,12 @@ Type objective_function<Type>::operator() ()
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
   for(int a = 0; a < n_ages; a++)
   {
-    if(M_model < 3) // age-specific M (if constant M, M_a = 0 and mapped to NA)
+    if(M_model == 1) // constant M
+    {
+      MAA(0,a) = exp(M0);
+      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+    }
+    if(M_model == 2) // age-specific M
     {
       // MAA(0,i) = exp(M_pars1(MAA_pointer(i)-1));
       // for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,MAA_pointer(i)-1));
@@ -440,7 +445,7 @@ Type objective_function<Type>::operator() ()
     else //M_model == 3, allometric function of weight
     {
       MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
-      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
       // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
       // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }

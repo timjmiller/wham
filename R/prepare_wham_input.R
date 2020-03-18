@@ -360,11 +360,11 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
         data$n_M_a = 1
         data$M_est = 0
         M_a_ini = 0
-        M_re_ini = matrix(log(asap3$M[-1,1])-matrix(M0_ini,data$n_years_model-1,1,byrow=T), data$n_years_model-1, data$n_M_a)
+        # M_re_ini = matrix(log(asap3$M[-1,1])-matrix(M0_ini,data$n_years_model-1,1,byrow=T), data$n_years_model-1, data$n_ages)
         if(is.null(M$initial_means) & length(unique(asap3$M[1,])) > 1) warning("Constant or weight-at-age M specified (so only 1 mean M parameter),
-                                                                             but first row of MAA matrix has > 1 unique value.
-                                                                             Initializing M at age-1 MAA values. To avoid this warning
-                                                                             without changing ASAP file, specify M$initial_means.")
+but first row of MAA matrix has > 1 unique value.
+Initializing M at age-1 MAA values. To avoid this warning
+without changing ASAP file, specify M$initial_means.")
         if(!is.null(M$logb_prior)){
           if(!is.logical(M$logb_prior)) stop("M$logb_prior must be either TRUE or FALSE")
           if(M$logb_prior) data$use_b_prior = 1
