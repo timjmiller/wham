@@ -550,19 +550,21 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      for(int y = 0; y < n_years_model + n_years_proj; y++)
-      {
-        // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
-        if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
+      if(Ecov_recruit > 0){ // if there's an ecov effect on recruitment
+        for(int y = 0; y < n_years_model + n_years_proj; y++)
         {
-          // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-          log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
-        }
-        // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
-        if(Ecov_how(Ecov_recruit-1) == 2 | Ecov_how(Ecov_recruit-1) == 4)
-        {
-          // log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-          log_SR_b(y) += Ecov_lm(y,Ecov_recruit-1);
+          // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
+          if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
+          {
+            // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+            log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
+          }
+          // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
+          if(Ecov_how(Ecov_recruit-1) == 2 | Ecov_how(Ecov_recruit-1) == 4)
+          {
+            // log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+            log_SR_b(y) += Ecov_lm(y,Ecov_recruit-1);
+          }
         }
       }
       if(use_steepness != 1)
@@ -586,17 +588,19 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      for(int y = 0; y < n_years_model + n_years_proj; y++)
-      {
-        if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+      if(Ecov_recruit > 0){ // if there's an ecov effect on recruitment
+        for(int y = 0; y < n_years_model + n_years_proj; y++)
         {
-          // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-          log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
-        }
-        if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
-        { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-          // log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-          log_SR_b(y) += 1.0 + Ecov_lm(y,Ecov_recruit-1);
+          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+          {
+            // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+            log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
+          }
+          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+          { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
+            // log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
+            log_SR_b(y) += 1.0 + Ecov_lm(y,Ecov_recruit-1);
+          }
         }
       }
       if(use_steepness != 1)
@@ -635,9 +639,11 @@ Type objective_function<Type>::operator() ()
     {
       if(recruit_model == 2) // random about mean
       {
-        if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = exp(mean_rec_pars(0));
+        // if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = exp(mean_rec_pars(0));
+        // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_lm(y,Ecov_recruit-1));
         // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
-        if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_lm(y,Ecov_recruit-1));
+        pred_NAA(y,0) = exp(mean_rec_pars(0));
+        if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) += Ecov_lm(y,Ecov_recruit-1);
       }
       else
       {

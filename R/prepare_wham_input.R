@@ -723,7 +723,12 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
 
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
-  data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
+  # data$keep_C <- matrix(subset(obs, type=='logcatch')$ind, nrow=data$n_years_catch, ncol=data$n_fleets, byrow=TRUE)
+  data$keep_C <- matrix(NA, nrow=data$n_years_catch, ncol=data$n_fleets)
+  xl <- lapply(seq_len(nrow(data$use_agg_catch)), function(r) which(data$use_agg_catch[r,]==1))
+  Col <- unlist(xl)
+  Row <- rep(1:data$n_years_catch, times=sapply(xl, length))
+  data$keep_C[cbind(Row,Col)] <- subset(obs, type=='logcatch')$ind
 
   data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
   # data$keep_I[data$use_indices==1] <- subset(obs, type=='logindex')$ind
