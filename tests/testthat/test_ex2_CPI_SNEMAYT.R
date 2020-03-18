@@ -33,7 +33,7 @@ for(m in 1:n.mods){
   env <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
-    sigma = as.matrix(env.dat$CPI_sigma),
+    logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
@@ -69,7 +69,8 @@ for(m in 1:n.mods){
 
   # ---------------------------------------------------------
   ## Fit model
-  mods[[m]] <- fit_wham(input)
+  # mods[[m]] <- fit_wham(input)
+  mods[[m]] <- fit_wham(input, do.osa=F, do.retro=F)
   plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
 
   mcheck <- check_convergence(mods[[m]], ret=TRUE)
