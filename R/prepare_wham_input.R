@@ -615,7 +615,7 @@ without changing ASAP file, specify M$initial_means.")
         for(i in 1:data$n_Ecov){
           ecov_str[[i]] <- strsplit(ecov$link_model[i],"-")[[1]]
           if(!ecov_str[[i]][1] %in% c('linear','poly')) stop("Only 'linear' or 'poly-x' (x = 1, 2, ...) ecov link models implemented.")
-          if(ecov_str[[i]]=='linear') data$Ecov_poly[i] <- 1
+          if(ecov_str[[i]][1]=='linear') data$Ecov_poly[i] <- 1
           if(ecov_str[[i]][1]=='poly') data$Ecov_poly[i] <- as.numeric(ecov_str[[i]][2])
           ecov_str[[i]] = ecov$link_model[i]
         }
