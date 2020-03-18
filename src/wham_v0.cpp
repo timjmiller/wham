@@ -643,7 +643,7 @@ Type objective_function<Type>::operator() ()
         // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_lm(y,Ecov_recruit-1));
         // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
         pred_NAA(y,0) = exp(mean_rec_pars(0));
-        if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) += Ecov_lm(y,Ecov_recruit-1);
+        if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
       }
       else
       {
