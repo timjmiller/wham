@@ -359,9 +359,16 @@ Type objective_function<Type>::operator() ()
   int n_poly = Ecov_beta.rows();
   for(int i = 0; i < n_Ecov; i++){
     // vector<int> poly_seq = seq(1,Ecov_poly(i));
+    matrix<Type> X_poly(n_years_model + n_years_proj, n_poly);
+    X_poly.setZero();
+    if(n_poly == 1){ // n_poly = 1 if ecov effect is none or linear
+      X_poly = Ecov_out.col(i).matrix();
+    } else { // n_poly > 1, get poly transformation for ith ecov
+      X_poly = poly_trans(Ecov_out.col(i), n_poly);
+    }
     for(int y = 0; y < n_years_model + n_years_proj; y++){
       for(int j = 0; j < n_poly; j++){
-        Ecov_lm(y,i) += Ecov_beta(j,i) * pow(Ecov_out(y,i), j+1);
+        Ecov_lm(y,i) += Ecov_beta(j,i) * pow(X_poly(y,j), j+1);
       }
     }
   }
