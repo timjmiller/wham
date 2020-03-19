@@ -371,8 +371,11 @@ Type objective_function<Type>::operator() ()
         Ecov_lm(y,i) += Ecov_beta(j,i) * pow(X_poly(y,j), j+1);
       }
     }
+    // REPORT(X_poly);
+    // REPORT(thecol);
   }
-  REPORT(Ecov_lm);
+  // REPORT(Ecov_lm);
+  // REPORT(n_poly);
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
@@ -436,26 +439,23 @@ Type objective_function<Type>::operator() ()
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
   for(int a = 0; a < n_ages; a++)
   {
-    if(M_model == 1) // constant M
-    {
+    if(M_model == 1){ // constant M
       MAA(0,a) = exp(M0);
       for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
     }
-    if(M_model == 2) // age-specific M
-    {
-      // MAA(0,i) = exp(M_pars1(MAA_pointer(i)-1));
-      // for(int y = 1; y < n_years_model; y++) MAA(y,i) = exp(M_re(y-1,MAA_pointer(i)-1));
+    if(M_model == 2){ // age-specific M
       MAA(0,a) = exp(M0 + M_a(a));
       for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
-      // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a) + M_re(y-1,a));
-      // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(a));
     }
-    else //M_model == 3, allometric function of weight
-    {
+    if(M_model == 3){ // M is allometric function of weight
       MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
       for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
-      // if(use_M_re == 1) for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
-      // else for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M_pars1(0) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+    }
+  }
+  // add ecov effect on M (shared across ages)
+  if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
+    for(int a = 0; a < n_ages; a++){
+      for(int y = 0; y < n_years_model; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
     }
   }
   if(do_proj == 1){ // add to MAA in projection years using average MAA over avg.yrs

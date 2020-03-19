@@ -832,7 +832,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$log_index_sig_scale = rep(0, data$n_indices)
 
   # Ecov pars
-  par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
+  # par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
+  par$Ecov_re = matrix(rnorm(data$n_years_Ecov*data$n_Ecov), data$n_years_Ecov, data$n_Ecov)
   max.poly <- max(data$Ecov_poly)
   par$Ecov_beta = matrix(0, nrow=max.poly, ncol=data$n_Ecov) # beta_R in eqns 4-5, Miller et al. (2016)
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
