@@ -354,7 +354,7 @@ Type objective_function<Type>::operator() ()
   }
 
   // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
-  matrix<Type> Ecov_lm(n_years_Ecov + n_years_proj, n_Ecov); // ecov linear model for each Ecov in each model year
+  matrix<Type> Ecov_lm(n_years_model + n_years_proj, n_Ecov); // ecov linear model for each Ecov in each model year
   Ecov_lm.setZero();
   int n_poly = Ecov_beta.rows();
   for(int i = 0; i < n_Ecov; i++){
@@ -365,6 +365,7 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
+  REPORT(Ecov_lm);
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
