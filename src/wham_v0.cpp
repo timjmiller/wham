@@ -434,6 +434,7 @@ Type objective_function<Type>::operator() ()
   REPORT(M_re);
   REPORT(M0);
   REPORT(M_a);
+  REPORT(M_repars);
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
@@ -452,7 +453,13 @@ Type objective_function<Type>::operator() ()
       for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
-  // add ecov effect on M (shared across ages)
+  // add age-specific M_re to first year if not estimating mean M by age
+  if(M_model != 2) if(M_re_model == 3){
+    for(int a = 0; a < n_ages; a++){
+      MAA(0,a) *= exp(M_re(0,a));
+    }
+  }
+  // add ecov effect on M (by year, shared across ages)
   if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
     for(int a = 0; a < n_ages; a++){
       for(int y = 0; y < n_years_model; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));

@@ -887,7 +887,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$M_a <- factor(tmp)
 
-  # map$M_re = factor(rep(NA, length(par$M_re)))
+  # M_re: "none","iid","ar1_a","ar1_y","rw_y","2dar1"
   tmp <- par$M_re
   # if(data$M_re_model == 1){
   #   tmp[] = NA
@@ -895,12 +895,12 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   #   tmp[,data$M_est==0] = NA # turn off RE for ages that aren't estimated
   # }
   if(data$M_re_model == 1) tmp[] = NA # either estimate RE for all ages or none at all
-  ind.notNA <- which(!is.na(tmp))
-  tmp[ind.notNA] <- 1:length(ind.notNA)
+  if(data$M_re_model %in% c(2,6)) tmp[] = 1:prod(dim(tmp)) # all y,a estimated
+  if(data$M_re_model == 3) for(i in 1:dim(tmp)[2]) tmp[,i] = i # devs by age, shared across years
+  if(data$M_re_model %in% 4:5) for(i in 1:dim(tmp)[1]) tmp[i,] = i # devs by year, shared across ages
   map$M_re <- factor(tmp)
 
   # M_repars: sigma_M, rho_M_a, rho_M_y
-  # M re models: "none","iid","ar1_a","ar1_y","rw_y","2dar1"
   if(data$M_re_model == 1) tmp <- rep(NA,3) # no RE pars to estimate
   if(data$M_re_model == 2) tmp <- c(1,NA,NA) # estimate sigma
   if(data$M_re_model == 3) tmp <- c(1,2,NA) # ar1_a: estimate sigma, rho_a
