@@ -441,24 +441,27 @@ Type objective_function<Type>::operator() ()
   for(int a = 0; a < n_ages; a++)
   {
     if(M_model == 1){ // constant M
-      MAA(0,a) = exp(M0);
-      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+      // MAA(0,a) = exp(M0);
+      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a)); // M_re = 0 and mapped to NA in year 1      
     }
     if(M_model == 2){ // age-specific M
-      MAA(0,a) = exp(M0 + M_a(a));
-      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+      // MAA(0,a) = exp(M0 + M_a(a));
+      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
+      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a)); // M_re = 0 and mapped to NA in year 1
     }
     if(M_model == 3){ // M is allometric function of weight
-      MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
-      for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      // MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
+      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
-  // add age-specific M_re to first year if not estimating mean M by age
-  if(M_model != 2) if(M_re_model == 3){
-    for(int a = 0; a < n_ages; a++){
-      MAA(0,a) *= exp(M_re(0,a));
-    }
-  }
+  // // add age-specific M_re to first year if not estimating mean M by age
+  // if(M_model != 2) if(M_re_model == 3){
+  //   for(int a = 0; a < n_ages; a++){
+  //     MAA(0,a) *= exp(M_re(0,a));
+  //   }
+  // }
   // add ecov effect on M (by year, shared across ages)
   if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
     for(int a = 0; a < n_ages; a++){

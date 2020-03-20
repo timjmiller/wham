@@ -351,7 +351,8 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   M_first_est = 1
   M0_ini <- log(asap3$M[1,1])
   M_a_ini <- log(asap3$M[1,]) - M0_ini
-  M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini + M0_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
+  # M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini + M0_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
+  M_re_ini <- matrix(log(asap3$M)-matrix(M_a_ini + M0_ini,data$n_years_model,data$n_M_a,byrow=T), data$n_years_model, data$n_M_a)
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
@@ -895,9 +896,18 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   #   tmp[,data$M_est==0] = NA # turn off RE for ages that aren't estimated
   # }
   if(data$M_re_model == 1) tmp[] = NA # either estimate RE for all ages or none at all
-  if(data$M_re_model %in% c(2,6)) tmp[] = 1:prod(dim(tmp)) # all y,a estimated
-  if(data$M_re_model == 3) for(i in 1:dim(tmp)[2]) tmp[,i] = i # devs by age, shared across years
-  if(data$M_re_model %in% 4:5) for(i in 1:dim(tmp)[1]) tmp[i,] = i # devs by year, shared across ages
+  if(data$M_re_model %in% c(2,6)){
+    tmp[1,] = NA
+    tmp[-1,] = 1:((dim(tmp)[1]-1)*dim(tmp)[2]) # all y,a estimated
+  }
+  if(data$M_re_model == 3){
+    tmp[,1] = NA
+    for(i in 2:dim(tmp)[2]) tmp[,i] = i-1 # devs by age, shared across years
+  }
+  if(data$M_re_model %in% 4:5){
+    tmp[1,] = NA
+    for(i in 2:dim(tmp)[1]) tmp[i,] = i-1 # devs by year, shared across ages
+  }
   map$M_re <- factor(tmp)
 
   # M_repars: sigma_M, rho_M_a, rho_M_y
