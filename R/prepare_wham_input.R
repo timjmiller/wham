@@ -83,7 +83,7 @@
 #'   \describe{
 #'     \item{$model}{Natural mortality model options are:
 #'                    \describe{
-#'                      \item{"constant"}{(default) estimate a single M shared across all ages}
+#'                      \item{"constant"}{(default) estimate a single mean M shared across all ages}
 #'                      \item{"age-specific"}{estimate M_a independent for each age}
 #'                      \item{"weight-at-age"}{specifies M as a function of weight-at-age, \eqn{M_y,a = exp(b0 + b1*log(W_y,a))}, as in
 #'                        \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)} and
@@ -93,11 +93,10 @@
 #'     \item{$re}{Time- and age-varying (random effects) on M. Note that random effects can only be estimated if
 #'                mean M-at-age parameters are (\code{$est_ages} is not \code{NULL}).
 #'                  \describe{
-#'                    \item{"none"}{(default) M constant in time and uncorrelated across ages.}
+#'                    \item{"none"}{(default) M constant in time and across ages.}
 #'                    \item{"iid"}{M varies by year and age, but uncorrelated.}
-#'                    \item{"ar1_a"}{M correlated by age (AR1), but not year.}
-#'                    \item{"ar1_y"}{M correlated by year (AR1), but not age.}
-#'                    \item{"rw_y"}{Random walk on M by year, ages share variance but uncorrelated.}
+#'                    \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
+#'                    \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
 #'                    \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
 #'                  }
 #'                 }
@@ -356,6 +355,8 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
+      if(!is.null(M$re)) if(M$model == "age-specific" & M$re == "ar1_a") stope("Cannot estimate age-specific mean M and AR1 deviations M_a.
+If you want an AR1 process on M-at-age, set M$model = 'constant' and M$re = 'ar1_a'.")
       data$M_model <- match(M$model, c("constant","age-specific","weight-at-age"))
       if(M$model %in% c("constant","weight-at-age")){
         data$n_M_a = 1
@@ -374,8 +375,8 @@ without changing ASAP file, specify M$initial_means.")
     }
     if(!is.null(M$re)){
       if(length(M$re) != 1) stop("Length(M$re) must be 1")
-      if(!(M$re %in% c("none","iid","ar1_a","ar1_y","rw_y","2dar1"))) stop("M$re must be one of the following: 'none','iid','ar1_a','ar1_y','rw_y','2dar1'")
-      data$M_re_model <- match(M$re, c("none","iid","ar1_a","ar1_y","rw_y","2dar1"))
+      if(!(M$re %in% c("none","iid","ar1_a","ar1_y","2dar1"))) stop("M$re must be one of the following: 'none','iid','ar1_a','ar1_y','2dar1'")
+      data$M_re_model <- match(M$re, c("none","iid","ar1_a","ar1_y","2dar1"))
       # data$use_M_re <- 1
     }
     if(!is.null(M$initial_means)){
@@ -822,7 +823,6 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$M_repars[1] <- log(0.1) # start sigma at 0.1, rho at 0
   if(data$M_re_model == 3) par$M_repars[3] <- 0 # if ar1 over ages only, fix rho_y = 0
   if(data$M_re_model == 4) par$M_repars[2] <- 0 # if ar1 over years only, fix rho_a = 0
-  if(data$M_re_model == 5) {par$M_repars[2] <- 0; par$M_repars[3] <- Inf}  # if rw over years, fix rho_a = 0 and rho_y = 1
   # check if only 1 estimated mean M (e.g. because weight-at-age M or if all but 1 age is fixed), can't estimate rho_a
   # if(data$n_M_est < 2) par$M_repars[2] <- 0
   par$log_b = log(0.305)
@@ -888,25 +888,22 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$M_a <- factor(tmp)
 
-  # M_re: "none","iid","ar1_a","ar1_y","rw_y","2dar1"
+  # M_re: "none","iid","ar1_a","ar1_y","2dar1"
   tmp <- par$M_re
   # if(data$M_re_model == 1){
   #   tmp[] = NA
   # } else {
   #   tmp[,data$M_est==0] = NA # turn off RE for ages that aren't estimated
   # }
-  if(data$M_re_model == 1) tmp[] = NA # either estimate RE for all ages or none at all
-  if(data$M_re_model %in% c(2,6)){
-    tmp[1,] = NA
-    tmp[-1,] = 1:((dim(tmp)[1]-1)*dim(tmp)[2]) # all y,a estimated
+  if(data$M_re_model == 1) tmp[] = NA # no RE (either estimate RE for all ages or none at all)
+  if(data$M_re_model %in% c(2,5)){ # 2d ar1
+    tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
   }
-  if(data$M_re_model == 3){
-    tmp[,1] = NA
-    for(i in 2:dim(tmp)[2]) tmp[,i] = i-1 # devs by age, shared across years
+  if(data$M_re_model == 3){ # ar1_a (devs by age, constant by year)
+    for(i in 1:dim(tmp)[2]) tmp[,i] = i
   }
-  if(data$M_re_model %in% 4:5){
-    tmp[1,] = NA
-    for(i in 2:dim(tmp)[1]) tmp[i,] = i-1 # devs by year, shared across ages
+  if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
+    for(i in 1:dim(tmp)[1]) tmp[i,] = i
   }
   map$M_re <- factor(tmp)
 
@@ -914,9 +911,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(data$M_re_model == 1) tmp <- rep(NA,3) # no RE pars to estimate
   if(data$M_re_model == 2) tmp <- c(1,NA,NA) # estimate sigma
   if(data$M_re_model == 3) tmp <- c(1,2,NA) # ar1_a: estimate sigma, rho_a
-  if(data$M_re_model == 4) tmp <- c(1,NA,2) # estimate sigma, rho_y
-  if(data$M_re_model == 5) tmp <- c(1,NA,NA) # rw_y: estimate sigma only (fix rho_a = 0, rho_y = 1)
-  if(data$M_re_model == 6) tmp <- 1:3 # 2dar1: estimate all
+  if(data$M_re_model == 4) tmp <- c(1,NA,2) # ar1_y: estimate sigma, rho_y
+  if(data$M_re_model == 5) tmp <- 1:3 # 2dar1: estimate all
   # if(data$n_M_est < 2) tmp[2] <- NA # can't estimate rho_a if M estimated for < 2 ages
   map$M_repars = factor(tmp)
 

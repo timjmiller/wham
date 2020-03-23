@@ -66,7 +66,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(M_model); // 1: "constant", 2: "age-specific", 3: "weight-at-age"
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations
   // DATA_INTEGER(use_M_re);
-  DATA_INTEGER(M_re_model); // 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
+  DATA_INTEGER(M_re_model); // 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
   DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If weight-at-age M, dim = 1.
   DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_NAA_re);
@@ -386,9 +386,19 @@ Type objective_function<Type>::operator() ()
     Type sigma_M = exp(M_repars(0));
     Type rho_M_a = rho_trans(M_repars(1));
     Type rho_M_y = rho_trans(M_repars(2));
-    Type Sigma_sig_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
+
     // likelihood of M deviations, M_re
-    nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M)(M_re); // must be array, not matrix!
+    if(M_re_model == 2 | M_re_model == 5){
+      Type Sigma_sig_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
+      nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M)(M_re); // must be array, not matrix!
+    } else {
+      if(M_re_model == 3){ // ar1_a
+        nll_M += SCALE(AR1(rho_M_a), sigma_M)(M_re.matrix().row(0));
+      } else { // M_re_model = 4, ar1_y
+        nll_M += SCALE(AR1(rho_M_y), sigma_M)(M_re.matrix().col(0));
+      }
+    }
+    
     // SIMULATE if(simulate_state == 1){
     //   SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M).simulate(M_re);
     //   REPORT(M_re);
@@ -438,30 +448,15 @@ Type objective_function<Type>::operator() ()
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
-  for(int a = 0; a < n_ages; a++)
-  {
+  if(M_model == 2){ // age-specific M
+    for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
+  } else {
     if(M_model == 1){ // constant M
-      // MAA(0,a) = exp(M0);
-      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
-      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a)); // M_re = 0 and mapped to NA in year 1      
-    }
-    if(M_model == 2){ // age-specific M
-      // MAA(0,a) = exp(M0 + M_a(a));
-      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y-1,a)); // M_re = 0 and mapped to NA if not estimated
-      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a)); // M_re = 0 and mapped to NA in year 1
-    }
-    if(M_model == 3){ // M is allometric function of weight
-      // MAA(0,a) = exp(M0 - exp(log_b) * log(waa(waa_pointer_jan1-1,0,a)));
-      // for(int y = 1; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y-1,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
-      for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a));
+    } else { // M_model = 3, M is allometric function of weight
+      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
-  // // add age-specific M_re to first year if not estimating mean M by age
-  // if(M_model != 2) if(M_re_model == 3){
-  //   for(int a = 0; a < n_ages; a++){
-  //     MAA(0,a) *= exp(M_re(0,a));
-  //   }
-  // }
   // add ecov effect on M (by year, shared across ages)
   if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
     for(int a = 0; a < n_ages; a++){
