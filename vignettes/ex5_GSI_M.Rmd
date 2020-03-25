@@ -20,13 +20,9 @@ In this vignette we walk through an example using the `wham` (WHAM = Woods Hole 
 This is the 5th `wham` example, which builds off [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
 
 - full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
-
 - logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
-
 - random-about-mean recruitment (`recruit_model = 2`)
-
 - 5 indices
-
 - fit to 1973-2011 data
 
 We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects or time-varying M, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
@@ -34,17 +30,11 @@ We assume you already have `wham` installed. If not, see the [README](https://gi
 In example 5, we demonstrate how to specify and run WHAM with varying options for natural mortality:
 
 - not estimated (fixed at input values)
-
 - one value, $\mu_M$
-
 - age-specific, $M_a$ (independent)
-
 - function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$
-
 - AR1 deviations (random effects, by age), $M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad \delta_a \sim \mathcal{N} (\rho_a \delta_{a-1}, \sigma^2_M)$
-
 - AR1 deviations (random effects, by year), $M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad \delta_y \sim \mathcal{N} (\rho_y \delta_{y-1}, \sigma^2_M)$
-
 - 2D AR1 deviations (random effects, by age and year), $M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)$)
 
 We also demonstrate alternate specifications for the link between M and an environmental covariate, the Gulf Stream Index (GSI), as in [O'Leary et al. (2019)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092):
@@ -55,7 +45,7 @@ We also demonstrate alternate specifications for the link between M and an envir
 
 - quadratic (in log-space), $M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y + \beta_2 E^2_y}$
 
-Note that you can specify more than one of the above effects on M, although the model may not be estimable. For example, the most complex model with weight-at-age, 2D AR1 age- and year-deviations, and a quadratic environmental effect: $M_{y,a} = e^{\mathrm{log}\mu_M + b W_{y,a} + \beta_1 E_y + \beta_2 E^2_y + \delta_{y,a}}$.
+Note that you can specify more than one of the above effects on $M$, although the model may not be estimable. For example, the most complex model with weight-at-age, 2D AR1 age- and year-deviations, and a quadratic environmental effect: $M_{y,a} = e^{\mathrm{log}\mu_M + b W_{y,a} + \beta_1 E_y + \beta_2 E^2_y + \delta_{y,a}}$.
 
 ## 1. Load data
 
@@ -137,13 +127,13 @@ Next we specify the options for modeling natural mortality by including an optio
 - `$model`: Natural mortality model options.
   - `"constant"`: estimate a single M, $\mu_M$, shared across all ages and years.
   - `"age-specific"`: estimate $M_a$ independent for each age, shared across years.
-  - `"weight-at-age"`: estimate M as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
-- `$re`: Time- and age-varying random effects on M.
-  - `"none"`: M constant in time and across ages (default).
-  - `"iid"`: M varies by year and age, but uncorrelated.
-  - `"ar1_a"`: M correlated by age (AR1), constant in time.
-  - `"ar1_y"`: M correlated by year (AR1), constant by age.
-  - `"2dar1"`: M correlated by year and age (2D AR1), as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
+  - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
+- `$re`: Time- and age-varying random effects on $M$.
+  - `"none"`: $M$ constant in time and across ages (default).
+  - `"iid"`: $M$ varies by year and age, but uncorrelated.
+  - `"ar1_a"`: $M$ correlated by age (AR1), constant in time.
+  - `"ar1_y"`: $M$ correlated by year (AR1), constant by age.
+  - `"2dar1"`: $M$ correlated by year and age (2D AR1), as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
 - `$initial_means`: Initial/mean M-at-age vector, with length = number of ages (if `$model = "age-specific"`) or 1 (if `$model = "weight-at-age"` or `"constant"`). If `NULL`, initial mean M-at-age values are taken from the first row of the MAA matrix in the ASAP data file.
 - `$est_ages`: Vector of ages to estimate age-specific M (others will be fixed at initial values). E.g. in a model with 6 ages, `$est_ages = 5:6` will estimate M for the 5th and 6th ages, and fix M for ages 1-4. If `NULL`, M at all ages is fixed at `M$initial_means` (if not `NULL`) or row 1 of the MAA matrix from the ASAP file (if `M$initial_means = NULL`).
 - `$logb_prior`: (Only for weight-at-age model) TRUE or FALSE (default), should a $\mathcal{N}(0.305, 0.08)$ prior be used on `log_b`? Based on Fig. 1 and Table 1 (marine fish) in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).
@@ -172,7 +162,7 @@ To use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations (
 M <- list(re="2dar1")
 ```
 
-## 4. Linking M to an environmental covariate (GSI)
+## 4. Linking *M* to an environmental covariate (GSI)
 
 As described in [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate (Ecov) options are fed to `prepare_wham_input` as a list, `Ecov`. This example differs from example 2 in that:
 
@@ -180,7 +170,7 @@ As described in [example 2](https://github.com/timjmiller/wham/blob/mortality/in
 - `$lag = 0`: GSI in year *t* affects $M$ in year *t*, instead of year *t+1*.
 - `$where = "M"`: GSI affects $M$, instead of recruitment.
 - `$how`: `ecov$how = 0` estimates the GSI time-series model (AR1) for models without a GSI-M effect, in order to compare AIC with models that do include a GSI-M effect. Setting `ecov$how = 1` is necessary to allow a GSI-M effect.
-- `$link_model`: specifies the model linking GSI to M. Can be `NA` (no effect, default), `"linear"`, or `"poly-x"` (where x is the degree of a polynomial). In this example we demonstrate models with no GSI-M effect, a linear GSI-M effect, and a quadratic GSI-M effect (`"poly-2"`). WHAM includes a function to calculate orthogonal polynomials in TMB, akin to the [`poly()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/poly) function in R.
+- `$link_model`: specifies the model linking GSI to $M$. Can be `NA` (no effect, default), `"linear"`, or `"poly-x"` (where x is the degree of a polynomial). In this example we demonstrate models with no GSI-M effect, a linear GSI-M effect, and a quadratic GSI-M effect (`"poly-2"`). WHAM includes a function to calculate orthogonal polynomials in TMB, akin to the [`poly()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/poly) function in R.
 
 For example, the `ecov` list for model `m3` with a quadratic GSI-M effect:
 
@@ -325,7 +315,7 @@ In general, models with GSI effects or 2D AR1 deviations on $M$ had reduced retr
 
 Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models. Compared to `m1`, the retrospective pattern for `m8` was worse for recruitment (`m8` 0.31, `m1` 0.26) but improved for SSB (`m8` 0.01, `m1` 0.11) and F (`m8` -0.03, `m1` -0.13).
 
-### Yet more M options
+### Yet more *M* options
 
 If you want to estimate M-at-age shared/mirrored among *some but not all ages*, you'll need to modify `input$map$M_a` after calling `prepare_wham_input`. For example:
 
