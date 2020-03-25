@@ -14,10 +14,12 @@ knitr::opts_chunk$set(
 )
 wham.dir <- find.package("wham")
 knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+library(knitr)
+library(kableExtra)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 5th `wham` example, which builds off [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
+This is the 5th WHAM example, which builds off [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
 
 - full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
 - logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
@@ -25,17 +27,17 @@ This is the 5th `wham` example, which builds off [example 2](https://github.com/
 - 5 indices
 - fit to 1973-2011 data
 
-We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects or time-varying M, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
+We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
 
-In example 5, we demonstrate how to specify and run WHAM with varying options for natural mortality:
+In example 5, we demonstrate how to specify and run WHAM with the following options for natural mortality:
 
 - not estimated (fixed at input values)
-- one value, $\mu_M$
+- one value, $M$
 - age-specific, $M_a$ (independent)
 - function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$
-- AR1 deviations (random effects, by age), $M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad \delta_a \sim \mathcal{N} (\rho_a \delta_{a-1}, \sigma^2_M)$
-- AR1 deviations (random effects, by year), $M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad \delta_y \sim \mathcal{N} (\rho_y \delta_{y-1}, \sigma^2_M)$
-- 2D AR1 deviations (random effects, by age and year), $M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)$
+- AR1 deviations by age (random effects), $M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad \delta_a \sim \mathcal{N} (\rho_a \delta_{a-1}, \sigma^2_M)$
+- AR1 deviations by year (random effects), $M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad \delta_y \sim \mathcal{N} (\rho_y \delta_{y-1}, \sigma^2_M)$
+- 2D AR1 deviations by age and year (random effects), $M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)$
 
 We also demonstrate alternate specifications for the link between $M$ and an environmental covariate, the Gulf Stream Index (GSI), as in [O'Leary et al. (2019)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092):
 
@@ -92,15 +94,12 @@ asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
 ```
 
 Load the environmental covariate (Gulf Stream Index, GSI) data into R:
-```{r eval=FALSE}
+```{r}
 env.dat <- read.csv("GSI.csv", header=T)
-```
-
-The GSI does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value or yearly values (random effects $\mathrm{log}\sigma^E_y \sim \mathcal{N}(\mathrm{log}\sigma^E, \sigma^2_{\sigma^E})$). We will estimate one observation error parameter, shared across years.
-
-```{r eval=FALSE}
 head(env.dat)
 ```
+
+The GSI does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value, $\sigma_E$, or yearly values as random effects, $\mathrm{log}\sigma_{E_y} \sim \mathcal{N}(\mathrm{log}\sigma_E, \sigma^2_{\sigma_E})$. In this example we choose the simpler option and estimate one observation error parameter, shared across years.
 
 ## 2. Specify models
 
@@ -115,7 +114,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 ```
 
-Look at the model table.
+Look at the model table:
 ```{r}
 df.mods
 ```
@@ -125,7 +124,7 @@ df.mods
 Next we specify the options for modeling natural mortality by including an optional list argument, `M`, to the  `prepare_wham_input` function (see the `?prepare_wham_input` help page). `M` specifies estimation options and can overwrite M-at-age values specified in the ASAP data file. By default (i.e. `M` is `NULL` or not included), the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). `M` is a list with the following entries:
 
 - `$model`: Natural mortality model options.
-  - `"constant"`: estimate a single M, $\mu_M$, shared across all ages and years.
+  - `"constant"`: estimate a single $M$, shared across all ages and years.
   - `"age-specific"`: estimate $M_a$ independent for each age, shared across years.
   - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
 - `$re`: Time- and age-varying random effects on $M$.
@@ -135,7 +134,7 @@ Next we specify the options for modeling natural mortality by including an optio
   - `"ar1_y"`: $M$ correlated by year (AR1), constant by age.
   - `"2dar1"`: $M$ correlated by year and age (2D AR1), as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
 - `$initial_means`: Initial/mean M-at-age vector, with length = number of ages (if `$model = "age-specific"`) or 1 (if `$model = "weight-at-age"` or `"constant"`). If `NULL`, initial mean M-at-age values are taken from the first row of the MAA matrix in the ASAP data file.
-- `$est_ages`: Vector of ages to estimate age-specific M (others will be fixed at initial values). E.g. in a model with 6 ages, `$est_ages = 5:6` will estimate M for the 5th and 6th ages, and fix M for ages 1-4. If `NULL`, M at all ages is fixed at `M$initial_means` (if not `NULL`) or row 1 of the MAA matrix from the ASAP file (if `M$initial_means = NULL`).
+- `$est_ages`: Vector of ages to estimate age-specific $M_a$ (others will be fixed at initial values). E.g. in a model with 6 ages, `$est_ages = 5:6` will estimate $M_a$ for the 5th and 6th ages, and fix $M$ for ages 1-4. If `NULL`, $M$ at all ages is fixed at `M$initial_means` (if not `NULL`) or row 1 of the MAA matrix from the ASAP file (if `M$initial_means = NULL`).
 - `$logb_prior`: (Only for weight-at-age model) TRUE or FALSE (default), should a $\mathcal{N}(0.305, 0.08)$ prior be used on `log_b`? Based on Fig. 1 and Table 1 (marine fish) in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).
 
 For example, to fit model `m1` (fix $M_a$ at values in ASAP file):
@@ -156,7 +155,7 @@ And to fit model `m8` (estimate mean $M$ with 2D AR1 deviations by year and age)
 M <- list(model="constant", est_ages=1, re="2dar1")
 ```
 
-To use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations (as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047)):
+To use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047):
 
 ```{r eval=FALSE}
 M <- list(re="2dar1")
@@ -305,15 +304,43 @@ Look at results table.
 df.mods
 ```
 
+In the table below, I have converted `na_sdrep` to `Pos def Hessian` and highlighted models for which this is true. Note that `mod$na_sdrep = FALSE` if `TMB::sdreport(mod)` successfully inverts the Hessian and produces SE estimates for all (fixed effect) parameters.
+
 ```{r echo=FALSE}
-vign5_res
+vign5_res[,11:13] = round(vign5_res[,11:13], 3)
+vign5_res[,6] = ifelse(vign5_res[,6]==FALSE,TRUE,FALSE)
+
+# colnames(vign5_res)[1] = ""
+# colnames(vign5_res)[2] = "M model"
+# colnames(vign5_res)[4] = "GSI"
+# colnames(vign5_res)[5] = "GSI\nlink"
+# colnames(vign5_res)[6] = "Pos def\nHessian"
+# colnames(vign5_res)[7] = "Runtime\n(min)"
+# colnames(vign5_res)[11] = "$\\rho_{R}$"
+# colnames(vign5_res)[12] = "$\\rho_{SSB}$"
+# colnames(vign5_res)[13] = "$\\rho_{\\overline{F}}$"
+# kable(vign5_res) %>%
+#   kable_styling(bootstrap_options = c("striped", "condensed", "responsive"))
+
+posdef = which(vign5_res$na_sdrep == TRUE)
+thebest = which(vign5_res$dAIC == 0)
+vign5_res %>%
+  # mutate(na_sdrep = cell_spec(na_sdrep, "html", bold = ifelse(na_sdrep == TRUE,TRUE,FALSE))) %>%
+  # select(everything()) %>%
+  dplyr::rename("M model"="M_est", "GSI"="Ecov_process", "GSI link"="Ecov_link",
+         "Pos def\nHessian"="na_sdrep", "Runtime\n(min)"="runtime",
+         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") %>%
+  kable(escape = F) %>%
+  kable_styling(bootstrap_options = c("condensed","responsive")) %>%
+  row_spec(posdef, background = gray.colors(10,end=0.95)[10]) %>%
+  row_spec(thebest, bold=TRUE)
 ```
 
 ## 7. Results
 
 In general, models with GSI effects or 2D AR1 deviations on $M$ had reduced retrospective patterns compared to the status quo (`m1`) and models with 1D AR1 random effects on $M$.
 
-Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models. Compared to `m1`, the retrospective pattern for `m8` was worse for recruitment (`m8` 0.31, `m1` 0.26) but improved for SSB (`m8` 0.01, `m1` 0.11) and F (`m8` -0.03, `m1` -0.13).
+Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (bold in above table). Compared to `m1`, the retrospective pattern for `m8` was worse for recruitment (`m8` 0.31, `m1` 0.26) but improved for SSB (`m8` 0.01, `m1` 0.11) and F (`m8` -0.03, `m1` -0.13).
 
 ### Yet more *M* options
 

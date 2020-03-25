@@ -21,9 +21,9 @@ Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structu
   from an ASAP3 dat file. Many of the plotting functions for input data, results, and 
   diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks.
 Depends:
-    R (>= 3.5.0)
+    R (>= 3.6.0)
 Imports:
-    TMB (>= 1.7.15),
+    TMB (>= 1.7.16),
     plotrix (>= 3.7-5),
     ellipse (>= 0.4.1),
     Hmisc (>= 4.2-0),
@@ -33,10 +33,11 @@ Imports:
     colorspace (>= 1.4-1),
     mnormt (>= 1.5-5),
     Deriv (>= 3.8.5),
-    tidyr (>= 0.8.3),
-    dplyr (>= 0.8.0),
-    ggplot2 (>= 3.2.0),
-    TMBhelper (>= 1.1.0)
+    tidyr (>= 1.0.2),
+    dplyr (>= 0.8.5),
+    ggplot2 (>= 3.3.0),
+    TMBhelper (>= 1.1.0),
+    viridis (>= 0.5.1)
 Remotes: 
     kaskr/TMB_contrib_R/TMBhelper,
     kaskr/adcomp/TMB

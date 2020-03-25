@@ -3322,3 +3322,64 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
 }
 
 #-------------------------------------------------------------------------------
+# 2D tile plot by age and year (e.g. selAA, MAA)
+plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE, od){
+  dat = mod$env$data
+  rep = mod$rep
+  years = mod$years
+  n_years = length(years)
+  n_ages = dat$n_ages
+  ages <- 1:n_ages
+
+  # selAA for all blocks using facet_wrap
+  if(type=="selAA"){ 
+    n_selblocks <- length(rep$selAA)
+    sel_mod <- c("age-specific","logistic","double-logistic","decreasing-logistic")[dat$selblock_models]
+    sel_re <- c("no","IID","AR1","AR1_y","2D AR1")[dat$selblock_models_re]
+    df.selAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
+    colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Block")
+    for(i in 1:n_selblocks){
+      tmp = as.data.frame(rep$selAA[[i]])
+      tmp$Year <- years
+      colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
+      tmp$Block = paste0("Block ",i,": ", sel_mod[i]," (",sel_re[i]," random effects)")
+      df.selAA <- rbind(df.selAA, tmp)
+    }
+    df.plot <- df.selAA %>% tidyr::pivot_longer(-c(Year,Block),
+              names_to = "Age", 
+              names_prefix = "Age_",
+              names_ptypes = list(Age = integer()),
+              values_to = "Selectivity")
+    df.plot$Block <- factor(as.character(df.plot$Block), levels=names(table(df.plot$Block)))
+
+    if(do.tex) cairo_pdf(file.path(od, paste0("SelAA_tile.pdf")), family = "Times", height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("SelAA_tile.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
+      print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
+        ggplot2::geom_tile() +
+        ggplot2::theme_bw() + 
+        ggplot2::facet_wrap(~Block, dir="v") +
+        viridis::scale_fill_viridis())
+    if(do.tex | do.png) dev.off()
+  }
+
+  # MAA
+  if(type=="MAA"){ 
+    df.MAA <- as.data.frame(rep$MAA)
+    df.MAA$Year <- years
+    colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year")
+    df.plot <- df.MAA %>% tidyr::pivot_longer(-Year,
+              names_to = "Age", 
+              names_prefix = "Age_",
+              names_ptypes = list(Age = integer()),
+              values_to = "M")
+
+    if(do.tex) cairo_pdf(file.path(od, paste0("MAA_tile.pdf")), family = "Times", height = 5, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("MAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = "Times")
+      print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
+        ggplot2::geom_tile() +
+        ggplot2::theme_bw() + 
+        viridis::scale_fill_viridis())
+    if(do.tex | do.png) dev.off()
+  }
+}  
+
