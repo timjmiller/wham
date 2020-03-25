@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 5: Time-varying natural mortality (+/- Gulf Stream Index effect on M)"
+title: "WHAM example 5: Time-varying natural mortality with Gulf Stream Index effect on M"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 5: Time-varying natural mortality (+/- Gulf Stream Index effect on M)}
+  %\VignetteIndexEntry{WHAM example 5: Time-varying natural mortality with Gulf Stream Index effect on M}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -35,14 +35,12 @@ In example 5, we demonstrate how to specify and run WHAM with varying options fo
 - function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$
 - AR1 deviations (random effects, by age), $M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad \delta_a \sim \mathcal{N} (\rho_a \delta_{a-1}, \sigma^2_M)$
 - AR1 deviations (random effects, by year), $M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad \delta_y \sim \mathcal{N} (\rho_y \delta_{y-1}, \sigma^2_M)$
-- 2D AR1 deviations (random effects, by age and year), $M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)$)
+- 2D AR1 deviations (random effects, by age and year), $M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)$
 
-We also demonstrate alternate specifications for the link between M and an environmental covariate, the Gulf Stream Index (GSI), as in [O'Leary et al. (2019)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092):
+We also demonstrate alternate specifications for the link between $M$ and an environmental covariate, the Gulf Stream Index (GSI), as in [O'Leary et al. (2019)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092):
 
 - none
-
 - linear (in log-space), $M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y}$
-
 - quadratic (in log-space), $M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y + \beta_2 E^2_y}$
 
 Note that you can specify more than one of the above effects on $M$, although the model may not be estimable. For example, the most complex model with weight-at-age, 2D AR1 age- and year-deviations, and a quadratic environmental effect: $M_{y,a} = e^{\mathrm{log}\mu_M + b W_{y,a} + \beta_1 E_y + \beta_2 E^2_y + \delta_{y,a}}$.
@@ -53,6 +51,7 @@ Open R and load the `wham` package:
 
 ```{r message=FALSE}
 library(wham)
+library(dplyr)
 ```
 
 For a clean, runnable `.R` script, look at `ex5_GSI_M.R` in the `example_scripts` folder of the `wham` package install:
@@ -83,22 +82,23 @@ file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=
 ```
 
 Confirm you are in the correct directory and it has the required data files:
-```{r}
+```{r eval=FALSE}
 list.files()
 ```
 
 Read the ASAP3 .dat file into R and convert to input list for wham:
-```{r}
+```{r eval=FALSE}
 asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
 ```
 
 Load the environmental covariate (Gulf Stream Index, GSI) data into R:
-```{r}
+```{r eval=FALSE}
 env.dat <- read.csv("GSI.csv", header=T)
 ```
 
 The GSI does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value or yearly values (random effects $\mathrm{log}\sigma^E_y \sim \mathcal{N}(\mathrm{log}\sigma^E, \sigma^2_{\sigma^E})$). We will estimate one observation error parameter, shared across years.
-```{r}
+
+```{r eval=FALSE}
 head(env.dat)
 ```
 
@@ -115,7 +115,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 ```
 
-Look at the model table
+Look at the model table.
 ```{r}
 df.mods
 ```
@@ -127,7 +127,7 @@ Next we specify the options for modeling natural mortality by including an optio
 - `$model`: Natural mortality model options.
   - `"constant"`: estimate a single M, $\mu_M$, shared across all ages and years.
   - `"age-specific"`: estimate $M_a$ independent for each age, shared across years.
-  - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
+  - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
 - `$re`: Time- and age-varying random effects on $M$.
   - `"none"`: $M$ constant in time and across ages (default).
   - `"iid"`: $M$ varies by year and age, but uncorrelated.
@@ -140,31 +140,31 @@ Next we specify the options for modeling natural mortality by including an optio
 
 For example, to fit model `m1` (fix $M_a$ at values in ASAP file):
 
-```{r}
+```{r eval=FALSE}
 M <- NULL # or simply leave out of call to prepare_wham_input
 ```
 
 To fit model `m6` (estimate one $M$, constant by year and age):
 
-```{r}
+```{r eval=FALSE}
 M <- list(model="constant", est_ages=1)
 ```
 
 And to fit model `m8` (estimate mean $M$ with 2D AR1 deviations by year and age):
 
-```{r}
+```{r eval=FALSE}
 M <- list(model="constant", est_ages=1, re="2dar1")
 ```
 
 To use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations (as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047)):
 
-```{r}
+```{r eval=FALSE}
 M <- list(re="2dar1")
 ```
 
 ## 4. Linking *M* to an environmental covariate (GSI)
 
-As described in [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate (Ecov) options are fed to `prepare_wham_input` as a list, `Ecov`. This example differs from example 2 in that:
+As described in [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
 
 - `$logsigma = "est_1"`: estimate the observation error for the GSI (one overall value for all years). The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.
 - `$lag = 0`: GSI in year *t* affects $M$ in year *t*, instead of year *t+1*.

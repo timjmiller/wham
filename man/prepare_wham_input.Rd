@@ -122,7 +122,7 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
   \describe{
     \item{$model}{Natural mortality model options are:
                    \describe{
-                     \item{"constant"}{(default) estimate a single M shared across all ages}
+                     \item{"constant"}{(default) estimate a single mean M shared across all ages}
                      \item{"age-specific"}{estimate M_a independent for each age}
                      \item{"weight-at-age"}{specifies M as a function of weight-at-age, \eqn{M_y,a = exp(b0 + b1*log(W_y,a))}, as in
                        \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)} and
@@ -132,11 +132,10 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
     \item{$re}{Time- and age-varying (random effects) on M. Note that random effects can only be estimated if
                mean M-at-age parameters are (\code{$est_ages} is not \code{NULL}).
                  \describe{
-                   \item{"none"}{(default) M constant in time and uncorrelated across ages.}
+                   \item{"none"}{(default) M constant in time and across ages.}
                    \item{"iid"}{M varies by year and age, but uncorrelated.}
-                   \item{"ar1_a"}{M correlated by age (AR1), but not year.}
-                   \item{"ar1_y"}{M correlated by year (AR1), but not age.}
-                   \item{"rw_y"}{Random walk on M by year, ages share variance but uncorrelated.}
+                   \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
+                   \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
                    \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
                  }
                 }
