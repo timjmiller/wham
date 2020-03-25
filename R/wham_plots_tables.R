@@ -1224,7 +1224,8 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 	  if(do.png) png(filename = file.path(od, paste0("Selectivity_fleet",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 	  blocks = unique(sb_p[,i])
 		n.blocks <- length(blocks)
-    sel = rbind(mod$rep$selblocks[blocks,])
+    # sel = rbind(mod$rep$selblocks[blocks,])
+    sel = do.call(rbind, lapply(mod$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
 		minyr <- rep(NA, n.blocks)
 		maxyr <- rep(NA, n.blocks)
 		my.col <- rep(NA, n.blocks)
@@ -1272,7 +1273,8 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 	  if(do.png) png(filename = file.path(od, paste0("Selectivity_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
 	  blocks = unique(sb_p[,i])
 		n.blocks <- length(blocks)
-    sel = rbind(mod$rep$selblocks[blocks,])
+    # sel = rbind(mod$rep$selblocks[blocks,])
+    sel = do.call(rbind, lapply(mod$rep$selAA, function(x) apply(x,2,mean)))[blocks,,drop=FALSE]
 		minyr <- rep(NA, n.blocks)
 		maxyr <- rep(NA, n.blocks)
 		my.col <- rep(NA, n.blocks)
@@ -3356,6 +3358,8 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     if(do.png) png(filename = file.path(od, paste0("SelAA_tile.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
         ggplot2::geom_tile() +
+        ggplot2::scale_x_continuous(expand=c(0,0)) +
+        ggplot2::scale_y_continuous(expand=c(0,0)) +        
         ggplot2::theme_bw() + 
         ggplot2::facet_wrap(~Block, dir="v") +
         viridis::scale_fill_viridis())
@@ -3377,6 +3381,8 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     if(do.png) png(filename = file.path(od, paste0("MAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = "Times")
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
         ggplot2::geom_tile() +
+        ggplot2::scale_x_continuous(expand=c(0,0)) +
+        ggplot2::scale_y_continuous(expand=c(0,0)) +
         ggplot2::theme_bw() + 
         viridis::scale_fill_viridis())
     if(do.tex | do.png) dev.off()
