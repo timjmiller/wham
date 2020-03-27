@@ -363,17 +363,17 @@ It is also worth noting that, although the Hessian was not positive definite, mo
 
 ![Mohn's rho for SSB, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_SSB_retro_relative.png){ width=45% }![Mohn's rho for F, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_Fbar_retro_relative.png){ width=45% }
 
-![Mohn's rho for recruitment, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png){ width=60% }
+![Mohn's rho for recruitment, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png){ width=45% }
 
 #### Stock status
 
-Compared to `m1` (left), `m8` (right) estimated higher *M*, lower and more uncertain *F*, and higher SSB -- a much rosier picture of the stock status through time.
+Compared to `m1` (left), `m8` (center) estimated higher *M*, lower and more uncertain *F*, and higher SSB -- a much rosier picture of the stock status through time. Model `m17` (right) is intermediate between `m1` and `m8`.
 
-![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m1_FSPR_relative.png){ width=45% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m8_FSPR_relative.png){ width=45% }
+![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m1_FSPR_relative.png){ width=31% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m8_FSPR_relative.png){ width=31% }![Relative stock status, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_FSPR_relative.png){ width=31% }
 
-Compared to `m1` (left), `m8` (right) estimated higher and more variable reference points, $F_{\%SPR}$ (top), and lower and more variable yield-per-recruit (bottom).
+Compared to `m1` (left), `m8` (center) estimated higher and more variable reference points, $F_{\%SPR}$ (top), and lower and more variable yield-per-recruit (bottom). Model `m17` (right) estimated a shift in yield-per-recruit from ~0.10 before 1990 (as in `m1`) to ~0.05 after 1990 (as in `m8`).
 
-![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=45% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=45% }
+![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=31% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=31% }![Reference point variability, m17.](https://raw.githubusercontent.com/timjmiller/wham/mortality/vignettes/ex5_plots/m17_FSPR_annual_time.png){ width=31% }
 
 In the final year (2011), `m8` estimated a lower probability of the stock being overfished (4% vs. 19%).
 
