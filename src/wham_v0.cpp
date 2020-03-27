@@ -119,6 +119,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
   DATA_INTEGER(proj_F_opt); // 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
+  DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
@@ -403,41 +404,6 @@ Type objective_function<Type>::operator() ()
     //   SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_sig_M).simulate(M_re);
     //   REPORT(M_re);
     // }
-
-    // if(M_model == 0) for(int i = 0; i < n_M_a; i++)
-    // {
-    //   Type mu = M_pars1(i);
-    //   if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-    //   nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
-    //   SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
-    //   for(int y = 1; y < n_years_model - 1; y++)
-    //   {
-    //     mu = M_re(y-1,i);
-    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-    //     nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
-    //     SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
-    //   }
-    // }
-    // else
-    // {
-    //   for(int i = 0; i < n_M_a; i++)
-    //   {
-    //     Type mu = M_pars1(i);
-    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-    //     nll_M(0,i) -= dnorm(M_re(0,i), mu, sigma_M(i), 1);
-    //     SIMULATE if(simulate_state == 1) M_re(0,i) = rnorm(mu, sigma_M(i));
-    //   }
-    //   for(int i = 0; i < n_M_a; i++) for(int y = 1; y < n_years_model - 1; y++)
-    //   {
-    //     Type mu = M_re(y-1,i);
-    //     if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(sigma_M(i)));
-    //     nll_M(y,i) -= dnorm(M_re(y,i), mu, sigma_M(i), 1);
-    //     SIMULATE if(simulate_state == 1) M_re(y,i) = rnorm(mu, sigma_M(i));
-    //   }
-    // }
-    // SIMULATE REPORT(M_re);
-    
-    // nll += nll_M.sum();
   }
   REPORT(nll_M);
   nll += nll_M;
@@ -463,16 +429,28 @@ Type objective_function<Type>::operator() ()
       for(int y = 0; y < n_years_model; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
     }
   }
-  if(do_proj == 1){ // add to MAA in projection years using average MAA over avg.yrs
-    matrix<Type> MAA_toavg(n_toavg,n_ages);
-    for(int a = 0; a < n_ages; a++){
-      for(int i = 0; i < n_toavg; i++){
-        MAA_toavg(i,a) = MAA(avg_years_ind(i),a);
+  if(do_proj == 1){ // add to MAA in projection years
+    if(proj_M_opt == 2){ // use average MAA over avg.yrs 
+      matrix<Type> MAA_toavg(n_toavg,n_ages);
+      for(int a = 0; a < n_ages; a++){
+        for(int i = 0; i < n_toavg; i++){
+          MAA_toavg(i,a) = MAA(avg_years_ind(i),a);
+        }
       }
-    }
-    vector<Type> MAA_proj = MAA_toavg.colwise().mean();
-    for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
-      MAA.row(y) = MAA_proj;
+      vector<Type> MAA_proj = MAA_toavg.colwise().mean();
+      for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+        MAA.row(y) = MAA_proj;
+      }
+    } else { // proj_M_opt == 1, use M_re in projection years
+      if(M_model == 2){ // age-specific M
+        for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
+      } else {
+        if(M_model == 1){ // constant M
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a));
+        } else { // M_model = 3, M is allometric function of weight
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+        }
+      }
     }
   }
 
