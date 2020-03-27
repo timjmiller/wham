@@ -200,10 +200,15 @@ prepare_projection = function(model, proj.opts)
   if(data$proj_M_opt == 1){ 
     par$M_re <- rbind(par$M_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
     tmp <- par$M_re
-    ind.NA <- which(is.na(tmp))
-    tmp[-ind.NA] <- NA
-    tmp[ind.NA] <- 1:length(ind.NA)
-    par$M_re[ind.NA] <- 0 
+    ind.proj <- which(is.na(tmp))
+    par$M_re[ind.proj] <- 0
+
+    tmp[-ind.proj] <- NA
+    if(data$M_re_model %in% c(2,5)) tmp[ind.proj] <- 1:length(ind.proj)
+    if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
+      for(i in 1:proj.opts$n.yrs) tmp[data$n_years_model+i,] = i
+    }
+    map$M_re <- factor(tmp)
   }
 
   return(list(data=data, par = par, map = map, random = input1$random,

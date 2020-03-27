@@ -423,13 +423,8 @@ Type objective_function<Type>::operator() ()
       for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
-  // add ecov effect on M (by year, shared across ages)
-  if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
-    for(int a = 0; a < n_ages; a++){
-      for(int y = 0; y < n_years_model; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
-    }
-  }
-  if(do_proj == 1){ // add to MAA in projection years
+  // add to MAA in projection years
+  if(do_proj == 1){ 
     if(proj_M_opt == 2){ // use average MAA over avg.yrs 
       matrix<Type> MAA_toavg(n_toavg,n_ages);
       for(int a = 0; a < n_ages; a++){
@@ -441,16 +436,22 @@ Type objective_function<Type>::operator() ()
       for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
         MAA.row(y) = MAA_proj;
       }
-    } else { // proj_M_opt == 1, use M_re in projection years
-      if(M_model == 2){ // age-specific M
-        for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
-      } else {
-        if(M_model == 1){ // constant M
-          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a));
-        } else { // M_model = 3, M is allometric function of weight
-          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+    } else { // proj_M_opt == 1, use M_re and/or ecov_lm in projection years
+        if(M_model == 2){ // age-specific M
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
+        } else {
+          if(M_model == 1){ // constant M
+            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a));
+          } else { // M_model = 3, M is allometric function of weight
+            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+          }
         }
       }
+  }
+  // add ecov effect on M (by year, shared across ages)
+  if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
+    for(int a = 0; a < n_ages; a++){
+      for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
     }
   }
 
