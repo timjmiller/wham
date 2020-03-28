@@ -771,6 +771,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   data$avg_years_ind <- 0
   data$proj_F_opt <- 0
   data$proj_Fcatch <- 0
+  data$proj_M_opt <- 0
 
   # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
   # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
