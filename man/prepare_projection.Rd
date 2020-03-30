@@ -21,6 +21,7 @@ prepare_projection(model, proj.opts)
   \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
   \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
   \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+  \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 }}
 }
 \value{

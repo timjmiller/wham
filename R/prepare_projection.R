@@ -197,18 +197,29 @@ prepare_projection = function(model, proj.opts)
   }
 
   # only need to pad M_re if continuing M_re in projections (otherwise will average)
+  # only M_re models 2, 4, 5
   if(data$proj_M_opt == 1){ 
-    par$M_re <- rbind(par$M_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-    tmp <- par$M_re
-    ind.proj <- which(is.na(tmp))
-    par$M_re[ind.proj] <- 0
+    # par$M_re <- rbind(par$M_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    # tmp <- par$M_re
+    # ind.proj <- which(is.na(tmp))
+    # par$M_re[ind.proj] <- 0
 
-    tmp[-ind.proj] <- NA
-    if(data$M_re_model %in% c(2,5)) tmp[ind.proj] <- 1:length(ind.proj)
+    par$M_re <- rbind(par$M_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    tmp <- par$M_re
+    if(data$M_re_model %in% c(2,5)){ # 2d ar1
+      tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
+    }
     if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
-      for(i in 1:proj.opts$n.yrs) tmp[data$n_years_model+i,] = i
+      for(i in 1:dim(tmp)[1]) tmp[i,] = i
     }
     map$M_re <- factor(tmp)
+
+    # tmp[-ind.proj] <- NA
+    # if(data$M_re_model %in% c(2,5)) tmp[ind.proj] <- 1:length(ind.proj)
+    # if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
+    #   for(i in 1:proj.opts$n.yrs) tmp[data$n_years_model+i,] = i
+    # }
+    # map$M_re <- factor(tmp)
   }
 
   return(list(data=data, par = par, map = map, random = input1$random,
