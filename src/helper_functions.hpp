@@ -1056,6 +1056,15 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
     }
   }
 
+  // scale
+  vector<Type> scale = sqrt(norm2);
+  matrix<Type> finalX(n_years_model + n_years_proj, degree);
+  for(int j=0; j<degree; j++){
+    for(int i=0; i<n_years_model; i++){
+      finalX(i,j) = X(i,j) / scale(j);
+    }
+  }
+
   // do proj years if necessary
   if(n_years_proj > 0){
     vector<Type> x_proj = x.tail(n_years_proj);
@@ -1074,17 +1083,14 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
         Xi_proj =  (x_centered_proj - alpha(i-2)).array() * X_proj.col(i-2).array() - beta(i-2)*X_proj.col(i-3).array();
         X_proj.col(i-1) = Xi;      
       }
-    }    
-  }
-  
-  // combine X and X_proj, then scale
-  vector<Type> scale = sqrt(norm2);
-  matrix<Type> finalX(n_years_model + n_years_proj, degree);
-  for(int j=0; j<degree; j++){
-    for(int i=0; i<n_years_model; i++) finalX(i,j) = X(i,j) / scale(j);
-    if(n_years_proj > 0){
-      for(int i=0; i<n_years_proj; i++) finalX(n_years_model+i,j) = X_proj(i,j) / scale(j);
+    }
+
+    for(int j=0; j<degree; j++){
+      for(int i=0; i<n_years_proj; i++){
+        finalX(n_years_model+i,j) = X_proj(i,j) / scale(j);
+      }
     }
   }
+  
   return finalX;
 }
