@@ -1008,13 +1008,14 @@ Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<T
 
 // transform vector 'x' into matrix of orthogonal polynomials, with degree/ncols = 'degree'
 // note that the # datapoints, length(x), must be greater than 'degree' - this is checked on the R side before calling TMB
-// degree assumed to be > 1
+// degree assumed to be > 1 (could call this for linear Ecov models but slows down code, so don't)
+// algorithm from https://stackoverflow.com/questions/39031172/how-poly-generates-orthogonal-polynomials-how-to-understand-the-coefs-ret/39051154
 template <class Type>
-matrix<Type> poly_trans(vector<Type> x, int degree)
+matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_years_proj)
 {
-  Type x_mean = x.mean();
-  int n_x = x.size();
-  vector<Type> x_centered = x - x_mean;
+  vector<Type> x_model = x.head(n_years_model);
+  Type x_mean = x_model.mean();
+  vector<Type> x_centered = x_model - x_mean;
   
   vector<Type> beta(degree);
   vector<Type> alpha(degree);
@@ -1022,17 +1023,17 @@ matrix<Type> poly_trans(vector<Type> x, int degree)
   beta.setZero();
   alpha.setZero();
   norm2.setZero();
-  matrix<Type> X(n_x, degree);
+  matrix<Type> X(n_years_model, degree);
   X = x_centered.replicate(1,degree);
   
   Type new_norm = (x_centered * x_centered).sum();
   norm2(0) = new_norm;
   alpha(0) = (x_centered * x_centered * x_centered).sum() / new_norm;
-  beta(0) = new_norm / n_x;
+  beta(0) = new_norm / n_years_model;
   
   // degree 2 (assume degree > 1)
   Type old_norm = new_norm;
-  vector<Type> Xi(n_x);
+  vector<Type> Xi(n_years_model);
   Xi = (x_centered - alpha(0)).array() * X.col(0).array() - beta(0);
   X.col(1) = Xi;
   vector<Type> tmp2 = Xi * Xi;
@@ -1054,13 +1055,35 @@ matrix<Type> poly_trans(vector<Type> x, int degree)
       old_norm = new_norm;      
     }
   }
+
+  // do proj years if necessary
+  if(n_years_proj > 0){
+    vector<Type> x_proj = x.tail(n_years_proj);
+    vector<Type> x_centered_proj = x_proj - x_mean;
+    matrix<Type> X_proj(n_years_proj, degree);
+    X_proj = x_centered_proj.replicate(1,degree);
+
+    // degree 2
+    vector<Type> Xi_proj(n_years_proj);
+    Xi_proj = (x_centered_proj - alpha(0)).array() * X_proj.col(0).array() - beta(0);
+    X_proj.col(1) = Xi;
+
+    // degree > 2
+    if(degree > 2){
+      for(int i=3; i<degree+1; i++){
+        Xi_proj =  (x_centered_proj - alpha(i-2)).array() * X_proj.col(i-2).array() - beta(i-2)*X_proj.col(i-3).array();
+        X_proj.col(i-1) = Xi;      
+      }
+    }    
+  }
   
-  // scale X
+  // combine X and X_proj, then scale
   vector<Type> scale = sqrt(norm2);
-  matrix<Type> finalX(n_x, degree);
+  matrix<Type> finalX(n_years_model + n_years_proj, degree);
   for(int j=0; j<degree; j++){
-    for(int i=0; i<n_x; i++){
-      finalX(i,j) = X(i,j) / scale(j);
+    for(int i=0; i<n_years_model; i++) finalX(i,j) = X(i,j) / scale(j);
+    if(n_years_proj > 0){
+      for(int i=0; i<n_years_proj; i++) finalX(n_years_model+i,j) = X_proj(i,j) / scale(j);
     }
   }
   return finalX;

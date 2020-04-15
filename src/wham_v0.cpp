@@ -365,11 +365,12 @@ Type objective_function<Type>::operator() ()
     if(n_poly == 1){ // n_poly = 1 if ecov effect is none or linear
       X_poly = thecol.matrix();
     } else { // n_poly > 1, get poly transformation for ith ecov
-      X_poly = poly_trans(thecol, n_poly);
+      X_poly = poly_trans(thecol, n_poly, n_years_model, n_years_proj);
     }
     for(int y = 0; y < n_years_model + n_years_proj; y++){
       for(int j = 0; j < n_poly; j++){
-        Ecov_lm(y,i) += Ecov_beta(j,i) * pow(X_poly(y,j), j+1);
+        // Ecov_lm(y,i) += Ecov_beta(j,i) * pow(X_poly(y,j), j+1);
+        Ecov_lm(y,i) += Ecov_beta(j,i) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
       }
     }
     // REPORT(X_poly);
