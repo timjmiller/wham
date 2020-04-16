@@ -124,13 +124,13 @@ res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.d
 plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
 
 # save objects to test against in future
-ex1_test_results <- list(nll=nll,
-                         m1par=as.numeric(m1$opt$par),
-                         m2par=as.numeric(m2$opt$par),
-                         m3par=as.numeric(m3$opt$par),
-                         m4par=as.numeric(m4$opt$par))
-saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
-save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
+# ex1_test_results <- list(nll=nll,
+#                          m1par=as.numeric(m1$opt$par),
+#                          m2par=as.numeric(m2$opt$par),
+#                          m3par=as.numeric(m3$opt$par),
+#                          m4par=as.numeric(m4$opt$par))
+# saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
+# save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
 })
 
 # # remove files created during testing

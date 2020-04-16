@@ -53,7 +53,7 @@ df.mods
 for(m in 1:n.mods){
   # set up environmental covariate data and model options
   # see ?prepare_wham_input
-  Ecov <- list(
+  ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
     sigma = as.matrix(env.dat$CPI_sigma),
@@ -70,7 +70,7 @@ for(m in 1:n.mods){
   # Generate wham input from ASAP3 and Ecov data
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              Ecov = Ecov)
+                              ecov = ecov)
 
   # Builds off model m4 in example 1:
   #   full state-space model, logistic normal age-compositions
@@ -95,11 +95,12 @@ for(m in 1:n.mods){
   input$data$random_recruitment = 0
   input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
   input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA","Ecov_re")
+  input$random = c(input$random, "log_NAA")
 
   # ---------------------------------------------------------
   ## Fit model
-  mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
+  # mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
+  mod <- fit_wham(input, do.retro=F, do.osa=F)
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
@@ -117,7 +118,8 @@ vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
 for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
 # calculate AIC and Mohn's rho
-df.aic <- compare_wham_models(mods, sort=FALSE)$tab
+# df.aic <- compare_wham_models(mods, sort=FALSE)$tab
+df.aic <- compare_wham_models(mods, sort=FALSE, calc.rho=F)$tab
 df.mods <- cbind(df.mods, df.aic)
 
 # make results prettier
@@ -132,3 +134,4 @@ df.mods
 
 # save results table
 save("df.mods", file="vign2_res.RData")
+write.csv(df.mods, file="vign2_res.csv",row.names=F,quote=F)

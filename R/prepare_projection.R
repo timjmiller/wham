@@ -16,6 +16,7 @@
 #'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
 #'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -39,6 +40,21 @@ prepare_projection = function(model, proj.opts)
 # model = readRDS("m6.rds")
 # proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL,
 #                 avg.yrs=NULL, cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL)
+  input1 <- model$input
+  data <- input1$data
+
+  # options for M in projections, data$proj_M_opt:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.Mre)){
+    if(proj.opts$cont.Mre & model$env$data$M_re_model %in% c(1,3)){ # 1 = none, 3 = AR1_a (not time-varying)
+    stop(paste("","** Error setting up projections **",
+      "proj.opts$cont.Mre = TRUE but no time-varying random effects on M"))
+    }
+    data$proj_M_opt <- ifelse(proj.opts$cont.Mre, 1, 2) # 1 = continue M_re, 2 = average
+  } else { # if NULL, default is to continue M random effects (if they exist!)
+    data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
+  }
 
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
   if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)
@@ -57,8 +73,6 @@ prepare_projection = function(model, proj.opts)
     capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
   # check Ecov options are valid
-  input1 <- model$input
-  data <- input1$data
   if(any(input1$data$Ecov_model > 0)){
     # if Ecov already extends beyond population model, Ecov proj options are unnecessary
     n.beyond <- data$n_years_Ecov-1-data$ind_Ecov_out_end
@@ -121,7 +135,7 @@ prepare_projection = function(model, proj.opts)
   map <- input1$map
   # map <- lapply(par, fill_vals)
 
-  # pad parameters for projections: log_NAA / log_R and Ecov_re
+  # pad parameters for projections: log_NAA / log_R, Ecov_re, and M_re
   if(data$use_NAA_re == 1){
     par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
     # par$log_NAA[which(is.na(par$log_NAA))] <- 10 
@@ -181,16 +195,32 @@ prepare_projection = function(model, proj.opts)
       map$Ecov_re = factor(tmp.re)
     }
   }
-  # tmp <- par$Ecov_re
-  # ind.0 <- which(par$Ecov_re == 0)
-  # # tmp[-ind.0] <- NA
-  # # tmp[ind.0] <- 1:length(ind.0)
-  # tmp[ind.0] <- 1:length(ind.0) + max(as.numeric(map$Ecov_re))
-  # map$Ecov_re = factor(tmp)
 
-  # # remove random effects if they are not estimated (all mapped to NA)
-  # check_allNA <- function(x){ifelse(length(levels(map[[x]])) > 0, FALSE, TRUE)}
-  # random <- input1$random[!sapply(input1$random, check_allNA)]
+  # only need to pad M_re if continuing M_re in projections (otherwise will average)
+  # only M_re models 2, 4, 5
+  if(data$proj_M_opt == 1){ 
+    # par$M_re <- rbind(par$M_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    # tmp <- par$M_re
+    # ind.proj <- which(is.na(tmp))
+    # par$M_re[ind.proj] <- 0
+
+    par$M_re <- rbind(par$M_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    tmp <- par$M_re
+    if(data$M_re_model %in% c(2,5)){ # 2d ar1
+      tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
+    }
+    if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
+      for(i in 1:dim(tmp)[1]) tmp[i,] = i
+    }
+    map$M_re <- factor(tmp)
+
+    # tmp[-ind.proj] <- NA
+    # if(data$M_re_model %in% c(2,5)) tmp[ind.proj] <- 1:length(ind.proj)
+    # if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
+    #   for(i in 1:proj.opts$n.yrs) tmp[data$n_years_model+i,] = i
+    # }
+    # map$M_re <- factor(tmp)
+  }
 
   return(list(data=data, par = par, map = map, random = input1$random,
     years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),

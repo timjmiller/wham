@@ -4,8 +4,7 @@
 \alias{plot_wham_output}
 \title{Plot WHAM output}
 \usage{
-plot_wham_output(mod, dir.main = getwd(), out.type = "html",
-  res = 72)
+plot_wham_output(mod, dir.main = getwd(), out.type = "html", res = 72)
 }
 \arguments{
 \item{mod}{output from \code{\link{fit_wham}}}

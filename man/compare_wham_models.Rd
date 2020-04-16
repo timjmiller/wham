@@ -4,8 +4,14 @@
 \alias{compare_wham_models}
 \title{Compare WHAM models}
 \usage{
-compare_wham_models(mods, fname = "model_comparison", sort = TRUE,
-  calc.rho = TRUE, calc.aic = TRUE, fdir = getwd())
+compare_wham_models(
+  mods,
+  fname = "model_comparison",
+  sort = TRUE,
+  calc.rho = TRUE,
+  calc.aic = TRUE,
+  fdir = getwd()
+)
 }
 \arguments{
 \item{mods}{(named) list of fit WHAM models. If no names are given, "m1", "m2", ...

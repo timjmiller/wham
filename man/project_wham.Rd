@@ -4,10 +4,14 @@
 \alias{project_wham}
 \title{Project a fit WHAM model}
 \usage{
-project_wham(model, proj.opts = list(n.yrs = 3, use.last.F = TRUE,
-  use.avg.F = FALSE, use.FXSPR = FALSE, proj.F = NULL, proj.catch = NULL,
-  avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov = FALSE, avg.Ecov.yrs =
-  NULL, proj.Ecov = NULL), n.newton = 3, do.sdrep = TRUE)
+project_wham(
+  model,
+  proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
+    proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov =
+    FALSE, avg.Ecov.yrs = NULL, proj.Ecov = NULL, cont.Mre = NULL),
+  n.newton = 3,
+  do.sdrep = TRUE
+)
 }
 \arguments{
 \item{model}{a previously fit wham model}
@@ -24,6 +28,7 @@ project_wham(model, proj.opts = list(n.yrs = 3, use.last.F = TRUE,
   \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
   \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
   \item \code{$proj.Ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
+  \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 }}
 
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.}

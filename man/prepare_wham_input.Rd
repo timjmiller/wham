@@ -4,8 +4,14 @@
 \alias{prepare_wham_input}
 \title{Prepare input data and parameters for WHAM model}
 \usage{
-prepare_wham_input(asap3, model_name = "WHAM for unnamed stock",
-  recruit_model = 2, Ecov = NULL, selectivity = NULL)
+prepare_wham_input(
+  asap3,
+  model_name = "WHAM for unnamed stock",
+  recruit_model = 2,
+  ecov = NULL,
+  selectivity = NULL,
+  M = NULL
+)
 }
 \arguments{
 \item{asap3}{list containing data and parameters (output from \code{\link{read_asap3_dat}})}
@@ -14,16 +20,18 @@ prepare_wham_input(asap3, model_name = "WHAM for unnamed stock",
 
 \item{recruit_model}{numeric, option to specify stock-recruit model (see details)}
 
-\item{Ecov}{(optional) named list of environmental covariate data and parameters (see details)}
+\item{ecov}{(optional) named list of environmental covariate data and parameters (see details)}
 
 \item{selectivity}{(optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)}
+
+\item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)}
 }
 \value{
 a named list with the following components:
   \describe{
     \item{\code{data}}{Named list of data, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
     \item{\code{par}}{Named list of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-    \item{\code{map}}{not sure what this does, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
+    \item{\code{map}}{Named list defining how to optionally collect and fix parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
     \item{\code{random}}{Character vector of parameters to treat as random effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
     \item{\code{years}}{Numeric vector of years to fit WHAM model (specified in ASAP3 .dat file)}
     \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group (specified in ASAP3 .dat file)}
@@ -33,7 +41,7 @@ a named list with the following components:
 \description{
 After the data file is read into R by \code{\link{read_asap3_dat}}, this function
 prepares the data and parameter settings for \code{\link{fit_wham}}.
-By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}.
+By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
 }
 \details{
 \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} to see implementation.
@@ -44,7 +52,7 @@ By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.go
     \item{= 4}{Ricker}
   }
 
-\code{Ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+\code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
 Otherwise, it must be a named list with the following components:
   \describe{
@@ -53,31 +61,39 @@ Otherwise, it must be a named list with the following components:
     \item{$logsigma}{Observation standard error (log). Options:
       \describe{
         \item{Matrix with same dimensions as \code{$mean}}{Specified values (not estimated) for each time step }
-        \item{Single value per Ecov, numeric vector or matrix w/ dim 1 x n.Ecov}{Specified value (not estimated) shared among time steps}
-        \item{Vector with estimate options for each Ecov, length = n.Ecov}{
+        \item{Single value per ecov, numeric vector or matrix w/ dim 1 x n.ecov}{Specified value (not estimated) shared among time steps}
+        \item{Vector with estimate options for each ecov, length = n.ecov}{
           \code{'est_1'}: Estimated, one value shared among time steps.
           \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
       }
     }
     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
-    Use the observation? Can be used to ignore subsets of the environmental covariate without changing data files.}
-    \item{$lag}{Offset between the environmental covariate observations and their affect on the stock.
+    Use the observation? Can be used to ignore subsets of the ecov without changing data files.}
+    \item{$lag}{Offset between the ecov observations and their affect on the stock.
     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
-    \item{$process_model}{Process model for the environmental covariate. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
-    \item{$where}{Where does the environmental covariate affect the population? \code{"recuit"} = recruitment,
-    \code{"growth"} = growth, \code{"mortality"} = natural mortality.}
-    \item{$how}{How does the environmental covariate affect the \code{$where} process? These options are
+    \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
+    \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
+    \code{"M"} = natural mortality, \code{"growth"} = growth.}
+    \item{$how}{How does the ecov affect the \code{$where} process? These options are
     specific to the \code{$where} process.}
+    \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
+    where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b0 + b1*ecov + b2*ecov^2 + ...}).}
   }
 
-\code{Ecov$how} specifies HOW the environmental covariate affects the \code{Ecov$where} process.
+\code{ecov$how} specifies HOW the ecov affects the \code{ecov$where} process.
   \describe{
+    \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
     \item{= 1}{"controlling" (dens-indep mortality)}
-    \item{= 2}{"limiting" (carrying capacity, e.g. Ecov determines amount of suitable habitat)}
-    \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some Ecov value)}
+    \item{= 2}{"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)}
+    \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
     \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
     \item{= 5}{"directive" (e.g. behavioral)}
+  }
+Options for M:
+  \describe{
+    \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+    \item{= 1}{effect on mean M (shared across ages)}
   }
 
 \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
@@ -98,6 +114,40 @@ If \code{NULL}, selectivity options from the ASAP data file are used. \code{sele
     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
     \item{$fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
   }
+
+\code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file.
+If \code{NULL}, the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). To estimate M-at-age
+shared/mirrored among some but not all ages, modify \code{input$map$M_a} after calling \code{prepare_wham_input}
+(see vignette for more details). \code{M} is a list with the following entries:
+  \describe{
+    \item{$model}{Natural mortality model options are:
+                   \describe{
+                     \item{"constant"}{(default) estimate a single mean M shared across all ages}
+                     \item{"age-specific"}{estimate M_a independent for each age}
+                     \item{"weight-at-age"}{specifies M as a function of weight-at-age, \eqn{M_y,a = exp(b0 + b1*log(W_y,a))}, as in
+                       \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)} and
+                       \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035}{Miller & Hyun (2018)}.}
+                   }
+                 }
+    \item{$re}{Time- and age-varying (random effects) on M. Note that random effects can only be estimated if
+               mean M-at-age parameters are (\code{$est_ages} is not \code{NULL}).
+                 \describe{
+                   \item{"none"}{(default) M constant in time and across ages.}
+                   \item{"iid"}{M varies by year and age, but uncorrelated.}
+                   \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
+                   \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
+                   \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
+                 }
+                }
+    \item{$initial_means}{Initial/mean M-at-age vector, with length = number of ages (if \code{$model = "age-specific"})
+                         or 1 (if \code{$model = "weight-at-age" or "constant"}). If \code{NULL}, initial mean M-at-age values are taken
+                         from the first row of the MAA matrix in the ASAP data file.}
+    \item{$est_ages}{Vector of ages to estimate M (others will be fixed at initial values). E.g. in a model with 6 ages,
+                     \code{$est_ages = 5:6} will estimate M for the 5th and 6th ages, and fix M for ages 1-4. If \code{NULL},
+                     M at all ages is fixed at \code{M$initial_means} (if not \code{NULL}) or row 1 of the MAA matrix from the ASAP file (if \code{M$initial_means = NULL}).}
+    \item{$logb_prior}{(Only if \code{$model = "weight-at-age"}) TRUE or FALSE (default), should a N(0.305, 0.08) prior be
+                       used on log_b? Based on Fig. 1 and Table 1 (marine fish) in \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}.}
+  }
 }
 \examples{
 \dontrun{
@@ -108,5 +158,5 @@ mod = fit_wham(input)
 
 }
 \seealso{
-\code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3}, \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}
+\code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}, \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}
 }

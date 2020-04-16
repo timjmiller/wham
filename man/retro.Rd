@@ -4,8 +4,7 @@
 \alias{retro}
 \title{Run retrospective analysis}
 \usage{
-retro(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE,
-  n.newton = 0)
+retro(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0)
 }
 \arguments{
 \item{model}{Optimized TMB model, output from \code{\link{fit_tmb}}.}

@@ -33,7 +33,7 @@ for(m in 1:n.mods){
   env <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
-    sigma = as.matrix(env.dat$CPI_sigma),
+    logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
@@ -45,7 +45,7 @@ for(m in 1:n.mods){
   # source("/home/bstock/Documents/wham/R/prepare_wham_input.R")
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              Ecov = env,
+                              ecov = env,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))))
@@ -65,19 +65,13 @@ for(m in 1:n.mods){
   input$data$random_recruitment = 0
   input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
   input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA","Ecov_re")
+  input$random = c(input$random, "log_NAA")
 
   # ---------------------------------------------------------
   ## Fit model
-  mods[[m]] <- fit_wham(input)
+  # mods[[1]] <- fit_wham(input)
+  mods[[m]] <- fit_wham(input, do.osa=F, do.retro=F)
   plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
-
-  mcheck <- check_convergence(mods[[m]], ret=TRUE)
-  expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
-  expect_false(mcheck$na_sdrep) # sdrep should succeed
-  expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-  expect_equal(as.numeric(mods[[m]]$opt$par), ex2_test_results$pars[[m]], tolerance=1e-3) # parameter values
-  expect_equal(as.numeric(mods[[m]]$opt$obj), ex2_test_results$nll[m], tolerance=1e-6) # nll
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
 # mods <- lapply(mod.list, readRDS)
@@ -86,6 +80,56 @@ for(m in 1:n.mods){
 # ex2_test_results$nll <- sapply(mods, function(x) x$opt$obj)
 # saveRDS(ex2_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex2_test_results.rds")
 
+# hard to see which model fails bc they're indexed by m
+# print out each one by one
+mcheck <- check_convergence(mods[[1]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[1]]$opt$par), ex2_test_results$pars[[1]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[1]]$opt$obj), ex2_test_results$nll[1], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[2]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[2]]$opt$par), ex2_test_results$pars[[2]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[2]]$opt$obj), ex2_test_results$nll[2], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[3]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[3]]$opt$par), ex2_test_results$pars[[3]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[3]]$opt$obj), ex2_test_results$nll[3], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[4]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[4]]$opt$par), ex2_test_results$pars[[4]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[4]]$opt$obj), ex2_test_results$nll[4], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[5]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[5]]$opt$par), ex2_test_results$pars[[5]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[5]]$opt$obj), ex2_test_results$nll[5], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[6]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[6]]$opt$par), ex2_test_results$pars[[6]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[6]]$opt$obj), ex2_test_results$nll[6], tolerance=1e-6) # nll
+
+mcheck <- check_convergence(mods[[7]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(as.numeric(mods[[7]]$opt$par), ex2_test_results$pars[[7]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[7]]$opt$obj), ex2_test_results$nll[7], tolerance=1e-6) # nll
 })
 
 # # remove files created during testing

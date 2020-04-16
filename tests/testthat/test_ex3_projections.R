@@ -34,7 +34,7 @@ env <- list(
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
-                            Ecov = env,
+                            ecov = env,
                             selectivity=list(model=rep("logistic",6),
                                              initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                              fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))))
@@ -54,7 +54,7 @@ input$data$use_NAA_re = 1
 input$data$random_recruitment = 0
 input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
 input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-input$random = c(input$random, "log_NAA","Ecov_re")
+input$random = c(input$random, "log_NAA")
 
 # ---------------------------------------------------------
 ## Fit model without projections
