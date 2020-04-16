@@ -256,7 +256,11 @@ for(m in 1:n.mods){
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
 
   # Plot output in new subfolder
-  plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='html')
+  # plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='html')
+  
+  # Do projections
+  # mod_proj <- project_wham(mod)
+  # saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))
 }
 ```
 
@@ -274,27 +278,25 @@ mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
 ```
 
-Add results to model table.
+Get model convergence and stats.
 
 ```{r eval=FALSE}
-df.mods$na_sdrep <- sapply(mods, function(x) x$na_sdrep)
-df.mods$Ecov_link <- c("---","linear","poly-2")[df.mods$Ecov_link+1]
-df.mods$M_re[df.mods$M_re=="none"] = "---"
-df.mods$M_model[1:3] = "---"
-colnames(df.mods)[2] = "M_est"
+df.mods$pdHess <- sapply(mods, function(x) x$sdrep$pdHess)
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-
-# deal with m11 having NaN
-mods[[11]] <- NULL
 df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
-df.aic <- rbind(df.aic[1:10,],rep(NA,5),df.aic[11:15,])
-
-# only calculate AIC and dAIC for converged models with positive definite Hessian
-df.aic$AIC[df.mods$na_sdrep==TRUE | is.na(df.mods$na_sdrep)] <- NA
+df.aic$AIC[df.mods$pdHess==FALSE | is.na(df.mods$pdHess)] <- NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(df.mods, df.aic)
+```
+
+Make results table prettier.
+
+```{r eval=FALSE}
+df.mods$Ecov_link <- c("---","linear","poly-2")[df.mods$Ecov_link+1]
+df.mods$M_re[df.mods$M_re=="none"] = "---"
+colnames(df.mods)[2] = "M_est"
 rownames(df.mods) <- NULL
 ```
 
@@ -309,7 +311,7 @@ df.mods
 
 Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (bold in table below).
 
-In the table, I have converted `na_sdrep` to `Pos def Hessian` and highlighted models for which this is true. Note that `mod$na_sdrep = FALSE` if `TMB::sdreport(mod)` successfully inverts the Hessian and produces SE estimates for all (fixed effect) parameters.
+In the table, `Pos def Hessian` highlights models for which `TMB::sdreport(mod)` successfully inverted the Hessian and produced SE estimates for all (fixed effect) parameters. This information is stored in `mod$na_sdrep` (should be `FALSE`) and `mod$sdrep$pdHess` (should be `TRUE`).
 
 ```{r echo=FALSE}
 vign5_res[,11:13] = round(vign5_res[,11:13], 3)
@@ -328,6 +330,7 @@ vign5_res[,6] = ifelse(vign5_res[,6]==FALSE,TRUE,FALSE)
 #   kable_styling(bootstrap_options = c("striped", "condensed", "responsive"))
 
 posdef = which(vign5_res$na_sdrep == TRUE)
+# posdef = which(vign5_res$pdHess == TRUE)
 thebest = which(vign5_res$dAIC == 0)
 vign5_res %>%
   # mutate(na_sdrep = cell_spec(na_sdrep, "html", bold = ifelse(na_sdrep == TRUE,TRUE,FALSE))) %>%
