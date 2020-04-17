@@ -75,7 +75,7 @@ for(m in 1:n.mods){
     re = df.mods$M_re[m],
     est_ages = est_ages
   )
-  if(m_model == "constant") M$initial_means = 0.28
+  if(m_model %in% c("constant","weight-at-age")) M$initial_means = 0.28
 
   # Generate wham input from ASAP3 and Ecov data
   input <- prepare_wham_input(asap3, recruit_model = 2,
