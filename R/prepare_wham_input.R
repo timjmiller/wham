@@ -847,7 +847,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$NAA_re = matrix(0, data$n_years_model-1, data$n_ages)
   
   # NAA_re and NAA_rho map
-  if(!is.null(NAA_re$cor)) if(!NAA_re$cor %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
+  if(!is.null(NAA_re$cor)){
+    if(!NAA_re$cor %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
+  } else {
+    NAA_re$cor <- 'iid'
+  }
   tmp <- par$trans_NAA_rho
   if(NAA_re$cor %in% c("iid","ar1_y")) tmp[1] = NA 
   if(NAA_re$cor %in% c("iid","ar1_a")) tmp[2] = NA
