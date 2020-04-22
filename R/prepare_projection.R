@@ -135,26 +135,14 @@ prepare_projection = function(model, proj.opts)
   map <- input1$map
   # map <- lapply(par, fill_vals)
 
-  # pad parameters for projections: log_NAA / log_R, Ecov_re, and M_re
-  if(data$use_NAA_re == 1){
-    par$log_NAA <- rbind(par$log_NAA, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-    # par$log_NAA[which(is.na(par$log_NAA))] <- 10 
-    tmp <- par$log_NAA
+  # pad random effects for projections: NAA_re, Ecov_re, and M_re
+  if(data$n_NAA_sigma > 0){
+    par$NAA_re <- rbind(par$NAA_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    tmp <- par$NAA_re
     ind.NA <- which(is.na(tmp))
     tmp[-ind.NA] <- NA
     tmp[ind.NA] <- 1:length(ind.NA)
-    # map$log_NAA = factor(tmp)
-    par$log_NAA[ind.NA] <- 10 
-  }
-  if(data$random_recruitment == 1){
-    par$log_R <- c(par$log_R, rep(NA, proj.opts$n.yrs))
-    # par$log_R[which(is.na(par$log_R))] <- 10 
-    tmp <- par$log_R
-    ind.NA <- which(is.na(tmp))
-    tmp[-ind.NA] <- NA
-    tmp[ind.NA] <- 1:length(ind.NA)
-    # map$log_R = factor(tmp)
-    par$log_R[ind.NA] <- 10 
+    par$NAA_re[ind.NA] <- 0 
   }
 
   if(any(data$Ecov_model > 0)){

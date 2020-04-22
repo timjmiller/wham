@@ -110,12 +110,36 @@
 #'                        used on log_b? Based on Fig. 1 and Table 1 (marine fish) in \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}.}
 #'   }
 #'
+#' \code{NAA_re} specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not)
+#' If \code{NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic).
+#' To fit a state-space model, specify \code{NAA_re}, a list with the following entries:
+#'   \describe{
+#'     \item{$sigma}{Which ages allow deviations from pred_NAA? Common options are specified with the strings:
+#'                    \describe{
+#'                      \item{"rec"}{Random effects on recruitment (deviations), all other ages deterministic}
+#'                      \item{"rec+1"}{"Full state space" model with 2 estimated \code{sigma_a}, one for recruitment and one shared among other ages}
+#'                    }
+#'                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the 
+#'                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 \code{sigma_a}, with recruitment (age-1) deviations having their
+#'                   own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}.
+#'                  }
+#'     \item{$cor}{Correlation structure for the NAA deviations. Options are:
+#'                  \describe{
+#'                    \item{"iid"}{NAA deviations vary by year and age, but uncorrelated.}
+#'                    \item{"ar1_a"}{NAA deviations correlated by age (AR1).}
+#'                    \item{"ar1_y"}{NAA deviations correlated by year (AR1).}
+#'                    \item{"2dar1"}{NAA deviations correlated by year and age (2D AR1).}
+#'                  }
+#'                }
+#'   }
+#'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
 #' @param ecov (optional) named list of environmental covariate data and parameters (see details)
 #' @param selectivity (optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
+#' @param NAA_re (optional) list specifying random effect options on numbers-at-age (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -138,7 +162,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL){
+prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL){
   asap3 = asap3$dat
   which_indices <- which(asap3$use_index ==1)
   asap3$n_indices = length(which_indices)
@@ -337,8 +361,34 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   data$selpars_upper = selpars_hi
   map = list(logit_selpars = factor(temp))
 
-  data$n_NAA_sigma <- 2 #by default
-  data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+  # NAA_re options
+  if(is.null(NAA_re)){ # default = SCAA
+    data$n_NAA_sigma <- 0
+    data$NAA_sigma_pointers <- rep(1,n.ages)
+  } else {
+    if(NAA_re$sigma == "rec"){
+      data$n_NAA_sigma <- 1
+      data$NAA_sigma_pointers <- rep(1,n.ages)
+    } else {
+      if(NAA_re$sigma == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
+        data$n_NAA_sigma <- 2
+        data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+      } else {
+        if(length(NAA_re$sigma) != n.ages) stop("NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
+'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
+or a vector with length == n.ages specifying which sigma_a to use for each age.")
+        if(length(NAA_re$sigma) == n.ages){
+          if(is.na(unique(NAA_re$sigma))){
+            data$n_NAA_sigma <- 0
+            data$NAA_sigma_pointers <- rep(1,n.ages)            
+          } else {
+            data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
+            data$NAA_sigma_pointers <- NAA_re$sigma
+          }
+        }
+      }
+    }
+  }
   data$recruit_model = recruit_model
 
   # natural mortality options, default = use values from ASAP file, no estimation
@@ -355,7 +405,7 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
-      if(!is.null(M$re)) if(M$model == "age-specific" & M$re == "ar1_a") stope("Cannot estimate age-specific mean M and AR1 deviations M_a.
+      if(!is.null(M$re)) if(M$model == "age-specific" & M$re == "ar1_a") stop("Cannot estimate age-specific mean M and AR1 deviations M_a.
 If you want an AR1 process on M-at-age, set M$model = 'constant' and M$re = 'ar1_a'.")
       data$M_model <- match(M$model, c("constant","age-specific","weight-at-age"))
       if(M$model %in% c("constant","weight-at-age")){
@@ -787,7 +837,31 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
   if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
   if(data$N1_model == 0) par$log_N1_pars = rep(10,data$n_ages)
-  par$log_NAA_sigma = rep(0, data$n_NAA_sigma)
+
+  # NAA_re pars
+  if(data$n_NAA_sigma == 0){
+    par$log_NAA_sigma <- 0
+    map$log_NAA_sigma <- factor(NA)
+  } else {
+    par$log_NAA_sigma <- rep(0,data$n_NAA_sigma)
+  }
+  par$trans_NAA_rho <- c(0,0)
+  par$NAA_re = matrix(0, data$n_years_model-1, data$n_ages)
+  
+  # NAA_re and NAA_rho map
+  if(!is.null(NAA_re$cor)) if(!NAA_re$cor %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
+  tmp <- par$trans_NAA_rho
+  if(NAA_re$cor %in% c("iid","ar1_y")) tmp[1] = NA 
+  if(NAA_re$cor %in% c("iid","ar1_a")) tmp[2] = NA
+  ind.notNA <- which(!is.na(tmp))
+  tmp[ind.notNA] <- 1:length(ind.notNA)
+  map$trans_NAA_rho = factor(tmp)
+
+  tmp <- par$NAA_re
+  if(data$n_NAA_sigma == 0) tmp[] <- NA
+  ind.notNA <- which(!is.na(tmp))
+  tmp[ind.notNA] <- 1:length(ind.notNA)
+  map$NAA_re = factor(tmp)
 
   # selectivity pars
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
@@ -814,7 +888,6 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   n_index_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
-  par$log_NAA = matrix(10, data$n_years_model-1, data$n_ages)
 
   # natural mortality pars
   par$M0 <- M0_ini # mean M
@@ -827,9 +900,6 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # check if only 1 estimated mean M (e.g. because weight-at-age M or if all but 1 age is fixed), can't estimate rho_a
   # if(data$n_M_est < 2) par$M_repars[2] <- 0
   par$log_b = log(0.305)
-
-  par$log_R = rep(10, data$n_years_model-1) #/n_years_model-1, if used.
-  par$log_R_sigma = 0
   par$log_catch_sig_scale = rep(0, data$n_fleets)
   par$log_index_sig_scale = rep(0, data$n_indices)
 
@@ -917,11 +987,9 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # if(data$n_M_est < 2) tmp[2] <- NA # can't estimate rho_a if M estimated for < 2 ages
   map$M_repars = factor(tmp)
 
-  # map$M_sigma_pars = factor(rep(NA, length(par$M_sigma_pars)))
-  map$log_NAA = factor(rep(NA, length(par$log_NAA)))
+  map$NAA_re = factor(rep(NA, length(par$NAA_re)))
   map$log_NAA_sigma = factor(rep(NA, length(par$log_NAA_sigma)))
   map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
-  map$log_R_sigma = factor(rep(NA, length(par$log_R_sigma)))
   if(data$M_model != 3) map$log_b = factor(rep(NA,length(par$log_b)))
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
@@ -955,6 +1023,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(any(data$selblock_models_re > 1)) random = c(random, "selpars_re")
   if(data$M_re_model > 1) random = c(random, "M_re")
   if(sum(data$Ecov_model) > 0) random = c(random, "Ecov_re")
+  if(data$n_NAA_sigma > 0) random = c(random, "NAA_re")
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
   return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))

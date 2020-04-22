@@ -10,7 +10,8 @@ prepare_wham_input(
   recruit_model = 2,
   ecov = NULL,
   selectivity = NULL,
-  M = NULL
+  M = NULL,
+  NAA_re = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ prepare_wham_input(
 \item{selectivity}{(optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)}
 
 \item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)}
+
+\item{NAA_re}{(optional) list specifying random effect options on numbers-at-age (see details)}
 }
 \value{
 a named list with the following components:
@@ -147,6 +150,29 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
                      M at all ages is fixed at \code{M$initial_means} (if not \code{NULL}) or row 1 of the MAA matrix from the ASAP file (if \code{M$initial_means = NULL}).}
     \item{$logb_prior}{(Only if \code{$model = "weight-at-age"}) TRUE or FALSE (default), should a N(0.305, 0.08) prior be
                        used on log_b? Based on Fig. 1 and Table 1 (marine fish) in \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}.}
+  }
+
+\code{NAA_re} specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not)
+If \code{NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic).
+To fit a state-space model, specify \code{NAA_re}, a list with the following entries:
+  \describe{
+    \item{$sigma}{Which ages allow deviations from pred_NAA? Common options are specified with the strings:
+                   \describe{
+                     \item{"rec"}{Random effects on recruitment (deviations), all other ages deterministic}
+                     \item{"rec+1"}{"Full state space" model with 2 estimated \code{sigma_a}, one for recruitment and one shared among other ages}
+                   }
+                  Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the 
+                  NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 \code{sigma_a}, with recruitment (age-1) deviations having their
+                  own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}.
+                 }
+    \item{$cor}{Correlation structure for the NAA deviations. Options are:
+                 \describe{
+                   \item{"iid"}{NAA deviations vary by year and age, but uncorrelated.}
+                   \item{"ar1_a"}{NAA deviations correlated by age (AR1).}
+                   \item{"ar1_y"}{NAA deviations correlated by year (AR1).}
+                   \item{"2dar1"}{NAA deviations correlated by year and age (2D AR1).}
+                 }
+               }
   }
 }
 \examples{
