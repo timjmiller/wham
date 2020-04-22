@@ -364,23 +364,23 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   # NAA_re options
   if(is.null(NAA_re)){ # default = SCAA
     data$n_NAA_sigma <- 0
-    data$NAA_sigma_pointers <- rep(1,n.ages)
+    data$NAA_sigma_pointers <- rep(1,data$n_ages)
   } else {
     if(NAA_re$sigma == "rec"){
       data$n_NAA_sigma <- 1
-      data$NAA_sigma_pointers <- rep(1,n.ages)
+      data$NAA_sigma_pointers <- rep(1,data$n_ages)
     } else {
       if(NAA_re$sigma == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
         data$n_NAA_sigma <- 2
         data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
       } else {
-        if(length(NAA_re$sigma) != n.ages) stop("NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
+        if(length(NAA_re$sigma) != data$n_ages) stop("NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
 'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
 or a vector with length == n.ages specifying which sigma_a to use for each age.")
-        if(length(NAA_re$sigma) == n.ages){
+        if(length(NAA_re$sigma) == data$n_ages){
           if(is.na(unique(NAA_re$sigma))){
             data$n_NAA_sigma <- 0
-            data$NAA_sigma_pointers <- rep(1,n.ages)            
+            data$NAA_sigma_pointers <- rep(1,data$n_ages)            
           } else {
             data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
             data$NAA_sigma_pointers <- NAA_re$sigma
