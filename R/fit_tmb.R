@@ -35,13 +35,17 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
     }, error = function(e) {err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
   }
   if(exists("err")) model$err <- err # store error message to print out in fit_wham
-
+  
+  #model$env$parList() gives error when there are no random effects
+  is.re = length(model$env$random)>0
+  fe = model$env$last.par.best
+  if(is.re) fe = fe[-c(model$env$random)]
+  
   if(do.check){
-    ParHat = model$env$last.par.best[-c(model$env$random)]
-    Gr = model$gr(ParHat)
+    Gr = model$gr(fe)
     if(any(Gr > 0.01)){
-      df <- data.frame(param = names(ParHat),
-                       MLE = ParHat,
+      df <- data.frame(param = names(fe),
+                       MLE = fe,
                        gr.at.MLE = Gr)
       ind.hi <- which(Gr > 0.01)
       model$badpar <- df[ind.hi,]
@@ -64,7 +68,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
   model$dir = getwd()
   model$rep <- model$report()
   model$TMB_version = packageVersion("TMB")
-  model$parList = model$env$parList()
+  model$parList = model$env$parList(x = fe)
   model$final_gradient = model$gr()
 
   # if(do.sdrep & !exists("err")) # only do sdrep if no error
