@@ -625,6 +625,29 @@ Type objective_function<Type>::operator() ()
     REPORT(log_SR_R0);
   }
 
+  // likelihood of NAA random effects
+  Type nll_NAA = Type(0);
+  Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
+  Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
+  vector<Type> NAA_sigma = exp(log_NAA_sigma);
+  vector<Type> sigma_a_sig(n_ages);
+  for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+  if(n_NAA_sigma < 2) for(int a=1; a<n_ages; a++) sigma_a_sig(a) = 0;
+  if(n_NAA_sigma > 1) nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
+  if(n_NAA_sigma == 1) nll_NAA += SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y))(NAA_re);
+  SIMULATE {
+    if(simulate_state == 1){
+      if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_re);
+      if(n_NAA_sigma == 1) SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y)).simulate(NAA_re);
+    }
+  }
+  ADREPORT(NAA_sigma);
+  ADREPORT(NAA_rho_a);
+  ADREPORT(NAA_rho_y);
+  REPORT(NAA_re);
+  REPORT(nll_NAA);
+  nll += nll_NAA;
+
   // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, for all years)
   for(int y = 1; y < n_years_model + n_years_proj; y++)
@@ -658,7 +681,11 @@ Type objective_function<Type>::operator() ()
     for(int a = 1; a < n_ages-1; a++) pred_NAA(y,a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
     pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
     // calculate NAA = pred_NAA * NAA deviation
-    for(int a = 0; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a) * exp(NAA_re(y-1,a));
+    if(bias_correct_pe == 1){
+      for(int a = 0; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a) * exp(NAA_re(y-1,a) - 0.5*pow(sigma_a_sig(a),2));
+    } else {
+      for(int a = 0; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a) * exp(NAA_re(y-1,a));
+    }
 
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
     if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
@@ -703,28 +730,6 @@ Type objective_function<Type>::operator() ()
 
     for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
-
-  // likelihood of NAA random effects
-  Type nll_NAA = Type(0);
-  Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
-  Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
-  vector<Type> NAA_sigma = exp(log_NAA_sigma);
-  vector<Type> sigma_a_sig(n_ages);
-  for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
-  if(n_NAA_sigma > 1) nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
-  if(n_NAA_sigma == 1) nll_NAA += SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y))(NAA_re);
-  SIMULATE {
-    if(simulate_state == 1){
-      if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_re);
-      if(n_NAA_sigma == 1) SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y)).simulate(NAA_re);
-    }
-  }
-  ADREPORT(NAA_sigma);
-  ADREPORT(NAA_rho_a);
-  ADREPORT(NAA_rho_y);
-  REPORT(NAA_re);
-  REPORT(nll_NAA);
-  nll += nll_NAA;
 
   // ------------------------------------------------------------------------------
   // Catch data likelihood

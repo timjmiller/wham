@@ -60,13 +60,6 @@ for(m in 1:n.mods){
   input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
-  # Full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))] # remove from map (i.e. estimate)
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA")
-
   # Fit model
   btime = Sys.time()
   mod <- fit_wham(input, do.retro=T, do.osa=F)
