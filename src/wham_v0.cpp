@@ -631,10 +631,16 @@ Type objective_function<Type>::operator() ()
   Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
   vector<Type> NAA_sigma = exp(log_NAA_sigma);
   vector<Type> sigma_a_sig(n_ages);
-  for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
-  if(n_NAA_sigma < 2) for(int a=1; a<n_ages; a++) sigma_a_sig(a) = 0;
-  if(n_NAA_sigma > 1) nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
-  if(n_NAA_sigma == 1) nll_NAA += SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y))(NAA_re);
+  sigma_a_sig.setZero();
+  if(n_NAA_sigma == 1){
+    sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
+    nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_re.col(0));
+  }
+  if(n_NAA_sigma > 1){
+    for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+    nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
+  }
+    
   SIMULATE {
     if(simulate_state == 1){
       if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_re);

@@ -1,38 +1,44 @@
 # WHAM example 6: Numbers-at-age options
 
-# devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
-# devtools::load_all()
-library(dplyr)
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(tidyverse)
 library(wham)
 
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
-write.dir <- "/home/bstock/Documents/wham/sandbox/ex6_NAA"
 if(!exists("write.dir")) write.dir = getwd()
 dir.create(write.dir)
 setwd(write.dir)
 
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=FALSE)
 
 # confirm you are in the working directory and it has the ex2_SNEMAYT.dat file
 list.files()
 
-asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
+asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
+env.dat <- read.csv("GSI.csv", header=T)
 
 # specify models:
-# Model NAA_cor NAA_sigma
-#    m1     ---       ---
-#    m2     iid       rec
-#    m3   ar1_a       rec
-#    m4   ar1_y       rec
-#    m5   2dar1       rec
-#    m6     iid     rec+1
-#    m7   ar1_a     rec+1
-#    m8   ar1_y     rec+1
-#    m9   2dar1     rec+1
-df.mods <- data.frame(NAA_cor = c('---','iid','ar1_a','ar1_y','2dar1','iid','ar1_a','ar1_y','2dar1'),
-                      NAA_sigma = c('---',rep("rec",4),rep("rec+1",4)), stringsAsFactors=FALSE)
+# Model NAA_cor NAA_sigma GSI_Rec
+#    m1     ---       ---     ---
+#    m2     iid       rec     ---
+#    m3   ar1_y       rec     ---
+#    m4     iid     rec+1     ---
+#    m5   ar1_a     rec+1     ---
+#    m6   ar1_y     rec+1     ---
+#    m7   2dar1     rec+1     ---
+#    m8     ---       ---     ar1
+#    m9     iid       rec     ar1
+#    m10  ar1_y       rec     ar1
+#    m11    iid     rec+1     ar1
+#    m12  ar1_a     rec+1     ar1
+#    m13  ar1_y     rec+1     ar1
+#    m14  2dar1     rec+1     ar1
+df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
+                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4)),
+                      GSI_how = c(rep(0,7),rep(2,7)), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -43,22 +49,36 @@ df.mods
 for(m in 1:n.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL
+
+  ecov <- list(
+    label = "GSI",
+    mean = as.matrix(env.dat$GSI),
+    logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
+    year = env.dat$year,
+    use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+    lag = 1, # GSI in year t affects Rec in year t + 1
+    process_model = 'ar1', # "rw" or "ar1"
+    where = "recruit", # GSI affects recruitment
+    how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
+    link_model = "linear")
+
   input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
-                              selectivity=list(model=rep("logistic",6),
-                                               initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
-                                               fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
-                              NAA_re = NAA_list)
+                              selectivity=list(model=rep("age-specific",3), 
+                                re=rep("none",3), 
+                                initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                fix_pars=list(c(4,5),4,2)),
+                              NAA_re = NAA_list,
+                              ecov=ecov)
 
   # overwrite age comp model (all models use logistic normal)
-  input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets]
-  input$data$age_comp_model_indices = rep(5, input$data$n_indices) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[input$data$age_comp_model_indices]
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets[which(apply(input$data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
-  input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
+  input$data$age_comp_model_indices = rep(7, input$data$n_indices)
+  input$data$age_comp_model_fleets = rep(7, input$data$n_fleets)
+  input$data$n_age_comp_pars_indices = rep(1, input$data$n_indices)
+  input$data$n_age_comp_pars_fleets = rep(1, input$data$n_fleets)
+  input$par$index_paa_pars = rep(0, input$data$n_indices)
+  input$par$catch_paa_pars = rep(0, input$data$n_fleets)
+  input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
   # Fit model
   btime = Sys.time()
@@ -67,43 +87,15 @@ for(m in 1:n.mods){
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
-
-  # Plot output in new subfolder
-  # plot_wham_output(mod=mod, out.type='html')
-
-  # Do projections
-  # mod_proj <- project_wham(mod)
-  # saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))
 }
 
 # collect fit models into a list
 mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
-# mods_proj <- lapply(paste0(df.mods$Model,"_proj.rds"), readRDS)
 df.mods$na_sdrep <- sapply(mods, function(x) x$na_sdrep)
-# df.mods$pdHess <- sapply(mods, function(x) x$sdrep$pdHess)
-df.mods$Ecov_link <- c("---","linear","poly-2")[df.mods$Ecov_link+1]
-df.mods$M_re[df.mods$M_re=="none"] = "---"
-colnames(df.mods)[2] = "M_est"
-
-# deal with m11 and m13 having NaN NLL or NA sdrep
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-theNA <- which(is.na(df.mods$NLL) | is.na(df.mods$na_sdrep))
-mods2 <- mods
-mods2[theNA] <- NULL
-df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
-df.aic <- df.aic.tmp[FALSE,]
-ct = 1
-for(i in 1:n.mods){
-  if(i %in% theNA){
-    df.aic[i,] <- rep(NA,5)
-  } else {
-    df.aic[i,] <- df.aic.tmp[ct,]
-    ct <- ct + 1
-  }
-}
-df.aic$AIC[df.mods$na_sdrep==TRUE | is.na(df.mods$na_sdrep)] <- NA
+df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(df.mods, df.aic)
@@ -112,55 +104,52 @@ rownames(df.mods) <- NULL
 # look at results table
 df.mods
 
-# # plot output for all models
-# for(m in 1:n.mods){
-#   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
-# }
+# plot output for all models
+for(m in 1:n.mods){
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
+}
 
 # save results table
-write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
+write.csv(df.mods, file="ex6_table.csv",quote=F, row.names=F)
 
 # ---------------------------------------------------------
-# plot all MAA together in one giant 16-panel plot
-years = mods[[1]]$years
+# plot all NAA_re in one multipanel plot
+years = mods[[1]]$years[-1]
 n_years = length(years)
 n_ages = mods[[1]]$env$data$n_ages
 ages <- 1:n_ages
 
-ecov_link <- df.mods$Ecov_link
-ecov_link[ecov_link=="---"] = "no"
-M_mod <- c("constant","age-specific","weight-at-age")[sapply(mods, function(x) x$env$data$M_model)]
-M_mod[sapply(mods, function(x) unique(x$env$data$M_est)) == 0] = "fixed"
-M_re <- c("no","IID","AR1_a","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$M_re_model)]
-df.MAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
-colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year","Model")
+NAA_mod <- c("FE","RE (recruit)","RE (all NAA)")[sapply(mods, function(x) x$env$data$n_NAA_sigma+1)]
+NAA_cor <- rep(c("(none)","IID","AR1_y","IID","AR1_a","AR1_y","2D AR1"),2)
+GSI_how <- c("no GSI","GSI (limiting)")[df.mods$GSI_how/2+1]
+# NAA_lab <- paste0(df.mods$Model, ": ", paste(NAA_mod,NAA_cor,sep=" - ")) # each unique, for facet_wrap
+NAA_lab <- paste(NAA_mod,NAA_cor,sep=" - ") # duplicate by GSI, for facet_grid
+df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
+colnames(df.NAA) <- c(paste0("Age_",1:n_ages),"Year","GSI_how","NAA_lab")
 for(i in 1:n.mods){
-  tmp = as.data.frame(mods[[i]]$rep$MAA)
+  tmp = as.data.frame(mods[[i]]$rep$NAA_re)
   tmp$Year <- years
   colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
-  tmp$Model = paste0("m",i,": ", M_mod[i]," + ",ecov_link[i]," GSI link + ",M_re[i]," devs")
-  df.MAA <- rbind(df.MAA, tmp)
+  tmp$GSI_how = GSI_how[i]
+  tmp$NAA_lab = NAA_lab[i]
+  df.NAA <- rbind(df.NAA, tmp)
 }
-df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model),
+df.plot <- df.NAA %>% tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
           names_to = "Age",
           names_prefix = "Age_",
           names_ptypes = list(Age = integer()),
-          values_to = "M")
-df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m13: age-specific + poly-2 GSI link + 2D AR1 devs","m11: constant + linear GSI link + 2D AR1 devs"))
-df.plot2$Model <- factor(as.character(df.plot2$Model), levels=unique(df.plot2$Model))
-df.plot2$logM <- log(df.plot2$M)
-df.plot2$logM[df.plot2$logM < -4] <- -4
+          values_to = "NAA_re")
+df.plot$GSI_how <- factor(as.character(df.plot$GSI_how), levels=unique(df.plot$GSI_how))
+df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=unique(df.plot$NAA_lab))
 
-png(filename = file.path(getwd(), paste0("MAA.png")), width = 10, height = 8, res = 100, units='in')
-    print(ggplot2::ggplot(df.plot2, ggplot2::aes(x=Year, y=Age, fill=logM)) +
-      ggplot2::geom_tile() +
-      ggplot2::scale_x_continuous(expand=c(0,0)) +
-      ggplot2::scale_y_continuous(expand=c(0,0)) +
-      ggplot2::theme_bw() +
-      ggplot2::facet_wrap(~Model, nrow=5, dir="v") +
-      viridis::scale_fill_viridis())
+png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 10, height = 11, res = 100, units='in')
+    print(ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=NAA_re)) +
+      geom_tile() +
+      scale_x_continuous(expand=c(0,0)) +
+      scale_y_continuous(expand=c(0,0)) +
+      theme_bw() +
+      facet_grid(rows=vars(NAA_lab), cols=vars(GSI_how), drop=F) +
+      scale_fill_gradient2(name = "NAA devs", low = scales::muted("blue"), mid = "white", high = scales::muted("red")))
 dev.off()
 
-# # make sure NLL doesn't change with projections
-# samenll <- mapply(function(x,y) ifelse(all.equal(x$opt$objective, y$opt$objective)==TRUE, TRUE, FALSE), mods, mods_proj)
-# samenll
+

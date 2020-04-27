@@ -2277,17 +2277,23 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     vals <- std[t.ind,1][1:n_years_full]
     cv <- std[t.ind,2][1:n_years_full]
     ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-	  if(!na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
-    if(na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
-	  grid(col = gray(0.7))
-    polyy = exp(c(ci[,1],rev(ci[,2])))
-    polyx = c(years_full,rev(years_full))
-    polyx = polyx[!is.na(polyy)]
-    polyy = polyy[!is.na(polyy)]
-    polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
-    if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
+    if(!is.nan(unique(vals))){
+  	  if(!na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
+      if(na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
+  	  grid(col = gray(0.7))
+      polyy = exp(c(ci[,1],rev(ci[,2])))
+      polyx = c(years_full,rev(years_full))
+      polyx = polyx[!is.na(polyy)]
+      polyy = polyy[!is.na(polyy)]
+      polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
+      if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
+      mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
+    } else { # all nan, print error message
+      plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+      text(x = 0.5, y = 0.55, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
+      text(x = 0.5, y = 0.45, ylabs[[i]], cex = 1.6, col = "black")
+    }
 	}
-  mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
 
   # FSPR relative --------------------------------------------------
@@ -2297,33 +2303,45 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
-  grid(col = gray(0.7))
-  polyy = exp(c(ci[,1],rev(ci[,2])))
-  polyx = c(years_full,rev(years_full))
-  polyx = polyx[!is.na(polyy)]
-  polyy = polyy[!is.na(polyy)]
-  polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
-  abline(h=1, lty = 2)
-  abline(h=0.5, lty = 2, col = 'red')
-  if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
+  if(!is.nan(unique(rel.ssb.vals))){
+    plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
+    grid(col = gray(0.7))
+    polyy = exp(c(ci[,1],rev(ci[,2])))
+    polyx = c(years_full,rev(years_full))
+    polyx = polyx[!is.na(polyy)]
+    polyy = polyy[!is.na(polyy)]
+    polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
+    abline(h=1, lty = 2)
+    abline(h=0.5, lty = 2, col = 'red')
+    if(mod$env$data$do_proj==1) abline(v=tail(mod$years,1), lty=2, lwd=1)
+  } else {
+    plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+    text(x = 0.5, y = 0.58, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
+    text(x = 0.5, y = 0.42, bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), cex = 1.6, col = "black")    
+  }
 
   rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
   ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(!na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
-    ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
-  if(na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
-    ylim = c(0,max(exp(rel.f.vals),1, na.rm = TRUE)), type = 'l')
-  grid(col = gray(0.7))
-  polyy = exp(c(ci[,1],rev(ci[,2])))
-  polyx = c(years_full,rev(years_full))
-  polyx = polyx[!is.na(polyy)]
-  polyy = polyy[!is.na(polyy)]
-  polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
-  abline(h=1, lty = 2, col = 'red')
-  if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
-  mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
+  if(!is.nan(unique(rel.f.vals))){
+    if(!na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+      ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
+    if(na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+      ylim = c(0,max(exp(rel.f.vals),1, na.rm = TRUE)), type = 'l')
+    grid(col = gray(0.7))
+    polyy = exp(c(ci[,1],rev(ci[,2])))
+    polyx = c(years_full,rev(years_full))
+    polyx = polyx[!is.na(polyy)]
+    polyy = polyy[!is.na(polyy)]
+    polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
+    abline(h=1, lty = 2, col = 'red')
+    if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
+    mtext(side =1, "Year", outer = TRUE, line = 2, cex = 1.5)
+  } else {
+    plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+    text(x = 0.5, y = 0.58, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
+    text(x = 0.5, y = 0.42, bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])), cex = 1.6, col = "black")      
+  }
   if(do.tex | do.png) dev.off() else par(origpar)
 
   # Kobe plot - only if sdreport was successful ---------------------------
@@ -2335,7 +2353,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.years))
     for(i in 1:length(status.years)){
       check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[status.years[i]]])==0
-      if(!any(check.zero.sd)){
+      if(!any(is.na(check.zero.sd))) if(!any(check.zero.sd)){
         p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
         p.ssb.lo.f.hi[i] <- mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
         p.ssb.hi.f.lo[i] <- mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
@@ -2419,10 +2437,19 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
   	  cv <- std[t.ind,2][1:n_years_full]
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
       na.ci <- all(is.na(ci))
+      # remove NaN and Inf
+      # rm.rows <- which(vals < 0)
+      vals[!is.finite(vals)] = NA
+      # vals[rm.rows] = NA
+      # rm.rows <- which(ci[,2] < 0)
+      ci[!is.finite(exp(ci))] = NA
+      # ci[rm.rows,] = NA
 		  if(!na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
       if(na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
 		  grid(col = gray(0.7))
-		  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+      not.na.ci <- !is.na(ci[,1])
+		  polygon(c(years_full[not.na.ci],rev(years_full[not.na.ci])), exp(c(ci[,1][not.na.ci],rev(ci[,2][not.na.ci]))), col = tcol, border = tcol, lwd = 1)
+      # polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
       if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
 		}
     if(do.tex | do.png) dev.off() else par(origpar)
@@ -2435,6 +2462,13 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
+      # remove NaN and Inf
+      # rm.rows <- which(rel.ssb.vals < 0)
+      rel.ssb.vals[!is.finite(rel.ssb.vals)] = NA
+      # rel.ssb.vals[rm.rows] = NA
+      # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
+      ci[!is.finite(exp(ci))] = NA
+      # ci[rm.rows,] = NA    
 		if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
     if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
@@ -2447,6 +2481,13 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
     ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
+      # remove NaN and Inf
+      # rm.rows <- which(rel.f.vals < 0)
+      rel.f.vals[!is.finite(rel.f.vals)] = NA
+      # rel.f.vals[rm.rows] = NA
+      # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
+      ci[!is.finite(exp(ci))] = NA
+      # ci[rm.rows,] = NA    
 		if(!na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
       ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
     if(na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),

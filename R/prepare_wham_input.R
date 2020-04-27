@@ -860,7 +860,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$trans_NAA_rho = factor(tmp)
 
   tmp <- par$NAA_re
-  if(data$n_NAA_sigma == 0) tmp[] <- NA
+  if(data$n_NAA_sigma < 2) tmp[,-1] <- NA # always estimate Rec devs (col 1), whether random effect or not
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$NAA_re = factor(tmp)
@@ -989,9 +989,9 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # if(data$n_M_est < 2) tmp[2] <- NA # can't estimate rho_a if M estimated for < 2 ages
   map$M_repars = factor(tmp)
 
-  map$NAA_re = factor(rep(NA, length(par$NAA_re)))
-  map$log_NAA_sigma = factor(rep(NA, length(par$log_NAA_sigma)))
-  if(data$recruit_model == 1) map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
+  # map$NAA_re = factor(rep(NA, length(par$NAA_re)))
+  # map$log_NAA_sigma = factor(rep(NA, length(par$log_NAA_sigma)))
+  if(recruit_model == 1) map$mean_rec_pars = factor(rep(NA, length(par$mean_rec_pars)))
   if(data$M_model != 3) map$log_b = factor(rep(NA,length(par$log_b)))
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
