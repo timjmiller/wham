@@ -1,5 +1,18 @@
 # WHAM example 6: Numbers-at-age options
 
+# As in example 1:
+#   stock = SNEMA yellowtail flounder
+#   2 indices
+#   fit to 1973-2016 data
+#   age compositions = 7, logistic normal don't pool zero obs
+#   selectivity = age-specific
+
+# As in example 2:
+#   environmental effect on recruitment
+
+# As in example 5:
+#   Gulf Stream Index (GSI)
+
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(tidyverse)
 library(wham)

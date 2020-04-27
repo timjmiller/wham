@@ -19,7 +19,7 @@ library(kableExtra)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 5th WHAM example, which builds off [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
+This is the 5th WHAM example, which builds off [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
 
 - full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
 - logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
@@ -76,7 +76,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same ASAP data file as in [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
+We need the same ASAP data file as in [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -163,7 +163,7 @@ M <- list(re="2dar1")
 
 ## 4. Linking *M* to an environmental covariate (GSI)
 
-As described in [example 2](https://github.com/timjmiller/wham/blob/mortality/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
+As described in [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
 
 - `$logsigma = "est_1"`: estimate the observation error for the GSI (one overall value for all years). The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.
 - `$lag = 0`: GSI in year *t* affects $M$ in year *t*, instead of year *t+1*.
