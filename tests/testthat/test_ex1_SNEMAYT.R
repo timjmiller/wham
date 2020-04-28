@@ -8,7 +8,8 @@
 #   - Compare models by AIC and Mohn’s rho (retrospective analysis)
 #   - Plots of input data, diagnostics, and results
 
-# btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
+# library(wham)
+# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex1_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
 # 19.7 min
 
 context("Ex 1: SNEMA yellowtail")
