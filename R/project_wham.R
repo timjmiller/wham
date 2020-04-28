@@ -98,11 +98,12 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     mod$err_proj <- err # store error message to print out in fit_wham
   }
 
-  # pass along previously calculated retros, OSA residuals, and error messages
+  # pass along previously calculated retros, OSA residuals, error messages, and runtime
   if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
   if(!is.null(model$osa)) mod$osa <- model$osa # OSA residuals
   if(!is.null(model$err)) mod$err <- model$err # error messages
   if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
+  mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
 
   # print error message
   if(!is.null(mod$err_proj)) warning(paste("","** Error during projections. **",

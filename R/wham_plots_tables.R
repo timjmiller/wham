@@ -2277,7 +2277,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     vals <- std[t.ind,1][1:n_years_full]
     cv <- std[t.ind,2][1:n_years_full]
     ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
-    if(!is.nan(unique(vals))){
+    if(all(!is.nan(unique(vals)))){
   	  if(!na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm= TRUE)), type = 'l', cex.lab = 2)
       if(na.sd[i]) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'l', cex.lab = 2)
   	  grid(col = gray(0.7))
@@ -2303,7 +2303,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(!is.nan(unique(rel.ssb.vals))){
+  if(all(!is.nan(unique(rel.ssb.vals)))){
     plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
     grid(col = gray(0.7))
     polyy = exp(c(ci[,1],rev(ci[,2])))
@@ -2323,7 +2323,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
   ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(!is.nan(unique(rel.f.vals))){
+  if(all(!is.nan(unique(rel.f.vals)))){
     if(!na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
       ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
     if(na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
@@ -3409,8 +3409,13 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
 
   # MAA
   if(type=="MAA"){ 
+    if(mod$env$data$do_proj == 1){
+      years_full = mod$years_full
+    } else {
+      years_full = years
+    }
     df.MAA <- as.data.frame(rep$MAA)
-    df.MAA$Year <- years
+    df.MAA$Year <- years_full
     colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year")
     df.plot <- df.MAA %>% tidyr::pivot_longer(-Year,
               names_to = "Age", 
