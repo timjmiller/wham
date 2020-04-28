@@ -21,18 +21,14 @@ ex1_test_results <- readRDS(file.path(path_to_examples,"ex1_test_results.rds"))
 
 # read asap3 data file and convert to input list for wham
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-base <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
-						selectivity=list(model=rep("age-specific",3),
-										initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-										fix_pars=list(5,4,2)))
 
-#SCAA, but with random effects for recruitment
-temp = base
-temp$random = c(temp$random, "log_R")
-temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
-temp$data$random_recruitment = 1
-# m1 <- fit_wham(temp, do.retro=F, do.osa=F)
-m1 <- suppressWarnings(fit_wham(temp))
+input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+	                            selectivity=list(model=rep("age-specific",3), 
+                                	re=rep("none",3), 
+                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                	fix_pars=list(5,4,2)),
+	                            NAA_re = list(sigma="rec", cor="iid"))
+m1 <- suppressWarnings(fit_wham(input1, do.osa = F)) # turn off OSA residuals to save time
 
 # Check that m1 converged
 m1_check <- check_convergence(m1, ret=TRUE)
@@ -42,21 +38,18 @@ expect_lt(m1_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m1 parameter values
 # order of logit_selpars changed when modifying prepare_wham_input for time-varying selectivity
-expect_equal(as.numeric(m1$opt$par), ex1_test_results$m1par, tolerance=1e-3)
+expect_equal(as.numeric(m1$opt$par), ex1_test_results$par[[1]], tolerance=1e-3)
 
 #Like m1, but change age comp likelihoods to logistic normal
-temp = base
-temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
-temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
-temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
-temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
-temp$par$index_paa_pars = rep(0, temp$data$n_indices)
-temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
-temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-temp$random = c(temp$random, "log_R")
-temp$map = temp$map[!(names(temp$map) %in% c("log_R_sigma", "mean_rec_pars"))]
-temp$data$random_recruitment = 1
-m2 <- suppressWarnings(fit_wham(temp))
+input2 = input1
+input2$data$age_comp_model_indices = rep(7, input2$data$n_indices)
+input2$data$age_comp_model_fleets = rep(7, input2$data$n_fleets)
+input2$data$n_age_comp_pars_indices = rep(1, input2$data$n_indices)
+input2$data$n_age_comp_pars_fleets = rep(1, input2$data$n_fleets)
+input2$par$index_paa_pars = rep(0, input2$data$n_indices)
+input2$par$catch_paa_pars = rep(0, input2$data$n_fleets)
+input2$map = input2$map[!(names(input2$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+m2 <- suppressWarnings(fit_wham(input2, do.osa = F)) # turn off OSA residuals to save time
 
 # Check that m2 converged
 m2_check <- check_convergence(m2, ret=TRUE)
@@ -65,16 +58,16 @@ expect_false(m2_check$na_sdrep) # sdrep should succeed
 expect_lt(m2_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m2 parameter values
-expect_equal(as.numeric(m2$opt$par), ex1_test_results$m2par, tolerance=1e-3)
+expect_equal(as.numeric(m2$opt$par), ex1_test_results$par[[2]], tolerance=1e-3)
 
 #full state-space model, abundance is the state vector
-temp = base
-temp$data$use_NAA_re = 1
-temp$data$random_recruitment = 0
-temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
-temp$random = c(temp$random, "log_NAA")
-m3 <- suppressWarnings(fit_wham(temp))
+input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+	                            selectivity=list(model=rep("age-specific",3), 
+                                	re=rep("none",3), 
+                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                	fix_pars=list(5,4,2)),
+	                            NAA_re = list(sigma="rec+1", cor="iid"))
+m3 <- suppressWarnings(fit_wham(input3, do.osa = F)) # turn off OSA residuals to save time
 
 # Check that m3 converged
 m3_check <- check_convergence(m3, ret=TRUE)
@@ -83,23 +76,18 @@ expect_false(m3_check$na_sdrep) # sdrep should succeed
 expect_lt(m3_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m3 parameter values
-expect_equal(as.numeric(m3$opt$par), ex1_test_results$m3par, tolerance=1e-3)
+expect_equal(as.numeric(m3$opt$par), ex1_test_results$par[[3]], tolerance=1e-3)
 
 #Like m3, but change age comp likelihoods to logistic normal
-temp = base
-temp$data$age_comp_model_indices = rep(7, temp$data$n_indices)
-temp$data$age_comp_model_fleets = rep(7, temp$data$n_fleets)
-temp$data$n_age_comp_pars_indices = rep(1, temp$data$n_indices)
-temp$data$n_age_comp_pars_fleets = rep(1, temp$data$n_fleets)
-temp$par$index_paa_pars = rep(0, temp$data$n_indices)
-temp$par$catch_paa_pars = rep(0, temp$data$n_fleets)
-temp$map = temp$map[!(names(temp$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-temp$data$use_NAA_re = 1
-temp$data$random_recruitment = 0
-temp$map = temp$map[!(names(temp$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-temp$map$log_R = factor(rep(NA, length(temp$par$log_R)))
-temp$random = c(temp$random, "log_NAA")
-m4 <- suppressWarnings(fit_wham(temp))
+input4 = input3
+input4$data$age_comp_model_indices = rep(7, input4$data$n_indices)
+input4$data$age_comp_model_fleets = rep(7, input4$data$n_fleets)
+input4$data$n_age_comp_pars_indices = rep(1, input4$data$n_indices)
+input4$data$n_age_comp_pars_fleets = rep(1, input4$data$n_fleets)
+input4$par$index_paa_pars = rep(0, input4$data$n_indices)
+input4$par$catch_paa_pars = rep(0, input4$data$n_fleets)
+input4$map = input4$map[!(names(input4$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+m4 <- suppressWarnings(fit_wham(input4, do.osa = F)) # turn off OSA residuals to save time
 
 # Check that m4 converged
 m4_check <- check_convergence(m4, ret=TRUE)
@@ -108,7 +96,7 @@ expect_false(m4_check$na_sdrep) # sdrep should succeed
 expect_lt(m4_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 
 # Check m4 parameter values
-expect_equal(as.numeric(m4$opt$par), ex1_test_results$m4par, tolerance=1e-3)
+expect_equal(as.numeric(m4$opt$par), ex1_test_results$par[[4]], tolerance=1e-3)
 
 # Save list of all fit models
 mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
@@ -122,16 +110,9 @@ tmp.dir <- tempdir(check=TRUE)
 res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.dir)
 
 # WHAM output plots for best model with projections
-plot_wham_output(mod=m4, out.type='html', dir.main=tmp.dir)
+m4_proj <- project_wham(model=mods$m4)
+plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir)
 
-# save objects to test against in future
-# ex1_test_results <- list(nll=nll,
-#                          m1par=as.numeric(m1$opt$par),
-#                          m2par=as.numeric(m2$opt$par),
-#                          m3par=as.numeric(m3$opt$par),
-#                          m4par=as.numeric(m4$opt$par))
-# saveRDS(ex1_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex1_test_results.rds")
-# save("mods", file="/home/bstock/Documents/wham/sandbox/ex1/ex1_models.RData")
 })
 
 # # remove files created during testing
