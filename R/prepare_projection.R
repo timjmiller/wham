@@ -135,16 +135,26 @@ prepare_projection = function(model, proj.opts)
   map <- input1$map
   # map <- lapply(par, fill_vals)
 
-  # pad random effects for projections: NAA_re, Ecov_re, and M_re
-  if(data$n_NAA_sigma > 0){
-    par$NAA_re <- rbind(par$NAA_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
-    tmp <- par$NAA_re
-    ind.NA <- which(is.na(tmp))
-    tmp[-ind.NA] <- NA
-    tmp[ind.NA] <- 1:length(ind.NA)
-    par$NAA_re[ind.NA] <- 0 
-  }
+  # SCAA: pad NAA_re with 0, map all ages to NA
+  # Rec: pad NAA_re with 0, map ages > 1 to NA (estimate Rec devs as RE)
+  # all: pad NAA_re with 0, estimate all ages as RE
+  # if(data$n_NAA_sigma > 0){
+  par$NAA_re <- rbind(par$NAA_re, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+  tmp <- par$NAA_re
+  ind.NA <- which(is.na(tmp))
+  tmp[-ind.NA] <- NA
+  tmp[ind.NA] <- 1:length(ind.NA)
+  par$NAA_re[ind.NA] <- 0 
 
+  tmp <- par$NAA_re
+  if(data$n_NAA_sigma < 2) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if SCAA or RE on recruitment
+  if(data$n_NAA_sigma == 0) tmp[which(tmp[,1] == 0),1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
+  ind.notNA <- which(!is.na(tmp))
+  tmp[ind.notNA] <- 1:length(ind.notNA)
+  map$NAA_re = factor(tmp)
+  # }
+
+  # pad Ecov_re for projections
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
       for(i in 1:(proj.opts$n.yrs-end.beyond)){
