@@ -844,7 +844,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     par$log_NAA_sigma <- rep(0,data$n_NAA_sigma)
   }
   par$trans_NAA_rho <- c(0,0)
-  par$NAA_re = matrix(0, data$n_years_model-1, data$n_ages)
+  par$log_NAA = matrix(10, data$n_years_model-1, data$n_ages)
   
   # NAA_re and NAA_rho map
   if(!is.null(NAA_re$cor)){
@@ -859,11 +859,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$trans_NAA_rho = factor(tmp)
 
-  tmp <- par$NAA_re
+  tmp <- par$log_NAA
   if(data$n_NAA_sigma < 2) tmp[,-1] <- NA # always estimate Rec devs (col 1), whether random effect or not
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
-  map$NAA_re = factor(tmp)
+  map$log_NAA = factor(tmp)
 
   # selectivity pars
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
@@ -1025,7 +1025,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(any(data$selblock_models_re > 1)) random = c(random, "selpars_re")
   if(data$M_re_model > 1) random = c(random, "M_re")
   if(sum(data$Ecov_model) > 0) random = c(random, "Ecov_re")
-  if(data$n_NAA_sigma > 0) random = c(random, "NAA_re")
+  if(data$n_NAA_sigma > 0) random = c(random, "log_NAA")
   if(missing(model_name)) model_name = "WHAM for unnamed stock"
   return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
