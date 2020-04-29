@@ -126,6 +126,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
   PARAMETER_VECTOR(log_NAA_sigma);
   PARAMETER_VECTOR(trans_NAA_rho); // rho_a, rho_y (length = 2)
+  // PARAMETER_ARRAY(log_NAA); // numbers-at-age random effects, (dim = n.yrs-1, n.ages)
   PARAMETER_ARRAY(NAA_re); // random effects / deviations from pred NAA for year y, age a (dim = n.yrs-1, n.ages)
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
   PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
@@ -626,7 +627,6 @@ Type objective_function<Type>::operator() ()
   }
 
   // likelihood of NAA random effects
-  Type nll_NAA = Type(0);
   Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
   Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
   vector<Type> NAA_sigma = exp(log_NAA_sigma);
@@ -634,26 +634,13 @@ Type objective_function<Type>::operator() ()
   sigma_a_sig.setZero();
   if(n_NAA_sigma == 1){
     sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
-    nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_re.col(0));
+    // nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_re.col(0));
   }
   if(n_NAA_sigma > 1){
     for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
-    nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
+    // nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
   }
     
-  SIMULATE {
-    if(simulate_state == 1){
-      if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_re);
-      if(n_NAA_sigma == 1) SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y)).simulate(NAA_re);
-    }
-  }
-  ADREPORT(NAA_sigma);
-  ADREPORT(NAA_rho_a);
-  ADREPORT(NAA_rho_y);
-  REPORT(NAA_re);
-  REPORT(nll_NAA);
-  nll += nll_NAA;
-
   // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, for all years)
   for(int y = 1; y < n_years_model + n_years_proj; y++)
@@ -736,6 +723,29 @@ Type objective_function<Type>::operator() ()
 
     for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
+
+  // likelihood of NAA random effects
+  Type nll_NAA = Type(0);
+  if(n_NAA_sigma == 1){
+    // sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
+    nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_re.col(0));
+  }
+  if(n_NAA_sigma > 1){
+    // for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+    nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_re);
+  }
+  SIMULATE {
+    if(simulate_state == 1){
+      if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_re);
+      if(n_NAA_sigma == 1) SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y)).simulate(NAA_re);
+    }
+  }
+  ADREPORT(NAA_sigma);
+  ADREPORT(NAA_rho_a);
+  ADREPORT(NAA_rho_y);
+  REPORT(NAA_re);
+  REPORT(nll_NAA);
+  nll += nll_NAA;
 
   // ------------------------------------------------------------------------------
   // Catch data likelihood
