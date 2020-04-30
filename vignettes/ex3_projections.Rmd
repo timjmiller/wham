@@ -113,7 +113,7 @@ env <- list(
 
 input <- prepare_wham_input(asap3, recruit_model = 3, # Bev-Holt recruitment
                             model_name = "Ex 3: Projections",
-                            Ecov = env)
+                            ecov = env)
 
 # age comp: logistic normal pool obs (not multinomial, the default)
 input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 5 = logistic normal (pool zero obs)
