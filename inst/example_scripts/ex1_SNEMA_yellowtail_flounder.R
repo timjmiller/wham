@@ -74,7 +74,7 @@ input4$data$n_age_comp_pars_fleets = rep(1, input4$data$n_fleets)
 input4$par$index_paa_pars = rep(0, input4$data$n_indices)
 input4$par$catch_paa_pars = rep(0, input4$data$n_fleets)
 input4$map = input4$map[!(names(input4$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-m4 <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time
+m4 <- fit_wham(input4, do.osa = T) # do OSA residuals for m4 bc we'll show that output
 
 # Check that m4 converged
 check_convergence(m4)
