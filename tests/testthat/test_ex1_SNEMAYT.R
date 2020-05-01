@@ -10,7 +10,7 @@
 
 # library(wham)
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex1_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
-# 19.7 min
+# 5.9 min
 
 context("Ex 1: SNEMA yellowtail")
 
