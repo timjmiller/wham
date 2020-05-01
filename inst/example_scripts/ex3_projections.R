@@ -32,7 +32,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 env <- list(
   label = "CPI",
   mean = as.matrix(env.dat$CPI), # CPI observations
-  sigma = as.matrix(env.dat$CPI_sigma), # CPI standard error is given/fixed as data
+  logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
   year = env.dat$Year,
   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
   lag = 1, # CPI in year t affects recruitment in year t+1
@@ -42,7 +42,8 @@ env <- list(
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
-                            Ecov = env)
+                            ecov = env,
+                            NAA_re = list(sigma="rec+1", cor="iid"))
 
 # age comp logistic normal pool obs (not multinomial, the default)
 input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
@@ -58,13 +59,6 @@ input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 #   2 pars per block instead of n.ages
 #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
 input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
-
-# full state-space model, abundance is the state vector
-input$data$use_NAA_re = 1
-input$data$random_recruitment = 0
-input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-input$random = c(input$random, "log_NAA","Ecov_re")
 
 # ---------------------------------------------------------
 ## Fit model without projections

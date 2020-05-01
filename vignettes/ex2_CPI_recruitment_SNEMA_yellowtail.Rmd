@@ -81,7 +81,7 @@ Load the environmental covariate (Cold Pool Index, CPI) data into R:
 env.dat <- read.csv("CPI.csv", header=T)
 ```
 
-We generally abbreviate 'environmental covariate' as `Ecov` in the code. In this example, the `Ecov` data file has columns for observations (`CPI`), standard error (`CPI_sigma`), and year (`Year`). Observations and year are always required. Standard error can be treated as fixed/data with yearly values (as here) or one overall value shared among years. It can also be estimated as a parameter(s), likewise either as yearly values or one overall value.
+We generally abbreviate 'environmental covariate' as `ecov` in the code. In this example, the `ecov` data file has columns for observations (`CPI`), standard error (`CPI_sigma`), and year (`Year`). Observations and year are always required. Standard error can be treated as fixed/data with yearly values (as here) or one overall value shared among years. It can also be estimated as a parameter(s), likewise either as yearly values or one overall value.
 ```{r}
 head(env.dat)
 ```
@@ -91,8 +91,8 @@ head(env.dat)
 Now we specify how the 7 models treat recruitment, the CPI process, and how the CPI affects recruitment:
 ```{r}
 df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
-                      Ecov_process = c(rep("rw",4),rep("ar1",3)),
-                      Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
+                      ecov_process = c(rep("rw",4),rep("ar1",3)),
+                      ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model to first col
@@ -110,34 +110,34 @@ We specify the options for modeling recruitment and any environmental covariate(
   3. Beverton-Holt, and 
   4. Ricker.
 
-The environmental covariate options are fed to `prepare_wham_input` as a list, `Ecov`:
+The environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`:
 ```{r eval=FALSE}
   m=1 # example for first model
-  Ecov <- list(
+  ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
-    sigma = as.matrix(env.dat$CPI_sigma),
+    logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (all = 1)
     lag = 1, # CPI in year t affects recruitment in year t+1
-    process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
+    process_model = df.mods$ecov_process[m], # "rw" or "ar1"
     where = "recruit", # CPI affects recruitment
-    how = df.mods$Ecov_how[m]) # 0 = no effect, 1 = controlling, 2 = limiting
+    how = df.mods$ecov_how[m]) # 0 = no effect, 1 = controlling, 2 = limiting
 ```
 
-There are currently 2 options for the `Ecov` process model (`Ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We must next specify **where** the `Ecov` affects the population; here it is via recruitment (`Ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `Ecov` affects recruitment (`Ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 
+There are currently 2 options for the `ecov` process model (`ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We must next specify **where** the `ecov` affects the population; here it is via recruitment (`ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `ecov` affects recruitment (`ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 
 
   1. "controlling" (dens-indep mortality), 
-  2. "limiting" (carrying capacity, e.g. `Ecov` determines amount of suitable habitat), 
-  3. "lethal" (threshold, i.e. R --> 0 at some `Ecov` value),  
-  4. "masking" (metabolic/growth, `Ecov` decreases dR/dS), and 
+  2. "limiting" (carrying capacity, e.g. `ecov` determines amount of suitable habitat), 
+  3. "lethal" (threshold, i.e. R --> 0 at some `ecov` value),  
+  4. "masking" (metabolic/growth, `ecov` decreases dR/dS), and 
   5. "directive" (e.g. behavioral). 
   
-Finally, we specify the **lag** at which CPI affects recruitment (`Ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
+Finally, we specify the **lag** at which CPI affects recruitment (`ecov$lag = 1`, i.e. CPI in year *t* affects recruitment in year *t + 1*).
 
-You can set `Ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `Ecov` data even for models without an `Ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `Ecov$how = 0`.
+You can set `ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `ecov` data even for models without an `ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `ecov$how = 0`.
 
-Options are described in the `?prepare_wham_input` help page. Not all `Ecov$how` options are implemented for every recruitment model.
+Options are described in the `?prepare_wham_input` help page. Not all `ecov$how` options are implemented for every recruitment model.
 ```{r eval=FALSE}
 ?prepare_wham_input
 ```
@@ -147,27 +147,29 @@ Options are described in the `?prepare_wham_input` help page. Not all `Ecov$how`
 ```{r eval=FALSE}
 for(m in 1:n.mods){
   # set up environmental covariate data and model options
-  Ecov <- list(
+  ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
     sigma = as.matrix(env.dat$CPI_sigma),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
-    process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
+    process_model = df.mods$ecov_process[m], # "rw" or "ar1"
     where = "recruit", # CPI affects recruitment
-    how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+    how = df.mods$ecov_how[m]) # 0 = no effect (but still fit ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
 
-  # (not used in this vignette) can set Ecov = NULL to fit model without ecov data
-  if(is.na(df.mods$Ecov_process[m])) Ecov = NULL 
+  # (not used in this vignette) can set ecov = NULL to fit model without ecov data
+  if(is.na(df.mods$ecov_process[m])) ecov = NULL 
 
-  # generate wham input from ASAP3 and Ecov data
+  # generate wham input from ASAP3 and ecov data
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              Ecov = Ecov)
+                              ecov = ecov,
+                              NAA_re = list(sigma="rec+1", cor="iid"))
 
   # Builds off model m4 in example 1:
-  #   full state-space model, logistic normal age-compositions
+  #   full state-space model: NAA_re = list(sigma="rec+1", cor="iid")
+  #   logistic normal age-compositions (below)
 
   # Age comp model = logistic normal pool obs (not multinomial, the default)
   input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 5 = logistic normal (pool zero obs)
@@ -184,15 +186,7 @@ for(m in 1:n.mods){
   #   sel pars of indices 4/5 fixed at 1.5, 0.1 (specified via neg phase in ex2_SNEMAYT.dat)
   input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
-  # Full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA","Ecov_re")
-
-  # ---------------------------------------------------------
-  ## Fit model
+  # Fit model
   mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
 
   # Save model
@@ -239,7 +233,7 @@ Print and save the results table. `m6` has the lowest AIC (Bev-Holt recruitment,
 # make results table prettier
 rownames(df.mods) <- NULL
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
-df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
+df.mods$ecov_how <- dplyr::recode(df.mods$ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 df.mods <- df.mods[order(df.mods$dAIC),]
 save("df.mods", file="vign2_res.RData")

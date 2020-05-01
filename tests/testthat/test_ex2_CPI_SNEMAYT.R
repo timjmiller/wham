@@ -6,6 +6,7 @@
 #   age compositions = 5, logistic normal pool zero obs (ex 1: 7, logistic normal missing zero obs)
 #   selectivity = logistic (ex 1: age-specific)
 
+# devtools::load_all()
 # btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex2_CPI_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
 # 12 min
@@ -42,13 +43,10 @@ for(m in 1:n.mods){
     how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
   if(is.na(df.mods$Ecov_process[m])) env = NULL # if no ecov data
 
-  # source("/home/bstock/Documents/wham/R/prepare_wham_input.R")
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
                               ecov = env,
-                              selectivity=list(model=rep("logistic",6),
-                                               initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
-                                               fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))))
+                              NAA_re = list(sigma="rec+1", cor="iid"))
 
   # age comp logistic normal pool obs (not multinomial, the default)
   input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
@@ -60,17 +58,13 @@ for(m in 1:n.mods){
   input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
-  # full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA")
+  # selectivity = logistic, not age-specific
+  #   2 pars per block instead of n.ages
+  #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
+  input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
 
-  # ---------------------------------------------------------
-  ## Fit model
-  # mods[[1]] <- fit_wham(input)
-  mods[[m]] <- fit_wham(input, do.osa=F, do.retro=F)
+  # Fit model
+  mods[[m]] <- fit_wham(input, do.retro=T, do.osa=T)
   plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
