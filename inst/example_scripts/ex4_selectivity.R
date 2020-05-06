@@ -33,9 +33,9 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 # --------------------------------------------------------------------------
 # 2. Specify selectivity model options
 # --------------------------------------------------------------------------
-# We are going to run 10 models that differ only in their selectivity options:
-# m1-m5 logistic, m6-m10 age-specific
-sel_model <- c(rep("logistic",5), rep("age-specific",5))
+# We are going to run 9 models that differ only in their selectivity options:
+# m1-m5 logistic, m6-m9 age-specific
+sel_model <- c(rep("logistic",5), rep("age-specific",4))
 
 # time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)
 sel_re <- list(c("none","none","none"), # m1-m5 logistic
@@ -43,21 +43,18 @@ sel_re <- list(c("none","none","none"), # m1-m5 logistic
 				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"),
-				c("none","none","none"), # m6-m10 age-specific
+				c("none","none","none"), # m6-m9 age-specific
 				c("iid","none","none"),
-				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"))
 n.mods <- length(sel_re)
 
 # summary data frame
-df.mods <- data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model, 
-							"Block_1"=sapply(sel_re, function(x) x[[1]]),
-							"Block_2"=sapply(sel_re, function(x) x[[2]]),
-							"Block_3"=sapply(sel_re, function(x) x[[3]]))
+df.mods <- data.frame(Model=paste0("m",1:n.mods), 
+	Selectivity=sel_model, # Selectivity model (same for all blocks)
+	Block_1_re=sapply(sel_re, function(x) x[[1]])) # Block 1 random effects
 rownames(df.mods) <- NULL
 
-# look at model table
 df.mods
 
 # see currently specified selectivity options, from asap3 file:
@@ -73,19 +70,25 @@ asap3$dat$index_sel_ini # index sel initial values (col1), estimation phase (-1 
 # 3. Setup and run models
 # -----------------------------------------------------------------------
 inv.logit <- function(x) exp(x)/(1+exp(x))
-mods <- vector("list",n.mods) # store models in a list
-selAA <- vector("list",n.mods) # save selectivity-at-age for block 1 for each model
 for(m in 1:n.mods){
 	if(sel_model[m] == "logistic"){ # logistic selectivity
 		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(inv.logit(-0.67935549),0.2),c(2,0.2),c(2,0.2))))
-		input$par$sel_repars[1,1] <- -1.3
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(1.5,0.2),c(2,0.2),c(2,0.2))),
+					NAA_re = list(sigma='rec+1',cor='iid'))
 	} else { # age-specific selectivity
-		# fix ages 1,4,5 / 4 / 2
+		# # don't fix any ages
+		# input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+		# 			selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+		# 				initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),
+		# 			NAA_re = list(sigma='rec+1',cor='iid'))
+
+		# fix selectivity for one age per block: 4 / 4 / 2
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(inv.logit(-4),0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), fix_pars=list(c(1,4,5),4,2)))
-		input$par$sel_repars[1,1] <- -0.4
+					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+						initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+						fix_pars=list(4,4,2)),
+					NAA_re = list(sigma='rec+1',cor='iid'))
 	}
 
 	# overwrite age comp model (all models use logistic normal)
@@ -96,58 +99,75 @@ for(m in 1:n.mods){
 	input$par$index_paa_pars = rep(0, input$data$n_indices)
 	input$par$catch_paa_pars = rep(0, input$data$n_fleets)
 	input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-
-	# overwrite NAA model (all models use full state space)
-	input$data$use_NAA_re = 1
-	input$data$random_recruitment = 0
-	input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-	input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-	input$random = c(input$random, "log_NAA")
 	
 	# fit model
-	mods[[m]] <- fit_wham(input, do.check=T, do.osa=F, do.proj=F, do.retro=F) 
-	saveRDS(mods[[m]], file=paste0("m",m,".rds"))
-
-	# save selectivity-at-age for block 1 (fleet)
-	selAA[[m]] <- mods[[m]]$report()$selAA[[1]]
+	mod <- fit_wham(input, do.check=T, do.osa=F, do.proj=F, do.retro=F) 
+	saveRDS(mod, file=paste0("m",m,".rds"))
 }
 
 # -----------------------------------------------------------------------
 # 4. Model convergence and comparison
 # -----------------------------------------------------------------------
+mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
+mods <- lapply(mod.list, readRDS)
+
 # check models converged
 sapply(mods, function(x) check_convergence(x))
 
+# plot output for converged models
+conv <- sapply(mods, function(x) x$opt$convergence == 0)
+conv_mods <- (1:n.mods)[conv] # 0 means converged
+for(m in conv_mods){
+	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=file.path(write.dir,paste0("m",m)))
+}
+
 # compare models using AIC
-df.aic <- compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab
+df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab)
+df.aic[df.aic$AIC > 0 | !is.finite(df.aic$AIC),] = NA
+minAIC <- min(df.aic$AIC, na.rm=T)
+df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model, 
-							"Block_1"=sapply(sel_re, function(x) x[[1]]),
-							"Block_2"=sapply(sel_re, function(x) x[[2]]),
-							"Block_3"=sapply(sel_re, function(x) x[[3]]),
-							"NLL"=sapply(mods, function(x) round(x$opt$objective,3))), df.aic)
+							"Block1_re"=sapply(sel_re, function(x) x[[1]]),
+							"Converged"= ifelse(conv, "Yes", "No"),
+							"NLL"=sapply(mods, function(x) round(x$opt$objective,3)),
+							"runtime"=sapply(mods, function(x) x$runtime)), df.aic)
 rownames(df.mods) <- NULL
 df.mods
 
 # plot the models estimates of selectivity-at-age for block 1 (fleet).
-df.selAA <- data.frame(matrix(NA, nrow=0, ncol=8))
-colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model")
+library(tidyverse)
+library(viridis)
+
+selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
+sel_mod <- c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])]
+sel_cor <- c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])]
+df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
+colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
 for(m in 1:n.mods){
 	df <- as.data.frame(selAA[[m]])
 	df$Year <- input$years
 	colnames(df) <- c(paste0("Age_",1:6),"Year")
 	df$Model <- m
+	df$conv <- ifelse(df.mods$Converged[m]=="Yes",1,0)
+	df$sel_mod = sel_mod[m]
+	df$sel_cor = sel_cor[m]
 	df.selAA <- rbind(df.selAA, df)
 }
-df <- df.selAA %>% pivot_longer(-c(Year,Model),
+df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
 				names_to = "Age", 
 				names_prefix = "Age_",
 				names_ptypes = list(Age = integer()),
 				values_to = "Selectivity")
-df$sel_model <- factor(rep(c("Logistic","Age-specific"), each=dim(df)[1]/2), levels=c("Logistic","Age-specific"))
-df$sel_re <- factor(c(rep(c("None","IID","AR1","AR1_y","2D AR1"), each=dim(df)[1]/n.mods), rep(c("None","IID","AR1","AR1_y","2D AR1"), each=dim(df)[1]/n.mods)), levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
+df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
 
-print(ggplot(df, aes(x=Year, y=Age, fill=Selectivity)) + 
-	geom_tile() +
+print(ggplot(df, aes(x=Year, y=Age)) + 
+	geom_tile(aes(fill=Selectivity, alpha=factor(conv))) +
+	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
 	theme_bw() + 
-	facet_grid(rows=vars(sel_re), cols=vars(sel_model)) +
+	geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
+	  data=data.frame(Year=1975.5, Age=5.8, lab=paste0("m",1:length(mods)), sel_mod=sel_mod, sel_cor=sel_cor)) +  	
+	scale_x_continuous(expand=c(0,0)) +
+	scale_y_continuous(expand=c(0,0)) +
+	facet_grid(rows=vars(sel_cor), cols=vars(sel_mod)) +
 	scale_fill_viridis())
