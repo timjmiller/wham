@@ -2345,7 +2345,9 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   if(do.tex | do.png) dev.off() else par(origpar)
 
   # Kobe plot - only if sdreport was successful ---------------------------
-  if(!mod$na_sdrep){
+  do.kobe <- sapply(log.rel.ssb.rel.F.cov[status.years], function(x) !all(!is.finite(x))) # only if some non-infinite values for at least some status years
+  # if(!mod$na_sdrep){
+  if(do.kobe){  
     log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
       if(is.na(rel.f.vals[x])) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
