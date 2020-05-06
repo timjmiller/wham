@@ -16,7 +16,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_indices);
   DATA_INTEGER(n_selblocks);
   DATA_IVECTOR(selblock_models); // for each block: 1 = age-specific, 2 = logistic, 3 = double-logistic, 4 = logistic (declining)
-  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
+  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
   DATA_IVECTOR(n_selpars);
   DATA_IMATRIX(selpars_est); // n_blocks x (n_pars + n_ages), is the selpar estimated in this block?
   DATA_IVECTOR(n_selpars_est); // of the selpars, how many are actually estimated (not fixed at 0 or 1)
@@ -217,10 +217,24 @@ Type objective_function<Type>::operator() ()
       sigma = exp(sel_repars(b,0));
       rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
+      
+      if(selblock_models_re(b) == 2 | selblock_models_re(b) == 5){
+        Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
+        nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
+      } else {
+        if(selblock_models_re(b) == 3){ // ar1_a
+          // Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
+          Sigma_sig_sel = sigma;
+          nll_sel += SCALE(AR1(rho), Sigma_sig_sel)(tmp.matrix().row(0));
+        } else { // selblock_models_re(b) = 4, ar1_y
+          // Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
+          Sigma_sig_sel = sigma;
+          nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp.matrix().col(0));
+        }
+      }
 
       // 2D AR1 process on selectivity parameter deviations
-      nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
+      // nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
       // SIMULATE if(simulate_state == 1){
       //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel).simulate(tmp);
       //   int istart1 = 0;

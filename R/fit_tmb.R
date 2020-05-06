@@ -57,8 +57,9 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
         bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
         bad.par.grep <- grep(bad.par, test$BadParams$Param)
         model$badpar <- test$BadParams[bad.par.grep,]
-        warning(paste("","Some fixed effect parameter(s) are not identifiable, consider removing",
-          "them from the model by setting input$par at their MLE and input$map = NA.","",
+        warning(paste("","Some fixed effect parameter(s) are not identifiable.",
+          "Consider 1) removing them from the model by fixing input$par and input$map = NA, or",
+          "2) changing your model configuration.","",
           paste(capture.output(print(test$BadParams[bad.par.grep,])), collapse = "\n"), sep="\n"))    
       }
     }

@@ -4,13 +4,18 @@
 #' prepares the data and parameter settings for \code{\link{fit_wham}}.
 #' By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
 #'
-#' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} to see implementation.
+#' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
 #'   \describe{
 #'     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
 #'     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
 #'   }
+#' Note: we allow fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
+#' but in that case no stock-recruit function is estimated. A warning message is printed if \code{recruit_model > 2} and \code{NAA_re = NULL}.
+#' If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects, 
+#' either only age-1 (\code{NAA_re = list(sigma='rec')}) or all ages (\code{NAA_re = list(sigma='rec+1')}, "full state-space" model).
+#' See below for details on \code{NAA_re} specification.
 #'
 #' \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 #' the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
@@ -389,6 +394,9 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
       }
     }
   }
+  if(recruit_model > 2 & data$n_NAA_sigma == 0) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects.
+Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
+This message will not appear if you set recruit_model = 2 (random about mean).")
   data$recruit_model = recruit_model
 
   # natural mortality options, default = use values from ASAP file, no estimation
@@ -872,6 +880,25 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # number of estimated selpars per block * number of years per block (only if that block has re)
   if(any(data$selblock_models_re > 1)){
     par$selpars_re <- rep(0, sum((data$selblock_models_re > 1)*data$n_selpars_est*data$n_years_selblocks))
+    tmp_vec <- c()
+    ct <- 0
+    for(b in 1:data$n_selblocks){
+      if(data$selblock_models_re[b] > 1){
+        tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
+        if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
+          tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
+        }
+        if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)
+          for(i in 1:dim(tmp)[2]) tmp[,i] = (i + ct)
+        }
+        if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
+          for(i in 1:dim(tmp)[1]) tmp[i,] = (i + ct)
+        }
+        ct = max(tmp)
+        tmp_vec = c(tmp_vec, as.vector(tmp))
+      }
+    }
+    map$selpars_re <- factor(tmp_vec)
   } else {
     par$selpars_re <- matrix(0)
     map$selpars_re <- factor(NA)
@@ -1009,17 +1036,6 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   ind.notNA <- which(!is.na(tmp.sel.repars))
   tmp.sel.repars[ind.notNA] <- 1:length(ind.notNA)
   map$sel_repars = factor(tmp.sel.repars)
-
-  # tmp.sel.re <- par$selpars_re
-  # istart <- 1
-  # for(b in 1:data$n_selblocks){
-  #   iend <- istart + data$n_years_model*data$n_selpars[b] - 1
-  #   if(data$selblock_models_re[b] == 1) tmp.sel.re[istart:iend] <- NA # no RE on selectivity
-  #   istart <- istart + data$n_years_model*data$n_selpars[b]
-  # }
-  # ind.notNA <- which(!is.na(tmp.sel.re))
-  # tmp.sel.re[ind.notNA] <- 1:length(ind.notNA)
-  # map$selpars_re = factor(tmp.sel.re)
 
   random = character()
   if(data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
