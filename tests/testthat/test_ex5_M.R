@@ -1,8 +1,9 @@
 # WHAM example 5: Ecov and age-year effects on natural mortality
 
+# devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
 # devtools::load_all()
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex5_M.R"); etime <- Sys.time(); runtime = etime - btime;
-# 7.6 min
+# 14.4 min
 
 context("Ex 5: Natural mortality")
 
@@ -78,39 +79,39 @@ for(m in tofit){
 }
 
 expect_equal(as.numeric(mods[[1]]$opt$par), ex5_test_results$pars[[1]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[1]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[1]]$opt$obj), ex5_test_results$nll[1], tolerance=1e-6) # nll
 expect_equal(mods[[1]]$opt$objective, mods_proj[[1]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[2]]$opt$par), ex5_test_results$pars[[2]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[2]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[2]]$opt$obj), ex5_test_results$nll[2], tolerance=1e-6) # nll
 expect_equal(mods[[2]]$opt$objective, mods_proj[[2]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[3]]$opt$par), ex5_test_results$pars[[3]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[3]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[3]]$opt$obj), ex5_test_results$nll[3], tolerance=1e-6) # nll
 expect_equal(mods[[3]]$opt$objective, mods_proj[[3]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[5]]$opt$par), ex5_test_results$pars[[5]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[5]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[5]]$opt$obj), ex5_test_results$nll[5], tolerance=1e-6) # nll
 expect_equal(mods[[5]]$opt$objective, mods_proj[[5]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[6]]$opt$par), ex5_test_results$pars[[6]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[6]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[6]]$opt$obj), ex5_test_results$nll[6], tolerance=1e-6) # nll
 expect_equal(mods[[6]]$opt$objective, mods_proj[[6]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[7]]$opt$par), ex5_test_results$pars[[7]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[7]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[7]]$opt$obj), ex5_test_results$nll[7], tolerance=1e-6) # nll
 expect_equal(mods[[7]]$opt$objective, mods_proj[[7]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[8]]$opt$par), ex5_test_results$pars[[8]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[8]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[8]]$opt$obj), ex5_test_results$nll[8], tolerance=1e-6) # nll
 expect_equal(mods[[8]]$opt$objective, mods_proj[[8]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[9]]$opt$par), ex5_test_results$pars[[9]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[9]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[9]]$opt$obj), ex5_test_results$nll[9], tolerance=1e-6) # nll
 expect_equal(mods[[9]]$opt$objective, mods_proj[[9]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 expect_equal(as.numeric(mods[[10]]$opt$par), ex5_test_results$pars[[10]], tolerance=1e-3) # parameter values
-expect_equal(as.numeric(mods[[10]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(as.numeric(mods[[10]]$opt$obj), ex5_test_results$nll[10], tolerance=1e-6) # nll
 expect_equal(mods[[10]]$opt$objective, mods_proj[[10]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 })

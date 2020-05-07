@@ -41,7 +41,7 @@ As in example 5:
 
 Example 6 highlights WHAM's options for treating the yearly transitions in numbers-at-age (i.e. survival):
 
-1. Deterministic (as in statistical catch-at-age models, recruitment deviations are independent fixed effects)
+1. Deterministic (as in statistical catch-at-age models, recruitment in each year estimated as independent fixed effect parameters)
 2. Recruitment deviations (from Bev-Holt expectation) are random effects
     - independent
     - AR1 deviations by year (autocorrelated)
@@ -110,9 +110,9 @@ As in example 5, the GSI data file does not have a standard error estimate, eith
 
 Now we specify several models with different options for the numbers-at-age (NAA) transitions, i.e. survival:
 ```{r}
-df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
-                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4)),
-                      GSI_how = c(rep(0,7),rep(2,7)), stringsAsFactors=FALSE)
+df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
+                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
+                      GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -166,7 +166,7 @@ As described in [example 2](https://github.com/timjmiller/wham/blob/master/inst/
 - `ecov$how = 0` estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting `ecov$how = 2` specifies that the GSI affects the Beverton-Holt $b$ parameter ("limiting" / carrying capacity effect).
 - `ecov$link_model = "linear"` specifies a linear model linking GSI to $b$.
 
-For example, the `ecov` list for models `m8`-`m14` with the linear GSI-$b$ effect:
+For example, the `ecov` list for models `m8`-`m13` with the linear GSI-$b$ effect:
 
 ```{r eval=FALSE}
   # example for model m3
@@ -225,17 +225,15 @@ for(m in 1:n.mods){
   input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
   # Fit model
-  btime = Sys.time()
   mod <- fit_wham(input, do.retro=T, do.osa=F)
-  mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),1)
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
 
-  # Plot output in new subfolder
+  # If desired, plot output in new subfolder
   # plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='html')
   
-  # Do projections
+  # If desired, do projections
   # mod_proj <- project_wham(mod)
   # saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))
 }
@@ -257,10 +255,14 @@ mods <- lapply(mod.list, readRDS)
 Get model convergence and stats.
 
 ```{r eval=FALSE}
-df.mods$na_sdrep <- sapply(mods, function(x) x$na_sdrep)
+opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- as.logical(opt_conv)
+df.mods$pdHess <- as.logical(ok_sdrep)df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
+df.aic$AIC[df.mods$pdHess==FALSE] <- NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(df.mods, df.aic)
@@ -275,20 +277,18 @@ df.mods
 
 ## 7. Results
 
-Two models had very similar AIC and were overwhelmingly supported relative to the other models (bold in table below): `m12` (all NAA are random effects with correlation by age, GSI-Recruitment effect) and `m14` (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).
+Two models had very similar AIC and were overwhelmingly supported relative to the other models (bold in table below): `m11` (all NAA are random effects with correlation by age, GSI-Recruitment effect) and `m13` (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).
 
-Models with the multivariate 2D AR1 structure took much longer to estimate.
+The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models `m2`, `m3`, `m8`, and `m9` the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models `m4`-`m7` and `m10`-`m13`).
 
-In the table, `Pos def Hessian` highlights models for which `TMB::sdreport(mod)` successfully inverted the Hessian and produced SE estimates for all (fixed effect) parameters. This information is stored in `mod$na_sdrep` (should be `FALSE`) and `mod$sdrep$pdHess` (should be `TRUE`).
+In the table, I have highlighted models which converged (see [`?stats::nlminb`](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/nlminb.html)) and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters (see [`?TMB::sdreport`](https://www.rdocumentation.org/packages/TMB/versions/1.7.16/topics/sdreport)). WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`).
 
 ```{r echo=FALSE}
 vign6_res[,10:12] = round(vign6_res[,10:12], 3)
-vign6_res[,5] = ifelse(vign6_res[,5]==FALSE,TRUE,FALSE)
-
-posdef = which(vign6_res$na_sdrep == TRUE)
+posdef = which(vign6_res$pdHess == TRUE)
 thebest = which(vign6_res$dAIC < 1)
 vign6_res %>%
-  dplyr::rename("Pos def\nHessian"="na_sdrep", "Runtime\n(min)"="runtime", "$\\Delta AIC$"="dAIC",
+  dplyr::rename("Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime", "$\\Delta AIC$"="dAIC",
          "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") %>%
   kable(escape = F) %>%
   kable_styling(bootstrap_options = c("condensed","responsive")) %>%
@@ -302,27 +302,43 @@ vign6_res %>%
 - Models with all NAA as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).
 - Models with a GSI-Recruitment link had less trend in recruitment deviations, because the GSI effect on expected recruitment accounted for this trend.
 
-![Survival deviations by age (y-axis) and year (x-axis) for all models.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/NAA_devs.png){ width=95% }
+Survival deviations by age (y-axis) and year (x-axis) for all models:
 
-#### Estimated GSI
-
-Models with a GSI-Recruitment link estimated higher observation error and more smoothing of the GSI than those without (compare confidence intervals for `m14`, left, to those for `m7`, right).
-
-![Gulf Stream Index (GSI) time-series model, m14.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m14_GSI.png){ width=45% }![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_GSI.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/NAA_devs.png){ width=95% }
 
 #### Retrospective patterns
 
-The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 1.94). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m4-7` and `m11-14` all below 0.38).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$. 
+The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 1.94). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m4-7` and `m10-13` all below 0.38).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$. 
 
-Comparing `m12` and `m14`, the two best models with similar AIC, `m14` had lower retrospective patterns ($\rho_R$, $\rho_{SSB}$, and $\rho_{\overline{F}}$).
+Comparing `m11` and `m13`, the two best models with similar AIC, `m13` had lower retrospective patterns ($\rho_R$, $\rho_{SSB}$, and $\rho_{\overline{F}}$).
 
-![Mohn's rho for numbers-at-age, m14.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m14_NAA_retro.png){ width=90% }
+The plots below compare retrospective patterns from the base model (`m1`, left) to those from the full model (`m13`, right). 
 
-![Mohn's rho for SSB, m14.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m14_SSB_retro.png){ width=45% }![Mohn's rho for F, m14.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m14_Fbar_retro.png){ width=45% }
+###### Numbers-at-age, NAA
+
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_NAA_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_NAA_retro_relative.png){ width=45% }
+
+###### Spawning stock biomass, SSB
+
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_SSB_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_SSB_retro_relative.png){ width=45% }
+
+###### Fishing mortality, F
+
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_Fbar_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Fbar_retro_relative.png){ width=45% }
+
+#### Estimated GSI
+
+Models with a GSI-Recruitment link estimated higher observation error and more smoothing of the GSI than those without. Compare the confidence intervals for `m7` (left, no GSI-Recruitment link), to those for `m13` (right, with GSI-Recruitment link).
+
+![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_Ecov_1.png){ width=45% }![Gulf Stream Index (GSI) time-series model, m13.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Ecov_1.png){ width=45% }
 
 #### Stock status
 
-Adding the GSI-Recruitment link to the state-space model estimated a lower probability of the stock being overfished in the final year, 2016 (`m7` w/o GSI, 66%, left; `m14` w/ GSI, 10%, right).
+The state-space models, with or without the GSI-Recruitment link, estimated substantially different trends in $SSB$ and $F$ compared to the base model. Left: $SSB$ and $F$ trends from the base model, `m1`. Right: $SSB$ and $F$ trends from the state-space model without GSI effect, `m7`.
 
-![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_Kobe_status.png){ width=45% }![Kobe status plot, m14.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m14_Kobe_status.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_SSB_F_trend.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_SSB_F_trend.png){ width=45% }
+
+Adding the GSI-Recruitment link to the state-space model estimated a lower probability of the stock being overfished in the final year, 2016 (`m7` w/o GSI, 66%, left; `m13` w/ GSI, 10%, right).
+
+![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_Kobe_status.png){ width=45% }![Kobe status plot, m13.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Kobe_status.png){ width=45% }
 
