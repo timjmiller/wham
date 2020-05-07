@@ -322,11 +322,13 @@ df.mods
 
 ## 7. Results
 
-Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (bold in table below).
-
 In the table, I have highlighted models which converged (see [`?stats::nlminb`](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/nlminb.html)) and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters (see [`?TMB::sdreport`](https://www.rdocumentation.org/packages/TMB/versions/1.7.16/topics/sdreport)). WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`).
 
+Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (bold in table below).
+
 ```{r echo=FALSE}
+library(knitr)
+library(kableExtra)
 vign5_res[,12:14] = round(vign5_res[,12:14], 3)
 posdef = which(vign5_res$pdHess == TRUE)
 thebest = which(vign5_res$dAIC == 0)
@@ -348,37 +350,39 @@ vign5_res %>%
 - Models that estimated $M_a$ had highest $M_a$ for ages 4-5.
 - Models that estimated $M_y$ had higher $M_y$ in the early 1990s and around 2000.
 
-![Natural mortality by age (y-axis) and year (x-axis) for all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png){ width=90% }
+Below is a plot of $M$ by age (y-axis) and year (x-axis) for all models. Models with a positive definite Hessian are solid, and models with non-positive definite Hessian are pale.
+
+![Natural mortality by age (y-axis) and year (x-axis) for all models.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/MAA.png){ width=90% }
 
 #### Retrospective patterns
 
 Compared to `m1`, the retrospective pattern for `m8` was worse for recruitment (`m8` 0.31, `m1` 0.26) but improved for SSB (`m8` 0.01, `m1` 0.11) and F (`m8` -0.03, `m1` -0.13). In general, models with GSI effects or 2D AR1 deviations on $M$ had reduced retrospective patterns compared to the status quo (`m1`) and models with 1D AR1 random effects on $M$. Compare the retrospective patterns of numbers-at-age, SSB, and F for models `m1` (left, fixed $M_a$) and `m8` (right, estimated $M$ + 2D AR1 deviations).
 
-![Mohn's rho for numbers-at-age, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png){ width=45% }![Mohn's rho for numbers-at-age, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_NAA_retro_relative.png){ width=45% }
+![Mohn's rho for numbers-at-age, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_NAA_retro_relative.png){ width=45% }![Mohn's rho for numbers-at-age, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_NAA_retro_relative.png){ width=45% }
 
-![Mohn's rho for SSB, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png){ width=45% }![Mohn's rho for SSB, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_SSB_retro_relative.png){ width=45% }
+![Mohn's rho for SSB, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_SSB_retro_relative.png){ width=45% }![Mohn's rho for SSB, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_SSB_retro_relative.png){ width=45% }
 
-![Mohn's rho for F, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png){ width=45% }![Mohn's rho for F, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png){ width=45% }
+![Mohn's rho for F, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_Fbar_retro_relative.png){ width=45% }![Mohn's rho for F, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_Fbar_retro_relative.png){ width=45% }
 
 It is also worth noting that, although the Hessian was not positive definite, model `m17` had the lowest retrospective pattern across all numbers-at-age, SSB, and F. Model `m17` left $M_a$ fixed at the values from the ASAP data file (as in `m1`) and estimated 2D AR1 deviations around these mean $M_a$. This is how $M$ was modeled in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
 
-![Mohn's rho for SSB, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png){ width=45% }![Mohn's rho for F, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png){ width=45% }
+![Mohn's rho for SSB, m17.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m17_SSB_retro_relative.png){ width=45% }![Mohn's rho for F, m17.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m17_Fbar_retro_relative.png){ width=45% }
 
-![Mohn's rho for recruitment, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png){ width=45% }
+![Mohn's rho for recruitment, m17.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png){ width=45% }
 
 #### Stock status
 
 Compared to `m1` (left), `m8` (center) estimated higher *M*, lower and more uncertain *F*, and higher SSB -- a much rosier picture of the stock status through time. Model `m17` (right) is intermediate between `m1` and `m8`.
 
-![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png){ width=31% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png){ width=31% }![Relative stock status, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_relative.png){ width=31% }
+![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_FSPR_relative.png){ width=31% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_FSPR_relative.png){ width=31% }![Relative stock status, m17.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m17_FSPR_relative.png){ width=31% }
 
 Compared to `m1` (left), `m8` (center) estimated higher and more variable reference points, $F_{\%SPR}$ (top), and lower and more variable yield-per-recruit (bottom). Model `m17` (right) estimated a shift in yield-per-recruit from ~0.10 before 1990 (as in `m1`) to ~0.05 after 1990 (as in `m8`).
 
-![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=31% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=31% }![Reference point variability, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_annual_time.png){ width=31% }
+![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=31% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=31% }![Reference point variability, m17.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m17_FSPR_annual_time.png){ width=31% }
 
 In the final year (2011), `m8` estimated a lower probability of the stock being overfished (4% vs. 19%).
 
-![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png){ width=45% }![Kobe status plot, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png){ width=45% }
+![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m1_Kobe_status.png){ width=45% }![Kobe status plot, m8.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex5_plots/m8_Kobe_status.png){ width=45% }
 
 ### Yet more *M* options
 

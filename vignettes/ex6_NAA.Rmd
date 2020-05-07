@@ -277,14 +277,15 @@ df.mods
 
 ## 7. Results
 
-Two models had very similar AIC and were overwhelmingly supported relative to the other models (bold in table below): `m11` (all NAA are random effects with correlation by age, GSI-Recruitment effect) and `m13` (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).
+Two models had very similar AIC and were overwhelmingly supported relative to the other models (**bold** in table below): `m11` (all NAA are random effects with correlation by age, GSI-Recruitment effect) and `m13` (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).
 
 The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models `m2`, `m3`, `m8`, and `m9` the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models `m4`-`m7` and `m10`-`m13`).
 
 In the table, I have highlighted models which converged (see [`?stats::nlminb`](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/nlminb.html)) and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters (see [`?TMB::sdreport`](https://www.rdocumentation.org/packages/TMB/versions/1.7.16/topics/sdreport)). WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`).
 
 ```{r echo=FALSE}
-vign6_res[,10:12] = round(vign6_res[,10:12], 3)
+vign6_res[,11:13] = round(vign6_res[,11:13], 3)
+vign6_res$GSI_how = dplyr::recode(vign6_res$GSI_how, `0`='---',`2`='Limiting')
 posdef = which(vign6_res$pdHess == TRUE)
 thebest = which(vign6_res$dAIC < 1)
 vign6_res %>%
@@ -302,7 +303,7 @@ vign6_res %>%
 - Models with all NAA as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).
 - Models with a GSI-Recruitment link had less trend in recruitment deviations, because the GSI effect on expected recruitment accounted for this trend.
 
-Survival deviations by age (y-axis) and year (x-axis) for all models:
+Estimated survival deviations by age (y-axis) and year (x-axis) for all models:
 
 ![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/NAA_devs.png){ width=95% }
 

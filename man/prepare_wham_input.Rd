@@ -47,13 +47,18 @@ prepares the data and parameter settings for \code{\link{fit_wham}}.
 By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
 }
 \details{
-\code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} to see implementation.
+\code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
   \describe{
     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
     \item{= 3}{Beverton-Holt}
     \item{= 4}{Ricker}
   }
+Note: we allow fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
+but in that case no stock-recruit function is estimated. A warning message is printed if \code{recruit_model > 2} and \code{NAA_re = NULL}.
+If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects, 
+either only age-1 (\code{NAA_re = list(sigma='rec')}) or all ages (\code{NAA_re = list(sigma='rec+1')}, "full state-space" model).
+See below for details on \code{NAA_re} specification.
 
 \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
 the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.

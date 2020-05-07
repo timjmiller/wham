@@ -19,7 +19,7 @@ In this vignette we walk through an example using the `wham` (WHAM = Woods Hole 
 
 Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
-- full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
 - logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
 
@@ -89,7 +89,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 Setup model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
-- full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
 - logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
 

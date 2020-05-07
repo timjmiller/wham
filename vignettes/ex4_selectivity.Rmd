@@ -27,7 +27,7 @@ Here we assume you already have `wham` installed. If not, see the [README](https
 
 - random-about-mean recruitment (`recruit_model = 2`)
 
-- no environmental covariate (`Ecov = NULL`)
+- no environmental covariate (`ecov = NULL`)
 
 - 2 indices
 
@@ -114,7 +114,7 @@ n.mods <- length(sel_re)
 # summary data frame
 df.mods <- data.frame(Model=paste0("m",1:n.mods), 
 	Selectivity=sel_model, # Selectivity model (same for all blocks)
-	Block_1_re=sapply(sel_re, function(x) x[[1]])) # Block 1 random effects
+	Block1_re=sapply(sel_re, function(x) x[[1]])) # Block 1 random effects
 rownames(df.mods) <- NULL
 
 df.mods
@@ -198,7 +198,7 @@ for(m in 1:n.mods){
 	input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 	
 	# fit model
-	mod <- fit_wham(input, do.check=T, do.osa=F, do.proj=F, do.retro=F) 
+	mod <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F)
 	saveRDS(mod, file=paste0("m",m,".rds"))
 }
 ```
@@ -217,7 +217,7 @@ mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
 mods <- lapply(mod.list, readRDS)
 ```
 
-Check which models converged:
+Check which models converged. Note that 3 of the 9 models did NOT converge:
 
 ```{r, eval=FALSE}
 sapply(mods, function(x) check_convergence(x))
@@ -241,7 +241,7 @@ Compare the models using AIC:
 
 ```{r, eval=FALSE}
 df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab)
-df.aic[df.aic$AIC > 0 | !is.finite(df.aic$AIC),] = NA
+df.aic[!conv,] = NA # don't get AIC for unconverged models
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model, 
@@ -263,7 +263,7 @@ Prepare to plot selectivity-at-age for block 1 (fleet).
 selAA <- vign4_selAA
 ```
 
-```{r}
+```{r eval=FALSE}
 library(tidyverse)
 library(viridis)
 
@@ -293,7 +293,7 @@ df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
 
 Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.
 
-```{r}
+```{r eval=FALSE}
 print(ggplot(df, aes(x=Year, y=Age)) + 
 	geom_tile(aes(fill=Selectivity, alpha=factor(conv))) +
 	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
@@ -306,7 +306,7 @@ print(ggplot(df, aes(x=Year, y=Age)) +
 	scale_fill_viridis())
 ```
 
-<!-- ![Selectivity-at-age for block 1, all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% } -->
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex4_plots/selAA.png){ width=90% }
 
 #### A note on convergence
 
