@@ -16,7 +16,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_indices);
   DATA_INTEGER(n_selblocks);
   DATA_IVECTOR(selblock_models); // for each block: 1 = age-specific, 2 = logistic, 3 = double-logistic, 4 = logistic (declining)
-  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID (rho and rho_y fixed at 0), 3 = ar1_y (rho fixed at 0), 4 = 2dar1 (estimate all)
+  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
   DATA_IVECTOR(n_selpars);
   DATA_IMATRIX(selpars_est); // n_blocks x (n_pars + n_ages), is the selpar estimated in this block?
   DATA_IVECTOR(n_selpars_est); // of the selpars, how many are actually estimated (not fixed at 0 or 1)
@@ -69,9 +69,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(M_re_model); // 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
   DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If weight-at-age M, dim = 1.
   DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
-  DATA_INTEGER(use_NAA_re);
   DATA_INTEGER(use_b_prior);
-  DATA_INTEGER(random_recruitment);
   DATA_INTEGER(which_F_age); //which age of F to use for full total F for msy/ypr calculations
   DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
@@ -96,7 +94,6 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
   DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
   DATA_MATRIX(Ecov_obs);
-  // DATA_MATRIX(Ecov_obs_sigma); // now in $par, either given (data), fixed effect(s), or random effects
   DATA_IVECTOR(Ecov_lag);
   DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_poly); // polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
@@ -128,19 +125,19 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(F_devs);
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
   PARAMETER_VECTOR(log_NAA_sigma);
+  PARAMETER_VECTOR(trans_NAA_rho); // rho_a, rho_y (length = 2)
+  PARAMETER_ARRAY(log_NAA); // numbers-at-age random effects, (dim = n.yrs-1, n.ages)
+  // PARAMETER_ARRAY(NAA_re); // random effects / deviations from pred NAA for year y, age a (dim = n.yrs-1, n.ages)
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
   PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_VECTOR(index_paa_pars);
-  PARAMETER_MATRIX(log_NAA);
   PARAMETER(M0); // overall mean M
   PARAMETER_VECTOR(M_a); // mean M-at-age deviations from M0, fixed effects, length = n_M_a (n_ages if age-specific M, 1 if using weight-at-age M)
-  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from M0 + M_a, dim = n_years-1 x n_M_a
+  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from M0 + M_a, dim = n_years x n_M_a
   PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
   PARAMETER(log_b);
-  PARAMETER_VECTOR(log_R); //n_years-1, if used.
-  PARAMETER(log_R_sigma);
   PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
   PARAMETER_VECTOR(log_index_sig_scale) //n_indices
 
@@ -188,7 +185,6 @@ Type objective_function<Type>::operator() ()
     any_fleet_age_comp(i) = 0;
     for(int y = 0; y < n_years_catch; y++) if(use_catch_paa(y,i) == 1) any_fleet_age_comp(i) = 1;
   }
-  vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*2.0);
 
   // Selectivity --------------------------------------------------------------
   vector<array<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
@@ -221,10 +217,24 @@ Type objective_function<Type>::operator() ()
       sigma = exp(sel_repars(b,0));
       rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
+      
+      if(selblock_models_re(b) == 2 | selblock_models_re(b) == 5){
+        Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
+        nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
+      } else {
+        if(selblock_models_re(b) == 3){ // ar1_a
+          // Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
+          Sigma_sig_sel = sigma;
+          nll_sel += SCALE(AR1(rho), Sigma_sig_sel)(tmp.matrix().row(0));
+        } else { // selblock_models_re(b) = 4, ar1_y
+          // Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
+          Sigma_sig_sel = sigma;
+          nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp.matrix().col(0));
+        }
+      }
 
       // 2D AR1 process on selectivity parameter deviations
-      nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
+      // nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
       // SIMULATE if(simulate_state == 1){
       //   SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel).simulate(tmp);
       //   int istart1 = 0;
@@ -373,11 +383,7 @@ Type objective_function<Type>::operator() ()
         Ecov_lm(y,i) += Ecov_beta(j,i) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
       }
     }
-    // REPORT(X_poly);
-    // REPORT(thecol);
   }
-  // REPORT(Ecov_lm);
-  // REPORT(n_poly);
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
@@ -454,6 +460,20 @@ Type objective_function<Type>::operator() ()
     for(int a = 0; a < n_ages; a++){
       for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
     }
+  }
+  // prior on M(WAA) coefficient
+  if(use_b_prior == 1)
+  {
+    Type mu = log(0.305);
+    if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(0.08));
+    Type lprior_b = dnorm(log_b, mu, Type(0.08), 1);
+    SIMULATE
+    {
+      if(simulate_state == 1) log_b = rnorm(mu, Type(0.08));
+      REPORT(log_b);
+    }
+    REPORT(lprior_b);
+    nll -= lprior_b;
   }
 
   // Construct survey catchability-at-age (QAA)
@@ -619,13 +639,9 @@ Type objective_function<Type>::operator() ()
     REPORT(SR_h_tf);
     REPORT(log_SR_R0);
   }
-
+  
   // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, for all years)
-  matrix<Type> nll_NAA(n_years_model-1 + n_years_proj,n_ages);
-  nll_NAA.setZero();
-  vector<Type> nll_recruit(n_years_model-1 + n_years_proj);
-  nll_recruit.setZero();
   for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     // Expected recruitment
@@ -637,56 +653,36 @@ Type objective_function<Type>::operator() ()
     {
       if(recruit_model == 2) // random about mean
       {
-        // if(Ecov_how(Ecov_recruit-1) == 0) pred_NAA(y,0) = exp(mean_rec_pars(0));
-        // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_lm(y,Ecov_recruit-1));
-        // if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) = exp(mean_rec_pars(0) + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1));
         pred_NAA(y,0) = exp(mean_rec_pars(0));
         if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
       }
       else
       {
-        if(recruit_model == 3) // BH stock recruit
+        if(recruit_model == 3) // BH stock recruit (if ecov effect, already modified SR_a and/or SR_b)
         {
           pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
         }
-        else // recruit_model = 4, Ricker stock recruit
+        else // recruit_model = 4, Ricker stock recruit (if ecov effect, already modified SR_a and/or SR_b)
         {
           pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
         }
       }
     }
 
-    // calculate NAA and pred_NAA, numbers at age after recruitment
+    // calculate pred_NAA for ages after recruitment
     for(int a = 1; a < n_ages-1; a++) pred_NAA(y,a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
     pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
-    if(use_NAA_re == 1) //random effects NAA, state-space model for all numbers at age
-    {
-      for(int a = 0; a < n_ages; a++)
-      {
-        Type mu = log(pred_NAA(y,a));
-        if(bias_correct_pe == 1) mu -= 0.5*exp(2*log_NAA_sigma(NAA_sigma_pointers(a)-1));
-        nll_NAA(y-1,a) -= dnorm(log_NAA(y-1,a), mu, exp(log_NAA_sigma(NAA_sigma_pointers(a)-1)), 1);
-        SIMULATE
-        {
-          if(simulate_state == 1) log_NAA(y-1,a) = rnorm(mu, exp(log_NAA_sigma(NAA_sigma_pointers(a)-1)));
-        }
-        NAA(y,a) = exp(log_NAA(y-1,a));
-      }
+    
+    // calculate NAA
+    if(n_NAA_sigma == 2){
+      // all NAA are estimated (random effects)
+      for(int a = 0; a < n_ages; a++) NAA(y,a) = exp(log_NAA(y-1,a));
+    } else {
+      // only recruitment estimated (either fixed or random effects)
+      NAA(y,0) = exp(log_NAA(y-1,0));
+      for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // survival is deterministic     
     }
-    else //recruitments are still estimated parameters, fixed or random effects
-    {
-      if(random_recruitment == 1) //estimate recruitment as random effects, otherwise as fixed effects. pred_NAA(y,0) should be properly specified above in any case.
-      {
-        Type mu = log(pred_NAA(y,0));
-        if(bias_correct_pe == 1) mu -= 0.5*exp(2*log_R_sigma);
-        nll_recruit(y-1) -= dnorm(log_R(y-1), mu, exp(log_R_sigma), 1);
-        SIMULATE if(simulate_state == 1) log_R(y-1) = rnorm(mu, exp(log_R_sigma));
-      }
-      NAA(y,0) = exp(log_R(y-1));
-      //when random effects not used for all numbers at age, survival is deterministic.
-      for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a);
-    }
-
+        
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
     if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
       // get selectivity using average over avg.yrs
@@ -730,35 +726,55 @@ Type objective_function<Type>::operator() ()
 
     for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
-  if(use_NAA_re == 1)
-  {
-    REPORT(nll_NAA);
-    nll += nll_NAA.sum();
-    SIMULATE REPORT(log_NAA);
-  }
 
-  if(random_recruitment == 1)
-  {
-    REPORT(nll_recruit);
-    nll += nll_recruit.sum();
-    SIMULATE REPORT(log_R);
+  // --------------------------------------------------------------------------
+  // NAA random effects
+  Type nll_NAA = Type(0);
+  Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
+  Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
+  vector<Type> NAA_sigma = exp(log_NAA_sigma);
+  vector<Type> sigma_a_sig(n_ages);
+  sigma_a_sig.setZero();
+  if(n_NAA_sigma == 1){
+    sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
   }
-
-  if(use_b_prior == 1)
-  {
-    Type mu = log(0.305);
-    if(bias_correct_pe == 1) mu -= 0.5*exp(2*log(0.08));
-    Type lprior_b = dnorm(log_b, mu, Type(0.08), 1);
-    SIMULATE
-    {
-      if(simulate_state == 1) log_b = rnorm(mu, Type(0.08));
-      REPORT(log_b);
+  if(n_NAA_sigma > 1){
+    for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+  }
+  // calculate mean-0 deviations of log NAA (possibly bias-corrected)
+  array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
+  if(bias_correct_pe == 1){
+    for(int y = 1; y < n_years_model+n_years_proj; y++){
+      for(int a = 0; a < n_ages; a++){
+        NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a)) + 0.5*pow(sigma_a_sig(a),2);
+      }
+    }    
+  } else {
+    for(int y = 1; y < n_years_model+n_years_proj; y++){
+      for(int a = 0; a < n_ages; a++){
+        NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+      }
+    }       
+  }
+  // likelihood of NAA deviations
+  if(n_NAA_sigma == 1){
+    nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
+  }
+  if(n_NAA_sigma > 1){
+    nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
+  }  
+  SIMULATE {
+    if(simulate_state == 1){
+      if(n_NAA_sigma > 1) SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_devs);
+      if(n_NAA_sigma == 1) SEPARABLE(SCALE(AR1(NAA_rho_a), sigma_a_sig(0)),AR1(NAA_rho_y)).simulate(NAA_devs);
     }
-    //see(lprior_b);
-    REPORT(lprior_b);
-    nll -= lprior_b;
   }
-  //see(nll);
+  ADREPORT(NAA_sigma);
+  ADREPORT(NAA_rho_a);
+  ADREPORT(NAA_rho_y);
+  REPORT(NAA_devs);
+  REPORT(nll_NAA);
+  nll += nll_NAA;
 
   // ------------------------------------------------------------------------------
   // Catch data likelihood

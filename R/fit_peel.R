@@ -26,15 +26,22 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
     temp$dat$ind_Ecov_out_end = model$dat$ind_Ecov_out_end - peel
     temp$dat$Ecov_use_obs[(temp$dat$n_years_Ecov-peel+1):temp$dat$n_years_Ecov, ] <- 0
   }
-  log_NAA_na_ind = rbind(matrix(1:(temp$dat$n_ages*(n_years-1)), n_years-1), matrix(rep(NA, peel*temp$dat$n_ages), peel))
+  
+  if("log_NAA" %in% temp$random){
+    tmp <- rbind(matrix(1:(temp$dat$n_ages*(n_years-1)), n_years-1), matrix(rep(NA, peel*temp$dat$n_ages), peel))
+    if(temp$dat$n_NAA_sigma < 2) tmp[,-1] <- NA # always estimate Rec devs (col 1), whether random effect or not
+    ind.notNA <- which(!is.na(tmp))
+    tmp[ind.notNA] <- 1:length(ind.notNA)
+    temp$map$log_NAA = factor(tmp)
+  }
+
   F_devs_na_ind = rbind(matrix(1:(temp$dat$n_fleets * (n_years-1)), n_years-1), matrix(rep(NA, peel * temp$dat$n_fleets), peel))
-  log_R_na_ind = c(1:(n_years-1), rep(NA, peel))
-  if("log_R" %in% model$random) temp$map$log_R = factor(log_R_na_ind)
-  if("log_NAA" %in% model$random) temp$map$log_NAA = factor(log_NAA_na_ind)
   temp$map$F_devs = factor(F_devs_na_ind)
+
   if(temp$dat$Ecov_obs_sigma_opt %in% c(3,4)){
     temp$map$Ecov_obs_logsigma = factor(rbind(head(matrix(as.numeric(as.character(temp$map$Ecov_obs_logsigma)), ncol=temp$dat$n_Ecov), -peel), matrix(NA, ncol=temp$dat$n_Ecov, nrow=peel)))
   }
+
   temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map)
   out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
   return(out)

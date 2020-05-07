@@ -56,7 +56,7 @@ for(m in 1:n.mods){
   ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
-    sigma = as.matrix(env.dat$CPI_sigma),
+    logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
@@ -70,7 +70,8 @@ for(m in 1:n.mods){
   # Generate wham input from ASAP3 and Ecov data
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              ecov = ecov)
+                              ecov = ecov,
+                              NAA_re = list(sigma="rec+1", cor="iid"))
 
   # Builds off model m4 in example 1:
   #   full state-space model, logistic normal age-compositions
@@ -90,17 +91,8 @@ for(m in 1:n.mods){
   #   sel pars of indices 4/5 fixed at 1.5, 0.1 (specified via neg phase in ex2_SNEMAYT.dat)
   input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
-  # Full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA")
-
-  # ---------------------------------------------------------
-  ## Fit model
-  # mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
-  mod <- fit_wham(input, do.retro=F, do.osa=F)
+  # Fit model
+  mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
@@ -117,16 +109,16 @@ mods <- lapply(mod.list, readRDS)
 vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
 for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
-# calculate AIC and Mohn's rho
-# df.aic <- compare_wham_models(mods, sort=FALSE)$tab
-df.aic <- compare_wham_models(mods, sort=FALSE, calc.rho=F)$tab
-df.mods <- cbind(df.mods, df.aic)
-
-# make results prettier
+# make results table prettier
 rownames(df.mods) <- NULL
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
 df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
+
+# calculate AIC and Mohn's rho
+df.aic <- compare_wham_models(mods, sort=FALSE)$tab
+df.mods <- cbind(df.mods, df.aic)
+df.mods$runtime <- sapply(mods, function(x) round(x$runtime,1))
 df.mods <- df.mods[order(df.mods$dAIC),]
 
 # look at results table

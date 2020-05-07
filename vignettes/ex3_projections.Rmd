@@ -19,21 +19,21 @@ In this vignette we walk through an example using the `wham` (WHAM = Woods Hole 
 
 Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
-- full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
 - logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 
-- Cold Pool Index (CPI) fit as an AR1 process (`Ecov$process_model = "ar1"`)
+- Cold Pool Index (CPI) fit as an AR1 process (`ecov$process_model = "ar1"`)
 
-- CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`Ecov$where = "recruit"`, `Ecov$how = 1`)
+- CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`ecov$where = "recruit"`, `ecov$how = 1`)
 
 In example 3, we demonstrate how to project/forecast WHAM models using the `project_wham` function options for handling
 
 - fishing mortality / catch (use last F, use average F, use $F_{SPR}$, specify F, specify catch) and the
 
-- environmental covariate (continue Ecov process, use last Ecov, use average Ecov, specify Ecov).
+- environmental covariate (continue ecov process, use last ecov, use average ecov, specify ecov).
 
 ## 1. Load data
 
@@ -89,21 +89,21 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 Setup model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
 
-- full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
 - logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 
-- Cold Pool Index (CPI) fit as an AR1 process (`Ecov$process_model = "ar1"`)
+- Cold Pool Index (CPI) fit as an AR1 process (`ecov$process_model = "ar1"`)
 
-- CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`Ecov$where = "recruit"`, `Ecov$how = 1`)
+- CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`ecov$where = "recruit"`, `ecov$how = 1`)
 
-```{r}
+```{r eval=FALSE}
 env <- list(
   label = "CPI",
   mean = as.matrix(env.dat$CPI), # CPI observations
-  logsigma = as.matrix(env.dat$CPI_sigma), # CPI standard error is given/fixed as data
+  logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
   year = env.dat$Year,
   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
   lag = 1, # CPI in year t affects recruitment in year t+1
@@ -113,7 +113,8 @@ env <- list(
 
 input <- prepare_wham_input(asap3, recruit_model = 3, # Bev-Holt recruitment
                             model_name = "Ex 3: Projections",
-                            ecov = env)
+                            ecov = env,
+                            NAA_re = list(sigma="rec+1", cor="iid"))
 
 # age comp: logistic normal pool obs (not multinomial, the default)
 input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 5 = logistic normal (pool zero obs)
@@ -129,13 +130,6 @@ input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 #   2 pars per block instead of n.ages
 #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
 input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
-
-# full state-space model, abundance is the state vector
-input$data$use_NAA_re = 1
-input$data$random_recruitment = 0
-input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-input$random = c(input$random, "log_NAA","Ecov_re")
 ```
 
 ## 3. Fit the model without projections
@@ -163,49 +157,51 @@ The two code blocks above are equivalent; when `do.proj = TRUE`, `fit_wham` fits
 # run
 mod <- fit_wham(input)
 saveRDS(mod, file="m6.rds") # save unprojected model
-mod_proj <- list()
 ```
 
 ## 4. Add projections to fit model
 
-Projection options are specifed using the `proj.opts` input to `project_wham`. The default settings are to project 3 years (`n.yrs = 3`), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (`avg.yrs`), use fishing mortality in the last model year (`use.last.F = TRUE`), and continue the Ecov process model (`cont.Ecov = TRUE`). These options are also described in the `?project_wham` help page.
+Projection options are specifed using the `proj.opts` input to `project_wham`. The default settings are to project 3 years (`n.yrs = 3`), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (`avg.yrs`), use fishing mortality in the last model year (`use.last.F = TRUE`), and continue the ecov process model (`cont.ecov = TRUE`). These options are also described in the `?project_wham` help page.
 
 ```{r eval=FALSE}
+ # save projected models in a list
+mod_proj <- list()
+
 # default settings spelled out
 mod_proj[[1]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 
 # equivalent
 # mod_proj[[1]] <- project_wham(mod)
 ```
 
-WHAM implements four options for handling the environmental covariate(s) in the projections. Exactly one of these must be specified in `proj.opts` if `Ecov` is in the model:
+WHAM implements four options for handling the environmental covariate(s) in the projections. Exactly one of these must be specified in `proj.opts` if `ecov` is in the model:
 
-- (Default) Continue the Ecov process model (e.g. random walk, AR1). Set `cont.Ecov = TRUE`. WHAM will estimate the Ecov process in the projection years (i.e. continue the random walk / AR1 process).
+- (Default) Continue the ecov process model (e.g. random walk, AR1). Set `cont.ecov = TRUE`. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).
 
-- Use last year Ecov. Set `use.last.Ecov = TRUE`. WHAM will use Ecov value from the terminal year of the population model for projections.
+- Use last year ecov. Set `use.last.ecov = TRUE`. WHAM will use ecov value from the terminal year of the population model for projections.
 
-- Use average Ecov. Provide `avg.yrs.Ecov`, a vector specifying which years to average over the environmental covariate(s) for projections.
+- Use average ecov. Provide `avg.yrs.ecov`, a vector specifying which years to average over the environmental covariate(s) for projections.
 
-- Specify Ecov. Provide `proj.Ecov`, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (`proj.opts$n.yrs`) x the number of Ecovs (`ncols(Ecov$mean)`).
+- Specify ecov. Provide `proj.ecov`, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (`proj.opts$n.yrs`) x the number of ecovs (`ncols(ecov$mean)`).
 
-Note that for all options, **if the original model fit the Ecov in years beyond the population model, WHAM will use these already-fit Ecov values for the projections**. If the Ecov model extended at least `proj.opts$n.yrs` years beyond the population model, then none of the above need be specified.
+Note that for all options, **if the original model fit the ecov in years beyond the population model, WHAM will use these already-fit ecov values for the projections**. If the ecov model extended at least `proj.opts$n.yrs` years beyond the population model, then none of the above need be specified.
 
 ```{r eval=FALSE}
-# 5 years, use average Ecov from 1992-1996
+# 5 years, use average ecov from 1992-1996
 mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=FALSE, use.last.Ecov=FALSE, avg.Ecov.yrs=1992:1996, proj.Ecov=NULL))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=1992:1996, proj.ecov=NULL))
 # equivalent
-# mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, avg.Ecov.yrs=1992:1996))
+# mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, avg.ecov.yrs=1992:1996))
 
-# 5 years, use Ecov from last year (2011)
+# 5 years, use ecov from last year (2011)
 mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=FALSE, use.last.Ecov=TRUE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=FALSE, use.last.ecov=TRUE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
-# mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.Ecov=TRUE))
+# mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.ecov=TRUE))
 
 # 5 years, specify high CPI ~ 0.5
 # note: only need 4 years of CPI because CPI in last model year (2011) was already fit,
@@ -213,9 +209,9 @@ mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 #       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.
 mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=FALSE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
 # equivalent
-# mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.Ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
+# mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
 
 # 5 years, specify low CPI ~ -1.5
 # note: again, only need 4 years of CPI because CPI in last model year (2011) was already fit,
@@ -223,9 +219,9 @@ mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 #       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.
 mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=FALSE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
 # equivalent
-# mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.Ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
+# mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
 ```
 
 WHAM implements five options for handling fishing mortality in the projections. Exactly one of these must be specified in `proj.opts`:
@@ -244,35 +240,35 @@ WHAM implements five options for handling fishing mortality in the projections. 
 # 5 years, specify catch
 mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=c(10, 2000, 1000, 3000, 20), avg.yrs=NULL,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
 # mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.catch=c(10, 2000, 1000, 3000, 20)))
 
 # 5 years, specify F
 mod_proj[[7]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=c(0.001, 1, 0.5, .1, .2), proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
 # mod_proj[[7]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.F=c(0.001, 1, 0.5, .1, .2)))
 
 # 5 years, use FXSPR
 mod_proj[[8]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=TRUE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
 # mod_proj[[8]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.FXSPR=TRUE))
 
 # 3 years, use avg F (avg.yrs defaults to last 5 years, 2007-2011)
 mod_proj[[9]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=FALSE, use.avg.F=TRUE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
 # mod_proj[[9]] <- project_wham(mod, proj.opts=list(use.avg.F=TRUE))
 
 # 10 years, use avg F 1992-1996
 mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, use.avg.F=TRUE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=1992:1996,
-              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 # equivalent
 # mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.avg.F=TRUE, avg.yrs=1992:1996))
 ```

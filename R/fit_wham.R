@@ -75,6 +75,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                               cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
 {
+  btime <- Sys.time()
+
   # fit model
   if(missing(model)){
     mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map)
@@ -115,5 +117,6 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
     paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
 
+  mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2)
   return(mod)
 }

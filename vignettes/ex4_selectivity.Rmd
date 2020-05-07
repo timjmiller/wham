@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 4: Time-varying selectivity"
+title: "WHAM example 4: Selectivity"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 4: Time-varying selectivity}
+  %\VignetteIndexEntry{WHAM example 4: Selectivity}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 header-includes:
@@ -21,13 +21,13 @@ In this vignette we walk through an example using the `wham` (WHAM = Woods Hole 
 
 Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd):
 
-- full state-space model (numbers-at-age are random effects for all ages, `input$data$use_NAA_re = 1`)
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
 - logistic normal age compositions, treating observations of zero as missing (`input$data$age_comp_model_fleets = 7` and `input$data$age_comp_model_indices = 7`)
 
 - random-about-mean recruitment (`recruit_model = 2`)
 
-- no environmental covariate (`Ecov = NULL`)
+- no environmental covariate (`ecov = NULL`)
 
 - 2 indices
 
@@ -39,7 +39,7 @@ In example 4, we demonstrate the time-varying selectivity options in WHAM for bo
 
 - `iid`: parameter- and year-specific (random effect) deviations from mean selectivity parameters
 
-- `ar1`: as above, but estimate correlation across parameters (e.g. ages)
+- `ar1`: as above, but estimate correlation across logistic parameters
 
 - `ar1_y`: as above, but estimate correlation across years
 
@@ -70,7 +70,7 @@ source(file.path(wham.dir, "example_scripts", "ex4_selectivity.R"))
 Let's create a directory for this analysis:
 ```{r, eval=FALSE}
 # choose a location to save output, otherwise will be saved in working directory
-write.dir <- "choose/where/to/save/output"
+write.dir <- "choose/where/to/save/output" # need to change
 dir.create(write.dir)
 setwd(write.dir)
 ```
@@ -93,11 +93,11 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 
 ## 2. Specify selectivity model options
 
-We are going to run 10 models that differ only in their selectivity options:
+We are going to run 9 models that differ only in the selectivity options:
 
 ```{r}
-# m1-m5 logistic, m6-m10 age-specific
-sel_model <- c(rep("logistic",5), rep("age-specific",5))
+# m1-m5 logistic, m6-m9 age-specific
+sel_model <- c(rep("logistic",5), rep("age-specific",4))
 
 # time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)
 sel_re <- list(c("none","none","none"), # m1-m5 logistic
@@ -105,18 +105,16 @@ sel_re <- list(c("none","none","none"), # m1-m5 logistic
 				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"),
-				c("none","none","none"), # m6-m10 age-specific
+				c("none","none","none"), # m6-m9 age-specific
 				c("iid","none","none"),
-				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"))
 n.mods <- length(sel_re)
 
 # summary data frame
-df.mods <- data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model, 
-							"Block_1"=sapply(sel_re, function(x) x[[1]]),
-							"Block_2"=sapply(sel_re, function(x) x[[2]]),
-							"Block_3"=sapply(sel_re, function(x) x[[3]]))
+df.mods <- data.frame(Model=paste0("m",1:n.mods), 
+	Selectivity=sel_model, # Selectivity model (same for all blocks)
+	Block1_re=sapply(sel_re, function(x) x[[1]])) # Block 1 random effects
 rownames(df.mods) <- NULL
 
 df.mods
@@ -155,7 +153,7 @@ $$\Sigma = \sigma^2_s(\mathrm{R}_a \otimes \mathrm{R}_y)$$
 $$R_{a,a^*} = \rho_a^{\vert a - a^* \vert}$$
 $$R_{y,y^*} = \rho_y^{\vert y - y^* \vert}$$
 
-Mean selectivity parameters can be initialized at different values from the ASAP file with `selectivity$initial_pars`. Parameters can be fixed at their initial values by specifying `selectivity$fix_pars`. Finally, we specify any time-varying (random effects) on selectivity parameters in the following ways (`selectivity$re`):
+Mean selectivity parameters can be initialized at different values from the ASAP file with `selectivity$initial_pars`. Parameters can be fixed at their initial values by specifying `selectivity$fix_pars`. Finally, we specify any time-varying (random effects) on selectivity parameters (`selectivity$re`):
 
 `selectivity$re` | Deviations from mean | Estimated parameters 
 --- | --- | ---
@@ -168,20 +166,26 @@ Mean selectivity parameters can be initialized at different values from the ASAP
 Now we can run the above models in a loop:
 
 ```{r, eval=F}
-mods <- vector("list",n.mods) # store models in a list
-selAA <- vector("list",n.mods) # save selectivity-at-age for block 1 for each model
+inv.logit <- function(x) exp(x)/(1+exp(x))
 for(m in 1:n.mods){
-  inv.logit <- function(x) exp(x)/(1+exp(x))
 	if(sel_model[m] == "logistic"){ # logistic selectivity
 		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(inv.logit(-0.67935549),0.2),c(2,0.2),c(2,0.2))))
-		input$par$sel_repars[1,1] <- -1.3
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(1.5,0.2),c(2,0.2),c(2,0.2))),
+					NAA_re = list(sigma='rec+1',cor='iid'))
 	} else { # age-specific selectivity
-		# fix ages 1,4,5 / 4 / 2
+		# # don't fix any ages
+		# input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+		# 			selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+		# 				initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),
+		# 			NAA_re = list(sigma='rec+1',cor='iid'))
+
+		# fix selectivity for one age per block: 4 / 4 / 2
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(inv.logit(-4),0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), fix_pars=list(c(1,4,5),4,2)))
-		input$par$sel_repars[1,1] <- -0.4
+					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+						initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+						fix_pars=list(4,4,2)),
+					NAA_re = list(sigma='rec+1',cor='iid'))
 	}
 
 	# overwrite age comp model (all models use logistic normal)
@@ -192,20 +196,10 @@ for(m in 1:n.mods){
 	input$par$index_paa_pars = rep(0, input$data$n_indices)
 	input$par$catch_paa_pars = rep(0, input$data$n_fleets)
 	input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-
-	# overwrite NAA model (all models use full state space)
-	input$data$use_NAA_re = 1
-	input$data$random_recruitment = 0
-	input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))]
-	input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-	input$random = c(input$random, "log_NAA")
 	
 	# fit model
-	mods[[m]] <- fit_wham(input, do.check=T, do.osa=F, do.proj=F, do.retro=F) 
-	saveRDS(mods[[m]], file=paste0("m",m,".rds"))
-
-	# save selectivity-at-age for block 1 (fleet)
-	selAA[[m]] <- mods[[m]]$report()$selAA[[1]]
+	mod <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F)
+	saveRDS(mod, file=paste0("m",m,".rds"))
 }
 ```
 
@@ -217,7 +211,13 @@ data(vign4_conv)
 data(vign4_selAA)
 ```
 
-Check that the models converged:
+Collect all models into a list:
+```{r, eval=FALSE}
+mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
+mods <- lapply(mod.list, readRDS)
+```
+
+Check which models converged. Note that 3 of the 9 models did NOT converge:
 
 ```{r, eval=FALSE}
 sapply(mods, function(x) check_convergence(x))
@@ -227,15 +227,28 @@ sapply(mods, function(x) check_convergence(x))
 vign4_conv
 ```
 
+Plot output for models that converged (in a subfolder for each model):
+
+```{r, eval=FALSE}
+conv <- sapply(mods, function(x) x$opt$convergence == 0)
+conv_mods <- (1:n.mods)[conv] # 0 means converged
+for(m in conv_mods){
+	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=file.path(write.dir,paste0("m",m)))
+}
+```
+
 Compare the models using AIC:
 
 ```{r, eval=FALSE}
-df.aic <- compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab
+df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab)
+df.aic[!conv,] = NA # don't get AIC for unconverged models
+minAIC <- min(df.aic$AIC, na.rm=T)
+df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model, 
-							"Block_1"=sapply(sel_re, function(x) x[[1]]),
-							"Block_2"=sapply(sel_re, function(x) x[[2]]),
-							"Block_3"=sapply(sel_re, function(x) x[[3]]),
-							"NLL"=sapply(mods, function(x) round(x$opt$objective,3))), df.aic)
+							"Block1_re"=sapply(sel_re, function(x) x[[1]]),
+							"Converged"= ifelse(conv, "Yes", "No"),
+							"NLL"=sapply(mods, function(x) round(x$opt$objective,3)),
+							"runtime"=sapply(mods, function(x) x$runtime)), df.aic)
 rownames(df.mods) <- NULL
 df.mods
 ```
@@ -244,53 +257,76 @@ df.mods
 vign4_res
 ```
 
-Plot the models estimates of selectivity-at-age for block 1 (fleet).
+Prepare to plot selectivity-at-age for block 1 (fleet).
+
+```{r echo=FALSE}
+selAA <- vign4_selAA
+```
 
 ```{r eval=FALSE}
-df.selAA <- data.frame(matrix(NA, nrow=0, ncol=8))
-colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model")
+library(tidyverse)
+library(viridis)
+
+selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
+sel_mod <- c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])]
+sel_cor <- c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])]
+df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
+colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
 for(m in 1:n.mods){
 	df <- as.data.frame(selAA[[m]])
 	df$Year <- input$years
 	colnames(df) <- c(paste0("Age_",1:6),"Year")
 	df$Model <- m
+	df$conv <- ifelse(df.mods$Converged[m]=="Yes",1,0)
+	df$sel_mod = sel_mod[m]
+	df$sel_cor = sel_cor[m]
 	df.selAA <- rbind(df.selAA, df)
 }
-
-df <- df.selAA %>% pivot_longer(-c(Year,Model),
+df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
 				names_to = "Age", 
 				names_prefix = "Age_",
 				names_ptypes = list(Age = integer()),
 				values_to = "Selectivity")
-df$sel_model <- factor(rep(c("Logistic","Age-specific"), each=dim(df)[1]/2), levels=c("Logistic","Age-specific"))
-df$sel_re <- factor(c(rep(c("None","IID","AR1","AR1_y","2D AR1"), each=dim(df)[1]/n.mods), rep(c("None","IID","AR1","AR1_y","2D AR1"), each=dim(df)[1]/n.mods)), levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
+df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
+```
 
-print(ggplot(df, aes(x=Year, y=Age, fill=Selectivity)) + 
-	geom_tile() +
+Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.
+
+```{r eval=FALSE}
+print(ggplot(df, aes(x=Year, y=Age)) + 
+	geom_tile(aes(fill=Selectivity, alpha=factor(conv))) +
+	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
 	theme_bw() + 
-	facet_grid(rows=vars(sel_re), cols=vars(sel_model)) +
+	geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
+	  data=data.frame(Year=1975.5, Age=5.8, lab=paste0("m",1:length(mods)), sel_mod=sel_mod, sel_cor=sel_cor)) +  	
+	scale_x_continuous(expand=c(0,0)) +
+	scale_y_continuous(expand=c(0,0)) +
+	facet_grid(rows=vars(sel_cor), cols=vars(sel_mod)) +
 	scale_fill_viridis())
 ```
 
-![Selectivity-at-age for block 1, all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }
+![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex4_plots/selAA.png){ width=90% }
 
 #### A note on convergence
 
 When fitting age-specific selectivity, oftentimes some of the (mean, $\mu^{s}_a$) selectivity parameters need to be fixed for the model to converge. The specifications used here follow this procedure:
 
-1. Fit the model without fixing any selectivity parameters
+1. Fit the model without fixing any selectivity parameters.
 2. If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (> 5 or < -5 on the logit scale) and/or have `NaN` estimates of their standard error:
 ```{r, eval=F}
-mod$report()$logit_selpars # mean sel pars
-mod$report()$sel_repars # if time-varying selectivity turned on
-mod$report()$selAA # selectivity-at-age by block
+mod$rep$logit_selpars # mean sel pars
+mod$rep$sel_repars # if time-varying selectivity turned on
+mod$rep$selAA # selectivity-at-age by block
 mod$sdrep # look for sel pars with NaN standard errors
 ```
-3. Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above example, initialize and fix ages 4, 4, and 2 for blocks 1-3, respectively. Sometimes initializing the worst parameter is enough, without fixing it.
+3. Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above age-specific models, we initialized and fixed ages 4, 4, and 2 for blocks 1-3, respectively. Sometimes just initializing the worst parameter is enough, without fixing it.
 ```{r, eval=F}
-input <- prepare_wham_input(asap3, recruit_model=2, 
-            selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), fix_pars=list(4,4,2)))
-
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+						initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+						fix_pars=list(4,4,2)),
+					NAA_re = list(sigma='rec+1',cor='iid'))
 ```
 4. The goal is to find a set of selectivity parameter initial/fixed values that allow all nested models to converge. Fixing parameters should not affect the NLL much, and any model that is a superset of another should not have a greater NLL (indicates not converged to global minimum). The following commands may be helpful:
 ```{r, eval=F}
@@ -298,6 +334,6 @@ mod.list <- file.path(getwd(),paste0("m",1:n.mods,".rds"))
 mods <- lapply(mod.list, readRDS)
 sapply(mods, function(x) check_convergence(x))
 sapply(mods, function(x) x$opt$obj) # get NLL 
-lapply(mods, function(x) x$report()$logit_selpars)
-lapply(mods, function(x) x$report()$sel_repars)
+lapply(mods, function(x) x$rep$logit_selpars)
+lapply(mods, function(x) x$rep$sel_repars)
 ```

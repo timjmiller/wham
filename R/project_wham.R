@@ -22,15 +22,15 @@
 #'   }
 #'
 #' WHAM implements four options for handling the environmental covariate(s) in the projections.
-#' Exactly one of these must be specified in \code{proj.opts} if \code{Ecov} is in the model:
+#' Exactly one of these must be specified in \code{proj.opts} if \code{ecov} is in the model:
 #'   \describe{
-#'     \item{(Default) Continue Ecov process model (e.g. random walk, AR1)}{Set \code{$cont.Ecov = TRUE}. WHAM will estimate the Ecov process in projection years (i.e. continue the random walk / AR1 process).}
-#'     \item{Use last year Ecov(s)}{Set \code{$use.last.Ecov = TRUE}. WHAM will use Ecov value from the terminal year (of population model) for projections.}
-#'     \item{Use average Ecov(s)}{Provide \code{$avg.yrs.Ecov}, a vector specifying which years to average over the environmental covariate(s) for projections.}
-#'     \item{Specify \code{Ecov}}{Provide \code{$proj.Ecov}, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be # projection years (\code{proj.opts$n.yrs}) x # Ecovs (\code{ncols(Ecov$mean)}).}
+#'     \item{(Default) Continue ecov process model (e.g. random walk, AR1)}{Set \code{$cont.ecov = TRUE}. WHAM will estimate the ecov process in projection years (i.e. continue the random walk / AR1 process).}
+#'     \item{Use last year ecov(s)}{Set \code{$use.last.ecov = TRUE}. WHAM will use ecov value from the terminal year (of population model) for projections.}
+#'     \item{Use average ecov(s)}{Provide \code{$avg.yrs.ecov}, a vector specifying which years to average over the environmental covariate(s) for projections.}
+#'     \item{Specify \code{ecov}}{Provide \code{$proj.ecov}, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be # projection years (\code{proj.opts$n.yrs}) x # ecovs (\code{ncols(ecov$mean)}).}
 #'   }
-#' If the original model fit the Ecov in years beyond the population model, WHAM will use the already-fit
-#' Ecov values for the projections. If the Ecov model extended at least \code{proj.opts$n.yrs} years
+#' If the original model fit the ecov in years beyond the population model, WHAM will use the already-fit
+#' ecov values for the projections. If the ecov model extended at least \code{proj.opts$n.yrs} years
 #' beyond the population model, then none of the above need be specified.
 #'
 #' @param model a previously fit wham model
@@ -42,10 +42,10 @@
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
-#'     \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
-#'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
-#'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-#'     \item \code{$proj.Ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
+#'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+#'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
+#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
@@ -84,7 +84,7 @@
 #' }
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL, cont.Mre=NULL),
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL),
                         n.newton=3, do.sdrep=TRUE)
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
@@ -98,11 +98,12 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     mod$err_proj <- err # store error message to print out in fit_wham
   }
 
-  # pass along previously calculated retros, OSA residuals, and error messages
+  # pass along previously calculated retros, OSA residuals, error messages, and runtime
   if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
   if(!is.null(model$osa)) mod$osa <- model$osa # OSA residuals
   if(!is.null(model$err)) mod$err <- model$err # error messages
   if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
+  mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
 
   # print error message
   if(!is.null(mod$err_proj)) warning(paste("","** Error during projections. **",

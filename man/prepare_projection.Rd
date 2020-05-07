@@ -17,10 +17,10 @@ prepare_projection(model, proj.opts)
   \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
   \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
   \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
-  \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
-  \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
-  \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-  \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+  \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+  \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
+  \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+  \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
   \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 }}
 }
