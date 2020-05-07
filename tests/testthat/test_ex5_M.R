@@ -21,7 +21,10 @@ n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 
 mods <- vector("list",n.mods)
-for(m in c(1:3,5:10)){
+mods_proj <- vector("list",n.mods)
+# tofit <- c(1:10,14:17)
+tofit <- c(1:3,5:10)
+for(m in tofit){
   # set up environmental covariate data and model options
   # see ?prepare_wham_input
   ecov <- list(
@@ -56,6 +59,7 @@ for(m in c(1:3,5:10)){
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
+                              NAA_re = list(sigma='rec+1',cor='iid'),
                               M=M)
 
   # overwrite age comp model (all models use logistic normal)
@@ -68,18 +72,45 @@ for(m in c(1:3,5:10)){
   input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
-  # Full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))] # remove from map (i.e. estimate)
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA")
-
   # Fit model
-  mod <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F))
-
-  expect_equal(as.numeric(mod$opt$par), ex5_test_results$pars[[m]], tolerance=1e-3) # parameter values
-  expect_equal(as.numeric(mod$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F))
+  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]]))
 }
+
+expect_equal(as.numeric(mods[[1]]$opt$par), ex5_test_results$pars[[1]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[1]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[1]]$opt$objective, mods_proj[[1]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[2]]$opt$par), ex5_test_results$pars[[2]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[2]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[2]]$opt$objective, mods_proj[[2]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[3]]$opt$par), ex5_test_results$pars[[3]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[3]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[3]]$opt$objective, mods_proj[[3]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[5]]$opt$par), ex5_test_results$pars[[5]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[5]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[5]]$opt$objective, mods_proj[[5]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[6]]$opt$par), ex5_test_results$pars[[6]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[6]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[6]]$opt$objective, mods_proj[[6]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[7]]$opt$par), ex5_test_results$pars[[7]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[7]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[7]]$opt$objective, mods_proj[[7]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[8]]$opt$par), ex5_test_results$pars[[8]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[8]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[8]]$opt$objective, mods_proj[[8]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[9]]$opt$par), ex5_test_results$pars[[9]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[9]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[9]]$opt$objective, mods_proj[[9]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[10]]$opt$par), ex5_test_results$pars[[10]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[10]]$opt$obj), ex5_test_results$nll[m], tolerance=1e-6) # nll
+expect_equal(mods[[10]]$opt$objective, mods_proj[[10]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 })

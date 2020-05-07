@@ -1,7 +1,8 @@
 # WHAM example 5: Ecov and age-year effects on natural mortality
 
-library(dplyr)
 library(wham)
+library(tidyverse)
+library(viridis)
 
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
@@ -84,6 +85,7 @@ for(m in 1:n.mods){
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
+                              NAA_re = list(sigma='rec+1',cor='iid'),
                               M=M)
 
   # overwrite age comp model (all models use logistic normal)
@@ -96,25 +98,16 @@ for(m in 1:n.mods){
   input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
-  # Full state-space model, abundance is the state vector
-  input$data$use_NAA_re = 1
-  input$data$random_recruitment = 0
-  input$map = input$map[!(names(input$map) %in% c("log_NAA", "log_NAA_sigma", "mean_rec_pars"))] # remove from map (i.e. estimate)
-  input$map$log_R = factor(rep(NA, length(input$par$log_R)))
-  input$random = c(input$random, "log_NAA")
-
   # Fit model
-  btime = Sys.time()
-  mod <- fit_wham(input, do.retro=T, do.osa=F)
-  mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),1)
+  mod <- fit_wham(input, do.retro=T, do.osa=F) # no OSA residuals to save time
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
 
-  # Plot output in new subfolder
+  # If desired, plot output in new subfolder
   # plot_wham_output(mod=mod, out.type='html')
 
-  # Do projections
+  # If desired, do projections
   # mod_proj <- project_wham(mod)
   # saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))
 }
@@ -123,16 +116,22 @@ for(m in 1:n.mods){
 mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
 # mods_proj <- lapply(paste0(df.mods$Model,"_proj.rds"), readRDS)
-df.mods$na_sdrep <- sapply(mods, function(x) x$na_sdrep)
-# df.mods$pdHess <- sapply(mods, function(x) x$sdrep$pdHess)
+
+# get convergence info
+opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- as.logical(opt_conv)
+df.mods$pdHess <- as.logical(ok_sdrep)
+
+# make labeling prettier
 df.mods$Ecov_link <- c("---","linear","poly-2")[df.mods$Ecov_link+1]
 df.mods$M_re[df.mods$M_re=="none"] = "---"
 colnames(df.mods)[2] = "M_est"
 
-# deal with m11 and m13 having NaN NLL or NA sdrep
+# deal with models having NaN NLL
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-theNA <- which(is.na(df.mods$NLL) | is.na(df.mods$na_sdrep))
+theNA <- which(is.na(df.mods$NLL))
 mods2 <- mods
 mods2[theNA] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
@@ -146,7 +145,7 @@ for(i in 1:n.mods){
     ct <- ct + 1
   }
 }
-df.aic$AIC[df.mods$na_sdrep==TRUE | is.na(df.mods$na_sdrep)] <- NA
+df.aic$AIC[df.mods$pdHess==FALSE] <- NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(df.mods, df.aic)
@@ -176,32 +175,35 @@ M_mod <- c("constant","age-specific","weight-at-age")[sapply(mods, function(x) x
 M_mod[sapply(mods, function(x) unique(x$env$data$M_est)) == 0] = "fixed"
 M_re <- c("no","IID","AR1_a","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$M_re_model)]
 df.MAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
-colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year","Model")
+colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year","Model","pdHess")
 for(i in 1:n.mods){
   tmp = as.data.frame(mods[[i]]$rep$MAA)
   tmp$Year <- years
   colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
   tmp$Model = paste0("m",i,": ", M_mod[i]," + ",ecov_link[i]," GSI link + ",M_re[i]," devs")
+  tmp$pdHess <- df.mods$pdHess[i]
   df.MAA <- rbind(df.MAA, tmp)
 }
-df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model),
+df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model,pdHess),
           names_to = "Age",
           names_prefix = "Age_",
           names_ptypes = list(Age = integer()),
           values_to = "M")
+# df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m11: constant + linear GSI link + 2D AR1 devs","m7: constant + no GSI link + AR1_y devs"))
 df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m13: age-specific + poly-2 GSI link + 2D AR1 devs","m11: constant + linear GSI link + 2D AR1 devs"))
 df.plot2$Model <- factor(as.character(df.plot2$Model), levels=unique(df.plot2$Model))
 df.plot2$logM <- log(df.plot2$M)
 df.plot2$logM[df.plot2$logM < -4] <- -4
 
 png(filename = file.path(getwd(), paste0("MAA.png")), width = 10, height = 8, res = 100, units='in')
-    print(ggplot2::ggplot(df.plot2, ggplot2::aes(x=Year, y=Age, fill=logM)) +
-      ggplot2::geom_tile() +
-      ggplot2::scale_x_continuous(expand=c(0,0)) +
-      ggplot2::scale_y_continuous(expand=c(0,0)) +
-      ggplot2::theme_bw() +
-      ggplot2::facet_wrap(~Model, nrow=5, dir="v") +
-      viridis::scale_fill_viridis())
+    print(ggplot(df.plot2, aes(x=Year, y=Age)) +
+      geom_tile(aes(fill=logM, alpha=factor(pdHess))) +
+      scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
+      scale_x_continuous(expand=c(0,0)) +
+      scale_y_continuous(expand=c(0,0)) +
+      theme_bw() +
+      facet_wrap(~Model, nrow=5, dir="v") +
+      scale_fill_viridis())
 dev.off()
 
 # # make sure NLL doesn't change with projections

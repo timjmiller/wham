@@ -257,7 +257,7 @@ df.mods
 vign4_res
 ```
 
-Plot the models estimates of selectivity-at-age for block 1 (fleet).
+Prepare to plot selectivity-at-age for block 1 (fleet).
 
 ```{r echo=FALSE}
 selAA <- vign4_selAA
@@ -289,7 +289,11 @@ df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
 				values_to = "Selectivity")
 df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
 df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
+```
 
+Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.
+
+```{r}
 print(ggplot(df, aes(x=Year, y=Age)) + 
 	geom_tile(aes(fill=Selectivity, alpha=factor(conv))) +
 	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
