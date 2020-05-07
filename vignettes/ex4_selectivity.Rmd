@@ -306,7 +306,7 @@ print(ggplot(df, aes(x=Year, y=Age)) +
 	scale_fill_viridis())
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex4_plots/selAA.png){ width=90% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }
 
 #### A note on convergence
 

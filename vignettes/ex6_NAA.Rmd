@@ -305,7 +305,7 @@ vign6_res %>%
 
 Estimated survival deviations by age (y-axis) and year (x-axis) for all models:
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/NAA_devs.png){ width=95% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png){ width=95% }
 
 #### Retrospective patterns
 
@@ -317,29 +317,29 @@ The plots below compare retrospective patterns from the base model (`m1`, left) 
 
 ###### Numbers-at-age, NAA
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_NAA_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_NAA_retro_relative.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png){ width=45% }
 
 ###### Spawning stock biomass, SSB
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_SSB_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_SSB_retro_relative.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png){ width=45% }
 
 ###### Fishing mortality, F
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_Fbar_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Fbar_retro_relative.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png){ width=45% }
 
 #### Estimated GSI
 
 Models with a GSI-Recruitment link estimated higher observation error and more smoothing of the GSI than those without. Compare the confidence intervals for `m7` (left, no GSI-Recruitment link), to those for `m13` (right, with GSI-Recruitment link).
 
-![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_Ecov_1.png){ width=45% }![Gulf Stream Index (GSI) time-series model, m13.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Ecov_1.png){ width=45% }
+![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png){ width=45% }![Gulf Stream Index (GSI) time-series model, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png){ width=45% }
 
 #### Stock status
 
 The state-space models, with or without the GSI-Recruitment link, estimated substantially different trends in $SSB$ and $F$ compared to the base model. Left: $SSB$ and $F$ trends from the base model, `m1`. Right: $SSB$ and $F$ trends from the state-space model without GSI effect, `m7`.
 
-![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m1_SSB_F_trend.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_SSB_F_trend.png){ width=45% }
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png){ width=45% }
 
 Adding the GSI-Recruitment link to the state-space model estimated a lower probability of the stock being overfished in the final year, 2016 (`m7` w/o GSI, 66%, left; `m13` w/ GSI, 10%, right).
 
-![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m7_Kobe_status.png){ width=45% }![Kobe status plot, m13.](https://raw.githubusercontent.com/timjmiller/wham/naa/vignettes/ex6_plots/m13_Kobe_status.png){ width=45% }
+![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png){ width=45% }![Kobe status plot, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png){ width=45% }
 
