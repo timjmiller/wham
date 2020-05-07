@@ -42,16 +42,15 @@ env.dat <- read.csv("GSI.csv", header=T)
 #    m5   ar1_a     rec+1     ---
 #    m6   ar1_y     rec+1     ---
 #    m7   2dar1     rec+1     ---
-#    m8     ---       ---     ar1
-#    m9     iid       rec     ar1
-#    m10  ar1_y       rec     ar1
-#    m11    iid     rec+1     ar1
-#    m12  ar1_a     rec+1     ar1
-#    m13  ar1_y     rec+1     ar1
-#    m14  2dar1     rec+1     ar1
-df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
-                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4)),
-                      GSI_how = c(rep(0,7),rep(2,7)), stringsAsFactors=FALSE)
+#    m8     iid       rec     ar1
+#    m9   ar1_y       rec     ar1
+#    m10    iid     rec+1     ar1
+#    m11  ar1_a     rec+1     ar1
+#    m12  ar1_y     rec+1     ar1
+#    m13  2dar1     rec+1     ar1
+df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
+                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
+                      GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -94,9 +93,7 @@ for(m in 1:n.mods){
   input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
   # Fit model
-  btime = Sys.time()
   mod <- fit_wham(input, do.retro=T, do.osa=F)
-  mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),1)
 
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
@@ -105,10 +102,18 @@ for(m in 1:n.mods){
 # collect fit models into a list
 mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
-df.mods$na_sdrep <- sapply(mods, function(x) x$na_sdrep)
+
+# convergence
+opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- as.logical(opt_conv)
+df.mods$pdHess <- as.logical(ok_sdrep)
+
+# stats
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
+df.aic$AIC[df.mods$pdHess==FALSE] <- NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
 df.mods <- cbind(df.mods, df.aic)
@@ -118,6 +123,7 @@ rownames(df.mods) <- NULL
 df.mods
 
 # plot output for all models
+mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
 for(m in 1:n.mods){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
 }
@@ -132,19 +138,19 @@ n_years = length(years)
 n_ages = mods[[1]]$env$data$n_ages
 ages <- 1:n_ages
 
-NAA_mod <- c("FE","RE (recruit)","RE (all NAA)")[sapply(mods, function(x) x$env$data$n_NAA_sigma+1)]
-NAA_cor <- rep(c("(none)","IID","AR1_y","IID","AR1_a","AR1_y","2D AR1"),2)
-GSI_how <- c("no GSI","GSI (limiting)")[df.mods$GSI_how/2+1]
-# NAA_lab <- paste0(df.mods$Model, ": ", paste(NAA_mod,NAA_cor,sep=" - ")) # each unique, for facet_wrap
-NAA_lab <- paste(NAA_mod,NAA_cor,sep=" - ") # duplicate by GSI, for facet_grid
+plot.mods <- 2:n.mods # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
+NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
+NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
+GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[df.mods$GSI_how[plot.mods]/2+1]
+NAA_lab <- paste(NAA_mod,NAA_cor,sep=" + ") # duplicate by GSI, for facet_grid
 df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
 colnames(df.NAA) <- c(paste0("Age_",1:n_ages),"Year","GSI_how","NAA_lab")
-for(i in 1:n.mods){
-  tmp = as.data.frame(mods[[i]]$rep$NAA_re)
+for(i in plot.mods){
+  tmp = as.data.frame(mods[[i]]$rep$NAA_devs)
   tmp$Year <- years
   colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
-  tmp$GSI_how = GSI_how[i]
-  tmp$NAA_lab = NAA_lab[i]
+  tmp$GSI_how = GSI_how[i-1]
+  tmp$NAA_lab = NAA_lab[i-1]
   df.NAA <- rbind(df.NAA, tmp)
 }
 df.plot <- df.NAA %>% tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
@@ -154,15 +160,17 @@ df.plot <- df.NAA %>% tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
           values_to = "NAA_re")
 df.plot$GSI_how <- factor(as.character(df.plot$GSI_how), levels=unique(df.plot$GSI_how))
 df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=unique(df.plot$NAA_lab))
+df.plot$NAA_re[df.plot$NAA_lab %in% c("RE: Recruit + IID","RE: Recruit + AR1_y") & df.plot$Age > 1] = 0
 
-png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 10, height = 11, res = 100, units='in')
-    print(ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=NAA_re)) +
-      geom_tile() +
+png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 10, height = 11, res = 200, units='in')
+    print(ggplot(df.plot, ggplot2::aes(x=Year, y=Age)) +
+      geom_tile(aes(fill=NAA_re)) +
+      geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
+          data=data.frame(Year=1976.5, Age=5.8, lab=df.mods$Model[plot.mods], NAA_lab=NAA_lab, GSI_how=GSI_how)) +                
       scale_x_continuous(expand=c(0,0)) +
       scale_y_continuous(expand=c(0,0)) +
       theme_bw() +
       facet_grid(rows=vars(NAA_lab), cols=vars(GSI_how), drop=F) +
       scale_fill_gradient2(name = "NAA devs", low = scales::muted("blue"), mid = "white", high = scales::muted("red")))
 dev.off()
-
 

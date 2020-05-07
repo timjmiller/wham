@@ -3,7 +3,7 @@
 # devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
 # library(wham)
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex6_NAA.R"); etime <- Sys.time(); runtime = etime - btime;
-# 1 hr 18 min
+# 14 min
 
 context("Ex 6: Numbers-at-age")
 
@@ -14,14 +14,15 @@ ex6_test_results <- readRDS(file.path(path_to_examples,"ex6_test_results.rds"))
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
 
-df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
-                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4)),
-                      GSI_how = c(rep(0,7),rep(2,7)), stringsAsFactors=FALSE)
+df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
+                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
+                      GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
-for(m in 1:n.mods){
+fit.mods <- c(1:4,6:13)
+for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL
 
@@ -37,7 +38,8 @@ for(m in 1:n.mods){
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
-  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  recruit = ifelse(m == 1,2,3)
+  input <- prepare_wham_input(asap3, recruit_model = recruit, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), 
                                 re=rep("none",3), 
