@@ -1,0 +1,42 @@
+
+navbar:
+  structure:
+#    left:
+#    - home
+#    - intro
+#    - reference
+#    - articles
+#    - tutorials
+#    - news
+    right: 
+#    - externactive
+    - github
+    - sendemail
+
+  components:
+#    home:
+#      icon: fas fa-home fa-lg
+#      href: index.html
+#    reference:
+#      text: Reference
+#      href: reference/index.html
+#    externactive:
+#      image: 
+#        source: man/figures/badge_external_active.png
+#        alt: "badge_external_active"
+#      icon: fas fa-check fa-lg
+#      icon: badge
+    sendemail:
+      icon: far fa-paper-plane fa-lg
+      href: mailto:fisheries.toolbox@noaa.gov
+#    github:
+#      icon: fab fa-github fa-lg
+#      href: https://github.com/timjmiller/wham/
+    
+#home:
+#  links:
+#    - text: Email questions about wham
+#      href: mailto:fisheries.toolbox@noaa.gov
+#    - image: 
+#        source: man/figures/badge_external_active.png
+#        alt: "badge_external_active"
