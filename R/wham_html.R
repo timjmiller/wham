@@ -10,7 +10,7 @@
 #' @param width Width of plots (in pixels).
 #' @param openfile Automatically open index.html in default browser?
 #'
-#' @seealso \code{\link{plot_wham_output}}, [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)
+#' @seealso \code{\link{plot_wham_output}}, `r4ss::SS_html()`
 #'
 wham_html <- function(dir.main=NULL,
                     title="WHAM Output",

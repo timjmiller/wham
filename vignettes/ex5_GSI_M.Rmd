@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 5: Time-varying natural mortality with link to Gulf Stream Index"
+title: "Ex 5: Time-varying natural mortality linked to the Gulf Stream Index"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 5: Time-varying natural mortality with link to Gulf Stream Index}
+  %\VignetteIndexEntry{Ex 5: Time-varying natural mortality linked to the Gulf Stream Index}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,7 +19,7 @@ library(kableExtra)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 5th WHAM example, which builds off [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R):
+This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 - logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
@@ -27,7 +27,7 @@ This is the 5th WHAM example, which builds off [example 2](https://github.com/ti
 - 5 indices
 - fit to 1973-2011 data
 
-We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
+We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html).
 
 In example 5, we demonstrate how to specify and run WHAM with the following options for natural mortality:
 
@@ -77,7 +77,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same ASAP data file as in [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
+We need the same ASAP data file as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -122,7 +122,7 @@ df.mods
 
 ## 3. Natural mortality options
 
-Next we specify the options for modeling natural mortality by including an optional list argument, `M`, to the  `prepare_wham_input` function (see the `?prepare_wham_input` help page). `M` specifies estimation options and can overwrite M-at-age values specified in the ASAP data file. By default (i.e. `M` is `NULL` or not included), the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). `M` is a list with the following entries:
+Next we specify the options for modeling natural mortality by including an optional list argument, `M`, to the  `prepare_wham_input()` function (see the `prepare_wham_input()` help page). `M` specifies estimation options and can overwrite M-at-age values specified in the ASAP data file. By default (i.e. `M` is `NULL` or not included), the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). `M` is a list with the following entries:
 
 - `$model`: Natural mortality model options.
   - `"constant"`: estimate a single $M$, shared across all ages and years.
@@ -164,7 +164,7 @@ M <- list(re="2dar1")
 
 ## 4. Linking *M* to an environmental covariate (GSI)
 
-As described in [example 2](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment_SNEMA_yellowtail.R), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
+As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html), the environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`. This example differs from example 2 in that:
 
 - `$logsigma = "est_1"`: estimate the observation error for the GSI (one overall value for all years). The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.
 - `$lag = 0`: GSI in year *t* affects $M$ in year *t*, instead of year *t+1*.
@@ -322,9 +322,9 @@ df.mods
 
 ## 7. Results
 
-In the table, I have highlighted models which converged (see [`?stats::nlminb`](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/nlminb.html)) and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters (see [`?TMB::sdreport`](https://www.rdocumentation.org/packages/TMB/versions/1.7.16/topics/sdreport)). WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`).
+In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`). See `stats::nlminb()` and `TMB::sdreport()` for details.
 
-Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (bold in table below).
+Model `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (**bold** in table below).
 
 ```{r echo=FALSE}
 library(knitr)
@@ -386,4 +386,4 @@ In the final year (2011), `m8` estimated a lower probability of the stock being 
 
 ### Yet more *M* options
 
-If you want to estimate M-at-age shared/mirrored among *some but not all ages*, you'll need to modify `input$map$M_a` after calling `prepare_wham_input`.
+If you want to estimate M-at-age shared/mirrored among *some but not all ages*, you'll need to modify `input$map$M_a` after calling `prepare_wham_input()`.

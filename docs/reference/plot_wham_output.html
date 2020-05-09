@@ -8,11 +8,13 @@
 
 <title>Plot WHAM output — plot_wham_output • wham</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -38,10 +40,9 @@
 
   <link href="../extra.css" rel="stylesheet">
   
+
 <meta property="og:title" content="Plot WHAM output — plot_wham_output" />
-
 <meta property="og:description" content="Generates many output plots for a fit WHAM model." />
-
 
 
 
@@ -80,53 +81,25 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
+  <a href="../articles/index.html">Vignettes</a>
 </li>
 <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../reference/index.html">Functions</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="../articles/ex1_SNEMA_yellowtail_flounder.html">WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder</a>
-    </li>
-    <li>
-      <a href="../articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment</a>
-    </li>
-    <li>
-      <a href="../articles/ex3_projections.html">WHAM example 3: Projections / Forecasting</a>
-    </li>
-    <li>
-      <a href="../articles/ex4_selectivity.html">WHAM example 4: Selectivity</a>
-    </li>
-    <li>
-      <a href="../articles/ex5_GSI_M.html">WHAM example 5: Time-varying natural mortality with link to Gulf Stream Index</a>
-    </li>
-    <li>
-      <a href="../articles/ex6_NAA.html">WHAM example 6: Numbers-at-age</a>
-    </li>
-  </ul>
+<li>
+  <a href="https://github.com/timjmiller/wham/">Source code</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/timjmiller/wham/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a href="../mailto:fisheries.toolbox@noaa.gov">
+    <span class="far fa far fa-paper-plane fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="../mailto:fisheries.toolbox@noaa.gov">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+  <a href="https://github.com/timjmiller/wham/">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -149,13 +122,11 @@
     </div>
 
     <div class="ref-description">
-    
     <p>Generates many output plots for a fit WHAM model.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>plot_wham_output</span>(<span class='no'>mod</span>, <span class='kw'>dir.main</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/getwd.html'>getwd</a></span>(), <span class='kw'>out.type</span> <span class='kw'>=</span> <span class='st'>"html"</span>, <span class='kw'>res</span> <span class='kw'>=</span> <span class='fl'>72</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -176,7 +147,7 @@
       <td><p>resolution to save .png files (dpi)</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>out.type = 'pdf'</code> makes one pdf file of all plots. <code>out.type = 'png'</code>
@@ -184,16 +155,14 @@ creates a subdirectory `plots_png`` in <code>dir.main</code> and saves .png file
 <code>out.type = 'html'</code> (default) makes an html file for viewing these .png files in a browser
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').</p>
 <p>Plot functions are located in <code>wham_plots_tables.R</code></p>
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='wham_html.html'>wham_html</a></code>, <code>wham_plots_tables</code></p></div>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"SNEMA_ytl"</span>) <span class='co'># load SNEMA yellowtail flounder data and parameter settings</span>
-<span class='no'>mod</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"input4_SNEMAYT"</span>) <span class='co'># load fit wham model</span>
+<span class='no'>mod</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input4_SNEMAYT</span>)
 <span class='fu'>plot_wham_output</span>(<span class='no'>mod</span>)
 }</div></pre>
   </div>

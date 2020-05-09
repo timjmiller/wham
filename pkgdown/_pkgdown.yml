@@ -1,42 +1,52 @@
+url: https://timjmiller.github.io/wham/
 
 navbar:
-  structure:
-#    left:
-#    - home
-#    - intro
-#    - reference
-#    - articles
-#    - tutorials
-#    - news
-    right: 
-#    - externactive
-    - github
-    - sendemail
-
-  components:
-#    home:
-#      icon: fas fa-home fa-lg
-#      href: index.html
-#    reference:
-#      text: Reference
-#      href: reference/index.html
-#    externactive:
-#      image: 
-#        source: man/figures/badge_external_active.png
-#        alt: "badge_external_active"
-#      icon: fas fa-check fa-lg
-#      icon: badge
-    sendemail:
-      icon: far fa-paper-plane fa-lg
+  left:
+    - text: "Vignettes"
+      href: articles/index.html
+    - text: "Functions"
+      href: reference/index.html
+    - text: "Source code"
+      href: https://github.com/timjmiller/wham/
+  right:
+    - icon: far fa-paper-plane fa-lg
       href: mailto:fisheries.toolbox@noaa.gov
-#    github:
-#      icon: fab fa-github fa-lg
-#      href: https://github.com/timjmiller/wham/
-    
-#home:
-#  links:
-#    - text: Email questions about wham
-#      href: mailto:fisheries.toolbox@noaa.gov
-#    - image: 
-#        source: man/figures/badge_external_active.png
-#        alt: "badge_external_active"
+    - icon: fab fa-github fa-lg
+      href: https://github.com/timjmiller/wham/
+
+articles:
+  - title: "WHAM tutorial"
+    desc: >
+      These vignettes provide an introduction to fitting state-space assessment
+      models using the **WHAM** package. They get progressively more complex, so
+      we advise working through them in order unless you are only interested in
+      a specific topic.
+    contents:
+      - ex1_SNEMA_yellowtail_flounder
+      - ex2_CPI_recruitment_SNEMA_yellowtail
+      - ex3_projections
+      - ex4_selectivity
+      - ex5_GSI_M
+      - ex6_NAA
+
+reference:
+  - title: Functions that users call directly
+    contents:
+      - '`read_asap3_dat`'
+      - '`prepare_wham_input`'
+      - '`fit_wham`'
+      - '`check_convergence`'
+      - '`project_wham`'
+      - '`plot_wham_output`'
+      - '`compare_wham_models`'
+  - title: Helper functions and the like that users do not call
+    contents:
+      - '`set_age_sel0`'
+      - '`fit_tmb`'
+      - '`fit_peel`'
+      - '`retro`'
+      - '`retro_res`'
+      - '`mohns_rho`'
+      - '`prepare_projection`'
+      - '`wham_html`'
+      - '`%>%`'

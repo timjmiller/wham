@@ -13,16 +13,16 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Woods Hole Assessment Model (WHAM)">
-<meta property="og:description" content="The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
+<meta property="og:description" content='The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
   stock assessment model that can include environmental effects on population processes.
-  WHAM can be configured to estimate a range of assessment models from a traditional 
-  statistical catch-at-age (SCAA) model with recruitments as (possibly penalized) fixed 
-  effects, SCAA with recruitments as random effects, or abundance at all ages treated 
+  WHAM can be configured to estimate a range of assessment models: a traditional 
+  statistical catch-at-age (SCAA) model with recruitments as fixed effects, SCAA with 
+  recruitments as random effects, or a "full state-space" model with abundance at all ages treated 
   as random effects. WHAM is a generalization of the R and TMB code from Miller et al. 
-  (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM also has many similarities of input data sources with 
-  ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file 
+  (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM also has many similarities of 
+  input data sources with ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file 
   from an ASAP3 dat file. Many of the plotting functions for input data, results, and 
-  diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks.">
+  diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks.'>
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -48,52 +48,25 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
+  <a href="articles/index.html">Vignettes</a>
 </li>
 <li>
-  <a href="reference/index.html">Reference</a>
+  <a href="reference/index.html">Functions</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/ex1_SNEMA_yellowtail_flounder.html">WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder</a>
-    </li>
-    <li>
-      <a href="articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment</a>
-    </li>
-    <li>
-      <a href="articles/ex3_projections.html">WHAM example 3: Projections / Forecasting</a>
-    </li>
-    <li>
-      <a href="articles/ex4_selectivity.html">WHAM example 4: Selectivity</a>
-    </li>
-    <li>
-      <a href="articles/ex5_GSI_M.html">WHAM example 5: Time-varying natural mortality with link to Gulf Stream Index</a>
-    </li>
-    <li>
-      <a href="articles/ex6_NAA.html">WHAM example 6: Numbers-at-age</a>
-    </li>
-  </ul>
+  <a href="https://github.com/timjmiller/wham/">Source code</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a href="mailto:fisheries.toolbox@noaa.gov">
+    <span class="far fa far fa-paper-plane fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="mailto:fisheries.toolbox@noaa.gov">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+  <a href="https://github.com/timjmiller/wham/">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -109,188 +82,102 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-
-<div id="wham-a-state-space-age-structured-assessment-model" class="section level2">
+<div id="wham-a-state-space-age-structured-assessment-model" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#wham-a-state-space-age-structured-assessment-model" class="anchor"></a>WHAM: a state-space age-structured assessment model</h1></div>
+<p>The Woods Hole Assessment Model (<strong>WHAM</strong>) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. <strong>WHAM</strong> can be configured to estimate a range of assessment models (see <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>):</p>
+<ul>
+<li>statistical catch-at-age (SCAA) model with recruitments as fixed effects,</li>
+<li>SCAA with recruitments as random effects</li>
+<li>“full state-space model”, abundance at all ages are random effects</li>
+</ul>
+<p><strong>WHAM</strong> is a significant advancement in fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:</p>
+<ul>
+<li>recruitment / numbers-at-age (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>),</li>
+<li>selectivity (<a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">Ex 4</a>),</li>
+<li>natural mortality (<a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>), and</li>
+<li>environmental effects on the above (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>)</li>
+</ul>
+<p>A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts (<a href="https://timjmiller.github.io/wham/articles/ex3_projections.html">Ex 3</a>).</p>
+<div id="background" class="section level2">
 <h2 class="hasAnchor">
-<a href="#wham-a-state-space-age-structured-assessment-model" class="anchor"></a>WHAM: a state-space age-structured assessment model</h2>
-<p>The Woods Hole Assessment Model (WHAM) is a state-space age-structured stock assessment model that can include environmental effects on population processes. WHAM can be configured to estimate a range of assessment models from a traditional statistical catch-at-age (SCAA) model with recruitments as (possibly penalized) fixed effects, SCAA with recruitments as random effects, or abundance at all ages treated as random effects. WHAM is a generalization of the R and TMB code from <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a>, <a href="https://doi.org/10.1139/cjfas-2017-0035">Miller and Hyun 2018</a>, and <a href="https://doi.org/10.1139/cjfas-2017-0124">Miller et al. 2018</a>. WHAM has many similarities to ASAP (<a href="https://www.nefsc.noaa.gov/nft/ASAP.html">code</a>, <a href="http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf">Legault and Restrepo 1999</a>), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks (<a href="https://github.com/cmlegault/ASAPplots">ASAPplots</a>).</p>
-<div id="installation-and-basic-use" class="section level3">
-<h3 class="hasAnchor">
-<a href="#installation-and-basic-use" class="anchor"></a>Installation and basic use</h3>
-<p>Install WHAM:</p>
-<pre><code># if you want vignettes
-# not sure why, but these look better if you *build using R Studio*
-devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
-
-# if you do NOT want vignettes
-devtools::install_github("timjmiller/wham", dependencies=TRUE)
-
-# if you're having problems with dependencies not installing:
-devtools::install_github("kaskr/adcomp/TMB", dependencies=TRUE)
-to.install &lt;- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2"))
-new.packages &lt;- to.install[!(to.install %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)</code></pre>
-<p>View installed vignettes:</p>
-<pre><code><a href="https://rdrr.io/r/utils/browseVignettes.html">browseVignettes("wham")</a></code></pre>
-<p>For a clean, runnable <code>.R</code> script, look at <code>ex1_SNEMA_yellowtail_flounder.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
+<a href="#background" class="anchor"></a>Background</h2>
+<p><strong>WHAM</strong> generalizes and extends R and TMB code from <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a>, <a href="https://doi.org/10.1139/cjfas-2017-0035">Miller and Hyun 2018</a>, and <a href="https://doi.org/10.1139/cjfas-2017-0124">Miller et al. 2018</a>. <strong>WHAM</strong> has many similarities to ASAP (<a href="https://www.nefsc.noaa.gov/nft/ASAP.html">code</a>, <a href="http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf">Legault and Restrepo 1998</a>), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks (<a href="https://github.com/cmlegault/ASAPplots">ASAPplots</a>).</p>
+<p><strong>WHAM</strong> is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:</p>
+<ul>
+<li>R: <a href="https://www.r-project.org/" class="uri">https://www.r-project.org/</a>
+</li>
+<li>TMB: <a href="https://kaskr.github.io/adcomp/_book/Introduction.html" class="uri">https://kaskr.github.io/adcomp/_book/Introduction.html</a>
+</li>
+</ul>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h2>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE)</a></code></pre>
+</div>
+<div id="tutorial" class="section level2">
+<h2 class="hasAnchor">
+<a href="#tutorial" class="anchor"></a>Tutorial</h2>
+<p>We suggest walking through the vignettes to familiarize yourself with <strong>WHAM</strong>: <a href="https://timjmiller.github.io/wham/articles" class="uri">https://timjmiller.github.io/wham/articles</a>.</p>
+<p>Clean, runnable <code>.R</code> scripts for each vignette are also available in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <pre><code><a href="https://rdrr.io/pkg/wham/man">library(wham)
 wham.dir &lt;- find.package("wham")
 file.path(wham.dir, "example_scripts")</a></code></pre>
-<p>You can run this entire example script with:</p>
-<pre><code>write.dir &lt;- "choose/where/to/save/output" # otherwise will be saved in working directory
-source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))</code></pre>
+<p>You can then run the entire first example script with:</p>
+<pre><code><a href="https://rdrr.io/r/base/getwd.html">setwd("choose/where/to/save/output")
+source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))</a></code></pre>
 </div>
-<div id="observation-model-components" class="section level3">
-<h3 class="hasAnchor">
-<a href="#observation-model-components" class="anchor"></a>Observation model components:</h3>
-<div id="aggregate-relative-abundance-indices" class="section level4">
-<h4 class="hasAnchor">
-<a href="#aggregate-relative-abundance-indices" class="anchor"></a>Aggregate relative abundance indices:</h4>
-<ul>
-<li>These can be in numbers or biomass, determined by an indicator.</li>
-<li>A normal distribution is assumed for the log-indices.</li>
-<li>Input standard errors for log-indices are year-specific, but index-specific scalars may be estimated.</li>
-<li>There can be any number of indices.</li>
-<li>There are indicators for whether to use the index in a given year.</li>
-<li>The time of year the index occurs is specified for each year.</li>
-<li>The selectivity “block” to use for an index is specified for each year.</li>
-</ul>
-</div>
-<div id="index-age-composition" class="section level4">
-<h4 class="hasAnchor">
-<a href="#index-age-composition" class="anchor"></a>Index age composition:</h4>
-<ul>
-<li>These can also be in numbers or biomass, determined by an indicator.</li>
-<li>Several distribution assumptions available: multinomial, Dirichlet, Dirichlet-multinomial, logistic normal, two types of zero-one inflated logistic normal.</li>
-<li>Effective sample sizes for multinomial are input and year-specific, but variance parameters may be estimated for other distributions.</li>
-<li>The order is the same as the relative abundance indices.</li>
-<li>There are indicators for whether to use the age composition in a given year.</li>
-</ul>
-</div>
-<div id="aggregate-fleet-catch" class="section level4">
-<h4 class="hasAnchor">
-<a href="#aggregate-fleet-catch" class="anchor"></a>Aggregate fleet catch:</h4>
-<ul>
-<li>This is in biomass.</li>
-<li>A normal distribution is assumed for the log-catch.</li>
-<li>Input standard errors for log-catch are year-specific, but fleet-specific scalars may be estimated.</li>
-<li>There can be any number of fleets.</li>
-<li>The selectivity “block” to use for an fleet is specified for each year.</li>
-</ul>
-</div>
-<div id="fleet-age-composition" class="section level4">
-<h4 class="hasAnchor">
-<a href="#fleet-age-composition" class="anchor"></a>Fleet age composition:</h4>
-<ul>
-<li>These can only be in numbers.</li>
-<li>Same distribution assumptions as indices available: multinomial, Dirichlet, Dirichlet-multinomial, logistic normal, two types of zero-one inflated logistic normal.</li>
-<li>Effective sample sizes for multinomial are input and year-specific, but variance parameters may be estimated for other distributions.</li>
-<li>The order is the same as the fleet catches.</li>
-<li>There are indicators for whether to use the age composition in a given year.</li>
-</ul>
-<div id="hidden-process-model-components" class="section level5">
-<h5 class="hasAnchor">
-<a href="#hidden-process-model-components" class="anchor"></a>Hidden process model components:</h5>
-<ul>
-<li>Abundance at age:</li>
-<li>As mentioned above, the model can be configured to have no hidden processes (random effects),</li>
-<li>or log-recruitment can be treated as a normal random variable,</li>
-<li>or all log-abundances at age can be treated as normal random variables. Abundances at age are currently conditionally independent of each other.</li>
-<li>Natural mortality:</li>
-<li>can be assumed known at age, or estimated as fixed effects parameters.</li>
-<li>if an allometric function of size is estimated, the (log of the) exponential parameter can be estimated as a normal random effect with a prior based on Lorenzen’s work.</li>
-<li>or annual log-natural mortality parameters can be treated as a normal random walk.</li>
-</ul>
-</div>
-</div>
-</div>
-<div id="other-inputs" class="section level3">
-<h3 class="hasAnchor">
-<a href="#other-inputs" class="anchor"></a>Other Inputs:</h3>
-<div id="weight-at-age" class="section level4">
-<h4 class="hasAnchor">
-<a href="#weight-at-age" class="anchor"></a>Weight-at-age:</h4>
-<ul>
-<li>Like ASAP weight-at-age are input and pointers are specified for them for fleet catches, relative abundance indices (if necessary), Spawning Stock Biomass, etc.</li>
-<li>Future versions may include options for internal estimation of weight at age, like <a href="https://doi.org/10.1139/cjfas-2017-0124">Miller et al. 2018</a>.</li>
-</ul>
-</div>
-</div>
-</div>
-<div id="maturity-at-age" class="section level2">
+<div id="install-details" class="section level2">
 <h2 class="hasAnchor">
-<a href="#maturity-at-age" class="anchor"></a>Maturity-at-age:</h2>
-<ul>
-<li>One matrix of annual maturity at age is input and used to estimate annual spawning stock biomass.</li>
-</ul>
-<div id="parameter-options" class="section level3">
-<h3 class="hasAnchor">
-<a href="#parameter-options" class="anchor"></a>Parameter options:</h3>
-<ul>
-<li>Natural Mortality:</li>
-<li>In general, this can be year- and age-specific. However, by default it is assumed known at the initial parameter values using the map argument in TMB.</li>
-<li>It can also be treated as a random walk of random effects, or an allometric function of weight at age.</li>
-<li>Variance parameters for natural mortality:</li>
-<li>If a random walk in annual natural mortality parameters, then corresponding variance parameters can be estimated.</li>
-<li>Initial numbers at age:</li>
-<li>Estimate between 1 and n_ages age-specfic parameters</li>
-<li>Estimate an initial recruitment and an “initial F” and rest of numbers at age are based on equilibrium calculations.</li>
-<li>Recruitment:</li>
-<li>Can be estimated as annual fixed effects, a random walk, or random effects around a mean (potentially related to spawning stock biomass)</li>
-<li>Abundance at age:</li>
-<li>Numbers at age after recruitment can be deterministically determined by numbers at previous age in previous year (statistical catch-at-age)</li>
-<li>Transitions in abundance at age can be stochastic</li>
-<li>Variance parameters for abundance at age</li>
-<li>If transitions in abundance at age are stochastic, estimate between between 1 and n_ages corresponding variance parameters.</li>
-<li>Catchability is estimated on a logit scale with the user specifying upper and lower bounds.</li>
-<li>Selectivity parameters:</li>
-<li>A set of selectivity “blocks” is specified and a pointer to each fleet and index each year is specified.</li>
-<li>Selectivity models for each block can be composed of age-specific parameters, logistic (increasing or decreasing), or double-logistic.</li>
-<li><p>Parameters estimated on a logit scale with the user specifying upper and lower bounds.</p></li>
-<li>Variance parameters for aggregate catch and indices</li>
-<li>Fleet- or index-specific parameters may be estimated to scale corresponding input standard errors.</li>
-<li>Variance parameters for age composition observations</li>
-<li><p>Depends on models assumed, but parameters for each age composition set (i.e., fleet or index) can be estimated.</p></li>
-</ul>
+<a href="#install-details" class="anchor"></a>Install details</h2>
+<p>Installation from GitHub does not include the vignettes by default because they can be accessed online anytime at <a href="https://timjmiller.github.io/wham/articles" class="uri">https://timjmiller.github.io/wham/articles</a>. If you want to build the vignettes locally, they look best if you <em>build using R Studio</em>:</p>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))</a></code></pre>
+<p>View installed vignettes:</p>
+<pre><code><a href="https://rdrr.io/r/utils/browseVignettes.html">browseVignettes("wham")</a></code></pre>
+<p>If you’re having problems with dependencies not installing, you can try:</p>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("kaskr/adcomp/TMB", dependencies=TRUE)
+devtools::install_github("kaskr/TMB_contrib_R/TMBhelper")
+to.install &lt;- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis")
+new.packages &lt;- to.install[!(to.install %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)</a></code></pre>
 </div>
-<div id="ouput-estimates" class="section level3">
-<h3 class="hasAnchor">
-<a href="#ouput-estimates" class="anchor"></a>Ouput Estimates:</h3>
-<ul>
-<li>Annual abundance-at-age</li>
-<li>Annual spawning stock biomass</li>
-<li>Selectivity at age for each selectivity “block”</li>
-<li>Natural mortality at age</li>
-<li>Catchability for each relative abundance index, and catchability at age</li>
-<li>Annual fully-selected fishing mortalty for each fleet</li>
-<li>Annual fishing mortality at age for each fleet, and total F at age</li>
-<li>Predicted catch for each fleet and corresponding age composition</li>
-<li>Predicted indices and corresponding age composition</li>
-<li>Estimates of unfished spawning biomass per recruit each year based on corresponding weight-, maturity-, and natural mortality-at-age.</li>
-<li>Biological Reference Points:</li>
-<li>The user specifies a percentage of unfished spawning biomass per recruit to make estimates of fishing mortality and SSB reference points.</li>
-<li>Beverton-Holt and Ricker spawner-recruit models may be assumed. Traditional “alpha” and “beta” parameters or steepness and <br><span class="math display"><em>R</em><sub>0</sub></span><br> may be estimated.</li>
-<li>Annual conditional reference points are estimated in case weight, maturity, natural mortality, or selectivity at age change over time.</li>
-<li>If a spawner-recruit model is assumed, MSY-based reference points are also estimated.</li>
-<li>Both of these classes of reference points employ a Newton method internally to determine the fishing mortality reference points, thereby propogating uncertainty of inputs as in <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. 2016</a> and <a href="https://doi.org/10.1139/cjfas-2017-0124">Miller et al. 2018</a>.</li>
-</ul>
+<div id="references" class="section level2">
+<h2 class="hasAnchor">
+<a href="#references" class="anchor"></a>References</h2>
+<blockquote>
+<p>Kristensen, K., Nielsen, A., Berg, C. W., Skaug, H., and Bell, B. M. 2016. TMB: Automatic differentiation and Laplace approximation. Journal of Statistical Software 70(5): 1–21. doi: 10.18637/jss.v070.i05.</p>
+</blockquote>
+<blockquote>
+<p>Legault, C. M. and Restrepo, V. R. 1998. A flexible forward age-structured assessment program. ICCAT. Col. Vol. Sci. Pap. 49: 246-253.</p>
+</blockquote>
+<blockquote>
+<p>Miller, T. J., Hare, J. A., and Alade, L. A. 2016. A state-space approach to incorporating environmental effects on recruitment in an age-structured assessment model with an application to Southern New England yellowtail flounder. Canadian Journal of Fisheries and Aquatic Sciences 73(8): 1261-1270. doi: 10.1139/cjfas-2015-0339</p>
+</blockquote>
+<blockquote>
+<p>Miller, T. J. and Hyun, S-Y. 2018. Evaluating evidence for alternative natural mortality and process error assumptions using a state-space, age-structured assessment model. Canadian Journal of Fisheries and Aquatic Sciences 75(5): 691-703. doi: 10.1139/cjfas-2017-0035</p>
+</blockquote>
+<blockquote>
+<p>Miller, T. J., O’Brien, L., and Fratantoni, P. S. 2018. Temporal and environmental variation in growth and maturity and effects on management reference points of Georges Bank Atlantic cod. Canadian Journal of Fisheries and Aquatic Sciences 75(12): 2159-2171. doi: 10.1139/cjfas-2017-0124</p>
+</blockquote>
+<blockquote>
+<p>R Core Team. 2019. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.r-project.org/" class="uri">https://www.r-project.org/</a></p>
+</blockquote>
 </div>
-<div id="noaa-disclaimer" class="section level3">
-<h3 class="hasAnchor">
-<a href="#noaa-disclaimer" class="anchor"></a>NOAA Disclaimer</h3>
+<div id="noaa-disclaimer" class="section level2">
+<h2 class="hasAnchor">
+<a href="#noaa-disclaimer" class="anchor"></a>NOAA Disclaimer</h2>
 <p>This repository is a scientific product and is not official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.</p>
 <!-- badges: start -->
 
 <!-- badges: end -->
-<footer><img src="reference/figures/noaa-fisheries-rgb-2line-horizontal-small.png" height="75" alt="NOAA Fisheries"><div class="mywrap_center">
-  <a class="mylink line" href="https://www.commerce.gov/">U.S. Department of Commerce</a>
- <a class="mylink line" href="https://www.noaa.gov">National Oceanographic and Atmospheric Administration</a>
- <a class="mylink" href="https://www.fisheries.noaa.gov/">NOAA Fisheries</a>
- </div>
+<footer><a href="https://www.fisheries.noaa.gov/"><img src="reference/figures/noaa-fisheries-rgb-2line-horizontal-small.png" height="75" alt="NOAA Fisheries"></a>
+<div class="mywrap_center">
+<a class="mylink line" href="https://www.commerce.gov/">U.S. Department of Commerce</a> <a class="mylink line" href="https://www.noaa.gov">National Oceanographic and Atmospheric Administration</a> <a class="mylink" href="https://www.fisheries.noaa.gov/">NOAA Fisheries</a>
+</div>
 </footer><!-- <div class ="attribution">Icons by icons8 https://icons8.com/</div>  -->
 </div>
 </div>
-
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -66,17 +66,17 @@
 #'
 #' @examples
 #' \dontrun{
-#' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-#' mod <- fit_wham(input) # using default values (do.proj=T)
+#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder input data and model settings
+#' mod <- fit_wham(input4_SNEMAYT) # using default values (do.proj=T)
 #'
-#' mod2 <- fit_wham(input, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
+#' mod2 <- fit_wham(input4_SNEMAYT, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
 #' mod_proj <- project_wham(mod2) # add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
 #'
 #' names(mod_proj$rep) # list of derived quantities
 #' tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
-
+#'
 #' x = summary(mod_proj$sdrep)
-#' unique(rownames(x))) # list of estimated parameters and derived quanitites with SE
+#' unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
 #' x = x[rownames(x) == "log_SSB",] # SSB estimates with SE
 #' ssb.mat = exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
 #' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")

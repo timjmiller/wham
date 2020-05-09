@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 3: Projections / Forecasting"
+title: "Ex 3: Projecting / forecasting random effects"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 3: Projections / Forecasting}
+  %\VignetteIndexEntry{Ex 3: Projecting / forecasting random effects}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
+Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -29,7 +29,7 @@ Here we assume you already have `wham` installed. If not, see the [README](https
 
 - CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`ecov$where = "recruit"`, `ecov$how = 1`)
 
-In example 3, we demonstrate how to project/forecast WHAM models using the `project_wham` function options for handling
+In example 3, we demonstrate how to project/forecast WHAM models using the `project_wham()` function options for handling
 
 - fishing mortality / catch (use last F, use average F, use $F_{SPR}$, specify F, specify catch) and the
 
@@ -63,7 +63,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
+We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -87,7 +87,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 ## 2. Specify model
 
-Setup model `m6` from [example 2](https://github.com/timjmiller/wham/blob/master/vignettes/ex2_CPI_recruitment_SNEMA_yellowtail.Rmd):
+Setup model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -151,7 +151,7 @@ mod_proj <- project_wham(mod)
 mod_proj <- fit_wham(input, do.proj = TRUE)
 ```
 
-The two code blocks above are equivalent; when `do.proj = TRUE`, `fit_wham` fits the model without projections and then calls `project_wham` to add them. In this example we choose option #1 because we are going to add several different projections to the same model, `mod`. We will save each projected model in a list, `mod_proj`.
+The two code blocks above are equivalent; when `do.proj = TRUE`, `fit_wham()` fits the model without projections and then calls `project_wham()` to add them. In this example we choose option #1 because we are going to add several different projections to the same model, `mod`. We will save each projected model in a list, `mod_proj`.
 
 ```{r eval=FALSE}
 # run
@@ -161,7 +161,7 @@ saveRDS(mod, file="m6.rds") # save unprojected model
 
 ## 4. Add projections to fit model
 
-Projection options are specifed using the `proj.opts` input to `project_wham`. The default settings are to project 3 years (`n.yrs = 3`), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (`avg.yrs`), use fishing mortality in the last model year (`use.last.F = TRUE`), and continue the ecov process model (`cont.ecov = TRUE`). These options are also described in the `?project_wham` help page.
+Projection options are specifed using the `proj.opts` input to `project_wham()`. The default settings are to project 3 years (`n.yrs = 3`), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (`avg.yrs`), use fishing mortality in the last model year (`use.last.F = TRUE`), and continue the ecov process model (`cont.ecov = TRUE`). These options are also described in the `project_wham()` help page.
 
 ```{r eval=FALSE}
  # save projected models in a list

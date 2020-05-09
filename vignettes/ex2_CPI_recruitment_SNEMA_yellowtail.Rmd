@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment"
+title: "Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment}
+  %\VignetteIndexEntry{Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 2nd `wham` example, which builds off model `m4` from example 1 (full state-space model, numbers at all ages are random effects, logistic normal age-compositions). We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd).
+This is the 2nd `wham` example, which builds off model `m4` from example 1 (full state-space model, numbers at all ages are random effects, logistic normal age-compositions). We assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html).
 
 In example 2, we demonstrate how to specify and run WHAM with varying
 
@@ -27,7 +27,7 @@ In example 2, we demonstrate how to specify and run WHAM with varying
 
 - how the CPI affects recruitment (controlling or limiting)
 
-As in [example 1](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R), we check that each model converges (`check_convergence`), plot diagnostics, results, and reference points (`plot_wham_output`), and compare models using AIC and Mohn's rho (`compare_wham_models`).
+As in [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html), we check that each model converges (`check_convergence()`), plot diagnostics, results, and reference points (`plot_wham_output()`), and compare models using AIC and Mohn's rho (`compare_wham_models()`).
 
 ## 1. Prepare `wham`
 
@@ -103,14 +103,14 @@ Look at the model table
 df.mods
 ```
 
-We specify the options for modeling recruitment and any environmental covariate(s) using the `prepare_wham_input` function. WHAM provides 4 options for recruitment (`recruit_model`): 
+We specify the options for modeling recruitment and any environmental covariate(s) using the `prepare_wham_input()` function. WHAM provides 4 options for recruitment (`recruit_model`): 
 
   1. random walk, 
   2. random about mean, 
   3. Beverton-Holt, and 
   4. Ricker.
 
-The environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`:
+The environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`:
 ```{r eval=FALSE}
   m=1 # example for first model
   ecov <- list(
@@ -137,7 +137,7 @@ Finally, we specify the **lag** at which CPI affects recruitment (`ecov$lag = 1`
 
 You can set `ecov = NULL` to fit the model without environmental covariate data, but note that here we fit the `ecov` data even for models without an `ecov` effect on recruitment (`m1` and `m3`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `ecov$how = 0`.
 
-Options are described in the `?prepare_wham_input` help page. Not all `ecov$how` options are implemented for every recruitment model.
+Options are described in the `prepare_wham_input()` help page. Not all `ecov$how` options are implemented for every recruitment model.
 ```{r eval=FALSE}
 ?prepare_wham_input
 ```
@@ -222,7 +222,7 @@ for(m in 1:7) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
 ## 5. Compare models
 
-Calculate AIC and Mohn's rho using `compare_wham_models`.
+Calculate AIC and Mohn's rho using `compare_wham_models()`.
 ```{r eval=FALSE}
 df.aic <- compare_wham_models(mods, sort=FALSE)$tab # can't sort yet bc going to make labels prettier
 df.mods <- cbind(df.mods, df.aic)
@@ -247,7 +247,7 @@ vign2_res
 
 ## 6. Results
 
-There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
+There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html()`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
 ```{r eval=FALSE}
 # save output plots in subfolder for each model
 for(m in 1:n.mods) plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(), df.mods$Model[m]), out.type='html')

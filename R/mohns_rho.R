@@ -10,8 +10,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit_wham(input) # using default values: do.retro = T, n.peels = 7
+#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
+#' mod = fit_wham(input4_SNEMAYT) # using default values: do.retro = T, n.peels = 7
 #' mohns_rho(mod) # calculate Mohn's rho
 #' }
 mohns_rho = function(model)

@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 4: Selectivity"
+title: "Ex 4: Selectivity with time- and age-varying random effects"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 4: Selectivity}
+  %\VignetteIndexEntry{Ex 4: Selectivity with time- and age-varying random effects}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 header-includes:
@@ -19,7 +19,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd):
+Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -75,7 +75,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 1](https://github.com/timjmiller/wham/blob/master/vignettes/ex1_SNEMA_yellowtail_flounder.Rmd). Let's copy `ex1_SNEMAYT.dat` to our analysis directory:
+We need the same data files as in [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html). Let's copy `ex1_SNEMAYT.dat` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -135,7 +135,7 @@ asap3$dat$sel_ini # fleet sel initial values (col1), estimation phase (-1 = fix)
 asap3$dat$index_sel_ini # index sel initial values (col1), estimation phase (-1 = fix)
 ```
 
-When we specify the WHAM model with `prepare_wham_input`, we can overwrite the selectivity options from the ASAP data file with the optional list argument `selectivity`. The selectivity model is chosen via `selectivity$model`:
+When we specify the WHAM model with `prepare_wham_input()`, we can overwrite the selectivity options from the ASAP data file with the optional list argument `selectivity`. The selectivity model is chosen via `selectivity$model`:
 
 Model | `selectivity$model` | No. Parameters
 --- | --- | ---

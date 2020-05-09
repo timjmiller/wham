@@ -29,8 +29,8 @@ Access quick convergence checks from `TMB` and `nlminb`.
 }
 \examples{
 \dontrun{
-data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-mod = fit_wham(input) # using default values
+data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
+mod = fit_wham(input4_SNEMAYT) # using default values
 check_convergence(mod)
 }
 }

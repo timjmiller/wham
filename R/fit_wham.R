@@ -60,9 +60,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit_wham(input) # using default values
-#' mod = fit_wham(input, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
+#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
+#' mod = fit_wham(input4_SNEMAYT) # using default values
+#' mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
 #'
 #' names(mod$rep) # list of derived quantities
 #' mod$rep$SSB # get SSB estimates (weight, not numbers)

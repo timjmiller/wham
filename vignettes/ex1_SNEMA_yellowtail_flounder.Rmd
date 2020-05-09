@@ -1,8 +1,8 @@
 ---
-title: "WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder"
+title: "Ex 1: The basics"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{WHAM example 1: Southern New England Mid-Atlantic Yellowtail Flounder}
+  %\VignetteIndexEntry{Ex 1: The basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,19 +15,19 @@ knitr::opts_chunk$set(
 wham.dir <- find.package("wham")
 knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
-In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate how to:
+In this vignette we walk through an example using the `wham` (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate the basic `wham` workflow:
 
 1. Load `wham` and data
 
 2. Specify several (slightly different) models:
 
-  - m1: statistical catch-at-age (SCAA) model, but with recruitment estimated as random effects; multinomial age-compositions
+    - m1: statistical catch-at-age (SCAA) model, but with recruitment estimated as random effects; multinomial age-compositions
   
-  - m2: as m1, but with logistic normal age-compositions
+    - m2: as m1, but with logistic normal age-compositions
   
-  - m3: full state-space model (numbers at all ages are random effects), multinomial age-compositions
+    - m3: full state-space model (numbers at all ages are random effects), multinomial age-compositions
   
-  - m4: full state-space model, logistic normal age-compositions
+    - m4: full state-space model, logistic normal age-compositions
 
 3. Fit models and check for convergence
 
@@ -83,7 +83,7 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 
 ## 2. Specify model
 
-We use the `prepare_wham_input` function to specify the model name and any settings that differ from the ASAP3 file. Our first model will use:
+We use the `prepare_wham_input()` function to specify the model name and any settings that differ from the ASAP3 file. Our first model will use:
 
 - recruitment model: random about mean, no S-R function (`recruit_model = 2`)
 - recruitment deviations: independent random effects (`NAA_re = list(sigma="rec", cor="iid")`)
@@ -105,7 +105,7 @@ The stock-recruit model options in WHAM are:
 - 3 = Beverton-Holt, and 
 - 4 = Ricker
 
-Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. `prepare_wham_input` fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (age 5 in fishery, age 4 in index1, and age 2 in index2). If you are interested in more details and options for selectivity in WHAM, see [Example 4](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex4_selectivity.R).
+Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. `prepare_wham_input()` fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (age 5 in fishery, age 4 in index 1, and age 2 in index 2). If you are interested in more details and options for selectivity in WHAM, see [Example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html) and `prepare_wham_input()`.
 
 ## 3. Fit model and check for convergence
 
@@ -113,7 +113,7 @@ Note that the parameterization of age-specific selectivity is specific to SNEMA 
 m1 <- fit_wham(input1, do.osa = F) # turn off OSA residuals to save time in ex
 ```
 
-By default, `fit_wham` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). See `?fit_wham`.
+By default, `fit_wham()` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham()` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). For more details, see `fit_wham()`.
 
 ```{r include=FALSE}
 data(vign1_m1_conv)
@@ -123,7 +123,7 @@ data(vign1_m4_conv)
 data(vign1_res)
 ```
 
-We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham` includes a `do.check` option to run Jim Thorson's useful function [TMBhelper::Check_Identifiable](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `?fit_wham`.
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham()` includes a `do.check` option to run Jim Thorson's useful function [TMBhelper::Check_Identifiable()](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `fit_wham()`.
 ```{r eval=FALSE}
 check_convergence(m1)
 ```
@@ -227,18 +227,18 @@ res$best
 vign1_res$best
 ```
 
-By default, `compare_wham_models` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. `m1` vs. `m3` (both multinomial) and `m2` vs. `m4` (both logistic normal).
+By default, `compare_wham_models()` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. `m1` vs. `m3` (both multinomial) and `m2` vs. `m4` (both logistic normal).
 
 ### Project the best model
 
-Let's do projections for the best model, `m4`, using the default settings (see `?project_wham`):
+Let's do projections for the best model, `m4`, using the default settings (see `project_wham()`):
 ```{r eval=FALSE}
 m4_proj <- project_wham(model=m4)
 ```
 
 ## 5. Plot input data, diagnostics, and results
 
-There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
+There are 3 options for plotting WHAM output. The default (`out.type='html'`) creates and opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html()`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)):
 
 ```{r eval=FALSE}
 plot_wham_output(mod=m4_proj, out.type='html')

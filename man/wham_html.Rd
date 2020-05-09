@@ -22,5 +22,5 @@ Writes a set of HTML files with tabbed navigation between them. Called by
 default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R).
 }
 \seealso{
-\code{\link{plot_wham_output}}, [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)
+\code{\link{plot_wham_output}}, `r4ss::SS_html()`
 }

@@ -28,8 +28,8 @@ Plot functions are located in \code{wham_plots_tables.R}
 }
 \examples{
 \dontrun{
-data("SNEMA_ytl") # load SNEMA yellowtail flounder data and parameter settings
-mod = fit_wham(input)
+data("input4_SNEMAYT") # load fit wham model
+mod <- fit_wham(input4_SNEMAYT)
 plot_wham_output(mod)
 }
 }
