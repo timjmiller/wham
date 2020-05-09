@@ -1,12 +1,12 @@
 # WHAM: a state-space age-structured assessment model
 
-The Woods Hole Assessment Model (**WHAM**) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. **WHAM** can be configured to estimate a range of assessment models (see [Ex 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)):
+The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see [Ex 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)):
 
 - statistical catch-at-age (SCAA) model with recruitments as fixed effects, 
 - SCAA with recruitments as random effects
 - "full state-space model", abundance at all ages are random effects
 
-**WHAM** is a significant advancement in fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:
+WHAM is a significant advancement in fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:
 
 - recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
 - selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
@@ -17,9 +17,9 @@ A nice property of treating population and environmental processes as random eff
 
 ## Background
 
-**WHAM** generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). **WHAM** has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
+WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
 
-**WHAM** is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
+WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
 
 - R: https://www.r-project.org/
 - TMB: https://kaskr.github.io/adcomp/_book/Introduction.html
@@ -32,7 +32,7 @@ devtools::install_github("timjmiller/wham", dependencies=TRUE)
 
 ## Tutorial
 
-We suggest walking through the vignettes to familiarize yourself with **WHAM**: https://timjmiller.github.io/wham/articles.
+We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
 
 Clean, runnable `.R` scripts for each vignette are also available in the `example_scripts` folder of the `wham` package install:
 ```
