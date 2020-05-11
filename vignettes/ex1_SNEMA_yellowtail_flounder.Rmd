@@ -37,7 +37,9 @@ In this vignette we walk through an example using the `wham` (WHAM = the Woods H
 
 ## 1. Load data
 
-We assume you already have `wham` and dependencies installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). Open R and load the `wham` package:
+We assume you have already read the [Introduction](https://timjmiller.github.io/wham/) and installed `wham` and its dependencies. If not, you should be able to just run `devtools::install_github("timjmiller/wham", dependencies=TRUE)`.
+
+Open R and load the `wham` package:
 
 ```{r}
 library(wham)

@@ -38,27 +38,66 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/index.html">Vignettes</a>
-</li>
-<li>
-  <a href="../reference/index.html">Functions</a>
-</li>
-<li>
-  <a href="https://github.com/timjmiller/wham/">Source code</a>
-</li>
-      </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="../mailto:fisheries.toolbox@noaa.gov">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    <span class="fas fa fas fa-book"></span>
      
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/index.html">Overview</a>
+    </li>
+    <li>
+      <a href="../articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1: The basics</a>
+    </li>
+    <li>
+      <a href="../articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+    </li>
+    <li>
+      <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
+    </li>
+    <li>
+      <a href="../articles/ex4_selectivity.html">Ex 4: Selectivity with time- and age-varying random effects</a>
+    </li>
+    <li>
+      <a href="../articles/ex5_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
+    </li>
+    <li>
+      <a href="../articles/ex6_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../reference/index.html">
+    <span class="fa fa-file-code-o"></span>
+     
+    Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fa fa-github fa-lg"></span>
      
+    Source code
+  </a>
+</li>
+      </ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/timjmiller/wham/issues/">
+    <span class="fa fa-question-circle-o"></span>
+     
+    Issues
+  </a>
+</li>
+<li>
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
+    <span class="far fa far fa-paper-plane fa-lg"></span>
+     
+    Contact
   </a>
 </li>
       </ul>
@@ -103,12 +142,13 @@
 <div id="load-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#load-data" class="anchor"></a>1. Load data</h2>
-<p>We assume you already have <code>wham</code> and dependencies installed. If not, see the <a href="https://github.com/timjmiller/wham#installation-and-basic-use">README</a>. Open R and load the <code>wham</code> package:</p>
+<p>We assume you have already read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and installed <code>wham</code> and its dependencies. If not, you should be able to just run <code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE)</a></code>.</p>
+<p>Open R and load the <code>wham</code> package:</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">wham</span>)</pre></body></html></div>
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex1_SNEMA_yellowtail_flounder.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>)
-<span class="co">#&gt; [1] "/tmp/RtmpiiUo4I/temp_libpath29b0569df550/wham/example_scripts"</span></pre></body></html></div>
+<span class="co">#&gt; [1] "/tmp/RtmpImTf8V/temp_libpathb932507db92/wham/example_scripts"</span></pre></body></html></div>
 <p>You can run this entire example script with:</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_SNEMA_yellowtail_flounder.R"</span>))</pre></body></html></div>

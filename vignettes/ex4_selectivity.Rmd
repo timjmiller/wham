@@ -19,7 +19,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [README](https://github.com/timjmiller/wham#installation-and-basic-use). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html):
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 

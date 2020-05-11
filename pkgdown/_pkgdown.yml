@@ -3,16 +3,36 @@ url: https://timjmiller.github.io/wham/
 navbar:
   left:
     - text: "Vignettes"
-      href: articles/index.html
+      icon: fas fa-book
+      menu:
+      -  text: "Overview"
+         href: articles/index.html
+      -  text: "Ex 1: The basics"
+         href: articles/ex1_SNEMA_yellowtail_flounder.html
+      -  text: "Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)"
+         href: articles/ex2_CPI_recruitment_SNEMA_yellowtail.html
+      -  text: "Ex 3: Projecting / forecasting random effects"
+         href: articles/ex3_projections.html
+      -  text: "Ex 4: Selectivity with time- and age-varying random effects"
+         href: articles/ex4_selectivity.html
+      -  text: "Ex 5: Time-varying natural mortality linked to the Gulf Stream Index"
+         href: articles/ex5_GSI_M.html
+      -  text: "Ex 6: Numbers-at-age / survival deviations as random effects"
+         href: articles/ex6_NAA.html
+
     - text: "Functions"
+      icon: fa-file-code-o
       href: reference/index.html
     - text: "Source code"
+      icon: fa-github fa-lg
       href: https://github.com/timjmiller/wham/
   right:
+    - icon: fa-question-circle-o
+      text: "Issues"
+      href: https://github.com/timjmiller/wham/issues/
     - icon: far fa-paper-plane fa-lg
-      href: mailto:fisheries.toolbox@noaa.gov
-    - icon: fab fa-github fa-lg
-      href: https://github.com/timjmiller/wham/
+      text: "Contact"
+      href: https://www.fisheries.noaa.gov/contact/timothy-miller-phd
 
 articles:
   - title: "WHAM tutorial"
