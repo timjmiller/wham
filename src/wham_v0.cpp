@@ -674,7 +674,7 @@ Type objective_function<Type>::operator() ()
     pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
     
     // calculate NAA
-    if(n_NAA_sigma == 2){
+    if(n_NAA_sigma > 1){
       // all NAA are estimated (random effects)
       for(int a = 0; a < n_ages; a++) NAA(y,a) = exp(log_NAA(y-1,a));
     } else {
