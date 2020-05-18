@@ -30,6 +30,7 @@
 #'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
+#' @param MakeADFun.silent T/F, Passed to silent argument of TMB::MakeADFun. Default = \code{FALSE}.
 #' @param do.proj T/F, do projections? Default = \code{FALSE}. If true, runs \code{\link{project_wham}}.
 #' @param proj.opts list of options for projections
 #'   \itemize{
@@ -70,7 +71,7 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
-                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE,
+                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
                     do.proj = FALSE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                               cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
@@ -79,7 +80,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
   # fit model
   if(missing(model)){
-    mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map)
+    mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent)
   } else {mod = model}
 
   mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
