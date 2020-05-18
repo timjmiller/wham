@@ -30,7 +30,7 @@
 #'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
-#' @param MakeADFun.silent T/F, Passed to silent argument of TMB::MakeADFun. Default = \code{FALSE}.
+#' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}. Default = \code{FALSE}.
 #' @param do.proj T/F, do projections? Default = \code{FALSE}. If true, runs \code{\link{project_wham}}.
 #' @param proj.opts list of options for projections
 #'   \itemize{
