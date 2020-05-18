@@ -8,13 +8,11 @@
 
 <title>Project a fit WHAM model — project_wham • wham</title>
 
-
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -40,9 +38,10 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-
 <meta property="og:title" content="Project a fit WHAM model — project_wham" />
+
 <meta property="og:description" content="Provides projections/forecasts for an existing (already fit) WHAM model." />
+
 
 
 
@@ -127,6 +126,7 @@
   </a>
 </li>
       </ul>
+      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -161,7 +161,9 @@
     </div>
 
     <div class="ref-description">
+    
     <p>Provides projections/forecasts for an existing (already fit) WHAM model.</p>
+    
     </div>
 
     <pre class="usage"><span class='fu'>project_wham</span>(
@@ -172,7 +174,7 @@
   <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>,
   <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre>
-
+    
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -205,7 +207,7 @@
       <td><p>T/F, calculate standard deviations of model parameters? See <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>sdreport</a></code>. Default = <code>TRUE</code>.</p></td>
     </tr>
     </table>
-
+    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a projected WHAM model with additional output if specified:</p><dl'>
@@ -216,6 +218,7 @@
   
 </dl>
 
+    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>WHAM implements five options for handling fishing mortality in the projections.
@@ -245,9 +248,11 @@ Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</
 </dl><p>If the original model fit the ecov in years beyond the population model, WHAM will use the already-fit
 ecov values for the projections. If the ecov model extended at least <code>proj.opts$n.yrs</code> years
 beyond the population model, then none of the above need be specified.</p>
+    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='fit_tmb.html'>fit_tmb</a></code></p></div>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
