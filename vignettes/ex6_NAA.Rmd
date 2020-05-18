@@ -283,11 +283,15 @@ The SCAA and state-space models with independent NAA deviations had the lowest r
 
 In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`). See `stats::nlminb()` and `TMB::sdreport()` for details.
 
+We leave the AIC for model `m1` blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include `m1` to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment.
+
 ```{r echo=FALSE}
 vign6_res[,11:13] = round(vign6_res[,11:13], 3)
 vign6_res$GSI_how = dplyr::recode(vign6_res$GSI_how, `0`='---',`2`='Limiting')
 posdef = which(vign6_res$pdHess == TRUE)
 thebest = which(vign6_res$dAIC < 1)
+vign6_res[1,"dAIC"] = '---'
+vign6_res[1,"AIC"] = '---'
 vign6_res %>%
   dplyr::rename("Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime", "$\\Delta AIC$"="dAIC",
          "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") %>%

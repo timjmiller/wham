@@ -2347,7 +2347,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   # Kobe plot - only if sdreport was successful ---------------------------
   do.kobe <- sapply(log.rel.ssb.rel.F.cov[status.years], function(x) !all(!is.finite(x))) # only if some non-infinite values for at least some status years
   # if(!mod$na_sdrep){
-  if(do.kobe){  
+  if(any(do.kobe)){  
     log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
       if(is.na(rel.f.vals[x])) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
@@ -3393,8 +3393,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot <- df.selAA %>% tidyr::pivot_longer(-c(Year,Block),
               names_to = "Age", 
               names_prefix = "Age_",
-              names_ptypes = list(Age = integer()),
+              names_ptypes = list(Age = character()),
               values_to = "Selectivity")
+    df.plot$Age <- as.integer(df.plot$Age)
     df.plot$Block <- factor(as.character(df.plot$Block), levels=names(table(df.plot$Block)))
 
     if(do.tex) cairo_pdf(file.path(od, paste0("SelAA_tile.pdf")), family = "Times", height = 10, width = 10)
@@ -3422,8 +3423,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot <- df.MAA %>% tidyr::pivot_longer(-Year,
               names_to = "Age", 
               names_prefix = "Age_",
-              names_ptypes = list(Age = integer()),
+              names_ptypes = list(Age = character()),
               values_to = "M")
+    df.plot$Age <- as.integer(df.plot$Age)
 
     if(do.tex) cairo_pdf(file.path(od, paste0("MAA_tile.pdf")), family = "Times", height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0("MAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = "Times")

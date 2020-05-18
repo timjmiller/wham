@@ -370,6 +370,7 @@
 <p>Two models had very similar AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below): <code>m11</code> (all NAA are random effects with correlation by age, GSI-Recruitment effect) and <code>m13</code> (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).</p>
 <p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models <code>m4</code>-<code>m7</code> and <code>m10</code>-<code>m13</code>).</p>
 <p>In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
+<p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment.</p>
 <table class="table table table-condensed table-responsive">
 <thead><tr>
 <th style="text-align:left;">
@@ -396,10 +397,10 @@ Runtime (min)
 <th style="text-align:right;">
 NLL
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 <span class="math inline">\(\Delta AIC\)</span>
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 AIC
 </th>
 <th style="text-align:right;">
@@ -438,11 +439,11 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -721.490
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-186.3
+<td style="text-align:left;background-color: #F2F2F2 !important;">
+—
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--1211.0
+<td style="text-align:left;background-color: #F2F2F2 !important;">
+—
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 1.941
@@ -479,10 +480,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -608.670
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-332.0
+<td style="text-align:left;background-color: #F2F2F2 !important;">
+332
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1065.3
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -520,10 +521,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -622.626
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-306.0
+<td style="text-align:left;background-color: #F2F2F2 !important;">
+306
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1091.3
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -561,10 +562,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -757.815
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 35.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1361.6
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -602,10 +603,10 @@ FALSE
 <td style="text-align:right;">
 -768.243
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 NA
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 NA
 </td>
 <td style="text-align:right;">
@@ -643,10 +644,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -763.434
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 26.4
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1370.9
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -684,10 +685,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -771.570
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 12.2
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1385.1
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -725,10 +726,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -623.722
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 303.9
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1093.4
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -766,10 +767,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -626.705
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 299.9
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1097.4
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -807,10 +808,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -767.957
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 17.4
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1379.9
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -848,10 +849,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 -777.633
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.0
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+0
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 -1397.3
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
@@ -889,10 +890,10 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -769.801
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 15.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:left;background-color: #F2F2F2 !important;">
 -1381.6
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
@@ -930,11 +931,11 @@ TRUE
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 -778.482
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 0.3
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--1397.0
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+-1397
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 0.116
