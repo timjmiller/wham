@@ -4,7 +4,14 @@
 \alias{retro}
 \title{Run retrospective analysis}
 \usage{
-retro(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0)
+retro(
+  model,
+  n.peels = 7,
+  ran = "log_NAA",
+  do.sdrep = FALSE,
+  n.newton = 0,
+  MakeADFun.silent = FALSE
+)
 }
 \arguments{
 \item{model}{Optimized TMB model, output from \code{\link{fit_tmb}}.}
@@ -16,6 +23,8 @@ retro(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0)
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters for each peel? Default = \code{FALSE}.}
 
 \item{n.newton}{integer, number of additional Newton steps after optimization for each peel. Default = \code{0}.}
+
+\item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model

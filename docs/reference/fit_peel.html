@@ -168,7 +168,7 @@ Fits the model peeling off <em>i</em> years of data (calls <code><a href='fit_tm
     
     </div>
 
-    <pre class="usage"><span class='fu'>fit_peel</span>(<span class='no'>peel</span>, <span class='no'>model</span>, <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>)</pre>
+    <pre class="usage"><span class='fu'>fit_peel</span>(<span class='no'>peel</span>, <span class='no'>model</span>, <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -188,6 +188,10 @@ Fits the model peeling off <em>i</em> years of data (calls <code><a href='fit_tm
     <tr>
       <th>n.newton</th>
       <td><p>integer, number of additional Newton steps after optimization for each peel. Default = <code>3</code>.</p></td>
+    </tr>
+    <tr>
+      <th>MakeADFun.silent</th>
+      <td><p>T/F, Passed to silent argument of <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></td>
     </tr>
     </table>
     

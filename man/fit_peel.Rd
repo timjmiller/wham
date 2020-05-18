@@ -4,7 +4,7 @@
 \alias{fit_peel}
 \title{Fit model peeling off \emph{i} years of data}
 \usage{
-fit_peel(peel, model, do.sdrep = FALSE, n.newton = 3)
+fit_peel(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE)
 }
 \arguments{
 \item{peel}{Integer, number of years of data to remove before model fitting.}
@@ -14,6 +14,8 @@ fit_peel(peel, model, do.sdrep = FALSE, n.newton = 3)
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.}
 
 \item{n.newton}{integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.}
+
+\item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 }
 \value{
 \code{out}, output of \code{\link{fit_tmb}} for peel \emph{i}

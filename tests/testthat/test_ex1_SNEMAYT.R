@@ -28,7 +28,7 @@ input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                 	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
                                 	fix_pars=list(5,4,2)),
 	                            NAA_re = list(sigma="rec", cor="iid"))
-m1 <- suppressWarnings(fit_wham(input1, do.osa = F)) # turn off OSA residuals to save time
+m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
 
 #Like m1, but change age comp likelihoods to logistic normal
 input2 = input1
@@ -39,7 +39,7 @@ input2$data$n_age_comp_pars_fleets = rep(1, input2$data$n_fleets)
 input2$par$index_paa_pars = rep(0, input2$data$n_indices)
 input2$par$catch_paa_pars = rep(0, input2$data$n_fleets)
 input2$map = input2$map[!(names(input2$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-m2 <- suppressWarnings(fit_wham(input2, do.osa = F)) # turn off OSA residuals to save time
+m2 <- suppressWarnings(fit_wham(input2, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
 
 #full state-space model, abundance is the state vector
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -48,7 +48,7 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                 	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
                                 	fix_pars=list(5,4,2)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"))
-m3 <- suppressWarnings(fit_wham(input3, do.osa = F)) # turn off OSA residuals to save time
+m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
 
 #Like m3, but change age comp likelihoods to logistic normal
 input4 = input3
@@ -59,7 +59,7 @@ input4$data$n_age_comp_pars_fleets = rep(1, input4$data$n_fleets)
 input4$par$index_paa_pars = rep(0, input4$data$n_indices)
 input4$par$catch_paa_pars = rep(0, input4$data$n_fleets)
 input4$map = input4$map[!(names(input4$map) %in% c("index_paa_pars", "catch_paa_pars"))]
-m4 <- suppressWarnings(fit_wham(input4, do.osa = F)) # turn off OSA residuals to save time
+m4 <- suppressWarnings(fit_wham(input4, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
 
 # Save list of all fit models
 mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)

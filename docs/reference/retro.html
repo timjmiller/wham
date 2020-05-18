@@ -168,7 +168,14 @@ to fit the model peeling off <code>1, 2, ..., n.peels</code> years of data.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>retro</span>(<span class='no'>model</span>, <span class='kw'>n.peels</span> <span class='kw'>=</span> <span class='fl'>7</span>, <span class='kw'>ran</span> <span class='kw'>=</span> <span class='st'>"log_NAA"</span>, <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>0</span>)</pre>
+    <pre class="usage"><span class='fu'>retro</span>(
+  <span class='no'>model</span>,
+  <span class='kw'>n.peels</span> <span class='kw'>=</span> <span class='fl'>7</span>,
+  <span class='kw'>ran</span> <span class='kw'>=</span> <span class='st'>"log_NAA"</span>,
+  <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>0</span>,
+  <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -192,6 +199,10 @@ to fit the model peeling off <code>1, 2, ..., n.peels</code> years of data.</p>
     <tr>
       <th>n.newton</th>
       <td><p>integer, number of additional Newton steps after optimization for each peel. Default = <code>0</code>.</p></td>
+    </tr>
+    <tr>
+      <th>MakeADFun.silent</th>
+      <td><p>T/F, Passed to silent argument of <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></td>
     </tr>
     </table>
     
