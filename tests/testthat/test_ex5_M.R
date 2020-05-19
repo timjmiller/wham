@@ -74,7 +74,7 @@ for(m in tofit){
   input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
   # Fit model
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F))
+  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
   mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]]))
 }
 

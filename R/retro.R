@@ -19,6 +19,6 @@ retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton
 {
   temp = list(dat = model$env$data, par = model$parList, map = model$env$map, random = ran)
   if(n.peels>0) peels = list(fit_peel(1, model = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent))
-  if(n.peels>1) for(i in 2:n.peels) peels[[i]] = fit_peel(i, model = temp, do.sdrep = do.sdrep, n.newton = n.newton)
+  if(n.peels>1) for(i in 2:n.peels) peels[[i]] = fit_peel(i, model = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent)
   return(peels)
 }
