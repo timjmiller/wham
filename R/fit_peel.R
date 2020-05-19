@@ -7,12 +7,13 @@
 #' @param model Output from \code{\link{fit_tmb}}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.
 #' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.
+#' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
 #'
 #' @return \code{out}, output of \code{\link{fit_tmb}} for peel \emph{i}
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}
 #'
-fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
+fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE)
 {
   out = list()
   print(peel)
@@ -42,7 +43,7 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3)
     temp$map$Ecov_obs_logsigma = factor(rbind(head(matrix(as.numeric(as.character(temp$map$Ecov_obs_logsigma)), ncol=temp$dat$n_Ecov), -peel), matrix(NA, ncol=temp$dat$n_Ecov, nrow=peel)))
   }
 
-  temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map)
+  temp.mod <- TMB::MakeADFun(temp$dat, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)
   out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
   return(out)
 }

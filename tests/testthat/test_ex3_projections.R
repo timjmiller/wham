@@ -54,7 +54,7 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 
 # ---------------------------------------------------------
 ## Fit model without projections
-mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F)
+mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE)
 # saveRDS(mod, file="m6.rds")
 # mod <- readRDS("/home/bstock/Documents/wham/sandbox/ex3_projections/m6.rds")
 

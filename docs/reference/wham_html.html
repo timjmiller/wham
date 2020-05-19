@@ -8,13 +8,11 @@
 
 <title>Create HTML file to view output plots in browser — wham_html • wham</title>
 
-
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -40,11 +38,12 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-
 <meta property="og:title" content="Create HTML file to view output plots in browser — wham_html" />
+
 <meta property="og:description" content="Writes a set of HTML files with tabbed navigation between them. Called by
 plot_wham_output if `out.type = 'html'` (default). Opens main file in
 default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)." />
+
 
 
 
@@ -129,6 +128,7 @@ default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/bl
   </a>
 </li>
       </ul>
+      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -163,13 +163,15 @@ default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/bl
     </div>
 
     <div class="ref-description">
+    
     <p>Writes a set of HTML files with tabbed navigation between them. Called by
 <code><a href='plot_wham_output.html'>plot_wham_output</a></code> if `out.type = 'html'` (default). Opens main file in
 default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R).</p>
+    
     </div>
 
     <pre class="usage"><span class='fu'>wham_html</span>(<span class='kw'>dir.main</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"WHAM Output"</span>, <span class='kw'>width</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>openfile</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
-
+    
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -191,10 +193,11 @@ makes `.png` plot files in a `plots_png` subdirectory of `dir.main`).</p></td>
       <td><p>Automatically open index.html in default browser?</p></td>
     </tr>
     </table>
-
+    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='plot_wham_output.html'>plot_wham_output</a></code>, `r4ss::SS_html()`</p></div>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -60,12 +60,12 @@ for(m in c(1:3,5:6,8)){ # only models that converge
 	input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
 	# fit model
-	mods[[m]] <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F) 
+	mods[[m]] <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F, MakeADFun.silent = TRUE) 
 	if(exists("err")) rm("err") # need to clean this up
 }
 
 for(m in c(1:3,5:6,8)){
-	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
+#	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
 
 	mcheck <- check_convergence(mods[[m]], ret=TRUE)
 	expect_equal(mcheck$convergence, 0) # opt$convergence should be 0

@@ -64,7 +64,7 @@ for(m in 1:n.mods){
   input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
 
   # Fit model
-  mods[[m]] <- fit_wham(input, do.retro=T, do.osa=T)
+  mods[[m]] <- fit_wham(input, do.retro=T, do.osa=T, MakeADFun.silent = TRUE)
   plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))

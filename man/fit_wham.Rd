@@ -14,6 +14,7 @@ fit_wham(
   osa.opts = list(method = "oneStepGeneric", parallel = TRUE),
   model = NULL,
   do.check = FALSE,
+  MakeADFun.silent = FALSE,
   do.proj = FALSE,
   proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
     proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov =
@@ -49,6 +50,8 @@ Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
 \item{model}{(optional), a previously fit wham model.}
 
 \item{do.check}{T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
+
+\item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
 \item{do.proj}{T/F, do projections? Default = \code{FALSE}. If true, runs \code{\link{project_wham}}.}
 

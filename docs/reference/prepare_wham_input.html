@@ -8,13 +8,11 @@
 
 <title>Prepare input data and parameters for WHAM model — prepare_wham_input • wham</title>
 
-
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -40,11 +38,12 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-
 <meta property="og:title" content="Prepare input data and parameters for WHAM model — prepare_wham_input" />
+
 <meta property="og:description" content="After the data file is read into R by read_asap3_dat, this function
 prepares the data and parameter settings for fit_wham.
 By default, this will set up a SCAA version like ASAP." />
+
 
 
 
@@ -129,6 +128,7 @@ By default, this will set up a SCAA version like ASAP." />
   </a>
 </li>
       </ul>
+      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -163,9 +163,11 @@ By default, this will set up a SCAA version like ASAP." />
     </div>
 
     <div class="ref-description">
+    
     <p>After the data file is read into R by <code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, this function
 prepares the data and parameter settings for <code><a href='fit_wham.html'>fit_wham</a></code>.
 By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>.</p>
+    
     </div>
 
     <pre class="usage"><span class='fu'>prepare_wham_input</span>(
@@ -177,7 +179,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
   <span class='kw'>M</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>NAA_re</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
 )</pre>
-
+    
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -210,7 +212,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
       <td><p>(optional) list specifying random effect options on numbers-at-age (see details)</p></td>
     </tr>
     </table>
-
+    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a named list with the following components:</p><dl'>
@@ -224,6 +226,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
   
 </dl>
 
+    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>recruit_model</code> specifies the stock-recruit model. See <code>wham.cpp</code> for implementation.</p><dl'>
@@ -343,9 +346,11 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
   
 </dl>
 
+    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {

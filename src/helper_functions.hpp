@@ -1094,3 +1094,232 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
   
   return finalX;
 }
+
+template <class Type>
+Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
+  vector<Type> log_SR_b, int Ecov_recruit, vector<int> Ecov_how, matrix<Type> Ecov_lm){
+
+  /*
+   * y: year (between 1 and n_years_model+n_years_proj)
+   * recruit_model: which recruitment model (1-4)
+   * mean_rec_pars: vector of any recruitment parameters (defined in main code)
+   * SSB: vector of yearly SSB (uses y-1 for any S-R relationship)
+   * NAA: matrix of numbers at age
+   * log_SR_a: yearly "a" parameters for SR function
+   * log_SR_b: yearly "b" parameters for SR function
+   * Ecov_recruit: integer determining if Ecov is affecting recruitment
+   * Ecov_how: integer vector with an element that tells how the Ecov is affecting recruitment
+   * Ecov_lm: matrix that holds linear predictor for Ecov
+   */
+  //recruit_model == 1, random walk
+  Type pred_recruit = NAA(y-1,0);
+  if(recruit_model == 1) // random walk
+  {
+    //pred_NAA(y,0) = NAA(y-1,0);
+  }
+  else
+  {
+    if(recruit_model == 2) // random about mean
+    {
+      pred_recruit = exp(mean_rec_pars(0));
+      if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_recruit *= exp(Ecov_lm(y,Ecov_recruit-1));
+      //pred_NAA(y,0) = exp(mean_rec_pars(0));
+      //if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
+    }
+    else
+    {
+      if(recruit_model == 3) // BH stock recruit (if ecov effect, already modified SR_a and/or SR_b)
+      {
+        pred_recruit = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
+        //pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
+      }
+      else // recruit_model = 4, Ricker stock recruit (if ecov effect, already modified SR_a and/or SR_b)
+      {
+        pred_recruit = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
+        //pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
+      }
+    }
+  }
+  return(pred_recruit);
+}
+
+template <class Type>
+vector<Type> get_pred_NAA_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
+  vector<Type> log_SR_b, int Ecov_recruit, vector<int> Ecov_how, matrix<Type> Ecov_lm, matrix<Type> ZAA){
+
+  /*
+   * y: year (between 1 and n_years_model+n_years_proj)
+   * recruit_model: which recruitment model (1-4)
+   * mean_rec_pars: vector of any recruitment parameters (defined in main code)
+   * SSB: vector of yearly SSB (uses y-1 for any S-R relationship)
+   * NAA: matrix of numbers at age
+   * log_SR_a: yearly "a" parameters for SR function
+   * log_SR_b: yearly "b" parameters for SR function
+   * Ecov_recruit: integer determining if Ecov is affecting recruitment
+   * Ecov_how: integer vector with an element that tells how the Ecov is affecting recruitment
+   * Ecov_lm: matrix that holds linear predictor for Ecov
+   * ZAA: matrix of total mortality rate by year and age
+   */
+  int n_ages = NAA.cols();
+  vector<Type> pred_NAA(n_ages);
+  
+  // Expected recruitment
+  pred_NAA(0) = get_pred_recruit_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
+    log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm);
+    
+  // calculate pred_NAA for ages after recruitment
+  for(int a = 1; a < n_ages-1; a++) pred_NAA(a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
+  pred_NAA(n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
+  
+  return(pred_NAA);
+}
+
+template <class Type>
+vector<Type> get_waa_y(array<Type> waa, int y, int na, int pointer){
+  vector<Type> waay(na);
+  for(int a = 0; a < na; a++) waay(a) = waa(pointer-1, y, a);
+  return(waay);
+}
+
+template <class Type>
+Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> mature, int y, int ssbpointer, vector<Type> fracyr_SSB){
+  int na = mature.cols();
+  Type SSB = 0;
+  vector<Type> waay = get_waa_y(waa,y,na,ssbpointer);
+  for(int a = 0; a < na; a++) SSB += NAA(y,a) * waay(a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
+  return(SSB);
+}
+ 
+template <class Type>
+vector<Type> get_F_proj(int y, int proj_F_opt, matrix<Type> FAA_tot, matrix<Type> NAA, matrix<Type> MAA, matrix<Type> mature, 
+  vector<Type> waacatch, vector<Type> waassb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
+  int n_years_model, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch){
+    /* 
+     get F to project for next time step
+              y:  year of projection (>n_years_model)
+     proj_F_opt:  how to specify F for projection (1 to 5)
+        FAA_tot:  FAA_tot matrix from main code.
+            NAA:  NAA matrix from main code
+            MAA:  MAA matrix from main code.
+            mature:  maturity matrix from main code.
+       waacatch:  weight at age in catch to use for year y (use function get_waa_y defined above)
+         waassb:  weight at age for SSB to use in year y (use function get_waa_y defined above)
+     fracyr_SSB:  vector of yearly fractions of the year when spawning occurs
+       log_SPR0:  vector of yearly log(unfished SSB/R) 
+  avg_years_ind:  integer vector of years to average F for projection
+  n_years_model:  number of years before projection begins
+    which_F_age:  define which age has max F
+     percentSPR:  percentage (0-100) of unfished spawning potential to determine F_percentSPR
+     proj_Fcatch: vector (n_years_proj) of user specified Fishing mortality rates to project
+    */
+    //if(y > n_years_model-1){
+    //for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
+    //for(int a = 0; a < n_ages; a++) waassb(a) = waa(waa_pointer_ssb-1, y, a);
+  int n_toavg = avg_years_ind.size();
+  int n_ages = waacatch.size();
+
+  //proj_F_opt == 1, last year F (default)
+  vector<Type> FAA_proj = FAA_tot.row(n_years_model-1);
+  
+  if(proj_F_opt == 1){ // last year F (default)
+    //FAA_tot.row(y) = FAA_tot.row(n_years_model-1);
+    //already defined.
+  }
+  if(proj_F_opt>1)
+  {
+    matrix<Type> FAA_toavg(n_toavg, n_ages);
+    for(int a = 0; a < n_ages; a++){
+      for(int i = 0; i < n_toavg; i++){
+        FAA_toavg(i,a) = FAA_tot(avg_years_ind(i),a);
+      }
+    }
+    //get selectivity using average over avg.yrs
+    vector<Type> sel_proj(n_ages);
+    for(int a = 0; a < n_ages; a++) sel_proj(a) = FAA_proj(a)/FAA_proj(which_F_age-1);
+    vector<Type> M = MAA.row(y);
+    vector<Type> NAA_y = NAA.row(y);
+    vector<Type> mat = mature.row(y);
+    
+    //proj_F_opt == 2, average F
+    if(proj_F_opt == 2){
+      FAA_proj = FAA_toavg.colwise().mean();
+    }
+
+    if(proj_F_opt == 3){ // F at X% SPR
+      Type fracyr_SSB_y = fracyr_SSB(y);
+      Type log_SPR0_y = log_SPR0(y);
+      //FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
+      FAA_proj = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
+    }
+    if(proj_F_opt == 4){ // user-specified F
+      //FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
+      FAA_proj = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
+    }
+    if(proj_F_opt == 5){ // calculate F from user-specified catch
+      Type thecatch = proj_Fcatch(y-n_years_model);
+      //FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
+      FAA_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
+    }
+  }
+  return(FAA_proj);
+}
+
+
+template <class Type>
+matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSBin, matrix<Type> NAAin, vector<Type> log_SR_a, 
+  vector<Type> log_SR_b, int Ecov_recruit, vector<int> Ecov_how, matrix<Type> Ecov_lm, int n_NAA_sigma, 
+  int do_proj, int proj_F_opt, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
+  int waa_pointer_totcatch, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
+  int n_years_model, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch){
+
+  // Population model (get NAA, numbers-at-age, for all years)
+  int ny = log_SR_a.size();
+  int n_ages = NAAin.cols();
+  vector<Type> SSB(ny);
+  SSB(0) = SSBin(0);
+  matrix<Type> NAA(ny, n_ages), pred_NAA(ny, n_ages);
+  matrix<Type> ZAA = MAA + FAA_tot;
+  matrix<Type> log_NAA(ny-1, n_ages);
+  log_NAA.setZero();
+  NAA.row(0) = pred_NAA.row(0) = NAAin.row(0);
+  for(int y = 1; y < ny; y++)
+  {
+    //use NAA.row(y-1)
+    pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
+      log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, ZAA);
+    
+    // calculate NAA
+    if(n_NAA_sigma > 1){
+      // all NAA are estimated (random effects)
+      for(int a = 0; a < n_ages; a++) 
+      {
+        log_NAA(y-1,a) = log(pred_NAA(y,a)) + NAA_devs(y-1,a);
+        NAA(y,a) = exp(log_NAA(y-1,a));
+      }
+    } else {
+      // only recruitment estimated (either fixed or random effects)
+      log_NAA(y-1,0) = log(pred_NAA(y,0)) + NAA_devs(y-1,0);
+      NAA(y,0) = exp(log_NAA(y-1,0));
+      for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // survival is deterministic     
+    }
+
+    // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
+    if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
+      // get selectivity using average over avg.yrs
+      if(y > n_years_model-1){
+        vector<Type> waacatch = get_waa_y(waa, y, n_ages, waa_pointer_totcatch);
+        vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
+        FAA_tot.row(y) = get_F_proj(y, proj_F_opt, FAA_tot, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
+         which_F_age, percentSPR, proj_Fcatch);
+        ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
+      }
+    } // end proj F
+    SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
+  } // end pop model loop
+  
+  matrix<Type> out(ny, 2 * n_ages + 1);
+  for(int i = 0; i < n_ages; i++) out.col(i) = NAA.col(i);
+  for(int i = n_ages; i < 2 * n_ages; i++) out.col(i) = pred_NAA.col(i-n_ages);
+  out.col(out.cols()-1) = SSB;
+  return(out);
+}

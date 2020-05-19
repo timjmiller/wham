@@ -8,13 +8,11 @@
 
 <title>Read an ASAP3 .dat file into R — read_asap3_dat • wham</title>
 
-
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -40,11 +38,12 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-
 <meta property="og:title" content="Read an ASAP3 .dat file into R — read_asap3_dat" />
+
 <meta property="og:description" content="WHAM is built on ASAP3 and this
 function provides functionality to use a preexisting ASAP3 input data file. The
 output of read_asap3_dat should then be passed to prepare_wham_input." />
+
 
 
 
@@ -129,6 +128,7 @@ output of read_asap3_dat should then be passed to prepare_wham_input." />
   </a>
 </li>
       </ul>
+      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -163,13 +163,15 @@ output of read_asap3_dat should then be passed to prepare_wham_input." />
     </div>
 
     <div class="ref-description">
+    
     <p>WHAM is built on <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP3</a> and this
 function provides functionality to use a preexisting ASAP3 input data file. The
 output of <code>read_asap3_dat</code> should then be passed to <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>.</p>
+    
     </div>
 
     <pre class="usage"><span class='fu'>read_asap3_dat</span>(<span class='no'>filename</span>)</pre>
-
+    
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -179,7 +181,7 @@ output of <code>read_asap3_dat</code> should then be passed to <code><a href='pr
 in the current working directory, or <code>filename</code> can include the path.</p></td>
     </tr>
     </table>
-
+    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a named list with the following components:</p><dl'>
@@ -188,9 +190,11 @@ in the current working directory, or <code>filename</code> can include the path.
   
 </dl>
 
+    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code></p></div>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
