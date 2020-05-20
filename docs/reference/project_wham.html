@@ -172,7 +172,8 @@
     <span class='kw'>proj.F</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.catch</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>avg.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.ecov</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.last.ecov</span> <span class='kw'>=</span>
     <span class='fl'>FALSE</span>, <span class='kw'>avg.ecov.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.Mre</span> <span class='kw'>=</span> <span class='kw'>NULL</span>),
   <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+  <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
 )</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -205,6 +206,10 @@
     <tr>
       <th>do.sdrep</th>
       <td><p>T/F, calculate standard deviations of model parameters? See <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>sdreport</a></code>. Default = <code>TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>MakeADFun.silent</th>
+      <td><p>T/F, Passed to silent argument of <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></td>
     </tr>
     </table>
     

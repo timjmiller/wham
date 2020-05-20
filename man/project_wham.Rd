@@ -10,7 +10,8 @@ project_wham(
     proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.ecov = TRUE, use.last.ecov =
     FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL),
   n.newton = 3,
-  do.sdrep = TRUE
+  do.sdrep = TRUE,
+  MakeADFun.silent = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ project_wham(
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.}
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
+
+\item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 }
 \value{
 a projected WHAM model with additional output if specified:

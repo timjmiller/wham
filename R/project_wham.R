@@ -50,6 +50,7 @@
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
+#' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
 #'
 #' @return a projected WHAM model with additional output if specified:
 #'   \describe{
@@ -85,14 +86,15 @@
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL),
-                        n.newton=3, do.sdrep=TRUE)
+                        n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE)
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts)
     , error = function(e) {err <<- conditionMessage(e)})
 
   # refit model to estimate derived quantities in projection years
-  if(!exists("err")) mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F, do.proj=F)
+  if(!exists("err")) mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
+    MakeADFun.silent = MakeADFun.silent)
   if(exists("err")){
     mod <- model # if error, still pass previous/full fit
     mod$err_proj <- err # store error message to print out in fit_wham
