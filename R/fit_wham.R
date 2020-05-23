@@ -74,7 +74,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
                     do.proj = FALSE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.Ecov=TRUE, use.last.Ecov=FALSE, avg.Ecov.yrs=NULL, proj.Ecov=NULL))
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL))
 {
   btime <- Sys.time()
 
@@ -110,7 +110,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$input <- input
 
   # projections
-  if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts) # calls prepare_projection + fit_wham(do.proj=F)
+  if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent) # calls prepare_projection + fit_wham(do.proj=F)
 
   # error message reporting
   if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
