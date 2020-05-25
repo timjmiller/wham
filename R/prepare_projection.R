@@ -102,18 +102,19 @@ prepare_projection = function(model, proj.opts)
   data$n_years_proj_Ecov = proj.opts$n.yrs-end.beyond
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
-  if(proj.opts$use.last.F) data$proj_F_opt = 1
-  if(proj.opts$use.avg.F) data$proj_F_opt = 2
-  if(proj.opts$use.FXSPR) data$proj_F_opt = 3
+  data$proj_F_opt = rep(0,data$n_years_proj) 
+  if(proj.opts$use.last.F) data$proj_F_opt[] = 1
+  if(proj.opts$use.avg.F) data$proj_F_opt[] = 2
+  if(proj.opts$use.FXSPR) data$proj_F_opt[] = 3
   if(!is.null(proj.opts$proj.F)){
-    data$proj_F_opt = 4
+    data$proj_F_opt[] = 4
     data$proj_Fcatch = proj.opts$proj.F
   }
   if(!is.null(proj.opts$proj.catch)){
-    data$proj_F_opt = 5
+    data$proj_F_opt[] = 5
     data$proj_Fcatch = proj.opts$proj.catch
   }
-  if(data$proj_F_opt %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
+  if(data$proj_F_opt[1] %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
 
   #define age for full F in projections
   FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))

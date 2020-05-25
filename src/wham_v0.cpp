@@ -8,9 +8,9 @@ Type objective_function<Type>::operator() ()
 {
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
 
-  DATA_INTEGER(n_years_catch);
-  DATA_INTEGER(n_years_indices);
-  DATA_INTEGER(n_years_model);
+  DATA_INTEGER(n_years_catch); //same as n_years_model
+  DATA_INTEGER(n_years_indices); //same as n_years_model
+  DATA_INTEGER(n_years_model); 
   DATA_INTEGER(n_ages);
   DATA_INTEGER(n_fleets);
   DATA_INTEGER(n_indices);
@@ -75,7 +75,10 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
   DATA_IVECTOR(Fbar_ages);
-  DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
+  //DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
+  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov) in that order) will be simulated.
+  DATA_IVECTOR(simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
+  DATA_IVECTOR(simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
   DATA_SCALAR(percentSPR); //percentage to use for SPR-based reference points
   DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
@@ -114,7 +117,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_proj); // number of years to project
   DATA_INTEGER(n_years_proj_Ecov); // number of years to project Ecov
   DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
-  DATA_INTEGER(proj_F_opt); // 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
+  DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
 
@@ -154,21 +157,21 @@ Type objective_function<Type>::operator() ()
   vector<Type> SSB(n_years_model + n_years_proj);
   matrix<Type> F(n_years_model,n_fleets);
   matrix<Type> log_F(n_years_model,n_fleets);
-  array<Type> pred_CAA(n_years_model,n_fleets,n_ages);
-  array<Type> pred_catch_paa(n_years_model,n_fleets,n_ages);
-  matrix<Type> pred_catch(n_years_model,n_fleets);
-  matrix<Type> log_pred_catch(n_years_model,n_fleets);
-  array<Type> pred_IAA(n_years_model,n_indices,n_ages);
-  array<Type> pred_index_paa(n_years_model,n_indices,n_ages);
-  matrix<Type> pred_indices(n_years_model,n_indices);
+  array<Type> pred_CAA(n_years_model+n_years_proj,n_fleets,n_ages);
+  array<Type> pred_catch_paa(n_years_model+n_years_proj,n_fleets,n_ages);
+  matrix<Type> pred_catch(n_years_model+n_years_proj,n_fleets);
+  matrix<Type> log_pred_catch(n_years_model+n_years_proj,n_fleets);
+  array<Type> pred_IAA(n_years_model+n_years_proj,n_indices,n_ages);
+  array<Type> pred_index_paa(n_years_model+n_years_proj,n_indices,n_ages);
+  matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices);
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
-  array<Type> FAA(n_years_model,n_fleets,n_ages);
-  array<Type> log_FAA(n_years_model,n_fleets,n_ages);
+  array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
+  array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
   matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
-  array<Type> QAA(n_years_model,n_indices,n_ages);
+  array<Type> QAA(n_years_model+n_years_proj,n_indices,n_ages);
   vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages;
   vector<Type> q(n_indices);
   vector<Type> t_paa(n_ages);
@@ -224,7 +227,7 @@ Type objective_function<Type>::operator() ()
         // 2D AR1 process on selectivity parameter deviations
         Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
         nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
-        SIMULATE if(simulate_state == 1) SEPARABLE(AR1(rho),AR1(rho_y)).simulate(tmp);
+        SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) SEPARABLE(AR1(rho),AR1(rho_y)).simulate(tmp);
       } else {
         // 1D AR1 process on selectivity parameter deviations
         if(selblock_models_re(b) == 3){ // ar1 across parameters in selblock, useful for age-specific pars.
@@ -232,7 +235,7 @@ Type objective_function<Type>::operator() ()
           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
           //Sigma_sig_sel = sigma;
           nll_sel += SCALE(AR1(rho), Sigma_sig_sel)(tmp0);
-          SIMULATE if(simulate_state == 1) 
+          SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) 
           {
             AR1(rho).simulate(tmp0);
             for(int i = 0; i < tmp0.size(); i++) tmp(0,i) = tmp0(i);
@@ -242,18 +245,25 @@ Type objective_function<Type>::operator() ()
           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
           //Sigma_sig_sel = sigma;
           nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp0);
-          SIMULATE if(simulate_state == 1) 
+          SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0)  
           {
             AR1(rho_y).simulate(tmp0);
             tmp.col(0) = tmp0;
           }
         }
       }
-      SIMULATE if(simulate_state == 1) {
+      SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) {
         tmp = tmp * Sigma_sig_sel;
         istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
-        for(int j=0; j<n_selpars_est(b); j++){
+        /*for(int j=0; j<n_selpars_est(b); j++){
           selpars_re.segment(istart,n_years_selblocks(b)) = tmp.col(j);
+          istart += n_years_selblocks(b);
+        }*/
+        for(int j=0; j<n_selpars_est(b); j++){
+          for(int y = istart; y < n_years_selblocks(b); y++) {
+            if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1))
+              selpars_re(istart) = tmp(y-istart,j);
+            }
           istart += n_years_selblocks(b);
         }
       }
@@ -293,7 +303,7 @@ Type objective_function<Type>::operator() ()
   nll_Ecov.setZero();
 
   if(Ecov_model(0) == 0){ // no Ecov
-    for(int y = 0; y < n_years_model + n_years_proj; y++) Ecov_out(y,0) = Type(0); // set Ecov_out = 0
+    Ecov_out.setZero(); // set Ecov_out = 0
   } else { // yes Ecov
     for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
       // Ecov model option 1: RW
@@ -305,11 +315,19 @@ Type objective_function<Type>::operator() ()
 
         Ecov_x(0,i) = Ecov1;
         nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
-        SIMULATE if(simulate_state == 1 & Ecov_use_re(1,i) == 1) Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
+        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(1,i) == 1) {
+          if(simulate_period(0) == 1) {
+            Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
+          }
+        }
         Ecov_x(1,i) = Ecov_re(1,i);
         for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
+            if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
+              Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
+            }
+          }
           Ecov_x(y,i) = Ecov_re(y,i);
         }
       }
@@ -324,11 +342,19 @@ Type objective_function<Type>::operator() ()
         Ecov_sig = exp(Ecov_process_pars(2,i));
 
         nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        SIMULATE if(simulate_state == 1 & Ecov_use_re(0,i) == 1) Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(0,i) == 1) {
+          if(simulate_period(0) == 1) {
+            Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+          }
+        }
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
         {
           nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state == 1 & Ecov_use_re(y,i) == 1) Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
+          SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
+            if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
+              Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
+            }
+          }
         }
         for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
@@ -340,10 +366,11 @@ Type objective_function<Type>::operator() ()
         }
       }
     } // end loop over Ecovs
-    if(simulate_state == 1) SIMULATE REPORT(Ecov_re);
+    SIMULATE if(simulate_state(3) == 1) if(sum(simulate_period) > 0) REPORT(Ecov_re);
   }
 
   // Environmental covariate observation model -------------------------------------
+  //TODO: Ecov obs are not yet simulated in projection years!!!!!!!!
   Type nll_Ecov_obs = Type(0);
   Type nll_Ecov_obs_sig = Type(0); // Ecov obs sigma random effects (opt = 4)
   matrix<Type> Ecov_obs_sigma(n_years_Ecov, n_Ecov);
@@ -354,24 +381,35 @@ Type objective_function<Type>::operator() ()
           Type mu_logsigma = Ecov_obs_sigma_par(0,i);
           Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
           nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma(y,i), mu_logsigma, sd_logsigma, 1);
-          SIMULATE Ecov_obs_logsigma(y,i) = rnorm(mu_logsigma, sd_logsigma);
+          SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
+            Ecov_obs_logsigma(y,i) = rnorm(mu_logsigma, sd_logsigma);
+          }
         }
         Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
         // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
-        SIMULATE Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
+        SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
+          Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
+        }
       }
     }
   }
   nll += nll_Ecov_obs_sig;
   nll += nll_Ecov_obs;
-  SIMULATE REPORT(Ecov_obs);
+  SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) REPORT(Ecov_obs);
 
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
   for(int i = 0; i < n_Ecov; i++){
     int ct = 0;
     for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
+      see(i);
+      see(y);
+      see(ct);
+      see(n_years_Ecov);
+      see(n_years_proj_Ecov);
+      see(n_years_model);
+      see(n_years_proj);
       Ecov_out(ct,i) = Ecov_x(y,i);
       ct++;
     }
@@ -412,27 +450,39 @@ Type objective_function<Type>::operator() ()
     if(M_re_model == 2 | M_re_model == 5){ //2D AR1: age, year
       Sigma_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
       nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_M)(M_re); // must be array, not matrix!
-      SIMULATE if(simulate_state == 1) SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(M_re);
+      SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
+        array<Type> Mre_tmp = M_re;
+        SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(Mre_tmp);
+        Mre_tmp = Sigma_M * Mre_tmp;
+        for(int y = 0; y < n_years_model + n_years_proj; y++){
+          if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
+            for(int a = 0; a < n_ages; a++) M_re(y,a) = Mre_tmp(y,a);
+          }
+        }
+      }
     } else {
       if(M_re_model == 3){ // 1D ar1_a
         vector<Type> Mre0 = M_re.matrix().row(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_a,2)),0.5);
         nll_M += SCALE(AR1(rho_M_a), Sigma_M)(Mre0);
-        SIMULATE if(simulate_state == 1) {
+        SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_a).simulate(Mre0);
-          for(int i = 0; i < Mre0.size(); i++) M_re(0,i) = Mre0(i);
+          for(int i = 0; i < Mre0.size(); i++) M_re(0,i) = Sigma_M * Mre0(i);
         }
       } else { // M_re_model = 4, 1D ar1_y
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
         nll_M += SCALE(AR1(rho_M_y), Sigma_M)(M_re.matrix().col(0));
-        SIMULATE if(simulate_state == 1) {
+        SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
-          M_re.col(0) = Mre0;
+          for(int y = 0; y < n_years_model + n_years_proj; y++){
+            if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
+              M_re(y,0) = Sigma_M * Mre0(y);
+            }
+          }
         }
       }
     }
-    M_re = Sigma_M * M_re;
   }
   REPORT(nll_M);
   nll += nll_M;
@@ -491,7 +541,7 @@ Type objective_function<Type>::operator() ()
     Type lprior_b = dnorm(log_b, mu, Type(0.08), 1);
     SIMULATE
     {
-      if(simulate_state == 1) log_b = rnorm(mu, Type(0.08));
+      if(simulate_state(1) == 1) if(sum(simulate_period) > 0) log_b = rnorm(mu, Type(0.08));
       REPORT(log_b);
     }
     REPORT(lprior_b);
@@ -505,6 +555,10 @@ Type objective_function<Type>::operator() ()
     for(int y = 0; y < n_years_model; y++)
     {
       for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
+    }
+    //just use last years selectivity for now
+    if(do_proj == 1) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++) {
+      QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(y,a);
     }
   }
 
@@ -687,16 +741,23 @@ Type objective_function<Type>::operator() ()
       NAA(y,0) = exp(log_NAA(y-1,0));
       for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // survival is deterministic     
     }
+    // calculate mean-0 deviations of log NAA (possibly bias-corrected)
     for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
         
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
-    if(do_proj == 1){ // only need FAA_tot for projections, use average FAA_tot over avg.yrs
+    if(do_proj == 1){ // now need FAA by fleet for projections, use total of average FAA by fleet over avg.yrs
       // get selectivity using average over avg.yrs
       if(y > n_years_model-1){
         waacatch = get_waa_y(waa, y, n_ages, waa_pointer_totcatch);
         waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
-        FAA_tot.row(y) = get_F_proj(y, proj_F_opt, FAA_tot, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
-         which_F_age, percentSPR, proj_Fcatch);
+        //n_fleets x n_ages: projected full F is sum of (means across years at age) across fleets 
+        matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, 
+          log_SPR0, avg_years_ind, n_years_model, which_F_age, percentSPR, proj_Fcatch);
+        //see(FAA_proj);
+        FAA_tot.row(y) = FAA_proj.colwise().sum();
+        for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
+        //FAA_tot.row(y) = get_F_proj(y, proj_F_opt, FAA_tot, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
+        // which_F_age, percentSPR, proj_Fcatch);
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
@@ -719,25 +780,24 @@ Type objective_function<Type>::operator() ()
   if(n_NAA_sigma > 1){
     for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
   }
-  // calculate mean-0 deviations of log NAA (possibly bias-corrected)
-  //array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
-  for(int y = 1; y < n_years_model+n_years_proj; y++){
-    for(int a = 0; a < n_ages; a++){
-      NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
-    }
-  }
+  
   // likelihood of NAA deviations
   if(n_NAA_sigma == 1){
     if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
-    SIMULATE if(simulate_state == 1) {
+    SIMULATE if(simulate_state(0) == 1) {
       vector<Type> NAAdevs0 = NAA_devs.col(0);
       AR1(NAA_rho_y).simulate(NAAdevs0);
-      NAA_devs.col(0) = sigma_a_sig(0) * NAAdevs0;
-      if(bias_correct_pe == 1) NAA_devs.col(0) -= 0.5*pow(sigma_a_sig(0),2);
+      NAAdevs0 = sigma_a_sig(0) * NAAdevs0;
+      if(bias_correct_pe == 1) NAAdevs0 -= 0.5*pow(sigma_a_sig(0),2);
+      for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
+        if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
+          NAA_devs(y,0) = NAAdevs0(y);
+        }
+      }
       matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
-        n_NAA_sigma, do_proj, proj_F_opt, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
-        avg_years_ind, n_years_model, which_F_age, percentSPR, proj_Fcatch);
+        n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
+        avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
       SSB = sims.col(sims.cols()-1);
       for(int a = 0; a < n_ages; a++) 
       {
@@ -745,14 +805,6 @@ Type objective_function<Type>::operator() ()
         pred_NAA.col(a) = sims.col(a+n_ages);
         for(int y = 1;y < n_years_model + n_years_proj; y++) log_NAA(y-1,a) = log(NAA(y,a));
       }
-      //for(int y = 1; y < n_years_model+n_years_proj; y++) {
-       /* pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
-          log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, ZAA);
-        log_NAA(y-1,0) = log(pred_NAA(y,0)) + NAA_devs(y-1,0);
-        NAA(y,0) = exp(log_NAA(y-1,0));
-        SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);*/
-      //}
-      //matrix<Type> newpop = sim_pop(
       REPORT(sims);
       REPORT(log_NAA);
       REPORT(NAA_devs);
@@ -761,12 +813,18 @@ Type objective_function<Type>::operator() ()
   if(n_NAA_sigma > 1){
     if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
-    SIMULATE if(simulate_state == 1) {
-      SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAA_devs); //already scaled
-      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+    SIMULATE if(simulate_state(0) == 1) {
+      array<Type> NAAdevs = NAA_devs;
+      SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); //already scaled
+      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+      for(int y = 0; y < n_years_model + n_years_proj; y++){
+        if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
+          for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
+        }
+      }
       matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
-        n_NAA_sigma, do_proj, proj_F_opt, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
-        avg_years_ind, n_years_model, which_F_age, percentSPR, proj_Fcatch);
+        n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
+        avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
       SSB = sims.col(sims.cols()-1);
       for(int a = 0; a < n_ages; a++) 
       {
@@ -774,17 +832,6 @@ Type objective_function<Type>::operator() ()
         pred_NAA.col(a) = sims.col(a+n_ages);
         for(int y = 1;y < n_years_model + n_years_proj; y++) log_NAA(y-1,a) = log(NAA(y,a));
       }
-      /*for(int y = 1; y < n_years_model+n_years_proj; y++) {
-        for(int a = 0; a < n_ages; a++){
-          //sim_pop
-          log_NAA(y-1,a) = log(pred_NAA(y,a)) + NAA_devs(y-1,a);
-          NAA(y,a) = exp(log_NAA(y-1,a));
-        }
-        pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
-          log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, ZAA);
-        SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
-        }
-      }*/
       REPORT(sims);
       REPORT(log_NAA);
       REPORT(NAA_devs);
@@ -797,13 +844,17 @@ Type objective_function<Type>::operator() ()
   REPORT(nll_NAA);
   nll += nll_NAA;
 
-  // ------------------------------------------------------------------------------
   // Catch data likelihood
-  matrix<Type> nll_agg_catch(n_years_model,n_fleets), nll_catch_acomp(n_years_model,n_fleets);
+  matrix<Type> nll_agg_catch(n_years_model,n_fleets), nll_catch_acomp(n_years_model,n_fleets), agg_catch_proj(n_years_proj,n_fleets);
+  array<Type> catch_paa_proj(n_fleets, n_years_proj, n_ages);
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
-  for(int y = 0; y < n_years_model; y++)
+  
+  for(int y = 0; y < n_years_model+n_years_proj; y++)
   {
+    //for now just use uncertainty from last year of catch
+    int usey = y;
+    if(y > n_years_model-1) usey = n_years_model-1;
     int acomp_par_count = 0;
     for(int f = 0; f < n_fleets; f++)
     {
@@ -815,48 +866,47 @@ Type objective_function<Type>::operator() ()
         pred_catch(y,f) += waa(waa_pointer_fleets(f)-1,y,a) * pred_CAA(y,f,a);
         tsum += pred_CAA(y,f,a);
       }
-      if(use_agg_catch(y,f) == 1)
-      {
-        Type mu = log(pred_catch(y,f));
-        Type sig = agg_catch_sigma(y,f)*exp(log_catch_sig_scale(f));
-        if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+      Type mu = log(pred_catch(y,f));
+      log_pred_catch(y,f) = mu;
+      Type sig = agg_catch_sigma(usey,f)*exp(log_catch_sig_scale(f));
+      if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+      if(y < n_years_model) if(use_agg_catch(y,f) == 1){
         nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
-        // nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(log(agg_catch(y,f)), mu, sig,1);
-        SIMULATE agg_catch(y,f) = exp(rnorm(mu, sig));
-        log_pred_catch(y,f) = log(pred_catch(y,f));
       }
-      if(any_fleet_age_comp(f) == 1)
-      {
+      SIMULATE if(simulate_data(0) == 1){
+        if(simulate_period(0) == 1 & y < n_years_model) agg_catch(y,f) = exp(rnorm(mu, sig));
+        if(simulate_period(1) == 1 & y > n_years_model - 1) agg_catch_proj(y-n_years_model,f) = exp(rnorm(mu, sig));
+      }
+      if(any_fleet_age_comp(f) == 1){
         vector<Type> acomp_pars(n_age_comp_pars_fleets(f));
-        for(int j = 0; j < n_age_comp_pars_fleets(f); j++)
-        {
+        for(int j = 0; j < n_age_comp_pars_fleets(f); j++){
           acomp_pars(j) = catch_paa_pars(acomp_par_count);
           acomp_par_count++;
         }
-        if(use_catch_paa(y,f) == 1)
-        {
-          // vector<Type> t_keep(n_ages);
-          for(int a = 0; a < n_ages; a++)
-          {
-            pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
-            t_pred_paa(a) = pred_catch_paa(y,f,a);
-            t_paa(a) = catch_paa(f,y,a);
-            // t_paa(a) = obsvec(keep_Cpaa(f,y,a));
-            // t_keep(a) = keep(keep_Cpaa(f,y,a));
-          }
+        // vector<Type> t_keep(n_ages);
+        for(int a = 0; a < n_ages; a++){
+          pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
+          t_pred_paa(a) = pred_catch_paa(y,f,a);
+          if(y < n_years_model) t_paa(a) = catch_paa(f,y,a);
+          // t_paa(a) = obsvec(keep_Cpaa(f,y,a));
+          // t_keep(a) = keep(keep_Cpaa(f,y,a));
+        }
+        if(y < n_years_model) if(use_catch_paa(y,f) == 1){
           nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
           // nll_catch_acomp(y,f) -= get_acomp_ll_osa(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f), t_keep);
-          SIMULATE
-          {
-            t_paa = sim_acomp(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
-            for(int a = 0; a < n_ages; a++) catch_paa(f,y,a) = t_paa(a);
-          }
+        }
+        SIMULATE if(simulate_data(0) == 1){
+          t_paa = sim_acomp(catch_Neff(usey,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(usey,f));
+          if(simulate_period(0) == 1 & y < n_years_model) for(int a = 0; a < n_ages; a++) catch_paa(f,y,a) = t_paa(a);
+          if(simulate_period(1) == 1 & y > n_years_model - 1) for(int a = 0; a < n_ages; a++) catch_paa_proj(f,y-n_years_model,a) = t_paa(a);
         }
       }
     }
   }
-  SIMULATE REPORT(agg_catch);
-  SIMULATE REPORT(catch_paa);
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(agg_catch);
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_paa);
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(agg_catch_proj);
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_paa_proj);
   REPORT(nll_agg_catch);
   nll += nll_agg_catch.sum();
   //see(nll);
@@ -864,21 +914,26 @@ Type objective_function<Type>::operator() ()
   nll += nll_catch_acomp.sum();
   //see(nll);
 
+  //STOPPED WORKING HERE ON WHAM OM MODE
   // -----------------------------------------------------------------------------
   // Index/survey data likelihood
-  matrix<Type> nll_agg_indices(n_years_catch,n_indices), nll_index_acomp(n_years_catch,n_indices);
+  matrix<Type> nll_agg_indices(n_years_catch,n_indices), nll_index_acomp(n_years_catch,n_indices), agg_indices_proj(n_years_proj, n_indices);
+  array<Type> index_paa_proj(n_indices,n_years_proj,n_ages);
   nll_agg_indices.setZero();
   nll_index_acomp.setZero();
   pred_indices.setZero();
-  for(int y = 0; y < n_years_indices; y++)
+  //for(int y = 0; y < n_years_indices; y++)
+  for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
+    int yuse = y;
+    if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
     int acomp_par_count = 0;
     for(int i = 0; i < n_indices; i++)
     {
       Type tsum = 0.0;
       for(int a = 0; a < n_ages; a++)
       {
-        pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(y,i));
+        pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(yuse,i));
         if(units_indices(i) == 1) pred_indices(y,i) += waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(y,i,a);
         else pred_indices(y,i) += pred_IAA(y,i,a);
       }
@@ -888,16 +943,17 @@ Type objective_function<Type>::operator() ()
         tsum += pred_IAA(y,i,a);
       }
 
-      if(use_indices(y,i) == 1)
-      {
-        Type mu = log(pred_indices(y,i));
-        Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
-        if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
-        // nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
-        // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
-        nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), mu, sig, 1);
-        SIMULATE agg_indices(y,i) = exp(rnorm(mu, sig));
+      Type mu = log(pred_indices(y,i));
+      Type sig = agg_index_sigma(yuse,i)*exp(log_index_sig_scale(i));
+      if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+      // nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
+      // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
+      if(y < n_years_model) if(use_indices(y,i) == 1) nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), mu, sig, 1);
+      SIMULATE if(simulate_data(1) == 1){
+        if(simulate_period(0) == 1 & y < n_years_model) agg_indices(y,i) = exp(rnorm(mu, sig));
+        if(simulate_period(1) == 1 & y > n_years_model - 1) agg_indices_proj(y-n_years_model,i) = exp(rnorm(mu, sig));
       }
+      
       if(any_index_age_comp(i) == 1)
       {
         vector<Type> acomp_pars(n_age_comp_pars_indices(i));
@@ -906,29 +962,30 @@ Type objective_function<Type>::operator() ()
           acomp_pars(j) = index_paa_pars(acomp_par_count);
           acomp_par_count++;
         }
-        if(use_index_paa(y,i) > 0)
+        // vector<Type> t_keep(n_ages);
+        for(int a = 0; a < n_ages; a++)
         {
-          // vector<Type> t_keep(n_ages);
-          for(int a = 0; a < n_ages; a++)
-          {
-            pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
-            t_pred_paa(a) = pred_index_paa(y,i,a);
-            t_paa(a) = index_paa(i, y, a);
-            // t_keep(a) = keep(keep_Ipaa(i,y,a));
-          }
+          pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
+          t_pred_paa(a) = pred_index_paa(y,i,a);
+          t_paa(a) = index_paa(i,y,a);
+          // t_keep(a) = keep(keep_Ipaa(i,y,a));
+        }
+        if(y < n_years_model) if(use_index_paa(y,i) > 0) {
           nll_index_acomp(y,i) -= get_acomp_ll(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
-          // nll_index_acomp(y,i) -= get_acomp_ll_osa(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i), t_keep);
-          SIMULATE
-          {
-            t_paa = sim_acomp(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
-            for(int a = 0; a < n_ages; a++) index_paa(i,y,a) = t_paa(a);
-          }
+        }
+        // nll_index_acomp(y,i) -= get_acomp_ll_osa(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i), t_keep);
+        SIMULATE if(simulate_data(1) == 1){
+          t_paa = sim_acomp(index_Neff(yuse,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(yuse,i));
+          if(simulate_period(0) == 1 & y < n_years_model) for(int a = 0; a < n_ages; a++) index_paa(i,y,a) = t_paa(a);
+          if(simulate_period(1) == 1 & y > n_years_model - 1) for(int a = 0; a < n_ages; a++) index_paa_proj(i,y-n_years_model,a) = t_paa(a);
         }
       }
     }
   }
-  SIMULATE REPORT(agg_indices);
-  SIMULATE REPORT(index_paa);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(agg_indices);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(index_paa);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(agg_indices_proj);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(index_paa_proj);
   REPORT(nll_agg_indices);
   nll += nll_agg_indices.sum();
   //see(nll);
@@ -945,7 +1002,8 @@ Type objective_function<Type>::operator() ()
   // }
   if(do_proj == 1){
     vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
-    matrix<Type> CAA_proj(n_years_proj, n_ages);
+    matrix<Type> CAA_proj(n_years_proj, n_ages), catch_fleet_proj(n_years_proj, n_fleets);
+    array<Type> CAA_fleet_proj(n_fleets, n_years_proj, n_ages);
     catch_proj.setZero();
     for(int i = 0; i < n_years_proj; i++){
       int yi = i + n_years_model;
@@ -959,6 +1017,8 @@ Type objective_function<Type>::operator() ()
     REPORT(catch_proj);
     ADREPORT(log_catch_proj);
   }
+
+  // ------------------------------------------------------------------------------
 
   //////////////////////////////////////////
   //Still need to add in yearly vectors of biological inputs, make sure to calculate SR_a,SR_b vector or otherwise.
@@ -1061,6 +1121,7 @@ Type objective_function<Type>::operator() ()
     REPORT(log_YPR_MSY);
   }
 
+  //see(FAA_tot);
   matrix<Type> log_FAA_tot = log(FAA_tot.array());
   matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.array());
   matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.array());
