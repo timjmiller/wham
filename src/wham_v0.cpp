@@ -558,7 +558,7 @@ Type objective_function<Type>::operator() ()
     }
     //just use last years selectivity for now
     if(do_proj == 1) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++) {
-      QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(y,a);
+      QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
     }
   }
 
@@ -1123,8 +1123,8 @@ Type objective_function<Type>::operator() ()
 
   //see(FAA_tot);
   matrix<Type> log_FAA_tot = log(FAA_tot.array());
-  matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.array());
-  matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.array());
+  matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.block(0,0,n_years_model,n_indices).array());
+  matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.block(0,0,n_years_model,n_fleets).array());
   vector<Type> log_SSB =  log(SSB);
   vector<Type> Fbar(n_years_model + n_years_proj);
   Fbar.setZero();
