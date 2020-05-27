@@ -906,7 +906,6 @@ Type objective_function<Type>::operator() ()
   nll += nll_catch_acomp.sum();
   //see(nll);
 
-  //STOPPED WORKING HERE ON WHAM OM MODE
   // -----------------------------------------------------------------------------
   // Index/survey data likelihood
   matrix<Type> nll_agg_indices(n_years_catch,n_indices), nll_index_acomp(n_years_catch,n_indices), agg_indices_proj(n_years_proj, n_indices);
