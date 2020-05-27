@@ -1224,11 +1224,6 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
   matrix<Type> FAA_proj(n_fleets, n_ages);
   vector<Type> FAA_tot_proj(n_ages);
   FAA_tot_proj.setZero();
-  see(FAA(0,0,0));
-  see(FAA(0,0,4));
-  see(n_years_model);
-  see(FAA(n_years_model-1,0,0));
-  see(FAA(n_years_model-1,0,4));
   if(proj_F_opt_y == 1){ // last year F (default)
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA_proj(f,a) = FAA(n_years_model-1,f,a);
   }

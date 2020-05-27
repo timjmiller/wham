@@ -403,13 +403,6 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < n_Ecov; i++){
     int ct = 0;
     for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
-      see(i);
-      see(y);
-      see(ct);
-      see(n_years_Ecov);
-      see(n_years_proj_Ecov);
-      see(n_years_model);
-      see(n_years_proj);
       Ecov_out(ct,i) = Ecov_x(y,i);
       ct++;
     }
@@ -753,7 +746,6 @@ Type objective_function<Type>::operator() ()
         //n_fleets x n_ages: projected full F is sum of (means across years at age) across fleets 
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, 
           log_SPR0, avg_years_ind, n_years_model, which_F_age, percentSPR, proj_Fcatch);
-        //see(FAA_proj);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         //FAA_tot.row(y) = get_F_proj(y, proj_F_opt, FAA_tot, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
@@ -1121,7 +1113,6 @@ Type objective_function<Type>::operator() ()
     REPORT(log_YPR_MSY);
   }
 
-  //see(FAA_tot);
   matrix<Type> log_FAA_tot = log(FAA_tot.array());
   matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.block(0,0,n_years_model,n_indices).array());
   matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.block(0,0,n_years_model,n_fleets).array());
