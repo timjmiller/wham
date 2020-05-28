@@ -69,7 +69,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(log(mod$rep$pred_catch[,f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
+      plot(log(mod$rep$pred_catch[1:length(mod$years),f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -127,7 +127,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, res=72, od){
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(log(mod$rep$pred_indices[,f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
+      plot(log(mod$rep$pred_indices[1:length(mod$year),f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -394,7 +394,7 @@ get.RMSEs.fn <- function(model)
   catch_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_fleets)
   temp = sdrep[rownames(sdrep) %in% "log_index_resid",]
   index_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_indices)
-  temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa,c(2,1,3))
+  temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa[1:model$env$data$n_years_model,,,drop=FALSE],c(2,1,3))
   temp = sdrep[rownames(sdrep) %in% "log_index_resid",]
   index_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_indices)
   #temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa,c(2,1,3))
@@ -830,11 +830,12 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
+  pred_catch = mod$rep$pred_catch
   if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
-    pred_catch = rbind(mod$rep$pred_catch, as.matrix(mod$rep$catch_proj))
+    #pred_catch = rbind(mod$rep$pred_catch, as.matrix(mod$rep$catch_proj))
     years_full = mod$years_full
   } else {
-    pred_catch = mod$rep$pred_catch
+    #pred_catch = mod$rep$pred_catch
     years_full = years
   }
   catch = dat$agg_catch
@@ -876,7 +877,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, us
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  pred_index = aperm(mod$rep$pred_IAA, c(2,1,3))
+  pred_index = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))
   pred_index = sapply(1:dat$n_indices, function(x)
   {
       if(dat$units_indices[x] == 2) apply(pred_index[x,,],1,sum)
@@ -994,7 +995,7 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, u
 	for (i in fleets)
 	{
     acomp.obs = mod$env$data$catch_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_catch_paa, c(2,1,3))[i,,]
+    acomp.pred = aperm(mod$rep$pred_catch_paa[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
@@ -1045,7 +1046,7 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, res = 72, u
 	for (i in indices)
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
+    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,]
     if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:mod$env$data$n_years_indices,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index",i,".pdf")), family = "Times", height = 10, width = 10)
@@ -1089,9 +1090,9 @@ multinomial.pearson.fn = function(mod, ind = 1)
 {
   dat = mod$env$data
   rep = mod$rep
-  x = dat$index_paa[ind,,] - rep$pred_index_paa[,ind,]
+  x = dat$index_paa[ind,,] - rep$pred_index_paa[1:dat$n_years_model,ind,]
   temp = dat$index_Neff[,ind]
-  temp = rep$pred_index_paa[,ind,]*(1-rep$pred_index_paa[,ind,])/temp
+  temp = rep$pred_index_paa[1:dat$n_years_model,ind,]*(1-rep$pred_index_paa[1:dat$n_years_model,ind,])/temp
   x = x/sqrt(temp)
   x[which(dat$use_index_paa[,ind] == 0),] = NA
   return(x)
@@ -1114,7 +1115,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	for (i in fleets)
 	{
     acomp.obs = dat$catch_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_catch_paa, c(2,1,3))[i,,]
+    acomp.pred = aperm(mod$rep$pred_catch_paa[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_fleet",i,".pdf")), family = "Times", height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_fleet",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = "Times")
     par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
@@ -1166,7 +1167,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	for (i in indices)
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_IAA, c(2,1,3))[i,,]
+    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,]
     if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:dat$n_years_indices,]
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_index",i,".pdf")), family = "Times", height = 10, width = 10)
@@ -2912,8 +2913,7 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, r
 
 		# get catch at age
     catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * rep$pred_catch[1:n_years,i]/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
 		cpr <- rep0log(catchpr)
@@ -2952,12 +2952,12 @@ convert_survey_to_at_age <- function(mod)
 		if (sum(dat$use_index_paa[,i])>0)
 		{  # used age composition for the index
 			# get the aggregate index observed and predicted time series
-			agg.ob <- dat$agg_indices[dat$use_index_paa[,i]==1,i]
-			agg.pr <- rep$pred_indices[dat$use_index_paa[,i]==1,i]
+			agg.ob <- dat$agg_indices[which(dat$use_index_paa[,i]==1),i]
+			agg.pr <- rep$pred_indices[which(dat$use_index_paa[,i]==1),i]
 
 			# get proportions for correct years and ages only
-			props.ob <- dat$index_paa[i,dat$use_index_paa[,i]==1,]
-			props.pr <- rep$pred_index_paa[dat$use_index_paa[,i]==1,i,]
+			props.ob <- dat$index_paa[i,which(dat$use_index_paa[,i]==1),]
+			props.pr <- rep$pred_index_paa[which(dat$use_index_paa[,i]==1),i,]
 
       # figure out units for aggregate and proportions
 			agg.units <- dat$units_indices[i]
@@ -3124,7 +3124,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 		# get catch at age
     catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[,i,] * rep$pred_catch[,i]/apply(rep$pred_catch_paa[,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * rep$pred_catch[1:n_years,i]/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
