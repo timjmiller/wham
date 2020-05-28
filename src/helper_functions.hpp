@@ -970,6 +970,39 @@ struct catch_F {
   }
 };
 
+/* calculate Catch at F */
+template<class Type>
+struct log_catch_F {
+  /* Data and parameter objects for calculation: */
+  vector<Type> M;
+  vector<Type> sel;
+  vector<Type> waacatch;
+  vector<Type> NAA;
+
+  /* Constructor */
+  log_catch_F(
+  vector<Type> M_,
+  vector<Type> sel_,
+  vector<Type> waacatch_,
+  vector<Type> NAA_) :
+    M(M_), sel(sel_), waacatch(waacatch_), NAA(NAA_) {}
+
+  template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
+  T operator()(vector<T> log_F) { //find such that it achieves required catch
+    int n_ages = M.size();
+    T Catch = 0;
+    vector<T> F(n_ages), Z(n_ages);
+
+    F = exp(log_F(0)) * sel.template cast<T>();
+    Z = F + M.template cast<T>();
+    for(int age=0; age<n_ages; age++)
+    {
+      Catch += T(waacatch(age)) * T(NAA(age)) * F(age) *(1 - exp(-Z(age)))/Z(age);
+    }
+    return log(Catch);
+  }
+};
+
 template <class Type>
 Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch)
 {
@@ -983,6 +1016,24 @@ Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type>
     log_F_i(0) = log_F_iter(i);
     vector<Type> grad_catch_F = autodiff::gradient(catchF,log_F_i);
     log_F_iter(i+1) = log_F_iter(i) - (catchF(log_F_i) - Catch)/grad_catch_F(0);
+  }
+  Type res = exp(log_F_iter(n-1));
+  return res;
+}
+
+template <class Type>
+Type get_F_from_log_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch)
+{
+  int n = 10;
+  vector<Type> log_F_i(1);
+  vector<Type> log_F_iter(n);
+  log_F_iter.fill(log(0.2)); //starting value
+  log_catch_F<Type> logcatchF(M, sel, waacatch, NAA);
+  for (int i=0; i<n-1; i++)
+  {
+    log_F_i(0) = log_F_iter(i);
+    vector<Type> grad_log_catch_F = autodiff::gradient(logcatchF,log_F_i);
+    log_F_iter(i+1) = log_F_iter(i) - (logcatchF(log_F_i) - log(Catch))/grad_log_catch_F(0);
   }
   Type res = exp(log_F_iter(n-1));
   return res;
@@ -1233,10 +1284,10 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     FAA_proj.setZero();
     //option 1: average F is by fleet and Ftot is sum of fleet averages
     //when there is more than 1 fleet, the sum of predicted catch across fleets will not generally equal the total catch using FAA_tot and waa_totcatch.
-    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){
-      for(int i = 0; i < n_toavg; i++){
+    for(int f = 0; f < n_fleets; f++) 
+    {
+      for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_toavg; i++){
         FAA_proj(f,a) += FAA(avg_years_ind(i),f,a);
-        //FAA_toavg(f,i,a) = FAA(avg_years_ind(i),f,a);
       }
       FAA_proj.row(f) /= Type(n_toavg);
     }
@@ -1272,7 +1323,8 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     if(proj_F_opt_y == 5){ // calculate F from user-specified catch
       Type thecatch = proj_Fcatch(y-n_years_model);
       //FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
-      FAA_tot_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
+      //FAA_tot_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
+      FAA_tot_proj = get_F_from_log_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
       FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
     }
   }
@@ -1326,6 +1378,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
          which_F_age, percentSPR, proj_Fcatch);
+        for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
@@ -1333,9 +1386,10 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
     SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
   } // end pop model loop
   
-  matrix<Type> out(ny, 2 * n_ages + 1);
+  matrix<Type> out(ny, 2 * n_ages + n_fleets * n_ages + 1);
   for(int i = 0; i < n_ages; i++) out.col(i) = NAA.col(i);
   for(int i = n_ages; i < 2 * n_ages; i++) out.col(i) = pred_NAA.col(i-n_ages);
+  for(int y = 0; y < ny; y++) for(int i = 2 ; i < (2 + n_fleets); i++) for(int a = 0; a < n_ages; a++) out(y,i*n_ages + a) = FAA(y,i-2,a);
   out.col(out.cols()-1) = SSB;
   return(out);
 }

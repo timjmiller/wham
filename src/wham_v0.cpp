@@ -795,8 +795,19 @@ Type objective_function<Type>::operator() ()
       {
         NAA.col(a) = sims.col(a);
         pred_NAA.col(a) = sims.col(a+n_ages);
-        for(int y = 1;y < n_years_model + n_years_proj; y++) log_NAA(y-1,a) = log(NAA(y,a));
+        for(int y = 1;y < n_years_model + n_years_proj; y++) {
+          log_NAA(y-1,a) = log(NAA(y,a));
+          for(int f = 0; f < n_fleets; f++){
+            FAA(y,f,a) = sims(y,2*n_ages + f*n_ages + a);
+          }
+        }
       }
+      for(int y = 1;y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++){
+        Type tot = 0;
+        for(int f = 0; f < n_fleets; f++) tot += FAA(y,f,a);
+        FAA_tot(y,a) = tot;
+      }
+      ZAA = MAA + FAA_tot;
       REPORT(sims);
       REPORT(log_NAA);
       REPORT(NAA_devs);
@@ -867,7 +878,9 @@ Type objective_function<Type>::operator() ()
       }
       SIMULATE if(simulate_data(0) == 1){
         if(simulate_period(0) == 1 & y < n_years_model) agg_catch(y,f) = exp(rnorm(mu, sig));
-        if(simulate_period(1) == 1 & y > n_years_model - 1) agg_catch_proj(y-n_years_model,f) = exp(rnorm(mu, sig));
+        if(simulate_period(1) == 1 & y > n_years_model - 1) {
+          agg_catch_proj(y-n_years_model,f) = exp(rnorm(mu, sig));
+        }
       }
       if(any_fleet_age_comp(f) == 1){
         vector<Type> acomp_pars(n_age_comp_pars_fleets(f));
@@ -1135,6 +1148,7 @@ Type objective_function<Type>::operator() ()
   REPORT(F);
   REPORT(FAA);
   REPORT(FAA_tot);
+  REPORT(ZAA);
   REPORT(Fbar);
   REPORT(pred_catch);
   REPORT(pred_catch_paa);
