@@ -17,8 +17,9 @@ fit_wham(
   MakeADFun.silent = FALSE,
   do.proj = FALSE,
   proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
-    proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.Ecov = TRUE, use.last.Ecov =
-    FALSE, avg.Ecov.yrs = NULL, proj.Ecov = NULL)
+    proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.ecov = TRUE, use.last.ecov =
+    FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL),
+  do.fit = TRUE
 )
 }
 \arguments{
@@ -68,6 +69,8 @@ Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
   \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
   \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 }}
+
+\item{do.fit}{T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.}
 }
 \value{
 a fit TMB model with additional output if specified:

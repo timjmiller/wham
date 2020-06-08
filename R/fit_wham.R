@@ -45,6 +45,7 @@
 #'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'   }
+#' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}. 
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -74,50 +75,52 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
                     do.proj = FALSE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL))
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL), do.fit = TRUE)
 {
-  btime <- Sys.time()
 
   # fit model
   if(missing(model)){
     mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent)
   } else {mod = model}
 
-  mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
   mod$years <- input$years
   mod$years_full <- input$years_full
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
-
-  # retrospective analysis
-  if(do.retro) tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, MakeADFun.silent = MakeADFun.silent)
-    , error = function(e) {err <<- conditionMessage(e)})
-  if(exists("err")) mod$err_retro <- err # store error message to print out in fit_wham
-
-  # one-step-ahead residuals
-  if(do.osa){
-    if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
-      cat("Doing OSA residuals...\n");
-      OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
-                                  data.term.indicator="keep",
-                                  method=osa.opts$method,
-                                  discrete=FALSE, parallel=osa.opts$parallel))
-      input$data$obs$residual <- OSA$residual;
-      mod$osa <- input$data$obs
-    } else warning(paste("","** Did not do OSA residual analyses. **",
-    "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
-  }
   mod$input <- input
+  if(do.fit){
+    btime <- Sys.time()
+    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
 
-  # projections
-  if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent) # calls prepare_projection + fit_wham(do.proj=F)
+    # retrospective analysis
+    if(do.retro) tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, MakeADFun.silent = MakeADFun.silent)
+      , error = function(e) {err <<- conditionMessage(e)})
+    if(exists("err")) mod$err_retro <- err # store error message to print out in fit_wham
 
-  # error message reporting
-  if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
-    "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
-  if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
-    paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
+    # one-step-ahead residuals
+    if(do.osa){
+      if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
+        cat("Doing OSA residuals...\n");
+        OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+                                    data.term.indicator="keep",
+                                    method=osa.opts$method,
+                                    discrete=FALSE, parallel=osa.opts$parallel))
+        input$data$obs$residual <- OSA$residual;
+        mod$osa <- input$data$obs
+      } else warning(paste("","** Did not do OSA residual analyses. **",
+      "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
+    }
 
-  mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2)
+    # projections
+    if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent) # calls prepare_projection + fit_wham(do.proj=F)
+
+    # error message reporting
+    if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
+      "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
+    if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
+      paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
+
+    mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2)
+  }
   return(mod)
 }

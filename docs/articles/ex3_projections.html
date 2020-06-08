@@ -130,7 +130,7 @@
 <li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
+<li><p>CPI has a "controlling" (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
 </ul>
 <p>In example 3, we demonstrate how to project/forecast WHAM models using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
 <ul>
@@ -148,12 +148,12 @@
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex3_projections.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span>(<span class="no">write.dir</span>)</pre></body></html></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>. Let's copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"CPI.csv"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)</pre></body></html></div>
@@ -177,7 +177,7 @@
 <li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
+<li><p>CPI has a "controlling" (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
 </ul>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">env</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
   <span class="kw">label</span> <span class="kw">=</span> <span class="st">"CPI"</span>,
@@ -246,7 +246,7 @@
 <span class="co"># mod_proj[[1]] &lt;- project_wham(mod)</span></pre></body></html></div>
 <p>WHAM implements four options for handling the environmental covariate(s) in the projections. Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p>
 <ul>
-<li><p>(Default) Continue the ecov process model (e.g. random walk, AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).</p></li>
+<li><p>(Default) Continue the ecov process model (e.g. random walk, AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).</p></li>
 <li><p>Use last year ecov. Set <code>use.last.ecov = TRUE</code>. WHAM will use ecov value from the terminal year of the population model for projections.</p></li>
 <li><p>Use average ecov. Provide <code>avg.yrs.ecov</code>, a vector specifying which years to average over the environmental covariate(s) for projections.</p></li>
 <li><p>Specify ecov. Provide <code>proj.ecov</code>, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (<code>proj.opts$n.yrs</code>) x the number of ecovs (<code>ncols(ecov$mean)</code>).</p></li>
@@ -341,7 +341,7 @@
 <div class="sourceCode"><html><body><pre class="r"><span class="no">nll_proj</span> <span class="kw">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">mod_proj</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">opt</span>$<span class="no">obj</span>) <span class="co"># projected models NLL</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="no">nll_proj</span> - <span class="no">mod</span>$<span class="no">opt</span>$<span class="no">obj</span>, <span class="fl">6</span>) <span class="co"># difference between original and projected models' NLL</span></pre></body></html></div>
 <pre><code>#&gt;  [1] 0 0 0 0 0 0 0 0 0 0</code></pre>
-<p>Now let’s plot results from each of the projected models.</p>
+<p>Now let's plot results from each of the projected models.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="kw">for</span>(<span class="no">m</span> <span class="kw">in</span> <span class="fl">1</span>:<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">mod_proj</span>)){
   <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span>(<span class="no">mod_proj</span><span class="kw">[[</span><span class="no">m</span>]], <span class="kw">dir.main</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span>(),<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"proj_"</span>,<span class="no">m</span>)), <span class="kw">out.type</span><span class="kw">=</span><span class="st">'html'</span>)
 }</pre></body></html></div>

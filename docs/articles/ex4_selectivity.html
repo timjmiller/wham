@@ -153,12 +153,12 @@
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex4_selectivity.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># need to change</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span>(<span class="no">write.dir</span>)</pre></body></html></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>. Let’s copy <code>ex1_SNEMAYT.dat</code> to our analysis directory:</p>
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>. Let's copy <code>ex1_SNEMAYT.dat</code> to our analysis directory:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)</pre></body></html></div>
 <p>Confirm you are in the correct directory and it has the required data files:</p>
@@ -517,7 +517,7 @@
 <p>When fitting age-specific selectivity, oftentimes some of the (mean, <span class="math inline">\(\mu^{s}_a\)</span>) selectivity parameters need to be fixed for the model to converge. The specifications used here follow this procedure:</p>
 <ol style="list-style-type: decimal">
 <li>Fit the model without fixing any selectivity parameters.</li>
-<li>If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (&gt; 5 or &lt; -5 on the logit scale) and/or have <code>NaN</code> estimates of their standard error:</li>
+<li>If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (&gt; 5 or &lt; -5 on the logit scale) and/or have <code>NaN</code> estimates of their standard error:</li>
 </ol>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">mod</span>$<span class="no">rep</span>$<span class="no">logit_selpars</span> <span class="co"># mean sel pars</span>
 <span class="no">mod</span>$<span class="no">rep</span>$<span class="no">sel_repars</span> <span class="co"># if time-varying selectivity turned on</span>

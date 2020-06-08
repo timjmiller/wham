@@ -390,6 +390,7 @@ Type objective_function<Type>::operator() ()
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
           Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
+          obsvec(keep_E(y,i)) = Ecov_obs(y,i);
         }
       }
     }
@@ -877,7 +878,10 @@ Type objective_function<Type>::operator() ()
         nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
       }
       SIMULATE if(simulate_data(0) == 1){
-        if(simulate_period(0) == 1 & y < n_years_model) agg_catch(y,f) = exp(rnorm(mu, sig));
+        if(simulate_period(0) == 1 & y < n_years_model) {
+          agg_catch(y,f) = exp(rnorm(mu, sig));
+          if(use_agg_catch(y,f) == 1) obsvec(keep_C(y,f)) = log(agg_catch(y,f));
+        }
         if(simulate_period(1) == 1 & y > n_years_model - 1) {
           agg_catch_proj(y-n_years_model,f) = exp(rnorm(mu, sig));
         }
@@ -954,7 +958,10 @@ Type objective_function<Type>::operator() ()
       // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
       if(y < n_years_model) if(use_indices(y,i) == 1) nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), mu, sig, 1);
       SIMULATE if(simulate_data(1) == 1){
-        if(simulate_period(0) == 1 & y < n_years_model) agg_indices(y,i) = exp(rnorm(mu, sig));
+        if(simulate_period(0) == 1 & y < n_years_model) {
+          agg_indices(y,i) = exp(rnorm(mu, sig));
+          if(use_indices(y,i) == 1) obsvec(keep_I(y,i)) = log(agg_indices(y,i));
+        }
         if(simulate_period(1) == 1 & y > n_years_model - 1) agg_indices_proj(y-n_years_model,i) = exp(rnorm(mu, sig));
       }
       
@@ -996,7 +1003,8 @@ Type objective_function<Type>::operator() ()
   REPORT(nll_index_acomp);
   nll += nll_index_acomp.sum();
   //see(nll);
-
+  
+  SIMULATE if(sum(simulate_data) > 0) REPORT(obsvec);
   // -------------------------------------------------------------------
   // Calculate catch in projection years
   // if(do_proj == 0){

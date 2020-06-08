@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • wham</title>
+<title>Update input data and parameters from simulated data with projection — update_wham_input • wham</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -38,7 +38,13 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Update input data and parameters from simulated data with projection — update_wham_input" />
+
+<meta property="og:description" content="When data are simulated from a wham model with projections, this function can be used to update the input model years.
+This is helpful for using WHAM as an assessment model in a management strategy evaluation. See prepare_wham_input, 
+prepare_wham_om_input, prepare_wham_om_proj, and project_wham for further details on data and parameter structure." />
+
+
 
 
 
@@ -56,7 +62,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -149,157 +155,70 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Update input data and parameters from simulated data with projection</h1>
+    <small class="dont-index">Source: <a href='https://github.com/timjmiller/wham/blob/master/R/update_wham_input.R'><code>R/update_wham_input.R</code></a></small>
+    <div class="hidden name"><code>update_wham_input.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    
+    <p>When data are simulated from a wham model with projections, this function can be used to update the input model years.
+This is helpful for using WHAM as an assessment model in a management strategy evaluation. See <code>prepare_wham_input</code>, 
+<code>prepare_wham_om_input</code>, <code>prepare_wham_om_proj</code>, and <code>project_wham</code> for further details on data and parameter structure.</p>
+    
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
-
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-functions-that-users-call-directly" class="hasAnchor"><a href="#section-functions-that-users-call-directly" class="anchor"></a>Functions that users call directly</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="read_asap3_dat.html">read_asap3_dat()</a></code> </p>
-        </td>
-        <td><p>Read an ASAP3 .dat file into R</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters for WHAM model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fit_wham.html">fit_wham()</a></code> </p>
-        </td>
-        <td><p>Fit WHAM model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="check_convergence.html">check_convergence()</a></code> </p>
-        </td>
-        <td><p>Check convergence of WHAM model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="project_wham.html">project_wham()</a></code> </p>
-        </td>
-        <td><p>Project a fit WHAM model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_wham_output.html">plot_wham_output()</a></code> </p>
-        </td>
-        <td><p>Plot WHAM output</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="compare_wham_models.html">compare_wham_models()</a></code> </p>
-        </td>
-        <td><p>Compare WHAM models</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepare_wham_om_input.html">prepare_wham_om_input()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters for WHAM model from a few basic inputs to simulate populations and observations</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepare_wham_om_proj.html">prepare_wham_om_proj()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters to add projection to a WHAM operating model</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-helper-functions-and-the-like-that-users-do-not-call" class="hasAnchor"><a href="#section-helper-functions-and-the-like-that-users-do-not-call" class="anchor"></a>Helper functions and the like that users do not call</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="set_age_sel0.html">set_age_sel0()</a></code> </p>
-        </td>
-        <td><p>Make one or more selectivity blocks with age-specific parameters</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fit_tmb.html">fit_tmb()</a></code> </p>
-        </td>
-        <td><p>Fit TMB model using nlminb</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fit_peel.html">fit_peel()</a></code> </p>
-        </td>
-        <td><p>Fit model peeling off <em>i</em> years of data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="retro.html">retro()</a></code> </p>
-        </td>
-        <td><p>Run retrospective analysis</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="retro_res.html">retro_res()</a></code> </p>
-        </td>
-        <td><p>Extract retrospective results for plotting</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="mohns_rho.html">mohns_rho()</a></code> </p>
-        </td>
-        <td><p>Calculate Mohn's rho for a WHAM model with peels</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="wham_html.html">wham_html()</a></code> </p>
-        </td>
-        <td><p>Create HTML file to view output plots in browser</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pipe.html">%>%</a></code> </p>
-        </td>
-        <td><p>Pipe function</p></td>
-      </tr>
-    </tbody>
+    <pre class="usage"><span class='fu'>update_wham_input</span>(<span class='no'>simres</span>, <span class='no'>model</span>, <span class='no'>n_years_add</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>simres</th>
+      <td><p>list containing data and parameters (output from model$simulate(complete=TRUE), where model is output from <code>fit_wham</code>)</p></td>
+    </tr>
+    <tr>
+      <th>model</th>
+      <td><p>object used to produce simres.</p></td>
+    </tr>
+    <tr>
+      <th>n_years_add</th>
+      <td><p>number of projection years to convert to model_years</p></td>
+    </tr>
     </table>
-  </div>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>a named list with the following components:</p><dl'>
+    <dt><code>data</code></dt><dd><p>Named list of data, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
+    <dt><code>par</code></dt><dd><p>Named list of parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
+    <dt><code>map</code></dt><dd><p>Named list defining how to optionally collect and fix parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
+    <dt><code>random</code></dt><dd><p>Character vector of parameters to treat as random effects, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
+    <dt><code>years</code></dt><dd><p>Numeric vector of years to fit WHAM model</p></dd>
+    <dt><code>years_full</code></dt><dd><p>Numeric vector of years to fit and project WHAM model</p></dd>
+    <dt><code>ages.lab</code></dt><dd><p>Character vector of age labels, ending with plus-group</p></dd>
+    <dt><code>model_name</code></dt><dd><p>Character, name of stock/model (specified in call to <code>prepare_wham_input</code>)</p></dd>
+  
+</dl>
+
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='no'>input</span> <span class='kw'>=</span> <span class='fu'><a href='prepare_wham_om_input.html'>prepare_wham_om_input</a></span>(<span class='no'>asap3</span>)
+<span class='no'>mod</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input</span>, <span class='kw'>do.fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>do.proj</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='no'>sim</span> <span class='kw'>=</span> <span class='no'>mod</span>$<span class='fu'><a href='https://rdrr.io/r/stats/simulate.html'>simulate</a></span>(<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
+<span class='no'>sim_input</span> <span class='kw'>=</span> <span class='fu'>update_wham_input</span>(<span class='no'>sim</span>, <span class='no'>mod</span>, <span class='fl'>3</span>)
+<span class='no'>simfit</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>sim_input</span>, <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='fu'><a href='plot_wham_output.html'>plot_wham_output</a></span>(<span class='no'>simfit</span>)
+}</div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>

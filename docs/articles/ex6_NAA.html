@@ -136,14 +136,14 @@
 <ul>
 <li>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</li>
 <li>Environmental covariate (ecov) modeled as an AR1 process (<code>ecov$process_model = 'ar1'</code>)</li>
-<li>Compare with and w/o ecov having a “limiting” (carrying capacity) effect on recruitment (<code>ecov$how = 2</code>)</li>
+<li>Compare with and w/o ecov having a "limiting" (carrying capacity) effect on recruitment (<code>ecov$how = 2</code>)</li>
 </ul>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">example 5</a>:</p>
 <ul>
 <li>Environmental covariate: Gulf Stream Index (GSI)</li>
 <li>2D AR1 deviations by age and year (random effects)</li>
 </ul>
-<p>Example 6 highlights WHAM’s options for treating the yearly transitions in numbers-at-age (i.e. survival):</p>
+<p>Example 6 highlights WHAM's options for treating the yearly transitions in numbers-at-age (i.e. survival):</p>
 <ol style="list-style-type: decimal">
 <li>Deterministic (as in statistical catch-at-age models, recruitment in each year estimated as independent fixed effect parameters)</li>
 <li>Recruitment deviations (from Bev-Holt expectation) are random effects
@@ -152,7 +152,7 @@
 <li>AR1 deviations by year (autocorrelated)</li>
 </ul>
 </li>
-<li>“Full state-space model” (survival of all ages are random effects)
+<li>"Full state-space model" (survival of all ages are random effects)
 <ul>
 <li>independent</li>
 <li>AR1 deviations by age</li>
@@ -174,12 +174,12 @@
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex6_NAA.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span>(<span class="no">write.dir</span>)</pre></body></html></div>
-<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>, and the environmental covariate (Gulf Stream Index, GSI). Let’s copy <code>ex1_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
+<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>, and the environmental covariate (Gulf Stream Index, GSI). Let's copy <code>ex1_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"GSI.csv"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)</pre></body></html></div>
@@ -202,7 +202,7 @@
 <div id="specify-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#specify-models" class="anchor"></a>2. Specify models</h2>
-<p>Now we specify several models with different options for the numbers-at-age (NAA) transitions, i.e. survival:</p>
+<p>Now we specify several models with different options for the numbers-at-age (NAA) transitions, i.e. survival:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">df.mods</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">NAA_cor</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">'---'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span>),
                       <span class="kw">NAA_sigma</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">'---'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"rec"</span>,<span class="fl">2</span>),<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"rec+1"</span>,<span class="fl">4</span>),<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"rec"</span>,<span class="fl">2</span>),<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"rec+1"</span>,<span class="fl">4</span>)),
                       <span class="kw">GSI_how</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">0</span>,<span class="fl">7</span>),<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">2</span>,<span class="fl">6</span>)), <span class="kw">stringsAsFactors</span><span class="kw">=</span><span class="fl">FALSE</span>)
@@ -229,7 +229,7 @@
 <div id="numbers-at-age-options" class="section level2">
 <h2 class="hasAnchor">
 <a href="#numbers-at-age-options" class="anchor"></a>3. Numbers-at-age options</h2>
-<p>To specify the options for modeling NAA transitions, include an optional list argument, <code>NAA_re</code>, to the <code>prepare_wham_input</code> function (see the <code>prepare_wham_input</code> help page). ASAP3 does not estimate random effects, and therefore these options are not specified in the ASAP data file. By default (<code>NAA_re</code> is <code>NULL</code> or not included), WHAM fits a traditional statistical catch-at-age model (NAA = predicted NAA for all ages, i.e. survival is deterministic). To fit a state-space model, we must specify <code>NAA_re</code>.</p>
+<p>To specify the options for modeling NAA transitions, include an optional list argument, <code>NAA_re</code>, to the <code>prepare_wham_input</code> function (see the <code>prepare_wham_input</code> help page). ASAP3 does not estimate random effects, and therefore these options are not specified in the ASAP data file. By default (<code>NAA_re</code> is <code>NULL</code> or not included), WHAM fits a traditional statistical catch-at-age model (NAA = predicted NAA for all ages, i.e. survival is deterministic). To fit a state-space model, we must specify <code>NAA_re</code>.</p>
 <p><code>NAA_re</code> is a list with the following entries:</p>
 <ul>
 <li>
@@ -237,7 +237,7 @@
 <li>
 <code>"rec"</code>: Recruitment deviations are random effects, survival of all other ages is deterministic</li>
 <li>
-<code>"rec+1"</code>: Survival of all ages is stochastic (“full state space model”), with 2 estimated <span class="math inline">\(\sigma_a\)</span>, one for recruitment and one shared among other ages</li>
+<code>"rec+1"</code>: Survival of all ages is stochastic ("full state space model"), with 2 estimated <span class="math inline">\(\sigma_a\)</span>, one for recruitment and one shared among other ages</li>
 <li>
 <code>$cor</code>: Correlation structure for the NAA deviations. Options are:</li>
 <li>
@@ -265,7 +265,7 @@
 <li>
 <code>ecov$logsigma = "est_1"</code> estimates the GSI observation error (<span class="math inline">\(\sigma_{GSI}\)</span>, one overall value for all years). The other option is <code>"est_re"</code> to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given, so this was not necessary.</li>
 <li>
-<code>ecov$how = 0</code> estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting <code>ecov$how = 2</code> specifies that the GSI affects the Beverton-Holt <span class="math inline">\(b\)</span> parameter (“limiting” / carrying capacity effect).</li>
+<code>ecov$how = 0</code> estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting <code>ecov$how = 2</code> specifies that the GSI affects the Beverton-Holt <span class="math inline">\(b\)</span> parameter ("limiting" / carrying capacity effect).</li>
 <li>
 <code>ecov$link_model = "linear"</code> specifies a linear model linking GSI to <span class="math inline">\(b\)</span>.</li>
 </ul>
@@ -362,7 +362,7 @@
 <h2 class="hasAnchor">
 <a href="#results" class="anchor"></a>7. Results</h2>
 <p>Two models had very similar AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below): <code>m11</code> (all NAA are random effects with correlation by age, GSI-Recruitment effect) and <code>m13</code> (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).</p>
-<p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models <code>m4</code>-<code>m7</code> and <code>m10</code>-<code>m13</code>).</p>
+<p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models <code>m4</code>-<code>m7</code> and <code>m10</code>-<code>m13</code>).</p>
 <p>In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
 <p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment.</p>
 <table class="table table table-condensed table-responsive">
@@ -413,13 +413,13 @@ AIC
 m1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -434,10 +434,10 @@ TRUE
 -721.490
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 1.941
@@ -460,7 +460,7 @@ iid
 rec
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -501,7 +501,7 @@ ar1_y
 rec
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -542,7 +542,7 @@ iid
 rec+1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -583,7 +583,7 @@ ar1_a
 rec+1
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 TRUE
@@ -624,7 +624,7 @@ ar1_y
 rec+1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -665,7 +665,7 @@ m7
 rec+1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE

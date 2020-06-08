@@ -131,7 +131,7 @@
 <li><p>environmental covariate (Cold Pool Index, CPI) process models (random walk, AR1), and</p></li>
 <li><p>how the CPI affects recruitment (controlling or limiting)</p></li>
 </ul>
-<p>As in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>, we check that each model converges (<code><a href="../reference/check_convergence.html">check_convergence()</a></code>), plot diagnostics, results, and reference points (<code><a href="../reference/plot_wham_output.html">plot_wham_output()</a></code>), and compare models using AIC and Mohn’s rho (<code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code>).</p>
+<p>As in <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>, we check that each model converges (<code><a href="../reference/check_convergence.html">check_convergence()</a></code>), plot diagnostics, results, and reference points (<code><a href="../reference/plot_wham_output.html">plot_wham_output()</a></code>), and compare models using AIC and Mohn's rho (<code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code>).</p>
 <div id="prepare-wham" class="section level2">
 <h2 class="hasAnchor">
 <a href="#prepare-wham" class="anchor"></a>1. Prepare <code>wham</code>
@@ -144,7 +144,7 @@
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex2_CPI_recruitment_SNEMA_yellowtail.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
@@ -164,7 +164,7 @@
 <div class="sourceCode"><html><body><pre class="r"><span class="no">asap3</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span>(<span class="st">"ex2_SNEMAYT.dat"</span>)</pre></body></html></div>
 <p>Load the environmental covariate (Cold Pool Index, CPI) data into R:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">env.dat</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="st">"CPI.csv"</span>, <span class="kw">header</span><span class="kw">=</span><span class="no">T</span>)</pre></body></html></div>
-<p>We generally abbreviate ‘environmental covariate’ as <code>ecov</code> in the code. In this example, the <code>ecov</code> data file has columns for observations (<code>CPI</code>), standard error (<code>CPI_sigma</code>), and year (<code>Year</code>). Observations and year are always required. Standard error can be treated as fixed/data with yearly values (as here) or one overall value shared among years. It can also be estimated as a parameter(s), likewise either as yearly values or one overall value.</p>
+<p>We generally abbreviate 'environmental covariate' as <code>ecov</code> in the code. In this example, the <code>ecov</code> data file has columns for observations (<code>CPI</code>), standard error (<code>CPI_sigma</code>), and year (<code>Year</code>). Observations and year are always required. Standard error can be treated as fixed/data with yearly values (as here) or one overall value shared among years. It can also be estimated as a parameter(s), likewise either as yearly values or one overall value.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">env.dat</span>)
 <span class="co">#&gt;   Year     CPI CPI_sigma</span>
 <span class="co">#&gt; 1 1973  0.5988    0.2838</span>
@@ -215,14 +215,14 @@
     <span class="kw">how</span> <span class="kw">=</span> <span class="no">df.mods</span>$<span class="no">ecov_how</span>[<span class="no">m</span>]) <span class="co"># 0 = no effect, 1 = controlling, 2 = limiting</span></pre></body></html></div>
 <p>There are currently 2 options for the <code>ecov</code> process model (<code>ecov$process_model</code>): 1) random walk (<code>'rw'</code>), and 2) autoregressive (<code>'ar1'</code>). We must next specify <strong>where</strong> the <code>ecov</code> affects the population; here it is via recruitment (<code>ecov$where = "recruit"</code>) as opposed to another process like catchability, mortality, maturity, etc. The options for <strong>how</strong> the <code>ecov</code> affects recruitment (<code>ecov$how</code>) follow <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>:</p>
 <ol style="list-style-type: decimal">
-<li>“controlling” (dens-indep mortality),</li>
-<li>“limiting” (carrying capacity, e.g. <code>ecov</code> determines amount of suitable habitat),</li>
-<li>“lethal” (threshold, i.e. R –&gt; 0 at some <code>ecov</code> value),<br>
+<li>"controlling" (dens-indep mortality),</li>
+<li>"limiting" (carrying capacity, e.g. <code>ecov</code> determines amount of suitable habitat),</li>
+<li>"lethal" (threshold, i.e. R --&gt; 0 at some <code>ecov</code> value),<br>
 </li>
-<li>“masking” (metabolic/growth, <code>ecov</code> decreases dR/dS), and</li>
-<li>“directive” (e.g. behavioral).</li>
+<li>"masking" (metabolic/growth, <code>ecov</code> decreases dR/dS), and</li>
+<li>"directive" (e.g. behavioral).</li>
 </ol>
-<p>Finally, we specify the <strong>lag</strong> at which CPI affects recruitment (<code>ecov$lag = 1</code>, i.e. CPI in year <em>t</em> affects recruitment in year <em>t + 1</em>).</p>
+<p>Finally, we specify the <strong>lag</strong> at which CPI affects recruitment (<code>ecov$lag = 1</code>, i.e. CPI in year <em>t</em> affects recruitment in year <em>t + 1</em>).</p>
 <p>You can set <code>ecov = NULL</code> to fit the model without environmental covariate data, but note that here we fit the <code>ecov</code> data even for models without an <code>ecov</code> effect on recruitment (<code>m1</code> and <code>m3</code>) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting <code>ecov$how = 0</code>.</p>
 <p>Options are described in the <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> help page. Not all <code>ecov$how</code> options are implemented for every recruitment model.</p>
 <div class="sourceCode"><html><body><pre class="r">?<span class="no">prepare_wham_input</span></pre></body></html></div>
@@ -335,7 +335,7 @@
 <div id="compare-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#compare-models" class="anchor"></a>5. Compare models</h2>
-<p>Calculate AIC and Mohn’s rho using <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code>.</p>
+<p>Calculate AIC and Mohn's rho using <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code>.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">df.aic</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span>(<span class="no">mods</span>, <span class="kw">sort</span><span class="kw">=</span><span class="fl">FALSE</span>)$<span class="no">tab</span> <span class="co"># can't sort yet bc going to make labels prettier</span>
 <span class="no">df.mods</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">df.mods</span>, <span class="no">df.aic</span>)</pre></body></html></div>
 <p>Print and save the results table. <code>m6</code> has the lowest AIC (Bev-Holt recruitment, CPI modeled as AR1, controlling effect of CPI on recruitment).</p>

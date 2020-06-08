@@ -148,7 +148,7 @@
 <li>2D AR1 deviations by age and year (random effects), <span class="math inline">\(M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)\)</span>
 </li>
 </ul>
-<p>We also demonstrate alternate specifications for the link between <span class="math inline">\(M\)</span> and an environmental covariate, the Gulf Stream Index (GSI), as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092">O’Leary et al. (2019)</a>:</p>
+<p>We also demonstrate alternate specifications for the link between <span class="math inline">\(M\)</span> and an environmental covariate, the Gulf Stream Index (GSI), as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092">O'Leary et al. (2019)</a>:</p>
 <ul>
 <li>none</li>
 <li>linear (in log-space), <span class="math inline">\(M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y}\)</span>
@@ -170,12 +170,12 @@
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex5_M_GSI.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span>(<span class="no">write.dir</span>)</pre></body></html></div>
-<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>, and the environmental covariate (GSI). Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
+<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>, and the environmental covariate (GSI). Let's copy <code>ex2_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span>(<span class="kw">from</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"GSI.csv"</span>), <span class="kw">to</span><span class="kw">=</span><span class="no">write.dir</span>, <span class="kw">overwrite</span><span class="kw">=</span><span class="fl">FALSE</span>)</pre></body></html></div>
@@ -459,16 +459,16 @@ AIC
 m1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -503,10 +503,10 @@ TRUE
 m2
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
@@ -547,10 +547,10 @@ TRUE
 m3
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
@@ -594,13 +594,13 @@ m4
 age-specific
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 ar1
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 TRUE
@@ -638,13 +638,13 @@ m5
 weight-at-age
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -682,13 +682,13 @@ m6
 constant
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -732,7 +732,7 @@ ar1_y
 ar1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 TRUE
@@ -776,7 +776,7 @@ constant
 ar1
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 TRUE
@@ -814,7 +814,7 @@ m9
 constant
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
@@ -858,7 +858,7 @@ m10
 constant
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
-—
+---
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;">
 ar1
@@ -946,7 +946,7 @@ m12
 age-specific
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 ar1
@@ -1040,7 +1040,7 @@ ar1_a
 ar1
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 TRUE
@@ -1163,7 +1163,7 @@ NA
 m17
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 2dar1
@@ -1172,7 +1172,7 @@ m17
 ar1
 </td>
 <td style="text-align:left;">
-—
+---
 </td>
 <td style="text-align:left;">
 TRUE
@@ -1222,29 +1222,29 @@ NA
 <h4 class="hasAnchor">
 <a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
 <p>Compared to <code>m1</code>, the retrospective pattern for <code>m8</code> was worse for recruitment (<code>m8</code> 0.31, <code>m1</code> 0.26) but improved for SSB (<code>m8</code> 0.01, <code>m1</code> 0.11) and F (<code>m8</code> -0.03, <code>m1</code> -0.13). In general, models with GSI effects or 2D AR1 deviations on <span class="math inline">\(M\)</span> had reduced retrospective patterns compared to the status quo (<code>m1</code>) and models with 1D AR1 random effects on <span class="math inline">\(M\)</span>. Compare the retrospective patterns of numbers-at-age, SSB, and F for models <code>m1</code> (left, fixed <span class="math inline">\(M_a\)</span>) and <code>m8</code> (right, estimated <span class="math inline">\(M\)</span> + 2D AR1 deviations).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m8." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m8." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" alt="Mohn’s rho for F, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png" alt="Mohn’s rho for F, m8." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" alt="Mohn's rho for numbers-at-age, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_NAA_retro_relative.png" alt="Mohn's rho for numbers-at-age, m8." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" alt="Mohn's rho for SSB, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_SSB_retro_relative.png" alt="Mohn's rho for SSB, m8." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" alt="Mohn's rho for F, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png" alt="Mohn's rho for F, m8." style="width:45.0%"></p>
 <p>It is also worth noting that, although the Hessian was not positive definite, model <code>m17</code> had the lowest retrospective pattern across all numbers-at-age, SSB, and F. Model <code>m17</code> left <span class="math inline">\(M_a\)</span> fixed at the values from the ASAP data file (as in <code>m1</code>) and estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>. This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m17." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png" alt="Mohn’s rho for F, m17." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png" alt="Mohn's rho for SSB, m17." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png" alt="Mohn's rho for F, m17." style="width:45.0%"></p>
 <div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png" alt="Mohn’s rho for recruitment, m17." style="width:45.0%"><p class="caption">Mohn’s rho for recruitment, m17.</p>
+<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png" alt="Mohn's rho for recruitment, m17." style="width:45.0%"><p class="caption">Mohn's rho for recruitment, m17.</p>
 </div>
 </div>
 <div id="stock-status" class="section level4">
 <h4 class="hasAnchor">
 <a href="#stock-status" class="anchor"></a>Stock status</h4>
-<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher <em>M</em>, lower and more uncertain <em>F</em>, and higher SSB – a much rosier picture of the stock status through time. Model <code>m17</code> (right) is intermediate between <code>m1</code> and <code>m8</code>.</p>
+<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher <em>M</em>, lower and more uncertain <em>F</em>, and higher SSB -- a much rosier picture of the stock status through time. Model <code>m17</code> (right) is intermediate between <code>m1</code> and <code>m8</code>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" alt="Relative stock status, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png" alt="Relative stock status, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_relative.png" alt="Relative stock status, m17." style="width:31.0%"></p>
 <p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher and more variable reference points, <span class="math inline">\(F_{\%SPR}\)</span> (top), and lower and more variable yield-per-recruit (bottom). Model <code>m17</code> (right) estimated a shift in yield-per-recruit from ~0.10 before 1990 (as in <code>m1</code>) to ~0.05 after 1990 (as in <code>m8</code>).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png" alt="Reference point variability, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png" alt="Reference point variability, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_annual_time.png" alt="Reference point variability, m17." style="width:31.0%"></p>
-<p>In the final year (2011), <code>m8</code> estimated a lower probability of the stock being overfished (4% vs. 19%).</p>
+<p>In the final year (2011), <code>m8</code> estimated a lower probability of the stock being overfished (4% vs. 19%).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" alt="Kobe status plot, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" alt="Kobe status plot, m8." style="width:45.0%"></p>
 </div>
 <div id="yet-more-m-options" class="section level3">
 <h3 class="hasAnchor">
 <a href="#yet-more-m-options" class="anchor"></a>Yet more <em>M</em> options</h3>
-<p>If you want to estimate M-at-age shared/mirrored among <em>some but not all ages</em>, you’ll need to modify <code>input$map$M_a</code> after calling <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code>.</p>
+<p>If you want to estimate M-at-age shared/mirrored among <em>some but not all ages</em>, you'll need to modify <code>input$map$M_a</code> after calling <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code>.</p>
 </div>
 </div>
   </div>

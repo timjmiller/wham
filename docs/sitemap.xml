@@ -34,6 +34,12 @@
     <loc>https://timjmiller.github.io/wham//reference/prepare_wham_input.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham//reference/prepare_wham_om_input.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham//reference/prepare_wham_om_proj.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham//reference/project_wham.html</loc>
   </url>
   <url>
@@ -47,6 +53,9 @@
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham//reference/set_age_sel0.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham//reference/update_wham_input.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham//reference/wham_html.html</loc>

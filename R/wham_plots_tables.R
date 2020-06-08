@@ -2009,7 +2009,8 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
 	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
-  sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
+  sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
+  #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
 	sel <- sel/max(sel)
 	spawn.time <- mean(dat$fracyr_SSB[avg.ind])
   spr0 = get_SPR(F=0, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
@@ -2350,12 +2351,12 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   # if(!mod$na_sdrep){
   if(any(do.kobe)){  
     log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
-      if(is.na(rel.f.vals[x])) return(matrix(NA,100,2))
+      if(is.na(rel.f.vals[x]) | any(diag(log.rel.ssb.rel.F.cov[[x]])<0)) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
       })
     p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.years))
     for(i in 1:length(status.years)){
-      check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[status.years[i]]])==0
+      check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[status.years[i]]])==0 | diag(log.rel.ssb.rel.F.cov[[status.years[i]]]) < 0
       if(!any(is.na(check.zero.sd))) if(!any(check.zero.sd)){
         p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
         p.ssb.lo.f.hi[i] <- mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
@@ -2516,7 +2517,8 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
 	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
-  sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
+  sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
+  #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
 	sel <- sel/max(sel)
 	spawn.time <- mean(dat$fracyr_SSB[avg.ind])
   spr0 = get_SPR(F=0, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
@@ -2601,7 +2603,8 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
 	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
 	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
-  sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
+  sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
+  #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
 	sel <- sel/max(sel)
 	spawn.time <- mean(dat$fracyr_SSB[avg.ind])
   spr0 = get_SPR(F=0, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)

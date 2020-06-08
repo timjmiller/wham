@@ -59,6 +59,8 @@ reference:
       - '`project_wham`'
       - '`plot_wham_output`'
       - '`compare_wham_models`'
+      - '`prepare_wham_om_input`'
+      - '`prepare_wham_om_proj`'
   - title: Helper functions and the like that users do not call
     contents:
       - '`set_age_sel0`'

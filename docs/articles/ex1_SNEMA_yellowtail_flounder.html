@@ -136,7 +136,7 @@
 </ul>
 </li>
 <li><p>Fit models and check for convergence</p></li>
-<li><p>Compare models by AIC and Mohn’s rho (retrospective analysis)</p></li>
+<li><p>Compare models by AIC and Mohn's rho (retrospective analysis)</p></li>
 <li><p>Review plots of input data, diagnostics, and results.</p></li>
 </ol>
 <div id="load-data" class="section level2">
@@ -148,11 +148,11 @@
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex1_SNEMA_yellowtail_flounder.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>)
-<span class="co">#&gt; [1] "/tmp/RtmpMNbw9P/temp_libpath28652852460d/wham/example_scripts"</span></pre></body></html></div>
+<span class="co">#&gt; [1] "/tmp/RtmpTiJa4w/temp_libpath2df012a3a633/wham/example_scripts"</span></pre></body></html></div>
 <p>You can run this entire example script with:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_SNEMA_yellowtail_flounder.R"</span>))</pre></body></html></div>
-<p>Let’s create a directory for this analysis:</p>
+<p>Let's create a directory for this analysis:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># choose a location to save output</span>
 <span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"/path/to/save/output"</span> <span class="co"># modify</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span>(<span class="no">write.dir</span>)
@@ -199,7 +199,7 @@
 <a href="#fit-model-and-check-for-convergence" class="anchor"></a>3. Fit model and check for convergence</h2>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">m1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span>(<span class="no">input1</span>, <span class="kw">do.osa</span> <span class="kw">=</span> <span class="no">F</span>) <span class="co"># turn off OSA residuals to save time in ex</span></pre></body></html></div>
 <p>By default, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> uses 3 extra Newton steps to reduce the absolute value of the gradient (<code>n.newton = 3</code>) and estimates standard errors for derived parameters (<code>do.sdrep = TRUE</code>). <code><a href="../reference/fit_wham.html">fit_wham()</a></code> also does a retrospective analysis with 7 peels by default (<code>do.retro = TRUE</code>, <code>n.peels = 7</code>). For more details, see <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
-<p>We need to check that <code>m1</code> converged (<code>m1$opt$convergence</code> should be 0, and the maximum absolute value of the gradient vector should be &lt; 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> includes a <code>do.check</code> option to run Jim Thorson’s useful function <a href="https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R">TMBhelper::Check_Identifiable()</a>. <code>do.check = FALSE</code> by default. To turn on, set <code>do.check = TRUE</code>. See <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
+<p>We need to check that <code>m1</code> converged (<code>m1$opt$convergence</code> should be 0, and the maximum absolute value of the gradient vector should be &lt; 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> includes a <code>do.check</code> option to run Jim Thorson's useful function <a href="https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R">TMBhelper::Check_Identifiable()</a>. <code>do.check = FALSE</code> by default. To turn on, set <code>do.check = TRUE</code>. See <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span>(<span class="no">m1</span>)</pre></body></html></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
 #&gt; Maximum gradient component: 1.04e-07 
@@ -264,7 +264,7 @@
 <div id="compare-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#compare-models" class="anchor"></a>4. Compare models</h2>
-<p>We can compare models using AIC and Mohn’s rho:</p>
+<p>We can compare models using AIC and Mohn's rho:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span>(<span class="no">mods</span>, <span class="kw">fname</span><span class="kw">=</span><span class="st">"model_comparison"</span>, <span class="kw">sort</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
 <pre><code>#&gt;      dAIC     AIC  rho_R rho_SSB rho_Fbar
 #&gt; m4    0.0 -1466.9 0.3610  0.0091  -0.0106
@@ -277,7 +277,7 @@
 <div id="project-the-best-model" class="section level3">
 <h3 class="hasAnchor">
 <a href="#project-the-best-model" class="anchor"></a>Project the best model</h3>
-<p>Let’s do projections for the best model, <code>m4</code>, using the default settings (see <code><a href="../reference/project_wham.html">project_wham()</a></code>):</p>
+<p>Let's do projections for the best model, <code>m4</code>, using the default settings (see <code><a href="../reference/project_wham.html">project_wham()</a></code>):</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">m4_proj</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span>(<span class="kw">model</span><span class="kw">=</span><span class="no">m4</span>)</pre></body></html></div>
 </div>
 </div>
@@ -291,7 +291,7 @@
 </div>
 <p>Setting <code>out.type='pdf'</code> saves the plots organized into 6 <code>.pdf</code> files corresponding to the tabs in the <code>.html</code> file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). Setting <code>out.type='png'</code> saves the plots as <code>.png</code> files organized into 6 subdirectories.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span>(<span class="kw">mod</span><span class="kw">=</span><span class="no">m4_proj</span>, <span class="kw">out.type</span><span class="kw">=</span><span class="st">'png'</span>)</pre></body></html></div>
-<p>Many plots are generated—here we display some examples:</p>
+<p>Many plots are generated---here we display some examples:</p>
 <div id="diagnostics" class="section level3">
 <h3 class="hasAnchor">
 <a href="#diagnostics" class="anchor"></a>Diagnostics</h3>
@@ -319,7 +319,7 @@
 <div id="retrospective" class="section level3">
 <h3 class="hasAnchor">
 <a href="#retrospective" class="anchor"></a>Retrospective</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro.png" alt="SSB with 7 peels" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro_relative.png" alt="Mohn’s rho (SSB) with 7 peels" style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro.png" alt="SSB with 7 peels" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro_relative.png" alt="Mohn's rho (SSB) with 7 peels" style="width:45.0%"></p>
 </div>
 <div id="misc" class="section level3">
 <h3 class="hasAnchor">

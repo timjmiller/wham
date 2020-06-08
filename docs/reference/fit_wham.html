@@ -181,8 +181,9 @@ stats::nlminb. Runs retrospective analysis if specified." />
   <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>do.proj</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>proj.opts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>n.yrs</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>use.last.F</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.avg.F</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>use.FXSPR</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-    <span class='kw'>proj.F</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.catch</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>avg.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.Ecov</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.last.Ecov</span> <span class='kw'>=</span>
-    <span class='fl'>FALSE</span>, <span class='kw'>avg.Ecov.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.Ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+    <span class='kw'>proj.F</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.catch</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>avg.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.ecov</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.last.ecov</span> <span class='kw'>=</span>
+    <span class='fl'>FALSE</span>, <span class='kw'>avg.ecov.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.Mre</span> <span class='kw'>=</span> <span class='kw'>NULL</span>),
+  <span class='kw'>do.fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -257,6 +258,10 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
 <li><p><code>$avg.Ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
 <li><p><code>$proj.Ecov</code> (vector), user-specified environmental covariate(s) for projections. Length must equal <code>n.yrs</code>.</p></li>
 </ul></td>
+    </tr>
+    <tr>
+      <th>do.fit</th>
+      <td><p>T/F, fit the model using <code>fit_tmb</code>. Default = <code>TRUE</code>.</p></td>
     </tr>
     </table>
     
