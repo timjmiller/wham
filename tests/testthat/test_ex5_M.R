@@ -75,7 +75,7 @@ for(m in tofit){
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
-  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]]))
+  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 }
 
 expect_equal(as.numeric(mods[[1]]$opt$par), ex5_test_results$pars[[1]], tolerance=1e-3) # parameter values

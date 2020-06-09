@@ -58,7 +58,7 @@ for(m in fit.mods){
   input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
   # Fit model
-  mod <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F))
+  mod <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
 
   cat("---------------------------------------------------------------------------------------------------------------------\n")
   cat(paste0("Model ",m,"\n"))
