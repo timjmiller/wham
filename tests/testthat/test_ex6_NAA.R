@@ -2,6 +2,7 @@
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
 # library(wham)
+# devtools::load_all()
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex6_NAA.R"); etime <- Sys.time(); runtime = etime - btime;
 # 14 min
 
@@ -21,6 +22,7 @@ n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
+mods <- vector("list",n.mods)
 fit.mods <- c(1:4,6:13)
 for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
@@ -58,13 +60,22 @@ for(m in fit.mods){
   input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
 
   # Fit model
-  mod <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F))
+  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
 
-  cat("---------------------------------------------------------------------------------------------------------------------\n")
-  cat(paste0("Model ",m,"\n"))
-  cat("---------------------------------------------------------------------------------------------------------------------\n")
   # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values
-  expect_equal(as.numeric(mod$opt$obj), ex6_test_results$nll[m], tolerance=1e-3) # nll
 }
+
+expect_equal(as.numeric(mods[[1]]$opt$obj), ex6_test_results$nll[1], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[2]]$opt$obj), ex6_test_results$nll[2], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[3]]$opt$obj), ex6_test_results$nll[3], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[4]]$opt$obj), ex6_test_results$nll[4], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[6]]$opt$obj), ex6_test_results$nll[6], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[7]]$opt$obj), ex6_test_results$nll[7], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[8]]$opt$obj), ex6_test_results$nll[8], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[9]]$opt$obj), ex6_test_results$nll[9], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[10]]$opt$obj), ex6_test_results$nll[10], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[11]]$opt$obj), ex6_test_results$nll[11], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[12]]$opt$obj), ex6_test_results$nll[12], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[13]]$opt$obj), ex6_test_results$nll[13], tolerance=1e-3) # nll
 
 })
