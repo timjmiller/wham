@@ -7,7 +7,10 @@
 #' will be used.
 #' @param fname character, filename to save CSV results table (.csv will be appended). Default = "model_comparison".
 #' @param sort T/F, sort by AIC? Default = TRUE.
-#' @param mohns.rho T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.
+#' @param calc.rho T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.
+#' @param calc.aic T/F, calculate AIC? Default = TRUE.
+#' @param fdir character, path to directory to save CSV results table. Default = getwd().
+#' @param do.print T/F, print table to console? Default = TRUE.
 #'
 #' @return a list with the following components:
 #'   \describe{
@@ -31,7 +34,7 @@
 #' }
 #'
 #' @export
-compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, fdir=getwd()){
+compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, fdir=getwd(), do.print=TRUE){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
   aic.tab <- aic <- daic <- NULL
   if(calc.aic){
@@ -85,6 +88,6 @@ compare_wham_models <- function(mods, fname = "model_comparison", sort = TRUE, c
   }
   write.csv(tab, file = paste0(file.path(fdir,fname),".csv"))
 
-  print(tab) # print to console
+  if(do.print) print(tab) # print to console
   return(list(daic=daic, aic=aic, rho=rho, best=best, tab=tab))
 }
