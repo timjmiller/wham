@@ -70,7 +70,7 @@ expect_equal(nll, ex1_test_results$nll, tolerance=1e-6, scale=1)
 
 # Compare models by AIC and Mohn's rho
 tmp.dir <- tempdir(check=TRUE)
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.dir)
+res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.dir, do.print=FALSE)
 
 # WHAM output plots for best model with projections
 m4_proj <- project_wham(model=mods$m4, MakeADFun.silent=TRUE)

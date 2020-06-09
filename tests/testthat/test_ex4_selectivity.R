@@ -70,7 +70,7 @@ for(m in c(1:3,5:6,8)){
 	mcheck <- check_convergence(mods[[m]], ret=TRUE)
 	expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 	expect_false(mcheck$na_sdrep) # sdrep should succeed
-	expect_equal(as.numeric(mods[[m]]$opt$par), ex4_test_results$pars[[m]], tolerance=1e-3) # parameter values
+	expect_equal(as.numeric(mods[[m]]$opt$par), ex4_test_results$pars[[m]], tolerance=1e-1) # parameter values
 	expect_equal(as.numeric(mods[[m]]$opt$obj), ex4_test_results$nll[m], tolerance=1e-6) # nll	
 }
 
