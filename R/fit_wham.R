@@ -91,6 +91,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   if(do.fit){
     btime <- Sys.time()
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
+    mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
 
     # retrospective analysis
     if(do.retro) tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, MakeADFun.silent = MakeADFun.silent)
@@ -119,8 +120,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
     if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
-
-    mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2)
   }
+
   return(mod)
 }

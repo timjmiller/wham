@@ -125,17 +125,23 @@ df.mods
 Next we specify the options for modeling natural mortality by including an optional list argument, `M`, to the  `prepare_wham_input()` function (see the `prepare_wham_input()` help page). `M` specifies estimation options and can overwrite M-at-age values specified in the ASAP data file. By default (i.e. `M` is `NULL` or not included), the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). `M` is a list with the following entries:
 
 - `$model`: Natural mortality model options.
+
   - `"constant"`: estimate a single $M$, shared across all ages and years.
   - `"age-specific"`: estimate $M_a$ independent for each age, shared across years.
   - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
+
 - `$re`: Time- and age-varying random effects on $M$.
+
   - `"none"`: $M$ constant in time and across ages (default).
   - `"iid"`: $M$ varies by year and age, but uncorrelated.
   - `"ar1_a"`: $M$ correlated by age (AR1), constant in time.
   - `"ar1_y"`: $M$ correlated by year (AR1), constant by age.
   - `"2dar1"`: $M$ correlated by year and age (2D AR1), as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
+
 - `$initial_means`: Initial/mean M-at-age vector, with length = number of ages (if `$model = "age-specific"`) or 1 (if `$model = "weight-at-age"` or `"constant"`). If `NULL`, initial mean M-at-age values are taken from the first row of the MAA matrix in the ASAP data file.
+
 - `$est_ages`: Vector of ages to estimate age-specific $M_a$ (others will be fixed at initial values). E.g. in a model with 6 ages, `$est_ages = 5:6` will estimate $M_a$ for the 5th and 6th ages, and fix $M$ for ages 1-4. If `NULL`, $M$ at all ages is fixed at `M$initial_means` (if not `NULL`) or row 1 of the MAA matrix from the ASAP file (if `M$initial_means = NULL`).
+
 - `$logb_prior`: (Only for weight-at-age model) TRUE or FALSE (default), should a $\mathcal{N}(0.305, 0.08)$ prior be used on `log_b`? Based on Fig. 1 and Table 1 (marine fish) in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x).
 
 For example, to fit model `m1`, fix $M_a$ at values in ASAP file:

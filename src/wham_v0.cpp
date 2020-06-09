@@ -773,7 +773,7 @@ Type objective_function<Type>::operator() ()
   if(n_NAA_sigma > 1){
     for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
   }
-  
+
   // likelihood of NAA deviations
   if(n_NAA_sigma == 1){
     if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.

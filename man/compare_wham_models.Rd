@@ -10,7 +10,8 @@ compare_wham_models(
   sort = TRUE,
   calc.rho = TRUE,
   calc.aic = TRUE,
-  fdir = getwd()
+  fdir = getwd(),
+  do.print = TRUE
 )
 }
 \arguments{
@@ -21,7 +22,13 @@ will be used.}
 
 \item{sort}{T/F, sort by AIC? Default = TRUE.}
 
-\item{mohns.rho}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
+\item{calc.rho}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
+
+\item{calc.aic}{T/F, calculate AIC? Default = TRUE.}
+
+\item{fdir}{character, path to directory to save CSV results table. Default = getwd().}
+
+\item{do.print}{T/F, print table to console? Default = TRUE.}
 }
 \value{
 a list with the following components:
