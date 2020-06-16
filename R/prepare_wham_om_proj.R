@@ -152,9 +152,12 @@ prepare_wham_om_proj = function(om_input, proj.opts)
   tmp[ind.NA] <- 1:length(ind.NA)
   par$log_NAA[ind.NA] <- 10 
 
+  #tmp <- matrix(as.integer(map$log_NAA), data$n_years_model, data$n_ages)
+  #tmp <- rbind(tmp, matrix(NA, nrow=proj.opts$n.yrs, ncol=data$n_ages))
   tmp <- par$log_NAA
   if(data$n_NAA_sigma < 2) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if SCAA or RE on recruitment
-  if(data$n_NAA_sigma == 0) tmp[which(tmp[,1] == 10),1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
+  if(data$n_NAA_sigma == 0) tmp[data$n_years_model+1:proj.opts$n.yrs-1,1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
+  #if(data$n_NAA_sigma == 0) tmp[which(tmp[,1] == 10),1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$log_NAA = factor(tmp)
