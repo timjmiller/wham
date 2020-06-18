@@ -36,7 +36,8 @@
 update_wham_input <- function(simres, model, n_years_add){
   if(n_years_add> simres$n_years_proj) stop("the number of years to update is greater than the number of projection years in the simulated data.")
   map = model$input$map
-  par = model$input$par
+  if(!is.null(model$parList)) par = model$parList 
+  else par = model$input$par
   random = model$input$random
   
   nyo = simres$n_years_model
@@ -161,6 +162,7 @@ update_wham_input <- function(simres, model, n_years_add){
   data$Ecov_use_obs <- simres$Ecov_use_obs
   data$Ecov_year <- simres$Ecov_year
   data$n_years_Ecov <- nyeo <-simres$n_years_Ecov
+  #nyeo is the number of years of Ecov random effects in unupdated model
   data$ind_Ecov_out_start <- simres$ind_Ecov_out_start
   data$ind_Ecov_out_end <- simres$ind_Ecov_out_end
   data$Ecov_use_re <- simres$Ecov_use_re
@@ -171,13 +173,14 @@ update_wham_input <- function(simres, model, n_years_add){
     # Handle Ecov sigma options
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
 
-    end_model <- tail(model_years,1)
-    end_Ecov <- model_years[nmo]
+    end_model <- tail(model_years,1) #last updated model year
+    end_Ecov <- model_years[nyo] #end of model before update
 
     # pad Ecov if it ends before last model year
     if(end_Ecov < end_model){
       print("Ecov last year is before model last year. Padding Ecov...")
       # warning("Ecov last year is before model last year. Padding Ecov...")
+      #IFF simulate() for wham_v0.cpp is changed to include simulating Ecov_obs in the projection years, then change the next few lines
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       #par.Ecov.obs.logsigma <- rbind(par.Ecov.obs.logsigma, matrix(-1.3, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       #map.Ecov.obs.logsigma <- rbind(map.Ecov.obs.logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
@@ -185,7 +188,7 @@ update_wham_input <- function(simres, model, n_years_add){
       data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
       end_Ecov <- end_model
     }
-    data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
+    data$n_years_Ecov <- NROW(data$Ecov_obs) # num years Ecov to model (padded)
     data$Ecov_use_re <- matrix(1, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
@@ -386,7 +389,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
       }
       tmp_vec = c(tmp_vec, tmp)
     }
-    par$selpars_re = tmpre
+    par$selpars_re = tmp_vec
     tmp_vec <- c()
     ct <- 0
     for(b in 1:data$n_selblocks){
@@ -468,14 +471,15 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
       new.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,data$n_years_Ecov)
     }
     ind.notNA <- which(!is.na(new.re))
-    new.re[ind.notNA] <- 1:length(ind.notNA)
+    new.re[ind.notNA] <- max(tmp.re, na.rm = TRUE) + 1:length(ind.notNA)
   }
   map$Ecov_re = factor(rbind(tmp.re,new.re))
 
   # M_re: "none","iid","ar1_a","ar1_y","2dar1"
   #tmp <- par$M_re
+  oldmap = matrix(as.integer(map$M_re), nyo, NCOL(par$M_re))
   tmp <- matrix(NA, nya, NCOL(par$M_re))
-  if(any(!is.na(map$M_re))) maxmf = max(as.integer(map$M_re))
+  if(any(!is.na(oldmap))) maxmf = max(oldmap, na.rm = TRUE)
   else maxmf = integer()
   #if(data$M_re_model == 1) tmp[] = NA # no RE (either estimate RE for all ages or none at all)
   if(length(maxmf))
@@ -484,9 +488,10 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
       tmp[] = maxmf + 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
     }
     if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
-      for(i in 1:dim(tmp)[1]) tmp[i,] = maxmf + i
+      tmp[] = maxmf + 1:NROW(tmp) #repeats and fills by columns
+      #for(i in 1:dim(tmp)[1]) tmp[i,] = maxmf + i
     }
-    map$M_re <- factor(rbind(matrix(as.integer(map$M_re), nyo, NCOL(par$M_re)), tmp))
+    map$M_re <- factor(rbind(oldmap, tmp))
   }
 
   return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
