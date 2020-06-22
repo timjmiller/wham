@@ -1,14 +1,15 @@
 #' Update input data and parameters from simulated data with projection
 #'
 #' When data are simulated from a wham model with projections, this function can be used to update the input model years.
-#' This is helpful for using WHAM as an assessment model in a management strategy evaluation. See \code{prepare_wham_input}, 
-#' \code{prepare_wham_om_input}, \code{prepare_wham_om_proj}, and \code{project_wham} for further details on data and parameter structure.
+#' This is helpful for using WHAM as an assessment model in a management strategy evaluation. Note, this will remove any projection specifications.
+#' See \code{prepare_wham_input}, \code{prepare_wham_om_input}, \code{prepare_wham_om_proj}, and \code{project_wham} for 
+#' further details on data and parameter structure.
 #'
-#' @param simres list containing data and parameters (output from model$simulate(complete=TRUE), where model is output from \code{fit_wham})
+#' @param sim list containing data and random effects (output from model$simulate(complete=TRUE), where model is output from \code{fit_wham})
 #' @param model object used to produce simres.
 #' @param n_years_add number of projection years to convert to model_years
 #'
-#' @return a named list with the following components:
+#' @return a named list like \code{prepare_wham_input} and \code{prepare_wham_om_input} with the following components:
 #'   \describe{
 #'     \item{\code{data}}{Named list of data, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'     \item{\code{par}}{Named list of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
