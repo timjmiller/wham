@@ -1041,14 +1041,8 @@ Type objective_function<Type>::operator() ()
   vector<Type> predR(pred_NAA.rows());
   if(XSPR_R_opt == 1) predR = NAA.col(0);
   if(XSPR_R_opt == 3) predR = pred_NAA.col(0);
-  if(XSPR_R_opt == 2 | XSPR_R_opt == 4)
-  {
-    int nyr = XSPR_R_avg_yrs.size();
-    vector<Type> avg_Rs(nyr);
-    if(XSPR_R_opt == 2) for(int i = 0; i < nyr; i++) avg_Rs(i) = NAA(i-1,0);
-    if(XSPR_R_opt == 4) for(int i = 0; i < nyr; i++) avg_Rs(i) = pred_NAA(i-1,0);
-    predR.fill(avg_Rs.mean());
-  }
+  if(XSPR_R_opt == 2) predR.fill(NAA.col(0).mean());
+  if(XSPR_R_opt == 4) predR.fill(pred_NAA.col(0).mean());
   matrix<Type> SPR_res = get_SPR_res(MAA, FAA_tot, which_F_age, waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, predR, fracyr_SSB, log_SPR0);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);
