@@ -238,7 +238,8 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
     
   }
   #hard coded inputs
-  basic_info$index_units = rep(2, length(basic_info$index_cv)) #abundance
+  basic_info$index_units = rep(1, length(basic_info$index_cv)) #biomass
+  basic_info$index_paa_units = rep(2, length(basic_info$index_cv)) #abundance
   basic_info$q_lower = rep(0, length(basic_info$index_cv))
   basic_info$q_upper = rep(1000, length(basic_info$index_cv))
   
@@ -311,7 +312,7 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
   data$agg_indices = matrix(1, data$n_years_model, data$n_indices)
   data$use_indices = matrix(1, data$n_years_model, data$n_indices)
   data$agg_index_sigma = t(matrix(sqrt(log(basic_info$index_cv^2 + 1)), data$n_indices, data$n_years_model))
-  data$units_index_paa <- basic_info$index_units
+  data$units_index_paa <- basic_info$index_paa_units
   data$index_paa = array(1/data$n_ages, dim = c(data$n_indices, data$n_years_model, data$n_ages))
   data$use_index_paa = matrix(1, data$n_years_model, data$n_indices)
   data$index_Neff = t(matrix(basic_info$index_Neff, data$n_indices, data$n_years_model))
