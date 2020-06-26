@@ -477,7 +477,12 @@ Type objective_function<Type>::operator() ()
         }
       }
     }
+    ADREPORT(sigma_M);
+    ADREPORT(rho_M_a);
+    ADREPORT(rho_M_y);
   }
+  Type mean_M = exp(M0);
+  ADREPORT(mean_M);
   REPORT(nll_M);
   nll += nll_M;
   REPORT(M_re); //even if M_re not simulated.
