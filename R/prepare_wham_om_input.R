@@ -203,7 +203,7 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
   if(missing(basic_info)) {
     #basic_info: 
       #data: modyears, maturity, fracyr_spawn, waa_catch, waa_totcatch, waa_indices, waa_ssb, waa_jan1, catch_cv, catch_Neff, index_cv, index_Neff, 
-      #      fracyr_indices, sel_model_fleets, sel_model_indices
+      #      fracyr_indices, sel_model_fleets, sel_model_indices, use_steepness
       # par: q, F, M, mean_rec_pars, N1, NAA_sigma, NAA_rho, catch_paa_pars, index_paa_pars
       #selectivity configuration should be supplied in selectivity argument according to instructions there.
       #NAA configuration must be supplied in NAA_re argument according to instructions there.
@@ -231,6 +231,7 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
     basic_info$F = cbind(rep(0.2,length(basic_info$modyears)))
     basic_info$M = rep(0.2, na)
     basic_info$N1 = exp(10)*exp(-(0:(na-1))*basic_info$M[1])
+    basic_info$use_steepness = 0
     basic_info$mean_rec_pars = numeric(c(0,1,2,2)[recruit_model])
     if(recruit_model == 2) basic_info$mean_rec_pars[] = exp(10)
     else basic_info$mean_rec_pars[] = 1
@@ -485,7 +486,7 @@ without changing ASAP file, specify M$initial_means.")
   # data$recruit_model = 2 #random about mean
   data$N1_model = 0 #0: just age-specific numbers at age
   data$which_F_age = data$n_ages #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
-  data$use_steepness = 0 #use regular SR parameterization by default, steepness still can be estimated as derived par.
+  data$use_steepness = basic_info$use_steepness #0: regular SR parameterization by default, steepness still can be estimated as derived par.
   data$bias_correct_pe = 0 #bias correct log-normal process errors?
   data$bias_correct_oe = 0 #bias correct log-normal observation errors?
   data$Fbar_ages = 1:data$n_ages
@@ -844,7 +845,15 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # -------------------------------------------------------------------
   # Parameters
   par = list()
-  if(!is.null(basic_info$mean_rec_pars)) par$mean_rec_pars = log(basic_info$mean_rec_pars)
+  if(!is.null(basic_info$mean_rec_pars)) 
+  {
+    if(basic_info$use_steepness == 0) par$mean_rec_pars = log(basic_info$mean_rec_pars)
+    else {
+      if(recruit_model == 3) par$mean_rec_pars[1] = log(basic_info$mean_rec_pars[1] - 0.2) - log(1-basic_info$mean_rec_pars[1])
+      if(recruit_model == 4) par$mean_rec_pars[1] = log(basic_info$mean_rec_pars[1] - 0.2)
+      if(recruit_model > 2) par$mean_rec_pars[2] = log(basic_info$mean_rec_pars[2])
+    }
+  }
   else {
     par$mean_rec_pars = numeric(c(0,1,2,2)[recruit_model])
     if(recruit_model==3) par$mean_rec_pars[] = 0
