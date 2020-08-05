@@ -63,6 +63,7 @@ prepare_projection = function(model, proj.opts)
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
 
   # check options for F/catch are valid
+
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
   F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
@@ -107,9 +108,9 @@ prepare_projection = function(model, proj.opts)
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
   data$proj_F_opt = rep(0,data$n_years_proj) 
-  if(proj.opts$use.last.F) data$proj_F_opt[] = 1
-  if(proj.opts$use.avg.F) data$proj_F_opt[] = 2
-  if(proj.opts$use.FXSPR) data$proj_F_opt[] = 3
+  if(!is.null(proj.opts$use.last.F)) if(proj.opts$use.last.F) data$proj_F_opt[] = 1
+  if(!is.null(proj.opts$use.avg.F)) if(proj.opts$use.avg.F) data$proj_F_opt[] = 2
+  if(!is.null(proj.opts$use.FXSPR)) if(proj.opts$use.FXSPR) data$proj_F_opt[] = 3
   if(!is.null(proj.opts$proj.F)){
     data$proj_F_opt[] = 4
     data$proj_Fcatch = proj.opts$proj.F
@@ -163,14 +164,14 @@ prepare_projection = function(model, proj.opts)
   if(any(data$Ecov_model > 0)){
     if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
       for(i in 1:(proj.opts$n.yrs-end.beyond)){
-        if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
+        if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
           Ecov.proj[i,] <- model$rep$Ecov_re[data$ind_Ecov_out_end+1+end.beyond,]
         }
         if(!is.null(proj.opts$avg.ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
           avg.yrs.ind.ecov <- match(proj.opts$avg.ecov.yrs, input1$years)
           Ecov.proj[i,] <- avg_cols(as.matrix(model$rep$Ecov_re[avg.yrs.ind.ecov,]))
         }
-        if(proj.opts$cont.ecov){ # continue Ecov process (pad Ecov_re and estimate)
+        if(!is.null(proj.opts$cont.ecov)) if(proj.opts$cont.ecov){ # continue Ecov process (pad Ecov_re and estimate)
           Ecov.proj[i,] <- rep(0, data$n_Ecov)
         }
         if(!is.null(proj.opts$proj.ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
