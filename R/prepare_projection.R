@@ -48,8 +48,8 @@ prepare_projection = function(model, proj.opts)
   #   2 = use average
   if(!is.null(proj.opts$cont.Mre)){
     if(proj.opts$cont.Mre & model$env$data$M_re_model %in% c(1,3)){ # 1 = none, 3 = AR1_a (not time-varying)
-    stop(paste("","** Error setting up projections **",
-      "proj.opts$cont.Mre = TRUE but no time-varying random effects on M"))
+      stop(paste("","** Error setting up projections **",
+        "proj.opts$cont.Mre = TRUE but no time-varying random effects on M"))
     }
     data$proj_M_opt <- ifelse(proj.opts$cont.Mre, 1, 2) # 1 = continue M_re, 2 = average
   } else { # if NULL, default is to continue M random effects (if they exist!)
@@ -85,6 +85,7 @@ prepare_projection = function(model, proj.opts)
     if(end.beyond == proj.opts$n.yrs){ print("ecov already fit through projection years. Using fit ecov for projections...")
     } else { # if Ecov proj options ARE necessary, check they are valid
       Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
+      if(Ecov.opt.ct == 0) proj.opts$cont.ecov = TRUE; Ecov.opt.ct = 1;
       if(Ecov.opt.ct != 1) stop(paste("","** Error setting up projections: **",
         "Exactly one method of specifying ecov must be used (see ?project_wham).",
         "You have specified these in 'proj.opts':",
@@ -208,7 +209,7 @@ prepare_projection = function(model, proj.opts)
 
     par$M_re <- rbind(par$M_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
     tmp <- par$M_re
-    if(data$M_re_model %in% c(2,5)){ # 2d ar1
+    if(data$M_re_model %in% c(2,5)){ # iid / 2d ar1
       tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
     }
     if(data$M_re_model == 4){ # ar1_y (devs by year, constant by age)
