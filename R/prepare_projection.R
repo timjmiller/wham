@@ -59,6 +59,9 @@ prepare_projection = function(model, proj.opts)
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
   if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)
 
+  # default: 3 projection years
+  if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
+
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
