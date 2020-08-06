@@ -1316,16 +1316,24 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
     }
     if(proj_F_opt_y == 4){ // user-specified F
-      //FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
-      FAA_tot_proj = Type(proj_Fcatch(y-n_years_model)) * sel_tot_proj;
-      FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+      if(proj_Fcatch(y-n_years_model) < 1e-10){ // if F = 0, sel_proj is NaN
+        FAA_proj.setZero();
+      } else {
+        //FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
+        FAA_tot_proj = Type(proj_Fcatch(y-n_years_model)) * sel_tot_proj;
+        FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+      }
     }
     if(proj_F_opt_y == 5){ // calculate F from user-specified catch
       Type thecatch = proj_Fcatch(y-n_years_model);
-      //FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
-      //FAA_tot_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
-      FAA_tot_proj = get_F_from_log_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
-      FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+      if(thecatch < 1e-10){ // if catch = 0, F = 0 and sel_proj is NaN
+        FAA_proj.setZero();
+      } else {
+        //FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
+        //FAA_tot_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
+        FAA_tot_proj = get_F_from_log_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
+        FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+      }
     }
   }
   return(FAA_proj);
