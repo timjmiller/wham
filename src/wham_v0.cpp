@@ -397,7 +397,10 @@ Type objective_function<Type>::operator() ()
   }
   nll += nll_Ecov_obs_sig;
   nll += nll_Ecov_obs;
-  SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) REPORT(Ecov_obs);
+  SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
+    REPORT(Ecov_obs);
+    REPORT(Ecov_obs_logsigma);
+  }
 
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
@@ -481,8 +484,6 @@ Type objective_function<Type>::operator() ()
     ADREPORT(rho_M_a);
     ADREPORT(rho_M_y);
   }
-  Type mean_M = exp(M0);
-  ADREPORT(mean_M);
   REPORT(nll_M);
   nll += nll_M;
   REPORT(M_re); //even if M_re not simulated.
@@ -623,7 +624,7 @@ Type objective_function<Type>::operator() ()
     log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y)));
   }
   REPORT(log_SPR0);
-  ADREPORT(log_SPR0);
+  // ADREPORT(log_SPR0);
 
   // calculate stock-recruit parameters (steepness, R0, a, b)
   if(recruit_model > 2) //BH or Ricker SR
@@ -817,6 +818,8 @@ Type objective_function<Type>::operator() ()
       REPORT(sims);
       REPORT(log_NAA);
       REPORT(NAA_devs);
+      REPORT(log_NAA_sigma);
+      REPORT(trans_NAA_rho);
     }
   }
   if(n_NAA_sigma > 1){
@@ -844,6 +847,8 @@ Type objective_function<Type>::operator() ()
       REPORT(sims);
       REPORT(log_NAA);
       REPORT(NAA_devs);
+      REPORT(log_NAA_sigma);
+      REPORT(trans_NAA_rho);
     }
   }
   ADREPORT(NAA_sigma);
@@ -1133,7 +1138,13 @@ Type objective_function<Type>::operator() ()
   }
 
   matrix<Type> log_FAA_tot = log(FAA_tot.array());
-  matrix<Type> log_index_resid = log(agg_indices.block(0,0,n_years_model,n_indices).array()) - log(pred_indices.block(0,0,n_years_model,n_indices).array());
+  matrix<Type> log_index_resid(n_years_model, n_indices);
+  log_index_resid.setZero();
+  for(int y = 0; y < n_years_model; y++){
+    for(int i = 0; i < n_indices; i++){
+      if(use_indices(y,i) == 1) log_index_resid(y,i) = log(agg_indices(y,i)) - log(pred_indices(y,i));
+    }
+  }
   matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.block(0,0,n_years_model,n_fleets).array());
   vector<Type> log_SSB =  log(SSB);
   vector<Type> Fbar(n_years_model + n_years_proj);
@@ -1141,7 +1152,6 @@ Type objective_function<Type>::operator() ()
   int n_Fbar_ages = Fbar_ages.size();
   for(int y = 0; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_Fbar_ages; a++) Fbar(y) += FAA_tot(y,Fbar_ages(a)-1)/n_Fbar_ages;
 
-  matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.block(0,0,n_years_Ecov,n_Ecov).array();
   vector<Type> log_Fbar = log(Fbar);
   matrix<Type> log_NAA_rep = log(NAA.array());
 
@@ -1181,13 +1191,28 @@ Type objective_function<Type>::operator() ()
   ADREPORT(pred_IAA);
   ADREPORT(log_index_resid);
   ADREPORT(log_catch_resid);
-  ADREPORT(Ecov_x);
-  ADREPORT(Ecov_resid);
-  ADREPORT(Ecov_obs_sigma);
 
   REPORT(nll);
   REPORT(nll_Ecov);
   REPORT(nll_Ecov_obs);
+
+  if(Ecov_model.sum() > 0){
+    matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.block(0,0,n_years_Ecov,n_Ecov).array();
+    ADREPORT(Ecov_x);
+    ADREPORT(Ecov_resid);
+  }
+
+  SIMULATE {
+    REPORT(logit_q);
+    REPORT(log_F1);
+    REPORT(F_devs);
+    REPORT(log_N1_pars);
+    REPORT(catch_paa_pars);
+    REPORT(index_paa_pars);
+    REPORT(log_b);
+    REPORT(log_catch_sig_scale);
+    REPORT(log_index_sig_scale);
+  }
 
   return nll;
 }
