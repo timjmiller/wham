@@ -794,36 +794,10 @@ Type objective_function<Type>::operator() ()
           NAA_devs(y,0) = NAAdevs0(y);
         }
       }
-      matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
-        n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
-        avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
-      SSB = sims.col(sims.cols()-1);
-      for(int a = 0; a < n_ages; a++) 
-      {
-        NAA.col(a) = sims.col(a);
-        pred_NAA.col(a) = sims.col(a+n_ages);
-        for(int y = 1;y < n_years_model + n_years_proj; y++) {
-          log_NAA(y-1,a) = log(NAA(y,a));
-          for(int f = 0; f < n_fleets; f++){
-            FAA(y,f,a) = sims(y,2*n_ages + f*n_ages + a);
-          }
-        }
-      }
-      for(int y = 1;y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++){
-        Type tot = 0;
-        for(int f = 0; f < n_fleets; f++) tot += FAA(y,f,a);
-        FAA_tot(y,a) = tot;
-      }
-      ZAA = MAA + FAA_tot;
-      REPORT(sims);
-      REPORT(log_NAA);
-      REPORT(NAA_devs);
-      REPORT(log_NAA_sigma);
-      REPORT(trans_NAA_rho);
     }
   }
   if(n_NAA_sigma > 1){
-    if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
+    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) += 0.5*pow(sigma_a_sig(a),2);
     nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
     SIMULATE if(simulate_state(0) == 1) {
       array<Type> NAAdevs = NAA_devs;
@@ -834,22 +808,35 @@ Type objective_function<Type>::operator() ()
           for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
         }
       }
-      matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
-        n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
-        avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
-      SSB = sims.col(sims.cols()-1);
-      for(int a = 0; a < n_ages; a++) 
-      {
-        NAA.col(a) = sims.col(a);
-        pred_NAA.col(a) = sims.col(a+n_ages);
-        for(int y = 1;y < n_years_model + n_years_proj; y++) log_NAA(y-1,a) = log(NAA(y,a));
-      }
-      REPORT(sims);
-      REPORT(log_NAA);
-      REPORT(NAA_devs);
-      REPORT(log_NAA_sigma);
-      REPORT(trans_NAA_rho);
     }
+  }
+  if(n_NAA_sigma > 0) SIMULATE if(simulate_state(0) == 1){
+    matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
+      n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
+      avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
+    SSB = sims.col(sims.cols()-1);
+    for(int a = 0; a < n_ages; a++) 
+    {
+      NAA.col(a) = sims.col(a);
+      pred_NAA.col(a) = sims.col(a+n_ages);
+      for(int y = 1;y < n_years_model + n_years_proj; y++) {
+        log_NAA(y-1,a) = log(NAA(y,a));
+        for(int f = 0; f < n_fleets; f++){
+          FAA(y,f,a) = sims(y,2*n_ages + f*n_ages + a);
+        }
+      }
+    }
+    for(int y = 1;y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++){
+      Type tot = 0;
+      for(int f = 0; f < n_fleets; f++) tot += FAA(y,f,a);
+      FAA_tot(y,a) = tot;
+    }
+    ZAA = MAA + FAA_tot;
+    REPORT(sims);
+    REPORT(log_NAA);
+    REPORT(NAA_devs);
+    REPORT(log_NAA_sigma);
+    REPORT(trans_NAA_rho);
   }
   ADREPORT(NAA_sigma);
   ADREPORT(NAA_rho_a);
