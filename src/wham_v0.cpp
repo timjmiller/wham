@@ -803,8 +803,8 @@ Type objective_function<Type>::operator() ()
       array<Type> NAAdevs = NAA_devs;
       SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); //already scaled
       if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
-      for(int y = 0; y < n_years_model + n_years_proj; y++){
-        if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
+      for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
+        if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
           for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
         }
       }
