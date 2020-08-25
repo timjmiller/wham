@@ -782,13 +782,13 @@ Type objective_function<Type>::operator() ()
 
   // likelihood of NAA deviations
   if(n_NAA_sigma == 1){
-    if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
+    if(bias_correct_pe == 1) NAA_devs.col(0) -= 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
     SIMULATE if(simulate_state(0) == 1) {
       vector<Type> NAAdevs0 = NAA_devs.col(0);
       AR1(NAA_rho_y).simulate(NAAdevs0);
       NAAdevs0 = sigma_a_sig(0) * NAAdevs0;
-      if(bias_correct_pe == 1) NAAdevs0 -= 0.5*pow(sigma_a_sig(0),2);
+      //if(bias_correct_pe == 1) NAAdevs0 -= 0.5*pow(sigma_a_sig(0),2);
       for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
         if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
           NAA_devs(y,0) = NAAdevs0(y);
@@ -797,12 +797,12 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(n_NAA_sigma > 1){
-    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) += 0.5*pow(sigma_a_sig(a),2);
+    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
     nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
     SIMULATE if(simulate_state(0) == 1) {
       array<Type> NAAdevs = NAA_devs;
       SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); //already scaled
-      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+      //if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
       for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
         if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
           for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
