@@ -472,7 +472,7 @@ Type objective_function<Type>::operator() ()
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
         if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
-        nll_M += SCALE(AR1(rho_M_y), Sigma_M)(M_re.matrix().col(0));
+        nll_M += SCALE(AR1(rho_M_y), Sigma_M)(M_re0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
