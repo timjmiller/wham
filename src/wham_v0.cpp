@@ -446,7 +446,7 @@ Type objective_function<Type>::operator() ()
     // likelihood of M deviations, M_re
     if(M_re_model == 2 | M_re_model == 5){ //2D AR1: age, year
       Sigma_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
-      if(bias_correct_pe == 1) M_re -= 0.5 * pow(Sigma_M,2);
+      if(bias_correct_pe == 1) M_re += 0.5 * pow(Sigma_M,2);
       nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_M)(M_re); // must be array, not matrix!
       SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
         array<Type> Mre_tmp = M_re;
@@ -462,7 +462,7 @@ Type objective_function<Type>::operator() ()
       if(M_re_model == 3){ // 1D ar1_a
         vector<Type> Mre0 = M_re.matrix().row(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_a,2)),0.5);
-        if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
+        if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
         nll_M += SCALE(AR1(rho_M_a), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_a).simulate(Mre0);
@@ -471,7 +471,7 @@ Type objective_function<Type>::operator() ()
       } else { // M_re_model = 4, 1D ar1_y
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
-        if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
+        if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
         nll_M += SCALE(AR1(rho_M_y), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
@@ -785,7 +785,7 @@ Type objective_function<Type>::operator() ()
 
   // likelihood of NAA deviations
   if(n_NAA_sigma == 1){
-    if(bias_correct_pe == 1) NAA_devs.col(0) -= 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
+    if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
     SIMULATE if(simulate_state(0) == 1) {
       vector<Type> NAAdevs0 = NAA_devs.col(0);
@@ -800,7 +800,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(n_NAA_sigma > 1){
-    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) += 0.5*pow(sigma_a_sig(a),2);
     nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
     SIMULATE if(simulate_state(0) == 1) {
       array<Type> NAAdevs = NAA_devs;
