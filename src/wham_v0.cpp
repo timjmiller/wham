@@ -437,7 +437,7 @@ Type objective_function<Type>::operator() ()
   // Calculate mortality (M, F, then Z)
   // Natural mortality process model
   Type nll_M = Type(0);
-  if(M_re_model > 1) // random effects on M, M_re = 2D AR1 deviations on M(year,age)
+  if(M_re_model > 1) // random effects on M, M_re = 2D AR1 deviations on M(year,age), dim = n_years x n_M_a
   {
     Type sigma_M = exp(M_repars(0));
     Type rho_M_a = rho_trans(M_repars(1));
@@ -452,9 +452,10 @@ Type objective_function<Type>::operator() ()
         array<Type> Mre_tmp = M_re;
         SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(Mre_tmp);
         Mre_tmp = Sigma_M * Mre_tmp;
+        if(bias_correct_pe == 1) Mre_tmp -= 0.5 * pow(Sigma_M,2);
         for(int y = 0; y < n_years_model + n_years_proj; y++){
           if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
-            for(int a = 0; a < n_ages; a++) M_re(y,a) = Mre_tmp(y,a);
+            for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre_tmp(y,a);
           }
         }
       }
@@ -466,8 +467,14 @@ Type objective_function<Type>::operator() ()
         nll_M += SCALE(AR1(rho_M_a), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_a).simulate(Mre0);
-          for(int i = 0; i < Mre0.size(); i++) M_re(0,i) = Sigma_M * Mre0(i);
-        }
+          for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
+          if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
+          for(int y = 0; y < n_years_model + n_years_proj; y++){
+            for(int i = 0; i < Mre0.size(); i++){
+              M_re(y,i) = Mre0(i);
+            }
+          }
+        }          
       } else { // M_re_model = 4, 1D ar1_y
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
@@ -475,9 +482,11 @@ Type objective_function<Type>::operator() ()
         nll_M += SCALE(AR1(rho_M_y), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
+          for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
+          if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
-              M_re(y,0) = Sigma_M * Mre0(y);
+              M_re(y,0) = Mre0(y);
             }
           }
         }
@@ -789,9 +798,9 @@ Type objective_function<Type>::operator() ()
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
     SIMULATE if(simulate_state(0) == 1) {
       vector<Type> NAAdevs0 = NAA_devs.col(0);
-      AR1(NAA_rho_y).simulate(NAAdevs0);
+      AR1(NAA_rho_y).simulate(NAAdevs0); // sigma = 1, scale below
       NAAdevs0 = sigma_a_sig(0) * NAAdevs0;
-      //if(bias_correct_pe == 1) NAAdevs0 -= 0.5*pow(sigma_a_sig(0),2);
+      if(bias_correct_pe == 1) NAAdevs0 -= 0.5*pow(sigma_a_sig(0),2);
       for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
         if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
           NAA_devs(y,0) = NAAdevs0(y);
@@ -804,8 +813,8 @@ Type objective_function<Type>::operator() ()
     nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
     SIMULATE if(simulate_state(0) == 1) {
       array<Type> NAAdevs = NAA_devs;
-      SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); //already scaled
-      //if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+      SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); // scaled here
+      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
       for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
         if((simulate_period(0) == 1 & y < n_years_model - 1) | (simulate_period(1) == 1 & y > n_years_model - 2)){
           for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
