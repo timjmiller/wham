@@ -43,7 +43,7 @@ update_wham_input <- function(simres, model, n_years_add){
   
   nyo = simres$n_years_model
   nya = n_years_add
-  nym = ny0 + nya
+  nym = nyo + nya
   data = list(n_years_model = nym)
   data$n_years_catch = nym
   data$n_years_indices = nym
@@ -73,23 +73,19 @@ update_wham_input <- function(simres, model, n_years_add){
   data$mature = simres$mature[1:nym,]
 
   # Weight-at-age
-  data$waa_pointer_fleets = inputt$waa_pointer_fleets
-  data$waa_pointer_totcatch = inputt$waa_pointer_totcatch
-  data$waa_pointer_indices = inputt$waa_pointer_indices
-  data$waa_pointer_ssb = inputt$waa_pointer_ssb
-  data$waa_pointer_jan1 = inputt$waa_pointer_jan1
-  data$waa_pointer_totcatch = asap3$WAA_pointers[data$n_fleets + 1]
-  data$waa_pointer_indices = asap3$index_WAA_pointers
-  data$waa_pointer_ssb = asap3$WAA_pointers[data$n_fleets + 2]
-  data$waa_pointer_jan1 = asap3$WAA_pointers[data$n_fleets + 3]
+  data$waa_pointer_fleets = simres$waa_pointer_fleets
+  data$waa_pointer_totcatch = simres$waa_pointer_totcatch
+  data$waa_pointer_indices = simres$waa_pointer_indices
+  data$waa_pointer_ssb = simres$waa_pointer_ssb
+  data$waa_pointer_jan1 = simres$waa_pointer_jan1
   data$waa = simres$waa[,1:nym,,drop=FALSE]
   
   # Catch
   data$agg_catch = rbind(cbind(simres$agg_catch),cbind(simres$agg_catch_proj[1:nya,]))
-  data$agg_catch_sigma = rbind(cbind(simres$catch_cv), t(matrix(simres$catch_cv[nyo,], data$n_fleets, nya)))
+  data$agg_catch_sigma = rbind(cbind(simres$agg_catch_sigma), t(matrix(simres$agg_catch_sigma[nyo,], data$n_fleets, nya)))
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
   data$catch_paa[,1:nyo,] = simres$catch_paa
-  data$catch_paa[,nyo+1:nya,] = simres$catch_paa_proj
+  data$catch_paa[,nyo+1:nya,] = simres$catch_paa_proj[,1:nya,]
   data$use_agg_catch = rbind(cbind(simres$use_agg_catch), t(matrix(simres$use_agg_catch[nyo,],data$n_fleets, nya)))
   data$use_catch_paa = rbind(cbind(simres$use_catch_paa), t(matrix(simres$use_catch_paa[nyo,],data$n_fleets, nya)))
   data$catch_Neff = rbind(cbind(simres$catch_Neff), t(matrix(simres$catch_Neff[nyo,],data$n_fleets, nya)))
@@ -105,7 +101,7 @@ update_wham_input <- function(simres, model, n_years_add){
   data$units_index_paa <- simres$units_index_paa
   data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
   data$index_paa[,1:nyo,] = simres$index_paa
-  data$index_paa[,nyo+1:nya,] = simres$index_paa_proj
+  data$index_paa[,nyo+1:nya,] = simres$index_paa_proj[,1:nya,]
   data$use_index_paa = rbind(cbind(simres$use_index_paa), t(matrix(simres$use_index_paa[nyo,],data$n_indices, nya)))
   data$index_Neff = rbind(cbind(simres$index_Neff), t(matrix(simres$index_Neff[nyo,],data$n_indices, nya)))
   data$index_aref = matrix(NA, data$n_years_model, data$n_indices)
@@ -357,7 +353,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   #par$log_F1 = rep(-2, data$n_fleets)
   F = matrix(NA, nym,data$n_fleets)
   par$F_devs = matrix(0, nym-1, data$n_fleets)
-  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[i,1:nym,data$which_F_age]))
+  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[1:nym,i,data$which_F_age]))
    
   #par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
   #if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
@@ -492,8 +488,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
       tmp[] = maxmf + 1:NROW(tmp) #repeats and fills by columns
       #for(i in 1:dim(tmp)[1]) tmp[i,] = maxmf + i
     }
-    map$M_re <- factor(rbind(oldmap, tmp))
   }
+  map$M_re <- factor(rbind(oldmap, tmp))
 
   return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
     ages.lab = model$ages.lab, model_name = model$model_name))
