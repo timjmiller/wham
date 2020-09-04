@@ -447,12 +447,12 @@ Type objective_function<Type>::operator() ()
     if(M_re_model == 2 | M_re_model == 5){ //2D AR1: age, year
       Sigma_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
       nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_M)(M_re); // must be array, not matrix!
-      if(bias_correct_pe == 1) M_re -= 0.5 * pow(Sigma_M,2);      
+      // if(bias_correct_pe == 1) M_re -= 0.5 * pow(Sigma_M,2);      
       SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
         array<Type> Mre_tmp = M_re;
         SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(Mre_tmp);
         Mre_tmp = Sigma_M * Mre_tmp;
-        if(bias_correct_pe == 1) Mre_tmp -= 0.5 * pow(Sigma_M,2);
+        // if(bias_correct_pe == 1) Mre_tmp -= 0.5 * pow(Sigma_M,2);
         for(int y = 0; y < n_years_model + n_years_proj; y++){
           if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
             for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre_tmp(y,a);
@@ -463,12 +463,12 @@ Type objective_function<Type>::operator() ()
       if(M_re_model == 3){ // 1D ar1_a
         vector<Type> Mre0 = M_re.matrix().row(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_a,2)),0.5);
-        if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
+        // if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
         nll_M += SCALE(AR1(rho_M_a), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_a).simulate(Mre0);
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
-          if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
+          // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             for(int i = 0; i < Mre0.size(); i++){
               M_re(y,i) = Mre0(i);
@@ -478,12 +478,12 @@ Type objective_function<Type>::operator() ()
       } else { // M_re_model = 4, 1D ar1_y
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
-        if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
+        // if(bias_correct_pe == 1) Mre0 += 0.5 * pow(Sigma_M,2);
         nll_M += SCALE(AR1(rho_M_y), Sigma_M)(Mre0);
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
-          if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
+          // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
               M_re(y,0) = Mre0(y);
