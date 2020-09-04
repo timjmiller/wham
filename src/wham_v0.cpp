@@ -446,8 +446,8 @@ Type objective_function<Type>::operator() ()
     // likelihood of M deviations, M_re
     if(M_re_model == 2 | M_re_model == 5){ //2D AR1: age, year
       Sigma_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
-      if(bias_correct_pe == 1) M_re += 0.5 * pow(Sigma_M,2);
       nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_M)(M_re); // must be array, not matrix!
+      if(bias_correct_pe == 1) M_re -= 0.5 * pow(Sigma_M,2);      
       SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
         array<Type> Mre_tmp = M_re;
         SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(Mre_tmp);
