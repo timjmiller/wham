@@ -147,7 +147,7 @@ Type objective_function<Type>::operator() ()
   // parameters - environmental covariate ("Ecov")
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
   PARAMETER_MATRIX(Ecov_beta); // dim = n.poly x n.ecov, beta_R in eqns 4-5, Miller et al. (2016)
-  PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (sig, Ecov1), AR1: 3 par (mu, phi, sig); ncol = N_ecov
+  PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (Ecov1, sig), AR1: 3 par (mu, sig, phi); ncol = N_ecov
   PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
 
@@ -260,11 +260,12 @@ Type objective_function<Type>::operator() ()
           istart += n_years_selblocks(b);
         }*/
         for(int j=0; j<n_selpars_est(b); j++){
-          for(int y = istart; y < n_years_selblocks(b); y++) {
-            if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1))
-              selpars_re(istart) = tmp(y-istart,j);
-            }
-          istart += n_years_selblocks(b);
+          for(int y = 0; y < n_years_selblocks(b); y++){
+            // this wasn't right bc a sel block may be < n_years_model, need to check selblock_years to see if it's in model/proj years
+            // if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1))
+            selpars_re(istart) = tmp(y,j);
+            istart++;
+          }
         }
       }
 
@@ -309,9 +310,9 @@ Type objective_function<Type>::operator() ()
       // Ecov model option 1: RW
       if(Ecov_model(i) == 1){
         Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
-        Ecov_sig = exp(Ecov_process_pars(0,i));
+        Ecov_sig = exp(Ecov_process_pars(1,i));
         Type Ecov1; // Ecov_x in year 1 (fixed effect)
-        Ecov1 = Ecov_process_pars(1,i);
+        Ecov1 = Ecov_process_pars(0,i);
 
         Ecov_x(0,i) = Ecov1;
         nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
@@ -338,8 +339,8 @@ Type objective_function<Type>::operator() ()
         Type Ecov_phi; // autocorrelation
         Type Ecov_sig; // conditional sd
         Ecov_mu = Ecov_process_pars(0,i);
-        Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(1,i)));
-        Ecov_sig = exp(Ecov_process_pars(2,i));
+        Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(2,i)));
+        Ecov_sig = exp(Ecov_process_pars(1,i));
 
         nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
         SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(0,i) == 1) {

@@ -508,11 +508,11 @@ without changing ASAP file, specify M$initial_means.")
     data$Ecov_label <- "none"
     data$Ecov_use_re <- matrix(0, nrow=1, ncol=1)
   } else {
-    if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean} else{
+    if(class(ecov$mean)[1] == "matrix") {data$Ecov_obs <- ecov$mean} else{
       warning("ecov mean is not a matrix. Coercing to a matrix...")
       data$Ecov_obs <- as.matrix(ecov$mean)
     }
-    if(class(ecov$use_obs) == "matrix"){
+    if(class(ecov$use_obs)[1] == "matrix"){
       data$Ecov_use_obs <- ecov$use_obs
     } else{
       warning("ecov$use_obs is not a matrix with same dimensions as ecov$mean. Coercing to a matrix...")
@@ -523,13 +523,13 @@ without changing ASAP file, specify M$initial_means.")
     # Handle Ecov sigma options
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num Ecovs
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
-    if(class(ecov$logsigma) == "matrix"){
+    if(class(ecov$logsigma)[1] == "matrix"){
       # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
       par.Ecov.obs.logsigma <- ecov$logsigma
       if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$logsigma")
     }
-    if(class(ecov$logsigma) == 'numeric'){
+    if(class(ecov$logsigma)[1] == 'numeric'){
       # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
       print("ecov$logsigma is numeric. Coercing to a matrix...")
@@ -538,7 +538,7 @@ without changing ASAP file, specify M$initial_means.")
       if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(ecov$logsigma, ncol=1)
       if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
     }
-    if(class(ecov$logsigma) == 'character'){
+    if(class(ecov$logsigma)[1] == 'character'){
       if(ecov$logsigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
         data$Ecov_obs_sigma_opt = 2
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
@@ -557,7 +557,7 @@ without changing ASAP file, specify M$initial_means.")
         data$Ecov_obs_sigma_opt = 4
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
         map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-0.5, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
+        par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-2.3, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
         map.Ecov.obs.sigma.par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
       }
     }
@@ -940,7 +940,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$Ecov_re = matrix(rnorm(data$n_years_Ecov*data$n_Ecov), data$n_years_Ecov, data$n_Ecov)
   max.poly <- max(data$Ecov_poly)
   par$Ecov_beta = matrix(0, nrow=max.poly, ncol=data$n_Ecov) # beta_R in eqns 4-5, Miller et al. (2016)
-  par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
+  par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov
+  par$Ecov_process_pars[1,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
   par$Ecov_obs_sigma_par <- par.Ecov.obs.sigma.par
 
