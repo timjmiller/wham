@@ -8,15 +8,16 @@
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.
 #' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
+#' @param retro.silent T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.
 #'
 #' @return \code{out}, output of \code{\link{fit_tmb}} for peel \emph{i}
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}
 #'
-fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE)
+fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE)
 {
   out = list()
-  print(peel)
+  if(!retro.silent) print(peel)
   temp = model
   n_years = temp$dat$n_years_catch = temp$dat$n_years_indices = temp$dat$n_years_model = temp$dat$n_years_model - peel
   if(temp$dat$Ecov_model != 0){
