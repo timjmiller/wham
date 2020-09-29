@@ -469,9 +469,9 @@ without changing ASAP file, specify M$initial_means.")
   data$N1_model = 0 #0: just age-specific numbers at age
   data$which_F_age = data$n_ages #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
   data$use_steepness = 0 #use regular SR parameterization by default, steepness still can be estimated as derived par.
-  data$bias_correct_pe = 0 #bias correct log-normal process errors?
-  data$bias_correct_oe = 0 #bias correct log-normal observation errors?
-  data$Fbar_ages = 1:data$n_ages
+  data$bias_correct_pe = 1 #bias correct log-normal process errors?
+  data$bias_correct_oe = 1 #bias correct log-normal observation errors?
+  data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
   data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
   data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
   data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
@@ -841,11 +841,15 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$mean_rec_pars = numeric(c(0,1,2,2)[recruit_model])
   if(recruit_model==2) par$mean_rec_pars = 10
   if(recruit_model==4) par$mean_rec_pars[2] = -10
-  par$logit_q = rep(-8, data$n_indices)
-  par$log_F1 = rep(-2, data$n_fleets)
+  # par$logit_q = rep(-8, data$n_indices) # old
+  gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
+  par$logit_q = gen.logit(asap3$q_ini, q_lower, q_upper) # use q_ini values from asap3 file
+  # par$log_F1 = rep(-2, data$n_fleets) # old
+  par$log_F1 = log(asap3$F1_ini) # use F1_ini values from asap3 file  
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
-  if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
-  if(data$N1_model == 0) par$log_N1_pars = rep(10,data$n_ages)
+  if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1)) # allowed in wham.cpp but no option to set here (must be hard-coded after calling prepare_wham_input)
+  # if(data$N1_model == 0) par$log_N1_pars = rep(10,data$n_ages) # old
+  if(data$N1_model == 0) par$log_N1_pars = log(asap3$N1_ini) # use N1_ini values from asap3 file
 
   # NAA_re pars
   if(data$n_NAA_sigma == 0){
