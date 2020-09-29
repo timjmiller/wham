@@ -839,7 +839,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # Parameters
   par = list()
   par$mean_rec_pars = numeric(c(0,1,2,2)[recruit_model])
-  if(recruit_model==2) par$mean_rec_pars = 10
+  # if(recruit_model==2) par$mean_rec_pars = 10 # old
+  if(recruit_model==2) par$mean_rec_pars = log(asap3$N1_ini[1]) # initialize R0 at initial age-1
   if(recruit_model==4) par$mean_rec_pars[2] = -10
   # par$logit_q = rep(-8, data$n_indices) # old
   gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
