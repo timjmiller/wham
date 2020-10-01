@@ -8,11 +8,13 @@
 
 <title>Fit WHAM model — fit_wham • wham</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -38,11 +40,10 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Fit WHAM model — fit_wham" />
 
+<meta property="og:title" content="Fit WHAM model — fit_wham" />
 <meta property="og:description" content="Fits the compiled WHAM model using TMB::MakeADFun and
 stats::nlminb. Runs retrospective analysis if specified." />
-
 
 
 
@@ -127,7 +128,6 @@ stats::nlminb. Runs retrospective analysis if specified." />
   </a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -162,10 +162,8 @@ stats::nlminb. Runs retrospective analysis if specified." />
     </div>
 
     <div class="ref-description">
-    
     <p>Fits the compiled WHAM model using <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code> and
 <code><a href='https://rdrr.io/r/stats/nlminb.html'>stats::nlminb</a></code>. Runs retrospective analysis if specified.</p>
-    
     </div>
 
     <pre class="usage"><span class='fu'>fit_wham</span>(
@@ -179,13 +177,14 @@ stats::nlminb. Runs retrospective analysis if specified." />
   <span class='kw'>model</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>do.check</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>retro.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>do.proj</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>proj.opts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>n.yrs</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>use.last.F</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.avg.F</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>use.FXSPR</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
     <span class='kw'>proj.F</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.catch</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>avg.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.ecov</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.last.ecov</span> <span class='kw'>=</span>
     <span class='fl'>FALSE</span>, <span class='kw'>avg.ecov.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.Mre</span> <span class='kw'>=</span> <span class='kw'>NULL</span>),
   <span class='kw'>do.fit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
 )</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -241,6 +240,10 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
       <td><p>T/F, Passed to silent argument of <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></td>
     </tr>
     <tr>
+      <th>retro.silent</th>
+      <td><p>T/F, Passed to argument of internal retro function. Determines whether peel number is printed to screen. Default = <code>FALSE</code>.</p></td>
+    </tr>
+    <tr>
       <th>do.proj</th>
       <td><p>T/F, do projections? Default = <code>FALSE</code>. If true, runs <code><a href='project_wham.html'>project_wham</a></code>.</p></td>
     </tr>
@@ -264,7 +267,7 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
       <td><p>T/F, fit the model using <code>fit_tmb</code>. Default = <code>TRUE</code>.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a fit TMB model with additional output if specified:</p><dl'>
@@ -275,7 +278,6 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
   
 </dl>
 
-    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
@@ -284,11 +286,9 @@ implemented in <code><a href='https://rdrr.io/pkg/TMB/man/oneStepPredict.html'>T
 are passed to <code><a href='https://rdrr.io/pkg/TMB/man/oneStepPredict.html'>TMB::oneStepPredict</a></code> in a list <code>osa.opts</code>. For example,
 to use the (much faster, ~1 sec instead of 2 min) full Gaussian approximation instead of the (default)
 generic method, you can use <code>osa.opts=list(method="fullGaussian")</code>.</p>
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='fit_tmb.html'>fit_tmb</a></code>, <code><a href='retro.html'>retro</a></code>, <code><a href='https://rdrr.io/pkg/TMB/man/oneStepPredict.html'>TMB::oneStepPredict</a></code>, <code><a href='project_wham.html'>project_wham</a></code></p></div>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {

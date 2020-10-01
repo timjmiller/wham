@@ -8,11 +8,13 @@
 
 <title>Fit model peeling off <em>i</em> years of data — fit_peel • wham</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -38,11 +40,10 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Fit model peeling off <em>i</em> years of data — fit_peel" />
 
+<meta property="og:title" content="Fit model peeling off <em>i</em> years of data — fit_peel" />
 <meta property="og:description" content="Internal function called by retro for i in 1--n.peels.
 Fits the model peeling off i years of data (calls fit_tmb)." />
-
 
 
 
@@ -127,7 +128,6 @@ Fits the model peeling off i years of data (calls fit_tmb)." />
   </a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -162,14 +162,19 @@ Fits the model peeling off i years of data (calls fit_tmb)." />
     </div>
 
     <div class="ref-description">
-    
     <p>Internal function called by <code><a href='retro.html'>retro</a></code> for <em>i</em> in 1--<code>n.peels</code>.
 Fits the model peeling off <em>i</em> years of data (calls <code><a href='fit_tmb.html'>fit_tmb</a></code>).</p>
-    
     </div>
 
-    <pre class="usage"><span class='fu'>fit_peel</span>(<span class='no'>peel</span>, <span class='no'>model</span>, <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
-    
+    <pre class="usage"><span class='fu'>fit_peel</span>(
+  <span class='no'>peel</span>,
+  <span class='no'>model</span>,
+  <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>retro.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)</pre>
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -193,16 +198,18 @@ Fits the model peeling off <em>i</em> years of data (calls <code><a href='fit_tm
       <th>MakeADFun.silent</th>
       <td><p>T/F, Passed to silent argument of <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></td>
     </tr>
+    <tr>
+      <th>retro.silent</th>
+      <td><p>T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = <code>FALSE</code>.</p></td>
+    </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p><code>out</code>, output of <code><a href='fit_tmb.html'>fit_tmb</a></code> for peel <em>i</em></p>
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='retro.html'>retro</a></code>, <code><a href='fit_tmb.html'>fit_tmb</a></code></p></div>
-    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

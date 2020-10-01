@@ -10,7 +10,8 @@ retro(
   ran = "log_NAA",
   do.sdrep = FALSE,
   n.newton = 0,
-  MakeADFun.silent = FALSE
+  MakeADFun.silent = FALSE,
+  retro.silent = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ retro(
 \item{n.newton}{integer, number of additional Newton steps after optimization for each peel. Default = \code{0}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
+
+\item{retro.silent}{T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model

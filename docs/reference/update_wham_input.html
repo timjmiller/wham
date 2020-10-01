@@ -8,11 +8,13 @@
 
 <title>Update input data and parameters from simulated data with projection — update_wham_input • wham</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
@@ -38,12 +40,12 @@
 
   <link href="../extra.css" rel="stylesheet">
   
+
 <meta property="og:title" content="Update input data and parameters from simulated data with projection — update_wham_input" />
-
 <meta property="og:description" content="When data are simulated from a wham model with projections, this function can be used to update the input model years.
-This is helpful for using WHAM as an assessment model in a management strategy evaluation. See prepare_wham_input, 
-prepare_wham_om_input, prepare_wham_om_proj, and project_wham for further details on data and parameter structure." />
-
+This is helpful for using WHAM as an assessment model in a management strategy evaluation. Note, this will remove any projection specifications.
+See prepare_wham_input, prepare_wham_om_input, prepare_wham_om_proj, and project_wham for 
+further details on data and parameter structure." />
 
 
 
@@ -128,7 +130,6 @@ prepare_wham_om_input, prepare_wham_om_proj, and project_wham for further detail
   </a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
@@ -163,22 +164,17 @@ prepare_wham_om_input, prepare_wham_om_proj, and project_wham for further detail
     </div>
 
     <div class="ref-description">
-    
     <p>When data are simulated from a wham model with projections, this function can be used to update the input model years.
-This is helpful for using WHAM as an assessment model in a management strategy evaluation. See <code>prepare_wham_input</code>, 
-<code>prepare_wham_om_input</code>, <code>prepare_wham_om_proj</code>, and <code>project_wham</code> for further details on data and parameter structure.</p>
-    
+This is helpful for using WHAM as an assessment model in a management strategy evaluation. Note, this will remove any projection specifications.
+See <code>prepare_wham_input</code>, <code>prepare_wham_om_input</code>, <code>prepare_wham_om_proj</code>, and <code>project_wham</code> for 
+further details on data and parameter structure.</p>
     </div>
 
     <pre class="usage"><span class='fu'>update_wham_input</span>(<span class='no'>simres</span>, <span class='no'>model</span>, <span class='no'>n_years_add</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>simres</th>
-      <td><p>list containing data and parameters (output from model$simulate(complete=TRUE), where model is output from <code>fit_wham</code>)</p></td>
-    </tr>
     <tr>
       <th>model</th>
       <td><p>object used to produce simres.</p></td>
@@ -187,11 +183,15 @@ This is helpful for using WHAM as an assessment model in a management strategy e
       <th>n_years_add</th>
       <td><p>number of projection years to convert to model_years</p></td>
     </tr>
+    <tr>
+      <th>sim</th>
+      <td><p>list containing data and random effects (output from model$simulate(complete=TRUE), where model is output from <code>fit_wham</code>)</p></td>
+    </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a named list with the following components:</p><dl'>
+    <p>a named list like <code>prepare_wham_input</code> and <code>prepare_wham_om_input</code> with the following components:</p><dl'>
     <dt><code>data</code></dt><dd><p>Named list of data, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>par</code></dt><dd><p>Named list of parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>map</code></dt><dd><p>Named list defining how to optionally collect and fix parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
@@ -203,11 +203,9 @@ This is helpful for using WHAM as an assessment model in a management strategy e
   
 </dl>
 
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
-    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
