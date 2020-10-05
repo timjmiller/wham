@@ -844,7 +844,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(recruit_model==4) par$mean_rec_pars[2] = -10
   # par$logit_q = rep(-8, data$n_indices) # old
   gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
-  par$logit_q = gen.logit(asap3$q_ini, q_lower, q_upper) # use q_ini values from asap3 file
+  par$logit_q = gen.logit(asap3$q_ini, data$q_lower, data$q_upper) # use q_ini values from asap3 file
   # par$log_F1 = rep(-2, data$n_fleets) # old
   par$log_F1 = log(asap3$F1_ini) # use F1_ini values from asap3 file  
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
