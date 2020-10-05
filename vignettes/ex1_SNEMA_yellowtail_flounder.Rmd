@@ -51,7 +51,7 @@ wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
 ```
 
-You can run this entire example script with:
+You can run this entire example script with (2.0 min runtime):
 ```{r, eval=FALSE}
 write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
 source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
