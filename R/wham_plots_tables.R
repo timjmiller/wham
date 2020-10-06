@@ -3326,7 +3326,11 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   ecov.obs = dat$Ecov_obs
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
   sdrep = summary(mod$sdrep)
-  ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+  if("Ecov_obs_logsigma" %in% names(mod$env$par)){
+    ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+  } else {
+    ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
+  }
   ecov.use = dat$Ecov_use_obs
   ecov.obs.sig[ecov.use == 0] <- NA
   ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
