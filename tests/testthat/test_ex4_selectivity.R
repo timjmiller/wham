@@ -40,13 +40,13 @@ selAA <- vector("list",n.mods)
 # for(m in 1:n.mods){
 for(m in c(1:3,5:6,8)){ # only models that converge
 	if(sel_model[m] == "logistic"){ 
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(1.5,0.2),c(2,0.2),c(2,0.2))),
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.2),c(2,0.2),c(2,0.2))),
 					NAA_re = list(sigma='rec+1',cor='iid'))
 	} else {
 		# fix3: 1,4,5 / 4 / 2
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), fix_pars=list(4,4,2)),
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
+					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), fix_pars=list(4:5,4,2:4)),
 					NAA_re = list(sigma='rec+1',cor='iid'))
 	}
 

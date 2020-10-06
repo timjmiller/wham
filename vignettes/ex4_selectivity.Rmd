@@ -170,8 +170,8 @@ inv.logit <- function(x) exp(x)/(1+exp(x))
 for(m in 1:n.mods){
 	if(sel_model[m] == "logistic"){ # logistic selectivity
 		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(1.5,0.2),c(2,0.2),c(2,0.2))),
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.2),c(2,0.2),c(2,0.2))),
 					NAA_re = list(sigma='rec+1',cor='iid'))
 	} else { # age-specific selectivity
 		# # don't fix any ages
@@ -180,11 +180,11 @@ for(m in 1:n.mods){
 		# 				initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),
 		# 			NAA_re = list(sigma='rec+1',cor='iid'))
 
-		# fix selectivity for one age per block: 4 / 4 / 2
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+		# fix selectivity at 1 for ages 4-5 / 4 / 2-4 in blocks 1-3
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
 					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
-						initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-						fix_pars=list(4,4,2)),
+						initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
+						fix_pars=list(4:5,4,2:4)),
 					NAA_re = list(sigma='rec+1',cor='iid'))
 	}
 
@@ -268,8 +268,8 @@ library(tidyverse)
 library(viridis)
 
 selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
-sel_mod <- c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])]
-sel_cor <- c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])]
+sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
+sel_cor <- factor(c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])], levels=c("None","IID","AR1","AR1_y","2D AR1"))
 df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
 colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
 for(m in 1:n.mods){
@@ -283,10 +283,11 @@ for(m in 1:n.mods){
 	df.selAA <- rbind(df.selAA, df)
 }
 df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
-				names_to = "Age", 
+				names_to = "Age",
 				names_prefix = "Age_",
-				names_ptypes = list(Age = integer()),
+				names_ptypes = list(Age = character()),
 				values_to = "Selectivity")
+df$Age <- as.integer(df$Age)
 df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
 df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
 ```
@@ -320,12 +321,13 @@ mod$rep$sel_repars # if time-varying selectivity turned on
 mod$rep$selAA # selectivity-at-age by block
 mod$sdrep # look for sel pars with NaN standard errors
 ```
-3. Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above age-specific models, we initialized and fixed ages 4, 4, and 2 for blocks 1-3, respectively. Sometimes just initializing the worst parameter is enough, without fixing it.
+3. Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above age-specific models, we first initialized and fixed ages 4, 4, and 2 for blocks 1-3, respectively. The logit scale selectivity for age 5 and ages 3-4 for blocks 1 and 3 remained around 20, indicating that they too should be fixed at 1. Sometimes just initializing the worst parameter is enough, without fixing it.
 ```{r, eval=F}
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+		# fix selectivity at 1 for ages 4-5 / 4 / 2-4 in blocks 1-3
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
 					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
-						initial_pars=list(c(inv.logit(-4),0.5,0.5,1,0.5,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-						fix_pars=list(4,4,2)),
+						initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
+						fix_pars=list(4:5,4,2:4)),
 					NAA_re = list(sigma='rec+1',cor='iid'))
 ```
 4. The goal is to find a set of selectivity parameter initial/fixed values that allow all nested models to converge. Fixing parameters should not affect the NLL much, and any model that is a superset of another should not have a greater NLL (indicates not converged to global minimum). The following commands may be helpful:
