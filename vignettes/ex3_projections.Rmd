@@ -313,7 +313,7 @@ for(m in 1:length(mod_proj)){
 }
 ```
 
-To more easily compare the same plots for each projection, copy plots into new folders organized by plot type instead of model.
+To more easily compare the same plots for each projection, we can copy the plots into new folders organized by plot type instead of model.
 
 ```{r eval=FALSE}
 plots <- c("Ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_status")
