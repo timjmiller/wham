@@ -82,7 +82,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 > Miller, T. J., O’Brien, L., and Fratantoni, P. S. 2018. Temporal and environmental variation in growth and maturity and effects on management reference points of Georges Bank Atlantic cod. Canadian Journal of Fisheries and Aquatic Sciences 75(12): 2159-2171. doi: 10.1139/cjfas-2017-0124
 
-> R Core Team. 2019. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.r-project.org/
+> R Core Team. 2020. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.r-project.org/
 
 ## NOAA Disclaimer
 

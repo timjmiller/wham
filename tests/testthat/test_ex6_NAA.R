@@ -4,7 +4,7 @@
 # library(wham)
 # devtools::load_all()
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex6_NAA.R"); etime <- Sys.time(); runtime = etime - btime;
-# 14 min
+# 11 min
 
 context("Ex 6: Numbers-at-age")
 

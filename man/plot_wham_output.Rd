@@ -4,7 +4,13 @@
 \alias{plot_wham_output}
 \title{Plot WHAM output}
 \usage{
-plot_wham_output(mod, dir.main = getwd(), out.type = "html", res = 72)
+plot_wham_output(
+  mod,
+  dir.main = getwd(),
+  out.type = "html",
+  res = 72,
+  plot.opts = NULL
+)
 }
 \arguments{
 \item{mod}{output from \code{\link{fit_wham}}}
@@ -14,6 +20,8 @@ plot_wham_output(mod, dir.main = getwd(), out.type = "html", res = 72)
 \item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})}
 
 \item{res}{resolution to save .png files (dpi)}
+
+\item{plot.opts}{list, named element \code{$ages.lab} character vector will change age labels in plots (default is \code{1:n.ages})}
 }
 \description{
 Generates many output plots for a fit WHAM model.

@@ -13,6 +13,7 @@
 #' @param dir.main character, directory to save plots to (default = \code{getwd()})
 #' @param out.type character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})
 #' @param res resolution to save .png files (dpi)
+#' @param plot.opts list, named element \code{$ages.lab} character vector will change age labels in plots (default is \code{1:n.ages})
 #'
 #' @return NULL
 #'
@@ -26,7 +27,10 @@
 #' mod <- fit_wham(input4_SNEMAYT)
 #' plot_wham_output(mod)
 #' }
-plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72){
+plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72, plot.opts = NULL){
+  # allow overwrite of default ages.lab = 1:n.ages
+  if(!is.null(plot.opts)) if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab
+
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
