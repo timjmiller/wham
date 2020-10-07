@@ -8,7 +8,7 @@
 # as in example 2
 #   selectivity = logistic
 
-# devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
 # library(wham)
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex4_selectivity.R"); etime <- Sys.time(); runtime = etime - btime;
 # 2.2 min

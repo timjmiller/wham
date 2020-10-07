@@ -10,6 +10,7 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, res=72,
   sdrep = summary(mod$sdrep)
   if("Ecov_obs_logsigma" %in% names(mod$env$par)){
     ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+    if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
   } else {
     ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
   }
@@ -3328,6 +3329,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   sdrep = summary(mod$sdrep)
   if("Ecov_obs_logsigma" %in% names(mod$env$par)){
     ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+    if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
   } else {
     ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
   }
