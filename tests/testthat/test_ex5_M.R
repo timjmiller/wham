@@ -3,7 +3,7 @@
 # devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
 # devtools::load_all()
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex5_M.R"); etime <- Sys.time(); runtime = etime - btime;
-# 14.4 min
+# 13 min
 
 context("Ex 5: Natural mortality")
 

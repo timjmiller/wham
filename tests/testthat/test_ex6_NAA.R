@@ -45,8 +45,8 @@ for(m in fit.mods){
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), 
                                 re=rep("none",3), 
-                                initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                fix_pars=list(c(4,5),4,2)),
+                                initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
+                                fix_pars=list(4:5,4,2:4)),
                               NAA_re = NAA_list,
                               ecov=ecov)
 
