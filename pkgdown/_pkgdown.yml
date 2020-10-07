@@ -1,5 +1,8 @@
 url: https://timjmiller.github.io/wham/
 
+news:
+  one_page: true
+
 navbar:
   left:
     - text: "Vignettes"
@@ -26,6 +29,8 @@ navbar:
     - text: "Source code"
       icon: fa-github fa-lg
       href: https://github.com/timjmiller/wham/
+    - text: "News"
+      href: news/index.html
   right:
     - icon: fa-question-circle-o
       text: "Issues"
