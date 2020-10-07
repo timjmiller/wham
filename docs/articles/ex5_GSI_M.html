@@ -379,7 +379,7 @@
 <span class="no">df.mods</span>$<span class="no">pdHess</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span>(<span class="no">ok_sdrep</span>)
 <span class="no">df.mods</span>$<span class="no">runtime</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">mods</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="no">x</span>$<span class="no">runtime</span>)
 <span class="no">df.mods</span>$<span class="no">NLL</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">mods</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="no">x</span>$<span class="no">opt</span>$<span class="no">objective</span>,<span class="fl">3</span>))</pre></body></html></div>
-<p>We have to deal with the NLL for one model being <code>NaN</code>.</p>
+<p>We have to deal with any NLL being <code>NaN</code>.</p>
 <div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">theNA</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">df.mods</span>$<span class="no">NLL</span>))
 <span class="no">mods2</span> <span class="kw">&lt;-</span> <span class="no">mods</span>
 <span class="no">mods2</span>[<span class="no">theNA</span>] <span class="kw">&lt;-</span> <span class="kw">NULL</span>
@@ -410,7 +410,7 @@
 <h2 class="hasAnchor">
 <a href="#results" class="anchor"></a>7. Results</h2>
 <p>In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
-<p>Model <code>m8</code> (estimate mean <span class="math inline">\(M\)</span> and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC and was overwhelmingly supported relative to the other models (<strong>bold</strong> in table below).</p>
+<p>Models <code>m8</code> (estimate mean <span class="math inline">\(M\)</span> and 2D AR1 deviations by year and age, no GSI effect) and <code>m17</code> (keep mean <span class="math inline">\(M\)</span> fixed but estimate 2D AR1 deviations) had the lowest AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below).</p>
 <table class="table table table-condensed table-responsive">
 <thead><tr>
 <th style="text-align:left;">
@@ -480,25 +480,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.46
+0.21
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--813.858
+-819.514
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-37.1
+27.4
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1489.7
+-1501.0
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.259
+0.231
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.112
+0.068
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.126
+-0.111
 </td>
 </tr>
 <tr>
@@ -524,25 +524,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.54
+0.31
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--819.584
+-824.237
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-27.6
+19.9
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1499.2
+-1508.5
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.369
+0.304
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.154
+0.093
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.154
+-0.126
 </td>
 </tr>
 <tr>
@@ -568,25 +568,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-6.64
+3.15
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--820.307
+-824.619
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-28.2
+21.2
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1498.6
+-1507.2
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.336
+0.327
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.149
+0.104
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.148
+-0.130
 </td>
 </tr>
 <tr>
@@ -606,31 +606,31 @@ ar1
 —
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:left;">
 FALSE
 </td>
 <td style="text-align:right;">
-0.44
+0.27
 </td>
 <td style="text-align:right;">
--836.383
-</td>
-<td style="text-align:right;">
-NA
+-838.577
 </td>
 <td style="text-align:right;">
 NA
 </td>
 <td style="text-align:right;">
-0.265
+NA
 </td>
 <td style="text-align:right;">
-0.141
+0.262
 </td>
 <td style="text-align:right;">
--0.135
+0.113
+</td>
+<td style="text-align:right;">
+-0.149
 </td>
 </tr>
 <tr>
@@ -656,25 +656,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.47
+0.21
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--825.020
+-825.965
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-18.8
+18.5
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1508.0
+-1509.9
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.725
+0.679
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.145
+0.138
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.134
+-0.140
 </td>
 </tr>
 <tr>
@@ -700,25 +700,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.44
+0.21
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--825.015
+-825.959
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-16.8
+16.5
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1510.0
+-1511.9
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.544
+0.509
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.132
+0.126
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.129
+-0.137
 </td>
 </tr>
 <tr>
@@ -744,25 +744,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.63
+0.26
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--825.399
+-826.374
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-20.0
+19.7
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1506.8
+-1508.7
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-1.186
+1.182
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.419
+0.438
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.290
+-0.306
 </td>
 </tr>
 <tr>
@@ -788,25 +788,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-2.26
+0.94
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--836.408
+-837.213
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 0.0
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--1526.8
+-1528.4
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.312
+0.322
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.006
+0.013
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--0.028
+-0.051
 </td>
 </tr>
 <tr>
@@ -832,25 +832,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.56
+0.27
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--829.687
+-830.484
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 9.4
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1517.4
+-1519.0
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.292
+0.281
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.023
+0.027
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.052
+-0.072
 </td>
 </tr>
 <tr>
@@ -876,25 +876,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-7.16
+2.93
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--829.718
+-830.525
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-11.4
+11.3
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--1515.4
+-1517.1
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.294
+0.276
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.024
+0.025
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
--0.052
+-0.070
 </td>
 </tr>
 <tr>
@@ -920,10 +920,13 @@ FALSE
 FALSE
 </td>
 <td style="text-align:right;">
-2.59
+1.88
 </td>
 <td style="text-align:right;">
--840.464
+NaN
+</td>
+<td style="text-align:right;">
+NA
 </td>
 <td style="text-align:right;">
 NA
@@ -932,13 +935,10 @@ NA
 NA
 </td>
 <td style="text-align:right;">
-0.247
+NA
 </td>
 <td style="text-align:right;">
-0.022
-</td>
-<td style="text-align:right;">
-0.015
+NA
 </td>
 </tr>
 <tr>
@@ -964,25 +964,25 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-6.45
+3.55
 </td>
 <td style="text-align:right;">
--844.629
-</td>
-<td style="text-align:right;">
-NA
+-846.303
 </td>
 <td style="text-align:right;">
 NA
 </td>
 <td style="text-align:right;">
-0.135
+NA
 </td>
 <td style="text-align:right;">
--0.004
+0.776
 </td>
 <td style="text-align:right;">
--0.018
+0.011
+</td>
+<td style="text-align:right;">
+-0.062
 </td>
 </tr>
 <tr>
@@ -1008,7 +1008,7 @@ FALSE
 FALSE
 </td>
 <td style="text-align:right;">
-7.60
+6.36
 </td>
 <td style="text-align:right;">
 NaN
@@ -1052,25 +1052,25 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-2.16
+0.98
 </td>
 <td style="text-align:right;">
--829.122
-</td>
-<td style="text-align:right;">
-NA
+-830.067
 </td>
 <td style="text-align:right;">
 NA
 </td>
 <td style="text-align:right;">
-0.342
+NA
 </td>
 <td style="text-align:right;">
-0.108
+0.330
 </td>
 <td style="text-align:right;">
--0.120
+0.104
+</td>
+<td style="text-align:right;">
+-0.141
 </td>
 </tr>
 <tr>
@@ -1096,25 +1096,25 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-2.28
+1.10
 </td>
 <td style="text-align:right;">
--835.423
-</td>
-<td style="text-align:right;">
-NA
+-836.242
 </td>
 <td style="text-align:right;">
 NA
 </td>
 <td style="text-align:right;">
-0.128
+NA
 </td>
 <td style="text-align:right;">
--0.010
+0.147
 </td>
 <td style="text-align:right;">
--0.015
+0.009
+</td>
+<td style="text-align:right;">
+-0.063
 </td>
 </tr>
 <tr>
@@ -1140,69 +1140,69 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-7.67
+4.15
 </td>
 <td style="text-align:right;">
--835.757
-</td>
-<td style="text-align:right;">
-NA
+-836.646
 </td>
 <td style="text-align:right;">
 NA
 </td>
 <td style="text-align:right;">
-0.169
+NA
 </td>
 <td style="text-align:right;">
--0.004
+0.184
 </td>
 <td style="text-align:right;">
--0.020
+0.014
+</td>
+<td style="text-align:right;">
+-0.066
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 m17
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 —
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 2dar1
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 ar1
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 —
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 TRUE
 </td>
-<td style="text-align:left;">
-FALSE
+<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+TRUE
 </td>
-<td style="text-align:right;">
-2.75
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+1.03
 </td>
-<td style="text-align:right;">
--834.389
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+-835.450
 </td>
-<td style="text-align:right;">
-NA
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+1.5
 </td>
-<td style="text-align:right;">
-NA
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+-1526.9
 </td>
-<td style="text-align:right;">
-0.016
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+0.056
 </td>
-<td style="text-align:right;">
--0.056
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+-0.046
 </td>
-<td style="text-align:right;">
-0.046
+<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
+0.024
 </td>
 </tr>
 </tbody>
@@ -1224,11 +1224,11 @@ NA
 <div id="retrospective-patterns" class="section level4">
 <h4 class="hasAnchor">
 <a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
-<p>Compared to <code>m1</code>, the retrospective pattern for <code>m8</code> was worse for recruitment (<code>m8</code> 0.31, <code>m1</code> 0.26) but improved for SSB (<code>m8</code> 0.01, <code>m1</code> 0.11) and F (<code>m8</code> -0.03, <code>m1</code> -0.13). In general, models with GSI effects or 2D AR1 deviations on <span class="math inline">\(M\)</span> had reduced retrospective patterns compared to the status quo (<code>m1</code>) and models with 1D AR1 random effects on <span class="math inline">\(M\)</span>. Compare the retrospective patterns of numbers-at-age, SSB, and F for models <code>m1</code> (left, fixed <span class="math inline">\(M_a\)</span>) and <code>m8</code> (right, estimated <span class="math inline">\(M\)</span> + 2D AR1 deviations).</p>
+<p>Compared to <code>m1</code>, the retrospective pattern for <code>m8</code> was slightly worse for recruitment (<code>m8</code> 0.32, <code>m1</code> 0.23) but improved for SSB (<code>m8</code> 0.01, <code>m1</code> 0.07) and F (<code>m8</code> -0.05, <code>m1</code> -0.11). In general, models with GSI effects or 2D AR1 deviations on <span class="math inline">\(M\)</span> had reduced retrospective patterns compared to the status quo (<code>m1</code>) and models with 1D AR1 random effects on <span class="math inline">\(M\)</span>. Compare the retrospective patterns of numbers-at-age, SSB, and F for models <code>m1</code> (left, fixed <span class="math inline">\(M_a\)</span>) and <code>m8</code> (right, estimated <span class="math inline">\(M\)</span> + 2D AR1 deviations).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m8." style="width:45.0%"></p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m8." style="width:45.0%"></p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" alt="Mohn’s rho for F, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png" alt="Mohn’s rho for F, m8." style="width:45.0%"></p>
-<p>It is also worth noting that, although the Hessian was not positive definite, model <code>m17</code> had the lowest retrospective pattern across all numbers-at-age, SSB, and F. Model <code>m17</code> left <span class="math inline">\(M_a\)</span> fixed at the values from the ASAP data file (as in <code>m1</code>) and estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>. This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>.</p>
+<p>Model <code>m17</code> had <span class="math inline">\(\Delta AIC = 1.5\)</span> and the lowest retrospective pattern for all numbers-at-age and F. Model <code>m17</code> left <span class="math inline">\(M_a\)</span> fixed at the values from the ASAP data file (as in <code>m1</code>) and estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>. This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m17." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png" alt="Mohn’s rho for F, m17." style="width:45.0%"></p>
 <div class="figure">
 <img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png" alt="Mohn’s rho for recruitment, m17." style="width:45.0%"><p class="caption">Mohn’s rho for recruitment, m17.</p>
@@ -1239,10 +1239,10 @@ NA
 <a href="#stock-status" class="anchor"></a>Stock status</h4>
 <p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher <em>M</em>, lower and more uncertain <em>F</em>, and higher SSB – a much rosier picture of the stock status through time. Model <code>m17</code> (right) is intermediate between <code>m1</code> and <code>m8</code>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" alt="Relative stock status, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png" alt="Relative stock status, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_relative.png" alt="Relative stock status, m17." style="width:31.0%"></p>
-<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher and more variable reference points, <span class="math inline">\(F_{\%SPR}\)</span> (top), and lower and more variable yield-per-recruit (bottom). Model <code>m17</code> (right) estimated a shift in yield-per-recruit from ~0.10 before 1990 (as in <code>m1</code>) to ~0.05 after 1990 (as in <code>m8</code>).</p>
+<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher and more variable reference points, <span class="math inline">\(F_{\%SPR}\)</span> (top), and lower and more variable yield-per-recruit (bottom). Model <code>m17</code> (right) estimated more of a trend in yield-per-recruit and <span class="math inline">\(F_{\%SPR}\)</span>, with a notable shift around 1990.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png" alt="Reference point variability, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png" alt="Reference point variability, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_annual_time.png" alt="Reference point variability, m17." style="width:31.0%"></p>
-<p>In the final year (2011), <code>m8</code> estimated a lower probability of the stock being overfished (4% vs. 19%).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" alt="Kobe status plot, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" alt="Kobe status plot, m8." style="width:45.0%"></p>
+<p>In the final year (2011), <code>m8</code> and <code>m17</code> both estimated much lower probabilities of the stock being overfished than <code>m1</code> (16% and 21% vs. 98%).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" alt="Kobe status plot, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" alt="Kobe status plot, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Kobe_status.png" alt="Kobe status plot, m17." style="width:31.0%"></p>
 </div>
 <div id="yet-more-m-options" class="section level3">
 <h3 class="hasAnchor">

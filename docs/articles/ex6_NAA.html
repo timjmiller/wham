@@ -171,7 +171,7 @@
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex6_NAA.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>)</pre></body></html></div>
-<p>You can run this entire example script with:</p>
+<p>You can run this entire example script with (total run time about 12 minutes):</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex6_NAA.R"</span>))</pre></body></html></div>
 <p>Let’s create a directory for this analysis:</p>
@@ -271,11 +271,11 @@
 <li>
 <code>ecov$logsigma = "est_1"</code> estimates the GSI observation error (<span class="math inline">\(\sigma_{GSI}\)</span>, one overall value for all years). The other option is <code>"est_re"</code> to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given, so this was not necessary.</li>
 <li>
-<code>ecov$how = 0</code> estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting <code>ecov$how = 2</code> specifies that the GSI affects the Beverton-Holt <span class="math inline">\(b\)</span> parameter (“limiting” / carrying capacity effect).</li>
+<code>ecov$how = 0</code> estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting <code>ecov$how = 2</code> specifies that the GSI affects the Beverton-Holt <span class="math inline">\(\beta\)</span> parameter (“limiting” / carrying capacity effect).</li>
 <li>
-<code>ecov$link_model = "linear"</code> specifies a linear model linking GSI to <span class="math inline">\(b\)</span>.</li>
+<code>ecov$link_model = "linear"</code> specifies a linear model linking GSI to <span class="math inline">\(\beta\)</span>.</li>
 </ul>
-<p>For example, the <code>ecov</code> list for models <code>m8</code>-<code>m13</code> with the linear GSI-<span class="math inline">\(b\)</span> effect:</p>
+<p>For example, the <code>ecov</code> list for models <code>m8</code>-<code>m13</code> with the linear GSI-<span class="math inline">\(\beta\)</span> effect:</p>
 <div class="sourceCode" id="cb14"><html><body><pre class="r">  <span class="co"># example for model m3</span>
   <span class="no">ecov</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
     <span class="kw">label</span> <span class="kw">=</span> <span class="st">"GSI"</span>,
@@ -314,8 +314,8 @@
                               <span class="kw">model_name</span> <span class="kw">=</span> <span class="st">"Ex 6: Numbers-at-age"</span>,
                               <span class="kw">selectivity</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">model</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"age-specific"</span>,<span class="fl">3</span>),
                                 <span class="kw">re</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="st">"none"</span>,<span class="fl">3</span>),
-                                <span class="kw">initial_pars</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>),<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>),<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>)),
-                                <span class="kw">fix_pars</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">4</span>,<span class="fl">5</span>),<span class="fl">4</span>,<span class="fl">2</span>)),
+                                <span class="kw">initial_pars</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>),<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>),<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>)),
+                                <span class="kw">fix_pars</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fl">4</span>:<span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span>:<span class="fl">4</span>)),
                               <span class="kw">NAA_re</span> <span class="kw">=</span> <span class="no">NAA_list</span>,
                               <span class="kw">ecov</span><span class="kw">=</span><span class="no">ecov</span>)
 
@@ -368,9 +368,9 @@
 <h2 class="hasAnchor">
 <a href="#results" class="anchor"></a>7. Results</h2>
 <p>Two models had very similar AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below): <code>m11</code> (all NAA are random effects with correlation by age, GSI-Recruitment effect) and <code>m13</code> (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).</p>
-<p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime by a factor of 2-3 (comparing models <code>m4</code>-<code>m7</code> and <code>m10</code>-<code>m13</code>).</p>
-<p>In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
-<p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment.</p>
+<p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime roughly by a factor of 2 (comparing models <code>m4</code> with <code>m5</code>-<code>m7</code> and <code>m10</code> with <code>m11</code>-<code>m13</code>).</p>
+<p>All models converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
+<p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment. Note that <code>m2</code> is identical to <code>m1</code> except that recruitment deviations are random effects instead of fixed effects. The retrospective patterns are very similar, but <code>m2</code> takes 7x longer to run.</p>
 <table class="table table table-condensed table-responsive">
 <thead><tr>
 <th style="text-align:left;">
@@ -415,167 +415,167 @@ AIC
 </tr></thead>
 <tbody>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.36
+<td style="text-align:right;">
+0.19
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--721.490
+<td style="text-align:right;">
+-714.045
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-1.941
+<td style="text-align:right;">
+5.680
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.052
+<td style="text-align:right;">
+-0.027
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.052
+<td style="text-align:right;">
+0.034
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m2
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 iid
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-3.71
+<td style="text-align:right;">
+1.41
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--608.670
+<td style="text-align:right;">
+-602.862
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-332
+<td style="text-align:left;">
+348.4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1065.3
+<td style="text-align:left;">
+-1057.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-3.290
+<td style="text-align:right;">
+5.193
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.068
+<td style="text-align:right;">
+-0.015
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.024
+<td style="text-align:right;">
+0.014
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m3
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 ar1_y
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-3.54
+<td style="text-align:right;">
+1.36
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--622.626
+<td style="text-align:right;">
+-617.585
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-306
+<td style="text-align:left;">
+320.9
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1091.3
+<td style="text-align:left;">
+-1085.2
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-2.565
+<td style="text-align:right;">
+2.486
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.067
+<td style="text-align:right;">
+-0.013
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.021
+<td style="text-align:right;">
+0.007
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 iid
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.74
+<td style="text-align:right;">
+0.35
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--757.815
+<td style="text-align:right;">
+-761.946
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-35.7
+<td style="text-align:left;">
+32.2
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1361.6
+<td style="text-align:left;">
+-1373.9
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.373
+<td style="text-align:right;">
+0.297
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.062
+<td style="text-align:right;">
+0.039
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.048
+<td style="text-align:right;">
+-0.044
 </td>
 </tr>
 <tr>
@@ -595,356 +595,356 @@ rec+1
 TRUE
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:right;">
-1.77
+0.78
 </td>
 <td style="text-align:right;">
--768.243
+-770.601
 </td>
 <td style="text-align:left;">
-NA
+16.9
 </td>
 <td style="text-align:left;">
-NA
+-1389.2
 </td>
 <td style="text-align:right;">
-0.219
+0.236
 </td>
 <td style="text-align:right;">
-0.060
+0.037
 </td>
 <td style="text-align:right;">
--0.054
+-0.050
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m6
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 ar1_y
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-2.19
+<td style="text-align:right;">
+0.80
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--763.434
+<td style="text-align:right;">
+-765.796
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-26.4
+<td style="text-align:left;">
+26.5
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1370.9
+<td style="text-align:left;">
+-1379.6
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.380
+<td style="text-align:right;">
+0.324
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.031
+<td style="text-align:right;">
+0.014
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.012
+<td style="text-align:right;">
+-0.009
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m7
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 2dar1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 —
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-2.39
+<td style="text-align:right;">
+0.85
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--771.570
+<td style="text-align:right;">
+-772.842
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-12.2
+<td style="text-align:left;">
+14.4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1385.1
+<td style="text-align:left;">
+-1391.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.218
+<td style="text-align:right;">
+0.237
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.034
+<td style="text-align:right;">
+0.015
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.029
+<td style="text-align:right;">
+-0.025
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m8
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 iid
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-3.76
+<td style="text-align:right;">
+1.48
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--623.722
+<td style="text-align:right;">
+-618.835
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-303.9
+<td style="text-align:left;">
+318.4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1093.4
+<td style="text-align:left;">
+-1087.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-1.149
+<td style="text-align:right;">
+1.060
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.089
+<td style="text-align:right;">
+-0.035
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.001
+<td style="text-align:right;">
+0.028
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m9
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 ar1_y
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-3.94
+<td style="text-align:right;">
+1.44
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--626.705
+<td style="text-align:right;">
+-622.069
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-299.9
+<td style="text-align:left;">
+314
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1097.4
+<td style="text-align:left;">
+-1092.1
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
+<td style="text-align:right;">
 1.662
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.061
+<td style="text-align:right;">
+-0.009
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.024
+<td style="text-align:right;">
+0.006
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m10
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 iid
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.77
+<td style="text-align:right;">
+0.36
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--767.957
+<td style="text-align:right;">
+-771.850
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-17.4
+<td style="text-align:left;">
+14.4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1379.9
+<td style="text-align:left;">
+-1391.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.242
+<td style="text-align:right;">
+0.189
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.007
+<td style="text-align:right;">
+0.015
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--0.010
+<td style="text-align:right;">
+-0.017
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 m11
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 ar1_a
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-1.73
+<td style="text-align:right;font-weight: bold;">
+0.75
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--777.633
+<td style="text-align:right;font-weight: bold;">
+-780.027
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 0
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
--1397.3
+<td style="text-align:left;font-weight: bold;">
+-1406.1
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.147
+<td style="text-align:right;font-weight: bold;">
+0.150
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.041
+<td style="text-align:right;font-weight: bold;">
+0.020
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--0.038
+<td style="text-align:right;font-weight: bold;">
+-0.031
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 m12
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 ar1_y
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
+<td style="text-align:left;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-2.31
+<td style="text-align:right;">
+0.81
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
--769.801
+<td style="text-align:right;">
+-772.775
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
-15.7
+<td style="text-align:left;">
+14.5
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;">
--1381.6
+<td style="text-align:left;">
+-1391.6
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.228
+<td style="text-align:right;">
+0.181
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.009
+<td style="text-align:right;">
+0.000
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;">
-0.003
+<td style="text-align:right;">
+0.008
 </td>
 </tr>
 <tr>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 m13
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 2dar1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 rec+1
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 Limiting
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 TRUE
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 TRUE
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-2.49
+<td style="text-align:right;font-weight: bold;">
+0.89
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--778.482
+<td style="text-align:right;font-weight: bold;">
+-780.328
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
-0.3
+<td style="text-align:left;font-weight: bold;">
+1.4
 </td>
-<td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
--1397
+<td style="text-align:left;font-weight: bold;">
+-1404.7
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.116
+<td style="text-align:right;font-weight: bold;">
+0.121
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.023
+<td style="text-align:right;font-weight: bold;">
+0.001
 </td>
-<td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
--0.019
+<td style="text-align:right;font-weight: bold;">
+-0.005
 </td>
 </tr>
 </tbody>
@@ -953,9 +953,9 @@ TRUE
 <h4 class="hasAnchor">
 <a href="#estimated-naa-deviations" class="anchor"></a>Estimated NAA deviations</h4>
 <ul>
-<li>All models estimated positive recruitment (age-1) deviations in the 1970s and 80s (red), and primarily negative deviations since 1990 (blue).</li>
+<li>All models estimated positive recruitment (age-1) deviations in the 1970s and 80s (red), and more negative deviations since 1990 (blue).</li>
 <li>Models with all NAA as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).</li>
-<li>Models with a GSI-Recruitment link had less trend in recruitment deviations, because the GSI effect on expected recruitment accounted for this trend.</li>
+<li>Models with a GSI-Recruitment link had less trend toward negative recruitment deviations, because the GSI effect on expected recruitment accounted for some of this trend.</li>
 </ul>
 <p>Estimated survival deviations by age (y-axis) and year (x-axis) for all models:</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png" style="width:95.0%"></p>
@@ -963,8 +963,8 @@ TRUE
 <div id="retrospective-patterns" class="section level4">
 <h4 class="hasAnchor">
 <a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
-<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (<span class="math inline">\(\rho_R\)</span> = 1.94). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m4-7</code> and <code>m10-13</code> all below 0.38). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
-<p>Comparing <code>m11</code> and <code>m13</code>, the two best models with similar AIC, <code>m13</code> had lower retrospective patterns (<span class="math inline">\(\rho_R\)</span>, <span class="math inline">\(\rho_{SSB}\)</span>, and <span class="math inline">\(\rho_{\overline{F}}\)</span>).</p>
+<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (<span class="math inline">\(\rho_R\)</span> = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m4-7</code> and <code>m10-13</code> all below 0.32). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(\abs{\rho_{SSB}}\)</span> and <span class="math inline">\(\abs{\rho_{\overline{F}}}\)</span> were negligible for <code>m4-7</code>, &lt; 0.05).</p>
+<p>Comparing <code>m11</code> and <code>m13</code>, the models with lowest AIC, <code>m13</code> had slightly lower Mohn’s <span class="math inline">\(\rho_R\)</span>, <span class="math inline">\(\rho_{SSB}\)</span>, and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
 <p>The plots below compare retrospective patterns from the base model (<code>m1</code>, left) to those from the full model (<code>m13</code>, right).</p>
 <div id="numbers-at-age-naa" class="section level6">
 <h6>Numbers-at-age, NAA</h6>
@@ -988,9 +988,9 @@ TRUE
 <div id="stock-status" class="section level4">
 <h4 class="hasAnchor">
 <a href="#stock-status" class="anchor"></a>Stock status</h4>
-<p>The state-space models, with or without the GSI-Recruitment link, estimated substantially different trends in <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> compared to the base model. Left: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the base model, <code>m1</code>. Right: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the state-space model without GSI effect, <code>m7</code>.</p>
+<p>The state-space models, with or without the GSI-Recruitment link, estimated similar but slightly exaggerated trends in <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> compared to the base model. Left: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the base model, <code>m1</code>. Right: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the state-space model without GSI effect, <code>m7</code>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png" style="width:45.0%"></p>
-<p>Adding the GSI-Recruitment link to the state-space model estimated a lower probability of the stock being overfished in the final year, 2016 (<code>m7</code> w/o GSI, 66%, left; <code>m13</code> w/ GSI, 10%, right).</p>
+<p>Adding the GSI-Recruitment link to the state-space model did not impact the probability that the stock was overfished or experiencing overfishing in the final year, 2016 (<code>m7</code> w/o GSI, left; <code>m13</code> w/ GSI, right).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" alt="Kobe status plot, m7." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" alt="Kobe status plot, m13." style="width:45.0%"></p>
 </div>
 </div>

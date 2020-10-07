@@ -148,8 +148,8 @@
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex1_SNEMA_yellowtail_flounder.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">wham.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span>(<span class="st">"wham"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>)
-<span class="co">#&gt; [1] "/tmp/Rtmp7Zajl8/temp_libpath12cb5c2439bc/wham/example_scripts"</span></pre></body></html></div>
-<p>You can run this entire example script with:</p>
+<span class="co">#&gt; [1] "/tmp/RtmpjLPb6F/temp_libpath7da66d9f1c94/wham/example_scripts"</span></pre></body></html></div>
+<p>You can run this entire example script with (2.0 min runtime):</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">write.dir</span> <span class="kw">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="fu"><a href="https://rdrr.io/r/base/source.html">source</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_SNEMA_yellowtail_flounder.R"</span>))</pre></body></html></div>
 <p>Let’s create a directory for this analysis:</p>
@@ -202,7 +202,7 @@
 <p>We need to check that <code>m1</code> converged (<code>m1$opt$convergence</code> should be 0, and the maximum absolute value of the gradient vector should be &lt; 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> includes a <code>do.check</code> option to run Jim Thorson’s useful function <a href="https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R">TMBhelper::Check_Identifiable()</a>. <code>do.check = FALSE</code> by default. To turn on, set <code>do.check = TRUE</code>. See <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
 <div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span>(<span class="no">m1</span>)</pre></body></html></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.04e-07 
+#&gt; Maximum gradient component: 1.20e-07 
 #&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <div id="fit-models-m2-m4" class="section level3">
@@ -222,8 +222,8 @@
 <p>Check that <code>m2</code> converged:</p>
 <div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span>(<span class="no">m2</span>)</pre></body></html></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.06e-12 
-#&gt; Max gradient parameter: catch_paa_pars 
+#&gt; Maximum gradient component: 4.96e-12 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <p>The third, <code>m3</code>, is a full state-space model where numbers at all ages are random effects (<code>NAA_re$sigma = "rec+1"</code>):</p>
 <div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">input3</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span>(<span class="no">asap3</span>, <span class="kw">recruit_model</span><span class="kw">=</span><span class="fl">2</span>, <span class="kw">model_name</span><span class="kw">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
@@ -236,8 +236,8 @@
 <p>Check that <code>m3</code> converged:</p>
 <div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span>(<span class="no">m3</span>)</pre></body></html></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.43e-07 
-#&gt; Max gradient parameter: logit_q 
+#&gt; Maximum gradient component: 2.67e-06 
+#&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <p>The last, <code>m4</code>, is like <code>m3</code>, but again changes all the age composition likelihoods to logistic normal:</p>
 <div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="no">input4</span> <span class="kw">=</span> <span class="no">input3</span>
@@ -252,8 +252,8 @@
 <p>Check that <code>m4</code> converged:</p>
 <div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span>(<span class="no">m4</span>)</pre></body></html></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.86e-06 
-#&gt; Max gradient parameter: logit_q 
+#&gt; Maximum gradient component: 2.32e-07 
+#&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <p>Store all models together in one (named) list:</p>
 <div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">mods</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">m1</span><span class="kw">=</span><span class="no">m1</span>, <span class="kw">m2</span><span class="kw">=</span><span class="no">m2</span>, <span class="kw">m3</span><span class="kw">=</span><span class="no">m3</span>, <span class="kw">m4</span><span class="kw">=</span><span class="no">m4</span>)</pre></body></html></div>
@@ -267,10 +267,10 @@
 <p>We can compare models using AIC and Mohn’s rho:</p>
 <div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span>(<span class="no">mods</span>, <span class="kw">fname</span><span class="kw">=</span><span class="st">"model_comparison"</span>, <span class="kw">sort</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
 <pre><code>#&gt;      dAIC     AIC  rho_R rho_SSB rho_Fbar
-#&gt; m4    0.0 -1466.9 0.3610  0.0091  -0.0106
-#&gt; m2  294.2 -1172.7 3.1632 -0.0715  -0.0184
-#&gt; m3 5574.0  4107.1 0.1287  0.0304  -0.0162
-#&gt; m1 6313.4  4846.5 0.8207  0.1905  -0.2322</code></pre>
+#&gt; m4    0.0 -1475.5 0.2918  0.0240  -0.0247
+#&gt; m2  302.8 -1172.7 3.1666 -0.0708   0.1510
+#&gt; m3 5575.9  4100.4 0.1124  0.0056  -0.0056
+#&gt; m1 6322.0  4846.5 0.8207  0.1905  -0.1748</code></pre>
 <div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="no">res</span>$<span class="no">best</span></pre></body></html></div>
 <pre><code>#&gt; [1] "m4"</code></pre>
 <p>By default, <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> sorts the model comparison table with lowest (best) AIC at the top, and saves it as <code>model_comparison.csv</code>. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. <code>m1</code> vs. <code>m3</code> (both multinomial) and <code>m2</code> vs. <code>m4</code> (both logistic normal).</p>

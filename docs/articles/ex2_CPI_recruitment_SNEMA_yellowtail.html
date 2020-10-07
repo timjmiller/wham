@@ -292,44 +292,44 @@
 <span class="kw">for</span>(<span class="no">m</span> <span class="kw">in</span> <span class="fl">1</span>:<span class="no">n.mods</span>) <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"Model "</span>,<span class="no">m</span>,<span class="st">":"</span>), <span class="no">vign2_conv</span><span class="kw">[[</span><span class="no">m</span>]], <span class="st">""</span>, <span class="kw">sep</span><span class="kw">=</span><span class="st">'\n'</span>)</pre></body></html></div>
 <pre><code>#&gt; Model 1:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.48e-10 
+#&gt; Maximum gradient component: 1.16e-09 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 2:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 6.28e-09 
-#&gt; Max gradient parameter: log_NAA_sigma 
+#&gt; Maximum gradient component: 1.10e-09 
+#&gt; Max gradient parameter: F_devs 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 3:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 4.09e-10 
+#&gt; Maximum gradient component: 4.92e-10 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 4:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.60e-10 
+#&gt; Maximum gradient component: 8.37e-10 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 5:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.99e-10 
-#&gt; Max gradient parameter: logit_selpars 
+#&gt; Maximum gradient component: 9.77e-11 
+#&gt; Max gradient parameter: F_devs 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 6:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.64e-10 
+#&gt; Maximum gradient component: 1.20e-09 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 7:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.20e-10 
-#&gt; Max gradient parameter: logit_selpars 
+#&gt; Maximum gradient component: 1.66e-09 
+#&gt; Max gradient parameter: F_devs 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 </div>
 <div id="compare-models" class="section level2">
@@ -349,21 +349,21 @@
 
 <span class="no">df.mods</span></pre></body></html></div>
 <pre><code>#&gt;    Model Recruitment Ecov_process    Ecov_how      NLL dAIC     AIC  rho_R
-#&gt; m6    m6    Bev-Holt          ar1 Controlling -824.636  0.0 -1509.3 0.2084
-#&gt; m7    m7      Ricker          ar1 Controlling -824.196  0.9 -1508.4 0.2058
-#&gt; m5    m5    Bev-Holt          ar1    Limiting -824.098  1.1 -1508.2 0.2159
-#&gt; m4    m4    Bev-Holt           rw    Limiting -813.377 20.5 -1488.8 0.2157
-#&gt; m2    m2      Random           rw Controlling -810.097 25.1 -1484.2 0.2310
-#&gt; m3    m3    Bev-Holt           rw         --- -808.046 29.2 -1480.1 0.2331
-#&gt; m1    m1      Random           rw         --- -803.139 37.0 -1472.3 0.2592
+#&gt; m6    m6    Bev-Holt          ar1 Controlling -829.662  0.0 -1519.3 0.1909
+#&gt; m5    m5    Bev-Holt          ar1    Limiting -829.235  0.8 -1518.5 0.1970
+#&gt; m7    m7      Ricker          ar1 Controlling -829.061  1.2 -1518.1 0.1899
+#&gt; m4    m4    Bev-Holt           rw    Limiting -818.535 20.2 -1499.1 0.1965
+#&gt; m2    m2      Random           rw Controlling -815.937 23.4 -1495.9 0.2046
+#&gt; m3    m3    Bev-Holt           rw         --- -812.993 29.3 -1490.0 0.2133
+#&gt; m1    m1      Random           rw         --- -808.943 35.4 -1483.9 0.2308
 #&gt;    rho_SSB rho_Fbar runtime
-#&gt; m6  0.1037  -0.1154     1.6
-#&gt; m7  0.1002  -0.1124     1.7
-#&gt; m5  0.1087  -0.1197     1.7
-#&gt; m4  0.1091  -0.1201     1.7
-#&gt; m2  0.1151  -0.1274     1.4
-#&gt; m3  0.1060  -0.1167     1.5
-#&gt; m1  0.1124  -0.1264     1.3</code></pre>
+#&gt; m6  0.0633  -0.1023     0.3
+#&gt; m5  0.0665  -0.1055     0.3
+#&gt; m7  0.0607  -0.0998     0.4
+#&gt; m4  0.0668  -0.1057     0.3
+#&gt; m2  0.0696  -0.1108     0.2
+#&gt; m3  0.0659  -0.1039     0.3
+#&gt; m1  0.0682  -0.1106     0.2</code></pre>
 </div>
 <div id="results" class="section level2">
 <h2 class="hasAnchor">
@@ -377,20 +377,20 @@
 <p>Models that included an effect of the Cold Pool Index on recruitment were strongly supported by AIC over models without CPI effects (<code>m2</code> and <code>m4-7</code> lower AIC than <code>m1</code> and <code>m3</code>). Note that we can compare models with and without a CPI effect on recruitment using AIC because we also fit the CPI data in the models without the effect (<code>m1</code> and <code>m3</code>).</p>
 <p>Comparing <code>m4</code> and <code>m5</code> demonstrates that the CPI was best modeled as an AR1 process (<code>m5</code>) instead of a random walk (<code>m4</code>), since this was the only difference between the two models and <code>m5</code> had lower AIC. In addition, the one-step-ahead residuals for the CPI from <code>m5</code> (right) are smaller and conform more closely to a normal distribution than in <code>m4</code> (left):</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSAresid_ecov_m4.png" alt="OSA residuals for the CPI, model 4." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSAresid_ecov_m5.png" alt="OSA residuals for the CPI, model 5." style="width:45.0%"></p>
-<p>Compared to the base model (<code>m1</code>, left), the best model that included CPI and SSB effects on recruitment, (<code>m6</code>, right) reduced the retrospective pattern in recruitment, <span class="math inline">\(\rho_R\)</span>, from 0.259 to 0.208.</p>
+<p>Compared to the base model (<code>m1</code>, left), the best model that included CPI and SSB effects on recruitment, (<code>m6</code>, right) reduced the retrospective pattern in recruitment, <span class="math inline">\(\rho_R\)</span>, very slightly from 0.231 to 0.191.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m1.png" alt="Retrospective pattern in recruitment, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m6.png" alt="Retrospective pattern in recruitment, m6." style="width:45.0%"></p>
 </div>
 <div id="recruitment" class="section level3">
 <h3 class="hasAnchor">
 <a href="#recruitment" class="anchor"></a>Recruitment</h3>
-<p>Beverton-Holt recruitment was strongly preferred over random (<code>m4</code> lower AIC than <code>m2</code>) and weakly preferred over Ricker (<code>m6</code> lower AIC than <code>m7</code>). Models that included both Bev-Holt and CPI effects on recruitment had lower AIC than the model with Bev-Holt but without the CPI (<code>m4</code> vs. <code>m3</code>). Adding the CPI effect to the Bev-Holt explains some of the variability around the stock-recruit curve, which resulted in <code>m4</code> (right) estimating lower <span class="math inline">\(\sigma^2_R\)</span> than <code>m3</code> (left).</p>
+<p>Beverton-Holt recruitment was preferred over random (<code>m4</code> lower AIC than <code>m2</code>) and weakly preferred over Ricker (<code>m6</code> lower AIC than <code>m7</code>). Models that included both Bev-Holt and CPI effects on recruitment had lower AIC than the model with Bev-Holt but without the CPI (<code>m4</code> vs. <code>m3</code>). Adding the CPI effect to the Bev-Holt explains some of the variability around the stock-recruit curve, which resulted in <code>m4</code> (right) estimating lower <span class="math inline">\(\sigma^2_R\)</span> than <code>m3</code> (left).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_m3.png" alt="Bev-Holt fit from m3, without a CPI effect." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_m4.png" alt="Bev-Holt fit from m4, WITH a CPI effect." style="width:45.0%"></p>
-<p>There was weak evidence that the Cold Pool <em>controls</em> recruitment, as opposed to <em>limiting</em> recruitment (<code>m5</code> vs. <code>m6</code>). The hypothesis that the CPI indicates the amount of suitable habitat for juvenile yellowtail flounder corresponds to a limiting effect, as in <code>m5</code>. In contrast, a controlling effect (as in <code>m6</code>) causes density-independent mortality. For more explanation, see <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles &amp; Beverton (1998)</a>.</p>
+<p>There was very weak evidence that the Cold Pool <em>controls</em> recruitment, as opposed to <em>limiting</em> recruitment (<code>m5</code> vs. <code>m6</code>). The hypothesis that the CPI indicates the amount of suitable habitat for juvenile yellowtail flounder corresponds to a limiting effect, as in <code>m5</code>. In contrast, a controlling effect (as in <code>m6</code>) causes density-independent mortality. For more explanation, see <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles &amp; Beverton (1998)</a>.</p>
 </div>
 <div id="stock-status" class="section level3">
 <h3 class="hasAnchor">
 <a href="#stock-status" class="anchor"></a>Stock status</h3>
-<p>Whether or not to include the CPI had a greater influence on estimated stock status than whether, or how, to include a stock-recruit function. Specifically, the models differed in their estimation of the probability that the stock was overfished, <span class="math inline">\(Pr[SSB &lt; 0.5 \: SSB_{40\%}]\)</span>. Models that did <em>not</em> include an effect of the CPI on recruitment estimated <em>higher</em> probability that the stock was overfished (top row: <code>m1</code> = 0.11 and <code>m3</code> = 0.45; bottom row: <code>m2</code> = 0.01, <code>m4</code> = 0.02, and <code>m6</code> = 0.04). All models estimated with 100% probability that the stock was not experiencing overfishing in 2011, <span class="math inline">\(F &lt; F_{40\%}\)</span>.</p>
+<p>Whether or not to include a stock-recruit function and/or the CPI did not have a great influence on estimated stock status. Specifically, the models hardly differed in their estimation of the probability that the stock was overfished, <span class="math inline">\(Pr[SSB &lt; 0.5 \: SSB_{40\%}]\)</span>. All models estimated with 100% probability that the stock was not experiencing overfishing in 2011, <span class="math inline">\(F &lt; F_{40\%}\)</span>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m1.png" alt="Stock status, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m3.png" alt="Stock status, m3." style="width:45.0%"></p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m2.png" alt="Stock status, m2." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m4.png" alt="Stock status, m4." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m6.png" alt="Stock status, m6." style="width:30.0%"></p>
 </div>
