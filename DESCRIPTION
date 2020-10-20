@@ -23,19 +23,19 @@ Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structu
 Depends:
     R (>= 3.6.0)
 Imports:
-    TMB (>= 1.7.16),
+    TMB (>= 1.7.18),
     plotrix (>= 3.7-5),
     ellipse (>= 0.4.1),
-    Hmisc (>= 4.2-0),
+    Hmisc (>= 4.4-1),
     gplots (>= 3.0.1.1),
     fields (>= 9.6),
     RColorBrewer (>= 1.1-2),
     colorspace (>= 1.4-1),
     mnormt (>= 1.5-5),
     Deriv (>= 3.8.5),
-    tidyr (>= 1.0.2),
-    dplyr (>= 0.8.5),
-    ggplot2 (>= 3.3.0),
+    tidyr (>= 1.1.2),
+    dplyr (>= 1.0.2),
+    ggplot2 (>= 3.3.2),
     TMBhelper (>= 1.1.0),
     viridis (>= 0.5.1)
 Remotes: 

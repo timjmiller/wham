@@ -731,7 +731,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x[data$use_agg_catch==0] <- NA # can't fit to fleets/years with 0 catch
   colnames(x) <- paste0("fleet_", 1:data$n_fleets)
   x$year <- 1:data$n_years_catch
-  tmp <- tidyr::gather(x, fleet, val, -year)
+  # tmp <- tidyr::gather(x, fleet, val, -year) # gather no longer supported...
+  tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
   tmp <- tmp[complete.cases(tmp),]  
   tmp$val <- log(tmp$val) # all obs of 0 catch should have use_agg_catch==0, turned to NA, and removed
   tmp$age <- NA
@@ -743,7 +744,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x[data$use_indices==0] <- NA # only include index data to fit in obsvec
   colnames(x) <- paste0("index_", 1:data$n_indices)
   x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-  tmp <- tidyr::gather(x, fleet, val, -year)
+  # tmp <- tidyr::gather(x, fleet, val, -year)
+  tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
   tmp <- tmp[complete.cases(tmp),]
   tmp$val <- log(tmp$val) # all obs of 0 catch should have use_indices==0, turned to NA, and already removed
   tmp$age <- NA
@@ -757,7 +759,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
     # x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
     x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
-    tmp <- tidyr::gather(x, fleet, val, -year)
+    # tmp <- tidyr::gather(x, fleet, val, -year)
+    tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
     tmp <- tmp[complete.cases(tmp),]
     tmp$age <- NA
     tmp$type <- "Ecov"
@@ -844,7 +847,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(recruit_model==4) par$mean_rec_pars[2] = -10
   # par$logit_q = rep(-8, data$n_indices) # old
   gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
-  par$logit_q = gen.logit(asap3$q_ini, data$q_lower, data$q_upper) # use q_ini values from asap3 file
+  par$logit_q <- data$q_lower # rep(0, n_indices)
+  for(i in 1:data$n_indices) par$logit_q[i] = gen.logit(asap3$q_ini[i], data$q_lower[i], data$q_upper[i]) # use q_ini values from asap3 file
   # par$log_F1 = rep(-2, data$n_fleets) # old
   par$log_F1 = log(asap3$F1_ini) # use F1_ini values from asap3 file  
   par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
