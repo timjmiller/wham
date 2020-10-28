@@ -337,22 +337,26 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
   age_specific <- which(data$selblock_models==1)
   for(b in age_specific){
-    ind = list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
-    ind$indices = which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
-    paa = matrix(nrow = 0, ncol = data$n_ages)
-    if(length(ind$fleets)) for(f in ind$fleets)
-    {
-      y = data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
-      paa = rbind(paa,y)
+    if(all(phase_selpars[b,] < 0)){ # if no selpars estimated, keep fixed at specified initial values
+      phase_selpars[b,] = -1
+    } else {
+      ind = list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
+      ind$indices = which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
+      paa = matrix(nrow = 0, ncol = data$n_ages)
+      if(length(ind$fleets)) for(f in ind$fleets)
+      {
+        y = data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
+        paa = rbind(paa,y)
+      }
+      if(length(ind$indices)) for(i in ind$indices)
+      {
+        y = data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
+        paa = rbind(paa,y)
+      }
+      y = apply(paa,2,sum)
+      selpars_ini[b, which(y < 1e-5)] = 0
+      phase_selpars[b, which(y < 1e-5)] = -1
     }
-    if(length(ind$indices)) for(i in ind$indices)
-    {
-      y = data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
-      paa = rbind(paa,y)
-    }
-    y = apply(paa,2,sum)
-    selpars_ini[b, which(y < 1e-5)] = 0
-    phase_selpars[b, which(y < 1e-5)] = -1
   }
   data$selpars_est <- phase_selpars
   data$selpars_est[data$selpars_est == -1] = 0
@@ -1061,6 +1065,9 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
 }
 
+# function to calcluate reference age for age comp data
+#   returns max(age) with non-zero catch for each index/fleet and year
+#   -1 if not more than 1 age with non-zero catch (acomp not fit)
 get_aref_fn = function(paa){
   n_years = NROW(paa)
   n_ages = NCOL(paa)
