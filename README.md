@@ -49,6 +49,13 @@ setwd("choose/where/to/save/output")
 source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
 ```
 
+You can run ALL examples with (takes 1 hour):
+```
+library(wham)
+wham.dir <- find.package("wham")
+source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
+```
+
 ## Install details
 
 Installation from GitHub does not include the vignettes by default because they can be accessed online anytime at https://timjmiller.github.io/wham/articles. If you want to build the vignettes locally, they look best if you *build using R Studio*:

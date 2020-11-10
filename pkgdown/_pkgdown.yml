@@ -45,7 +45,13 @@ articles:
       These vignettes provide an introduction to fitting state-space assessment
       models using the **WHAM** package. They get progressively more complex, so
       we advise working through them in order unless you are only interested in
-      a specific topic.
+      a specific topic.<br/>
+      <br/>
+      To run ALL examples (takes ~1 hour):<br/>
+      `# setwd("choose/where/to/save/output") # otherwise in working directory`<br/>
+      `library(wham)`<br/>
+      `wham.dir <- find.package("wham")`<br/>
+      `source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))`<br/>
     contents:
       - ex1_SNEMA_yellowtail_flounder
       - ex2_CPI_recruitment_SNEMA_yellowtail
