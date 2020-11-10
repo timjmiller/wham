@@ -21,7 +21,7 @@ plot_wham_output(
 
 \item{res}{resolution to save .png files (dpi)}
 
-\item{plot.opts}{list, named element \code{$ages.lab} character vector will change age labels in plots (default is \code{1:n.ages})}
+\item{plot.opts}{(optional) list of plot modifications}
 }
 \description{
 Generates many output plots for a fit WHAM model.
@@ -31,6 +31,12 @@ Generates many output plots for a fit WHAM model.
 creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
 \code{out.type = 'html'} (default) makes an html file for viewing these .png files in a browser
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
+
+\code{plot.opts} holds optional arguments to modify plots:
+  \describe{
+    \item{\code{$ages.lab}}{Character vector, will change age labels in plots (default is \code{1:n.ages}).}
+    \item{\code{$font.family}}{Font family, e.g. \code{"Times"}.}
+  }
 
 Plot functions are located in \code{wham_plots_tables.R}
 }
