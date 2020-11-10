@@ -141,6 +141,8 @@ df.mods
 library(tidyverse)
 library(viridis)
 
+# selAA block 1 plots
+selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
 sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
 sel_cor <- factor(c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])], levels=c("None","IID","AR1","AR1_y","2D AR1"))
 df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))

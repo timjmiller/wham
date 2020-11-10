@@ -22,6 +22,8 @@ navbar:
          href: articles/ex5_GSI_M.html
       -  text: "Ex 6: Numbers-at-age / survival deviations as random effects"
          href: articles/ex6_NAA.html
+      -  text: "Ex 7: Debugging WHAM models"
+         href: articles/ex7_debug.html
 
     - text: "Functions"
       icon: fa-file-code-o
@@ -59,6 +61,7 @@ articles:
       - ex4_selectivity
       - ex5_GSI_M
       - ex6_NAA
+      - ex7_debug
 
 reference:
   - title: Functions that users call directly

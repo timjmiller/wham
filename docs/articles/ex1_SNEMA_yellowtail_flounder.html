@@ -68,6 +68,9 @@
     <li>
       <a href="../articles/ex6_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
     </li>
+    <li>
+      <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -154,7 +157,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/tmp/RtmpEgHUmX/temp_libpath11936e414517/wham/example_scripts"</span></code></pre></div>
+<span class="co">#&gt; [1] "/tmp/Rtmp3mGkDH/temp_libpath31c27054ca40/wham/example_scripts"</span></code></pre></div>
 <p>You can run this entire example script with (2.0 min runtime):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
@@ -176,7 +179,7 @@
 <span class="co">#&gt;  [1] "CPI.csv"                "ex1_SNEMAYT.dat"        "ex1_test_results.rds"  </span>
 <span class="co">#&gt;  [4] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
 <span class="co">#&gt;  [7] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
-<span class="co">#&gt; [10] "GSI.csv"</span></code></pre></div>
+<span class="co">#&gt; [10] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
