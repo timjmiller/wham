@@ -213,7 +213,7 @@ for(m in 1:n.mods){
     lag = 0, # GSI in year t affects M in same year
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
     where = "M", # GSI affects natural mortality
-    how = ifelse(df.mods$Ecov_link[m]==0,0,1),
+    how = ifelse(df.mods$Ecov_link[m]==0,0,1), # 0 = no effect (but still fit Ecov to compare AIC), 1 = mean
     link_model = c(NA,"linear","poly-2")[df.mods$Ecov_link[m]+1])
 
   m_model <- df.mods$M_model[m]

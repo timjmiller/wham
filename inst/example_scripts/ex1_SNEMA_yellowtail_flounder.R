@@ -4,7 +4,7 @@ library(wham)
 # create directory for analysis, E.g.,
 #write.dir <- "/path/to/save/output"
 if(!exists("write.dir")) write.dir = getwd()
-dir.create(write.dir)
+if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 # copy asap3 data file to working directory

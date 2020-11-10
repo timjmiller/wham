@@ -230,9 +230,6 @@ for(m in 1:n.mods){
   # Save model
   saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
 
-  # If desired, plot output in new subfolder
-  # plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='html')
-  
   # If desired, do projections
   # mod_proj <- project_wham(mod)
   # saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))
@@ -275,6 +272,16 @@ Look at results table.
 df.mods
 ```
 
+Plot output for models that converged.
+
+```{r eval=FALSE}
+conv_mods <- which(df.mods$pdHess)
+mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
+for(m in conv_mods){
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
+}
+```
+
 ## 7. Results
 
 Two models had very similar AIC and were overwhelmingly supported relative to the other models (**bold** in table below): `m11` (all NAA are random effects with correlation by age, GSI-Recruitment effect) and `m13` (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).
@@ -304,16 +311,16 @@ vign6_res %>%
 #### Estimated NAA deviations
 
 - All models estimated positive recruitment (age-1) deviations in the 1970s and 80s (red), and more negative deviations since 1990 (blue).
-- Models with all NAA as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).
-- Models with a GSI-Recruitment link had less trend toward negative recruitment deviations, because the GSI effect on expected recruitment accounted for some of this trend.
+- Models with all numbers-at-age as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).
+- Models with a GSI-Recruitment link also had extreme recruitment deviations, because the GSI effect on expected recruitment accounted for some of this variability.
 
-Estimated survival deviations by age (y-axis) and year (x-axis) for all models:
+Estimated survival deviations by age (y-axis) and year (x-axis) for all converged models:
 
 ![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png){ width=95% }
 
 #### Retrospective patterns
 
-The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m4-7` and `m10-13` all below 0.32).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $\abs{\rho_{SSB}}$ and $\abs{\rho_{\overline{F}}}$ were negligible for `m4-7`, < 0.05). 
+The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m4-7` and `m10-13` all below 0.32).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $|\rho_{SSB}|$ and $|\rho_{\overline{F}}|$ were negligible for `m4-7`, < 0.05). 
 
 Comparing `m11` and `m13`, the models with lowest AIC, `m13` had slightly lower Mohn's $\rho_R$, $\rho_{SSB}$, and $\rho_{\overline{F}}$.
 

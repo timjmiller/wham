@@ -20,7 +20,7 @@ library(wham)
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
 if(!exists("write.dir")) write.dir = getwd()
-dir.create(write.dir)
+if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 wham.dir <- find.package("wham")
@@ -122,9 +122,10 @@ rownames(df.mods) <- NULL
 # look at results table
 df.mods
 
-# plot output for all models
+# plot output for all models that converged
+conv_mods <- which(df.mods$pdHess)
 mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
-for(m in 1:n.mods){
+for(m in conv_mods){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
 }
 
@@ -138,39 +139,41 @@ n_years = length(years)
 n_ages = mods[[1]]$env$data$n_ages
 ages <- 1:n_ages
 
-plot.mods <- 2:n.mods # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
+plot.mods <- conv_mods[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
 NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
 NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
 GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[df.mods$GSI_how[plot.mods]/2+1]
 NAA_lab <- paste(NAA_mod,NAA_cor,sep=" + ") # duplicate by GSI, for facet_grid
 df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
 colnames(df.NAA) <- c(paste0("Age_",1:n_ages),"Year","GSI_how","NAA_lab")
-for(i in plot.mods){
-  tmp = as.data.frame(mods[[i]]$rep$NAA_devs)
+for(i in 1:length(plot.mods)){
+  tmp = as.data.frame(mods[[plot.mods[i]]]$rep$NAA_devs)
   tmp$Year <- years
   colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
-  tmp$GSI_how = GSI_how[i-1]
-  tmp$NAA_lab = NAA_lab[i-1]
+  tmp$GSI_how = GSI_how[i]
+  tmp$NAA_lab = NAA_lab[i]
   df.NAA <- rbind(df.NAA, tmp)
 }
 df.plot <- df.NAA %>% tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
           names_to = "Age",
           names_prefix = "Age_",
-          names_ptypes = list(Age = integer()),
+          names_transform = list(Age = as.integer),
           values_to = "NAA_re")
-df.plot$GSI_how <- factor(as.character(df.plot$GSI_how), levels=unique(df.plot$GSI_how))
-df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=unique(df.plot$NAA_lab))
+NAA_lab_levels <- c("RE: Recruit + IID","RE: Recruit + AR1_y","RE: all NAA + IID","RE: all NAA + AR1_a","RE: all NAA + AR1_y","RE: all NAA + 2D AR1")
+GSI_lab_levels <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")
+df.plot$GSI_how <- factor(as.character(df.plot$GSI_how), levels=GSI_lab_levels)
+df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=NAA_lab_levels)
 df.plot$NAA_re[df.plot$NAA_lab %in% c("RE: Recruit + IID","RE: Recruit + AR1_y") & df.plot$Age > 1] = 0
 
-png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 10, height = 11, res = 200, units='in')
+png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 8, height = 8.5, res = 200, units='in')
     print(ggplot(df.plot, ggplot2::aes(x=Year, y=Age)) +
       geom_tile(aes(fill=NAA_re)) +
       geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
-          data=data.frame(Year=1976.5, Age=5.8, lab=df.mods$Model[plot.mods], NAA_lab=NAA_lab, GSI_how=GSI_how)) +                
+          data=data.frame(Year=1976.5, Age=5.8, lab=df.mods$Model[plot.mods], NAA_lab=factor(NAA_lab, levels=NAA_lab_levels), GSI_how=factor(GSI_how, levels=GSI_lab_levels))) +                
       scale_x_continuous(expand=c(0,0)) +
       scale_y_continuous(expand=c(0,0)) +
       theme_bw() +
       facet_grid(rows=vars(NAA_lab), cols=vars(GSI_how), drop=F) +
-      scale_fill_gradient2(name = "NAA devs", low = scales::muted("blue"), mid = "white", high = scales::muted("red")))
+      scale_fill_gradient2(name = "", low = scales::muted("blue"), mid = "white", high = scales::muted("red")))
 dev.off()
 

@@ -12,7 +12,7 @@ library(wham)
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
 if(!exists("write.dir")) write.dir = getwd()
-dir.create(write.dir)
+if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 # ---------------------------------------------------------

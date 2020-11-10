@@ -7,7 +7,7 @@ library(viridis)
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
 if(!exists("write.dir")) write.dir = getwd()
-dir.create(write.dir)
+if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 wham.dir <- find.package("wham")
@@ -59,7 +59,6 @@ for(m in 1:n.mods){
     logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
     year = env.dat$year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    # lag = 1, # GSI in year t affects Rec in year t + 1
     lag = 0, # GSI in year t affects M in same year
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
     where = "M", # GSI affects natural mortality
@@ -76,11 +75,15 @@ for(m in 1:n.mods){
     re = df.mods$M_re[m],
     est_ages = est_ages
   )
-  if(m_model %in% c("constant","weight-at-age")) M$initial_means = 0.28
+  if(m_model == "constant") M$initial_means = 0.28
 
   # Generate wham input from ASAP3 and Ecov data
+  # input <- prepare_wham_input(asap3, recruit_model = 2,
+  #                             model_name = "Ex 5: Yellowtail Flounder with GSI effects on M",
+  #                             ecov = ecov,
+  #                             M = M)
   input <- prepare_wham_input(asap3, recruit_model = 2,
-                              model_name = "Ex 5: Yellowtail Flounder with GSI effects on M",
+                              model_name = "Ex 5: GSI effects on M",
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
@@ -174,7 +177,7 @@ ecov_link[ecov_link=="---"] = "no"
 M_mod <- c("constant","age-specific","weight-at-age")[sapply(mods, function(x) x$env$data$M_model)]
 M_mod[sapply(mods, function(x) unique(x$env$data$M_est)) == 0] = "fixed"
 M_re <- c("no","IID","AR1_a","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$M_re_model)]
-df.MAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
+df.MAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
 colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year","Model","pdHess")
 for(i in 1:n.mods){
   tmp = as.data.frame(mods[[i]]$rep$MAA)
@@ -187,9 +190,8 @@ for(i in 1:n.mods){
 df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model,pdHess),
           names_to = "Age",
           names_prefix = "Age_",
-          names_ptypes = list(Age = integer()),
+          names_transform = list(Age = as.integer),
           values_to = "M")
-# df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m11: constant + linear GSI link + 2D AR1 devs","m7: constant + no GSI link + AR1_y devs"))
 df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m13: age-specific + poly-2 GSI link + 2D AR1 devs","m11: constant + linear GSI link + 2D AR1 devs"))
 df.plot2$Model <- factor(as.character(df.plot2$Model), levels=unique(df.plot2$Model))
 df.plot2$logM <- log(df.plot2$M)
