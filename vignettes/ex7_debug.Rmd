@@ -1,0 +1,48 @@
+---
+title: "Debugging WHAM models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Debugging WHAM models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+wham.dir <- find.package("wham")
+knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+library(knitr)
+library(kableExtra)
+```
+
+In this vignette we show how to use the `do.fit = FALSE` flag to debug a WHAM model.
+
+```{r message=FALSE}
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(wham)
+```
+
+Load the ASAP3 data file.
+
+```{r}
+asap3 <- read_asap3_dat("ex7_SNEMAYT.dat")
+```
+
+Prepare the WHAM model (`m3` from [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html)).
+
+```{r}
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+                              NAA_re = list(sigma="rec+1", cor="iid"))
+```
+
+Try to fit the model... uh oh.
+
+```{r}
+mod <- fit_wham(input, do.osa = F, do.retro = F)
+```
+
+
+
