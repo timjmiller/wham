@@ -171,7 +171,7 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>fit_tmb</span>(<span class='no'>model</span>, <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>do.check</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>fit_tmb</span><span class='op'>(</span><span class='va'>model</span>, n.newton <span class='op'>=</span> <span class='fl'>3</span>, do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>, do.check <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -196,7 +196,7 @@ Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>model</code>, appends the following:</p><dl'>
+    <p><code>model</code>, appends the following:</p><dl>
     <dt><code>model$opt</code></dt><dd><p>Output from <code><a href='https://rdrr.io/r/stats/nlminb.html'>stats::nlminb</a></code></p></dd>
     <dt><code>model$date</code></dt><dd><p>System date</p></dd>
     <dt><code>model$dir</code></dt><dd><p>Current working directory</p></dd>
@@ -227,7 +227,7 @@ Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

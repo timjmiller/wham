@@ -173,7 +173,7 @@ See <code>prepare_wham_input</code>, <code>prepare_wham_om_input</code>, <code>p
 further details on data and parameter structure.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>update_wham_input</span>(<span class='no'>simres</span>, <span class='no'>model</span>, <span class='no'>n_years_add</span>)</pre>
+    <pre class="usage"><span class='fu'>update_wham_input</span><span class='op'>(</span><span class='va'>simres</span>, <span class='va'>model</span>, <span class='va'>n_years_add</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -194,7 +194,7 @@ further details on data and parameter structure.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a named list like <code>prepare_wham_input</code> and <code>prepare_wham_om_input</code> with the following components:</p><dl'>
+    <p>a named list like <code>prepare_wham_input</code> and <code>prepare_wham_om_input</code> with the following components:</p><dl>
     <dt><code>data</code></dt><dd><p>Named list of data, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>par</code></dt><dd><p>Named list of parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>map</code></dt><dd><p>Named list defining how to optionally collect and fix parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
@@ -211,14 +211,16 @@ further details on data and parameter structure.</p>
     <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='no'>input</span> <span class='kw'>=</span> <span class='fu'><a href='prepare_wham_om_input.html'>prepare_wham_om_input</a></span>(<span class='no'>asap3</span>)
-<span class='no'>mod</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input</span>, <span class='kw'>do.fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>do.proj</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='no'>sim</span> <span class='kw'>=</span> <span class='no'>mod</span>$<span class='fu'><a href='https://rdrr.io/r/stats/simulate.html'>simulate</a></span>(<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
-<span class='no'>sim_input</span> <span class='kw'>=</span> <span class='fu'>update_wham_input</span>(<span class='no'>sim</span>, <span class='no'>mod</span>, <span class='fl'>3</span>)
-<span class='no'>simfit</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>sim_input</span>, <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'><a href='plot_wham_output.html'>plot_wham_output</a></span>(<span class='no'>simfit</span>)
-}</div></pre>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='va'>input</span> <span class='op'>=</span> <span class='fu'><a href='prepare_wham_om_input.html'>prepare_wham_om_input</a></span><span class='op'>(</span><span class='va'>asap3</span><span class='op'>)</span>
+<span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span>, do.fit <span class='op'>=</span> <span class='cn'>FALSE</span>, do.proj <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='va'>sim</span> <span class='op'>=</span> <span class='va'>mod</span><span class='op'>$</span><span class='fu'>simulate</span><span class='op'>(</span>complete<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='va'>sim_input</span> <span class='op'>=</span> <span class='fu'>update_wham_input</span><span class='op'>(</span><span class='va'>sim</span>, <span class='va'>mod</span>, <span class='fl'>3</span><span class='op'>)</span>
+<span class='va'>simfit</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>sim_input</span>, MakeADFun.silent <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'><a href='plot_wham_output.html'>plot_wham_output</a></span><span class='op'>(</span><span class='va'>simfit</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -234,7 +236,7 @@ further details on data and parameter structure.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

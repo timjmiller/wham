@@ -224,7 +224,7 @@ for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
 ```
 
 ```{r echo=FALSE}
-vign4_conv
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
 ```
 
 Plot output for models that converged (in a subfolder for each model):

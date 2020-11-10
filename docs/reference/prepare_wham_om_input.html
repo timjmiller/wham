@@ -171,16 +171,16 @@ By default, this will set up a SCAA version like ASAP." />
 By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prepare_wham_om_input</span>(
-  <span class='no'>basic_info</span>,
-  <span class='kw'>model_name</span> <span class='kw'>=</span> <span class='st'>"WHAM setup to simulate unnamed stock"</span>,
-  <span class='kw'>recruit_model</span> <span class='kw'>=</span> <span class='fl'>2</span>,
-  <span class='kw'>ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>selectivity</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>M</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>NAA_re</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>proj.opts</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
-)</pre>
+    <pre class="usage"><span class='fu'>prepare_wham_om_input</span><span class='op'>(</span>
+  <span class='va'>basic_info</span>,
+  model_name <span class='op'>=</span> <span class='st'>"WHAM setup to simulate unnamed stock"</span>,
+  recruit_model <span class='op'>=</span> <span class='fl'>2</span>,
+  ecov <span class='op'>=</span> <span class='cn'>NULL</span>,
+  selectivity <span class='op'>=</span> <span class='cn'>NULL</span>,
+  M <span class='op'>=</span> <span class='cn'>NULL</span>,
+  NAA_re <span class='op'>=</span> <span class='cn'>NULL</span>,
+  proj.opts <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -221,7 +221,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a named list with the following components:</p><dl'>
+    <p>a named list with the following components:</p><dl>
     <dt><code>data</code></dt><dd><p>Named list of data, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>par</code></dt><dd><p>Named list of parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>map</code></dt><dd><p>Named list defining how to optionally collect and fix parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
@@ -235,7 +235,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>basic_info</code> may or may not be specified. If not, default values will be used to generate input and used in the function. 
-It is also provided as output and may be modified and provided to the function again.  If it is specified, it has the following elements:</p><dl'>
+It is also provided as output and may be modified and provided to the function again.  If it is specified, it has the following elements:</p><dl>
     <dt>$modyears</dt><dd><p>Years which the model (non-projection years) should span. Default is 1975:2014</p></dd>
     <dt>$maturity</dt><dd><p>Vector of age-specific proportion mature. Default is 1/(1 + exp(-1*(1:na - 5))) where na is the number of age classes</p></dd>
     <dt>$fracyr_spawn</dt><dd><p>fraction of the calendar year elapsed when spawning occurs</p></dd>
@@ -263,7 +263,7 @@ It is also provided as output and may be modified and provided to the function a
   
 </dl>
 
-<p><code>recruit_model</code> specifies the stock-recruit model. See <code>wham.cpp</code> for implementation.</p><dl'>
+<p><code>recruit_model</code> specifies the stock-recruit model. See <code>wham.cpp</code> for implementation.</p><dl>
     <dt>= 1</dt><dd><p>Random walk, i.e. predicted recruitment in year i = recruitment in year i-1</p></dd>
     <dt>= 2</dt><dd><p>(default) Random about mean, i.e. steepness = 1</p></dd>
     <dt>= 3</dt><dd><p>Beverton-Holt</p></dd>
@@ -276,11 +276,11 @@ either only age-1 (<code>NAA_re = list(sigma='rec')</code>) or all ages (<code>N
 See below for details on <code>NAA_re</code> specification.</p>
 <p><code>ecov</code> specifies any environmental covariate data and model. Environmental covariate data need not span
 the same years as the fisheries data. It can be <code>NULL</code> if no environmental data are to be fit.
-Otherwise, it must be a named list with the following components:</p><dl'>
+Otherwise, it must be a named list with the following components:</p><dl>
     <dt>$label</dt><dd><p>Name(s) of the environmental covariate(s). Used in printing.</p></dd>
     <dt>$mean</dt><dd><p>Mean observations (matrix). Missing values = NA.</p></dd>
     <dt>$logsigma</dt><dd><p>Observation standard error (log). Options:
-      <dl'>
+      <dl>
         <dt>Matrix with same dimensions as <code>$mean</code></dt><dd><p>Specified values for each time step</p></dd>
         <dt>Single value per ecov, numeric vector or matrix w/ dim 1 x n.ecov</dt><dd><p>Specified value shared among time steps</p></dd>
         <dt>Vector with estimate options for each ecov, length = n.ecov</dt><dd><p><code>'est_1'</code>: One value shared among time steps, estimated when used with <code><a href='fit_wham.html'>fit_wham</a></code>.
@@ -300,7 +300,7 @@ Otherwise, it must be a named list with the following components:</p><dl'>
   
 </dl>
 
-<p><code>ecov$how</code> specifies HOW the ecov affects the <code>ecov$where</code> process.</p><dl'>
+<p><code>ecov$how</code> specifies HOW the ecov affects the <code>ecov$where</code> process.</p><dl>
     <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
     <dt>= 1</dt><dd><p>"controlling" (dens-indep mortality)</p></dd>
     <dt>= 2</dt><dd><p>"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)</p></dd>
@@ -308,19 +308,19 @@ Otherwise, it must be a named list with the following components:</p><dl'>
     <dt>= 4</dt><dd><p>"masking" (metabolic/growth, decreases dR/dS)</p></dd>
     <dt>= 5</dt><dd><p>"directive" (e.g. behavioral)</p></dd>
   
-</dl><p>Options for M:</p><dl'>
+</dl><p>Options for M:</p><dl>
     <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
     <dt>= 1</dt><dd><p>effect on mean M (shared across ages)</p></dd>
   
 </dl>
 
 <p><code>selectivity</code> specifies options for selectivity, to overwrite default options.
-If <code>NULL</code>, logistic selectivity is assumed. If specifed, <code>selectivity</code> must be a list with the following entries:</p><dl'>
+If <code>NULL</code>, logistic selectivity is assumed. If specifed, <code>selectivity</code> must be a list with the following entries:</p><dl>
     <dt>$model</dt><dd><p>Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".</p></dd>
     <dt>$re</dt><dd><p>Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
                  If <code>NULL</code>, selectivity parameters in all blocks are constant over time and uncorrelated.
                  Each entry of <code>selectivity$re</code> must be one of the following options, where the selectivity parameters are:
-                 <dl'>
+                 <dl>
                    <dt>"none"</dt><dd><p>(default) are constant and uncorrelated</p></dd>
                    <dt>"iid"</dt><dd><p>vary by year and age/par, but uncorrelated</p></dd>
                    <dt>"ar1"</dt><dd><p>correlated by age/par (AR1), but not year</p></dd>
@@ -334,9 +334,9 @@ If <code>NULL</code>, logistic selectivity is assumed. If specifed, <code>select
 <p><code>M</code> specifies options for natural mortality and can overwrite default options.
 If <code>NULL</code>, the M is defined as fixed and constanct acros time, with age-specifc values defined in <code>basic_info</code>. To parameterize M-at-age
 shared/mirrored among some but not all ages, modify <code>basic_info$map$M_a</code> after calling <code>prepare_wham_om_input</code>
-(see vignette on natural mortality for more details). If specified, <code>M</code> must be a list with the following entries:</p><dl'>
+(see vignette on natural mortality for more details). If specified, <code>M</code> must be a list with the following entries:</p><dl>
     <dt>$model</dt><dd><p>Natural mortality model options are:
-                   <dl'>
+                   <dl>
                      <dt>"constant"</dt><dd><p>(default) A single mean M shared across all ages</p></dd>
                      <dt>"age-specific"</dt><dd><p>M unique for each age</p></dd>
                      <dt>"weight-at-age"</dt><dd><p>specifies M as a function of weight-at-age, \(M_y,a = exp(b0 + b1*log(W_y,a))\), as in
@@ -344,7 +344,7 @@ shared/mirrored among some but not all ages, modify <code>basic_info$map$M_a</co
                        <a href='https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035'>Miller &amp; Hyun (2018)</a>.</p></dd></dl></p></dd>
     <dt>$re</dt><dd><p>Time- and age-varying (random effects) on M. Note that random effects can only be estimated using <code><a href='fit_wham.html'>fit_wham</a></code> if
                mean M-at-age parameters are (<code>$est_ages</code> is not <code>NULL</code>).
-                 <dl'>
+                 <dl>
                    <dt>"none"</dt><dd><p>(default) M constant in time and across ages.</p></dd>
                    <dt>"iid"</dt><dd><p>M varies by year and age, but uncorrelated.</p></dd>
                    <dt>"ar1_a"</dt><dd><p>M correlated by age (AR1), constant in time.</p></dd>
@@ -363,16 +363,16 @@ shared/mirrored among some but not all ages, modify <code>basic_info$map$M_a</co
 
 <p><code>NAA_re</code> specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not)
 If <code>NULL</code>, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic).
-To fit a state-space model, specify <code>NAA_re</code>, a list with the following entries:</p><dl'>
+To fit a state-space model, specify <code>NAA_re</code>, a list with the following entries:</p><dl>
     <dt>$sigma</dt><dd><p>Which ages allow deviations from pred_NAA? Common options are specified with the strings:
-                   <dl'>
+                   <dl>
                      <dt>"rec"</dt><dd><p>Random effects on recruitment (deviations), all other ages deterministic</p></dd>
                      <dt>"rec+1"</dt><dd><p>"Full state space" model with 2 values for <code>sigma_a</code>, one for recruitment and one shared among other ages</p></dd></dl>
                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the 
                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will parameterize 3 values for <code>sigma_a</code>, with recruitment (age-1) deviations having their
                   own <code>sigma_R</code>, ages 2-3 sharing <code>sigma_2</code>, and ages 4-6 sharing <code>sigma_3</code>.</p></dd>
     <dt>$cor</dt><dd><p>Correlation structure for the NAA deviations. Options are:
-                 <dl'>
+                 <dl>
                    <dt>"iid"</dt><dd><p>NAA deviations vary by year and age, but uncorrelated.</p></dd>
                    <dt>"ar1_a"</dt><dd><p>NAA deviations correlated by age (AR1).</p></dd>
                    <dt>"ar1_y"</dt><dd><p>NAA deviations correlated by year (AR1).</p></dd>
@@ -385,11 +385,13 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
     <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
- <span class='no'>input</span> <span class='kw'>=</span> <span class='fu'>prepare_wham_om_input</span>()
- <span class='no'>mod</span> <span class='kw'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input</span>, <span class='kw'>do.fit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
- <span class='no'>newdata</span> <span class='kw'>=</span> <span class='no'>mod</span>$<span class='fu'><a href='https://rdrr.io/r/stats/simulate.html'>simulate</a></span>(<span class='kw'>complete</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
-}</div></pre>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+ <span class='va'>input</span> <span class='op'>=</span> <span class='fu'>prepare_wham_om_input</span><span class='op'>(</span><span class='op'>)</span>
+ <span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span>, do.fit <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+ <span class='va'>newdata</span> <span class='op'>=</span> <span class='va'>mod</span><span class='op'>$</span><span class='fu'>simulate</span><span class='op'>(</span>complete<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -405,7 +407,7 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

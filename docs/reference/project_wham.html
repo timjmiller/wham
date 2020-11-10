@@ -167,15 +167,15 @@
     <p>Provides projections/forecasts for an existing (already fit) WHAM model.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>project_wham</span>(
-  <span class='no'>model</span>,
-  <span class='kw'>proj.opts</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>n.yrs</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>use.last.F</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.avg.F</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>use.FXSPR</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-    <span class='kw'>proj.F</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.catch</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>avg.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.ecov</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>use.last.ecov</span> <span class='kw'>=</span>
-    <span class='fl'>FALSE</span>, <span class='kw'>avg.ecov.yrs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proj.ecov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>cont.Mre</span> <span class='kw'>=</span> <span class='kw'>NULL</span>),
-  <span class='kw'>n.newton</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>do.sdrep</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>MakeADFun.silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>project_wham</span><span class='op'>(</span>
+  <span class='va'>model</span>,
+  proj.opts <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>n.yrs <span class='op'>=</span> <span class='fl'>3</span>, use.last.F <span class='op'>=</span> <span class='cn'>TRUE</span>, use.avg.F <span class='op'>=</span> <span class='cn'>FALSE</span>, use.FXSPR <span class='op'>=</span> <span class='cn'>FALSE</span>,
+    proj.F <span class='op'>=</span> <span class='cn'>NULL</span>, proj.catch <span class='op'>=</span> <span class='cn'>NULL</span>, avg.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, cont.ecov <span class='op'>=</span> <span class='cn'>TRUE</span>, use.last.ecov <span class='op'>=</span>
+    <span class='cn'>FALSE</span>, avg.ecov.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, proj.ecov <span class='op'>=</span> <span class='cn'>NULL</span>, cont.Mre <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>,
+  n.newton <span class='op'>=</span> <span class='fl'>3</span>,
+  do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  MakeADFun.silent <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -216,7 +216,7 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a projected WHAM model with additional output if specified:</p><dl'>
+    <p>a projected WHAM model with additional output if specified:</p><dl>
     <dt><code>$rep</code></dt><dd><p>List of derived quantity estimates (see examples)</p></dd>
     <dt><code>$sdrep</code></dt><dd><p>Parameter estimates (and standard errors if <code>do.sdrep=TRUE</code>)</p></dd>
     <dt><code>$peels</code></dt><dd><p>Retrospective analysis (if <code>do.retro=TRUE</code>)</p></dd>
@@ -244,7 +244,7 @@ The following quantities are averaged:</p><ul>
 </ul>
 
 <p>WHAM implements four options for handling the environmental covariate(s) in the projections.
-Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p><dl'>
+Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p><dl>
     <dt>(Default) Continue ecov process model (e.g. random walk, AR1)</dt><dd><p>Set <code>$cont.ecov = TRUE</code>. WHAM will estimate the ecov process in projection years (i.e. continue the random walk / AR1 process).</p></dd>
     <dt>Use last year ecov(s)</dt><dd><p>Set <code>$use.last.ecov = TRUE</code>. WHAM will use ecov value from the terminal year (of population model) for projections.</p></dd>
     <dt>Use average ecov(s)</dt><dd><p>Provide <code>$avg.yrs.ecov</code>, a vector specifying which years to average over the environmental covariate(s) for projections.</p></dd>
@@ -258,23 +258,24 @@ beyond the population model, then none of the above need be specified.</p>
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='fit_tmb.html'>fit_tmb</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='st'>"input4_SNEMAYT"</span>) <span class='co'># load SNEMA yellowtail flounder input data and model settings</span>
-<span class='no'>mod</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input4_SNEMAYT</span>) <span class='co'># using default values (do.proj=T)</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"input4_SNEMAYT"</span><span class='op'>)</span> <span class='co'># load SNEMA yellowtail flounder input data and model settings</span>
+<span class='va'>mod</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span><span class='op'>)</span> <span class='co'># using default values (do.proj=T)</span>
 
-<span class='no'>mod2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span>(<span class='no'>input4_SNEMAYT</span>, <span class='kw'>do.retro</span><span class='kw'>=</span><span class='no'>F</span>, <span class='kw'>do.osa</span><span class='kw'>=</span><span class='no'>F</span>, <span class='kw'>do.proj</span><span class='kw'>=</span><span class='no'>F</span>) <span class='co'># fit model without projections, retro analysis, or OSA residuals</span>
-<span class='no'>mod_proj</span> <span class='kw'>&lt;-</span> <span class='fu'>project_wham</span>(<span class='no'>mod2</span>) <span class='co'># add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years</span>
+<span class='va'>mod2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span>, do.retro<span class='op'>=</span><span class='cn'>F</span>, do.osa<span class='op'>=</span><span class='cn'>F</span>, do.proj<span class='op'>=</span><span class='cn'>F</span><span class='op'>)</span> <span class='co'># fit model without projections, retro analysis, or OSA residuals</span>
+<span class='va'>mod_proj</span> <span class='op'>&lt;-</span> <span class='fu'>project_wham</span><span class='op'>(</span><span class='va'>mod2</span><span class='op'>)</span> <span class='co'># add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years</span>
 
-<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span>(<span class='no'>mod_proj</span>$<span class='no'>rep</span>) <span class='co'># list of derived quantities</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span>(<span class='no'>mod_proj</span>$<span class='no'>rep</span>$<span class='no'>SSB</span>, <span class='fl'>3</span>) <span class='co'># get 3-year projected SSB estimates (weight, not numbers)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>)</span> <span class='co'># list of derived quantities</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>$</span><span class='va'>SSB</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># get 3-year projected SSB estimates (weight, not numbers)</span>
 
-<span class='no'>x</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span>(<span class='no'>mod_proj</span>$<span class='no'>sdrep</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>x</span>)) <span class='co'># list of estimated parameters and derived quanitites with SE</span>
-<span class='no'>x</span> <span class='kw'>=</span> <span class='no'>x</span>[<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>x</span>) <span class='kw'>==</span> <span class='st'>"log_SSB"</span>,] <span class='co'># SSB estimates with SE</span>
-<span class='no'>ssb.mat</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span>(<span class='no'>x</span>, <span class='no'>x</span>[,<span class='fl'>1</span>] + <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span>(<span class='fl'>0.975</span>)*<span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span>(-<span class='no'>x</span>[,<span class='fl'>2</span>],<span class='no'>x</span>[,<span class='fl'>2</span>])))/<span class='fl'>1000</span> <span class='co'># calculate 95% CI</span>
-<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>ssb.mat</span>) <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"SSB"</span>,<span class='st'>"SSB_se"</span>,<span class='st'>"SSB_lower"</span>,<span class='st'>"SSB_upper"</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span>(<span class='no'>ssb.mat</span>, <span class='fl'>3</span>) <span class='co'># 3-year projected SSB estimates with SE and 95% CI</span>
-}</div></pre>
+<span class='va'>x</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>sdrep</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># list of estimated parameters and derived quanitites with SE</span>
+<span class='va'>x</span> <span class='op'>=</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>==</span> <span class='st'>"log_SSB"</span>,<span class='op'>]</span> <span class='co'># SSB estimates with SE</span>
+<span class='va'>ssb.mat</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>x</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='fl'>0.975</span><span class='op'>)</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span>,<span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>1000</span> <span class='co'># calculate 95% CI</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>ssb.mat</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"SSB"</span>,<span class='st'>"SSB_se"</span>,<span class='st'>"SSB_lower"</span>,<span class='st'>"SSB_upper"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>ssb.mat</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># 3-year projected SSB estimates with SE and 95% CI</span>
+<span class='op'>}</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -290,7 +291,7 @@ beyond the population model, then none of the above need be specified.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

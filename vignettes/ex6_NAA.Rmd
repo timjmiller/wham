@@ -312,7 +312,7 @@ vign6_res %>%
 
 - All models estimated positive recruitment (age-1) deviations in the 1970s and 80s (red), and more negative deviations since 1990 (blue).
 - Models with all numbers-at-age as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).
-- Models with a GSI-Recruitment link also had extreme recruitment deviations, because the GSI effect on expected recruitment accounted for some of this variability.
+- Models with a GSI-Recruitment link also had less extreme recruitment deviations, because the GSI effect on expected recruitment accounted for some of this variability.
 
 Estimated survival deviations by age (y-axis) and year (x-axis) for all converged models:
 
