@@ -34,6 +34,10 @@ As in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment
 - Environmental covariate (ecov) modeled as an AR1 process (`ecov$process_model = 'ar1'`)
 - Compare with and w/o ecov having a "limiting" (carrying capacity) effect on recruitment (`ecov$how = 2`)
 
+As in [example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html):
+
+- Age-specific selectivity with some ages fixed at 1 (fishery: 4-5, index1: 4, index2: 2-4)
+
 As in [example 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html):
 
 - Environmental covariate: Gulf Stream Index (GSI)
@@ -270,6 +274,12 @@ Look at results table.
 
 ```{r eval=FALSE}
 df.mods
+```
+
+Save results table.
+
+```{r eval=FALSE}
+write.csv(df.mods, file="ex6_table.csv",quote=F, row.names=F)
 ```
 
 Plot output for models that converged.

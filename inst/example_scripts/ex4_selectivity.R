@@ -122,6 +122,8 @@ conv <- sapply(mods, function(x) x$opt$convergence == 0) # 0 means opt converged
 conv_mods <- (1:n.mods)[pdHess] 
 for(m in conv_mods){
 	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=file.path(write.dir,paste0("m",m)))
+	# plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)))
+	# plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)), plot.opts=list(font.family="Times"))
 }
 
 # compare models using AIC
@@ -137,6 +139,9 @@ df.mods <- cbind(data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model,
 							"Runtime"=sapply(mods, function(x) x$runtime)), df.aic)
 rownames(df.mods) <- NULL
 df.mods
+
+# save results table
+write.csv(df.mods, file="ex4_table.csv",quote=F, row.names=F)
 
 # plot the models estimates of selectivity-at-age for block 1 (fleet).
 # selAA block 1 plots

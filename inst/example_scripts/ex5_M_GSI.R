@@ -136,14 +136,16 @@ colnames(df.mods)[2] = "M_est"
 # deal with models having NaN NLL
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-theNA <- which(is.na(df.mods$NLL))
+nopeels <- which(sapply(mods, function(x) length(x$peels)) == 0)
+noNLL <- which(is.na(df.mods$NLL))
 mods2 <- mods
-mods2[theNA] <- NULL
+mods2[noNLL] <- NULL
+mods2[nopeels] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
-  if(i %in% theNA){
+  if(i %in% c(nopeels, noNLL)){
     df.aic[i,] <- rep(NA,5)
   } else {
     df.aic[i,] <- df.aic.tmp[ct,]

@@ -5,10 +5,12 @@
 #   2 indices
 #   fit to 1973-2016 data
 #   age compositions = 7, logistic normal don't pool zero obs
-#   selectivity = age-specific
 
 # As in example 2:
 #   environmental effect on recruitment
+
+# As in example 4:
+#   selectivity = age-specific (fix ages = list(4:5,4,2:4))
 
 # As in example 5:
 #   Gulf Stream Index (GSI)
@@ -80,8 +82,8 @@ for(m in 1:n.mods){
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), 
                                 re=rep("none",3), 
-                                initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                fix_pars=list(c(4,5),4,2)),
+                                initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
+                                fix_pars=list(4:5,4,2:4)),
                               NAA_re = NAA_list,
                               ecov=ecov)
 
