@@ -45,7 +45,7 @@ Open R and load the `wham` package:
 library(wham)
 ```
 
-For a clean, runnable `.R` script, look at `ex1_SNEMA_yellowtail_flounder.R` in the `example_scripts` folder of the `wham` package install:
+For a clean, runnable `.R` script, look at `ex1_basics.R` in the `example_scripts` folder of the `wham` package install:
 ```{r}
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
@@ -54,7 +54,7 @@ file.path(wham.dir, "example_scripts")
 You can run this entire example script with (2.0 min runtime):
 ```{r, eval=FALSE}
 write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
-source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_basics.R"))
 ```
 
 Let's create a directory for this analysis:

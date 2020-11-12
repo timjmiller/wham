@@ -51,10 +51,10 @@
       <a href="../articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="../articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1: The basics</a>
+      <a href="../articles/ex1_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="../articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="../articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
       <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
@@ -131,7 +131,7 @@
     
     
 <p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>:</p>
+<p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
 <li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>
@@ -164,7 +164,7 @@
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
@@ -186,7 +186,7 @@
 <div id="specify-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#specify-model" class="anchor"></a>2. Specify model</h2>
-<p>Setup model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>:</p>
+<p>Setup model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
 <li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>

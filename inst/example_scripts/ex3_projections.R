@@ -134,7 +134,7 @@ for(m in 1:length(mod_proj)){
 
 # to more easily compare plots, copy to folders organized by plot instead of by model
 plots <- c("ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_status")
-dirs <- paste0(getwd(),"/",plots)
+dirs <- file.path(getwd(),plots)
 lapply(as.list(dirs), FUN=dir.create)
 for(m in 1:length(mod_proj)){
   for(i in 1:length(plots)){

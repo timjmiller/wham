@@ -4,6 +4,7 @@ wham 1.0.0.9000
 ### Minor improvements
 
 * `run_all_examples.R` script to test all examples work
+* new vignette on debugging WHAM models
 
 ### Bug fixes
 

@@ -10,7 +10,8 @@
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(wham)
-library(tidyverse)
+library(ggplot2)
+library(tidyr)
 library(viridis)
 
 # -------------------------------------------------------------------------
@@ -138,9 +139,6 @@ rownames(df.mods) <- NULL
 df.mods
 
 # plot the models estimates of selectivity-at-age for block 1 (fleet).
-library(tidyverse)
-library(viridis)
-
 # selAA block 1 plots
 selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
 sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
@@ -167,6 +165,7 @@ df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
 df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
 df$conv = factor(df$conv)
 
+png(file.path(getwd(),"selAA.png"), width = 8, height = 7.5, res = 200, units='in')
 print(ggplot(df, aes(x=Year, y=Age)) +
 	geom_tile(aes(fill=Selectivity, alpha=conv)) +
 	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
@@ -177,3 +176,4 @@ print(ggplot(df, aes(x=Year, y=Age)) +
 	theme_bw() +
 	scale_x_continuous(expand=c(0,0)) +
 	scale_y_continuous(expand=c(0,0)))
+dev.off()

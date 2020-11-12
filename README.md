@@ -1,6 +1,6 @@
 # WHAM: a state-space age-structured assessment model
 
-The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see [Ex 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)):
+The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see [Ex 1](https://timjmiller.github.io/wham/articles/ex1_basics.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)):
 
 - statistical catch-at-age (SCAA) model with recruitments as fixed effects, 
 - SCAA with recruitments as random effects
@@ -8,10 +8,10 @@ The Woods Hole Assessment Model (WHAM) is a general state-space age-structured s
 
 WHAM advances fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:
 
-- recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
+- recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
 - selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
 - natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), and
-- environmental effects on the above ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
+- environmental effects on the above ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 

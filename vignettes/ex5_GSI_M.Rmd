@@ -19,7 +19,7 @@ library(kableExtra)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
+This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 - logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
@@ -27,7 +27,7 @@ This is the 5th WHAM example, which builds off [example 2](https://timjmiller.gi
 - 5 indices
 - fit to 1973-2011 data
 
-We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html).
+We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
 
 In example 5, we demonstrate how to specify and run WHAM with the following options for natural mortality:
 
@@ -77,7 +77,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same ASAP data file as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
+We need the same ASAP data file as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), and the environmental covariate (GSI). Let's copy `ex2_SNEMAYT.dat` and `GSI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -170,7 +170,7 @@ M <- list(re="2dar1")
 
 ## 4. Linking *M* to an environmental covariate (GSI)
 
-As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html), the environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`. This example differs from example 2 in that:
+As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), the environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`. This example differs from example 2 in that:
 
 - `$logsigma = "est_1"`: estimate the observation error for the GSI (one overall value for all years). The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.
 - `$lag = 0`: GSI in year *t* affects $M$ in year *t*, instead of year *t+1*.

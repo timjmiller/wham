@@ -14,8 +14,10 @@
 #   Gulf Stream Index (GSI)
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
-library(tidyverse)
 library(wham)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
 
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac

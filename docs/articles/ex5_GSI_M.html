@@ -51,10 +51,10 @@
       <a href="../articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="../articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1: The basics</a>
+      <a href="../articles/ex1_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="../articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="../articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
       <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
@@ -132,7 +132,7 @@
     
     
 <p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>This is the 5th WHAM example, which builds off <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>:</p>
+<p>This is the 5th WHAM example, which builds off <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</li>
 <li>logistic normal age compositions, pooling zero observations (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</li>
@@ -140,7 +140,7 @@
 <li>5 indices</li>
 <li>fit to 1973-2011 data</li>
 </ul>
-<p>We assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The simpler 1st example, without environmental effects or time-varying <span class="math inline">\(M\)</span>, is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_SNEMA_yellowtail_flounder.R">R script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">vignette</a>.</p>
+<p>We assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The simpler 1st example, without environmental effects or time-varying <span class="math inline">\(M\)</span>, is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R">R script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">vignette</a>.</p>
 <p>In example 5, we demonstrate how to specify and run WHAM with the following options for natural mortality:</p>
 <ul>
 <li>not estimated (fixed at input values)</li>
@@ -187,7 +187,7 @@
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>, and the environmental covariate (GSI). Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
+<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>, and the environmental covariate (GSI). Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
@@ -296,7 +296,7 @@
 <div id="linking-m-to-an-environmental-covariate-gsi" class="section level2">
 <h2 class="hasAnchor">
 <a href="#linking-m-to-an-environmental-covariate-gsi" class="anchor"></a>4. Linking <em>M</em> to an environmental covariate (GSI)</h2>
-<p>As described in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">example 2</a>, the environmental covariate options are fed to <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> as a list, <code>ecov</code>. This example differs from example 2 in that:</p>
+<p>As described in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>, the environmental covariate options are fed to <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> as a list, <code>ecov</code>. This example differs from example 2 in that:</p>
 <ul>
 <li>
 <code>$logsigma = "est_1"</code>: estimate the observation error for the GSI (one overall value for all years). The other option is <code>"est_re"</code> to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.</li>

@@ -1,7 +1,9 @@
 # WHAM example 5: Ecov and age-year effects on natural mortality
 
 library(wham)
-library(tidyverse)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
 library(viridis)
 
 # create directory for analysis, e.g.

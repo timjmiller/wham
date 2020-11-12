@@ -10,11 +10,11 @@ wham.dir <- find.package("wham")
 
 # Ex 1
 write.dir <- file.path(main.dir,"ex1")
-source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_basics.R"))
 
 # Ex 2
 write.dir <- file.path(main.dir,"ex2")
-source(file.path(wham.dir, "example_scripts", "ex2_CPI_recruitment_SNEMA_yellowtail.R"))
+source(file.path(wham.dir, "example_scripts", "ex2_CPI_recruitment.R"))
 
 # Ex 3
 write.dir <- file.path(main.dir,"ex3")

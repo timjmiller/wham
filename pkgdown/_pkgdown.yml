@@ -11,9 +11,9 @@ navbar:
       -  text: "Overview"
          href: articles/index.html
       -  text: "Ex 1: The basics"
-         href: articles/ex1_SNEMA_yellowtail_flounder.html
+         href: articles/ex1_basics.html
       -  text: "Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)"
-         href: articles/ex2_CPI_recruitment_SNEMA_yellowtail.html
+         href: articles/ex2_CPI_recruitment.html
       -  text: "Ex 3: Projecting / forecasting random effects"
          href: articles/ex3_projections.html
       -  text: "Ex 4: Selectivity with time- and age-varying random effects"
@@ -55,8 +55,8 @@ articles:
       `wham.dir <- find.package("wham")`<br/>
       `source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))`<br/>
     contents:
-      - ex1_SNEMA_yellowtail_flounder
-      - ex2_CPI_recruitment_SNEMA_yellowtail
+      - ex1_basics
+      - ex2_CPI_recruitment
       - ex3_projections
       - ex4_selectivity
       - ex5_GSI_M

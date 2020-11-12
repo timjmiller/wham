@@ -60,10 +60,10 @@
       <a href="articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1: The basics</a>
+      <a href="articles/ex1_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
       <a href="articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
@@ -130,7 +130,7 @@
 <div id="wham-a-state-space-age-structured-assessment-model" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#wham-a-state-space-age-structured-assessment-model" class="anchor"></a>WHAM: a state-space age-structured assessment model</h1></div>
-<p>The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">Ex 1</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>):</p>
+<p>The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">Ex 1</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>):</p>
 <ul>
 <li>statistical catch-at-age (SCAA) model with recruitments as fixed effects,</li>
 <li>SCAA with recruitments as random effects</li>
@@ -138,10 +138,10 @@
 </ul>
 <p>WHAM advances fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:</p>
 <ul>
-<li>recruitment / numbers-at-age (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>),</li>
+<li>recruitment / numbers-at-age (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Ex 6</a>),</li>
 <li>selectivity (<a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">Ex 4</a>),</li>
 <li>natural mortality (<a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>), and</li>
-<li>environmental effects on the above (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>)</li>
+<li>environmental effects on the above (<a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">Ex 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>)</li>
 </ul>
 <p>A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts (<a href="https://timjmiller.github.io/wham/articles/ex3_projections.html">Ex 3</a>).</p>
 <div id="background" class="section level2">
@@ -173,6 +173,10 @@ file.path(wham.dir, "example_scripts")</a></code></pre>
 <p>You can then run the entire first example script with:</p>
 <pre><code><a href="https://rdrr.io/r/base/getwd.html">setwd("choose/where/to/save/output")
 source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))</a></code></pre>
+<p>You can run ALL examples with (takes 1 hour):</p>
+<pre><code><a href="https://timjmiller.github.io/wham/">library(wham)
+wham.dir &lt;- find.package("wham")
+source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))</a></code></pre>
 </div>
 <div id="install-details" class="section level2">
 <h2 class="hasAnchor">

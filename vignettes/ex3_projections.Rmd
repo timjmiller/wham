@@ -17,7 +17,7 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -63,7 +63,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
+We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
@@ -87,7 +87,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 ## 2. Specify model
 
-Setup model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment_SNEMA_yellowtail.html):
+Setup model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
