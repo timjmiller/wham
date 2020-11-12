@@ -146,6 +146,10 @@
 <li>Environmental covariate (ecov) modeled as an AR1 process (<code>ecov$process_model = 'ar1'</code>)</li>
 <li>Compare with and w/o ecov having a “limiting” (carrying capacity) effect on recruitment (<code>ecov$how = 2</code>)</li>
 </ul>
+<p>As in <a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">example 4</a>:</p>
+<ul>
+<li>Age-specific selectivity with some ages fixed at 1 (fishery: 4-5, index1: 4, index2: 2-4)</li>
+</ul>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">example 5</a>:</p>
 <ul>
 <li>Environmental covariate: Gulf Stream Index (GSI)</li>
@@ -386,8 +390,11 @@
 <p>Look at results table.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.mods</span></code></pre></div>
-<p>Plot output for models that converged.</p>
+<p>Save results table.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html">write.csv</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"ex6_table.csv"</span>,quote<span class="op">=</span><span class="cn">F</span>, row.names<span class="op">=</span><span class="cn">F</span><span class="op">)</span></code></pre></div>
+<p>Plot output for models that converged.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">conv_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span><span class="op">)</span>
 <span class="va">mods</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># m1 didn't actually fit a Bev-Holt</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="va">conv_mods</span><span class="op">)</span><span class="op">{</span>
@@ -467,7 +474,7 @@ TRUE
 0.20
 </td>
 <td style="text-align:right;">
--721.343
+-714.045
 </td>
 <td style="text-align:left;">
 —
@@ -476,13 +483,13 @@ TRUE
 —
 </td>
 <td style="text-align:right;">
-1.941
+5.680
 </td>
 <td style="text-align:right;">
--0.052
+-0.027
 </td>
 <td style="text-align:right;">
-0.026
+0.034
 </td>
 </tr>
 <tr>
@@ -505,25 +512,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.47
+1.53
 </td>
 <td style="text-align:right;">
--608.523
+-602.862
 </td>
 <td style="text-align:left;">
-337.1
+348.4
 </td>
 <td style="text-align:left;">
--1065
+-1057.7
 </td>
 <td style="text-align:right;">
-3.334
+5.193
 </td>
 <td style="text-align:right;">
--0.070
+-0.015
 </td>
 <td style="text-align:right;">
-0.060
+0.014
 </td>
 </tr>
 <tr>
@@ -543,28 +550,28 @@ rec
 TRUE
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:right;">
-1.63
+1.56
 </td>
 <td style="text-align:right;">
--622.475
+-617.585
 </td>
 <td style="text-align:left;">
-NA
+320.9
 </td>
 <td style="text-align:left;">
-NA
+-1085.2
 </td>
 <td style="text-align:right;">
-2.565
+2.486
 </td>
 <td style="text-align:right;">
--0.067
+-0.013
 </td>
 <td style="text-align:right;">
-0.058
+0.007
 </td>
 </tr>
 <tr>
@@ -587,7 +594,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.36
+0.34
 </td>
 <td style="text-align:right;">
 -761.946
@@ -596,7 +603,7 @@ TRUE
 32.2
 </td>
 <td style="text-align:left;">
--1369.9
+-1373.9
 </td>
 <td style="text-align:right;">
 0.297
@@ -637,7 +644,7 @@ TRUE
 16.9
 </td>
 <td style="text-align:left;">
--1385.2
+-1389.2
 </td>
 <td style="text-align:right;">
 0.236
@@ -663,31 +670,31 @@ rec+1
 —
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:right;">
-0.73
+0.88
 </td>
 <td style="text-align:right;">
-NaN
+-765.796
 </td>
 <td style="text-align:left;">
-NA
+26.5
 </td>
 <td style="text-align:left;">
-NA
+-1379.6
 </td>
 <td style="text-align:right;">
-0.353
+0.324
 </td>
 <td style="text-align:right;">
-74.513
+0.014
 </td>
 <td style="text-align:right;">
-106.173
+-0.009
 </td>
 </tr>
 <tr>
@@ -707,28 +714,28 @@ rec+1
 TRUE
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:right;">
-0.97
+0.95
 </td>
 <td style="text-align:right;">
--772.837
+-772.842
 </td>
 <td style="text-align:left;">
-NA
+14.4
 </td>
 <td style="text-align:left;">
-NA
+-1391.7
 </td>
 <td style="text-align:right;">
-0.234
+0.237
 </td>
 <td style="text-align:right;">
-0.019
+0.015
 </td>
 <td style="text-align:right;">
--0.033
+-0.025
 </td>
 </tr>
 <tr>
@@ -751,25 +758,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.44
+1.50
 </td>
 <td style="text-align:right;">
--623.599
+-618.835
 </td>
 <td style="text-align:left;">
-308.9
+318.4
 </td>
 <td style="text-align:left;">
--1093.2
+-1087.7
 </td>
 <td style="text-align:right;">
-1.067
+1.060
 </td>
 <td style="text-align:right;">
--0.086
+-0.035
 </td>
 <td style="text-align:right;">
-0.074
+0.028
 </td>
 </tr>
 <tr>
@@ -792,25 +799,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.58
+1.53
 </td>
 <td style="text-align:right;">
--626.544
+-622.069
 </td>
 <td style="text-align:left;">
-305
+314
 </td>
 <td style="text-align:left;">
--1097.1
+-1092.1
 </td>
 <td style="text-align:right;">
-1.693
+1.662
 </td>
 <td style="text-align:right;">
--0.062
+-0.009
 </td>
 <td style="text-align:right;">
-0.054
+0.006
 </td>
 </tr>
 <tr>
@@ -833,7 +840,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.38
+0.35
 </td>
 <td style="text-align:right;">
 -771.850
@@ -842,7 +849,7 @@ TRUE
 14.4
 </td>
 <td style="text-align:left;">
--1387.7
+-1391.7
 </td>
 <td style="text-align:right;">
 0.189
@@ -883,7 +890,7 @@ TRUE
 0
 </td>
 <td style="text-align:left;font-weight: bold;">
--1402.1
+-1406.1
 </td>
 <td style="text-align:right;font-weight: bold;">
 0.150
@@ -915,7 +922,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.93
+0.80
 </td>
 <td style="text-align:right;">
 -772.775
@@ -924,7 +931,7 @@ TRUE
 14.5
 </td>
 <td style="text-align:left;">
--1387.6
+-1391.6
 </td>
 <td style="text-align:right;">
 0.181
@@ -956,7 +963,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-0.99
+0.88
 </td>
 <td style="text-align:right;font-weight: bold;">
 -780.328
@@ -965,7 +972,7 @@ TRUE
 1.4
 </td>
 <td style="text-align:left;font-weight: bold;">
--1400.7
+-1404.7
 </td>
 <td style="text-align:right;font-weight: bold;">
 0.121

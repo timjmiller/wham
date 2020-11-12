@@ -1,4 +1,4 @@
-wham 1.0.0.9000
+wham 1.0.1
 =========================
 
 ### Minor improvements
