@@ -27,7 +27,7 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
   for(int a = 0; a < dim; a++)
   {
     ll += -lgamma(obs(a) + 1.0);
-    if(obs(a)>0) ll += obs(a) * log(pred(a));
+    if(obs(a)>0) ll += obs(a) * log(pred(a) + Type(1.0e-15));
   }
   if(do_log == 1) return ll;
   else return exp(ll);
@@ -43,7 +43,7 @@ Type mydmultinom_osa(vector<Type> obs, vector<Type> pred, Type Neff, int do_log,
   for(int a = 0; a < dim; a++)
   {
     if(obs(a) <= 0) ll += t_keep(a) * -lgamma(Neff*obs(a) + 1.0);
-    if(obs(a) > 0) ll += t_keep(a) * (-lgamma(Neff*obs(a) + 1.0) + Neff*obs(a) * log(pred(a)));
+    if(obs(a) > 0) ll += t_keep(a) * (-lgamma(Neff*obs(a) + 1.0) + Neff*obs(a) * log(pred(a) + Type(1.0e-15)));
     // if(obs(a)>0) ll += t_keep(a)* obs(a) * log(pred(a));
   }
   if(do_log == 1) return ll;
@@ -105,7 +105,7 @@ Type ddirichlet(vector<Type> obs, vector<Type>p, Type phi, int do_log)
 {
   int n = obs.size();
   Type ll = lgamma(phi);
-  for(int i = 0; i < n; i++) ll +=  -lgamma(phi * p(i)) + (phi * p(i) - 1.0) * log(obs(i));
+  for(int i = 0; i < n; i++) ll +=  -lgamma(phi * (p(i) + Type(1.0e-15))) + (phi * (p(i) + Type(1.0e-15)) - 1.0) * log(obs(i));
   if(do_log == 1) return ll;
   else return exp(ll);
 }
@@ -116,7 +116,7 @@ Type ddirmultinom(vector<Type> obs, vector<Type> p,  Type phi, int do_log)
   int dim = obs.size();
   Type N = obs.sum();
   Type ll = lgamma(N + 1.0) + lgamma(phi) - lgamma(N + phi);
-  for(int a = 0; a < dim; a++) ll += -lgamma(obs(a) + 1.0) + lgamma(obs(a) + phi * p(a)) - lgamma(phi * p(a));
+  for(int a = 0; a < dim; a++) ll += -lgamma(obs(a) + 1.0) + lgamma(obs(a) + phi * (p(a) + Type(1.0e-15))) - lgamma(phi * (p(a) + Type(1.0e-15)));
   if(do_log == 1) return ll;
   else return exp(ll);
 }
@@ -176,14 +176,14 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
       obs += paa_obs(a);
       if(paa_obs(a) > Type(1.0e-15))
       {
-        ll +=  -lgamma(exp(age_comp_pars(0)) * pred) + (exp(age_comp_pars(0)) * pred - 1.0) * log(obs);
+        ll +=  -lgamma(exp(age_comp_pars(0)) * (pred + Type(1.0e-15))) + (exp(age_comp_pars(0)) * (pred + Type(1.0e-15)) - 1.0) * log(obs);
         pred = 0.0;
         obs = 0.0;
       }
       //else pooling with next age
     }
     //add in the last age class(es).
-    ll += -lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2);
+    ll += -lgamma(exp(age_comp_pars(0)) * (pred_2 + Type(1.0e-15))) + (exp(age_comp_pars(0)) * (pred_2 + Type(1.0e-15)) - 1.0) * log(obs_2);
   }
   if(age_comp_model == 4) //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
   {
