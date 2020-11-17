@@ -4,6 +4,7 @@ wham 1.0.1.9000
 ### Minor improvements
 
 * add `1e-15` to predicted proportions to make age composition likelihoods robust to 0 predictions when selAA is fixed at 0. This affects the multinomial, Dirichlet, and Dirichlet-multinomial (options 1-3), since the logistic normal (options 4-7) already did this. [88f15d4](https://github.com/timjmiller/wham/commit/88f15d4a51f69a3d649d76bcac0a8cf299c3135e)
+* can now specify age composition model using `age_comp` argument to `prepare_wham_input`
 
 wham 1.0.1 (2020-11-12)
 =========================

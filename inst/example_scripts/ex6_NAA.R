@@ -85,16 +85,8 @@ for(m in 1:n.mods){
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
                                 fix_pars=list(4:5,4,2:4)),
                               NAA_re = NAA_list,
-                              ecov=ecov)
-
-  # overwrite age comp model (all models use logistic normal)
-  input$data$age_comp_model_indices = rep(7, input$data$n_indices)
-  input$data$age_comp_model_fleets = rep(7, input$data$n_fleets)
-  input$data$n_age_comp_pars_indices = rep(1, input$data$n_indices)
-  input$data$n_age_comp_pars_fleets = rep(1, input$data$n_fleets)
-  input$par$index_paa_pars = rep(0, input$data$n_indices)
-  input$par$catch_paa_pars = rep(0, input$data$n_fleets)
-  input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+                              ecov=ecov,
+                              age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
   # Fit model
   mod <- fit_wham(input, do.retro=T, do.osa=F)

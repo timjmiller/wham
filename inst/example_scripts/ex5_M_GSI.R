@@ -91,17 +91,8 @@ for(m in 1:n.mods){
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
                               NAA_re = list(sigma='rec+1',cor='iid'),
-                              M=M)
-
-  # overwrite age comp model (all models use logistic normal)
-  input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets]
-  input$data$age_comp_model_indices = rep(5, input$data$n_indices) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[input$data$age_comp_model_indices]
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets[which(apply(input$data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
-  input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
+                              M=M,
+                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
 
   # Fit model
   mod <- fit_wham(input, do.retro=T, do.osa=F) # no OSA residuals to save time

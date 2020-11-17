@@ -43,17 +43,8 @@ env <- list(
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
                             ecov = env,
-                            NAA_re = list(sigma="rec+1", cor="iid"))
-
-# age comp logistic normal pool obs (not multinomial, the default)
-input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-input$data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets]
-input$data$age_comp_model_indices = rep(5, input$data$n_indices) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-input$data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[input$data$age_comp_model_indices]
-n_catch_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets[which(apply(input$data$use_catch_paa,2,sum)>0)]]
-n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
-input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
+                            NAA_re = list(sigma="rec+1", cor="iid"),
+                            age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
 
 # selectivity = logistic, not age-specific
 #   2 pars per block instead of n.ages
