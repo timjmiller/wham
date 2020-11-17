@@ -137,6 +137,27 @@
 #'                  }
 #'                }
 #'   }
+#' 
+#' \code{age_comp} specifies the age composition models for fleet(s) and indices.
+#' If \code{NULL}, the multinomial is used because this was the only option in ASAP.
+#' The age composition models available are:
+#'   \describe{
+#'     \item{\code{"multinomial"}}{Multinomial. This is the default because it was the only option in ASAP. 0 parameters. Generally inferior.}
+#'     \item{\code{"dir-mult"}}{Dirichlet-multinomial. Effective sample size is estimated by the model (\href{https://www.sciencedirect.com/science/article/abs/pii/S0165783616301941}{Thorson et al. 2017}; \href{https://www.sciencedirect.com/science/article/abs/pii/S016578361830033X}{Thorson 2019}). 1 parameter.}
+#'     \item{\code{"dirichlet"}}{See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}. 1 parameter.}
+#'     \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters.}
+#'     \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter.}
+#'     \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters.}
+#'     \item{\code{"logistic-normal-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
+#'   }
+#' An age composition model needs to be specified for each fleet and index. If you would like
+#' all fleets and indices to use the same age composition likelihood, you can simply specify one 
+#' of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
+#' age composition model to be used for all fleets and indices, you must specify a named list with the following entries:
+#'   \describe{
+#'     \item{$fleets}{A vector of the above strings with length = the number of fleets.}
+#'     \item{$indices}{A vector of the above strings with length = the number of indices.}
+#'   }
 #'
 #' @param asap3 list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
@@ -145,6 +166,7 @@
 #' @param selectivity (optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
 #' @param NAA_re (optional) list specifying random effect options on numbers-at-age (see details)
+#' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -167,7 +189,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL){
+prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, age_comp=NULL){
   asap3 = asap3$dat
   which_indices <- which(asap3$use_index ==1)
   asap3$n_indices = length(which_indices)
@@ -212,10 +234,33 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   data$n_years_selblocks <- apply(data$selblock_years, 2, sum)
 
   # Age composition model
-  data$age_comp_model_fleets = rep(1, data$n_fleets) #multinomial by default
-  data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[data$age_comp_model_fleets]
-  data$age_comp_model_indices = rep(1, data$n_indices) #multinomial by default
-  data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[data$age_comp_model_indices]
+  if(is.null(age_comp)){
+    data$age_comp_model_fleets = rep(1, data$n_fleets) # multinomial by default
+    data$age_comp_model_indices = rep(1, data$n_indices) # multinomial by default
+  } else {
+    if(is.character(age_comp)){ # all use the same model
+      themod <- match(age_comp, c("multinomial","dir-mult","dirichlet","logistic-normal-01-infl","logistic-normal-pool0","logistic-normal-01-infl-2par","logistic-normal-miss0"))
+      if(is.na(themod)) stop("age_comp option not recognized. See ?prepare_wham_input.")
+      data$age_comp_model_fleets = rep(themod, data$n_fleets)
+      data$age_comp_model_indices = rep(themod, data$n_indices)
+    } else {
+      if(all(names(age_comp) == c("fleets","indices"))){
+        themods <- match(age_comp$fleets, c("multinomial","dir-mult","dirichlet","logistic-normal-01-infl","logistic-normal-pool0","logistic-normal-01-infl-2par","logistic-normal-miss0"))
+        if(any(is.na(themods))) stop("age_comp$fleets option not recognized. See ?prepare_wham_input for available options.")
+        if(length(themods) != data$n_fleets) stop("age_comp$fleets must have length = the number of fleets")
+        data$age_comp_model_fleets = themods
+
+        themods <- match(age_comp$indices, c("multinomial","dir-mult","dirichlet","logistic-normal-01-infl","logistic-normal-pool0","logistic-normal-01-infl-2par","logistic-normal-miss0"))
+        if(any(is.na(themods))) stop("age_comp$indices option not recognized. See ?prepare_wham_input for available options.")
+        if(length(themods) != data$n_indices) stop("age_comp$indices must have length = the number of indices")
+        data$age_comp_model_indices = themods
+      } else {
+        stop("age_comp must either be a character or a named list. See ?prepare_wham_input.")
+      }
+    }
+  }
+  data$n_age_comp_pars_fleets = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets]
+  data$n_age_comp_pars_indices = c(0,1,1,3,1,2,1)[data$age_comp_model_indices]
 
   data$fracyr_SSB = rep(asap3$fracyr_spawn, data$n_years_model)
   data$mature = asap3$maturity
@@ -929,8 +974,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   }
 
   # age comp pars
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
+  n_catch_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
+  n_index_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
