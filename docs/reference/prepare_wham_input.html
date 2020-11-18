@@ -76,7 +76,7 @@ By default, this will set up a SCAA version like ASAP." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1.9000</span>
       </span>
     </div>
 
@@ -181,7 +181,8 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
   ecov <span class='op'>=</span> <span class='cn'>NULL</span>,
   selectivity <span class='op'>=</span> <span class='cn'>NULL</span>,
   M <span class='op'>=</span> <span class='cn'>NULL</span>,
-  NAA_re <span class='op'>=</span> <span class='cn'>NULL</span>
+  NAA_re <span class='op'>=</span> <span class='cn'>NULL</span>,
+  age_comp <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -214,6 +215,10 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
     <tr>
       <th>NAA_re</th>
       <td><p>(optional) list specifying random effect options on numbers-at-age (see details)</p></td>
+    </tr>
+    <tr>
+      <th>age_comp</th>
+      <td><p>(optional) character or named list, specifies age composition model for fleet(s) and indices (see details)</p></td>
     </tr>
     </table>
 
@@ -346,6 +351,26 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
                    <dt>"ar1_a"</dt><dd><p>NAA deviations correlated by age (AR1).</p></dd>
                    <dt>"ar1_y"</dt><dd><p>NAA deviations correlated by year (AR1).</p></dd>
                    <dt>"2dar1"</dt><dd><p>NAA deviations correlated by year and age (2D AR1).</p></dd></dl></p></dd>
+  
+</dl>
+
+<p><code>age_comp</code> specifies the age composition models for fleet(s) and indices.
+If <code>NULL</code>, the multinomial is used because this was the only option in ASAP.
+The age composition models available are:</p><dl>
+    <dt><code>"multinomial"</code></dt><dd><p>Multinomial. This is the default because it was the only option in ASAP. 0 parameters. Generally inferior.</p></dd>
+    <dt><code>"dir-mult"</code></dt><dd><p>Dirichlet-multinomial. Effective sample size is estimated by the model (<a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783616301941'>Thorson et al. 2017</a>; <a href='https://www.sciencedirect.com/science/article/abs/pii/S016578361830033X'>Thorson 2019</a>). 1 parameter.</p></dd>
+    <dt><code>"dirichlet"</code></dt><dd><p>See <a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093'>Francis 2014</a> and <a href='https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532'>Albertsen et al. 2016</a>. 1 parameter.</p></dd>
+    <dt><code>"logistic-normal-01-infl"</code></dt><dd><p>Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in <a href='https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628'>Ospina and Ferrari (2012)</a>. 3 parameters.</p></dd>
+    <dt><code>"logistic-normal-pool0"</code></dt><dd><p>Logistic normal, pooling zero observations with adjacent age classes. 1 parameter.</p></dd>
+    <dt><code>"logistic-normal-01-infl-2par"</code></dt><dd><p>Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters.</p></dd>
+    <dt><code>"logistic-normal-miss0"</code></dt><dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
+  
+</dl><p>An age composition model needs to be specified for each fleet and index. If you would like
+all fleets and indices to use the same age composition likelihood, you can simply specify one 
+of the strings above, i.e. <code>age_comp = "logistic-normal-miss0"</code>. If you do not want the same
+age composition model to be used for all fleets and indices, you must specify a named list with the following entries:</p><dl>
+    <dt>$fleets</dt><dd><p>A vector of the above strings with length = the number of fleets.</p></dd>
+    <dt>$indices</dt><dd><p>A vector of the above strings with length = the number of indices.</p></dd>
   
 </dl>
 

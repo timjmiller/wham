@@ -136,16 +136,15 @@ cat(vign1_m1_conv, sep = "\n")
 
 ### Fit models `m2`-`m4`
 
-The second model, `m2`, is like the first, but changes all the age composition likelihoods from multinomial to logistic normal with estimated observation error variances:
+The second model, `m2`, is like the first, but changes all the age composition likelihoods from multinomial to logistic normal (treating 0 observations as missing):
 ```{r eval=FALSE}
-input2 = input1
-input2$data$age_comp_model_indices = rep(7, input2$data$n_indices)
-input2$data$age_comp_model_fleets = rep(7, input2$data$n_fleets)
-input2$data$n_age_comp_pars_indices = rep(1, input2$data$n_indices)
-input2$data$n_age_comp_pars_fleets = rep(1, input2$data$n_fleets)
-input2$par$index_paa_pars = rep(0, input2$data$n_indices)
-input2$par$catch_paa_pars = rep(0, input2$data$n_fleets)
-input2$map = input2$map[!(names(input2$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+                                    selectivity=list(model=rep("age-specific",3), 
+                                        re=rep("none",3), 
+                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                        fix_pars=list(5,4,2)),
+                                    NAA_re = list(sigma="rec", cor="iid"),
+                                    age_comp = "logistic-normal-miss0")
 m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time in ex
 ```
 
@@ -180,14 +179,13 @@ cat(vign1_m3_conv, sep = "\n")
 
 The last, `m4`, is like `m3`, but again changes all the age composition likelihoods to logistic normal:
 ```{r eval=FALSE}
-input4 = input3
-input4$data$age_comp_model_indices = rep(7, input4$data$n_indices)
-input4$data$age_comp_model_fleets = rep(7, input4$data$n_fleets)
-input4$data$n_age_comp_pars_indices = rep(1, input4$data$n_indices)
-input4$data$n_age_comp_pars_fleets = rep(1, input4$data$n_fleets)
-input4$par$index_paa_pars = rep(0, input4$data$n_indices)
-input4$par$catch_paa_pars = rep(0, input4$data$n_fleets)
-input4$map = input4$map[!(names(input4$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+                                    selectivity=list(model=rep("age-specific",3), 
+                                        re=rep("none",3), 
+                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                        fix_pars=list(5,4,2)),
+                                    NAA_re = list(sigma="rec+1", cor="iid"),
+                                    age_comp = "logistic-normal-miss0")
 m4 <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time in ex
 ```
 
