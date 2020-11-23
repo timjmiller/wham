@@ -357,11 +357,11 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
 <p><code>age_comp</code> specifies the age composition models for fleet(s) and indices.
 If <code>NULL</code>, the multinomial is used because this was the only option in ASAP.
 The age composition models available are:</p><dl>
-    <dt><code>"multinomial"</code></dt><dd><p>Multinomial. This is the default because it was the only option in ASAP. 0 parameters. Generally inferior.</p></dd>
+    <dt><code>"multinomial"</code></dt><dd><p>Multinomial. This is the default because it was the only option in ASAP. 0 parameters.</p></dd>
     <dt><code>"dir-mult"</code></dt><dd><p>Dirichlet-multinomial. Effective sample size is estimated by the model (<a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783616301941'>Thorson et al. 2017</a>; <a href='https://www.sciencedirect.com/science/article/abs/pii/S016578361830033X'>Thorson 2019</a>). 1 parameter.</p></dd>
     <dt><code>"dirichlet"</code></dt><dd><p>See <a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093'>Francis 2014</a> and <a href='https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532'>Albertsen et al. 2016</a>. 1 parameter.</p></dd>
     <dt><code>"logistic-normal-01-infl"</code></dt><dd><p>Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in <a href='https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628'>Ospina and Ferrari (2012)</a>. 3 parameters.</p></dd>
-    <dt><code>"logistic-normal-pool0"</code></dt><dd><p>Logistic normal, pooling zero observations with adjacent age classes. 1 parameter.</p></dd>
+    <dt><code>"logistic-normal-pool0"</code></dt><dd><p>Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See <a href='https://doi.org/10.1093/icesjms/fsl024'>Schnute and Haigh (2007)</a> and <a href='https://doi.org/10.1016/j.fishres.2013.12.015'>Francis (2014)</a></p></dd>.
     <dt><code>"logistic-normal-01-infl-2par"</code></dt><dd><p>Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters.</p></dd>
     <dt><code>"logistic-normal-miss0"</code></dt><dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
   
