@@ -935,6 +935,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$log_NAA = factor(tmp)
 
   # selectivity pars
+  selpars_ini[selpars_ini > selpars_hi] <- selpars_hi[selpars_ini > selpars_hi]
+  selpars_ini[selpars_ini < selpars_lo] <- selpars_lo[selpars_ini < selpars_lo]
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] = -10
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars>0] = 10
