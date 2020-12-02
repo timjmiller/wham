@@ -153,42 +153,42 @@
 <h2 class="hasAnchor">
 <a href="#load-data" class="anchor"></a>1. Load data</h2>
 <p>Open R and load the <code>wham</code> package:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex4_selectivity.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
 <p>You can run this entire example script with:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
 <span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex4_selectivity.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Let's create a directory for this analysis:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>Let’s create a directory for this analysis:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># need to change</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">example 1</a>. Let's copy <code>ex1_SNEMAYT.dat</code> to our analysis directory:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">example 1</a>. Let’s copy <code>ex1_SNEMAYT.dat</code> to our analysis directory:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>Confirm you are in the correct directory and it has the required data files:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "CPI.csv"                "ex1_SNEMAYT.dat"        "ex1_test_results.rds"  </span>
 <span class="co">#&gt;  [4] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
 <span class="co">#&gt;  [7] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
 <span class="co">#&gt; [10] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="specify-selectivity-model-options" class="section level2">
 <h2 class="hasAnchor">
 <a href="#specify-selectivity-model-options" class="anchor"></a>2. Specify selectivity model options</h2>
 <p>We are going to run 9 models that differ only in the selectivity options:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># m1-m5 logistic, m6-m9 age-specific</span>
 <span class="va">sel_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
 
@@ -226,7 +226,7 @@
 <h2 class="hasAnchor">
 <a href="#setup-and-run-models" class="anchor"></a>3. Setup and run models</h2>
 <p>The ASAP data file specifies selectivity options (model, initial parameter values, which parameters to fix/estimate). WHAM uses these by default in order to facilitate running ASAP models. To see the currently specified selectivity options in <code>asap3</code>:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_block_assign</span> <span class="co"># 1 fleet, all years assigned to block 1</span>
 <span class="co">#&gt; [[1]]</span>
 <span class="co">#&gt;  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
@@ -288,7 +288,7 @@
 <thead><tr class="header">
 <th>Model</th>
 <th><code>selectivity$model</code></th>
-<th>No. Parameters</th>
+<th>No. Parameters</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -318,9 +318,9 @@
 <p>Mean selectivity parameters can be initialized at different values from the ASAP file with <code>selectivity$initial_pars</code>. Parameters can be fixed at their initial values by specifying <code>selectivity$fix_pars</code>. Finally, we specify any time-varying (random effects) on selectivity parameters (<code>selectivity$re</code>):</p>
 <table class="table">
 <colgroup>
-<col width="5%">
-<col width="5%">
-<col width="5%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr class="header">
 <th><code>selectivity$re</code></th>
@@ -362,7 +362,7 @@
 </tbody>
 </table>
 <p>Now we can run the above models in a loop:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
     <span class="kw">if</span><span class="op">(</span><span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">==</span> <span class="st">"logistic"</span><span class="op">)</span><span class="op">{</span> <span class="co"># logistic selectivity</span>
         <span class="co"># overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)</span>
@@ -396,11 +396,11 @@
 <h2 class="hasAnchor">
 <a href="#model-convergence-and-comparison" class="anchor"></a>4. Model convergence and comparison</h2>
 <p>Collect all models into a list:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></code></pre></div>
 <p>Check which models converged. Note that 3 of the 9 models did NOT converge:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">vign4_conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/capture.output.html">capture.output</a></span><span class="op">(</span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign4_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt; Model 1:
@@ -457,7 +457,7 @@
 #&gt; Max gradient parameter: logit_q 
 #&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible</code></pre>
 <p>Plot output for models that converged (in a subfolder for each model):</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Is Hessian positive definite?</span>
 <span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
 <span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span>
@@ -468,7 +468,7 @@
     <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, out.type<span class="op">=</span><span class="st">'html'</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>Compare the models using AIC:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
 <span class="va">df.aic</span><span class="op">[</span><span class="op">!</span><span class="va">pdHess</span>,<span class="op">]</span> <span class="op">=</span> <span class="cn">NA</span>
 <span class="va">minAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
@@ -502,7 +502,7 @@
 #&gt; 8 -1477.5
 #&gt; 9      NA</code></pre>
 <p>Prepare to plot selectivity-at-age for block 1 (fleet).</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sjmgarnier/viridis">viridis</a></span><span class="op">)</span>
 
@@ -530,7 +530,7 @@
 <span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">conv</span><span class="op">)</span></code></pre></div>
 <p>Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">geom_tile</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>fill<span class="op">=</span><span class="va">Selectivity</span>, alpha<span class="op">=</span><span class="va">conv</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_alpha_discrete</span><span class="op">(</span>range<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.4</span>,<span class="fl">1</span><span class="op">)</span>, guide<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
@@ -541,18 +541,16 @@
     <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_x_continuous</span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_y_continuous</span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png" style="width:90.0%">
-</div>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png" style="width:90.0%"></p>
 <div id="a-note-on-convergence" class="section level4">
 <h4 class="hasAnchor">
 <a href="#a-note-on-convergence" class="anchor"></a>A note on convergence</h4>
 <p>When fitting age-specific selectivity, oftentimes some of the (mean, <span class="math inline">\(\mu^{s}_a\)</span>) selectivity parameters need to be fixed for the model to converge. The specifications used here follow this procedure:</p>
 <ol style="list-style-type: decimal">
 <li>Fit the model without fixing any selectivity parameters.</li>
-<li>If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (&gt; 5 or &lt; -5 on the logit scale) and/or have <code>NaN</code> estimates of their standard error:</li>
+<li>If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (&gt; 5 or &lt; -5 on the logit scale) and/or have <code>NaN</code> estimates of their standard error:</li>
 </ol>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">logit_selpars</span> <span class="co"># mean sel pars</span>
 <span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">sel_repars</span> <span class="co"># if time-varying selectivity turned on</span>
 <span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">selAA</span> <span class="co"># selectivity-at-age by block</span>
@@ -560,7 +558,7 @@
 <ol start="3" style="list-style-type: decimal">
 <li>Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above age-specific models, we first initialized and fixed ages 4, 4, and 2 for blocks 1-3, respectively. The logit scale selectivity for age 5 and ages 3-4 for blocks 1 and 3 remained around 20, indicating that they too should be fixed at 1. Sometimes just initializing the worst parameter is enough, without fixing it.</li>
 </ol>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R">        <span class="co"># fix selectivity at 1 for ages 4-5 / 4 / 2-4 in blocks 1-3</span>
         <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,
                     selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, 
@@ -570,7 +568,7 @@
 <ol start="4" style="list-style-type: decimal">
 <li>The goal is to find a set of selectivity parameter initial/fixed values that allow all nested models to converge. Fixing parameters should not affect the NLL much, and any model that is a superset of another should not have a greater NLL (indicates not converged to global minimum). The following commands may be helpful:</li>
 </ol>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>

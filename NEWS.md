@@ -8,7 +8,7 @@ wham 1.0.1.9000
 
 ### Bug fixes
 
-* check for sel par inits outside lower/upper bounds
+* check for sel par inits outside lower/upper bounds ([4ed394b](https://github.com/timjmiller/wham/commit/4ed394bac38d6054727bc4d3e17c8f4452ae8289))
 
 wham 1.0.1 (2020-11-12)
 =========================
