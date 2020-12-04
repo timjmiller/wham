@@ -67,7 +67,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations
   // DATA_INTEGER(use_M_re);
   DATA_INTEGER(M_re_model); // 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
-  DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If weight-at-age M, dim = 1.
+  DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If constant or weight-at-age M, dim = 1.
   DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_b_prior);
   DATA_INTEGER(which_F_age); //which age of F to use for full total F for msy/ypr calculations
@@ -136,9 +136,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_VECTOR(index_paa_pars);
-  PARAMETER(M0); // overall mean M
-  PARAMETER_VECTOR(M_a); // mean M-at-age deviations from M0, fixed effects, length = n_M_a (n_ages if age-specific M, 1 if using weight-at-age M)
-  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from M0 + M_a, dim = n_years x n_M_a
+  PARAMETER_VECTOR(M_a); // mean M-at-age, fixed effects, length = n_ages if M_model = 2 (age-specific), length = 1 if M_model = 1 (constant) or 3 (weight-at-age M)
+  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean M_a), dim = n_years x n_M_a
   PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
   PARAMETER(log_b);
   PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
@@ -500,19 +499,18 @@ Type objective_function<Type>::operator() ()
   REPORT(nll_M);
   nll += nll_M;
   REPORT(M_re); //even if M_re not simulated.
-  REPORT(M0);
   REPORT(M_a);
   REPORT(M_repars);
 
   // Construct mortality-at-age (MAA)
   matrix<Type> MAA(n_years_model + n_years_proj,n_ages);
   if(M_model == 2){ // age-specific M
-    for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
+    for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M_a(a) + M_re(y,a));   
   } else {
     if(M_model == 1){ // constant M
-      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a));
+      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a));
     } else { // M_model = 3, M is allometric function of weight
-      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
     }
   }
   // add to MAA in projection years
@@ -530,12 +528,12 @@ Type objective_function<Type>::operator() ()
       }
     } else { // proj_M_opt == 1, use M_re and/or ecov_lm in projection years
         if(M_model == 2){ // age-specific M
-          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_a(a) + M_re(y,a));   
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(a) + M_re(y,a));   
         } else {
           if(M_model == 1){ // constant M
-            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a));
+            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a));
           } else { // M_model = 3, M is allometric function of weight
-            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M0 + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
           }
         }
       }

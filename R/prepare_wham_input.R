@@ -454,11 +454,9 @@ This message will not appear if you set recruit_model = 2 (random about mean).")
   data$use_b_prior = 0
   data$M_re_model = 1 # default = no RE / 'none'
   data$M_est <- rep(0, data$n_M_a) # default = don't estimate M
-  M_first_est = 1
-  M0_ini <- log(asap3$M[1,1])
-  M_a_ini <- log(asap3$M[1,]) - M0_ini
-  # M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini + M0_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
-  M_re_ini <- matrix(log(asap3$M)-matrix(M_a_ini + M0_ini,data$n_years_model,data$n_M_a,byrow=T), data$n_years_model, data$n_M_a)
+  M_first_est = NA
+  M_a_ini <- log(asap3$M[1,])
+  M_re_ini <- matrix(log(asap3$M)-matrix(M_a_ini, data$n_years_model, data$n_M_a, byrow=T), data$n_years_model, data$n_M_a)
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
@@ -468,7 +466,7 @@ If you want an AR1 process on M-at-age, set M$model = 'constant' and M$re = 'ar1
       if(M$model %in% c("constant","weight-at-age")){
         data$n_M_a = 1
         data$M_est = 0
-        M_a_ini = 0
+        M_a_ini = log(asap3$M[1,1])
         # M_re_ini = matrix(log(asap3$M[-1,1])-matrix(M0_ini,data$n_years_model-1,1,byrow=T), data$n_years_model-1, data$n_ages)
         if(is.null(M$initial_means) & length(unique(asap3$M[1,])) > 1) warning("Constant or weight-at-age M specified (so only 1 mean M parameter),
 but first row of MAA matrix has > 1 unique value.
@@ -487,9 +485,8 @@ without changing ASAP file, specify M$initial_means.")
       # data$use_M_re <- 1
     }
     if(!is.null(M$initial_means)){
-      if(length(M$initial_means) != data$n_M_a) stop("Length(M$initial_means) must be # ages (if age-specific M) or 1 (if weight-at-age M)")
-      M0_ini <- log(M$initial_means[1])
-      M_a_ini <- log(M$initial_means) - M0_ini
+      if(length(M$initial_means) != data$n_M_a) stop("Length(M$initial_means) must be # ages (if age-specific M) or 1 (if constant or weight-at-age M)")
+      M_a_ini <- log(M$initial_means)
       # Use ASAP file M values
       # M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
       # overwrite ASAP file M values
@@ -499,15 +496,6 @@ without changing ASAP file, specify M$initial_means.")
       if(!all(M$est_ages %in% 1:data$n_M_a)) stop("All M$est_ages must be in 1:n.ages (if age-specific M) or 1 (if constant or weight-at-age M)")
       data$M_est[M$est_ages] = 1 # turn on estimation for specified M-at-age
       M_first_est <- M$est_ages[1]
-      if(M$model == "age-specific"){
-        if(is.null(M$initial_means)){
-          M0_ini <- log(asap3$M[1,M_first_est])
-          M_a_ini <- log(asap3$M[1,]) - M0_ini
-        } else {
-          M0_ini <- log(M$initial_means[M_first_est])
-          M_a_ini <- log(M$initial_means) - M0_ini
-        }
-      }
       M_re_ini[] = 0 # if estimating mean M for any ages, initialize yearly deviations at 0
     }
   }
@@ -982,7 +970,6 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
   # natural mortality pars
-  par$M0 <- M0_ini # mean M
   par$M_a <- M_a_ini # deviations by age
   par$M_re <- M_re_ini # deviations from mean M_a on log-scale, PARAMETER_ARRAY
   par$M_repars <- rep(0, 3)
@@ -1043,10 +1030,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
 
-  if(data$n_M_est == 0) map$M0 = factor(NA)
-  # map$M_a = factor(rep(NA, length(par$M_a)))
   tmp <- par$M_a
-  tmp[M_first_est] = NA # M0 represents M for first estimated age, fix that M_a deviation = 0
   tmp[data$M_est==0] = NA
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
