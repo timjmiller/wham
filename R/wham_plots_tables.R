@@ -202,7 +202,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(tmp$pred, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Predicted ", mod$env$data$Ecov_label[f]), ylab="OSA Residuals",
+      plot(tmp$pred, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Predicted ", mod$env$data$Ecov_label[[1]][f]), ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -231,7 +231,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       lines(z, upper, lty=2, col=plot.colors[f])
       lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("OSA residual diagnostics: Ecov ",f," (",mod$env$data$Ecov_label[f],")"), outer=T, line=-1)
+      title (paste0("OSA residual diagnostics: Ecov ",f," (",mod$env$data$Ecov_label[[1]][f],")"), outer=T, line=-1)
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
@@ -264,7 +264,7 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
   text(5,nl <- nl-0.5,paste0("Recruitment model: ", recs[mod$env$data$recruit_model]))
   if(!all(mod$env$data$Ecov_model == 0)){
-    for(ec in 1:mod$env$data$n_Ecov) text(5,nl <- nl-0.5, paste0("Environmental effect ", ec,": ", mod$env$data$Ecov_label[ec]," (",env.mod[mod$env$data$Ecov_model[ec]],") on ",env.where[mod$env$data$Ecov_where[ec]], " (", env.how[mod$env$data$Ecov_how[ec]],")"))
+    for(ec in 1:mod$env$data$n_Ecov) text(5,nl <- nl-0.5, paste0("Environmental effect ", ec,": ", mod$env$data$Ecov_label[[1]][ec]," (",env.mod[mod$env$data$Ecov_model[ec]],") on ",env.where[mod$env$data$Ecov_where[ec]], " (", env.how[mod$env$data$Ecov_how[ec]],")"))
   } else {
     text(5,nl <- nl-0.5, "Environmental effects: none")
   }
@@ -612,7 +612,7 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
     }
     xe$row = xe$Label
     xe$Label = factor(xe$Label)
-    levels(xe$Label) = mod$env$data$Ecov_label
+    levels(xe$Label) = mod$env$data$Ecov_label[[1]]
     xe$type = "Ecov"
   }
 
@@ -723,7 +723,7 @@ plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, fo
     x <- rbind(x, td)
   }
   x$Ecov = factor(x$Ecov)
-  levels(x$Ecov) = mod$env$data$Ecov_label
+  levels(x$Ecov) = mod$env$data$Ecov_label[[1]]
   names(plot.colors) = levels(x$Ecov)
   ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=Ecov)) +
     ggplot2::geom_line(size=1.1) +

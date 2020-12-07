@@ -677,7 +677,7 @@ without changing ASAP file, specify M$initial_means.")
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
 
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
-    if(!ecov$where %in% c('recruit','M')){
+    if(!any(ecov$where %in% c('recruit','M'))){
       stop("Sorry, only ecov effects on recruitment and M currently implemented.
       Set ecov$where = 'recruit' or 'M'.")
     }
@@ -735,14 +735,14 @@ Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
 
       if(data$Ecov_where[i] == 1){ # recruitment
         cat(paste0("Ecov ",i,": ",ecov$label[i],"
-",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how+1]," (",ecov_str[[i]],") effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
+",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how[i]+1]," (",ecov_str[[i]],") effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
 
 In model years:
 "))
       }
       if(data$Ecov_where[i] == 2){ # M
         cat(paste0("Ecov ",i,": ",ecov$label[i],"
-",ecov_str[[i]]," effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
+",c('*NO*',ecov_str[[i]])[data$Ecov_how[i]+1]," effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
 
 In model years:
 "))
@@ -753,8 +753,10 @@ lastyr <- tail(years,1)
 cat(paste0("Lag: ",data$Ecov_lag[i],"
 Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_where[i]]," in ",years[1+data$Ecov_lag[i]],"
     ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','M')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
+
 "))
     }
+    data$Ecov_label <- list(data$Ecov_label)
   } # end load Ecov
 
   # add vector of all observations for one step ahead residuals ==========================
@@ -1003,7 +1005,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   for(j in 1:data$n_Ecov){
     tmp[,j] <- ifelse(data$Ecov_how[j]==0, NA, 0)
     for(i in 1:max.poly){
-      if(i > data$Ecov_poly) tmp[i,j] = NA
+      if(i > data$Ecov_poly[j]) tmp[i,j] = NA
     }
   }
   ind.notNA <- which(!is.na(tmp))
