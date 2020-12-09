@@ -218,12 +218,12 @@
   0.0590   0.1720   0.3410   0.4150   0.5360   0.7020 
   0.1020   0.1670   0.3400   0.4510   0.5190   0.7170 
 # Weight at Age Pointers
-1 #fleet 1
-1 #all catch
-2 #ssb
-3 #jan1b
-9 # not used?
-9 # not used?
+1 # fleet 1 catch
+2 # fleet 1 discards (not used)
+1 # total catch
+2 # total discards (not used)
+3 # SSB
+3 # Jan 1
 # Selectivity blocks (blocks within years)
 # Selectivity Block Assignment by Year x Fleet
 1

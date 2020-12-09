@@ -269,10 +269,10 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   i <- c(seq(1,(asap3$n_fleets+1)*2-1,2),(asap3$n_fleets+1)*2 + 1:2)
   WAA_pointers <- asap3$WAA_pointers[i] #wham has no discard data, so remove those WAA matrices
   data$waa_pointer_fleets = WAA_pointers[1:data$n_fleets]
-  data$waa_pointer_totcatch = asap3$WAA_pointers[data$n_fleets + 1]
+  data$waa_pointer_totcatch = WAA_pointers[data$n_fleets + 1]
   data$waa_pointer_indices = asap3$index_WAA_pointers
-  data$waa_pointer_ssb = asap3$WAA_pointers[data$n_fleets + 2]
-  data$waa_pointer_jan1 = asap3$WAA_pointers[data$n_fleets + 3]
+  data$waa_pointer_ssb = WAA_pointers[data$n_fleets + 2]
+  data$waa_pointer_jan1 = WAA_pointers[data$n_fleets + 3]
   data$waa = array(NA, dim = c(length(asap3$WAA_mats), data$n_years_model, data$n_ages))
   for(i in 1:length(asap3$WAA_mats)) data$waa[i,,] = asap3$WAA_mats[[i]]
 
