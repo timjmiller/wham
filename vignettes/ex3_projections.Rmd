@@ -17,17 +17,17 @@ knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
-- logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
+- logistic normal age compositions (`age_comp = "logistic-normal-pool0"`)
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 
 - Cold Pool Index (CPI) fit as an AR1 process (`ecov$process_model = "ar1"`)
 
-- CPI has a "controlling" (density-independent mortality, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`ecov$where = "recruit"`, `ecov$how = 1`)
+- CPI has a "limiting" (carrying capacity, [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)) effect on recruitment (`ecov$where = "recruit"`, `ecov$how = 2`)
 
 In example 3, we demonstrate how to project/forecast WHAM models using the `project_wham()` function options for handling
 
@@ -87,11 +87,11 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 ## 2. Specify model
 
-Setup model `m6` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+Setup model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
-- logistic normal age compositions (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
+- logistic normal age compositions (`age_comp = "logistic-normal-pool0"`)
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 
@@ -109,7 +109,7 @@ env <- list(
   lag = 1, # CPI in year t affects recruitment in year t+1
   process_model = "ar1", # fit CPI as AR1 process
   where = "recruit", # CPI affects recruitment
-  how = 1) # controlling (dens-indep mortality)
+  how = 2) # limiting (carrying capacity)
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
@@ -147,7 +147,7 @@ The two code blocks above are equivalent; when `do.proj = TRUE`, `fit_wham()` fi
 ```{r eval=FALSE}
 # run
 mod <- fit_wham(input)
-saveRDS(mod, file="m6.rds") # save unprojected model
+saveRDS(mod, file="m5.rds") # save unprojected model
 ```
 
 ## 4. Add projections to fit model
@@ -267,7 +267,7 @@ mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, u
 Save projected models
 
 ```{r eval=FALSE}
-saveRDS(mod_proj, file="m6_proj.rds")
+saveRDS(mod_proj, file="m5_proj.rds")
 ```
 
 ## 5. Compare projections
@@ -311,12 +311,12 @@ plots <- c("Ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_
 dirs <- file.path(getwd(),plots)
 lapply(as.list(dirs), FUN=dir.create)
 for(m in 1:length(mod_proj)){
-  for(i in 1:length(plots)){
+  for(i in 1:(length(plots)-1)){
      file.copy(from=file.path(getwd(),paste0("proj_",m),"plots_png","results",paste0(plots[i],".png")),
                to=file.path(dirs[i],paste0(plots[i],"_proj_",m,".png")))
-     file.copy(from=file.path(getwd(),paste0("proj_",m),"plots_png","ref_points",paste0(plots[i],".png")),
-               to=file.path(dirs[i],paste0(plots[i],"_proj_",m,".png")))
   }
+  file.copy(from=file.path(getwd(),paste0("proj_",m),"plots_png","ref_points","Kobe_status.png"),
+            to=file.path(dirs[i+1],paste0(plots[i+1],"_proj_",m,".png")))
 }
 ```
 

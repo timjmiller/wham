@@ -38,7 +38,7 @@ env <- list(
   lag = 1, # CPI in year t affects recruitment in year t+1
   process_model = "ar1", # fit CPI as AR1 process
   where = "recruit", # CPI affects recruitment
-  how = 1) # controlling (dens-indep mortality)
+  how = 2) # limiting (carrying capacity)
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
@@ -54,8 +54,8 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 # ---------------------------------------------------------
 ## Fit model without projections
 mod <- fit_wham(input) # default do.proj=FALSE
-saveRDS(mod, file="m6.rds")
-# mod <- readRDS("m6.rds")
+saveRDS(mod, file="m5.rds")
+# mod <- readRDS("m5.rds")
 
 # Add projections to previously fit model
 mod_proj <- list()
@@ -110,8 +110,8 @@ mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, u
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=1992:1996,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
 
-saveRDS(mod_proj, file="m6_proj.rds")
-# mod_proj <- readRDS("m6_proj.rds")
+saveRDS(mod_proj, file="m5_proj.rds")
+# mod_proj <- readRDS("m5_proj.rds")
 
 #  check marginal nll is the same
 nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)
