@@ -4,11 +4,14 @@ wham 1.0.1.9000
 ### Minor improvements
 
 * add `1e-15` to predicted proportions to make age composition likelihoods robust to 0 predictions when selAA is fixed at 0. This affects the multinomial, Dirichlet, and Dirichlet-multinomial (options 1-3), since the logistic normal (options 4-7) already did this. [88f15d4](https://github.com/timjmiller/wham/commit/88f15d4a51f69a3d649d76bcac0a8cf299c3135e)
-* can now specify age composition model using `age_comp` argument to `prepare_wham_input`. See [`?prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.html) for details. [fd94b3d](https://github.com/timjmiller/wham/commit/fd94b3dcaf189482e10a6750c2f1b8350837fd48)
+* specify age composition model using `age_comp` argument to `prepare_wham_input`. See [`?prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.html) for details. [fd94b3d](https://github.com/timjmiller/wham/commit/fd94b3dcaf189482e10a6750c2f1b8350837fd48)
+* estimate age-specific M for any age(s) ([60f1358](https://github.com/timjmiller/wham/commit/60f13584e515950bf43f358c5a0cfdb0e8a30241))
 
 ### Bug fixes
 
 * check for sel par inits outside lower/upper bounds ([4ed394b](https://github.com/timjmiller/wham/commit/4ed394bac38d6054727bc4d3e17c8f4452ae8289))
+* fleet weight-at-age pointers fixed ([059e66a](https://github.com/timjmiller/wham/commit/059e66a1cc6e90554862b3e30e815cf0d5cd18ab))
+* couple small fixes to handle multiple Ecovs ([9e46b48](https://github.com/timjmiller/wham/commit/9e46b4818e01b2bfd12e500bd4376869001f265e))
 
 wham 1.0.1 (2020-11-12)
 =========================
