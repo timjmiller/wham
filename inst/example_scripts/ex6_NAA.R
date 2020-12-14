@@ -99,19 +99,33 @@ for(m in 1:n.mods){
 mod.list <- paste0(df.mods$Model,".rds")
 mods <- lapply(mod.list, readRDS)
 
-# convergence
+# get convergence info
 opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
 ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
 df.mods$conv <- as.logical(opt_conv)
 df.mods$pdHess <- as.logical(ok_sdrep)
 
-# stats
+# make labeling prettier
+df.mods$GSI_how <- c("---","---","Limiting")[df.mods$GSI_how+1]
+
+# only get AIC and Mohn's rho for converged models
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
-df.aic$AIC[df.mods$pdHess==FALSE] <- NA
-minAIC <- min(df.aic$AIC, na.rm=T)
-df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
+not_conv <- !df.mods$conv | !df.mods$pdHess
+mods2 <- mods
+mods2[not_conv] <- NULL
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
+df.aic <- df.aic.tmp[FALSE,]
+ct = 1
+for(i in 1:n.mods){
+  if(not_conv[i]){
+    df.aic[i,] <- rep(NA,5)
+  } else {
+    df.aic[i,] <- df.aic.tmp[ct,]
+    ct <- ct + 1
+  }
+}
+df.aic[is.na(df.aic)] <- "---"
 df.mods <- cbind(df.mods, df.aic)
 rownames(df.mods) <- NULL
 
@@ -119,9 +133,8 @@ rownames(df.mods) <- NULL
 df.mods
 
 # plot output for all models that converged
-conv_mods <- which(df.mods$pdHess)
 mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
-for(m in conv_mods){
+for(m in which(!not_conv)){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
 }
 
@@ -135,7 +148,7 @@ n_years = length(years)
 n_ages = mods[[1]]$env$data$n_ages
 ages <- 1:n_ages
 
-plot.mods <- conv_mods[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
+plot.mods <- which(!not_conv)[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
 NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
 NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
 GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[df.mods$GSI_how[plot.mods]/2+1]

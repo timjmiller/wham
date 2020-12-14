@@ -124,38 +124,34 @@ df.mods$Ecov_link <- c("---","linear","poly-2")[df.mods$Ecov_link+1]
 df.mods$M_re[df.mods$M_re=="none"] = "---"
 colnames(df.mods)[2] = "M_est"
 
-# deal with models having NaN NLL
+# only get AIC and Mohn's rho for converged models
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-nopeels <- which(sapply(mods, function(x) length(x$peels)) == 0)
-noNLL <- which(is.na(df.mods$NLL))
+not_conv <- !df.mods$conv | !df.mods$pdHess
 mods2 <- mods
-mods2[noNLL] <- NULL
-mods2[nopeels] <- NULL
+mods2[not_conv] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
-  if(i %in% c(nopeels, noNLL)){
+  if(not_conv[i]){
     df.aic[i,] <- rep(NA,5)
   } else {
     df.aic[i,] <- df.aic.tmp[ct,]
     ct <- ct + 1
   }
 }
-df.aic$AIC[df.mods$pdHess==FALSE] <- NA
-minAIC <- min(df.aic$AIC, na.rm=T)
-df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
+df.aic[is.na(df.aic)] <- "---"
 df.mods <- cbind(df.mods, df.aic)
 rownames(df.mods) <- NULL
 
 # look at results table
 df.mods
 
-# # plot output for all models
-# for(m in 1:n.mods){
-#   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
-# }
+# plot output for all models that converged
+for(m in which(!not_conv)){
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
+}
 
 # save results table
 write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
