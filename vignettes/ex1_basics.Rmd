@@ -89,14 +89,14 @@ We use the `prepare_wham_input()` function to specify the model name and any set
 
 - recruitment model: random about mean, no S-R function (`recruit_model = 2`)
 - recruitment deviations: independent random effects (`NAA_re = list(sigma="rec", cor="iid")`)
-- selectivity: age-specific (fix sel=1 for age 5 in fishery, age 4 in index1, and age 2 in index2)
+- selectivity: age-specific (fix sel=1 for ages 4-5 in fishery, age 4 in index1, and ages 2-4 in index2)
 
 ```{r eval=FALSE}
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                               selectivity=list(model=rep("age-specific",3), 
                                   re=rep("none",3), 
                                   initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                  fix_pars=list(5,4,2)),
+                                  fix_pars=list(4:5,4,2:4)),
                               NAA_re = list(sigma="rec", cor="iid"))
 ```
 

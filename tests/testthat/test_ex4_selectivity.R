@@ -63,7 +63,7 @@ for(m in c(1:3,5:6,8)){ # only models that converge
 	}
 
 	# fit model
-	mods[[m]] <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F, MakeADFun.silent = TRUE) 
+	mods[[m]] <- suppressWarnings(fit_wham(input, do.osa=F, do.proj=F, do.retro=F, MakeADFun.silent = TRUE)) 
 	if(exists("err")) rm("err") # need to clean this up
 }
 

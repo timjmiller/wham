@@ -98,16 +98,35 @@ vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
 for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
 # make results table prettier
-rownames(df.mods) <- NULL
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
 df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
+
+# get convergence info
+opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- as.logical(opt_conv)
+df.mods$pdHess <- as.logical(ok_sdrep)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 
-# calculate AIC and Mohn's rho
-df.aic <- compare_wham_models(mods, sort=FALSE)$tab
+# only get AIC and Mohn's rho for converged models
+not_conv <- !df.mods$conv | !df.mods$pdHess
+mods2 <- mods
+mods2[not_conv] <- NULL
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
+df.aic <- df.aic.tmp[FALSE,]
+ct = 1
+for(i in 1:n.mods){
+  if(not_conv[i]){
+    df.aic[i,] <- rep(NA,5)
+  } else {
+    df.aic[i,] <- df.aic.tmp[ct,]
+    ct <- ct + 1
+  }
+}
 df.mods <- cbind(df.mods, df.aic)
-df.mods$runtime <- sapply(mods, function(x) round(x$runtime,1))
-df.mods <- df.mods[order(df.mods$dAIC),]
+df.mods <- df.mods[order(df.mods$dAIC, na.last=TRUE),]
+df.mods[is.na(df.mods$AIC), c('dAIC','AIC','rho_R','rho_SSB','rho_Fbar')] <- "---"
+rownames(df.mods) <- NULL
 
 # look at results table
 df.mods

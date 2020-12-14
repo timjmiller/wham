@@ -21,12 +21,12 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 # model 1
 #   recruitment expectation (recruit_model): random about mean (no S-R function)
 #   recruitment deviations (NAA_re): independent random effects
-#   selectivity: age-specific (fix sel=1 for age 5 in fishery, age 4 in index1, and age 2 in index2)
+#   selectivity: age-specific (fix sel=1 for ages 4-5 in fishery, age 4 in index1, and ages 2-4 in index2)
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
                                 	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                	fix_pars=list(5,4,2)),
+                                	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec", cor="iid"))
 m1 <- fit_wham(input1, do.osa = F) # turn off OSA residuals to save time
 
@@ -40,7 +40,7 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
                                         initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(5,4,2)),
+                                        fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
 m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time
@@ -55,7 +55,7 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
                                 	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                	fix_pars=list(5,4,2)),
+                                	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"))
 m3 <- fit_wham(input3, do.osa = F) # turn off OSA residuals to save time
 
@@ -69,7 +69,7 @@ input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
                                         initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(5,4,2)),
+                                        fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
 m4 <- fit_wham(input4, do.osa = T) # do OSA residuals for m4 bc we'll show that output

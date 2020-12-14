@@ -57,7 +57,7 @@ for(m in tofit){
   #                             model_name = "Ex 5: Yellowtail Flounder with GSI effects on M",
   #                             ecov = ecov,
   #                             M = M)
-  input <- prepare_wham_input(asap3, recruit_model = 2,
+  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 2,
                               model_name = "Ex 5: GSI effects on M",
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
@@ -65,7 +65,7 @@ for(m in tofit){
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
                               NAA_re = list(sigma='rec+1',cor='iid'),
                               M=M,
-                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
+                              age_comp = "logistic-normal-pool0")) # logistic normal pool 0 obs
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))

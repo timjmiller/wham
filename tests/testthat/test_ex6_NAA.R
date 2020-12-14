@@ -40,7 +40,7 @@ for(m in fit.mods){
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
-  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), 
                                 re=rep("none",3), 
@@ -48,7 +48,7 @@ for(m in fit.mods){
                                 fix_pars=list(4:5,4,2:4)),
                               NAA_re = NAA_list,
                               ecov=ecov,
-                              age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
+                              age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))

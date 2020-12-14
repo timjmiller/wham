@@ -45,7 +45,7 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 
 # ---------------------------------------------------------
 ## Fit model without projections
-mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE)
+mod <- suppressWarnings(fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE))
 # saveRDS(mod, file="m6.rds")
 # mod <- readRDS("/home/bstock/Documents/wham/sandbox/ex3_projections/m6.rds")
 
@@ -113,7 +113,7 @@ nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)
 # plot results
 tmp.dir <- tempdir(check=TRUE)
 for(m in 1:length(mod_proj)){
-  plot_wham_output(mod_proj[[m]], dir.main=tmp.dir, out.type='html')
+  suppressWarnings(plot_wham_output(mod_proj[[m]], dir.main=tmp.dir, out.type='html'))
   expect_equal(nll_proj[m], as.numeric(mod$opt$obj), tolerance=1e-6)
   expect_equal(as.numeric(mod_proj[[m]]$opt$par), as.numeric(mod$opt$par), tolerance=1e-3) # parameter values
 }
