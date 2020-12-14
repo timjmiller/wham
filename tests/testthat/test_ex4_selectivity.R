@@ -39,25 +39,28 @@ mods <- vector("list",n.mods)
 selAA <- vector("list",n.mods)
 # for(m in 1:n.mods){
 for(m in c(1:3,5:6,8)){ # only models that converge
-	if(sel_model[m] == "logistic"){ 
+	if(sel_model[m] == "logistic"){ # logistic selectivity
+		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
 					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.2),c(2,0.2),c(2,0.2))),
-					NAA_re = list(sigma='rec+1',cor='iid'))
-	} else {
-		# fix 4-5 / 4 / 2-4
-		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
-					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), fix_pars=list(4:5,4,2:4)),
-					NAA_re = list(sigma='rec+1',cor='iid'))
-	}
+					NAA_re = list(sigma='rec+1',cor='iid'),
+					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
+	} else { # age-specific selectivity
+		# # you can try not fixing any ages first
+		# input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, 
+		# 			selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+		# 				initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),
+		# 			NAA_re = list(sigma='rec+1',cor='iid'),
+	    #           age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
-	# overwrite age comp model (all models use logistic normal)
-	input$data$age_comp_model_indices = rep(7, input$data$n_indices)
-	input$data$age_comp_model_fleets = rep(7, input$data$n_fleets)
-	input$data$n_age_comp_pars_indices = rep(1, input$data$n_indices)
-	input$data$n_age_comp_pars_fleets = rep(1, input$data$n_fleets)
-	input$par$index_paa_pars = rep(0, input$data$n_indices)
-	input$par$catch_paa_pars = rep(0, input$data$n_fleets)
-	input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+		# often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-5 / 4 / 2-4
+		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
+					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
+						initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
+						fix_pars=list(4:5,4,2:4)),
+					NAA_re = list(sigma='rec+1',cor='iid'),
+					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
+	}
 
 	# fit model
 	mods[[m]] <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F, MakeADFun.silent = TRUE) 

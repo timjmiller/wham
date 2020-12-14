@@ -23,7 +23,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
 mods <- vector("list",n.mods)
-fit.mods <- c(1:4,6:13)
+fit.mods <- c(1:3,5:13)
 for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL
@@ -40,24 +40,15 @@ for(m in fit.mods){
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
-  recruit = ifelse(m == 1,2,3)
-  input <- prepare_wham_input(asap3, recruit_model = recruit, # Bev Holt recruitment
+  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), 
                                 re=rep("none",3), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
                                 fix_pars=list(4:5,4,2:4)),
                               NAA_re = NAA_list,
-                              ecov=ecov)
-
-  # overwrite age comp model (all models use logistic normal)
-  input$data$age_comp_model_indices = rep(7, input$data$n_indices)
-  input$data$age_comp_model_fleets = rep(7, input$data$n_fleets)
-  input$data$n_age_comp_pars_indices = rep(1, input$data$n_indices)
-  input$data$n_age_comp_pars_fleets = rep(1, input$data$n_fleets)
-  input$par$index_paa_pars = rep(0, input$data$n_indices)
-  input$par$catch_paa_pars = rep(0, input$data$n_fleets)
-  input$map = input$map[!(names(input$map) %in% c("index_paa_pars", "catch_paa_pars"))]
+                              ecov=ecov,
+                              age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
@@ -68,7 +59,8 @@ for(m in fit.mods){
 expect_equal(as.numeric(mods[[1]]$opt$obj), ex6_test_results$nll[1], tolerance=1e-3) # nll
 expect_equal(as.numeric(mods[[2]]$opt$obj), ex6_test_results$nll[2], tolerance=1e-3) # nll
 expect_equal(as.numeric(mods[[3]]$opt$obj), ex6_test_results$nll[3], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[4]]$opt$obj), ex6_test_results$nll[4], tolerance=1e-3) # nll
+# expect_equal(as.numeric(mods[[4]]$opt$obj), ex6_test_results$nll[4], tolerance=1e-3) # nll
+expect_equal(as.numeric(mods[[5]]$opt$obj), ex6_test_results$nll[5], tolerance=1e-3) # nll
 expect_equal(as.numeric(mods[[6]]$opt$obj), ex6_test_results$nll[6], tolerance=1e-3) # nll
 expect_equal(as.numeric(mods[[7]]$opt$obj), ex6_test_results$nll[7], tolerance=1e-3) # nll
 expect_equal(as.numeric(mods[[8]]$opt$obj), ex6_test_results$nll[8], tolerance=1e-3) # nll

@@ -24,7 +24,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 mods <- vector("list",n.mods)
 mods_proj <- vector("list",n.mods)
 # tofit <- c(1:10,14:17)
-tofit <- c(1:3,5:10)
+tofit <- c(1:3,5:10,17)
 for(m in tofit){
   # set up environmental covariate data and model options
   # see ?prepare_wham_input
@@ -34,7 +34,6 @@ for(m in tofit){
     logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
     year = env.dat$year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    # lag = 1, # GSI in year t affects Rec in year t + 1
     lag = 0, # GSI in year t affects M in same year
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
     where = "M", # GSI affects natural mortality
@@ -51,27 +50,22 @@ for(m in tofit){
     re = df.mods$M_re[m],
     est_ages = est_ages
   )
-  if(m_model %in% c("constant","weight-at-age")) M$initial_means = 0.28
+  if(m_model == "constant") M$initial_means = 0.28
 
   # Generate wham input from ASAP3 and Ecov data
+  # input <- prepare_wham_input(asap3, recruit_model = 2,
+  #                             model_name = "Ex 5: Yellowtail Flounder with GSI effects on M",
+  #                             ecov = ecov,
+  #                             M = M)
   input <- prepare_wham_input(asap3, recruit_model = 2,
-                              model_name = "Ex 5: Yellowtail Flounder with GSI effects on M",
+                              model_name = "Ex 5: GSI effects on M",
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
                               NAA_re = list(sigma='rec+1',cor='iid'),
-                              M=M)
-
-  # overwrite age comp model (all models use logistic normal)
-  input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets]
-  input$data$age_comp_model_indices = rep(5, input$data$n_indices) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[input$data$age_comp_model_indices]
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets[which(apply(input$data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
-  input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
+                              M=M,
+                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
@@ -113,5 +107,9 @@ expect_equal(mods[[9]]$opt$objective, mods_proj[[9]]$opt$objective, tolerance=1e
 expect_equal(as.numeric(mods[[10]]$opt$par), ex5_test_results$pars[[10]], tolerance=1e-1) # parameter values
 expect_equal(as.numeric(mods[[10]]$opt$obj), ex5_test_results$nll[10], tolerance=1e-6) # nll
 expect_equal(mods[[10]]$opt$objective, mods_proj[[10]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+
+expect_equal(as.numeric(mods[[17]]$opt$par), ex5_test_results$pars[[17]], tolerance=1e-1) # parameter values
+expect_equal(as.numeric(mods[[17]]$opt$obj), ex5_test_results$nll[17], tolerance=1e-6) # nll
+expect_equal(mods[[17]]$opt$objective, mods_proj[[17]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 })

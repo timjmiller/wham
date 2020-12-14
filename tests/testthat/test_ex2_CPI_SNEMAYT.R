@@ -31,7 +31,7 @@ df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model
 tmp.dir <- tempdir(check=TRUE)
 mods <- list()
 for(m in 1:n.mods){
-  env <- list(
+  ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),
     logsigma = as.matrix(log(env.dat$CPI_sigma)),
@@ -41,27 +41,21 @@ for(m in 1:n.mods){
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
     where = "recruit", # CPI affects recruitment
     how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
-  if(is.na(df.mods$Ecov_process[m])) env = NULL # if no ecov data
 
+  # (not used in this vignette) can set Ecov = NULL to fit model without Ecov data
+  if(is.na(df.mods$Ecov_process[m])) Ecov = NULL
+
+  # Generate wham input from ASAP3 and Ecov data
   input <- prepare_wham_input(asap3, recruit_model = df.mods$Recruitment[m],
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
-                              ecov = env,
-                              NAA_re = list(sigma="rec+1", cor="iid"))
+                              ecov = ecov,
+                              NAA_re = list(sigma="rec+1", cor="iid"),
+                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
 
-  # age comp logistic normal pool obs (not multinomial, the default)
-  input$data$age_comp_model_fleets = rep(5, input$data$n_fleets) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets]
-  input$data$age_comp_model_indices = rep(5, input$data$n_indices) # 1 = multinomial (default), 5 = logistic normal (pool zero obs)
-  input$data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[input$data$age_comp_model_indices]
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_fleets[which(apply(input$data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[input$data$age_comp_model_indices[which(apply(input$data$use_index_paa,2,sum)>0)]]
-  input$par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  input$par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
-
-  # selectivity = logistic, not age-specific
+  # Selectivity = logistic, not age-specific as in ex1
   #   2 pars per block instead of n.ages
-  #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
-  input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
+  #   sel pars of indices 4/5 fixed at 1.5, 0.1 (specified via neg phase in ex2_SNEMAYT.dat)
+  input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
   # Fit model
   mods[[m]] <- fit_wham(input, do.retro=T, do.osa=T, MakeADFun.silent = TRUE)
