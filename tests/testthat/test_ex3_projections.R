@@ -30,7 +30,7 @@ env <- list(
   lag = 1, # CPI in year t affects recruitment in year t+1
   process_model = "ar1", # fit CPI as AR1 process
   where = "recruit", # CPI affects recruitment
-  how = 1) # controlling (dens-indep mortality)
+  how = 2) # limiting (carrying capacity)
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
