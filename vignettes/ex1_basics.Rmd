@@ -107,7 +107,7 @@ The stock-recruit model options in WHAM are:
 - 3 = Beverton-Holt, and 
 - 4 = Ricker
 
-Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. `prepare_wham_input()` fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (age 5 in fishery, age 4 in index 1, and age 2 in index 2). If you are interested in more details and options for selectivity in WHAM, see [Example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html) and `prepare_wham_input()`.
+Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. `prepare_wham_input()` fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (ages 4-5 in fishery, age 4 in index 1, and ages 2-4 in index 2). If you are interested in more details and options for selectivity in WHAM, see [Example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html) and `prepare_wham_input()`.
 
 ## 3. Fit model and check for convergence
 
@@ -142,7 +142,7 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
                                         initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(5,4,2)),
+                                        fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
 m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time in ex
@@ -163,7 +163,7 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                               selectivity=list(model=rep("age-specific",3), 
                                   re=rep("none",3), 
                                   initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                  fix_pars=list(5,4,2)),
+                                  fix_pars=list(4:5,4,2:4)),
                               NAA_re = list(sigma="rec+1", cor="iid"))
 m3 <- fit_wham(input3, do.osa = F) # turn off OSA residuals to save time in ex
 ```
@@ -183,7 +183,7 @@ input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
                                         initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(5,4,2)),
+                                        fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
 m4 <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time in ex

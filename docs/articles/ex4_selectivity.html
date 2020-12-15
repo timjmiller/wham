@@ -40,7 +40,7 @@
       <ul class="nav navbar-nav">
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fas fa fas fa-book"></span>
+    <span class="fas fa-book fa-lg"></span>
      
     Vignettes
      
@@ -75,33 +75,37 @@
 </li>
 <li>
   <a href="../reference/index.html">
-    <span class="fa fa-file-code-o"></span>
+    <span class="far fa-file-code fa-lg"></span>
      
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
     Source code
   </a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-bullhorn fa-lg"></span>
+     
+    News
+  </a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/timjmiller/wham/issues/">
-    <span class="fa fa-question-circle-o"></span>
+    <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+    <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
   </a>
@@ -116,8 +120,7 @@
 
       
 
-      </header><link href="ex4_selectivity_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="ex4_selectivity_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 4: Selectivity with time- and age-varying random effects</h1>
@@ -405,55 +408,55 @@
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign4_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt; Model 1:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.54e-11 
-#&gt; Max gradient parameter: F_devs 
+#&gt; Maximum gradient component: 2.04e-01 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 2:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.77e-13 
+#&gt; Maximum gradient component: 2.27e-01 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 3:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 5.21e-09 
-#&gt; Max gradient parameter: sel_repars 
+#&gt; Maximum gradient component: 2.04e-01 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 4:
 #&gt; stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0
-#&gt; Maximum gradient component: NaN 
-#&gt; Max gradient parameter:  
+#&gt; Maximum gradient component: 7.33e+08 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible
 #&gt; 
 #&gt; Model 5:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 3.55e-13 
-#&gt; Max gradient parameter: catch_paa_pars 
+#&gt; Maximum gradient component: 2.26e-01 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 6:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.67e-10 
-#&gt; Max gradient parameter: F_devs 
+#&gt; Maximum gradient component: 2.12e-01 
+#&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 7:
 #&gt; stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0
-#&gt; Maximum gradient component: NaN 
-#&gt; Max gradient parameter:  
+#&gt; Maximum gradient component: 6.11e+09 
+#&gt; Max gradient parameter: sel_repars 
 #&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible
 #&gt; 
 #&gt; Model 8:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 4.83e-09 
-#&gt; Max gradient parameter: sel_repars 
+#&gt; Maximum gradient component: 2.12e-01 
+#&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 9:
 #&gt; stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0
-#&gt; Maximum gradient component: 2.70e+01 
+#&gt; Maximum gradient component: 6.48e+01 
 #&gt; Max gradient parameter: logit_q 
 #&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible</code></pre>
 <p>Plot output for models that converged (in a subfolder for each model):</p>
@@ -482,15 +485,15 @@
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
 <span class="va">df.mods</span></code></pre></div>
 <pre><code>#&gt;   Model  Selectivity Block1_re opt_converged pd_hessian      NLL Runtime dAIC
-#&gt; 1    m1     logistic      none           Yes        Yes -795.146    0.20 47.6
-#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.26 10.0
-#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.29 51.6
-#&gt; 4    m4     logistic     ar1_y            No         No      NaN    0.43   NA
-#&gt; 5    m5     logistic     2dar1           Yes        Yes -821.965    0.30  0.0
-#&gt; 6    m6 age-specific      none           Yes        Yes -810.725    0.19 28.4
-#&gt; 7    m7 age-specific       iid            No         No -868.155    0.57   NA
-#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -810.725    0.24 32.4
-#&gt; 9    m9 age-specific     2dar1            No         No -799.801    1.10   NA
+#&gt; 1    m1     logistic      none           Yes        Yes -795.146    0.24 47.6
+#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.31 10.0
+#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.33 51.6
+#&gt; 4    m4     logistic     ar1_y            No         No      NaN    0.45   NA
+#&gt; 5    m5     logistic     2dar1           Yes        Yes -821.965    0.35  0.0
+#&gt; 6    m6 age-specific      none           Yes        Yes -810.725    0.22 28.4
+#&gt; 7    m7 age-specific       iid            No         No -868.155    0.59   NA
+#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -810.725    0.28 32.4
+#&gt; 9    m9 age-specific     2dar1            No         No -799.801    1.02   NA
 #&gt;       AIC
 #&gt; 1 -1462.3
 #&gt; 2 -1499.9

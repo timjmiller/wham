@@ -40,7 +40,7 @@
       <ul class="nav navbar-nav">
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fas fa fas fa-book"></span>
+    <span class="fas fa-book fa-lg"></span>
      
     Vignettes
      
@@ -75,33 +75,37 @@
 </li>
 <li>
   <a href="../reference/index.html">
-    <span class="fa fa-file-code-o"></span>
+    <span class="far fa-file-code fa-lg"></span>
      
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
     Source code
   </a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-bullhorn fa-lg"></span>
+     
+    News
+  </a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/timjmiller/wham/issues/">
-    <span class="fa fa-question-circle-o"></span>
+    <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+    <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
   </a>
@@ -116,8 +120,7 @@
 
       
 
-      </header><link href="ex3_projections_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="ex3_projections_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 3: Projecting / forecasting random effects</h1>
@@ -131,13 +134,13 @@
     
     
 <p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
+<p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
-<li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>
+<li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
+<li><p>CPI has a “limiting” (carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
 </ul>
 <p>In example 3, we demonstrate how to project/forecast WHAM models using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
 <ul>
@@ -186,10 +189,10 @@
 <div id="specify-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#specify-model" class="anchor"></a>2. Specify model</h2>
-<p>Setup model <code>m6</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
+<p>Setup model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
-<li><p>logistic normal age compositions (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</p></li>
+<li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
 <li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
@@ -204,7 +207,7 @@
   lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># CPI in year t affects recruitment in year t+1</span>
   process_model <span class="op">=</span> <span class="st">"ar1"</span>, <span class="co"># fit CPI as AR1 process</span>
   where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># CPI affects recruitment</span>
-  how <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># controlling (dens-indep mortality)</span>
+  how <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># limiting (carrying capacity)</span>
 
 <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>,
                             model_name <span class="op">=</span> <span class="st">"Ex 3: Projections"</span>,
@@ -238,7 +241,7 @@
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="st">"m6.rds"</span><span class="op">)</span> <span class="co"># save unprojected model</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="st">"m5.rds"</span><span class="op">)</span> <span class="co"># save unprojected model</span></code></pre></div>
 </div>
 <div id="add-projections-to-fit-model" class="section level2">
 <h2 class="hasAnchor">
@@ -342,7 +345,7 @@
 <span class="co"># mod_proj[[10]] &lt;- project_wham(mod, proj.opts=list(n.yrs=10, use.avg.F=TRUE, avg.yrs=1992:1996))</span></code></pre></div>
 <p>Save projected models</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod_proj</span>, file<span class="op">=</span><span class="st">"m6_proj.rds"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod_proj</span>, file<span class="op">=</span><span class="st">"m5_proj.rds"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="compare-projections" class="section level2">
 <h2 class="hasAnchor">
@@ -350,7 +353,7 @@
 <p>Projecting the model differently should not have changed the marginal negative log-likelihood! Confirm that the NLL is the same for all projected models (within <code>1e-06</code>).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># original model NLL</span></code></pre></div>
-<pre><code>#&gt; [1] -829.6624
+<pre><code>#&gt; [1] -829.4091
 #&gt; attr(,"logarithm")
 #&gt; [1] TRUE</code></pre>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
@@ -368,12 +371,12 @@
 <span class="va">dirs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">plots</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">as.list</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">)</span>, FUN<span class="op">=</span><span class="va">dir.create</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
      <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"results"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span>,
                to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-     <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"ref_points"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span>,
-               to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
   <span class="op">}</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"ref_points"</span>,<span class="st">"Kobe_status.png"</span><span class="op">)</span>,
+            to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
 <div id="results" class="section level2">

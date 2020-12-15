@@ -40,7 +40,7 @@
       <ul class="nav navbar-nav">
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fas fa fas fa-book"></span>
+    <span class="fas fa-book fa-lg"></span>
      
     Vignettes
      
@@ -75,33 +75,37 @@
 </li>
 <li>
   <a href="../reference/index.html">
-    <span class="fa fa-file-code-o"></span>
+    <span class="far fa-file-code fa-lg"></span>
      
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
     Source code
   </a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-bullhorn fa-lg"></span>
+     
+    News
+  </a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/timjmiller/wham/issues/">
-    <span class="fa fa-question-circle-o"></span>
+    <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+    <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
   </a>
@@ -116,8 +120,7 @@
 
       
 
-      </header><link href="ex6_NAA_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="ex6_NAA_files/anchor-sections-1.0/anchor-sections.js"></script><script src="ex6_NAA_files/kePrint-0.0.1/kePrint.js"></script><link href="ex6_NAA_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+      </header><script src="ex6_NAA_files/kePrint-0.0.1/kePrint.js"></script><link href="ex6_NAA_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
@@ -370,26 +373,40 @@
 <code class="sourceCode R"><span class="va">opt_conv</span> <span class="op">=</span> <span class="fl">1</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span><span class="op">)</span>
 <span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
 <span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">opt_conv</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">runtime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span></code></pre></div>
+<p>Only calculate AIC and Mohn’s rho for converged models.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df.mods</span><span class="op">$</span><span class="va">runtime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span>
 <span class="va">df.mods</span><span class="op">$</span><span class="va">NLL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">objective</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>
-<span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span><span class="op">[</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span><span class="op">==</span><span class="cn">FALSE</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>
-<span class="va">minAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span> <span class="op">-</span> <span class="va">minAIC</span>,<span class="fl">1</span><span class="op">)</span>
+<span class="va">not_conv</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">|</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span>
+<span class="va">mods2</span> <span class="op">&lt;-</span> <span class="va">mods</span>
+<span class="va">mods2</span><span class="op">[</span><span class="va">not_conv</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
+<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
+<span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="cn">FALSE</span>,<span class="op">]</span>
+<span class="va">ct</span> <span class="op">=</span> <span class="fl">1</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
+  <span class="kw">if</span><span class="op">(</span><span class="va">not_conv</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">{</span>
+    <span class="va">df.aic</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">5</span><span class="op">)</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span>
+    <span class="va">df.aic</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="va">ct</span>,<span class="op">]</span>
+    <span class="va">ct</span> <span class="op">&lt;-</span> <span class="va">ct</span> <span class="op">+</span> <span class="fl">1</span>
+  <span class="op">}</span>
+<span class="op">}</span>
+<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
+<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
+<span class="va">df.aic</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"NA"</span>,<span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span><span class="op">)</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"---"</span>
 <span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">df.mods</span>, <span class="va">df.aic</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></code></pre></div>
 <p>Look at results table.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.mods</span></code></pre></div>
 <p>Save results table.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html">write.csv</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"ex6_table.csv"</span>,quote<span class="op">=</span><span class="cn">F</span>, row.names<span class="op">=</span><span class="cn">F</span><span class="op">)</span></code></pre></div>
 <p>Plot output for models that converged.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">conv_mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span><span class="op">)</span>
-<span class="va">mods</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># m1 didn't actually fit a Bev-Holt</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="va">conv_mods</span><span class="op">)</span><span class="op">{</span>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mods</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># m1 didn't actually fit a Bev-Holt</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">not_conv</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
   <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
@@ -398,7 +415,7 @@
 <a href="#results" class="anchor"></a>7. Results</h2>
 <p>Two models had very similar AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below): <code>m11</code> (all NAA are random effects with correlation by age, GSI-Recruitment effect) and <code>m13</code> (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).</p>
 <p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime roughly by a factor of 2 (comparing models <code>m4</code> with <code>m5</code>-<code>m7</code> and <code>m10</code> with <code>m11</code>-<code>m13</code>).</p>
-<p>All models converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
+<p>All models except for <code>m4</code> converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
 <p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment. Note that <code>m2</code> is identical to <code>m1</code> except that recruitment deviations are random effects instead of fixed effects. The retrospective patterns are very similar, but <code>m2</code> takes 7x longer to run.</p>
 <table class="table table table-condensed table-responsive">
 <thead><tr>
@@ -432,13 +449,13 @@ NLL
 <th style="text-align:left;">
 AIC
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 <span class="math inline">\(\rho_{R}\)</span>
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 <span class="math inline">\(\rho_{SSB}\)</span>
 </th>
-<th style="text-align:right;">
+<th style="text-align:left;">
 <span class="math inline">\(\rho_{\overline{F}}\)</span>
 </th>
 </tr></thead>
@@ -474,13 +491,13 @@ TRUE
 <td style="text-align:left;">
 —
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 5.680
 </td>
-<td style="text-align:right;">
--0.027
+<td style="text-align:left;">
+-0.030
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.034
 </td>
 </tr>
@@ -504,25 +521,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.53
+1.37
 </td>
 <td style="text-align:right;">
--602.862
+-602.894
 </td>
 <td style="text-align:left;">
-348.4
+348.3
 </td>
 <td style="text-align:left;">
--1057.7
+-1057.8
 </td>
-<td style="text-align:right;">
-5.193
+<td style="text-align:left;">
+5.191
 </td>
-<td style="text-align:right;">
--0.015
+<td style="text-align:left;">
+-0.019
 </td>
-<td style="text-align:right;">
-0.014
+<td style="text-align:left;">
+0.015
 </td>
 </tr>
 <tr>
@@ -545,7 +562,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.56
+1.42
 </td>
 <td style="text-align:right;">
 -617.585
@@ -556,13 +573,13 @@ TRUE
 <td style="text-align:left;">
 -1085.2
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 2.486
 </td>
-<td style="text-align:right;">
--0.013
+<td style="text-align:left;">
+-0.019
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.007
 </td>
 </tr>
@@ -580,31 +597,31 @@ rec+1
 —
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:right;">
-0.34
+0.52
 </td>
 <td style="text-align:right;">
--761.946
+NaN
 </td>
 <td style="text-align:left;">
-32.2
+—
 </td>
 <td style="text-align:left;">
--1373.9
+—
 </td>
-<td style="text-align:right;">
-0.297
+<td style="text-align:left;">
+—
 </td>
-<td style="text-align:right;">
-0.039
+<td style="text-align:left;">
+—
 </td>
-<td style="text-align:right;">
--0.044
+<td style="text-align:left;">
+—
 </td>
 </tr>
 <tr>
@@ -627,25 +644,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.86
+0.74
 </td>
 <td style="text-align:right;">
--770.601
+-770.651
 </td>
 <td style="text-align:left;">
-16.9
+16.8
 </td>
 <td style="text-align:left;">
--1389.2
+-1389.3
 </td>
-<td style="text-align:right;">
-0.236
+<td style="text-align:left;">
+0.235
 </td>
-<td style="text-align:right;">
-0.037
+<td style="text-align:left;">
+0.039
 </td>
-<td style="text-align:right;">
--0.050
+<td style="text-align:left;">
+-0.051
 </td>
 </tr>
 <tr>
@@ -668,10 +685,10 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.88
+0.83
 </td>
 <td style="text-align:right;">
--765.796
+-765.823
 </td>
 <td style="text-align:left;">
 26.5
@@ -679,14 +696,14 @@ TRUE
 <td style="text-align:left;">
 -1379.6
 </td>
-<td style="text-align:right;">
-0.324
+<td style="text-align:left;">
+0.325
 </td>
-<td style="text-align:right;">
-0.014
+<td style="text-align:left;">
+0.018
 </td>
-<td style="text-align:right;">
--0.009
+<td style="text-align:left;">
+-0.010
 </td>
 </tr>
 <tr>
@@ -709,25 +726,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.95
+0.87
 </td>
 <td style="text-align:right;">
--772.842
+-772.897
 </td>
 <td style="text-align:left;">
-14.4
+14.3
 </td>
 <td style="text-align:left;">
--1391.7
+-1391.8
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.237
 </td>
-<td style="text-align:right;">
-0.015
+<td style="text-align:left;">
+0.018
 </td>
-<td style="text-align:right;">
--0.025
+<td style="text-align:left;">
+-0.026
 </td>
 </tr>
 <tr>
@@ -750,7 +767,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.50
+1.38
 </td>
 <td style="text-align:right;">
 -618.835
@@ -761,13 +778,13 @@ TRUE
 <td style="text-align:left;">
 -1087.7
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 1.060
 </td>
-<td style="text-align:right;">
--0.035
+<td style="text-align:left;">
+-0.041
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.028
 </td>
 </tr>
@@ -791,24 +808,24 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.53
+1.48
 </td>
 <td style="text-align:right;">
 -622.069
 </td>
 <td style="text-align:left;">
-314
+314.0
 </td>
 <td style="text-align:left;">
 -1092.1
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 1.662
 </td>
-<td style="text-align:right;">
--0.009
+<td style="text-align:left;">
+-0.015
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.006
 </td>
 </tr>
@@ -832,10 +849,10 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.35
+0.36
 </td>
 <td style="text-align:right;">
--771.850
+-771.868
 </td>
 <td style="text-align:left;">
 14.4
@@ -843,13 +860,13 @@ TRUE
 <td style="text-align:left;">
 -1391.7
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.189
 </td>
-<td style="text-align:right;">
-0.015
+<td style="text-align:left;">
+0.016
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 -0.017
 </td>
 </tr>
@@ -873,24 +890,24 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-0.80
+0.76
 </td>
 <td style="text-align:right;font-weight: bold;">
--780.027
+-780.041
 </td>
 <td style="text-align:left;font-weight: bold;">
-0
+0.0
 </td>
 <td style="text-align:left;font-weight: bold;">
 -1406.1
 </td>
-<td style="text-align:right;font-weight: bold;">
-0.150
+<td style="text-align:left;font-weight: bold;">
+0.151
 </td>
-<td style="text-align:right;font-weight: bold;">
-0.020
+<td style="text-align:left;font-weight: bold;">
+0.021
 </td>
-<td style="text-align:right;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 -0.031
 </td>
 </tr>
@@ -914,10 +931,10 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.80
+0.82
 </td>
 <td style="text-align:right;">
--772.775
+-772.784
 </td>
 <td style="text-align:left;">
 14.5
@@ -925,13 +942,13 @@ TRUE
 <td style="text-align:left;">
 -1391.6
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.181
 </td>
-<td style="text-align:right;">
-0.000
+<td style="text-align:left;">
+0.002
 </td>
-<td style="text-align:right;">
+<td style="text-align:left;">
 0.008
 </td>
 </tr>
@@ -958,7 +975,7 @@ TRUE
 0.88
 </td>
 <td style="text-align:right;font-weight: bold;">
--780.328
+-780.336
 </td>
 <td style="text-align:left;font-weight: bold;">
 1.4
@@ -966,13 +983,13 @@ TRUE
 <td style="text-align:left;font-weight: bold;">
 -1404.7
 </td>
-<td style="text-align:right;font-weight: bold;">
-0.121
+<td style="text-align:left;font-weight: bold;">
+0.122
 </td>
-<td style="text-align:right;font-weight: bold;">
-0.001
+<td style="text-align:left;font-weight: bold;">
+0.003
 </td>
-<td style="text-align:right;font-weight: bold;">
+<td style="text-align:left;font-weight: bold;">
 -0.005
 </td>
 </tr>
@@ -992,7 +1009,7 @@ TRUE
 <div id="retrospective-patterns" class="section level4">
 <h4 class="hasAnchor">
 <a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
-<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (<span class="math inline">\(\rho_R\)</span> = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m4-7</code> and <code>m10-13</code> all below 0.32). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(|\rho_{SSB}|\)</span> and <span class="math inline">\(|\rho_{\overline{F}}|\)</span> were negligible for <code>m4-7</code>, &lt; 0.05).</p>
+<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (<span class="math inline">\(\rho_R\)</span> = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m5-7</code> and <code>m10-13</code> all below 0.32). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(|\rho_{SSB}|\)</span> and <span class="math inline">\(|\rho_{\overline{F}}|\)</span> were negligible for <code>m5-7</code>, &lt; 0.05).</p>
 <p>Comparing <code>m11</code> and <code>m13</code>, the models with lowest AIC, <code>m13</code> had slightly lower Mohn’s <span class="math inline">\(\rho_R\)</span>, <span class="math inline">\(\rho_{SSB}\)</span>, and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
 <p>The plots below compare retrospective patterns from the base model (<code>m1</code>, left) to those from the full model (<code>m13</code>, right).</p>
 <div id="numbers-at-age-naa" class="section level6">

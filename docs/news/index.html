@@ -81,7 +81,7 @@
       <ul class="nav navbar-nav">
         <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fas fa fas fa-book"></span>
+    <span class="fas fa-book fa-lg"></span>
      
     Vignettes
      
@@ -116,33 +116,37 @@
 </li>
 <li>
   <a href="../reference/index.html">
-    <span class="fa fa-file-code-o"></span>
+    <span class="far fa-file-code fa-lg"></span>
      
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
     Source code
   </a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-bullhorn fa-lg"></span>
+     
+    News
+  </a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/timjmiller/wham/issues/">
-    <span class="fa fa-question-circle-o"></span>
+    <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+    <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
   </a>
@@ -173,8 +177,9 @@
 <ul>
 <li>add <code>1e-15</code> to predicted proportions to make age composition likelihoods robust to 0 predictions when selAA is fixed at 0. This affects the multinomial, Dirichlet, and Dirichlet-multinomial (options 1-3), since the logistic normal (options 4-7) already did this. <a href="https://github.com/timjmiller/wham/commit/88f15d4a51f69a3d649d76bcac0a8cf299c3135e">88f15d4</a>
 </li>
-<li>can now specify age composition model using <code>age_comp</code> argument to <code>prepare_wham_input</code>. See <a href="https://timjmiller.github.io/wham/reference/prepare_wham_input.html"><code>?prepare_wham_input</code></a> for details. <a href="https://github.com/timjmiller/wham/commit/fd94b3dcaf189482e10a6750c2f1b8350837fd48">fd94b3d</a>
+<li>specify age composition model using <code>age_comp</code> argument to <code>prepare_wham_input</code>. See <a href="https://timjmiller.github.io/wham/reference/prepare_wham_input.html"><code>?prepare_wham_input</code></a> for details. <a href="https://github.com/timjmiller/wham/commit/fd94b3dcaf189482e10a6750c2f1b8350837fd48">fd94b3d</a>
 </li>
+<li>estimate age-specific M for any age(s) (<a href="https://github.com/timjmiller/wham/commit/60f13584e515950bf43f358c5a0cfdb0e8a30241">60f1358</a>)</li>
 </ul>
 </div>
 <div id="bug-fixes" class="section level3">
@@ -182,6 +187,8 @@
 <a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>check for sel par inits outside lower/upper bounds (<a href="https://github.com/timjmiller/wham/commit/4ed394bac38d6054727bc4d3e17c8f4452ae8289">4ed394b</a>)</li>
+<li>fleet weight-at-age pointers fixed (<a href="https://github.com/timjmiller/wham/commit/059e66a1cc6e90554862b3e30e815cf0d5cd18ab">059e66a</a>)</li>
+<li>couple small fixes to handle multiple Ecovs (<a href="https://github.com/timjmiller/wham/commit/9e46b4818e01b2bfd12e500bd4376869001f265e">9e46b48</a>)</li>
 </ul>
 </div>
 </div>

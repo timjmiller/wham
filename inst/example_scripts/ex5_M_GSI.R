@@ -141,7 +141,9 @@ for(i in 1:n.mods){
     ct <- ct + 1
   }
 }
-df.aic[is.na(df.aic)] <- "---"
+df.aic[,1:2] <- format(round(df.aic[,1:2], 1), nsmall=1)
+df.aic[,3:5] <- format(round(df.aic[,3:5], 3), nsmall=3)
+df.aic[grep("NA",df.aic$dAIC),] <- "---"
 df.mods <- cbind(df.mods, df.aic)
 rownames(df.mods) <- NULL
 

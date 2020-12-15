@@ -6,7 +6,7 @@ news:
 navbar:
   left:
     - text: "Vignettes"
-      icon: fas fa-book
+      icon: fas fa-book fa-lg
       menu:
       -  text: "Overview"
          href: articles/index.html
@@ -26,18 +26,19 @@ navbar:
          href: articles/ex7_debug.html
 
     - text: "Functions"
-      icon: fa-file-code-o
+      icon: far fa-file-code fa-lg
       href: reference/index.html
     - text: "Source code"
-      icon: fa-github fa-lg
+      icon: fab fa-github fa-lg
       href: https://github.com/timjmiller/wham/
     - text: "News"
+      icon: fas fa-bullhorn fa-lg
       href: news/index.html
   right:
-    - icon: fa-question-circle-o
+    - icon: fas fa-question-circle fa-lg
       text: "Issues"
       href: https://github.com/timjmiller/wham/issues/
-    - icon: far fa-paper-plane fa-lg
+    - icon: fas fa-paper-plane fa-lg
       text: "Contact"
       href: https://www.fisheries.noaa.gov/contact/timothy-miller-phd
 

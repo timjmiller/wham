@@ -40,7 +40,7 @@
       <ul class="nav navbar-nav">
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fas fa fas fa-book"></span>
+    <span class="fas fa-book fa-lg"></span>
      
     Vignettes
      
@@ -75,33 +75,37 @@
 </li>
 <li>
   <a href="../reference/index.html">
-    <span class="fa fa-file-code-o"></span>
+    <span class="far fa-file-code fa-lg"></span>
      
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
     Source code
   </a>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-bullhorn fa-lg"></span>
+     
+    News
+  </a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/timjmiller/wham/issues/">
-    <span class="fa fa-question-circle-o"></span>
+    <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
-    <span class="far fa far fa-paper-plane fa-lg"></span>
+    <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
   </a>
@@ -116,8 +120,7 @@
 
       
 
-      </header><link href="ex7_debug_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="ex7_debug_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Debugging WHAM models</h1>
@@ -163,10 +166,10 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "NAA"                "Ecov_beta"          "ZAA"               </span>
 <span class="co">#&gt;  [4] "pred_index_paa"     "nll_NAA"            "selAA"             </span>
-<span class="co">#&gt;  [7] "QAA"                "Ecov_obs_sigma_par" "log_YPR_FXSPR"     </span>
-<span class="co">#&gt; [10] "log_FXSPR_iter"     "log_SPR_FXSPR"      "log_FXSPR"         </span>
-<span class="co">#&gt; [13] "mean_rec_pars"      "logit_selpars"      "NAA_devs"          </span>
-<span class="co">#&gt; [16] "Ecov_process_pars"  "pred_indices"       "Ecov_re"           </span>
+<span class="co">#&gt;  [7] "QAA"                "log_YPR_FXSPR"      "log_FXSPR_iter"    </span>
+<span class="co">#&gt; [10] "log_SPR_FXSPR"      "log_FXSPR"          "Ecov_obs_sigma_par"</span>
+<span class="co">#&gt; [13] "logit_selpars"      "NAA_devs"           "Ecov_process_pars" </span>
+<span class="co">#&gt; [16] "mean_rec_pars"      "pred_indices"       "Ecov_re"           </span>
 <span class="co">#&gt; [19] "selpars_re"         "pred_catch"         "nll_index_acomp"   </span>
 <span class="co">#&gt; [22] "q"                  "FAA"                "pred_CAA"          </span>
 <span class="co">#&gt; [25] "pred_catch_paa"     "M_a"                "pred_NAA"          </span>
@@ -174,10 +177,10 @@
 <span class="co">#&gt; [31] "nll_agg_indices"    "sel_repars"         "M_repars"          </span>
 <span class="co">#&gt; [34] "Ecov_out"           "M_re"               "nll_Ecov"          </span>
 <span class="co">#&gt; [37] "F"                  "Ecov_x"             "nll_sel"           </span>
-<span class="co">#&gt; [40] "nll_catch_acomp"    "log_SPR0"           "M0"                </span>
-<span class="co">#&gt; [43] "pred_IAA"           "MAA"                "Fbar"              </span>
-<span class="co">#&gt; [46] "log_Y_FXSPR"        "SSB"                "FAA_tot"           </span>
-<span class="co">#&gt; [49] "nll_agg_catch"      "nll"                "nll_M"</span></code></pre></div>
+<span class="co">#&gt; [40] "nll_catch_acomp"    "log_SPR0"           "pred_IAA"          </span>
+<span class="co">#&gt; [43] "MAA"                "Fbar"               "log_Y_FXSPR"       </span>
+<span class="co">#&gt; [46] "SSB"                "FAA_tot"            "nll_agg_catch"     </span>
+<span class="co">#&gt; [49] "nll"                "nll_M"</span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and sum over all individual values.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>

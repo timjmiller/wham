@@ -252,12 +252,30 @@ opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
 ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
 df.mods$conv <- as.logical(opt_conv)
 df.mods$pdHess <- as.logical(ok_sdrep)
+```
+
+Only calculate AIC and Mohn's rho for converged models.
+
+```{r eval=FALSE}
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
-df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=T)$tab)
-df.aic$AIC[df.mods$pdHess==FALSE] <- NA
-minAIC <- min(df.aic$AIC, na.rm=T)
-df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
+not_conv <- !df.mods$conv | !df.mods$pdHess
+mods2 <- mods
+mods2[not_conv] <- NULL
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
+df.aic <- df.aic.tmp[FALSE,]
+ct = 1
+for(i in 1:n.mods){
+  if(not_conv[i]){
+    df.aic[i,] <- rep(NA,5)
+  } else {
+    df.aic[i,] <- df.aic.tmp[ct,]
+    ct <- ct + 1
+  }
+}
+df.aic[,1:2] <- format(round(df.aic[,1:2], 1), nsmall=1)
+df.aic[,3:5] <- format(round(df.aic[,3:5], 3), nsmall=3)
+df.aic[grep("NA",df.aic$dAIC),] <- "---"
 df.mods <- cbind(df.mods, df.aic)
 rownames(df.mods) <- NULL
 ```
@@ -277,9 +295,8 @@ write.csv(df.mods, file="ex6_table.csv",quote=F, row.names=F)
 Plot output for models that converged.
 
 ```{r eval=FALSE}
-conv_mods <- which(df.mods$pdHess)
 mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
-for(m in conv_mods){
+for(m in which(!not_conv)){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
 }
 ```
@@ -290,15 +307,16 @@ Two models had very similar AIC and were overwhelmingly supported relative to th
 
 The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models `m2`, `m3`, `m8`, and `m9` the slowest. Adding correlation structure to the NAA deviations increased runtime roughly by a factor of 2 (comparing models `m4` with `m5`-`m7` and `m10` with `m11`-`m13`).
 
-All models converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`). See `stats::nlminb()` and `TMB::sdreport()` for details.
+All models except for `m4` converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`). See `stats::nlminb()` and `TMB::sdreport()` for details.
 
 We leave the AIC for model `m1` blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include `m1` to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment. Note that `m2` is identical to `m1` except that recruitment deviations are random effects instead of fixed effects. The retrospective patterns are very similar, but `m2` takes 7x longer to run.
 
 ```{r echo=FALSE}
-vign6_res[,11:13] = round(vign6_res[,11:13], 3)
+# vign6_res[,11:13] = round(vign6_res[,11:13], 3)
 vign6_res$GSI_how = dplyr::recode(vign6_res$GSI_how, `0`='---',`2`='Limiting')
 # posdef = which(vign6_res$pdHess == TRUE)
-thebest = which(vign6_res$dAIC < 2)
+# thebest = which(vign6_res$dAIC < 2)
+thebest = c(11,13)
 vign6_res[1,"dAIC"] = '---'
 vign6_res[1,"AIC"] = '---'
 vign6_res %>%
@@ -322,7 +340,7 @@ Estimated survival deviations by age (y-axis) and year (x-axis) for all converge
 
 #### Retrospective patterns
 
-The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m4-7` and `m10-13` all below 0.32).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $|\rho_{SSB}|$ and $|\rho_{\overline{F}}|$ were negligible for `m4-7`, < 0.05). 
+The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m5-7` and `m10-13` all below 0.32).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $|\rho_{SSB}|$ and $|\rho_{\overline{F}}|$ were negligible for `m5-7`, < 0.05). 
 
 Comparing `m11` and `m13`, the models with lowest AIC, `m13` had slightly lower Mohn's $\rho_R$, $\rho_{SSB}$, and $\rho_{\overline{F}}$.
 

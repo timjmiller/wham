@@ -275,30 +275,30 @@ opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
 ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
 df.mods$conv <- as.logical(opt_conv)
 df.mods$pdHess <- as.logical(ok_sdrep)
-df.mods$runtime <- sapply(mods, function(x) x$runtime)
-df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 ```
 
-We have to deal with any NLL being `NaN`.
+Only calculate AIC and Mohn's rho for converged models.
 
 ```{r eval=FALSE}
-theNA <- which(is.na(df.mods$NLL))
+df.mods$runtime <- sapply(mods, function(x) x$runtime)
+df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
+not_conv <- !df.mods$conv | !df.mods$pdHess
 mods2 <- mods
-mods2[theNA] <- NULL
+mods2[not_conv] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
-  if(i %in% theNA){
+  if(not_conv[i]){
     df.aic[i,] <- rep(NA,5)
   } else {
     df.aic[i,] <- df.aic.tmp[ct,]
     ct <- ct + 1
   }
 }
-df.aic$AIC[df.mods$pdHess==FALSE] <- NA
-minAIC <- min(df.aic$AIC, na.rm=T)
-df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
+df.aic[,1:2] <- format(round(df.aic[,1:2], 1), nsmall=1)
+df.aic[,3:5] <- format(round(df.aic[,3:5], 3), nsmall=3)
+df.aic[grep("NA",df.aic$dAIC),] <- "---"
 df.mods <- cbind(df.mods, df.aic)
 ```
 
@@ -326,9 +326,10 @@ Models `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI eff
 ```{r echo=FALSE}
 library(knitr)
 library(kableExtra)
-vign5_res[,12:14] = round(vign5_res[,12:14], 3)
+# vign5_res[,12:14] = round(vign5_res[,12:14], 3)
 posdef = which(vign5_res$pdHess == TRUE)
-thebest = which(vign5_res$dAIC < 2) # m8 and m17
+# thebest = which(vign5_res$dAIC < 2) # m8 and m17
+thebest = c(8,17)
 vign5_res %>%
   # mutate(na_sdrep = cell_spec(na_sdrep, "html", bold = ifelse(na_sdrep == TRUE,TRUE,FALSE))) %>%
   # select(everything()) %>%
