@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -160,7 +160,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/tmp/RtmpYokBkJ/temp_libpath6efc68fdc3a9/wham/example_scripts"</span></code></pre></div>
+<span class="co">#&gt; [1] "/tmp/RtmpLKqghY/temp_libpath78db44a7c5ac/wham/example_scripts"</span></code></pre></div>
 <p>You can run this entire example script with (2.0 min runtime):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
@@ -210,7 +210,7 @@
 <li>3 = Beverton-Holt, and</li>
 <li>4 = Ricker</li>
 </ul>
-<p>Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (age 5 in fishery, age 4 in index 1, and age 2 in index 2). If you are interested in more details and options for selectivity in WHAM, see <a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">Example 4</a> and <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code>.</p>
+<p>Note that the parameterization of age-specific selectivity is specific to SNEMA yellowtail flounder. We will use age-specific selectivity parameters for the first three selectivity blocks. Selectivity blocks define a selectivity configuration that can be used in one or more fleets or surveys over any set of years in the model. <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> fixes age-specific parameters at zero if there are any age classes without any observations where the selectivity block is applied. The function configures all other age-specific parameters to be estimated. Generally there may be confounding of the selectivity parameters with either fully-selected fishing mortality (for fleets) or catchability (for surveys), so selectivity parameters for one or more ages would need to be fixed to allow convergence. An initial fit with all selectivity parameters freely estimated can be useful in determining which age(s) to fix selectivity at 1. In the code above, we have already determined the ages to fix selectivity at 1 (ages 4-5 in fishery, age 4 in index 1, and ages 2-4 in index 2). If you are interested in more details and options for selectivity in WHAM, see <a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">Example 4</a> and <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code>.</p>
 </div>
 <div id="fit-model-and-check-for-convergence" class="section level2">
 <h2 class="hasAnchor">
