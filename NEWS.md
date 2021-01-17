@@ -1,3 +1,11 @@
+wham 1.0.2.9000
+=========================
+
+### Bug fixes
+
+* for SCAA (recruitment as fixed effects), fix recruitment in projections at mean recruitment (previously was `exp(10)`)
+* clean up error messages (remove global `err` object)
+
 wham 1.0.2 (2020-12-14)
 =========================
 

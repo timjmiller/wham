@@ -97,7 +97,10 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     # retrospective analysis
     if(do.retro) tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, 
       MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {err <<- conditionMessage(e)})
-    if(exists("err")) mod$err_retro <- err # store error message to print out in fit_wham
+    if(exists("err")){
+      mod$err_retro <- err # store error message to print out in fit_wham
+      rm("err")
+    }
 
     # one-step-ahead residuals
     if(do.osa){
