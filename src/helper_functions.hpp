@@ -286,7 +286,7 @@ Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Ty
   {
     Type mu = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
     Type pos_pred_sum = 0.0, y = 0.0;
-    Type sd = exp(age_comp_pars(0));
+    Type sd = exp(age_comp_pars(0)-0.5*log(Neff));
     int last_pos = 0;
     pos_obs_sum = sum(paa_obs);
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
