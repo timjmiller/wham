@@ -38,13 +38,13 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=unlist(dat$Ecov_label)[i],
          ylim=c(y.min, y.max))
     polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
     lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    title (paste0("Ecov ",i, ": ",unlist(dat$Ecov_label)[i]), outer=T, line=-1)
     if(dat$n_years_proj_Ecov > 0) abline(v=tail(years,1), lty=2)
 
     if(do.tex | do.png) dev.off() else par(origpar)
@@ -3362,13 +3362,13 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=dat$Ecov_label[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=unlist(dat$Ecov_label)[i],
          ylim=c(y.min, y.max))
     polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
     lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",dat$Ecov_label[i]), outer=T, line=-1)
+    title (paste0("Ecov ",i, ": ",unlist(dat$Ecov_label)[i]), outer=T, line=-1)
     if(dat$n_years_proj_Ecov > 0) abline(v=tail(years,1), lty=2)
 
     plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")

@@ -100,11 +100,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(Ecov_lag);
   DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_poly); // polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
-  DATA_IVECTOR(Ecov_where); // 1 = recruit, 2 = mortality
+  DATA_IVECTOR(Ecov_where); // 0 = no Ecov, 1 = recruit, 2 = mortality
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
-  DATA_INTEGER(Ecov_recruit); // Ecov index to use for recruitment
-  DATA_INTEGER(Ecov_growth); // Ecov index to use for growth
-  DATA_INTEGER(Ecov_mortality); // Ecov index to use for mortality
   DATA_INTEGER(year1_Ecov); // first year Ecov
   DATA_INTEGER(year1_model); // first year model
   DATA_IVECTOR(ind_Ecov_out_start); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
@@ -539,9 +536,11 @@ Type objective_function<Type>::operator() ()
       }
   }
   // add ecov effect on M (by year, shared across ages)
-  if(Ecov_mortality > 0) if(Ecov_how(Ecov_mortality-1) == 1){
-    for(int a = 0; a < n_ages; a++){
-      for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(y,Ecov_mortality-1));
+  for(int i=0; i < n_Ecov; i++){
+    if(Ecov_where(i) == 2) if(Ecov_how(i) == 1){ // if ecov i affects M
+      for(int a = 0; a < n_ages; a++){
+        for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(y,i));
+      }
     }
   }
   // prior on M(WAA) coefficient
@@ -655,20 +654,20 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      if(Ecov_recruit > 0){ // if there's an ecov effect on recruitment
-        for(int y = 0; y < n_years_model + n_years_proj; y++)
-        {
-          // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
-          if(Ecov_how(Ecov_recruit-1) == 1 | Ecov_how(Ecov_recruit-1) == 4)
+      for(int i=0; i < n_Ecov; i++){
+        if(Ecov_where(i) == 1){ // if ecov i affects recruitment
+          for(int y = 0; y < n_years_model + n_years_proj; y++)
           {
-            // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-            log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
-          }
-          // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
-          if(Ecov_how(Ecov_recruit-1) == 2 | Ecov_how(Ecov_recruit-1) == 4)
-          {
-            // log_SR_b(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-            log_SR_b(y) += Ecov_lm(y,Ecov_recruit-1);
+            // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
+            if(Ecov_how(i) == 1 | Ecov_how(i) == 4)
+            {
+              log_SR_a(y) += Ecov_lm(y,i);
+            }
+            // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
+            if(Ecov_how(i) == 2 | Ecov_how(i) == 4)
+            {
+              log_SR_b(y) += Ecov_lm(y,i);
+            }
           }
         }
       }
@@ -693,18 +692,18 @@ Type objective_function<Type>::operator() ()
         log_SR_a.fill(mean_rec_pars(0));
         log_SR_b.fill(mean_rec_pars(1));
       }
-      if(Ecov_recruit > 0){ // if there's an ecov effect on recruitment
-        for(int y = 0; y < n_years_model + n_years_proj; y++)
-        {
-          if(Ecov_how(Ecov_recruit-1) == 1) // "controlling" = dens-indep mortality
+      for(int i=0; i < n_Ecov; i++){
+        if(Ecov_where(i) == 1){ // if ecov i affects recruitment
+          for(int y = 0; y < n_years_model + n_years_proj; y++)
           {
-            // log_SR_a(y) += Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-            log_SR_a(y) += Ecov_lm(y,Ecov_recruit-1);
-          }
-          if(Ecov_how(Ecov_recruit-1) == 4) // "masking" = metabolic/growth (decreases dR/dS)
-          { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-            // log_SR_b(y) += 1.0 + Ecov_beta(Ecov_recruit-1) * Ecov_out(y,Ecov_recruit-1);
-            log_SR_b(y) += 1.0 + Ecov_lm(y,Ecov_recruit-1);
+            if(Ecov_how(i) == 1) // "controlling" = dens-indep mortality
+            {
+              log_SR_a(y) += Ecov_lm(y,i);
+            }
+            if(Ecov_how(i) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+            { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
+              log_SR_b(y) += 1.0 + Ecov_lm(y,i);
+            }
           }
         }
       }
@@ -733,7 +732,7 @@ Type objective_function<Type>::operator() ()
   {
     
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
-      log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, ZAA);
+      log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
     /*
     // Expected recruitment
     pred_NAA(y,0) = get_pred_recruit_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
@@ -822,7 +821,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(n_NAA_sigma > 0) SIMULATE if(simulate_state(0) == 1){
-    matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm, 
+    matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
       avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);
     SSB = sims.col(sims.cols()-1);

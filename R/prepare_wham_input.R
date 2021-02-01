@@ -534,12 +534,9 @@ without changing ASAP file, specify M$initial_means.")
     data$year1_model <- asap3$year1
     data$Ecov_lag <- 0
     data$Ecov_model <- 0
-    data$Ecov_where <- 1
+    data$Ecov_where <- 0
     data$Ecov_how <- 0
     data$Ecov_poly <- 1
-    data$Ecov_recruit <- 1
-    data$Ecov_growth <- 1
-    data$Ecov_mortality <- 1
     data$n_years_Ecov <- 1
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
     data$Ecov_label <- "none"
@@ -677,33 +674,33 @@ without changing ASAP file, specify M$initial_means.")
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
 
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
+    if(is.null(ecov$where)) stop("ecov$where must be specified, 'recruit' or 'M'")
     if(!any(ecov$where %in% c('recruit','M'))){
       stop("Sorry, only ecov effects on recruitment and M currently implemented.
       Set ecov$where = 'recruit' or 'M'.")
     }
     data$Ecov_where <- sapply(ecov$where, match, c('recruit','M'))
-    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
-    data$Ecov_growth <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # Ecov index to use for growth?
-    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # Ecov index to use for mortality?
 
     if(is.null(ecov$how)) stop("ecov$how must be specified")
     if(length(ecov$how) != data$n_Ecov) stop("ecov$how must be a vector of length(n.ecov)")
-    if(data$Ecov_mortality > 0) if(!ecov$how[data$Ecov_mortality] %in% c(0,1)){
-      stop("Sorry, only the following ecov effects on M are currently implemented.
-      Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
-    }
-    if(data$Ecov_recruit > 0) if(!ecov$how[data$Ecov_recruit] %in% c(0,1,2,4)){
-      stop("Sorry, only the following ecov effects on recruitment are currently implemented.
-      Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
-    }
-    if(recruit_model == 1 & data$Ecov_recruit != 0){
-      stop("Random walk recruitment cannot have an ecov effect on recruitment.
-      Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
-    }
-    if(data$Ecov_recruit > 0) if(recruit_model == 4 & ecov$how[data$Ecov_recruit] == 2){
-      stop("'Limiting' ecov effect on Ricker recruitment not implemented.
-      Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
-      Or set recruit_model = 3 (Bev-Holt).")
+    for(i in 1:data$n_Ecov){
+      if(data$Ecov_where[i] == 2) if(!ecov$how[i] %in% c(0,1)){
+        stop("Sorry, only the following ecov effects on M are currently implemented.
+        Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
+      }
+      if(data$Ecov_where[i] == 1) if(!ecov$how[i] %in% c(0,1,2,4)){
+        stop("Sorry, only the following ecov effects on recruitment are currently implemented.
+        Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
+      }
+      if(data$Ecov_where[i] == 1 & recruit_model == 1){
+        stop("Random walk recruitment cannot have an ecov effect on recruitment.
+        Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
+      }
+      if(data$Ecov_where[i] == 1) if(recruit_model == 4 & ecov$how[i] == 2){
+        stop("'Limiting' ecov effect on Ricker recruitment not implemented.
+        Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
+        Or set recruit_model = 3 (Bev-Holt).")
+      }      
     }
     data$Ecov_how <- ecov$how
     data$Ecov_poly <- rep(1,data$n_Ecov)
