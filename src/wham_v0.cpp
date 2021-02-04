@@ -57,7 +57,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(q_upper);
   DATA_MATRIX(selpars_lower);
   DATA_MATRIX(selpars_upper);
-  DATA_INTEGER(n_NAA_sigma);
+  DATA_INTEGER(n_NAA_sigma); // 0 = SCAA, 1 = logR only, 2 = full state-space with shared sig_a for a > 1
   DATA_IVECTOR(NAA_sigma_pointers);
   DATA_INTEGER(recruit_model);
   DATA_INTEGER(n_M_a);
@@ -117,6 +117,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
+  DATA_SCALAR(logR_sd); // empirical sd recruitment in model years, used for SCAA recruit projections
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
@@ -127,6 +129,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_NAA_sigma);
   PARAMETER_VECTOR(trans_NAA_rho); // rho_a, rho_y (length = 2)
   PARAMETER_ARRAY(log_NAA); // numbers-at-age random effects, (dim = n.yrs-1, n.ages)
+  PARAMETER_VECTOR(logR_proj); // recruitment (random effects) in proj years, only if SCAA
   // PARAMETER_ARRAY(NAA_re); // random effects / deviations from pred NAA for year y, age a (dim = n.yrs-1, n.ages)
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
   PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
@@ -746,13 +749,19 @@ Type objective_function<Type>::operator() ()
     if(n_NAA_sigma > 1){
       // all NAA are estimated (random effects)
       for(int a = 0; a < n_ages; a++) NAA(y,a) = exp(log_NAA(y-1,a));
-    } else {
-      // only recruitment estimated (either fixed or random effects)
-      NAA(y,0) = exp(log_NAA(y-1,0));
-      for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // survival is deterministic     
+      // calculate mean-0 deviations of log NAA (possibly bias-corrected)
+      for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+    } else { // only recruitment estimated (either fixed or random effects)
+      for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // for ages > 1 survival is deterministic 
+      if(n_NAA_sigma == 0 && y > n_years_model-1){ 
+        NAA(y,0) = exp(logR_proj(y-n_years_model)); // SCAA recruit in projections use diff object (random effect)
+        for(int a = 1; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+        NAA_devs(y-1,0) = logR_proj(y-n_years_model) - log(pred_NAA(y,0));
+      } else {
+        NAA(y,0) = exp(log_NAA(y-1,0));
+        for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+      }
     }
-    // calculate mean-0 deviations of log NAA (possibly bias-corrected)
-    for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
         
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
     if(do_proj == 1){ // now need FAA by fleet for projections, use total of average FAA by fleet over avg.yrs
@@ -791,6 +800,18 @@ Type objective_function<Type>::operator() ()
   }
 
   // likelihood of NAA deviations
+  if(n_NAA_sigma == 0 && do_proj == 1){ // SCAA treats recruitment in proj years as random effects with fixed mean, SD
+    for(int y = 0; y < n_years_proj; y++){
+      nll_NAA -= dnorm(logR_proj(y), logR_mean, logR_sd, 1);
+    }
+    SIMULATE if(simulate_state(0) == 1 & simulate_period(1) == 1){ // proj years only
+      for(int y = 0; y < n_years_proj; y++){
+        logR_proj(y) = rnorm(logR_mean, logR_sd);
+        NAA_devs(y+n_years_model-1,0) = logR_proj(y) - log(pred_NAA(y+n_years_model,0));
+      }
+    }
+    REPORT(logR_proj);
+  }
   if(n_NAA_sigma == 1){
     if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
@@ -820,7 +841,7 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
-  if(n_NAA_sigma > 0) SIMULATE if(simulate_state(0) == 1){
+  if(n_NAA_sigma > 0 | do_proj == 1) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
     matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
       avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch);

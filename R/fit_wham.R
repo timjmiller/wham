@@ -89,6 +89,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
   mod$input <- input
+  ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
+  mod$wham_version <- paste0(ver, collapse=" / ")
   if(do.fit){
     btime <- Sys.time()
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
@@ -120,7 +122,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent) # calls prepare_projection + fit_wham(do.proj=F)
 
     # error message reporting
-    if(!is.null(mod$err)) warning(paste("","** Error during Newton steps. **",
+    if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",
       "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
     if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))

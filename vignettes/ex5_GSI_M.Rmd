@@ -22,7 +22,7 @@ In this vignette we walk through an example using the `wham` (WHAM = Woods Hole 
 This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
-- logistic normal age compositions, pooling zero observations (`input$data$age_comp_model_fleets = 5` and `input$data$age_comp_model_indices = 5`)
+- logistic normal age compositions, pooling zero observations with adjacent ages (`age_comp = "logistic-normal-pool0"`)
 - random-about-mean recruitment (`recruit_model = 2`)
 - 5 indices
 - fit to 1973-2011 data

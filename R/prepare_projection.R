@@ -17,7 +17,7 @@
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for to use in projections. Default = all model years.
+#'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -101,18 +101,6 @@ prepare_projection = function(model, proj.opts)
     end.beyond = proj.opts$n.yrs # effectively say that Ecov already extends # of proj years
   }
 
-  # if SCAA (fixed effect Rec devs), option for which years to calculate mean and SD of logR to use in projections
-  if(!"log_NAA" %in% input1$random){ # SCAA
-    if(any(proj.opts$avg.rec.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
-      "proj.opts$avg.rec.yrs is not a subset of model years.","",sep='\n'))
-    if(is.null(proj.opts$avg.rec.yrs)) proj.opts$avg.rec.yrs <- model$years
-    avg.rec.yrs <- match(proj.opts$avg.rec.yrs, model$years)
-  } else {
-    if(!is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
-      "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
-      This model already treats recruitment as random effects.","",sep='\n'))
-  }
-
   # add new data objects for projections
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
@@ -151,28 +139,40 @@ prepare_projection = function(model, proj.opts)
   par <- model$parList
   # fill_vals <- function(x){as.factor(rep(NA, length(x)))}
   map <- input1$map
+  random <- input1$random
   # map <- lapply(par, fill_vals)
 
-  # SCAA: pad NAA_re with 0, map all ages to NA
-  # Rec: pad NAA_re with 0, map ages > 1 to NA (estimate Rec devs as RE)
-  # all: pad NAA_re with 0, estimate all ages as RE
-  # if(data$n_NAA_sigma > 0){
-  log_NAA_mean <- apply(par$log_NAA, 2, mean)
-  par$log_NAA <- rbind(par$log_NAA, matrix(log_NAA_mean, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
-  # tmp <- par$log_NAA
-  # ind.NA <- which(is.na(tmp))
-  # tmp[-ind.NA] <- NA
-  # tmp[ind.NA] <- 1:length(ind.NA)
-  # par$log_NAA[ind.NA] <- 10 
+  # SCAA (fixed effect Rec devs): set up logR_proj to treat recruitment as random effects in projections
+  if(data$n_NAA_sigma == 0){ # SCAA
+    if(any(proj.opts$avg.rec.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
+      "proj.opts$avg.rec.yrs is not a subset of model years.","",sep='\n'))
+    if(is.null(proj.opts$avg.rec.yrs)) proj.opts$avg.rec.yrs <- model$years[-1] # option for which model years to use for mean and SD calc
+    avg.rec.yrs <- match(proj.opts$avg.rec.yrs, model$years[-1])
+    data$logR_mean <- mean(par$log_NAA[avg.rec.yrs,1])
+    data$logR_sd <- sd(par$log_NAA[avg.rec.yrs,1])
+    par$logR_proj <- rep(data$logR_mean, proj.opts$n.yrs)
+    map$logR_proj <- factor(1:proj.opts$n.yrs) # turn on estimation of logR_proj
+    random = c(random, "logR_proj")
 
-  tmp <- par$log_NAA
-  if(data$n_NAA_sigma < 2) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if SCAA or RE on recruitment
-  # if(data$n_NAA_sigma == 0) tmp[which(tmp[,1] == 10),1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
-  if(data$n_NAA_sigma == 0) tmp[seq(dim(tmp)[1]+1-proj.opts$n.yrs, dim(tmp)[1]),1] <- NA # for SCAA, don't estimate fixed effect rec devs in projection years
-  ind.notNA <- which(!is.na(tmp))
-  tmp[ind.notNA] <- 1:length(ind.notNA)
-  map$log_NAA = factor(tmp)
-  # }
+    # pad log_NAA (even though projection years not used)
+    par$log_NAA <- rbind(par$log_NAA, matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    map$log_NAA <- factor(c(map$log_NAA, rep(NA, proj.opts$n.yrs*data$n_ages)))
+  } else {
+    # recruit RE: pad log_NAA, map ages > 1 to NA
+    # all NAA RE: pad log_NAA, estimate all
+    if(!is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
+      "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
+      This model already treats recruitment deviations as random effects.","",sep='\n'))
+
+    # pad log_NAA
+    log_NAA_mean <- apply(par$log_NAA, 2, mean) # start at mean for each age
+    par$log_NAA <- rbind(par$log_NAA, matrix(log_NAA_mean, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    tmp <- par$log_NAA
+    if(data$n_NAA_sigma == 1) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if RE only on recruitment
+    ind.notNA <- which(!is.na(tmp))
+    tmp[ind.notNA] <- 1:length(ind.notNA)
+    map$log_NAA = factor(tmp)
+  }
 
   # pad Ecov_re for projections
   if(any(data$Ecov_model > 0)){
@@ -240,7 +240,7 @@ prepare_projection = function(model, proj.opts)
     # map$M_re <- factor(tmp)
   }
 
-  return(list(data=data, par = par, map = map, random = input1$random,
+  return(list(data=data, par = par, map = map, random = random,
     years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
     ages.lab = input1$ages.lab, model_name = input1$model_name))
 }

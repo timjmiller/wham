@@ -23,7 +23,7 @@ Here we assume you already have `wham` installed. If not, see the [Introduction]
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
-- logistic normal age compositions, treating observations of zero as missing (`input$data$age_comp_model_fleets = 7` and `input$data$age_comp_model_indices = 7`)
+- logistic normal age compositions, treating observations of zero as missing (`age_comp = "logistic-normal-miss0"`)
 
 - random-about-mean recruitment (`recruit_model = 2`)
 

@@ -674,6 +674,12 @@ without changing ASAP file, specify M$initial_means.")
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
 
   #  data$n_Ecov_pars <- c(1,3)[data$Ecov_model] # rw: 1 par (sig), ar1: 3 par (phi, sig)
+    if(any(ecov$where == 'recruit') & data$n_NAA_sigma == 0){
+      stop("Cannot estimate ecov effect on recruitment when
+      recruitment in each year is estimated freely as fixed effect parameters.
+      Either remove ecov-recruit effect or estimate recruitment
+      (or all numbers-at-age) as random effects.")
+    }
     if(is.null(ecov$where)) stop("ecov$where must be specified, 'recruit' or 'M'")
     if(!any(ecov$where %in% c('recruit','M'))){
       stop("Sorry, only ecov effects on recruitment and M currently implemented.
@@ -870,7 +876,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   data$proj_F_opt <- 0
   data$proj_Fcatch <- 0
   data$proj_M_opt <- 0
-
+  data$logR_mean <- 0 # only used for SCAA projections
+  data$logR_sd <- 0 # only used for SCAA projections
   # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
   # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
 
@@ -901,6 +908,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   }
   par$trans_NAA_rho <- c(0,0)
   par$log_NAA = matrix(10, data$n_years_model-1, data$n_ages)
+  par$logR_proj <- 0 # will be set by prepare_projection if SCAA
+  map$logR_proj <- factor(NA)
   
   # NAA_re and NAA_rho map
   if(!is.null(NAA_re$cor)){

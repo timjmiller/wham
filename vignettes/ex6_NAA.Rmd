@@ -25,7 +25,7 @@ As in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
 
 - Stock: Southern New England-Mid Atlantic (SNEMA) yellowtail flounder
 - Data: 1973-2011, 1 fishery and 2 indices
-- Age compositions: logistic normal, without pooling zero observations (`input$data$age_comp_model_fleets = 7` and `input$data$age_comp_model_indices = 7`)
+- Age compositions: logistic normal, treating observations of zero as missing (`age_comp = "logistic-normal-miss0"`)
 - Selectivity: age-specific
 
 As in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):

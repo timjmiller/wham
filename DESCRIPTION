@@ -37,7 +37,8 @@ Imports:
     dplyr (>= 1.0.2),
     ggplot2 (>= 3.3.2),
     TMBhelper (>= 1.1.0),
-    viridis (>= 0.5.1)
+    viridis (>= 0.5.1),
+    sessioninfo (>= 1.1.1)
 Remotes: 
     kaskr/TMB_contrib_R/TMBhelper,
     kaskr/adcomp/TMB

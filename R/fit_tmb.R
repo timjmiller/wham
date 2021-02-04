@@ -34,7 +34,10 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
       model$opt$objective <- model$fn(model$opt$par)
     }, error = function(e) {err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
   }
-  if(exists("err")) model$err <- err # store error message to print out in fit_wham
+  if(exists("err")){
+    model$err <- err # store error message to print out in fit_wham
+    rm("err")
+  }  
   
   #model$env$parList() gives error when there are no random effects
   is.re = length(model$env$random)>0

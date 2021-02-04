@@ -243,7 +243,7 @@ mypalette = function(n){
 }
 
 fit.summary.text.plot.fn <- function(mod){
-  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet", "ZI-logistic normal(1)","logistic normal(1)","ZI-logistic normal(2)","logistic normal(2)")
+  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet", "ZI-logistic normal(1)","Logistic normal (pool0)","ZI-logistic normal(2)","Logistic normal (miss0)")
   selmods = c("Age-specific", "Logistic(+)", "Double-Logistic", "Logistic(-)")
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
@@ -272,7 +272,10 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
   for(i in 1:length(fleet_selblocks)) text(5,nl <- nl-0.5, paste0("Fleet ", i, " Selectivity Blocks: ", paste(fleet_selblocks[i], collapse = ", ")))
   for(i in 1:length(index_selblocks)) text(5,nl <- nl-0.5, paste0("Index ", i, " Selectivity Blocks: ", paste(index_selblocks[i], collapse = ", ")))
-  text(5,nl <- nl-0.5,paste0("WHAM run on ",format(mod$date, usetz = TRUE), " in directory ", mod$dir))
+  text(5,nl <- nl-0.5,paste0("Run date: ",format(mod$date, usetz = TRUE)))
+  text(5,nl <- nl-0.5,paste0("Run directory: ",mod$dir))
+  text(5,nl <- nl-0.5,paste0("WHAM version: ",mod$wham_version)) 
+  text(5,nl <- nl-0.5,paste0("TMB version: ",mod$TMB_version)) 
 
   if(mod$is_sdrep)
   {

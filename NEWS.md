@@ -3,13 +3,14 @@ wham 1.0.2.9000
 
 ### Minor improvements
 
-* allow multiple ecovs on each process (recruitment, M)
+* allow for multiple ecov effects on recruitment and M
+* add WHAM version to model object (version and GitHub commit). Requires `sessioninfo` package (within `devtools`).
+* for SCAA (recruitment as fixed effects), treat recruitment in projections as random effects with mean and SD calculated from model years (previously was fixed at `exp(10)`). This approximates ASAP + AgePro, allows for simulating projected recruitment according to the ECDF.
 
 ### Bug fixes
 
-* for SCAA (recruitment as fixed effects), fix recruitment in projections at mean recruitment (previously was `exp(10)`) [53f5ec6](https://github.com/timjmiller/wham/commit/53f5ec67a6f60ea85b928debc4a57d0ee6673e78)
 * clean up error messages (remove global `err` object) [53f5ec6](https://github.com/timjmiller/wham/commit/53f5ec67a6f60ea85b928debc4a57d0ee6673e78)
-* adjust age composition variance (tau) by effective sample size (Neff) for option 7 [4c13331](https://github.com/timjmiller/wham/commit/4c133312b2ecaab3972be13a96b4b456d9c1f6b0)
+* adjust age composition variance (`tau`) by effective sample size (`Neff`) for option 7 [4c13331](https://github.com/timjmiller/wham/commit/4c133312b2ecaab3972be13a96b4b456d9c1f6b0)
 
 wham 1.0.2 (2020-12-14)
 =========================
