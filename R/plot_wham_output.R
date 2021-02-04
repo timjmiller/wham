@@ -77,7 +77,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.ll.table.fn(mod)
     plot.catch.4.panel(mod)
     plot.index.4.panel(mod)
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.diagnostic(mod)
+    if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod)
     plot.NAA.4.panel(mod)
     plot.catch.age.comp(mod)
     plot.catch.age.comp.resids(mod)
@@ -114,7 +114,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.M(mod)
     plot.tile.age.year(mod, type="selAA")
     plot.tile.age.year(mod, type="MAA")
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod)
+    if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod)
     dev.off()
 
     # PDF reference points -----------------
@@ -214,7 +214,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       plot.index.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
+    if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     if(!is.null(mod$osa)) plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
@@ -277,7 +277,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     dev.off()
     plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    if(!all(mod$env$data$Ecov_model == 0)) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
+    if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
 
     # PNG reference points -----------------
     dir.refpts <- file.path(dir.plots, "ref_points")
