@@ -977,11 +977,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   par$index_paa_pars = rep(0, sum(n_index_acomp_pars))  
   if(all(data$age_comp_model_fleets %in% c(5,7))){ # start tau/neff at 0
-    neff <- apply(input$data$catch_Neff,2,mean)
+    neff <- apply(data$catch_Neff,2,mean)
     par$catch_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
   }  
   if(all(data$age_comp_model_indices %in% c(5,7))){ # start tau/neff at 0
-    neff <- apply(input$data$index_Neff,2,mean)
+    neff <- apply(data$index_Neff,2,mean)
     par$index_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
   }
   
