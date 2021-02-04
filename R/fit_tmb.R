@@ -55,7 +55,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
       warning(paste("","Some parameter(s) have high gradients at the MLE:","",
         paste(capture.output(print(model$badpar)), collapse = "\n"), sep="\n"))
     } else {
-      test <- TMBhelper::Check_Identifiable(model)
+      test <- TMBhelper::check_estimability(model)
       if(length(test$WhichBad) > 0){
         bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
         bad.par.grep <- grep(bad.par, test$BadParams$Param)

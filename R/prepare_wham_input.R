@@ -975,8 +975,16 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   n_catch_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
   n_index_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
-
+  par$index_paa_pars = rep(0, sum(n_index_acomp_pars))  
+  if(all(data$age_comp_model_fleets %in% c(5,7))){ # start tau/neff at 0
+    neff <- apply(input$data$catch_Neff,2,mean)
+    par$catch_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
+  }  
+  if(all(data$age_comp_model_indices %in% c(5,7))){ # start tau/neff at 0
+    neff <- apply(input$data$index_Neff,2,mean)
+    par$index_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
+  }
+  
   # natural mortality pars
   par$M_a <- M_a_ini # deviations by age
   par$M_re <- M_re_ini # deviations from mean M_a on log-scale, PARAMETER_ARRAY

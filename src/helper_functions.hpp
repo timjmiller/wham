@@ -624,7 +624,7 @@ vector<Type> sim_acomp(Type Neff, int age_comp_model, vector<Type> paa_obs, vect
   }
   if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
   {
-    Type sd = exp(age_comp_pars(0));
+    Type sd = exp(age_comp_pars(0)-0.5*log(Neff));
 
     int n_pos = 0;
     for(int a = 0; a < n_ages; a++) if(paa_obs(a) > 1.0e-15) n_pos++;
