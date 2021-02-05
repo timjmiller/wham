@@ -15,11 +15,7 @@ WHAM advances fisheries assessment because it can estimate constrained random de
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
-Overview of WHAM presentation (Jan 8 2021): 
-
-<figure class="video_container">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
+Overview of WHAM presentation (Jan 8 2021): https://www.youtube.com/watch?v=o8vJvbIaOdE
 
 ## Background
 

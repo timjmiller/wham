@@ -15,11 +15,15 @@ WHAM advances fisheries assessment because it can estimate constrained random de
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
+Overview of WHAM presentation (Jan 8 2021): 
+
+<figure class="video_container">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
 ## Background
 
 WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
-
-Overview of WHAM presentation from Nov 2019 CAPAM workshop: https://www.youtube.com/watch?v=M1x4Nv4Ibio.
 
 WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
 
