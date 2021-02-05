@@ -39,7 +39,7 @@
 #'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
 #'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
 #'     \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
-#'     \code{"M"} = natural mortality, \code{"growth"} = growth.}
+#'     \code{"M"} = natural mortality, \code{"none"} = fit ecov but without an effect on the population.}
 #'     \item{$how}{How does the ecov affect the \code{$where} process? These options are
 #'     specific to the \code{$where} process.}
 #'     \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
@@ -681,11 +681,11 @@ without changing ASAP file, specify M$initial_means.")
       (or all numbers-at-age) as random effects.")
     }
     if(is.null(ecov$where)) stop("ecov$where must be specified, 'recruit' or 'M'")
-    if(!any(ecov$where %in% c('recruit','M'))){
-      stop("Sorry, only ecov effects on recruitment and M currently implemented.
-      Set ecov$where = 'recruit' or 'M'.")
+    if(!any(ecov$where %in% c('recruit','M','none'))){
+      stop("Only ecov effects on recruitment and M currently implemented.
+      Set ecov$where = 'recruit', 'M', or 'none'.")
     }
-    data$Ecov_where <- sapply(ecov$where, match, c('recruit','M'))
+    data$Ecov_where <- sapply(ecov$where, match, c('none','recruit','M')) - 1
 
     if(is.null(ecov$how)) stop("ecov$how must be specified")
     if(length(ecov$how) != data$n_Ecov) stop("ecov$how must be a vector of length(n.ecov)")
@@ -977,11 +977,15 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
   par$index_paa_pars = rep(0, sum(n_index_acomp_pars))  
   if(all(data$age_comp_model_fleets %in% c(5,7))){ # start tau/neff at 0
-    neff <- apply(data$catch_Neff,2,mean)
+    neff <- data$catch_Neff
+    neff[neff <= 0] <- NA
+    neff <- apply(neff,2,mean, na.rm=TRUE)[which(apply(data$use_catch_paa,2,sum)>0)]
     par$catch_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
   }  
   if(all(data$age_comp_model_indices %in% c(5,7))){ # start tau/neff at 0
-    neff <- apply(data$index_Neff,2,mean)
+    neff <- data$index_Neff
+    neff[neff <= 0] <- NA
+    neff <- apply(neff,2,mean, na.rm=TRUE)[which(apply(data$use_index_paa,2,sum)>0)]
     par$index_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
   }
   

@@ -97,11 +97,13 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
 
     # retrospective analysis
-    if(do.retro) tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, 
-      MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {err <<- conditionMessage(e)})
-    if(exists("err")){
-      mod$err_retro <- err # store error message to print out in fit_wham
-      rm("err")
+    if(do.retro){
+      tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, 
+        MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {err <<- conditionMessage(e)})
+      if(exists("err")){
+        mod$err_retro <- err # store error message to print out in fit_wham
+        rm("err")
+      }
     }
 
     # one-step-ahead residuals

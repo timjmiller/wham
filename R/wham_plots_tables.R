@@ -892,6 +892,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
       else apply(pred_index[x,,] * dat$waa[dat$waa_pointer_indices[x],1:dat$n_years_indices,],1,sum)
   })
   index = dat$agg_indices
+  index[index < 0] = 0 # robustify to missing values entered as -999
   sigma = dat$agg_index_sigma
   log_stdres = (log(index)-log(pred_index))/sigma
   if(!missing(use.i)) indices <- use.i
