@@ -8,7 +8,7 @@ project_wham(
   model,
   proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
     proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.ecov = TRUE, use.last.ecov =
-    FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL),
+    FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL, avg.rec.yrs = NULL),
   n.newton = 3,
   do.sdrep = TRUE,
   MakeADFun.silent = FALSE
@@ -30,6 +30,7 @@ project_wham(
   \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
   \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
   \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+  \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for to use in projections. Default = all model years.
 }}
 
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.}
@@ -61,14 +62,18 @@ Exactly one of these must be specified in \code{proj.opts}:
     \item Specify catch. Provide \code{proj.opts$proj.catch}, a vector of aggregate catch with length = \code{n.yrs}. WHAM will calculate F to get specified catch.
   }
 
-\code{proj.opts$avg.yrs} controls which years will be averaged over in the projections.
-The following quantities are averaged:
+\code{proj.opts$avg.yrs} controls which years the following will be averaged over in the projections:
   \itemize{
     \item Maturity-at-age
     \item Weight-at-age
     \item Natural mortality-at-age
     \item Fishing mortality-at-age (if \code{proj.opts$use.avgF = TRUE})
   }
+
+If fitting a model with recruitment estimated freely in each year, i.e. as fixed effects as in ASAP, WHAM handles recruitment 
+in the projection years similarly to using the empirical cumulative distribution function. WHAM does this by calculating the mean
+and standard deviation of log(R) over all model years (default) or a specified subset of years (\code{proj.opts$avg.rec.yrs}). WHAM then
+treats recruitment in the projections as a random effect with this mean and SD, i.e. log(R) ~ N(meanlogR, sdlogR).
 
 WHAM implements four options for handling the environmental covariate(s) in the projections.
 Exactly one of these must be specified in \code{proj.opts} if \code{ecov} is in the model:

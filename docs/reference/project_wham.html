@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -178,7 +178,7 @@
   <span class='va'>model</span>,
   proj.opts <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>n.yrs <span class='op'>=</span> <span class='fl'>3</span>, use.last.F <span class='op'>=</span> <span class='cn'>TRUE</span>, use.avg.F <span class='op'>=</span> <span class='cn'>FALSE</span>, use.FXSPR <span class='op'>=</span> <span class='cn'>FALSE</span>,
     proj.F <span class='op'>=</span> <span class='cn'>NULL</span>, proj.catch <span class='op'>=</span> <span class='cn'>NULL</span>, avg.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, cont.ecov <span class='op'>=</span> <span class='cn'>TRUE</span>, use.last.ecov <span class='op'>=</span>
-    <span class='cn'>FALSE</span>, avg.ecov.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, proj.ecov <span class='op'>=</span> <span class='cn'>NULL</span>, cont.Mre <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>,
+    <span class='cn'>FALSE</span>, avg.ecov.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, proj.ecov <span class='op'>=</span> <span class='cn'>NULL</span>, cont.Mre <span class='op'>=</span> <span class='cn'>NULL</span>, avg.rec.yrs <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>,
   n.newton <span class='op'>=</span> <span class='fl'>3</span>,
   do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>,
   MakeADFun.silent <span class='op'>=</span> <span class='cn'>FALSE</span>
@@ -205,6 +205,7 @@
 <li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
 <li><p><code>$proj.ecov</code> (matrix), user-specified environmental covariate(s) for projections. <code>n.yrs</code> rows.</p></li>
 <li><p><code>$cont.Mre</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>TRUE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$avg.rec.yrs</code> (vector), specify which years to calculate the CDF of recruitment for to use in projections. Default = all model years.</p></li>
 </ul></td>
     </tr>
     <tr>
@@ -242,14 +243,17 @@ Exactly one of these must be specified in <code>proj.opts</code>:</p><ul>
 <li><p>Specify catch. Provide <code>proj.opts$proj.catch</code>, a vector of aggregate catch with length = <code>n.yrs</code>. WHAM will calculate F to get specified catch.</p></li>
 </ul>
 
-<p><code>proj.opts$avg.yrs</code> controls which years will be averaged over in the projections.
-The following quantities are averaged:</p><ul>
+<p><code>proj.opts$avg.yrs</code> controls which years the following will be averaged over in the projections:</p><ul>
 <li><p>Maturity-at-age</p></li>
 <li><p>Weight-at-age</p></li>
 <li><p>Natural mortality-at-age</p></li>
 <li><p>Fishing mortality-at-age (if <code>proj.opts$use.avgF = TRUE</code>)</p></li>
 </ul>
 
+<p>If fitting a model with recruitment estimated freely in each year, i.e. as fixed effects as in ASAP, WHAM handles recruitment 
+in the projection years similarly to using the empirical cumulative distribution function. WHAM does this by calculating the mean
+and standard deviation of log(R) over all model years (default) or a specified subset of years (<code>proj.opts$avg.rec.yrs</code>). WHAM then
+treats recruitment in the projections as a random effect with this mean and SD, i.e. log(R) ~ N(meanlogR, sdlogR).</p>
 <p>WHAM implements four options for handling the environmental covariate(s) in the projections.
 Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p><dl>
     <dt>(Default) Continue ecov process model (e.g. random walk, AR1)</dt><dd><p>Set <code>$cont.ecov = TRUE</code>. WHAM will estimate the ecov process in projection years (i.e. continue the random walk / AR1 process).</p></dd>

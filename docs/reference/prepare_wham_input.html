@@ -76,7 +76,7 @@ By default, this will set up a SCAA version like ASAP." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -270,7 +270,7 @@ Otherwise, it must be a named list with the following components:</p><dl>
     I.e. if SST in year <em>t</em> affects recruitment in year <em>t + 1</em>, set <code>lag = 1</code>.</p></dd>
     <dt>$process_model</dt><dd><p>Process model for the ecov time-series. <code>"rw"</code> = random walk, <code>"ar1"</code> = 1st order autoregressive, <code>NA</code> = do not fit</p></dd>
     <dt>$where</dt><dd><p>Where does the ecov affect the population? <code>"recuit"</code> = recruitment,
-    <code>"M"</code> = natural mortality, <code>"growth"</code> = growth.</p></dd>
+    <code>"M"</code> = natural mortality, <code>"none"</code> = fit ecov but without an effect on the population.</p></dd>
     <dt>$how</dt><dd><p>How does the ecov affect the <code>$where</code> process? These options are
     specific to the <code>$where</code> process.</p></dd>
     <dt>$link_model</dt><dd><p>Model describing ecov effect on the <code>$where</code> process. Options: 'linear' (default) or 'poly-x'

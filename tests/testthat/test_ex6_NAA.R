@@ -23,7 +23,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
 mods <- vector("list",n.mods)
-fit.mods <- c(1:3,5:13)
+fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
 for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL

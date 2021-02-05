@@ -85,7 +85,7 @@ Otherwise, it must be a named list with the following components:
     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
     \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
-    \code{"M"} = natural mortality, \code{"growth"} = growth.}
+    \code{"M"} = natural mortality, \code{"none"} = fit ecov but without an effect on the population.}
     \item{$how}{How does the ecov affect the \code{$where} process? These options are
     specific to the \code{$where} process.}
     \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'

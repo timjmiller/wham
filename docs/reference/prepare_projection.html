@@ -75,7 +75,7 @@ which in turn is called by fit_wham if do.proj = TRUE." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -199,6 +199,7 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
 <li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
 <li><p><code>$proj.ecov</code> (vector), user-specified environmental covariate(s) for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$cont.Mre</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>TRUE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$avg.rec.yrs</code> (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.</p></li>
 </ul></td>
     </tr>
     </table>

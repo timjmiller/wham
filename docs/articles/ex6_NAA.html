@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -140,7 +140,7 @@
 <ul>
 <li>Stock: Southern New England-Mid Atlantic (SNEMA) yellowtail flounder</li>
 <li>Data: 1973-2011, 1 fishery and 2 indices</li>
-<li>Age compositions: logistic normal, without pooling zero observations (<code>input$data$age_comp_model_fleets = 7</code> and <code>input$data$age_comp_model_indices = 7</code>)</li>
+<li>Age compositions: logistic normal, treating observations of zero as missing (<code>age_comp = "logistic-normal-miss0"</code>)</li>
 <li>Selectivity: age-specific</li>
 </ul>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
@@ -305,8 +305,7 @@
 </ul>
 <p>For example, the <code>ecov</code> list for models <code>m8</code>-<code>m13</code> with the linear GSI-<span class="math inline">\(\beta\)</span> effect:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R">  <span class="co"># example for model m3</span>
-  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+<code class="sourceCode R">  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
     label <span class="op">=</span> <span class="st">"GSI"</span>,
     mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">GSI</span><span class="op">)</span>,
     logsigma <span class="op">=</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span>
@@ -314,8 +313,8 @@
     use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
     lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># GSI in year t affects recruitment in year t+1</span>
     process_model <span class="op">=</span> <span class="st">"ar1"</span>, <span class="co"># GSI modeled as AR1 (random walk would be "rw")</span>
-    where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># GSI affects recruitment</span>
-    how <span class="op">=</span> <span class="fl">2</span>, <span class="co"># limiting</span>
+    where <span class="op">=</span> <span class="st">"recruit"</span>,
+    how <span class="op">=</span> <span class="fl">2</span>,
     link_model <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span> <span class="co"># linear GSI-Recruitment effect</span></code></pre></div>
 <p>Note that you can set <code>ecov = NULL</code> to fit the model without environmental covariate data, but here we fit the <code>ecov</code> data even for models without the GSI effect on recruitment (<code>m1</code>-<code>m7</code>) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting <code>ecov$how = 0</code> and <code>ecov$process_model = "ar1"</code>.</p>
 </div>
@@ -323,43 +322,41 @@
 <h2 class="hasAnchor">
 <a href="#run-all-models" class="anchor"></a>5. Run all models</h2>
 <p>All models use the same options for expected recruitment (Beverton-Holt stock-recruit function) and selectivity (age-specific, with one or two ages fixed at 1).</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">NAA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>cor<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_cor"</span><span class="op">]</span>, sigma<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_sigma"</span><span class="op">]</span><span class="op">)</span>
-  <span class="kw">if</span><span class="op">(</span><span class="va">NAA_list</span><span class="op">$</span><span class="va">sigma</span> <span class="op">==</span> <span class="st">'---'</span><span class="op">)</span> <span class="va">NAA_list</span> <span class="op">=</span> <span class="cn">NULL</span>
-
-  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-    label <span class="op">=</span> <span class="st">"GSI"</span>,
-    mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">GSI</span><span class="op">)</span>,
-    logsigma <span class="op">=</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span>
-    year <span class="op">=</span> <span class="va">env.dat</span><span class="op">$</span><span class="va">year</span>,
-    use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
-    lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># GSI in year t affects Rec in year t + 1</span>
-    process_model <span class="op">=</span> <span class="st">'ar1'</span>, <span class="co"># "rw" or "ar1"</span>
-    where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># GSI affects recruitment</span>
-    how <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">GSI_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="co"># 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting</span>
-    link_model <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>
-
-  <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>, <span class="co"># Bev Holt recruitment</span>
-                              model_name <span class="op">=</span> <span class="st">"Ex 6: Numbers-at-age"</span>,
-                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, <span class="co"># match ex4 selectivity</span>
-                                fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                              NAA_re <span class="op">=</span> <span class="va">NAA_list</span>,
-                              ecov<span class="op">=</span><span class="va">ecov</span>,
-                              age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span> <span class="co"># logistic normal, treat 0 obs as missing</span>
-
-  <span class="co"># Fit model</span>
-  <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.retro<span class="op">=</span><span class="cn">T</span>, do.osa<span class="op">=</span><span class="cn">F</span><span class="op">)</span>
-
-  <span class="co"># Save model</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
-
-  <span class="co"># If desired, do projections</span>
-  <span class="co"># mod_proj &lt;- project_wham(mod)</span>
-  <span class="co"># saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))</span>
-<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="cf">for</span>(m <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n.mods){</a>
+<a class="sourceLine" id="cb15-2" data-line-number="2">  NAA_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">cor=</span>df.mods[m,<span class="st">"NAA_cor"</span>], <span class="dt">sigma=</span>df.mods[m,<span class="st">"NAA_sigma"</span>])</a>
+<a class="sourceLine" id="cb15-3" data-line-number="3">  <span class="cf">if</span>(NAA_list<span class="op">$</span>sigma <span class="op">==</span><span class="st"> '---'</span>) NAA_list =<span class="st"> </span><span class="ot">NULL</span></a>
+<a class="sourceLine" id="cb15-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb15-5" data-line-number="5">  ecov &lt;-<span class="st"> </span><span class="kw">list</span>(</a>
+<a class="sourceLine" id="cb15-6" data-line-number="6">    <span class="dt">label =</span> <span class="st">"GSI"</span>,</a>
+<a class="sourceLine" id="cb15-7" data-line-number="7">    <span class="dt">mean =</span> <span class="kw">as.matrix</span>(env.dat<span class="op">$</span>GSI),</a>
+<a class="sourceLine" id="cb15-8" data-line-number="8">    <span class="dt">logsigma =</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span></a>
+<a class="sourceLine" id="cb15-9" data-line-number="9">    <span class="dt">year =</span> env.dat<span class="op">$</span>year,</a>
+<a class="sourceLine" id="cb15-10" data-line-number="10">    <span class="dt">use_obs =</span> <span class="kw">matrix</span>(<span class="dv">1</span>, <span class="dt">ncol=</span><span class="dv">1</span>, <span class="dt">nrow=</span><span class="kw">dim</span>(env.dat)[<span class="dv">1</span>]), <span class="co"># use all obs (=1)</span></a>
+<a class="sourceLine" id="cb15-11" data-line-number="11">    <span class="dt">lag =</span> <span class="dv">1</span>, <span class="co"># GSI in year t affects Rec in year t + 1</span></a>
+<a class="sourceLine" id="cb15-12" data-line-number="12">    <span class="dt">process_model =</span> <span class="st">'ar1'</span>, <span class="co"># "rw" or "ar1"</span></a>
+<a class="sourceLine" id="cb15-13" data-line-number="13">    <span class="dt">where =</span> <span class="dt">where =</span> <span class="kw">c</span>(<span class="st">"none"</span>,<span class="st">"recruit"</span>)[<span class="kw">as.logical</span>(df.mods<span class="op">$</span>GSI_how[m])<span class="op">+</span><span class="dv">1</span>], <span class="co"># GSI affects recruitment</span></a>
+<a class="sourceLine" id="cb15-14" data-line-number="14">    <span class="dt">how =</span> df.mods<span class="op">$</span>GSI_how[m], <span class="co"># 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting</span></a>
+<a class="sourceLine" id="cb15-15" data-line-number="15">    <span class="dt">link_model =</span> <span class="st">"linear"</span>)</a>
+<a class="sourceLine" id="cb15-16" data-line-number="16"></a>
+<a class="sourceLine" id="cb15-17" data-line-number="17">  input &lt;-<span class="st"> </span><span class="kw">prepare_wham_input</span>(asap3, <span class="dt">recruit_model =</span> <span class="dv">3</span>, <span class="co"># Bev Holt recruitment</span></a>
+<a class="sourceLine" id="cb15-18" data-line-number="18">                              <span class="dt">model_name =</span> <span class="st">"Ex 6: Numbers-at-age"</span>,</a>
+<a class="sourceLine" id="cb15-19" data-line-number="19">                              <span class="dt">selectivity=</span><span class="kw">list</span>(<span class="dt">model=</span><span class="kw">rep</span>(<span class="st">"age-specific"</span>,<span class="dv">3</span>), <span class="dt">re=</span><span class="kw">c</span>(<span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span>), </a>
+<a class="sourceLine" id="cb15-20" data-line-number="20">                                <span class="dt">initial_pars=</span><span class="kw">list</span>(<span class="kw">c</span>(<span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>),<span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>)), </a>
+<a class="sourceLine" id="cb15-21" data-line-number="21">                                <span class="dt">fix_pars=</span><span class="kw">list</span>(<span class="dv">4</span><span class="op">:</span><span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span><span class="op">:</span><span class="dv">6</span>)),</a>
+<a class="sourceLine" id="cb15-22" data-line-number="22">                              <span class="dt">NAA_re =</span> NAA_list,</a>
+<a class="sourceLine" id="cb15-23" data-line-number="23">                              <span class="dt">ecov=</span>ecov,</a>
+<a class="sourceLine" id="cb15-24" data-line-number="24">                              <span class="dt">age_comp =</span> <span class="st">"logistic-normal-miss0"</span>) <span class="co"># logistic normal, treat 0 obs as missing</span></a>
+<a class="sourceLine" id="cb15-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb15-26" data-line-number="26">  <span class="co"># Fit model</span></a>
+<a class="sourceLine" id="cb15-27" data-line-number="27">  mod &lt;-<span class="st"> </span><span class="kw">fit_wham</span>(input, <span class="dt">do.retro=</span>T, <span class="dt">do.osa=</span>F)</a>
+<a class="sourceLine" id="cb15-28" data-line-number="28"></a>
+<a class="sourceLine" id="cb15-29" data-line-number="29">  <span class="co"># Save model</span></a>
+<a class="sourceLine" id="cb15-30" data-line-number="30">  <span class="kw">saveRDS</span>(mod, <span class="dt">file=</span><span class="kw">paste0</span>(df.mods<span class="op">$</span>Model[m],<span class="st">".rds"</span>))</a>
+<a class="sourceLine" id="cb15-31" data-line-number="31"></a>
+<a class="sourceLine" id="cb15-32" data-line-number="32">  <span class="co"># If desired, do projections</span></a>
+<a class="sourceLine" id="cb15-33" data-line-number="33">  <span class="co"># mod_proj &lt;- project_wham(mod)</span></a>
+<a class="sourceLine" id="cb15-34" data-line-number="34">  <span class="co"># saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))</span></a>
+<a class="sourceLine" id="cb15-35" data-line-number="35">}</a></code></pre></div>
 </div>
 <div id="compare-models" class="section level2">
 <h2 class="hasAnchor">
@@ -480,10 +477,10 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.20
+0.18
 </td>
 <td style="text-align:right;">
--714.045
+-623.383
 </td>
 <td style="text-align:left;">
 —
@@ -492,13 +489,13 @@ TRUE
 —
 </td>
 <td style="text-align:left;">
-5.680
+8.818
 </td>
 <td style="text-align:left;">
--0.030
+0.951
 </td>
 <td style="text-align:left;">
-0.034
+-0.433
 </td>
 </tr>
 <tr>
@@ -521,25 +518,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.37
+1.40
 </td>
 <td style="text-align:right;">
--602.894
+-509.364
 </td>
 <td style="text-align:left;">
-348.3
+516.9
 </td>
 <td style="text-align:left;">
--1057.8
+-874.7
 </td>
 <td style="text-align:left;">
-5.191
+5.054
 </td>
 <td style="text-align:left;">
--0.019
+1.023
 </td>
 <td style="text-align:left;">
-0.015
+-0.437
 </td>
 </tr>
 <tr>
@@ -559,28 +556,28 @@ rec
 TRUE
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:right;">
-1.42
+1.55
 </td>
 <td style="text-align:right;">
--617.585
+-526.969
 </td>
 <td style="text-align:left;">
-320.9
+—
 </td>
 <td style="text-align:left;">
--1085.2
+—
 </td>
 <td style="text-align:left;">
-2.486
+—
 </td>
 <td style="text-align:left;">
--0.019
+—
 </td>
 <td style="text-align:left;">
-0.007
+—
 </td>
 </tr>
 <tr>
@@ -597,31 +594,31 @@ rec+1
 —
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:right;">
-0.52
+0.38
 </td>
 <td style="text-align:right;">
-NaN
+-751.564
 </td>
 <td style="text-align:left;">
-—
+34.5
 </td>
 <td style="text-align:left;">
-—
+-1357.1
 </td>
 <td style="text-align:left;">
-—
+0.374
 </td>
 <td style="text-align:left;">
-—
+0.013
 </td>
 <td style="text-align:left;">
-—
+-0.020
 </td>
 </tr>
 <tr>
@@ -644,25 +641,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.74
+0.78
 </td>
 <td style="text-align:right;">
--770.651
+-761.869
 </td>
 <td style="text-align:left;">
-16.8
+15.9
 </td>
 <td style="text-align:left;">
--1389.3
+-1375.7
 </td>
 <td style="text-align:left;">
-0.235
+0.245
 </td>
 <td style="text-align:left;">
-0.039
+0.000
 </td>
 <td style="text-align:left;">
--0.051
+-0.017
 </td>
 </tr>
 <tr>
@@ -685,25 +682,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.83
+0.84
 </td>
 <td style="text-align:right;">
--765.823
+-756.660
 </td>
 <td style="text-align:left;">
-26.5
+26.3
 </td>
 <td style="text-align:left;">
--1379.6
+-1365.3
 </td>
 <td style="text-align:left;">
-0.325
+0.412
 </td>
 <td style="text-align:left;">
-0.018
+-0.002
 </td>
 <td style="text-align:left;">
--0.010
+0.006
 </td>
 </tr>
 <tr>
@@ -726,25 +723,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.87
+0.98
 </td>
 <td style="text-align:right;">
--772.897
+-764.728
 </td>
 <td style="text-align:left;">
-14.3
+12.1
 </td>
 <td style="text-align:left;">
--1391.8
+-1379.5
 </td>
 <td style="text-align:left;">
-0.237
+0.256
 </td>
 <td style="text-align:left;">
-0.018
+-0.011
 </td>
 <td style="text-align:left;">
--0.026
+0.000
 </td>
 </tr>
 <tr>
@@ -767,25 +764,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.38
+1.36
 </td>
 <td style="text-align:right;">
--618.835
+-520.414
 </td>
 <td style="text-align:left;">
-318.4
+496.8
 </td>
 <td style="text-align:left;">
--1087.7
+-894.8
 </td>
 <td style="text-align:left;">
-1.060
+1.721
 </td>
 <td style="text-align:left;">
--0.041
+1.030
 </td>
 <td style="text-align:left;">
-0.028
+-0.425
 </td>
 </tr>
 <tr>
@@ -802,31 +799,31 @@ rec
 Limiting
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:left;">
-TRUE
+FALSE
 </td>
 <td style="text-align:right;">
-1.48
+0.98
 </td>
 <td style="text-align:right;">
--622.069
+-531.028
 </td>
 <td style="text-align:left;">
-314.0
+—
 </td>
 <td style="text-align:left;">
--1092.1
+—
 </td>
 <td style="text-align:left;">
-1.662
+—
 </td>
 <td style="text-align:left;">
--0.015
+—
 </td>
 <td style="text-align:left;">
-0.006
+—
 </td>
 </tr>
 <tr>
@@ -849,25 +846,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.36
+0.40
 </td>
 <td style="text-align:right;">
--771.868
+-760.977
 </td>
 <td style="text-align:left;">
-14.4
+17.6
 </td>
 <td style="text-align:left;">
--1391.7
+-1374.0
 </td>
 <td style="text-align:left;">
-0.189
+0.252
 </td>
 <td style="text-align:left;">
-0.016
+-0.002
 </td>
 <td style="text-align:left;">
--0.017
+-0.003
 </td>
 </tr>
 <tr>
@@ -890,25 +887,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-0.76
+0.82
 </td>
 <td style="text-align:right;font-weight: bold;">
--780.041
+-770.789
 </td>
 <td style="text-align:left;font-weight: bold;">
 0.0
 </td>
 <td style="text-align:left;font-weight: bold;">
--1406.1
+-1391.6
 </td>
 <td style="text-align:left;font-weight: bold;">
-0.151
+0.172
 </td>
 <td style="text-align:left;font-weight: bold;">
-0.021
+-0.011
 </td>
 <td style="text-align:left;font-weight: bold;">
--0.031
+-0.001
 </td>
 </tr>
 <tr>
@@ -931,25 +928,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.82
+0.93
 </td>
 <td style="text-align:right;">
--772.784
+-762.934
 </td>
 <td style="text-align:left;">
-14.5
+15.7
 </td>
 <td style="text-align:left;">
--1391.6
+-1375.9
 </td>
 <td style="text-align:left;">
-0.181
+0.247
 </td>
 <td style="text-align:left;">
-0.002
+-0.011
 </td>
 <td style="text-align:left;">
-0.008
+0.013
 </td>
 </tr>
 <tr>
@@ -972,25 +969,25 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-0.88
+1.03
 </td>
 <td style="text-align:right;font-weight: bold;">
--780.336
+-771.602
 </td>
 <td style="text-align:left;font-weight: bold;">
-1.4
+0.4
 </td>
 <td style="text-align:left;font-weight: bold;">
--1404.7
+-1391.2
 </td>
 <td style="text-align:left;font-weight: bold;">
-0.122
+0.148
 </td>
 <td style="text-align:left;font-weight: bold;">
-0.003
+-0.020
 </td>
 <td style="text-align:left;font-weight: bold;">
--0.005
+0.009
 </td>
 </tr>
 </tbody>

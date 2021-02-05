@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -232,9 +232,9 @@
     year <span class="op">=</span> <span class="va">env.dat</span><span class="op">$</span><span class="va">Year</span>,
     use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (all = 1)</span>
     lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># CPI in year t affects recruitment in year t+1</span>
-    process_model <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">ecov_process</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="co"># "rw" or "ar1"</span>
-    where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># CPI affects recruitment</span>
-    how <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">ecov_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">)</span> <span class="co"># 0 = no effect, 1 = controlling, 2 = limiting</span></code></pre></div>
+    process_model <span class="op">=</span> <span class="st">'rw'</span>, <span class="co"># "rw" or "ar1"</span>
+    where <span class="op">=</span> <span class="st">"none"</span>,
+    how <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 = no effect, 1 = controlling, 2 = limiting</span></code></pre></div>
 <p>There are currently 2 options for the <code>ecov</code> process model (<code>ecov$process_model</code>): 1) random walk (<code>'rw'</code>), and 2) autoregressive (<code>'ar1'</code>). We must next specify <strong>where</strong> the <code>ecov</code> affects the population; here it is via recruitment (<code>ecov$where = "recruit"</code>) as opposed to another process like catchability, mortality, maturity, etc. The options for <strong>how</strong> the <code>ecov</code> affects recruitment (<code>ecov$how</code>) follow <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>:</p>
 <ol style="list-style-type: decimal">
 <li>“controlling” (dens-indep mortality),</li>
@@ -264,7 +264,7 @@
     use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
     lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># CPI in year t affects recruitment in year t+1</span>
     process_model <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_process</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="co"># "rw" or "ar1"</span>
-    where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># CPI affects recruitment</span>
+    where <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"recruit"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>, <span class="co"># CPI affects recruitment</span>
     how <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">)</span> <span class="co"># 0 = no effect (but still fit Ecov to compare AIC)</span>
 
   <span class="co"># (not used in this vignette) can set ecov = NULL to fit model without ecov data</span>
@@ -305,43 +305,43 @@
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign2_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt; Model 1:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 5.74e-09 
-#&gt; Max gradient parameter: log_NAA_sigma 
+#&gt; Maximum gradient component: 3.41e-10 
+#&gt; Max gradient parameter: F_devs 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 2:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.19e-09 
+#&gt; Maximum gradient component: 5.95e-11 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 3:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 6.11e-09 
-#&gt; Max gradient parameter: log_NAA_sigma 
+#&gt; Maximum gradient component: 1.04e-09 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 4:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 7.42e-10 
+#&gt; Maximum gradient component: 3.36e-11 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 5:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 7.45e-11 
+#&gt; Maximum gradient component: 8.28e-10 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 6:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.14e-06 
-#&gt; Max gradient parameter: logit_selpars 
-#&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible
+#&gt; Maximum gradient component: 2.55e-10 
+#&gt; Max gradient parameter: log_NAA_sigma 
+#&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 7:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.46e-09 
+#&gt; Maximum gradient component: 1.01e-09 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 </div>
@@ -384,21 +384,21 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/save.html">save</a></span><span class="op">(</span><span class="st">"df.mods"</span>, file<span class="op">=</span><span class="st">"vign2_res.RData"</span><span class="op">)</span>
 <span class="va">df.mods</span></code></pre></div>
 <pre><code>#&gt;   Model Recruitment Ecov_process    Ecov_how conv pdHess      NLL dAIC     AIC
-#&gt; 1    m5    Bev-Holt          ar1    Limiting TRUE   TRUE -829.409    0 -1518.8
-#&gt; 2    m7      Ricker          ar1 Controlling TRUE   TRUE -829.120  0.6 -1518.2
-#&gt; 3    m4    Bev-Holt           rw    Limiting TRUE   TRUE -818.699 19.4 -1499.4
-#&gt; 4    m2      Random           rw Controlling TRUE   TRUE -815.937 22.9 -1495.9
-#&gt; 5    m3    Bev-Holt           rw         --- TRUE   TRUE -813.130 28.5 -1490.3
-#&gt; 6    m1      Random           rw         --- TRUE   TRUE -808.943 34.9 -1483.9
-#&gt; 7    m6    Bev-Holt          ar1 Controlling TRUE  FALSE -827.983  ---     ---
+#&gt; 1    m6    Bev-Holt          ar1 Controlling TRUE   TRUE -829.789  0.0 -1519.6
+#&gt; 2    m5    Bev-Holt          ar1    Limiting TRUE   TRUE -829.409  0.8 -1518.8
+#&gt; 3    m7      Ricker          ar1 Controlling TRUE   TRUE -829.120  1.4 -1518.2
+#&gt; 4    m4    Bev-Holt           rw    Limiting TRUE   TRUE -818.699 20.2 -1499.4
+#&gt; 5    m2      Random           rw Controlling TRUE   TRUE -815.937 23.7 -1495.9
+#&gt; 6    m3    Bev-Holt           rw         --- TRUE   TRUE -813.130 29.3 -1490.3
+#&gt; 7    m1      Random           rw         --- TRUE   TRUE -808.943 35.7 -1483.9
 #&gt;    rho_R rho_SSB rho_Fbar
-#&gt; 1 0.1961   0.069  -0.1052
-#&gt; 2 0.1883  0.0621  -0.0987
-#&gt; 3 0.1957  0.0693  -0.1054
-#&gt; 4 0.2046  0.0727  -0.1108
-#&gt; 5 0.2121  0.0679  -0.1033
-#&gt; 6 0.2308  0.0714  -0.1106
-#&gt; 7    ---     ---      ---</code></pre>
+#&gt; 1 0.1896  0.0653  -0.1017
+#&gt; 2 0.1961  0.0690  -0.1052
+#&gt; 3 0.1883  0.0621  -0.0987
+#&gt; 4 0.1957  0.0693  -0.1054
+#&gt; 5 0.2046  0.0727  -0.1108
+#&gt; 6 0.2121  0.0679  -0.1033
+#&gt; 7 0.2308  0.0714  -0.1106</code></pre>
 </div>
 <div id="results" class="section level2">
 <h2 class="hasAnchor">

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2.9000</span>
       </span>
     </div>
 
@@ -138,7 +138,7 @@
 <p>This is the 5th WHAM example, which builds off <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</li>
-<li>logistic normal age compositions, pooling zero observations (<code>input$data$age_comp_model_fleets = 5</code> and <code>input$data$age_comp_model_indices = 5</code>)</li>
+<li>logistic normal age compositions, pooling zero observations with adjacent ages (<code>age_comp = "logistic-normal-pool0"</code>)</li>
 <li>random-about-mean recruitment (<code>recruit_model = 2</code>)</li>
 <li>5 indices</li>
 <li>fit to 1973-2011 data</li>
@@ -219,10 +219,10 @@
 <a href="#specify-models" class="anchor"></a>2. Specify models</h2>
 <p>Now we specify several models with different options for natural mortality:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>M_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"---"</span>,<span class="fl">3</span><span class="op">)</span>,<span class="st">"age-specific"</span>,<span class="st">"weight-at-age"</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"constant"</span>,<span class="fl">6</span><span class="op">)</span>,<span class="st">"age-specific"</span>,<span class="st">"age-specific"</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"constant"</span>,<span class="fl">3</span><span class="op">)</span>,<span class="st">"---"</span><span class="op">)</span>,
-                      M_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">6</span><span class="op">)</span>,<span class="st">"ar1_y"</span>,<span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"2dar1"</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"ar1_a"</span>,<span class="fl">3</span><span class="op">)</span>,<span class="st">"2dar1"</span><span class="op">)</span>,
-                      Ecov_process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="fl">17</span><span class="op">)</span>,
-                      Ecov_link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span><span class="op">)</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>M_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"---"</span>,<span class="fl">3</span><span class="op">)</span>,<span class="st">"age-specific"</span>,<span class="st">"weight-at-age"</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"constant"</span>,<span class="fl">5</span><span class="op">)</span>,<span class="st">"---"</span><span class="op">)</span>,
+                      M_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">6</span><span class="op">)</span>,<span class="st">"ar1_y"</span>,<span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"2dar1"</span><span class="op">)</span>,
+                      Ecov_process <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="fl">11</span><span class="op">)</span>,
+                      Ecov_link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">5</span><span class="op">)</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span><span class="op">)</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
 <span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>
 <span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="va">Model</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span></code></pre></div>
@@ -240,13 +240,7 @@
 <span class="co">#&gt; 8     m8      constant 2dar1          ar1         0</span>
 <span class="co">#&gt; 9     m9      constant  none          ar1         1</span>
 <span class="co">#&gt; 10   m10      constant  none          ar1         2</span>
-<span class="co">#&gt; 11   m11      constant 2dar1          ar1         1</span>
-<span class="co">#&gt; 12   m12  age-specific  none          ar1         2</span>
-<span class="co">#&gt; 13   m13  age-specific 2dar1          ar1         2</span>
-<span class="co">#&gt; 14   m14      constant ar1_a          ar1         0</span>
-<span class="co">#&gt; 15   m15      constant ar1_a          ar1         1</span>
-<span class="co">#&gt; 16   m16      constant ar1_a          ar1         2</span>
-<span class="co">#&gt; 17   m17           --- 2dar1          ar1         0</span></code></pre></div>
+<span class="co">#&gt; 11   m11           --- 2dar1          ar1         0</span></code></pre></div>
 </div>
 <div id="natural-mortality-options" class="section level2">
 <h2 class="hasAnchor">
@@ -292,7 +286,7 @@
 <p>And to fit model <code>m8</code>, estimate mean <span class="math inline">\(M\)</span> with 2D AR1 deviations by year and age:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="st">"constant"</span>, est_ages<span class="op">=</span><span class="fl">1</span>, re<span class="op">=</span><span class="st">"2dar1"</span><span class="op">)</span></code></pre></div>
-<p>To fit model <code>m17</code>, use the <span class="math inline">\(M_a\)</span> values specified in the ASAP file, but with 2D AR1 deviations as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>:</p>
+<p>To fit model <code>m11</code>, use the <span class="math inline">\(M_a\)</span> values specified in the ASAP file, but with 2D AR1 deviations as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>re<span class="op">=</span><span class="st">"2dar1"</span><span class="op">)</span></code></pre></div>
 </div>
@@ -326,7 +320,7 @@
     where <span class="op">=</span> <span class="st">"M"</span>, <span class="co"># GSI affects natural mortality</span>
     how <span class="op">=</span> <span class="fl">1</span>, <span class="co"># include GSI effect on M</span>
     link_model <span class="op">=</span> <span class="st">"poly-2"</span><span class="op">)</span> <span class="co"># quadratic GSI-M effect</span></code></pre></div>
-<p>Note that you can set <code>ecov = NULL</code> to fit the model without environmental covariate data, but here we fit the <code>ecov</code> data even for models without GSI effect on <span class="math inline">\(M\)</span> (<code>m1</code>, <code>m4-8</code>, <code>m14</code>) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting <code>ecov$how = 0</code> and <code>ecov$process_model = "ar1"</code>.</p>
+<p>Note that you can set <code>ecov = NULL</code> to fit the model without environmental covariate data, but here we fit the <code>ecov</code> data even for models without GSI effect on <span class="math inline">\(M\)</span> (<code>m1</code>, <code>m4-8</code>) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting <code>ecov$how = 0</code> and <code>ecov$process_model = "ar1"</code>.</p>
 </div>
 <div id="run-all-models" class="section level2">
 <h2 class="hasAnchor">
@@ -361,7 +355,7 @@
   <span class="kw">if</span><span class="op">(</span><span class="va">m_model</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"constant"</span>,<span class="st">"weight-at-age"</span><span class="op">)</span><span class="op">)</span> <span class="va">M</span><span class="op">$</span><span class="va">initial_means</span> <span class="op">=</span> <span class="fl">0.28</span>
 
   <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">2</span>,
-                              model_name <span class="op">=</span> <span class="st">"Ex 5: GSI effects on M"</span>,
+                              model_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span>,<span class="st">": "</span>, <span class="va">df.mods</span><span class="op">$</span><span class="va">M_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>,<span class="st">" + "</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"no"</span>,<span class="st">"linear"</span>,<span class="st">"poly-2"</span><span class="op">)</span><span class="op">[</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_link</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="st">" GSI link + "</span>,<span class="va">df.mods</span><span class="op">$</span><span class="va">M_re</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>,<span class="st">" devs"</span><span class="op">)</span>,
                               ecov <span class="op">=</span> <span class="va">ecov</span>,
                               selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">6</span><span class="op">)</span>,
                                                initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>,<span class="fl">0.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>,<span class="fl">0.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,
@@ -433,7 +427,7 @@
 <h2 class="hasAnchor">
 <a href="#results" class="anchor"></a>7. Results</h2>
 <p>In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
-<p>Models <code>m8</code> (estimate mean <span class="math inline">\(M\)</span> and 2D AR1 deviations by year and age, no GSI effect) and <code>m17</code> (keep mean <span class="math inline">\(M\)</span> fixed but estimate 2D AR1 deviations) had the lowest AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below).</p>
+<p>Models <code>m8</code> (estimate mean <span class="math inline">\(M\)</span> and 2D AR1 deviations by year and age, no GSI effect) and <code>m11</code> (keep mean <span class="math inline">\(M\)</span> fixed but estimate 2D AR1 deviations) had the lowest AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below).</p>
 <table class="table table table-condensed table-responsive">
 <thead><tr>
 <th style="text-align:left;">
@@ -503,7 +497,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.20
+0.22
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -819.514
@@ -547,7 +541,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.25
+0.31
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -824.237
@@ -591,7 +585,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-2.76
+2.95
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -824.619
@@ -635,7 +629,7 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-0.24
+0.28
 </td>
 <td style="text-align:right;">
 -838.660
@@ -723,7 +717,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.20
+0.21
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -825.959
@@ -767,7 +761,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.25
+0.28
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -826.374
@@ -811,7 +805,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.84
+1.00
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 -837.213
@@ -855,7 +849,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-0.27
+0.28
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -830.484
@@ -899,7 +893,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
-2.87
+3.07
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;">
 -830.525
@@ -921,272 +915,8 @@ TRUE
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-m11
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-2dar1
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-linear
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-1.79
-</td>
-<td style="text-align:right;">
--842.745
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m12
-</td>
-<td style="text-align:left;">
-age-specific
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-poly-2
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-3.82
-</td>
-<td style="text-align:right;">
--846.303
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m13
-</td>
-<td style="text-align:left;">
-age-specific
-</td>
-<td style="text-align:left;">
-2dar1
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-poly-2
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-3.71
-</td>
-<td style="text-align:right;">
-NaN
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m14
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.97
-</td>
-<td style="text-align:right;">
--830.067
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m15
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-linear
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-1.12
-</td>
-<td style="text-align:right;">
--836.242
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m16
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-poly-2
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-3.99
-</td>
-<td style="text-align:right;">
--836.646
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
 <td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
-m17
+m11
 </td>
 <td style="text-align:left;background-color: #F2F2F2 !important;font-weight: bold;">
 —
@@ -1207,7 +937,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
-0.97
+1.02
 </td>
 <td style="text-align:right;background-color: #F2F2F2 !important;font-weight: bold;">
 -835.529
@@ -1251,21 +981,21 @@ TRUE
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_NAA_retro_relative.png" alt="Mohn’s rho for numbers-at-age, m8." style="width:45.0%"></p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m8." style="width:45.0%"></p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" alt="Mohn’s rho for F, m1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png" alt="Mohn’s rho for F, m8." style="width:45.0%"></p>
-<p>Model <code>m17</code> had <span class="math inline">\(\Delta AIC = 1.5\)</span> and the lowest retrospective pattern for all numbers-at-age and F. Model <code>m17</code> left <span class="math inline">\(M_a\)</span> fixed at the values from the ASAP data file (as in <code>m1</code>) and estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>. This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m17." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png" alt="Mohn’s rho for F, m17." style="width:45.0%"></p>
+<p>Model <code>m11</code> had <span class="math inline">\(\Delta AIC = 1.5\)</span> and the lowest retrospective pattern for all numbers-at-age and F. Model <code>m11</code> left <span class="math inline">\(M_a\)</span> fixed at the values from the ASAP data file (as in <code>m1</code>) and estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>. This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047">Cadigan (2016)</a>.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_SSB_retro_relative.png" alt="Mohn’s rho for SSB, m11." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_Fbar_retro_relative.png" alt="Mohn’s rho for F, m11." style="width:45.0%"></p>
 <div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png" alt="Mohn’s rho for recruitment, m17." style="width:45.0%"><p class="caption">Mohn’s rho for recruitment, m17.</p>
+<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_NAA_age1_retro_relative.png" alt="Mohn’s rho for recruitment, m11." style="width:45.0%"><p class="caption">Mohn’s rho for recruitment, m11.</p>
 </div>
 </div>
 <div id="stock-status" class="section level4">
 <h4 class="hasAnchor">
 <a href="#stock-status" class="anchor"></a>Stock status</h4>
-<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher <em>M</em>, lower and more uncertain <em>F</em>, and higher SSB – a much rosier picture of the stock status through time. Model <code>m17</code> (right) is intermediate between <code>m1</code> and <code>m8</code>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" alt="Relative stock status, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png" alt="Relative stock status, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_relative.png" alt="Relative stock status, m17." style="width:31.0%"></p>
-<p>Compared to <code>m1</code> (left), <code>m8</code> (center) estimated higher and more variable reference points, <span class="math inline">\(F_{\%SPR}\)</span> (top), and lower and more variable yield-per-recruit (bottom). Model <code>m17</code> (right) estimated more of a trend in yield-per-recruit and <span class="math inline">\(F_{\%SPR}\)</span>, with a notable shift around 1990.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png" alt="Reference point variability, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png" alt="Reference point variability, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_annual_time.png" alt="Reference point variability, m17." style="width:31.0%"></p>
-<p>In the final year (2011), <code>m8</code> and <code>m17</code> both estimated much lower probabilities of the stock being overfished than <code>m1</code> (16% and 21% vs. 98%).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" alt="Kobe status plot, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" alt="Kobe status plot, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Kobe_status.png" alt="Kobe status plot, m17." style="width:31.0%"></p>
+<p>Compared to <code>m1</code> (left), <code>m8</code> and <code>m11</code> (center, right) estimated higher <em>M</em>, lower and more uncertain <em>F</em>, and higher SSB – a much rosier picture of the stock status through time.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" alt="Relative stock status, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png" alt="Relative stock status, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_FSPR_relative.png" alt="Relative stock status, m11." style="width:31.0%"></p>
+<p>Compared to <code>m1</code> (left), <code>m8</code> and <code>m11</code> (center, right) estimated higher and more variable reference points, <span class="math inline">\(F_{\%SPR}\)</span> (top), and lower and more variable yield-per-recruit (bottom). Model <code>m11</code> (right) estimated more of a trend in yield-per-recruit and <span class="math inline">\(F_{\%SPR}\)</span>, with a notable shift around 1990.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png" alt="Reference point variability, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png" alt="Reference point variability, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_FSPR_annual_time.png" alt="Reference point variability, m11." style="width:31.0%"></p>
+<p>In the final year (2011), <code>m8</code> and <code>m11</code> both estimated much lower probabilities of the stock being overfished than <code>m1</code> (17% and 21% vs. 99%).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" alt="Kobe status plot, m1." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" alt="Kobe status plot, m8." style="width:31.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_Kobe_status.png" alt="Kobe status plot, m11." style="width:31.0%"></p>
 </div>
 <div id="yet-more-m-options" class="section level3">
 <h3 class="hasAnchor">
