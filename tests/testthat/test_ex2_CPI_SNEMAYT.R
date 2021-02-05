@@ -39,7 +39,7 @@ for(m in 1:n.mods){
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
-    where = "recruit", # CPI affects recruitment
+    where = c("none","recruit")[as.logical(df.mods$Ecov_how[m])+1], # CPI affects recruitment
     how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
 
   # (not used in this vignette) can set Ecov = NULL to fit model without Ecov data

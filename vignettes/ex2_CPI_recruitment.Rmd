@@ -120,9 +120,9 @@ The environmental covariate options are fed to `prepare_wham_input()` as a list,
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (all = 1)
     lag = 1, # CPI in year t affects recruitment in year t+1
-    process_model = df.mods$ecov_process[m], # "rw" or "ar1"
-    where = "recruit", # CPI affects recruitment
-    how = df.mods$ecov_how[m]) # 0 = no effect, 1 = controlling, 2 = limiting
+    process_model = 'rw', # "rw" or "ar1"
+    where = "none",
+    how = 0) # 0 = no effect, 1 = controlling, 2 = limiting
 ```
 
 There are currently 2 options for the `ecov` process model (`ecov$process_model`): 1) random walk (`'rw'`), and 2) autoregressive (`'ar1'`). We must next specify **where** the `ecov` affects the population; here it is via recruitment (`ecov$where = "recruit"`) as opposed to another process like catchability, mortality, maturity, etc. The options for **how** the `ecov` affects recruitment (`ecov$how`) follow [Iles and Beverton (1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236): 
@@ -155,7 +155,7 @@ for(m in 1:n.mods){
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
-    where = "recruit", # CPI affects recruitment
+    where = c("none","recruit")[as.logical(df.mods$Ecov_how[m])+1], # CPI affects recruitment
     how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC)
 
   # (not used in this vignette) can set ecov = NULL to fit model without ecov data

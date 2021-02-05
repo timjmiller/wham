@@ -14,17 +14,17 @@ ex5_test_results <- readRDS(file.path(path_to_examples,"ex5_test_results.rds"))
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
 
-df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",6),"age-specific","age-specific",rep("constant",3),"---"),
-                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1","none","2dar1",rep("ar1_a",3),"2dar1"),
-                      Ecov_process = rep("ar1",17),
-                      Ecov_link = c(0,1,2,rep(0,5),1,2,1,2,2,0,1,2,0), stringsAsFactors=FALSE)
+df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",5),"---"),
+                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1"),
+                      Ecov_process = rep("ar1",11),
+                      Ecov_link = c(0,1,2,rep(0,5),1,2,0), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 
 mods <- vector("list",n.mods)
 mods_proj <- vector("list",n.mods)
 # tofit <- c(1:10,14:17)
-tofit <- c(1:3,5:10,17)
+tofit <- c(1:3,5:11)
 for(m in tofit){
   # set up environmental covariate data and model options
   # see ?prepare_wham_input
@@ -58,14 +58,14 @@ for(m in tofit){
   #                             ecov = ecov,
   #                             M = M)
   input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 2,
-                              model_name = "Ex 5: GSI effects on M",
+                              model_name = paste0("m",m,": ", df.mods$M_model[m]," + ",c("no","linear","poly-2")[df.mods$Ecov_link[m]+1]," GSI link + ",df.mods$M_re[m]," devs"),
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
                                                fix_pars=c(rep(list(NULL),4), list(1:2, 1:2))),
                               NAA_re = list(sigma='rec+1',cor='iid'),
                               M=M,
-                              age_comp = "logistic-normal-pool0")) # logistic normal pool 0 obs
+                              age_comp = "logistic-normal-pool0"))
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
@@ -108,8 +108,8 @@ expect_equal(as.numeric(mods[[10]]$opt$par), ex5_test_results$pars[[10]], tolera
 expect_equal(as.numeric(mods[[10]]$opt$obj), ex5_test_results$nll[10], tolerance=1e-6) # nll
 expect_equal(mods[[10]]$opt$objective, mods_proj[[10]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
-expect_equal(as.numeric(mods[[17]]$opt$par), ex5_test_results$pars[[17]], tolerance=1e-1) # parameter values
-expect_equal(as.numeric(mods[[17]]$opt$obj), ex5_test_results$nll[17], tolerance=1e-6) # nll
-expect_equal(mods[[17]]$opt$objective, mods_proj[[17]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
+expect_equal(as.numeric(mods[[11]]$opt$par), ex5_test_results$pars[[11]], tolerance=1e-1) # parameter values
+expect_equal(as.numeric(mods[[11]]$opt$obj), ex5_test_results$nll[11], tolerance=1e-6) # nll
+expect_equal(mods[[11]]$opt$objective, mods_proj[[11]]$opt$objective, tolerance=1e-6) # projection shouldn't change nll
 
 })

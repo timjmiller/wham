@@ -34,17 +34,15 @@ env.dat <- read.csv("GSI.csv", header=T)
 # m8    constant      2dar1 ar1   ---
 # m9    constant      ---   ar1   linear
 # m10   constant      ---   ar1   quadratic
-# m11   constant      2dar1 ar1   linear
-# m12   age-specific  ---   ar1   quadratic
-# m13   age-specific  2dar1 ar1   quadratic
-# m14   constant      ar1_a ar1   ---
-# m15   constant      ar1_a ar1   linear
-# m16   constant      ar1_a ar1   quadratic
-# m17   ---           2dar1 ar1   ---
-df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",6),"age-specific","age-specific",rep("constant",3),"---"),
-                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1","none","2dar1",rep("ar1_a",3),"2dar1"),
-                      Ecov_process = rep("ar1",17),
-                      Ecov_link = c(0,1,2,rep(0,5),1,2,1,2,2,0,1,2,0), stringsAsFactors=FALSE)
+# m11   ---           2dar1 ar1   ---
+# df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",6),"age-specific","age-specific",rep("constant",3),"---"),
+#                       M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1","none","2dar1",rep("ar1_a",3),"2dar1"),
+#                       Ecov_process = rep("ar1",17),
+#                       Ecov_link = c(0,1,2,rep(0,5),1,2,1,2,2,0,1,2,0), stringsAsFactors=FALSE)
+df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",5),"---"),
+                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1"),
+                      Ecov_process = rep("ar1",11),
+                      Ecov_link = c(0,1,2,rep(0,5),1,2,0), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -85,7 +83,7 @@ for(m in 1:n.mods){
   #                             ecov = ecov,
   #                             M = M)
   input <- prepare_wham_input(asap3, recruit_model = 2,
-                              model_name = "Ex 5: GSI effects on M",
+                              model_name = paste0("m",m,": ", df.mods$M_model[m]," + ",c("no","linear","poly-2")[df.mods$Ecov_link[m]+1]," GSI link + ",df.mods$M_re[m]," devs"),
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
@@ -185,19 +183,20 @@ df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model,pdHess),
           names_prefix = "Age_",
           names_transform = list(Age = as.integer),
           values_to = "M")
-df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m13: age-specific + poly-2 GSI link + 2D AR1 devs","m11: constant + linear GSI link + 2D AR1 devs"))
+# df.plot2 <- dplyr::filter(df.plot, ! Model %in% c("m13: age-specific + poly-2 GSI link + 2D AR1 devs","m11: constant + linear GSI link + 2D AR1 devs"))
+df.plot2 <- df.plot
 df.plot2$Model <- factor(as.character(df.plot2$Model), levels=unique(df.plot2$Model))
 df.plot2$logM <- log(df.plot2$M)
 df.plot2$logM[df.plot2$logM < -4] <- -4
 
-png(filename = file.path(getwd(), paste0("MAA.png")), width = 10, height = 8, res = 100, units='in')
+png(filename = file.path(getwd(), paste0("MAA.png")), width = 8.5, height = 5, res = 100, units='in')
     print(ggplot(df.plot2, aes(x=Year, y=Age)) +
       geom_tile(aes(fill=logM, alpha=factor(pdHess))) +
       scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
       scale_x_continuous(expand=c(0,0)) +
       scale_y_continuous(expand=c(0,0)) +
       theme_bw() +
-      facet_wrap(~Model, nrow=5, dir="v") +
+      facet_wrap(~Model, nrow=4, dir="v") +
       scale_fill_viridis())
 dev.off()
 

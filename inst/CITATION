@@ -1,0 +1,30 @@
+citHeader("To cite WHAM in publications:")
+
+citEntry(entry = "misc",
+  title        = "The {W}oods {H}ole {A}ssessment {M}odel ({WHAM})",
+  author       = personList(as.person("Timothy J. Miller"),
+                  as.person("Brian C. Stock")),
+  year         = "2020",
+  note         = "Version 1.0",
+  url          = "https://timjmiller.github.io/wham/",
+
+  textVersion  =
+  paste("Miller, T.J. and Stock, B.C. 2020.",
+        "The Woods Hole Assessment Model (WHAM). Version 1.0.",
+        "https://timjmiller.github.io/wham/.")
+)
+
+citFooter(paste("If you treat all numbers-at-age as random effects:",
+"",
+"Miller, T.J., Hare, J.A., and Alade, L.A. 2016. A state-space approach to ",
+"incorporating environmental effects on recruitment in an age-structured assessment",
+"model with an application to southern New England yellowtail flounder. ",
+"Canadian Journal of Fisheries and Aquatic Sciences, 73: 1261–1270.",
+"",
+"If you use the 2D AR(1) structure for random effects on numbers-at-age or M-at-age:",
+"",
+"Stock, B.C., Xu, H., Miller, T.J., Thorson, J.T., and Nye, J.A. 2021. ",
+"Implementing two-dimensional autocorrelation in either survival or natural",
+"mortality improves a state-space assessment model for Southern New England-Mid Atlantic",
+"yellowtail flounder. Fisheries Research, 237: 105873.",
+"",sep="\n"))

@@ -36,16 +36,15 @@ for(m in fit.mods){
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # GSI in year t affects Rec in year t + 1
     process_model = 'ar1', # "rw" or "ar1"
-    where = "recruit", # GSI affects recruitment
+    where = c("none","recruit")[as.logical(df.mods$GSI_how[m])+1],
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
   input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
-                              selectivity=list(model=rep("age-specific",3), 
-                                re=rep("none",3), 
-                                initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
-                                fix_pars=list(4:5,4,2:4)),
+                              selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
+                                initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
+                                fix_pars=list(4:6,4,3:6)),
                               NAA_re = NAA_list,
                               ecov=ecov,
                               age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing

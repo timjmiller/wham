@@ -36,16 +36,17 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 # --------------------------------------------------------------------------
 # We are going to run 9 models that differ only in their selectivity options:
 # m1-m5 logistic, m6-m9 age-specific
-sel_model <- c(rep("logistic",5), rep("age-specific",4))
+sel_model <- c(rep("logistic",4), rep("age-specific",5))
 
 # time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)
-sel_re <- list(c("none","none","none"), # m1-m5 logistic
+sel_re <- list(c("none","none","none"), # m1-m4 logistic
 				c("iid","none","none"),
 				c("ar1","none","none"),
-				c("ar1_y","none","none"),
+				# c("ar1_y","none","none"), error
 				c("2dar1","none","none"),
-				c("none","none","none"), # m6-m9 age-specific
+				c("none","none","none"), # m5-m9 age-specific
 				c("iid","none","none"),
+				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"))
 n.mods <- length(sel_re)
@@ -74,7 +75,7 @@ for(m in 1:n.mods){
 	if(sel_model[m] == "logistic"){ # logistic selectivity
 		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.2),c(2,0.2),c(2,0.2))),
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.3),c(2,0.3),c(2,0.3))),
 					NAA_re = list(sigma='rec+1',cor='iid'),
 					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 	} else { # age-specific selectivity
@@ -85,11 +86,11 @@ for(m in 1:n.mods){
 		# 			NAA_re = list(sigma='rec+1',cor='iid'),
 	    #           age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
-		# often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-5 / 4 / 2-4
+		# often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-6 / 4 / 3-6
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
 					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
-						initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
-						fix_pars=list(4:5,4,2:4)),
+						initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
+						fix_pars=list(4:6,4,3:6)),
 					NAA_re = list(sigma='rec+1',cor='iid'),
 					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 	}
@@ -166,8 +167,9 @@ df$conv = factor(df$conv)
 
 png(file.path(getwd(),"selAA.png"), width = 8, height = 7.5, res = 200, units='in')
 print(ggplot(df, aes(x=Year, y=Age)) +
-	geom_tile(aes(fill=Selectivity, alpha=conv)) +
-	scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
+	geom_tile(aes(fill=Selectivity)) +
+	# geom_tile(aes(fill=Selectivity, alpha=conv)) +
+	# scale_alpha_discrete(range=c(0.4,1), guide=FALSE) +
 	geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
 	  data=data.frame(Year=1975.5, Age=5.8, lab=paste0("m",1:length(mods)), sel_mod=sel_mod, sel_cor=sel_cor)) +	
 	facet_grid(rows=vars(sel_cor), cols=vars(sel_mod)) +

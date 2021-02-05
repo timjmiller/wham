@@ -38,20 +38,20 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 env.dat <- read.csv("GSI.csv", header=T)
 
 # specify models:
-# Model NAA_cor NAA_sigma GSI_Rec
-#    m1     ---       ---     ---
-#    m2     iid       rec     ---
-#    m3   ar1_y       rec     ---
-#    m4     iid     rec+1     ---
-#    m5   ar1_a     rec+1     ---
-#    m6   ar1_y     rec+1     ---
-#    m7   2dar1     rec+1     ---
-#    m8     iid       rec     ar1
-#    m9   ar1_y       rec     ar1
-#    m10    iid     rec+1     ar1
-#    m11  ar1_a     rec+1     ar1
-#    m12  ar1_y     rec+1     ar1
-#    m13  2dar1     rec+1     ar1
+#    Model NAA_cor NAA_sigma GSI_how
+# 1     m1     ---       ---       0
+# 2     m2     iid       rec       0
+# 3     m3   ar1_y       rec       0
+# 4     m4     iid     rec+1       0
+# 5     m5   ar1_a     rec+1       0
+# 6     m6   ar1_y     rec+1       0
+# 7     m7   2dar1     rec+1       0
+# 8     m8     iid       rec       2
+# 9     m9   ar1_y       rec       2
+# 10   m10     iid     rec+1       2
+# 11   m11   ar1_a     rec+1       2
+# 12   m12   ar1_y     rec+1       2
+# 13   m13   2dar1     rec+1       2
 df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
                       NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
                       GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
@@ -74,16 +74,15 @@ for(m in 1:n.mods){
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # GSI in year t affects Rec in year t + 1
     process_model = 'ar1', # "rw" or "ar1"
-    where = "recruit", # GSI affects recruitment
+    where = c("none","recruit")[as.logical(df.mods$GSI_how[m])+1], # GSI affects recruitment
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
   input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
-                              selectivity=list(model=rep("age-specific",3), 
-                                re=rep("none",3), 
-                                initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
-                                fix_pars=list(4:5,4,2:4)),
+                              selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
+                                initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
+                                fix_pars=list(4:6,4,3:6)),
                               NAA_re = NAA_list,
                               ecov=ecov,
                               age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
@@ -153,7 +152,7 @@ ages <- 1:n_ages
 plot.mods <- which(!not_conv)[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
 NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
 NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
-GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[df.mods$GSI_how[plot.mods]/2+1]
+GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[as.numeric(factor(df.mods$GSI_how[plot.mods]))]
 NAA_lab <- paste(NAA_mod,NAA_cor,sep=" + ") # duplicate by GSI, for facet_grid
 df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
 colnames(df.NAA) <- c(paste0("Age_",1:n_ages),"Year","GSI_how","NAA_lab")

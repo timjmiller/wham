@@ -173,7 +173,6 @@ As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_r
 For example, the `ecov` list for models `m8`-`m13` with the linear GSI-$\beta$ effect:
 
 ```{r eval=FALSE}
-  # example for model m3
   ecov <- list(
     label = "GSI",
     mean = as.matrix(env.dat$GSI),
@@ -182,8 +181,8 @@ For example, the `ecov` list for models `m8`-`m13` with the linear GSI-$\beta$ e
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # GSI in year t affects recruitment in year t+1
     process_model = "ar1", # GSI modeled as AR1 (random walk would be "rw")
-    where = "recruit", # GSI affects recruitment
-    how = 2, # limiting
+    where = "recruit",
+    how = 2,
     link_model = "linear") # linear GSI-Recruitment effect
 ```
 
@@ -206,16 +205,15 @@ for(m in 1:n.mods){
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # GSI in year t affects Rec in year t + 1
     process_model = 'ar1', # "rw" or "ar1"
-    where = "recruit", # GSI affects recruitment
+    where = where = c("none","recruit")[as.logical(df.mods$GSI_how[m])+1], # GSI affects recruitment
     how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
     link_model = "linear")
 
   input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
-                              selectivity=list(model=rep("age-specific",3), 
-                                re=rep("none",3), 
-                                initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), # match ex4 selectivity
-                                fix_pars=list(4:5,4,2:4)),
+                              selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
+                                initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
+                                fix_pars=list(4:6,4,3:6)),
                               NAA_re = NAA_list,
                               ecov=ecov,
                               age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing

@@ -106,10 +106,10 @@ The GSI does not have a standard error estimate, either for each yearly observat
 
 Now we specify several models with different options for natural mortality:
 ```{r}
-df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",6),"age-specific","age-specific",rep("constant",3),"---"),
-                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1","none","2dar1",rep("ar1_a",3),"2dar1"),
-                      Ecov_process = rep("ar1",17),
-                      Ecov_link = c(0,1,2,rep(0,5),1,2,1,2,2,0,1,2,0), stringsAsFactors=FALSE)
+df.mods <- data.frame(M_model = c(rep("---",3),"age-specific","weight-at-age",rep("constant",5),"---"),
+                      M_re = c(rep("none",6),"ar1_y","2dar1","none","none","2dar1"),
+                      Ecov_process = rep("ar1",11),
+                      Ecov_link = c(0,1,2,rep(0,5),1,2,0), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -162,7 +162,7 @@ And to fit model `m8`, estimate mean $M$ with 2D AR1 deviations by year and age:
 M <- list(model="constant", est_ages=1, re="2dar1")
 ```
 
-To fit model `m17`, use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047):
+To fit model `m11`, use the $M_a$ values specified in the ASAP file, but with 2D AR1 deviations as in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047):
 
 ```{r eval=FALSE}
 M <- list(re="2dar1")
@@ -195,7 +195,7 @@ For example, the `ecov` list for model `m3` with a quadratic GSI-M effect:
     link_model = "poly-2") # quadratic GSI-M effect
 ```
 
-Note that you can set `ecov = NULL` to fit the model without environmental covariate data, but here we fit the `ecov` data even for models without GSI effect on $M$ (`m1`, `m4-8`, `m14`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `ecov$how = 0` and `ecov$process_model = "ar1"`.
+Note that you can set `ecov = NULL` to fit the model without environmental covariate data, but here we fit the `ecov` data even for models without GSI effect on $M$ (`m1`, `m4-8`) so that we can compare them via AIC (need to have the same data in the likelihood). We accomplish this by setting `ecov$how = 0` and `ecov$process_model = "ar1"`.
 
 ## 5. Run all models
 
@@ -230,7 +230,7 @@ for(m in 1:n.mods){
   if(m_model %in% c("constant","weight-at-age")) M$initial_means = 0.28
 
   input <- prepare_wham_input(asap3, recruit_model = 2,
-                              model_name = "Ex 5: GSI effects on M",
+                              model_name = paste0("m",m,": ", df.mods$M_model[m]," + ",c("no","linear","poly-2")[df.mods$Ecov_link[m]+1]," GSI link + ",df.mods$M_re[m]," devs"),
                               ecov = ecov,
                               selectivity=list(model=rep("logistic",6),
                                                initial_pars=c(rep(list(c(3,3)),4), list(c(1.5,0.1), c(1.5,0.1))),
@@ -321,15 +321,14 @@ df.mods
 
 In the table, I have highlighted models which converged and successfully inverted the Hessian to produce SE estimates for all (fixed effect) parameters. WHAM stores this information in `mod$na_sdrep` (should be `FALSE`), `mod$sdrep$pdHess` (should be `TRUE`), and `mod$opt$convergence` (should be `0`). See `stats::nlminb()` and `TMB::sdreport()` for details.
 
-Models `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) and `m17` (keep mean $M$ fixed but estimate 2D AR1 deviations) had the lowest AIC and were overwhelmingly supported relative to the other models (**bold** in table below).
+Models `m8` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI effect) and `m11` (keep mean $M$ fixed but estimate 2D AR1 deviations) had the lowest AIC and were overwhelmingly supported relative to the other models (**bold** in table below).
 
 ```{r echo=FALSE}
 library(knitr)
 library(kableExtra)
 # vign5_res[,12:14] = round(vign5_res[,12:14], 3)
 posdef = which(vign5_res$pdHess == TRUE)
-# thebest = which(vign5_res$dAIC < 2) # m8 and m17
-thebest = c(8,17)
+thebest = c(8,11)
 vign5_res %>%
   # mutate(na_sdrep = cell_spec(na_sdrep, "html", bold = ifelse(na_sdrep == TRUE,TRUE,FALSE))) %>%
   # select(everything()) %>%
@@ -362,25 +361,25 @@ Compared to `m1`, the retrospective pattern for `m8` was slightly worse for recr
 
 ![Mohn's rho for F, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png){ width=45% }![Mohn's rho for F, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Fbar_retro_relative.png){ width=45% }
 
-Model `m17` had $\Delta AIC = 1.5$ and the lowest retrospective pattern for all numbers-at-age and F. Model `m17` left $M_a$ fixed at the values from the ASAP data file (as in `m1`) and estimated 2D AR1 deviations around these mean $M_a$. This is how $M$ was modeled in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
+Model `m11` had $\Delta AIC = 1.5$ and the lowest retrospective pattern for all numbers-at-age and F. Model `m11` left $M_a$ fixed at the values from the ASAP data file (as in `m1`) and estimated 2D AR1 deviations around these mean $M_a$. This is how $M$ was modeled in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047).
 
-![Mohn's rho for SSB, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_SSB_retro_relative.png){ width=45% }![Mohn's rho for F, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Fbar_retro_relative.png){ width=45% }
+![Mohn's rho for SSB, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_SSB_retro_relative.png){ width=45% }![Mohn's rho for F, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_Fbar_retro_relative.png){ width=45% }
 
-![Mohn's rho for recruitment, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_NAA_age1_retro_relative.png){ width=45% }
+![Mohn's rho for recruitment, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_NAA_age1_retro_relative.png){ width=45% }
 
 #### Stock status
 
-Compared to `m1` (left), `m8` (center) estimated higher *M*, lower and more uncertain *F*, and higher SSB -- a much rosier picture of the stock status through time. Model `m17` (right) is intermediate between `m1` and `m8`.
+Compared to `m1` (left), `m8` and `m11` (center, right) estimated higher *M*, lower and more uncertain *F*, and higher SSB -- a much rosier picture of the stock status through time.
 
-![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png){ width=31% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png){ width=31% }![Relative stock status, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_relative.png){ width=31% }
+![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png){ width=31% }![Relative stock status, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_relative.png){ width=31% }![Relative stock status, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_FSPR_relative.png){ width=31% }
 
-Compared to `m1` (left), `m8` (center) estimated higher and more variable reference points, $F_{\%SPR}$ (top), and lower and more variable yield-per-recruit (bottom). Model `m17` (right) estimated more of a trend in yield-per-recruit and $F_{\%SPR}$, with a notable shift around 1990.
+Compared to `m1` (left), `m8` and `m11` (center, right) estimated higher and more variable reference points, $F_{\%SPR}$ (top), and lower and more variable yield-per-recruit (bottom). Model `m11` (right) estimated more of a trend in yield-per-recruit and $F_{\%SPR}$, with a notable shift around 1990.
 
-![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=31% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=31% }![Reference point variability, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_FSPR_annual_time.png){ width=31% }
+![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=31% }![Reference point variability, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_FSPR_annual_time.png){ width=31% }![Reference point variability, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_FSPR_annual_time.png){ width=31% }
 
-In the final year (2011), `m8` and `m17` both estimated much lower probabilities of the stock being overfished than `m1` (16% and 21% vs. 98%).
+In the final year (2011), `m8` and `m11` both estimated much lower probabilities of the stock being overfished than `m1` (17% and 21% vs. 99%).
 
-![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png){ width=31% }![Kobe status plot, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png){ width=31% }![Kobe status plot, m17.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m17_Kobe_status.png){ width=31% }
+![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png){ width=31% }![Kobe status plot, m8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png){ width=31% }![Kobe status plot, m11.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m11_Kobe_status.png){ width=31% }
 
 ### Yet more *M* options
 

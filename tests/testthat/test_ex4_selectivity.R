@@ -22,14 +22,14 @@ ex4_test_results <- readRDS(file.path(path_to_examples,"ex4_test_results.rds"))
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 inv.logit <- function(x) exp(x)/(1+exp(x))
 
-sel_model <- c(rep("logistic",5), rep("age-specific",4))
-sel_re <- list(c("none","none","none"), # all logistic
+sel_model <- c(rep("logistic",4), rep("age-specific",5))
+sel_re <- list(c("none","none","none"), # m1-m4 logistic
 				c("iid","none","none"),
 				c("ar1","none","none"),
-				c("ar1_y","none","none"),
 				c("2dar1","none","none"),
-				c("none","none","none"), # all age-specific
+				c("none","none","none"), # m5-m9 age-specific
 				c("iid","none","none"),
+				c("ar1","none","none"),
 				c("ar1_y","none","none"),
 				c("2dar1","none","none"))
 
@@ -37,12 +37,12 @@ tmp.dir <- tempdir(check=TRUE)
 n.mods <- length(sel_re)
 mods <- vector("list",n.mods)
 selAA <- vector("list",n.mods)
-# for(m in 1:n.mods){
-for(m in c(1:3,5:6,8)){ # only models that converge
+for(m in 1:n.mods){
+# for(m in c(1:3,5:6,8)){ # only models that converge
 	if(sel_model[m] == "logistic"){ # logistic selectivity
 		# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
-					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.2),c(2,0.2),c(2,0.2))),
+					selectivity=list(model=rep("logistic",3), re=sel_re[[m]], initial_pars=list(c(2,0.3),c(2,0.3),c(2,0.3))),
 					NAA_re = list(sigma='rec+1',cor='iid'),
 					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 	} else { # age-specific selectivity
@@ -56,8 +56,8 @@ for(m in c(1:3,5:6,8)){ # only models that converge
 		# often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-5 / 4 / 2-4
 		input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
 					selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], 
-						initial_pars=list(c(0.1,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
-						fix_pars=list(4:5,4,2:4)),
+						initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
+						fix_pars=list(4:6,4,3:6)),
 					NAA_re = list(sigma='rec+1',cor='iid'),
 					age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 	}
@@ -67,7 +67,7 @@ for(m in c(1:3,5:6,8)){ # only models that converge
 	if(exists("err")) rm("err") # need to clean this up
 }
 
-for(m in c(1:3,5:6,8)){
+for(m in 1:n.mods){
 #	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir)
 
 	mcheck <- check_convergence(mods[[m]], ret=TRUE)
