@@ -8,7 +8,7 @@
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
 #' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
 #' @return \code{model}, appends the following:
 #'   \describe{
 #'     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
@@ -23,7 +23,7 @@
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
 #'
-fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=TRUE)
+fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
 
