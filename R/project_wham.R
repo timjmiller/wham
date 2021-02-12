@@ -52,6 +52,7 @@
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs} rows.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for to use in projections. Default = all model years.
+#'     \item \code{$pct.FXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$pct.FXSPR = 75}. Default = 100.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
@@ -90,7 +91,7 @@
 #' }
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL),
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, pct.FXSPR=100),
                         n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)

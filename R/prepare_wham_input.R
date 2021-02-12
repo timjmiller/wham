@@ -513,6 +513,7 @@ without changing ASAP file, specify M$initial_means.")
   data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
   data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
   data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
+  data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   data$XSPR_R_opt = 2 # default = use average R estimates
   data$XSPR_R_avg_yrs = 1:data$n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)

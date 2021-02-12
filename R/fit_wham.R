@@ -33,7 +33,7 @@
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
 #' @param retro.silent T/F, Passed to argument of internal retro function. Determines whether peel number is printed to screen. Default = \code{FALSE}.
 #' @param do.proj T/F, do projections? Default = \code{FALSE}. If true, runs \code{\link{project_wham}}.
-#' @param proj.opts list of options for projections
+#' @param proj.opts a named list with the following components:
 #'   \itemize{
 #'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
 #'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
@@ -41,10 +41,13 @@
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
-#'     \item \code{$cont.Ecov} (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
-#'     \item \code{$use.last.Ecov} (T/F), use terminal year Ecov for projections.
-#'     \item \code{$avg.Ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-#'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
+#'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
+#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
+#'     \item \code{$pct.FXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$pct.FXSPR = 75}. Default = 100.
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}. 
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
@@ -75,9 +78,10 @@
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
-                    retro.silent = FALSE, do.proj = FALSE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
-                                              proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL), do.fit = TRUE, save.sdrep=TRUE)
+                    retro.silent = FALSE, do.proj = FALSE, 
+                    proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL, 
+                                   cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, pct.FXSPR=100), 
+                    do.fit = TRUE, save.sdrep=TRUE)
 {
 
   # fit model

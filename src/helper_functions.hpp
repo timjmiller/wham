@@ -1248,7 +1248,7 @@ Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> m
 template <class Type>
 matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> NAA, matrix<Type> MAA, matrix<Type> mature, 
   vector<Type> waacatch, vector<Type> waassb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
-  int n_years_model, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch){
+  int n_years_model, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR){
     /* 
      get F to project for next time step
               y:  year of projection (>n_years_model)
@@ -1266,6 +1266,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     which_F_age:  define which age has max F
      percentSPR:  percentage (0-100) of unfished spawning potential to determine F_percentSPR
      proj_Fcatch: vector (n_years_proj) of user specified Fishing mortality rates to project
+     percentFXSPR:  percentage (0-100) of F_percentSPR to use in catch, e.g. GOM cod uses F = 75% F_40%SPR
     */
     //if(y > n_years_model-1){
     //for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
@@ -1316,7 +1317,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       Type log_SPR0_y = log_SPR0(y);
       //FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
       FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_tot_proj;
-      FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+      FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj * 0.01*percentFXSPR;
     }
     if(proj_F_opt_y == 4){ // user-specified F
       if(proj_Fcatch(y-n_years_model) < 1e-10){ // if F = 0, sel_proj is NaN
@@ -1348,7 +1349,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, matrix<Type> Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   int waa_pointer_totcatch, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
-  int n_years_model, int n_fleets, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch){
+  int n_years_model, int n_fleets, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR){
 
   // Population model (get NAA, numbers-at-age, for all years)
   int ny = log_SR_a.size();
@@ -1388,7 +1389,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         vector<Type> waacatch = get_waa_y(waa, y, n_ages, waa_pointer_totcatch);
         vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
-         which_F_age, percentSPR, proj_Fcatch);
+         which_F_age, percentSPR, proj_Fcatch, percentFXSPR);
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
