@@ -34,6 +34,11 @@
 #' plot_wham_output(mod)
 #' }
 plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72, plot.opts = NULL){
+  # if sdreport succeeded but didn't save full sdreport object in mod, recalculate it here
+  if(mod$is_sdrep & class(mod$sdrep)[1] != "sdreport"){
+    mod$sdrep <- TMB::sdreport(mod)
+  }  
+
   # allow overwrite of default ages.lab = 1:n.ages
   if(!is.null(plot.opts)){
     if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab

@@ -6,8 +6,9 @@
 #'
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
-#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
+#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
 #' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
 #' @return \code{model}, appends the following:
 #'   \describe{
 #'     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
@@ -17,12 +18,12 @@
 #'     \item{\code{model$TMB_version}}{Version of TMB installed}
 #'     \item{\code{model$parList}}{List of parameters, \code{model$env$parList()}}
 #'     \item{\code{model$final_gradient}}{Final gradient, \code{model$gr()}}
-#'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}}}
+#'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
 #'   }
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
 #'
-fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
+fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=TRUE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
 
@@ -80,8 +81,8 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE)
   {
     model$sdrep <- try(TMB::sdreport(model))
     model$is_sdrep = !is.character(model$sdrep)
-    if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2]))
-    else model$na_sdrep = NA
+    if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
+    if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
   } else {
     model$is_sdrep = FALSE
     model$na_sdrep = NA

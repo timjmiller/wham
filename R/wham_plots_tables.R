@@ -7,7 +7,12 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
-  sdrep = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    sdrep = summary(mod$sdrep)
+  } else {
+    sdrep = mod$sdrep
+  }
+
   if("Ecov_obs_logsigma" %in% names(mod$env$par)){
     ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
     if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
@@ -397,7 +402,11 @@ hi.cor.fn <- function(mod, out.dir = "", do.tex = FALSE, do.csv = FALSE, cor.lim
 get.RMSEs.fn <- function(model)
 {
   out <- list(RMSE=list(), RMSE_n = list())
-  sdrep = summary(model$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    sdrep = summary(model$sdrep)
+  } else {
+    sdrep = model$sdrep
+  }  
   temp = sdrep[rownames(sdrep) %in% "log_catch_resid",]
   catch_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_fleets)
   temp = sdrep[rownames(sdrep) %in% "log_index_resid",]
@@ -478,7 +487,11 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     else png(filename = paste0(fn, '.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   temp = temp[rownames(temp) == "log_SSB",]
   temp = exp(cbind(temp, temp[,1] + qnorm(0.975)*cbind(-temp[,2],temp[,2])))/1000
   max.y <- max(temp[,4])
@@ -514,7 +527,11 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     else png(filename = paste0(fn, '.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "log_NAA_rep"
   templo = exp(array(temp[ind,1] - qnorm(0.975)*temp[ind,2], dim = c(ny, na)))
   temphi = exp(array(temp[ind,1] + qnorm(0.975)*temp[ind,2], dim = c(ny, na)))
@@ -552,7 +569,11 @@ get.wham.results.fn = function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     else png(filename = paste0(fn, '.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   temp = temp[rownames(temp) == "log_Fbar",]
   temp = exp(cbind(temp, temp[,1] + qnorm(0.975)*cbind(-temp[,2],temp[,2])))
   max.y <- max(temp[,4])
@@ -593,7 +614,11 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
   if(!all(mod$env$data$Ecov_model == 0)){
     ny = mod$env$data$n_years_Ecov
     ni = mod$env$data$n_Ecov
-    temp = summary(mod$sdrep)
+    if(class(mod$sdrep)[1] == "sdreport"){
+      temp = summary(mod$sdrep)
+    } else {
+      temp = mod$sdrep
+    }
     ind = rownames(temp) == "Ecov_resid"
     templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
     temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -622,7 +647,11 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
   # load Index residuals
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_indices
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "log_index_resid"
   templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
   temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -652,7 +681,11 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
   ny = mod$env$data$n_years_model
   ni = mod$env$data$n_fleets
   if(missing(years)) years = mod$years
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "log_catch_resid"
   templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
   temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -705,7 +738,11 @@ plot.ecov.stdresids.fn = function(mod, years, do.tex = FALSE, do.png = FALSE, fo
   ni = mod$env$data$n_Ecov
   if(missing(years)) years = mod$years
   if(missing(plot.colors)) plot.colors = mypalette(ni)
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "Ecov_resid"
   templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
   temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -750,7 +787,11 @@ plot.index.stdresids.fn = function(mod, years, index.names = NULL, do.tex = FALS
   ni = mod$env$data$n_indices
   if(missing(years)) years = mod$years
   if(missing(plot.colors)) plot.colors = mypalette(ni)
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "log_index_resid"
   templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
   temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -795,7 +836,11 @@ plot.fleet.stdresids.fn = function(mod, years, fleet.names = NULL, do.tex = FALS
   ni = mod$env$data$n_fleets
   if(missing(years)) years = mod$years
   if(missing(plot.colors)) plot.colors = mypalette(ni)
-  temp = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    temp = summary(mod$sdrep)
+  } else {
+    temp = mod$sdrep
+  }
   ind = rownames(temp) == "log_catch_resid"
   templo = matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
   temphi = matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
@@ -1319,7 +1364,11 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   years <- mod$years
   tcol <- col2rgb('black')
   tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  std = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    std = summary(mod$sdrep)
+  } else {
+    std = mod$sdrep
+  }
 	par(mfrow=c(2,1), mar=c(1,1,1,1), oma = c(4,4,0,0))
 
 	ssb.ind <- which(rownames(std) == "log_SSB")
@@ -1613,7 +1662,11 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
   years = mod$years
   years_full = mod$years_full
   nyrs <- length(years_full)
-  std = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    std = summary(mod$sdrep)
+  } else {
+    std = mod$sdrep
+  }
 	ssb.ind <- which(rownames(std) == "log_SSB")
 	log.ssb <- std[ssb.ind,1]
 	R <- mod$rep$NAA[,1]
@@ -1656,7 +1709,11 @@ plot.fleet.F <- function(mod, plot.colors)
 	if(n_fleets == 1){ # can calculate full F from FAA_tot in projection years if only one fleet
     years_full = mod$years_full
     nyrs <- length(years_full)
-    std <- summary(mod$sdrep)
+    if(class(mod$sdrep)[1] == "sdreport"){
+      std = summary(mod$sdrep)
+    } else {
+      std = mod$sdrep
+    }
     faa.ind <- which(rownames(std) == "log_FAA_tot")
     log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
     full.f.ind <- cbind(1:nyrs, apply(log.faa,1, function(x) max(which(x == max(x)))))
@@ -1688,7 +1745,11 @@ plot.cv <- function(mod)
   years = mod$years
   years_full = mod$years_full
   nyrs <- length(years_full)
-	std <- summary(mod$sdrep)
+	if(class(mod$sdrep)[1] == "sdreport"){
+    std = summary(mod$sdrep)
+  } else {
+    std = mod$sdrep
+  }
 	ssb.ind <- which(rownames(std) == "log_SSB")
 	log.ssb <- std[ssb.ind,1]
 	ssb.cv <- std[ssb.ind,2]
@@ -2192,7 +2253,11 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
 {
   if(mod$env$data$recruit_model == 3 & mod$env$data$use_steepness != 1) #B-H stock recruit function with alpha/beta
   {
-    std = summary(mod$sdrep)
+    if(class(mod$sdrep)[1] == "sdreport"){
+      std = summary(mod$sdrep)
+    } else {
+      std = mod$sdrep
+    }
     ssb.ind = which(rownames(std) == "log_SSB")
     years = mod$years
     nyrs = length(years)
@@ -3330,7 +3395,11 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   ecov.pred = mod$rep$Ecov_x
   ecov.obs = dat$Ecov_obs
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
-  sdrep = summary(mod$sdrep)
+  if(class(mod$sdrep)[1] == "sdreport"){
+    sdrep = summary(mod$sdrep)
+  } else {
+    sdrep = mod$sdrep
+  }
   if("Ecov_obs_logsigma" %in% names(mod$env$par)){
     ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
     if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)

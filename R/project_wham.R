@@ -91,7 +91,7 @@
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL),
-                        n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE)
+                        n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts)
@@ -99,7 +99,7 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
 
   # refit model to estimate derived quantities in projection years
   if(!exists("err")) mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
-    MakeADFun.silent = MakeADFun.silent)
+    MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep)
   if(exists("err")){
     mod <- model # if error, still pass previous/full fit
     mod$err_proj <- err # store error message to print out in fit_wham

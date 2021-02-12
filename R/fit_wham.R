@@ -47,6 +47,7 @@
 #'     \item \code{$proj.Ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}. 
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -76,7 +77,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
                     retro.silent = FALSE, do.proj = FALSE, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL), do.fit = TRUE)
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL), do.fit = TRUE, save.sdrep=TRUE)
 {
 
   # fit model
@@ -93,7 +94,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$wham_version <- paste0(ver, collapse=" / ")
   if(do.fit){
     btime <- Sys.time()
-    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check)
+    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
 
     # retrospective analysis
@@ -120,8 +121,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
     }
 
-    # projections
-    if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent) # calls prepare_projection + fit_wham(do.proj=F)
+    # projections, calls prepare_projection + fit_wham(do.proj=F)
+    if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)
 
     # error message reporting
     if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",
