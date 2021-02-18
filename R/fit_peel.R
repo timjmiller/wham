@@ -29,13 +29,13 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
     temp$dat$Ecov_use_obs[(temp$dat$n_years_Ecov-peel+1):temp$dat$n_years_Ecov, ] <- 0
   }
   
-  if("log_NAA" %in% temp$random){
+  # if("log_NAA" %in% temp$random){
     tmp <- rbind(matrix(1:(temp$dat$n_ages*(n_years-1)), n_years-1), matrix(rep(NA, peel*temp$dat$n_ages), peel))
     if(temp$dat$n_NAA_sigma < 2) tmp[,-1] <- NA # always estimate Rec devs (col 1), whether random effect or not
     ind.notNA <- which(!is.na(tmp))
     tmp[ind.notNA] <- 1:length(ind.notNA)
     temp$map$log_NAA = factor(tmp)
-  }
+  # }
 
   F_devs_na_ind = rbind(matrix(1:(temp$dat$n_fleets * (n_years-1)), n_years-1), matrix(rep(NA, peel * temp$dat$n_fleets), peel))
   temp$map$F_devs = factor(F_devs_na_ind)
