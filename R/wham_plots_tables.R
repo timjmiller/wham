@@ -931,11 +931,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   years <- mod$years
   dat = mod$env$data
   pred_index = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))
-  pred_index = sapply(1:dat$n_indices, function(x)
-  {
-      if(dat$units_indices[x] == 2) apply(pred_index[x,,],1,sum)
-      else apply(pred_index[x,,] * dat$waa[dat$waa_pointer_indices[x],1:dat$n_years_indices,],1,sum)
-  })
+  pred_index = sapply(1:dat$n_indices, function(x) apply(pred_index[x,,],1,sum)) #biomass is accounted for on the cpp side
   index = dat$agg_indices
   index[index < 0] = 0 # robustify to missing values entered as -999
   sigma = dat$agg_index_sigma
@@ -1100,8 +1096,7 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 	for (i in indices)
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:mod$env$data$n_years_indices,]
+    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -1221,8 +1216,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	for (i in indices)
 	{
     acomp.obs = mod$env$data$index_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,]
-    if(mod$env$data$units_index_paa[i] == 1) acomp.pred = acomp.pred * mod$env$data$waa[mod$env$data$waa_pointer_indices[i],1:dat$n_years_indices,]
+    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_index",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
