@@ -2013,8 +2013,9 @@ plot.maturity <- function(mod, ages.lab, plot.colors)
   box(lwd = 2)
 	if (length(unique(dat$mature)) > length(ages))
 	{
-		for (i in 1:n_years) points(jitter(ages, factor=0.25), dat$mature[i,],col=yr.col[i])
-		legend('topleft', horiz=FALSE, legend=c("First Year", "Last Year"), pch=c(1,1), col=c(plot.colors[1], plot.colors[n_years]))
+		for (i in 1:n_years) points(jitter(ages, factor=0.4), dat$mature[i,],col=plot.colors[i])
+    midi <- floor(n_years/2)
+		legend('topleft', horiz=FALSE, legend=c(years[1],years[midi],years[n_years]), pch=c(1,1,1), col=c(plot.colors[1], plot.colors[midi], plot.colors[n_years]))
 	}
 	title(main="Maturity", outer=FALSE)
 	par(origpar)
