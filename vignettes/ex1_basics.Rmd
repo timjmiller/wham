@@ -65,7 +65,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://www.nefsc.noaa.gov/nft/ASAP.html). For this vignette, an example ASAP3 input file is provided.
+WHAM was built by modifying the ADMB-based ASAP model code [(Legault and Restrepo 1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf), and is designed to take an ASAP3 .dat file as input. We generally assume in `wham` that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the [ASAP documentation](https://nmfs-fish-tools.github.io/ASAP/) (download the .zip file, install the windows .exe, and it provides a manual). For this vignette, an example ASAP3 input file is provided.
 
 Copy `ex1_SNEMAYT.dat` to our analysis directory:
 ```{r eval=FALSE}
