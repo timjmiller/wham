@@ -125,7 +125,7 @@ data(vign1_m4_conv)
 data(vign1_res)
 ```
 
-We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham()` includes a `do.check` option to run Jim Thorson's useful function [TMBhelper::Check_Identifiable()](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/Check_Identifiable.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `fit_wham()`.
+We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham()` includes a `do.check` option to run Jim Thorson's useful function [TMBhelper::check_estimability()](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `fit_wham()`.
 ```{r eval=FALSE}
 check_convergence(m1)
 ```

@@ -7,7 +7,7 @@
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
-#' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.
+#' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::check_estimability]{TMBhelper::check_estimability}}. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
 #' @return \code{model}, appends the following:
 #'   \describe{
@@ -21,7 +21,7 @@
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
 #'   }
 #'
-#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::check_estimability}}
 #'
 fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
 {
