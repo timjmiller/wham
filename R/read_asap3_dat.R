@@ -1,8 +1,10 @@
 #' Read an ASAP3 .dat file into R
 #'
-#' WHAM is built on \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP3} and this
+#' WHAM is built on ASAP \href{http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf}{(Legault and Restrepo 1999)} and this
 #' function provides functionality to use a preexisting ASAP3 input data file. The
-#' output of \code{read_asap3_dat} should then be passed to \code{\link{prepare_wham_input}}.
+#' output of \code{read_asap3_dat} should then be passed to \code{\link{prepare_wham_input}}. 
+#' If you are not familiar with ASAP3 input files, see the ASAP \href{https://github.com/cmlegault/ASAPplots/tree/master/pdf}{documentation} 
+#' and \href{https://nmfs-fish-tools.github.io/ASAP/}{code}.
 #'
 #' @param filename character, name of ASAP3 .dat file. The file either needs to be
 #' in the current working directory, or \code{filename} can include the path.
@@ -13,7 +15,7 @@
 #'     \item{\code{comments}}{Comments at top of ASAP3 .dat file (indicated by "#")}
 #'   }
 #'
-#' @seealso \code{\link{prepare_wham_input}}, \code{\link{fit_wham}}
+#' @seealso \code{\link{prepare_wham_input}}, \code{\link{fit_wham}}, \href{https://github.com/cmlegault/ASAPplots/tree/master/pdf}{ASAP documentation}
 #'
 #' @examples
 #' \dontrun{

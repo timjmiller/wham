@@ -1,6 +1,10 @@
 wham 1.0.3.9000
 =========================
 
+### Bug fixes
+
+* Fixed broken links in vignettes
+
 ### Minor improvements
 
 * New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Makes saved models MUCH smaller (e.g. 2MB vs. 35MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
