@@ -1,7 +1,7 @@
-read_asap3_fit <- function(wd,asap.name, pSPR)  {
+read_asap3_fit <- function(wd,asap.name, pSPR=40)  {
   #' @param wd directory where ASAP run is located (ex: "C:/MY/file/directories/model/" )
   #' @param asap.name Base name of original dat file (without the .dat extension)
-  #' @param pSPR is user-specified SPR reference point (expressed as 100*SSBPR(Fspr)/SSBPR(F=0) ); used in ASAPplots function PlotAnnualSPRtargets
+  #' @param pSPR is user-specified SPR reference point, 40 by default (expressed as 100*SSBPR(Fspr)/SSBPR(F=0) ); used in ASAPplots function PlotAnnualSPRtargets
 
   #' @return years: numeric vector, model years only
   #' @return years_full: numeric vector, model + proj years (for ASAP this will be the same as $years)
@@ -111,31 +111,20 @@ read_asap3_fit <- function(wd,asap.name, pSPR)  {
   log_NAA <- log(asap$N.age)
   NAA_CV <- matrix(NA, nrow=nyears, ncol=nages) # not sure how to derive this, but I can get it for age 1 recruits
   NAA_CV[,1] <- log_recruits.std
-  
-  # plot(years, asap$SR.annual.parms$R0.vec, type='l', ylim=c(0, max(asap$N.age[,1])))
-  # lines(years, (asap$SR.annual.parms$R0.vec*exp(log.recr.devs))  )
-  # points(years, asap$N.age[,1], pch=1, col='red')
-  
-  percentSPR <- pSPR   #pspr=c(0.4, 0.41, 0.42),
-  # asap.dir <- getwd()
-  asap.spr <- PlotAnnualSPRtargets(asap,pspr=0.41, save.plots=F,od=paste0(wd,"plots",plotf='png') )
+
+  percentSPR <- pSPR   
+ 
+  asap.spr <- PlotAnnualSPRtargets(asap, pspr=(pSPR/100), save.plots=F,od=paste0(wd,"plots"),plotf='png' )
  
   log_Y_FXSPR <- matrix(NA, nyears, 2)
   log_FXSPR <- matrix(NA, nyears, 2)
   log_SSB_FXSPR <- matrix(NA, nyears, 2)
-  ssb_pr <- rep(NA, nyears)
-  
+
   log_Y_FXSPR[,1] <- log(asap.spr$ypr.spr.vals)
   log_FXSPR[,1] <- log(asap.spr$f.spr.vals)
   
-  sel.matrix <- asap$F.age/apply(asap$F.age,1,max)
-   for (j in 1:nyears) {
-     ssb_pr[j] <- s.per.recr(nages=nages, fec.age=as.vector(asap$fecundity[j,]), mat.age=asap$maturity[j,], 
-                                      M.age= asap$M.age[j,], F.mult=asap.spr$f.spr.vals[j], 
-                                      sel.age=as.vector(sel.matrix[j,]), spawn.time=asap$options$frac.yr.spawn)
-    } #end j loop over nyears
-  
-  log_SSB_FXSPR[,1] <- log(recruits*ssb_pr)  
+
+  log_SSB_FXSPR[,1] <- log(recruits*0.4*asap$SR.annual.parms$s.per.r.vec)  
   log_SSB_FXSPR[,2] <- sqrt( (log_recruits.std*log_recruits.std)*(ssb_pr*ssb_pr) )
   
   log_rel_ssb_F_cov <- rep(list(matrix(NA, 2,2)), nyears ) 
