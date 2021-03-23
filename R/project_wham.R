@@ -116,7 +116,8 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
 
   # print error message
-  if(!is.null(model$err_proj)) 
+  if(!is.null(model$err_proj))
+  {
     mod$err_proj <- model$err_proj
     warning(paste("","** Error during projections. **",
       paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))

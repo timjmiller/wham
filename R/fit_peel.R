@@ -20,10 +20,15 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   if(!retro.silent) print(peel)
   temp = model
   n_years = temp$dat$n_years_catch = temp$dat$n_years_indices = temp$dat$n_years_model = temp$dat$n_years_model - peel
-  if(temp$dat$Ecov_model != 0){
+  if(any(temp$dat$Ecov_model != 0)){
     # temp$dat$n_years_Ecov = model$dat$n_years_Ecov - peel
-    if(temp$dat$Ecov_model != 1) Ecov_re_na_ind = rbind(matrix(1:((temp$dat$n_years_Ecov-peel)*temp$dat$n_Ecov), nrow=temp$dat$n_years_Ecov-peel, ncol=temp$dat$n_Ecov), matrix(rep(NA, peel*temp$dat$n_Ecov), nrow=peel))
-    if(temp$dat$Ecov_model == 1) Ecov_re_na_ind = rbind(matrix(rep(NA, temp$dat$n_Ecov)), matrix(1:((temp$dat$n_years_Ecov-peel-1)*temp$dat$n_Ecov), nrow=temp$dat$n_years_Ecov-peel-1, ncol=temp$dat$n_Ecov), matrix(rep(NA, peel*temp$dat$n_Ecov), nrow=peel))
+    Ecov_re_na_ind = matrix(NA, temp$dat$n_years_Ecov-peel, temp$dat$n_Ecov)
+    for(i in 1:length(temp$dat$Ecov_model)){
+      if(temp$dat$Ecov_model[i] != 1) Ecov_re_na_ind[,i] = 1
+      #if(temp$dat$Ecov_model[i] == 1) Ecov_re_na_ind[,i] = rbind(matrix(rep(NA, temp$dat$n_Ecov)), matrix(1:((temp$dat$n_years_Ecov-peel-1)*temp$dat$n_Ecov), nrow=temp$dat$n_years_Ecov-peel-1, ncol=temp$dat$n_Ecov), matrix(rep(NA, peel*temp$dat$n_Ecov), nrow=peel))
+    }
+    Ecov_re_na_ind = rbind(Ecov_re_na_ind, matrix(NA, peel, temp$dat$n_Ecov))
+    if(sum(!is.na(Ecov_re_na_ind))) Ecov_re_na_ind[!is.na(Ecov_re_na_ind)] = 1:sum(!is.na(Ecov_re_na_ind))
     temp$map$Ecov_re = factor(Ecov_re_na_ind)
     temp$dat$ind_Ecov_out_end = model$dat$ind_Ecov_out_end - peel
     temp$dat$Ecov_use_obs[(temp$dat$n_years_Ecov-peel+1):temp$dat$n_years_Ecov, ] <- 0
