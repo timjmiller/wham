@@ -121,17 +121,14 @@ prepare_projection = function(model, proj.opts)
     data$proj_Fcatch = proj.opts$proj.catch
   }
   if(data$proj_F_opt[1] %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
-  if(!is.null(proj.opts$percentFXSPR)){
-    if(any(data$proj_F_opt == 3)){
-      data$percentFXSPR = proj.opts$percentFXSPR
-    } 
+  if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
+  if(any(data$proj_F_opt == 3)) data$percentFXSPR = proj.opts$percentFXSPR
 #     else {
 # stop(paste("","** Error setting up projections: **",
 #         "percentFXSPR is not used if FXSPR is not used to calculate catch in projections.",
 #         "You have chosen ",
 #         capture.output(cat(c("use.last.F","use.avg.F","use.FXSPR","proj.F","proj.catch")[data$proj_F_opt])),"",sep='\n'))      
 #     }
-  }
 
   #define age for full F in projections
   FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
