@@ -370,13 +370,13 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
     for(b in 1:data$n_selblocks){
       if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] = -1
       if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] = -1
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
+      if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
     }
   }
   for(i in 1:data$n_selblocks){
     if(data$selblock_models[i] == 1) phase_selpars[i,data$n_ages + 1:6] = -1
     if(data$selblock_models[i] %in% c(2,4)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
-    if(data$selblock_models[i] == 3) phase_selpars[i,data$n_ages + 1:2] = -1
+    if(data$selblock_models[i] == 3) phase_selpars[i,1:(data$n_ages + 2)] = -1
   }
 
   # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0

@@ -96,16 +96,17 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts)
-    , error = function(e) {err <<- conditionMessage(e)})
+    , error = function(e) {model$err_proj <<- conditionMessage(e)})
 
   # refit model to estimate derived quantities in projection years
   if(!exists("err")) mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
     MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep)
-  if(exists("err")){
-    mod <- model # if error, still pass previous/full fit
-    mod$err_proj <- err # store error message to print out in fit_wham
-    rm("err")
-  }
+  #assigning model$err_proj above already accomplishes this
+  #if(exists("err")){
+  #  mod <- model # if error, still pass previous/full fit
+  #  mod$err_proj <- err # store error message to print out in fit_wham
+  #  rm("err")
+  #}
 
   # pass along previously calculated retros, OSA residuals, error messages, and runtime
   if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
@@ -115,8 +116,11 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
 
   # print error message
-  if(!is.null(mod$err_proj)) warning(paste("","** Error during projections. **",
-    paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
-
+  if(!is.null(model$err_proj))
+  {
+    mod$err_proj <- model$err_proj
+    warning(paste("","** Error during projections. **",
+      paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
+  }
   return(mod)
 }

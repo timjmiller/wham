@@ -177,20 +177,21 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
-      tmp$year <- years[tmp$year] # year in osa is MODEL year, not Ecov year
+      ecov_years = mod$env$data$year1_Ecov + 0:(mod$env$data$n_years_Ecov-1)
+      tmp$year <- ecov_years[tmp$year+1] # year in osa is MODEL year, not Ecov year
       # tmp$year <- seq(mod$env$data$year1_Ecov, by=1, length.out=mod$env$data$n_years_Ecov)
-      if(mod$env$data$year1_Ecov < mod$env$data$year1_model){
-        tmp <- rbind(data.frame(year=seq(mod$env$data$year1_Ecov, length.out=mod$env$data$year1_model-mod$env$data$year1_Ecov),
-                                fleet=names(table(dat$fleet))[f],
-                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA), tmp)
-      }
-      end_Ecov <- mod$env$data$year1_Ecov + mod$env$data$n_years_Ecov - 1
-      end_model <- mod$env$data$year1_model + mod$env$data$n_years_model - 1
-      if(end_Ecov > end_model){
-        tmp <- rbind(tmp, data.frame(year=seq(end_model+1, length.out=end_Ecov-end_model),
-                                fleet=names(table(dat$fleet))[f],
-                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA))
-      }
+#      if(mod$env$data$year1_Ecov < mod$env$data$year1_model){
+#        tmp <- rbind(data.frame(year=seq(mod$env$data$year1_Ecov, length.out=mod$env$data$year1_model-mod$env$data$year1_Ecov),
+#                                fleet=names(table(dat$fleet))[f],
+#                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA), tmp)
+#      }
+#      end_Ecov <- mod$env$data$year1_Ecov + mod$env$data$n_years_Ecov - 1
+#      end_model <- mod$env$data$year1_model + mod$env$data$n_years_model - 1
+#      if(end_Ecov > end_model){
+#        tmp <- rbind(tmp, data.frame(year=seq(end_model+1, length.out=end_Ecov-end_model),
+#                                fleet=names(table(dat$fleet))[f],
+#                                age=NA, type="Ecov", val=NA, ind=NA, residual=NA))
+#      }
       tmp$pred <- mod$rep$Ecov_x[1:dim(tmp)[1],f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_ecov_4panel_",f,".pdf")), family = fontfam, height = 10, width = 10)

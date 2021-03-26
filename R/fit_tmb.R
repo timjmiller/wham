@@ -26,20 +26,20 @@
 fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
-
   if(n.newton){ # Take a few extra newton steps
+    print("is n.newton")
     tryCatch(for(i in 1:n.newton) { 
       g <- as.numeric(model$gr(model$opt$par))
       h <- stats::optimHess(model$opt$par, model$fn, model$gr)
       model$opt$par <- model$opt$par - solve(h, g)
       model$opt$objective <- model$fn(model$opt$par)
-    }, error = function(e) {err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
+    }, error = function(e) {model$err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
   }
-  if(exists("err")){
-    model$err <- err # store error message to print out in fit_wham
-    rm("err")
-  }  
-  
+  #assigning model$err already does the below if statement.
+  #if(exists("err", inherits = FALSE)){
+  #  model$err <- err # store error message to print out in fit_wham
+  #  rm("err")
+  #}  
   #model$env$parList() gives error when there are no random effects
   is.re = length(model$env$random)>0
   fe = model$env$last.par.best
