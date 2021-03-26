@@ -124,7 +124,7 @@ read_asap3_fit <- function(wd,asap.name, pSPR=40)  {
   log_FXSPR[,1] <- log(asap.spr$f.spr.vals)
   
 
-  log_SSB_FXSPR[,1] <- log(recruits*0.4*asap$SR.annual.parms$s.per.r.vec)  
+  log_SSB_FXSPR[,1] <- log(recruits*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)  
   log_SSB_FXSPR[,2] <- sqrt( (log_recruits.std*log_recruits.std)*(ssb_pr*ssb_pr) )
   
   log_rel_ssb_F_cov <- rep(list(matrix(NA, 2,2)), nyears ) 

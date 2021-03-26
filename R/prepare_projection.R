@@ -18,7 +18,7 @@
 #'     \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
-#'     \item \code{$pct.FXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$pct.FXSPR = 75}. Default = 100.
+#'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -121,15 +121,16 @@ prepare_projection = function(model, proj.opts)
     data$proj_Fcatch = proj.opts$proj.catch
   }
   if(data$proj_F_opt[1] %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
-  if(!is.null(proj.opts$pct.FXSPR)){
+  if(!is.null(proj.opts$percentFXSPR)){
     if(any(data$proj_F_opt == 3)){
-      data$percentFXSPR = proj.opts$pct.FXSPR
-    } else {
-stop(paste("","** Error setting up projections: **",
-        "percentFXSPR is not used if FXSPR is not used to calculate catch in projections.",
-        "You have chosen ",
-        capture.output(cat(c("use.last.F","use.avg.F","use.FXSPR","proj.F","proj.catch")[data$proj_F_opt])),"",sep='\n'))      
-    }
+      data$percentFXSPR = proj.opts$percentFXSPR
+    } 
+#     else {
+# stop(paste("","** Error setting up projections: **",
+#         "percentFXSPR is not used if FXSPR is not used to calculate catch in projections.",
+#         "You have chosen ",
+#         capture.output(cat(c("use.last.F","use.avg.F","use.FXSPR","proj.F","proj.catch")[data$proj_F_opt])),"",sep='\n'))      
+#     }
   }
 
   #define age for full F in projections

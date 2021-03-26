@@ -84,6 +84,12 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
 
   if(do.table){
     if(is.null(table.opts)) table.opts=list(fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, print=TRUE, save.csv=TRUE)
+    if(is.null(table.opts$fname)) table.opts$fname = "model_comparison"
+    if(is.null(table.opts$sort)) table.opts$sort = TRUE
+    if(is.null(table.opts$calc.rho)) table.opts$calc.rho = TRUE
+    if(is.null(table.opts$calc.aic)) table.opts$calc.aic = TRUE
+    if(is.null(table.opts$print)) table.opts$print = TRUE
+    if(is.null(table.opts$save.csv)) table.opts$save.csv = TRUE
     aic.tab <- aic <- daic <- NULL
     if(length(wham.mods.ind) == 0) warning("No WHAM models. Consider setting do.table = FALSE.")
     if(!all.wham){
@@ -142,7 +148,7 @@ Returning AIC/rho table for WHAM models only.
     }
     if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
     if(table.opts$print) print(tab) # print to console    
-    y$daic = daic; y$aic=aic; y$rho=rho; y$best=best; t$tab=tab
+    y$daic = daic; y$aic=aic; y$rho=rho; y$best=best; y$tab=tab
   }
 
   if(do.plot){
@@ -192,33 +198,33 @@ Returning AIC/rho table for WHAM models only.
     }  
     g <-  vector("list", 10)
     for(i in plot.opts$which){
-      if(i==1) g[[i]] <- plot.SSB.F.R.compare(x, plot.opts)
-      if(i==2) g[[i]] <- plot.cv.compare(x, plot.opts)
-      if(i==3) g[[i]] <- plot.selectivity.compare(x, plot.opts, type="fleet")
-      if(i==4) g[[i]] <- plot.selectivity.compare(x, plot.opts, type="indices")
-      if(i==5) g[[i]] <- plot.tile.compare(x, plot.opts, type="selAA")
-      if(i==6) g[[i]] <- plot.M.compare(x, plot.opts)
-      if(i==7) g[[i]] <- plot.tile.compare(x, plot.opts, type="MAA")
-      if(i==8) g[[i]] <- plot.FXSPR.compare(x, plot.opts)
-      if(i==9) g[[i]] <- plot.rel.compare(x, plot.opts)
+      if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, plot.opts))
+      if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(x, plot.opts))
+      if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="fleet"))
+      if(i==4) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="indices"))
+      if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(x, plot.opts, type="selAA"))
+      if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(x, plot.opts))
+      if(i==7) g[[i]] <- suppressWarnings(plot.tile.compare(x, plot.opts, type="MAA"))
+      if(i==8) g[[i]] <- suppressWarnings(plot.FXSPR.compare(x, plot.opts))
+      if(i==9) g[[i]] <- suppressWarnings(plot.rel.compare(x, plot.opts))
       # if(i==10) g[[i]] <- plot.kobe.compare(x, plot.opts)
     }
     pdims <- lapply(g, gg_facet_dims)
     pdims[[10]] <- c(7,7)
     plabs <- c("SSB_F_R","CV","sel_fleets","sel_indices","sel_tile",paste0("M_age",plot.opts$M.age),"M_tile","ref_pts","rel_status_timeseries","rel_status_kobe")
     if(plot.opts$out.type == 'pdf'){
-      pnames <- file.path(fdir,"pdf",paste0("compare_",plabs,".pdf"))
-      dir.create(file.path(fdir,"pdf"))
+      pnames <- file.path(fdir,"compare_pdf",paste0("compare_",plabs,".pdf"))
+      if(!dir.exists(file.path(fdir,"compare_pdf"))) dir.create(file.path(fdir,"compare_pdf"))
     }
     if(plot.opts$out.type == 'png'){
-      pnames <- file.path(fdir,"png",paste0("compare_",plabs,".png"))
-      dir.create(file.path(fdir,"png"))
+      pnames <- file.path(fdir,"compare_png",paste0("compare_",plabs,".png"))
+      if(!dir.exists(file.path(fdir,"compare_png"))) dir.create(file.path(fdir,"compare_png"))
     }
     for(i in plot.opts$which){
       if(plot.opts$out.type == 'pdf') grDevices::cairo_pdf(filename=pnames[i], height = pdims[[i]][1], width = pdims[[i]][2])
       if(plot.opts$out.type == 'png') png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=100)
-      if(i < 10) print(g[[i]]) 
-      if(i == 10) g[[i]] <- plot.kobe.compare(x, plot.opts)
+      if(i < 10) suppressWarnings(print(g[[i]]))
+      if(i == 10) g[[i]] <- suppressWarnings(plot.kobe.compare(x, plot.opts))
       dev.off()
     }
     if(plot.opts$return.ggplot) y$g <- g
@@ -240,10 +246,8 @@ plot.timeseries.compare <- function(df, x, plot.opts){
     ind <- which(df$hi > df$y_max)
     df$hi[ind] = df$y_max[ind]    
   }  
-  dat <- data.table::data.table(df)
-  if(is.null(plot.opts$relative.to)) dat[,y_min := 0, by = var] # force y-axis to 0, but not if relative
 
-  g <- ggplot2::ggplot(dat, ggplot2::aes(x=Year, y=val, color=Model, group=Model))
+  g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=val, color=Model, group=Model))
   if(any(plot.opts$ci)){
     g <- g + ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lo, ymax=hi, fill=Model), color=NA, alpha=.15) +
           ggplot2::scale_fill_viridis_d()
@@ -251,19 +255,22 @@ plot.timeseries.compare <- function(df, x, plot.opts){
   g <- g + ggplot2::geom_line(size=.8) +
           ggplot2::facet_wrap(ggplot2::vars(var), scales="free_y", ncol=1, strip.position = "left") +
           ggplot2::ylab(NULL) +
-          ggplot2::scale_y_continuous(expand=c(0.01,0.01), labels=scales::number_format()) +
           ggplot2::scale_x_continuous(expand=c(0.01,0.01)) + # breaks=scales::breaks_extended(5)
           ggplot2::scale_colour_viridis_d() +
           ggplot2::theme_bw() +
           ggplot2::theme(strip.background = ggplot2::element_blank(), strip.placement = "outside", 
                 legend.position="top", legend.box.margin = ggplot2::margin(0,0,0,0), legend.margin = ggplot2::margin(0,0,0,0))
+  # if not relative, force y min to 0
+  if(is.null(plot.opts$relative.to)){
+    g <- g + ggplot2::scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=scales::number_format())
+  } else {
+    g <- g + ggplot2::scale_y_continuous(expand=c(0.01,0.01), labels=scales::number_format())
+  }
   # if projections, add vline at terminal year
   last_proj <- sapply(x, function(x) tail(x$years_full,1))
   last_mod <- sapply(x, function(x) tail(x$years,1))
   v.yr <- unique(last_mod[last_proj > last_mod])
   g <- g + ggplot2::geom_vline(xintercept = v.yr, linetype=2, size=.4) 
-  # if not relative, force y min to 0
-  if(is.null(plot.opts$relative.to)) g <- g + ggplot2::geom_blank(ggplot2::aes(y = y_min))
 
   return(g)
 }
@@ -503,8 +510,8 @@ plot.kobe.compare <- function(x, plot.opts){
     }
 
     vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
-    max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),2)
-    max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),2)
+    max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),1.25)
+    max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.25)
 
     plot(vals[,1],vals[,2], ylim = c(0,max.y), xlim = c(0,max.x), xlab = bquote(paste("SSB / ", SSB[paste(.(x[[1]]$percentSPR),"%")])),
       ylab = bquote(paste(italic(F)," / ", italic(F)[paste(.(x[[1]]$percentSPR),"%")])),type = 'n')
@@ -519,11 +526,11 @@ plot.kobe.compare <- function(x, plot.opts){
     tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
     polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
     polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n")
-    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n")
-    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n")
-    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n")
-    text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"))
+    legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", cex=0.7)
+    legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", cex=0.7)
+    legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", cex=0.7)
+    legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
+    text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"), cex=0.7)
     for(i in 1:length(status.years.ind)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
     return(list(rel.status = vals, p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
   } else return(NULL)   

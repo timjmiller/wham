@@ -95,7 +95,7 @@ We use the `prepare_wham_input()` function to specify the model name and any set
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                               selectivity=list(model=rep("age-specific",3), 
                                   re=rep("none",3), 
-                                  initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                  initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)),  
                                   fix_pars=list(4:5,4,2:4)),
                               NAA_re = list(sigma="rec", cor="iid"))
 ```
@@ -139,12 +139,12 @@ cat(vign1_m1_conv, sep = "\n")
 The second model, `m2`, is like the first, but changes all the age composition likelihoods from multinomial to logistic normal (treating 0 observations as missing):
 ```{r eval=FALSE}
 input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
-                                    selectivity=list(model=rep("age-specific",3), 
-                                        re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(4:5,4,2:4)),
-                                    NAA_re = list(sigma="rec", cor="iid"),
-                                    age_comp = "logistic-normal-miss0")
+                              selectivity=list(model=rep("age-specific",3), 
+                                  re=rep("none",3), 
+                                  initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
+                                  fix_pars=list(4:5,4,2:4)),
+                              NAA_re = list(sigma="rec", cor="iid"),
+                              age_comp = "logistic-normal-miss0")
 m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time in ex
 ```
 
@@ -162,7 +162,7 @@ The third, `m3`, is a full state-space model where numbers at all ages are rando
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                               selectivity=list(model=rep("age-specific",3), 
                                   re=rep("none",3), 
-                                  initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                  initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                   fix_pars=list(4:5,4,2:4)),
                               NAA_re = list(sigma="rec+1", cor="iid"))
 m3 <- fit_wham(input3, do.osa = F) # turn off OSA residuals to save time in ex
@@ -180,12 +180,12 @@ cat(vign1_m3_conv, sep = "\n")
 The last, `m4`, is like `m3`, but again changes all the age composition likelihoods to logistic normal:
 ```{r eval=FALSE}
 input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
-                                    selectivity=list(model=rep("age-specific",3), 
-                                        re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
-                                        fix_pars=list(4:5,4,2:4)),
-                                    NAA_re = list(sigma="rec+1", cor="iid"),
-                                    age_comp = "logistic-normal-miss0")
+                              selectivity=list(model=rep("age-specific",3), 
+                                  re=rep("none",3), 
+                                  initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
+                                  fix_pars=list(4:5,4,2:4)),
+                              NAA_re = list(sigma="rec+1", cor="iid"),
+                              age_comp = "logistic-normal-miss0")
 m4 <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time in ex
 ```
 
@@ -210,9 +210,9 @@ save("mods", file="ex1_models.RData")
 
 ## 4. Compare models
 
-We can compare models using AIC and Mohn's rho:
+`compare_wham_models()` will make 1) a table comparing multiple WHAM model fits using AIC and Mohn's rho, and 2) plots of key output (e.g. SSB, F, recruitment, reference points).
 ```{r eval=FALSE}
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE)
+res <- compare_wham_models(mods, table.opts=list(fname="ex1_table", sort=TRUE))
 ```
 
 ```{r echo=FALSE}
@@ -228,6 +228,8 @@ vign1_res$best
 ```
 
 By default, `compare_wham_models()` sorts the model comparison table with lowest (best) AIC at the top, and saves it as `model_comparison.csv`. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. `m1` vs. `m3` (both multinomial) and `m2` vs. `m4` (both logistic normal).
+
+The comparison plots are stored by default in the `compare_png` folder.
 
 ### Project the best model
 
