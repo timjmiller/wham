@@ -3,12 +3,19 @@ wham 1.0.3.9000
 
 ### Bug fixes
 
-* Fixed broken links in vignettes
+* Broken links in vignettes (thanks to @tcarruth)
+* Plotting issue with Ecov OSA residuals and peels (thanks to @h-du-pontavice, [1163df](https://github.com/timjmiller/wham/commit/1163df4290387174a5336ada98a13dc0f5a9644c))
+* Double logistic selectivity setup in `prepare_wham_input` (thanks to @tcarruth, [f270dd](https://github.com/timjmiller/wham/commit/f270ddb66d253ac2aaf9a0109631b89036ddcd5e))
+* `tryCatch` error assignment issues ([9d5c87](https://github.com/timjmiller/wham/commit/9d5c8792769dae9e640da3ad44b7f3e6b74e4a87))
 
 ### Minor improvements
 
-* New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Makes saved models MUCH smaller (e.g. 2MB vs. 35MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
+* New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can makes saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
 * Added `proj.opts$pct.FXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$pct.FXSPR = 75`.
+
+### Major improvements
+
+* New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to @liz-brooks for contributing `read_asap3_fit`! See `?compare_wham_models` and updated vignettes.
 
 wham 1.0.3 (2021-02-05)
 =========================

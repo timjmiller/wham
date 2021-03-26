@@ -3484,7 +3484,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
-        ggplot2::scale_y_continuous(expand=c(0,0)) +        
+        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
         ggplot2::theme_bw() + 
         ggplot2::facet_wrap(~Block, dir="v") +
         viridis::scale_fill_viridis())
@@ -3513,7 +3513,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
-        ggplot2::scale_y_continuous(expand=c(0,0)) +
+        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
         ggplot2::theme_bw() + 
         viridis::scale_fill_viridis())
     if(do.tex | do.png) dev.off()

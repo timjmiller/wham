@@ -50,7 +50,7 @@
 #'     \item \code{$pct.FXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$pct.FXSPR = 75}. Default = 100.
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}. 
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -81,7 +81,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
                     retro.silent = FALSE, do.proj = FALSE, 
                     proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL, 
                                    cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, pct.FXSPR=100), 
-                    do.fit = TRUE, save.sdrep=FALSE)
+                    do.fit = TRUE, save.sdrep=TRUE)
 {
 
   # fit model
