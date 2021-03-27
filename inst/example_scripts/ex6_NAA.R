@@ -31,7 +31,7 @@ wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
 file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=FALSE)
 
-# confirm you are in the working directory and it has the ex1_SNEMAYT.dat file
+# confirm you are in the working directory and it has the ex2_SNEMAYT.dat file
 list.files()
 
 asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
@@ -41,17 +41,19 @@ env.dat <- read.csv("GSI.csv", header=T)
 #    Model NAA_cor NAA_sigma GSI_how
 # 1     m1     ---       ---       0
 # 2     m2     iid       rec       0
-# 3     m3     iid     rec+1       0
-# 4     m4   ar1_a     rec+1       0
-# 5     m5   ar1_y     rec+1       0
-# 6     m6   2dar1     rec+1       0
-# 7     m7     iid       rec       2
-# 8     m8     iid     rec+1       2
-# 9     m9   ar1_a     rec+1       2
-# 10   m10   ar1_y     rec+1       2
-# 11   m11   2dar1     rec+1       2
-df.mods <- data.frame(NAA_cor = c('---','iid','iid','ar1_a','ar1_y','2dar1','iid','iid','ar1_a','ar1_y','2dar1'),
-                      NAA_sigma = c('---',"rec",rep("rec+1",4),"rec",rep("rec+1",4)),
+# 3     m3   ar1_y       rec       0
+# 4     m4     iid     rec+1       0
+# 5     m5   ar1_a     rec+1       0
+# 6     m6   ar1_y     rec+1       0
+# 7     m7   2dar1     rec+1       0
+# 8     m8     iid       rec       2
+# 9     m9   ar1_y       rec       2
+# 10   m10     iid     rec+1       2
+# 11   m11   ar1_a     rec+1       2
+# 12   m12   ar1_y     rec+1       2
+# 13   m13   2dar1     rec+1       2
+df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
+                      NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
                       GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
