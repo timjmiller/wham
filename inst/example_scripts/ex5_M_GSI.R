@@ -156,6 +156,11 @@ for(m in which(!not_conv)){
 # save results table
 write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
 
+# compare models 1, 2, 6, 8, 11
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F))
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=5))
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=4))
+
 # ---------------------------------------------------------
 # plot all MAA together in one giant 16-panel plot
 years = mods[[1]]$years

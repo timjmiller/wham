@@ -153,14 +153,18 @@ Returning AIC/rho table for WHAM models only.
 
   if(do.plot){
     if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE)
+    if(is.null(plot.opts$out.type)) plot.opts$out.type <- 'png'
     if(!plot.opts$out.type %in% c("pdf","png")) stop("plot.opts$out.type must be 'pdf' or 'png' (default)")
+    if(is.null(plot.opts$ci)) plot.opts$ci <- TRUE
     if(!length(plot.opts$ci) %in% c(1,length(mods))) stop("plot.opts$ci must have length = 1 or n.models")
     if(length(plot.opts$ci) == 1) plot.opts$ci <- rep(plot.opts$ci, length(mods))
     all.yrs <- unique(unlist(lapply(mods, function(x) x$years_full)))
     if(is.null(plot.opts$years)) plot.opts$years <- all.yrs
     if(!all(plot.opts$years %in% all.yrs)) stop("plot.opts$years must be a subset of $years_full in model fits")
     if(!is.null(plot.opts$relative.to)) if(!plot.opts$relative.to %in% names(mods)) stop("plot.opts$relative.to must match a model name, e.g. 'm1'.")
+    if(is.null(plot.opts$which)) plot.opts$which <- 1:10
     if(!all(plot.opts$which %in% 1:10)) stop("All elements of plot.opts$which must be in 1:11. See ?compare_wham_models for available plots.")
+    if(is.null(plot.opts$alpha)) plot.opts$alpha <- 0.05
     if(is.null(plot.opts[["ages.lab"]])) plot.opts$ages.lab <- mods[[1]]$ages.lab
     if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- tail(mods[[1]]$years, 1)
     if(!(plot.opts$kobe.yr %in% all.yrs)) stop("plot.opts$kobe.yr must be a year in $years_full from model fits.")      
