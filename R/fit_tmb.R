@@ -27,7 +27,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
 {
   model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000))
   if(n.newton){ # Take a few extra newton steps
-    print("is n.newton")
+    # print("is n.newton")
     tryCatch(for(i in 1:n.newton) { 
       g <- as.numeric(model$gr(model$opt$par))
       h <- stats::optimHess(model$opt$par, model$fn, model$gr)
