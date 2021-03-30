@@ -49,8 +49,8 @@
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if proj.opts$use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'   }
-#' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}. 
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{TRUE}.
+#' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -78,9 +78,9 @@
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
                     do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
-                    retro.silent = FALSE, do.proj = FALSE, 
-                    proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL, 
-                                   cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100), 
+                    retro.silent = FALSE, do.proj = FALSE,
+                    proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+                                   cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
                     do.fit = TRUE, save.sdrep=TRUE)
 {
 
@@ -103,7 +103,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
     # retrospective analysis
     if(do.retro){
-      tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels, 
+      tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels,
         MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
       #assigning mod$err_retro accomplishes the below if statement
       #if(exists("err")){
