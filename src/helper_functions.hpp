@@ -1040,7 +1040,7 @@ Type get_F_from_log_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<T
 }
 
 template <class Type>
-Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<Type> waassb,
+Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waassb,
   vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0)
 {
   int n = 10;
@@ -1056,6 +1056,30 @@ Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<T
   }
   Type res = exp(log_FXSPR_iter(n-1));
   return res;
+}
+
+template <class Type>
+Type get_FMSY(Type log_a, Type log_b, vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<Type> waassb,
+  vector<Type> mat, Type fracyr_SSB, Type log_SPR0, int recruit_model, Type F_init)
+{    
+  int n = 10;
+  vector<Type> log_FMSY_i(1);
+  vector<Type> log_FMSY_iter(n);
+  log_FMSY_iter.fill(log(F_init)); //starting value
+  Type a = exp(log_a);
+  Type b = exp(log_b);
+  int sr_type = 0; //recruit_model = 3, B-H
+  if(recruit_model == 4) sr_type = 1; //recruit_model = 4, Ricker
+  sr_yield<Type> sryield(a, b, M, sel, mat, waassb, waacatch, fracyr_SSB, sr_type);
+  for (int i=0; i<n-1; i++)
+  {
+    log_FMSY_i(0) = log_FMSY_iter(i);
+    vector<Type> grad_sr_yield = autodiff::gradient(sryield,log_FMSY_i);
+    matrix<Type> hess_sr_yield = autodiff::hessian(sryield,log_FMSY_i);
+    log_FMSY_iter(i+1) = log_FMSY_iter(i) - grad_sr_yield(0)/hess_sr_yield(0,0);
+  }
+  Type FMSY = exp(log_FMSY_iter(n-1));
+  return FMSY;
 }
 
 // transform vector 'x' into matrix of orthogonal polynomials, with degree/ncols = 'degree'
@@ -1316,7 +1340,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       Type fracyr_SSB_y = fracyr_SSB(y);
       Type log_SPR0_y = log_SPR0(y);
       //FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
-      FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_tot_proj;
+      FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_tot_proj;
       FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj * 0.01*percentFXSPR;
     }
     if(proj_F_opt_y == 4){ // user-specified F
