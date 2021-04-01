@@ -55,6 +55,7 @@ for(m in conv_mods){
   plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)))
 }
 
+# devtools::load_all("~/Documents/wham/") # test local changes not yet pushed to github
 base <- read_asap3_fit(wd=asap.dir, asap.name="BASE_3")
 mods <- c(list(base),mods)
 names(mods) <- c("base",df.mods$Model)
@@ -64,7 +65,14 @@ res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE)
 # m3 B40 and F40 ~1937, m2 F40 ~1955
 std <- mods$m2$sdrep$value
 ind.F40 <- which(names(std) == "log_FXSPR")
-mods$m2$sdrep$value[ind.F40[which(std[ind.F40] < -5)]] = NaN
+# std[ind.F40]
+badF40 <- which(std[ind.F40] < -5)
+mods$m2$sdrep$value[ind.F40[badF40]] = NaN
+ind.B40 <- which(names(std) == "log_SSB_FXSPR")
+mods$m2$sdrep$value[ind.B40[badF40]] = NaN
+# std[ind.B40]
+ind.Y40 <- which(names(std) == "log_Y_FXSPR")
+mods$m2$sdrep$value[ind.Y40[badF40]] = NaN
 
 std <- mods$m3$sdrep$value
 ind.B40 <- which(names(std) == "log_SSB_FXSPR")

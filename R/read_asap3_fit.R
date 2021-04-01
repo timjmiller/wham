@@ -128,12 +128,15 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   log_FXSPR <- matrix(NA, nyears, 2)
   log_SSB_FXSPR <- matrix(NA, nyears, 2)
 
-  log_Y_FXSPR[,1] <- log(asap.spr$ypr.spr.vals)
+  log_SR_scalar.row <- which(a1$asap.std$name=="log_SR_scaler")
+  log_R0.std <- a1$asap.std$stdev[log_SR_scalar.row]
+  R0 <- asap$SR.annual.parms$R0.vec[nyears]
+
+  log_Y_FXSPR[,1] <- log(R0*asap.spr$ypr.spr.vals)
   log_FXSPR[,1] <- log(asap.spr$f.spr.vals)
 
-
-  log_SSB_FXSPR[,1] <- log(recruits*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)
-  log_SSB_FXSPR[,2] <- log_recruits.std
+  log_SSB_FXSPR[,1] <- log(R0*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)  
+  log_SSB_FXSPR[,2] <- log_R0.std
 
   log_rel_ssb_F_cov <- rep(list(matrix(-99, 2,2)), nyears )
 
@@ -168,7 +171,6 @@ s.per.recr<-function(nages,fec.age,mat.age,M.age, F.mult, sel.age, spawn.time ) 
     z.ts=(M.age[i]+F.mult*sel.age[i])*spawn.time
     spr=spr+cum.survive*fec.age[i]*mat.age[i]*exp(-z.ts)
     cum.survive=cum.survive*exp(-z )
-    
   } 
   z= M.age[nages] + F.mult*sel.age[nages]
   z.ts=(M.age[nages]+F.mult*sel.age[nages])*spawn.time
