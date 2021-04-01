@@ -128,7 +128,7 @@ df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 not_conv <- !df.mods$conv | !df.mods$pdHess
 mods2 <- mods
 mods2[not_conv] <- NULL
-df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=TRUE))$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
@@ -150,11 +150,16 @@ df.mods
 
 # plot output for all models that converged
 for(m in which(!not_conv)){
-  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='html')
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='png')
 }
 
 # save results table
 write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
+
+# compare models 1, 2, 6, 8, 11
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F))
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=5))
+compare_wham_models(mods[c(1,2,6,8,11)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=4))
 
 # ---------------------------------------------------------
 # plot all MAA together in one giant 16-panel plot

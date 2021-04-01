@@ -25,7 +25,7 @@ asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
-                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec", cor="iid"))
 m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
@@ -34,7 +34,7 @@ m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE)) # tu
 input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
@@ -44,7 +44,7 @@ m2 <- suppressWarnings(fit_wham(input2, do.osa = F, MakeADFun.silent=TRUE)) # tu
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
-                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"))
 m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
@@ -53,7 +53,7 @@ m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE)) # tu
 input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
@@ -68,7 +68,7 @@ expect_equal(nll, ex1_test_results$nll, tolerance=1e-6, scale=1)
 
 # Compare models by AIC and Mohn's rho
 tmp.dir <- tempdir(check=TRUE)
-res <- compare_wham_models(mods, fname="model_comparison", sort=TRUE, fdir=tmp.dir, do.print=FALSE)
+res <- compare_wham_models(mods, fdir=tmp.dir, table.opts=list(fname="ex1_table", sort=TRUE, print=FALSE))
 
 # WHAM output plots for best model with projections
 m4_proj <- project_wham(model=mods$m4, MakeADFun.silent=TRUE)

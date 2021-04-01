@@ -210,7 +210,7 @@ mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
 mods <- lapply(mod.list, readRDS)
 ```
 
-Check which models converged. Note that 1 of the 9 models did NOT converge:
+Check which models converged.
 
 ```{r, eval=FALSE}
 vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
@@ -238,7 +238,7 @@ for(m in conv_mods){
 Compare the models using AIC:
 
 ```{r, eval=FALSE}
-df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab)
+df.aic <- as.data.frame(compare_wham_models(mods, table.opts=list(sort=FALSE, calc.rho=FALSE))$tab)
 df.aic[!pdHess,] = NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
@@ -291,7 +291,7 @@ df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
 df$conv = factor(df$conv)
 ```
 
-Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.
+Now plot selectivity-at-age for block 1 (fleet) in all models.
 
 ```{r eval=FALSE}
 print(ggplot(df, aes(x=Year, y=Age)) +

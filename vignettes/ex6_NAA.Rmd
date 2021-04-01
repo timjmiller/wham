@@ -260,7 +260,7 @@ df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 not_conv <- !df.mods$conv | !df.mods$pdHess
 mods2 <- mods
 mods2[not_conv] <- NULL
-df.aic.tmp <- as.data.frame(compare_wham_models(mods2, sort=FALSE, calc.rho=T)$tab)
+df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=TRUE))$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
@@ -338,7 +338,7 @@ Estimated survival deviations by age (y-axis) and year (x-axis) for all converge
 
 #### Retrospective patterns
 
-The base model, `m1`, had a severe retrospective pattern for recruitment ($\rho_R$ = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m5-7` and `m10-13` all below 0.32).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $|\rho_{SSB}|$ and $|\rho_{\overline{F}}|$ were negligible for `m5-7`, < 0.05). 
+The base model, `m1`, had a severe retrospective pattern for recruitment (very high $\rho_R$). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included ($\rho_R$ for `m5-7` and `m10-13` all below 0.4).  Adding a GSI-Recruitment link to the state-space models further reduced $\rho_R$, and also reduced $\rho_{SSB}$ and $\rho_{\overline{F}}$ (although $|\rho_{SSB}|$ and $|\rho_{\overline{F}}|$ were negligible for `m5-7`, < 0.05). 
 
 Comparing `m11` and `m13`, the models with lowest AIC, `m13` had slightly lower Mohn's $\rho_R$, $\rho_{SSB}$, and $\rho_{\overline{F}}$.
 

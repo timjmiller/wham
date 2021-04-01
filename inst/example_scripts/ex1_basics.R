@@ -25,7 +25,7 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
-                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                	initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec", cor="iid"))
 m1 <- fit_wham(input1, do.osa = F) # turn off OSA residuals to save time
@@ -39,7 +39,7 @@ check_convergence(m1)
 input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
@@ -54,7 +54,7 @@ check_convergence(m2)
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
-                                	initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"))
 m3 <- fit_wham(input3, do.osa = F) # turn off OSA residuals to save time
@@ -68,7 +68,7 @@ check_convergence(m3)
 input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
                                     selectivity=list(model=rep("age-specific",3), 
                                         re=rep("none",3), 
-                                        initial_pars=list(c(0.5,0.5,0.5,0.5,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,0.5,0.5,0.5,0.5)), 
+                                    initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
@@ -83,7 +83,7 @@ mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
 save("mods", file="ex1_models.RData")
 
 # Compare models by AIC and Mohn's rho
-res <- compare_wham_models(mods, fname="ex1_table", sort=TRUE)
+res <- compare_wham_models(mods, table.opts=list(fname="ex1_table", sort=TRUE))
 res$best
 
 # Project best model, m4,

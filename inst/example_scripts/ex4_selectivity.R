@@ -116,13 +116,13 @@ pdHess <- as.logical(ok_sdrep)
 conv <- sapply(mods, function(x) x$opt$convergence == 0) # 0 means opt converged
 conv_mods <- (1:n.mods)[pdHess] 
 for(m in conv_mods){
-	plot_wham_output(mod=mods[[m]], out.type='html', dir.main=file.path(write.dir,paste0("m",m)))
-	# plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)))
+	# plot_wham_output(mod=mods[[m]], out.type='html', dir.main=file.path(write.dir,paste0("m",m)))
+	plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)))
 	# plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)), plot.opts=list(font.family="Times"))
 }
 
 # compare models using AIC
-df.aic <- as.data.frame(compare_wham_models(mods, sort=FALSE, calc.rho=FALSE)$tab)
+df.aic <- as.data.frame(compare_wham_models(mods, table.opts=list(sort=FALSE, calc.rho=FALSE))$tab)
 df.aic[!pdHess,] = NA
 minAIC <- min(df.aic$AIC, na.rm=T)
 df.aic$dAIC <- round(df.aic$AIC - minAIC,1)

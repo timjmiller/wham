@@ -120,7 +120,7 @@ nll_proj - mod$opt$obj
 
 # plot results
 for(m in 1:length(mod_proj)){
-  plot_wham_output(mod_proj[[m]], dir.main=file.path(getwd(),paste0("proj_",m)), out.type='html')
+  plot_wham_output(mod_proj[[m]], dir.main=file.path(getwd(),paste0("proj_",m)), out.type='png')
 }
 
 # to more easily compare plots, copy to folders organized by plot instead of by model
