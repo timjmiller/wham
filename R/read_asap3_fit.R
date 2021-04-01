@@ -61,22 +61,21 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   n.fleet.sel <- max(asap$fleet.sel.blocks)
   n.index.sel <- length(asap$index.sel[,1])
   total.sel <- n.fleet.sel+n.index.sel
-  selAA <- list()
-   for (s in 1:total.sel) {
-     if (s<=n.fleet.sel) {
-       if(n.fleet==1) tmp.mat <- asap$fleet.sel.mats[[1]]
-       if(n.fleet>1) tmp.mat <- matrix(unlist(asap$fleet.sel.mats), nrow=nyears*n.fleet, ncol=nages, byrow=T)
-       selAA[[s]] <- tmp.mat[ which(asap$fleet.sel.blocks==s), ]
-     } # end case s<=n.fleet.sel
-     if (s>n.fleet.sel) {
-       selAA[[s]] <- matrix(rep(asap$index.sel[(s-n.fleet.sel),], nyears), nrow=nyears, ncol=nages, byrow=T)
-       rownames(selAA[[s]]) <- years
-     }
-   } #end s loop over selectivities
-
   selblock_pointer_fleets <- t(asap$fleet.sel.blocks)
   selblock_pointer_indices <- matrix(rep(seq(1, asap$parms$nindices)+ n.fleet.sel, nyears ), nrow=nyears, ncol=asap$parms$nindices, byrow=T)
   rownames(selblock_pointer_indices) <- years
+  selAA <- list()
+  for (s in 1:total.sel) {
+    if (s<=n.fleet.sel) {
+      selAA[[s]] <- matrix(NA, nrow=nyears*n.fleet, ncol=nages)
+      if(n.fleet==1) selAA[[s]][which(asap$fleet.sel.blocks==s), ] <- asap$fleet.sel.mats[[1]][which(asap$fleet.sel.blocks==s), ]
+      if(n.fleet>1) selAA[[s]] <- matrix(unlist(asap$fleet.sel.mats), nrow=nyears*n.fleet, ncol=nages, byrow=T)
+    } # end case s<=n.fleet.sel
+    if (s>n.fleet.sel) {
+     selAA[[s]] <- matrix(rep(asap$index.sel[(s-n.fleet.sel),], nyears), nrow=nyears, ncol=nages, byrow=T)
+     rownames(selAA[[s]]) <- years
+    }
+  } #end s loop over selectivities
 
   MAA <- asap$M.age
   SSB.rows <- which(a1$asap.std$name=="SSB")
@@ -134,9 +133,9 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
 
 
   log_SSB_FXSPR[,1] <- log(recruits*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)
-  log_SSB_FXSPR[,2] <- sqrt( (log_recruits.std*log_recruits.std)*(ssb_pr*ssb_pr) )
+  log_SSB_FXSPR[,2] <- log_recruits.std
 
-  log_rel_ssb_F_cov <- rep(list(matrix(NA, 2,2)), nyears )
+  log_rel_ssb_F_cov <- rep(list(matrix(-99, 2,2)), nyears )
 
 
   return(list(years=years, years_full=years_full, selAA=selAA, selblock_pointer_fleets=selblock_pointer_fleets,
