@@ -1,16 +1,21 @@
 # WHAM example 8: Read ASAP3 results and compare to fit WHAM models
 
 # source("/home/bstock/Documents/wham/inst/example_scripts/ex8_compare_asap.R")
+# devtools::install_github("timjmiller/wham", ref="devel", dependencies=TRUE)
 
-library(tidyverse)
 # devtools::load_all("~/Documents/wham/") # test locally (not yet pushed to github)
-devtools::install_github("timjmiller/wham", ref="devel", dependencies=TRUE)
+# devtools::install_github("timjmiller/wham", ref="devel", dependencies=TRUE)
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(tidyverse)
+library(wham)
 
 # create directory for analysis, e.g.
 # main.dir <- file.path(getwd(),"sandbox","wham_testing",paste0("runall-",format(Sys.Date(), "%Y%m%d")))
 main.dir <- "/home/bstock/Documents/wham/sandbox/wham_testing/runall-20210330"
-asap.dir <- "/home/bstock/Documents/wham/inst/extdata/BASE_3"
+wham.dir <- find.package("wham")
+asap.dir <- file.path(wham.dir,"extdata","BASE_3")
+# asap.dir <- "/home/bstock/Documents/wham/inst/extdata/BASE_3"
+
 if(!dir.exists(main.dir)) dir.create(main.dir)
 write.dir <- file.path(main.dir,"ex8")
 if(!dir.exists(write.dir)) dir.create(write.dir)
@@ -55,7 +60,7 @@ mods <- c(list(base),mods)
 names(mods) <- c("base",df.mods$Model)
 res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE))
 
-# remove some big outliers affecting plot scale (couple non-finite values)
+# remove a couple non-finite values affecting plot scale
 # m3 B40 and F40 ~1937, m2 F40 ~1955
 std <- mods$m2$sdrep$value
 ind.F40 <- which(names(std) == "log_FXSPR")
