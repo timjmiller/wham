@@ -36,12 +36,21 @@
 #'
 prepare_projection = function(model, proj.opts)
 {
-# library(wham)
-# write.dir <- "/home/bstock/Documents/wham/sandbox/ex3_projections"
-# setwd(write.dir)
-# model = readRDS("m6.rds")
-# proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL,
-#                 avg.yrs=NULL, cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL)
+  if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100)
+  # default: 3 projection years
+  if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
+  # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  
+  if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
+    proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
+  }
+  if(all(is.null(proj.opts$cont.ecov), is.null(proj.opts$use.last.ecov), is.null(proj.opts$avg.ecov.yrs), is.null(proj.opts$proj.ecov))){
+    proj.opts$cont.ecov=TRUE; proj.opts$use.last.ecov=FALSE; proj.opts$avg.ecov.yrs=NULL; proj.opts$proj.ecov=NULL
+  }
+  if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE
+  if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
+
   input1 <- model$input
   data <- input1$data
 
@@ -58,12 +67,6 @@ prepare_projection = function(model, proj.opts)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
 
-  # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)
-
-  # default: 3 projection years
-  if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
-
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
@@ -79,13 +82,17 @@ prepare_projection = function(model, proj.opts)
 
   # check ecov options are valid
   if(any(input1$data$Ecov_model > 0)){
-    # if Ecov already extends beyond population model, Ecov proj options are unnecessary
-    n.beyond <- data$n_years_Ecov-1-data$ind_Ecov_out_end
-    end.beyond <- min(n.beyond, proj.opts$n.yrs)
-    Ecov.proj <- matrix(rep(NA, (proj.opts$n.yrs-end.beyond)*dim(model$rep$Ecov_re)[2]), ncol=dim(model$rep$Ecov_re)[2], byrow=TRUE)
-    Ecov.map <- matrix(rep(NA, (proj.opts$n.yrs-end.beyond)*dim(model$rep$Ecov_re)[2]), ncol=dim(model$rep$Ecov_re)[2], byrow=TRUE)
-    if(end.beyond == proj.opts$n.yrs){ print("ecov already fit through projection years. Using fit ecov for projections...")
-    } else { # if Ecov proj options ARE necessary, check they are valid
+    # if Ecovs already extend beyond population model, Ecov proj options are unnecessary
+    n.beyond <- rep(NA, data$n_Ecov)
+    end.beyond <- rep(NA, data$n_Ecov)
+    for(i in 1:data$n_Ecov){
+      n.beyond[i] <- data$n_years_Ecov-1-data$ind_Ecov_out_end[i]
+      end.beyond[i] <- min(n.beyond[i], proj.opts$n.yrs)     
+      if(end.beyond[i] == proj.opts$n.yrs) print(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
+    }
+    Ecov.proj <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
+    Ecov.map <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
+    if(all(end.beyond < proj.opts$n.yrs)){ # if Ecov proj options ARE necessary, check they are valid
       Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
       if(Ecov.opt.ct == 0) proj.opts$cont.ecov = TRUE; Ecov.opt.ct = 1;
       if(Ecov.opt.ct != 1) stop(paste("","** Error setting up projections: **",
@@ -99,13 +106,13 @@ prepare_projection = function(model, proj.opts)
         "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
     }
   } else { # need to create objects if no Ecov
-    end.beyond = proj.opts$n.yrs # effectively say that Ecov already extends # of proj years
+    end.beyond = rep(proj.opts$n.yrs, data$n_Ecov) # effectively say that Ecov already extends # of proj years
   }
 
   # add new data objects for projections
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
-  data$n_years_proj_Ecov = proj.opts$n.yrs-end.beyond
+  data$n_years_proj_Ecov = max(proj.opts$n.yrs-end.beyond)
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
   data$proj_F_opt = rep(0,data$n_years_proj) 
@@ -121,7 +128,6 @@ prepare_projection = function(model, proj.opts)
     data$proj_Fcatch = proj.opts$proj.catch
   }
   if(data$proj_F_opt[1] %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
-  if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
   if(any(data$proj_F_opt == 3)) data$percentFXSPR = proj.opts$percentFXSPR
 #     else {
 # stop(paste("","** Error setting up projections: **",
@@ -185,24 +191,23 @@ prepare_projection = function(model, proj.opts)
 
   # pad Ecov_re for projections
   if(any(data$Ecov_model > 0)){
-    if(end.beyond < proj.opts$n.yrs){ # need to pad Ecov_re
-      for(i in 1:(proj.opts$n.yrs-end.beyond)){
-        if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
-          Ecov.proj[i,] <- model$rep$Ecov_re[data$ind_Ecov_out_end+1+end.beyond,]
-        }
-        if(!is.null(proj.opts$avg.ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
-          avg.yrs.ind.ecov <- match(proj.opts$avg.ecov.yrs, input1$years)
-          Ecov.proj[i,] <- avg_cols(as.matrix(model$rep$Ecov_re[avg.yrs.ind.ecov,]))
-        }
-        if(!is.null(proj.opts$cont.ecov)) if(proj.opts$cont.ecov){ # continue Ecov process (pad Ecov_re and estimate)
-          Ecov.proj[i,] <- rep(0, data$n_Ecov)
-        }
-        if(!is.null(proj.opts$proj.ecov)){ # use specified Ecov, have to back-calculate Ecov_re from Ecov_x
-          for(j in 1:data$n_Ecov){ 
-            #random walk
-            if(data$Ecov_model[j] == 1) Ecov.proj[i,j] <- proj.opts$proj.ecov[i,j]
-            #AR(1)
-            if(data$Ecov_model[j] == 2) Ecov.proj[i,j] <- proj.opts$proj.ecov[i,j] - par$Ecov_process_pars[1,j] 
+    if(any(end.beyond < proj.opts$n.yrs)){ # need to pad Ecov_re
+      for(j in 1:data$n_Ecov){
+        for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
+          if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
+            Ecov.proj[i,j] <- model$rep$Ecov_re[data$ind_Ecov_out_end[j]+1+end.beyond[j],j]
+          }
+          if(!is.null(proj.opts$avg.ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
+            ecov.yrs <- data$year1_Ecov+0:(data$n_years_Ecov-1+data$n_years_proj_Ecov)
+            avg.yrs.ind.ecov <- match(proj.opts$avg.ecov.yrs, ecov.yrs)
+            Ecov.proj[i,j] <- avg_cols(as.matrix(model$rep$Ecov_re[avg.yrs.ind.ecov,j]))
+          }
+          if(!is.null(proj.opts$cont.ecov)) if(proj.opts$cont.ecov){ # continue Ecov process (pad Ecov_re and estimate)
+            Ecov.proj[i,j] <- 0
+          }
+          if(!is.null(proj.opts$proj.ecov)){ # use specified Ecov, may have to back-calculate Ecov_re from Ecov_x
+              if(data$Ecov_model[j] == 1) Ecov.proj[i,j] <- proj.opts$proj.ecov[i,j] # random walk
+              if(data$Ecov_model[j] == 2) Ecov.proj[i,j] <- proj.opts$proj.ecov[i,j] - par$Ecov_process_pars[1,j] # AR(1)
           }
         }
       }
@@ -215,7 +220,11 @@ prepare_projection = function(model, proj.opts)
         tmp.re[,i] <- if(data$Ecov_model[i]==0) rep(NA,dim(par$Ecov_re)[1]) else tmp.re[,i]
         if(data$Ecov_model[i]==1) tmp.re[1,i] <- NA # if Ecov is a rw, first year of Ecov_re is not used bc Ecov_x[1] uses Ecov1 (fixed effect)
       }
-      if(!proj.opts$cont.ecov) tmp.re[1:(proj.opts$n.yrs-end.beyond)+data$n_years_Ecov,] <- NA
+      if(!proj.opts$cont.ecov){
+        for(i in 1:data$n_Ecov){
+          tmp.re[1:(proj.opts$n.yrs-end.beyond[i])+data$n_years_Ecov,] <- NA
+        }
+      } 
       ind.notNA <- which(!is.na(tmp.re))
       tmp.re[ind.notNA] <- 1:length(ind.notNA)
       data$Ecov_use_re[ind.notNA] <- 1 # don't want to add to NLL in projection years (= 0)
