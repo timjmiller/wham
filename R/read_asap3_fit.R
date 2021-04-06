@@ -2,7 +2,7 @@
 #'
 #' Gets output from a fit ASAP3 model for plotting with WHAM models.
 #'
-#' @param wd character, directory where ASAP3 output files are located (ex: "C:/MY/file/directories/model/" )
+#' @param wd character, directory where ASAP3 output files are located (ex: "C:/MY/file/directories/model/" ). 5 files are needed: \code{.rdat}, \code{.dat}, \code{.std}, \code{.cor}, and \code{.par}.
 #' @param asap.name character, base name of original .dat file (i.e. without the .dat extension)
 #' @param pSPR scalar, user-specified percent SPR to use for reference points, expressed as 100*SSBPR(Fspr)/SSBPR(F=0). Default = 40.
 #'

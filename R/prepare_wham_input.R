@@ -77,7 +77,7 @@
 #'                    \item{"2dar1"}{correlated by year and age/par (2D AR1)}
 #'                  }
 #'                 }
-#'     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages.}
+#'     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 for logistic, double-logistic, and decreasing-logistic.}
 #'     \item{$fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
 #'   }
 #'
@@ -212,12 +212,13 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   data$n_indices <- asap3$n_indices
 
   # Selectivity
+  selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
   data$n_selblocks <- asap3$n_fleet_sel_blocks + asap3$n_indices
   if(is.null(selectivity$model)) data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
-    if(!all(selectivity$model %in% c("age-specific","logistic","double-logistic","decreasing-logistic"))) stop("Each model entry must be one of the following: 'age-specific','logistic','double-logistic','decreasing-logistic'")
-    data$selblock_models <- match(selectivity$model, c("age-specific","logistic","double-logistic","decreasing-logistic"))
+    if(!all(selectivity$model %in% selopts)) stop("Each model entry must be one of the following: 'age-specific','logistic','double-logistic','decreasing-logistic'")
+    data$selblock_models <- match(selectivity$model, selopts)
   }
   if(is.null(selectivity$re)) data$selblock_models_re <- rep(1, data$n_selblocks) # default: no RE on selectivity parameters
   if(!is.null(selectivity$re)){
@@ -346,7 +347,41 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   selpars_ini = matrix(NA, data$n_selblocks, data$n_ages + 6)
   if(is.null(selectivity$initial_pars)) {
     for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
-    for(i in (1:asap3$n_indices)) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
+    for(i in 1:asap3$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
+    orig_sel_models <- c(asap3$sel_block_option, asap3$index_sel_option)
+    sel_mod_diff_warn <- NULL
+    orig_selpars <- list()
+    default_selpars <- list()
+    for(b in 1:data$n_selblocks){
+      if(data$selblock_models[b] != orig_sel_models[b]){
+        if(data$selblock_models[b] == 1){
+          orig_selpars[[b]] <- selpars_ini[b,1:data$n_ages]
+          default_selpars[[b]] <- rep(0.5, data$n_ages) # default to middle of par range
+          selpars_ini[b,1:data$n_ages] = default_selpars[[b]]
+          if(b <= asap3$n_fleet_sel_blocks) asap3$sel_ini[[b]][1:data$n_ages,2] = 1
+          if(b > asap3$n_fleet_sel_blocks) asap3$index_sel_ini[[b-asap3$n_fleet_sel_blocks]][1:data$n_ages,2] = 1
+        }
+        if(data$selblock_models[b] %in% c(2,4)){
+          orig_selpars[[b]] <- selpars_ini[b,data$n_ages+1:2]
+          default_selpars[[b]] <- rep(data$n_ages/2, 2) # default to middle of par range
+          selpars_ini[b,data$n_ages+1:2] = default_selpars[[b]]
+          if(b <= asap3$n_fleet_sel_blocks) asap3$sel_ini[[b]][data$n_ages+1:2,2] = 1
+          if(b > asap3$n_fleet_sel_blocks) asap3$index_sel_ini[[b-asap3$n_fleet_sel_blocks]][data$n_ages+1:2,2] = 1       
+        }
+        if(data$selblock_models[b] == 3){
+          orig_selpars[[b]] <- selpars_ini[b,data$n_ages+3:6]
+          default_selpars[[b]] <- rep(data$n_ages/2, 4) # default to middle of par range
+          selpars_ini[b,data$n_ages+3:6] <- default_selpars[[b]] # default to middle of par range
+          if(b <= asap3$n_fleet_sel_blocks) asap3$sel_ini[[b]][data$n_ages+3:6,2] = 1
+          if(b > asap3$n_fleet_sel_blocks) asap3$index_sel_ini[[b-asap3$n_fleet_sel_blocks]][data$n_ages+3:6,2] = 1        
+        }
+        sel_mod_diff_warn <- paste(sel_mod_diff_warn, paste0("Block ",b,":"), paste0("  ASAP .dat file: ",selopts[orig_sel_models[b]]),paste0("  selectivity$models: ",selopts[data$selblock_models[b]]),paste0("  Changing .dat file inits ",paste0(orig_selpars[[b]], collapse = ", ")," to inits in middle of par range ",paste0(default_selpars[[b]], collapse = ", ")), sep="\n")
+      }
+    }
+    if(!is.null(sel_mod_diff_warn)){
+      sel_mod_diff_warn <- paste("Selectivity models differ from ASAP .dat file but initial","parameter values not specified. Please check initial values","and specify with selectivity$initial_pars if desired.",sel_mod_diff_warn,sep="\n")
+      cat(sel_mod_diff_warn, sep="\n")
+    }
   } else {
     if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list")
     if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
