@@ -42,11 +42,14 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
   #}  
   #model$env$parList() gives error when there are no random effects
   is.re = length(model$env$random)>0
-  fe = model$env$last.par.best
-  if(is.re) fe = fe[-c(model$env$random)]
+  fe = model$opt$par
+  if(is.re) model$env$last.par.best[-c(model$env$random)] = fe
+  else  model$env$last.par.best = fe
+  #fe = model$env$last.par.best
+  #if(is.re) fe = fe[-c(model$env$random)]
   
+  Gr = model$gr(fe)
   if(do.check){
-    Gr = model$gr(fe)
     if(any(Gr > 0.01)){
       df <- data.frame(param = names(fe),
                        MLE = fe,
@@ -74,7 +77,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
   model$rep <- model$report()
   model$TMB_version = packageVersion("TMB")
   model$parList = model$env$parList(x = fe)
-  model$final_gradient = model$gr()
+  model$final_gradient = Gr
 
   # if(do.sdrep & !exists("err")) # only do sdrep if no error
   if(do.sdrep) # only do sdrep if no error
