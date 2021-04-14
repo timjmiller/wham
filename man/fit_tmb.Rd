@@ -4,16 +4,24 @@
 \alias{fit_tmb}
 \title{Fit TMB model using nlminb}
 \usage{
-fit_tmb(model, n.newton = 3, do.sdrep = TRUE, do.check = FALSE)
+fit_tmb(
+  model,
+  n.newton = 3,
+  do.sdrep = TRUE,
+  do.check = FALSE,
+  save.sdrep = FALSE
+)
 }
 \arguments{
 \item{model}{Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
 
 \item{n.newton}{Integer, number of additional Newton steps after optimization. Default = \code{3}.}
 
-\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
+\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.}
 
-\item{do.check}{T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::Check_Identifiable]{TMBhelper::Check_Identifiable}}. Default = \code{TRUE}.}
+\item{do.check}{T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::check_estimability]{TMBhelper::check_estimability}}. Default = \code{TRUE}.}
+
+\item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
 }
 \value{
 \code{model}, appends the following:
@@ -25,7 +33,7 @@ fit_tmb(model, n.newton = 3, do.sdrep = TRUE, do.check = FALSE)
     \item{\code{model$TMB_version}}{Version of TMB installed}
     \item{\code{model$parList}}{List of parameters, \code{model$env$parList()}}
     \item{\code{model$final_gradient}}{Final gradient, \code{model$gr()}}
-    \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}}}
+    \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
   }
 }
 \description{
@@ -34,5 +42,5 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by \code{\link{fit_wham}}.
 }
 \seealso{
-\code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::Check_Identifiable}}
+\code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::check_estimability}}
 }

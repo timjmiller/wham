@@ -2,59 +2,98 @@
 % Please edit documentation in R/compare_wham_models.R
 \name{compare_wham_models}
 \alias{compare_wham_models}
-\title{Compare WHAM models}
+\title{Compare multiple WHAM (or ASAP) models}
 \usage{
 compare_wham_models(
   mods,
-  fname = "model_comparison",
-  sort = TRUE,
-  calc.rho = TRUE,
-  calc.aic = TRUE,
+  do.table = TRUE,
+  do.plot = TRUE,
   fdir = getwd(),
-  do.print = TRUE
+  table.opts = NULL,
+  plot.opts = NULL,
+  fname = NULL,
+  sort = NULL,
+  calc.rho = NULL,
+  calc.aic = NULL,
+  do.print = NULL
 )
 }
 \arguments{
-\item{mods}{(named) list of fit WHAM models. If no names are given, "m1", "m2", ...
+\item{mods}{(named) list of fit WHAM/ASAP models. To read in ASAP model output, use \code{\link{read_asap3_fit}}. If no names are given, 'm1', 'm2', ...
 will be used.}
 
-\item{fname}{character, filename to save CSV results table (.csv will be appended). Default = "model_comparison".}
+\item{do.table}{T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.}
 
-\item{sort}{T/F, sort by AIC? Default = TRUE.}
+\item{do.plot}{T/F, produce plots? Default = TRUE.}
 
-\item{calc.rho}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
+\item{fdir}{character, path to directory to save table and/or plots. Default = getwd().}
 
-\item{calc.aic}{T/F, calculate AIC? Default = TRUE.}
+\item{table.opts}{list of options for AIC/rho table:
+\describe{
+  \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = 'model_comparison'.}
+  \item{\code{$sort}}{T/F, sort by AIC? Default = TRUE.}
+  \item{\code{$calc.rho}}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
+  \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
+  \item{\code{$print}}{T/F, print table to console? Default = TRUE.} 
+  \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = TRUE.} 
+}}
 
-\item{fdir}{character, path to directory to save CSV results table. Default = getwd().}
-
-\item{do.print}{T/F, print table to console? Default = TRUE.}
+\item{plot.opts}{list of options for plots:
+\describe{
+  \item{\code{$out.type}}{character, either \code{'pdf'} or \code{'png'} (default = \code{'png'} because I am not sure \code{system('pdftk')} will work across platforms.)}
+  \item{\code{$ci}}{vector of T/F, length = 1 (applied to all models) or number of models}
+  \item{\code{$years}}{vector, which years to plot? Default = all (model and projection years).}
+  \item{\code{$which}}{vector, which plots to make? Default = all. See details.}
+  \item{\code{$relative.to}}{scalar, plot differences relative to selected "base" model.}
+  \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
+  \item{\code{$ages.lab}}{vector, overwrite model age labels.}
+  \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
+  \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = `data$which_F_age` (age of F to use for full total F).}
+  \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
+}}
 }
 \value{
 a list with the following components:
   \describe{
-    \item{\code{daic}}{Vector of delta-AIC by model}
-    \item{\code{aic}}{Vector of AIC by model}
-    \item{\code{rho}}{Matrix of Mohn's rho by model}
-    \item{\code{best}}{Name of best model (lowest AIC)}
-    \item{\code{tab}}{Results table of AIC and Mohn's rho}
+    \item{\code{daic}}{Vector of delta-AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)}
+    \item{\code{aic}}{Vector of AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)}
+    \item{\code{rho}}{Matrix of Mohn's rho by model (if `do.table=T` and `table.opts$calc.rho=T`)}
+    \item{\code{best}}{Name of best model (lowest AIC) (if `do.table=T` and `table.opts$calc.aic=T`)}
+    \item{\code{tab}}{Results table of AIC and Mohn's rho (if `do.table=T`)}
+    \item{\code{g}}{List of ggplot2 objects for later modification (if `do.plot=T` and `plot.opts$return.ggplot=T`)}
   }
 }
 \description{
-After fitting multiple WHAM models, \code{compare_wham_models} produces a table
-of AIC and Mohn's rho to aid model comparison.
+After fitting multiple WHAM (or ASAP) models, \code{compare_wham_models} produces plots
+and a table of AIC and Mohn's rho to aid model comparison.
+}
+\details{
+\code{plot.opts$which} specifies which plots to make:
+  \describe{
+    \item{1}{3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment}
+    \item{2}{CV (coefficient of variation) for SSB, F, and Recruitment}
+    \item{3}{Fleet selectivity (by block, averaged across years)}
+    \item{4}{Index selectivity (by block, averaged across years)}
+    \item{5}{Selectivity tile (fleets + indices, useful for time-varying random effects)}
+    \item{6}{M time series (natural mortality, can specify which age with plot.opts$M.age)}
+    \item{7}{M tile (useful for time-varying random effects)}
+    \item{8}{3-panel of F X\% SPR, SSB at F_X\%SPR, and yield at F_X\%SPR}
+    \item{9}{2-panel of relative status (SSB / SSB at F_X\%SPR and F / F_X\%SPR)}
+    \item{10}{Kobe status (relative SSB vs. relative F)}
+  }
+If \code{plot.opts$return.ggplot = TRUE}, a list `g` is returned holding the above ggplot2 objects for later modification.
+`g[[i]]` holds the plot corresponding to `i` above, e.g. `g[[2]]` is the CV plot.
 }
 \examples{
 \dontrun{
+base <- read_asap3_fit()
 m1 <- fit_wham(input1)
 m2 <- fit_wham(input2)
-mods <- list(m1=m1, m2=m2)
+mods <- list(base=base, m1=m1, m2=m2)
 res <- compare_wham_models(mods)
-res$best
-res$tab
 }
 
 }
 \seealso{
-\code{\link{fit_wham}}
+\code{\link{fit_wham}}, \code{\link{read_asap3_fit}, \code{\link{read_wham_fit}}}
 }

@@ -1,6 +1,6 @@
 #' Read an ASAP3 .dat file into R
 #'
-#' WHAM is built on ASAP \href{http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf}{(Legault and Restrepo 1999)} and this
+#' WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf)) and this
 #' function provides functionality to use a preexisting ASAP3 input data file. The
 #' output of \code{read_asap3_dat} should then be passed to \code{\link{prepare_wham_input}}. 
 #' If you are not familiar with ASAP3 input files, see the ASAP \href{https://github.com/cmlegault/ASAPplots/tree/master/pdf}{documentation} 

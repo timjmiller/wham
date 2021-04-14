@@ -1,15 +1,15 @@
 #' Read WHAM fit
 #'
 #' Gets output from a fit WHAM model for plotting with other models.
-#' Internal function, called within \code{\link{compare_wham_models}.
+#' Internal function, called within \code{\link{compare_wham_models}}.
 #'
 #' @param mod output from \code{\link{fit_wham}}
 #'
 #' @return a named list with the following elements:
 #'   \describe{
-#'     \item{\code{$years}}{numeric vector, model years only, e.g. 1972:2020}
-#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. 1972:2022}
-#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, selAA[[5]] is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
+#'     \item{\code{$years}}{numeric vector, model years only, e.g. `1972:2020`}
+#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. `1972:2022`}
+#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
 #'     \item{\code{$selblock_pointer_fleets}}{matrix, years x fleets, indices of selAA used by each fleet in each year}
 #'     \item{\code{$selblock_pointer_indices}}{matrix, years x indices, indices of selAA used by each index in each year}
 #'     \item{\code{$MAA}}{matrix, years x ages, natural mortality}
@@ -17,7 +17,7 @@
 #'     \item{\code{$log_F}}{matrix, years x 2, log-scale fully-selected F. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_NAA}}{matrix, years x ages, numbers at age}
 #'     \item{\code{$NAA_CV}}{matrix, years x ages, CV of numbers at age}
-#'     \item{\code{$percentSPR}}{scalar, X% SPR used to calculate reference points, default = 40}
+#'     \item{\code{$percentSPR}}{scalar, X\% SPR used to calculate reference points, default = 40}
 #'     \item{\code{$log_Y_FXSPR}}{matrix, years x 2, log-scale yield at FXSPR. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_FXSPR}}{matrix, years x 2, log-scale FXSPR. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_SSB_FXSPR}}{matrix, years x 2, log-scale SSB at FXSPR. 1st col = MLE, 2nd col = SE.}
@@ -26,7 +26,7 @@
 #'
 #' @export
 #'
-#' @seealso \code{\link{fit_wham}}, \code{\link{read_asap3_fit}, \code{\link{compare_wham_models}
+#' @seealso \code{\link{fit_wham}}, \code{\link{read_asap3_fit}}, \code{\link{compare_wham_models}}
 #'
 read_wham_fit <- function(mod){
   # if sdreport succeeded but didn't save full sdreport object in mod, recalculate it here
