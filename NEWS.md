@@ -1,6 +1,17 @@
 wham 1.0.3.9000
 =========================
 
+WHAM description + simulation test paper published: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967)
+
+### Major improvements
+
+* New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to @liz-brooks for contributing `read_asap3_fit`! See `?compare_wham_models` and updated vignettes.
+
+### Minor improvements
+
+* New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
+* Added `proj.opts$percentFXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$percentFXSPR = 75`.
+
 ### Bug fixes
 
 * Broken links in vignettes (thanks to @tcarruth)
@@ -10,15 +21,7 @@ wham 1.0.3.9000
 * Remove error in default projection options (`percentSPR`)
 * Setting up projections with multiple Ecovs (again thanks to @h-du-pontavice, [42a6a4](https://github.com/timjmiller/wham/commit/42a6a4950e85613219525e89c5590c37f3a6369f))
 * Selectivity parameter initial values set to middle of range if unspecified in `prepare_wham_input`
-
-### Minor improvements
-
-* New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
-* Added `proj.opts$percentFXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$percentFXSPR = 75`.
-
-### Major improvements
-
-* New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to @liz-brooks for contributing `read_asap3_fit`! See `?compare_wham_models` and updated vignettes.
+* Fixed `fit_tmb` to make `$final_gradient` reported by wham equivalent to `sdreport()$gradient.fixed`. Issue was that the `model$env$last.par.best` is not updated by the newton steps after optimization so `model$opt$par` was slightly different (10^(-7) or smaller). [e20bd8](https://github.com/timjmiller/wham/commit/e20bd8d01a32b1cbdb826905257555f9a8b55c75)
 
 wham 1.0.3 (2021-02-05)
 =========================

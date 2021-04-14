@@ -457,10 +457,10 @@ plot.rel.compare <- function(x, plot.opts){
 #-------------------------------------------------------------------------------
 # 2D tile plot by age and year (e.g. selAA, MAA)
 plot.tile.compare <- function(x, plot.opts, type="selAA"){
-  n_years = length(x[[1]]$years_full)
   n_ages = length(plot.opts$ages.lab)
 
   if(type=="selAA"){ 
+    n_years = length(x[[1]]$years)
     df <- data.frame(matrix(NA, nrow=0, ncol=5))
     colnames(df) <- c("Year","Age","Selectivity","Fleet","Model")
     for(j in 1:length(x)){
@@ -482,7 +482,7 @@ plot.tile.compare <- function(x, plot.opts, type="selAA"){
       colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Fleet")
       for(i in 1:(n_f+n_i)){
         tmp = as.data.frame(selAA.byfleet[[i]])
-        tmp$Year <- x[[j]]$years_full
+        tmp$Year <- x[[j]]$years
         colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
         tmp$Fleet = names(selAA.byfleet)[i]
         df.selAA <- rbind(df.selAA, tmp)
@@ -501,6 +501,7 @@ plot.tile.compare <- function(x, plot.opts, type="selAA"){
   }
 
   if(type=="MAA"){ 
+    n_years = length(x[[1]]$years_full)
     df <- data.frame(matrix(NA, nrow=0, ncol=4))
     colnames(df) <- c("Year","Age","M","Model")
     for(j in 1:length(x)){
