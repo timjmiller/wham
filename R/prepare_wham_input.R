@@ -808,6 +808,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x <- as.data.frame(data$agg_catch)
   x[data$use_agg_catch==0] <- NA # can't fit to fleets/years with 0 catch
   colnames(x) <- paste0("fleet_", 1:data$n_fleets)
+  obs_levels <- paste0("fleet_", 1:data$n_fleets)
   x$year <- 1:data$n_years_catch
   # tmp <- tidyr::gather(x, fleet, val, -year) # gather no longer supported...
   tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
@@ -821,6 +822,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x <- as.data.frame(data$agg_indices)
   x[data$use_indices==0] <- NA # only include index data to fit in obsvec
   colnames(x) <- paste0("index_", 1:data$n_indices)
+  obs_levels <- c(obs_levels, paste0("index_", 1:data$n_indices))
   x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
   # tmp <- tidyr::gather(x, fleet, val, -year)
   tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
@@ -835,6 +837,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     x <- as.data.frame(data$Ecov_obs)
     x[data$Ecov_use_obs==0] <- NA # only include index data to fit in obsvec
     colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
+    obs_levels <- c(obs_levels, paste0("Ecov_", 1:data$n_Ecov))
     # x$year <- 1:data$n_years_Ecov # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
     x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
     # tmp <- tidyr::gather(x, fleet, val, -year)
@@ -862,6 +865,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # obs <- rbind(obs, x[, obs.colnames])
 
   # order by year, fleet, age, type
+  obs$fleet <- factor(obs$fleet, levels=obs_levels)
   o <- order(as.numeric(obs$year), obs$fleet, as.numeric(obs$age), obs$type)
   obs <- obs[o,]
 
