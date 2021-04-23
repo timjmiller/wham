@@ -136,9 +136,14 @@ prepare_projection = function(model, proj.opts)
 #         capture.output(cat(c("use.last.F","use.avg.F","use.FXSPR","proj.F","proj.catch")[data$proj_F_opt])),"",sep='\n'))      
 #     }
 
+  data$FXSPR_init = c(data$FXSPR_init,rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
+  data$FMSY_init_proj = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
+  data$F_proj_init = rep(0.1, data$n_years_proj)
+  data$F_proj_init[which(data$proj_F_opt == 3)] = data$FXSPR_init[which(data$proj_F_opt == 3)]
+  data$F_proj_init[which(data$proj_F_opt == 6)] = data$FMSY_init[which(data$proj_F_opt == 6)]
   #define age for full F in projections
   FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
-  data$which_F_age = which(FAA_proj == max(FAA_proj))[1]
+  data$which_F_age = c(data$which_F_age, rep(which(FAA_proj == max(FAA_proj))[1], data$n_years_proj))
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)

@@ -539,7 +539,7 @@ without changing ASAP file, specify M$initial_means.")
 
   # data$recruit_model = 2 #random about mean
   data$N1_model = 0 #0: just age-specific numbers at age
-  data$which_F_age = data$n_ages #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  data$which_F_age = rep(data$n_ages,data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
   data$use_steepness = 0 #use regular SR parameterization by default, steepness still can be estimated as derived par.
   data$bias_correct_pe = 1 #bias correct log-normal process errors?
   data$bias_correct_oe = 1 #bias correct log-normal observation errors?
@@ -552,6 +552,7 @@ without changing ASAP file, specify M$initial_means.")
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   data$XSPR_R_opt = 2 # default = use average R estimates
   data$XSPR_R_avg_yrs = 1:data$n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  
   model_years <- asap3$year1 + 1:asap3$n_years - 1
 
   # --------------------------------------------------------------------------------
@@ -918,6 +919,10 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   data$proj_M_opt <- 0
   data$logR_mean <- 0 # only used for SCAA projections
   data$logR_sd <- 0 # only used for SCAA projections
+  data$FXSPR_init = rep(0.1, data$n_years_model + data$n_years_proj)
+  data$FMSY_init = rep(0.1, data$n_years_model + data$n_years_proj)
+  data$F_proj_init = 0
+
   # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
   # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
 

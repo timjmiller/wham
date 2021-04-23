@@ -4,6 +4,7 @@
 # devtools::install_github("timjmiller/wham", ref="devel", dependencies=TRUE)
 
 # devtools::load_all("~/Documents/wham/") # test locally (not yet pushed to github)
+# devtools::load_all("~/work/wham/wham")
 # devtools::install_github("timjmiller/wham", ref="devel", dependencies=TRUE)
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(tidyverse)
@@ -15,6 +16,7 @@ main.dir <- "/home/bstock/Documents/wham/sandbox/wham_testing/runall-20210330"
 wham.dir <- find.package("wham")
 asap.dir <- file.path(wham.dir,"extdata","BASE_3")
 # asap.dir <- "/home/bstock/Documents/wham/inst/extdata/BASE_3"
+# asap.dir <- "~/work/wham/wham/inst/extdata/BASE_3"
 
 if(!dir.exists(main.dir)) dir.create(main.dir)
 write.dir <- file.path(main.dir,"ex8")

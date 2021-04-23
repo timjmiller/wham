@@ -43,7 +43,7 @@
 #'     \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
 #'     \item{\code{$ages.lab}}{vector, overwrite model age labels.}
 #'     \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
-#'     \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = `data$which_F_age` (age of F to use for full total F).}
+#'     \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = `max(data$which_F_age)` (max age of F to use for full total F).}
 #'     \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
 #'   }
 #'
@@ -185,7 +185,7 @@ Returning AIC/rho table for WHAM models only.
       if(is.null(plot.opts$ages.lab)) plot.opts$ages.lab <- paste0(1:dim(x[[1]]$MAA)[2], c(rep("",dim(x[[1]]$MAA)[2]-1),"+"))
     }
     if(is.null(plot.opts$M.age)){
-      if(!no.wham) plot.opts$M.age <- wham.mods[[1]]$env$data$which_F_age
+      if(!no.wham) plot.opts$M.age <- max(wham.mods[[1]]$env$data$which_F_age)
       if(is.null(plot.opts$M.age)) plot.opts$M.age <- dim(x[[1]]$MAA)[2]
     }
 

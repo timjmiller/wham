@@ -100,6 +100,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     btime <- Sys.time()
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
+    mod = check_FXSPR(mod)
+    if(mod$env$data$do_proj==1) mod = check_projF(mod) #projections added.
 
     # retrospective analysis
     if(do.retro){
@@ -136,5 +138,78 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
 
+  return(mod)
+}
+
+
+check_FXSPR = function(mod)
+{
+  percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
+  ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
+  if(length(ind))
+  {
+    for(i in 1:2)
+    {
+      if(mod$env$data$n_years_proj) years = mod$years_full
+      else years = mod$years
+      print(years)
+      print(ind)
+      redo_SPR_years = years[ind]
+      print(redo_SPR_years)
+      print(paste(redo_SPR_years, collapse = ","))
+      warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
+      mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*0.5
+      mod$fn(mod$opt$par)
+      mod$rep = mod$report(mod$opt$par)
+      percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
+      ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
+      if(!length(ind)) break
+    }
+  }
+  if(length(ind)) warning(paste0("Still bad initial values and estimates of FXSPR for years ", paste(years[ind], collapse = ","), "."))
+  return(mod)     
+}
+
+check_projF = function(mod)
+{
+  proj_F_opt = mod$env$data$proj_F_opt
+  ind = which(proj_F_opt == 3) #FXSPR
+  if(length(ind))
+  {
+    y = mod$env$data$n_years_model + ind
+    bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
+    if(length(bad))
+    {
+      redo_SPR_years = mod$years_full[y[bad]]
+      warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
+      mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
+      mod$fn(mod$opt$par)
+      mod$rep = mod$report(mod$opt$par)
+      bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
+    }
+  }
+  y_bad_FXSPR = mod$years_full[y[bad]]
+  if(length(bad)) warning(paste0("Still bad initial values and estimates of FXSPR used to define F in projection years ", paste(y_bad_FXSPR, collapse = ","), "."))
+  ind = which(proj_F_opt == 5) #Find F from catch
+  if(length(ind))
+  {
+    y = mod$env$data$n_years_model + ind
+    bad = which(round(mod$env$data$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
+    if(length(bad))
+    {
+      for(i in 1:2)
+      {
+        redo_Catch_years = mod$years_full[y[bad]]
+        warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
+        mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
+        mod$fn(mod$opt$par)
+        mod$rep = mod$report(mod$opt$par)
+        bad = which(round(mod$env$data$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
+        if(!length(bad)) break
+      }
+    }
+  }
+  y_bad_Fcatch = mod$years_full[y[bad]]
+  if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), , "."))
   return(mod)
 }

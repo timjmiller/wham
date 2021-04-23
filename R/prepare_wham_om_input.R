@@ -485,7 +485,7 @@ without changing ASAP file, specify M$initial_means.")
 
   # data$recruit_model = 2 #random about mean
   data$N1_model = 0 #0: just age-specific numbers at age
-  data$which_F_age = data$n_ages #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  data$which_F_age = rep(data$n_ages,data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
   data$use_steepness = basic_info$use_steepness #0: regular SR parameterization by default, steepness still can be estimated as derived par.
   data$bias_correct_pe = 0 #bias correct log-normal process errors?
   data$bias_correct_oe = 0 #bias correct log-normal observation errors?

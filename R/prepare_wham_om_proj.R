@@ -123,7 +123,7 @@ prepare_wham_om_proj = function(om_input, proj.opts)
 
   #define age for full F in projections
   FAA_proj = colMeans(rbind(rep$FAA_tot[avg.yrs.ind,]))
-  data$which_F_age = which(FAA_proj == max(FAA_proj))[1]
+  data$which_F_age = c(data$which_F_age, rep(which(FAA_proj == max(FAA_proj))[1], data$n_years_proj))
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)

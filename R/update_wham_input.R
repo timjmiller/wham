@@ -353,7 +353,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   #par$log_F1 = rep(-2, data$n_fleets)
   F = matrix(NA, nym,data$n_fleets)
   par$F_devs = matrix(0, nym-1, data$n_fleets)
-  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[1:nym,i,data$which_F_age]))
+  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[cbind(1:nym,i,data$which_F_age[1:nym])]))
    
   #par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
   #if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))
