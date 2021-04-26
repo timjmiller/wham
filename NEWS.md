@@ -11,6 +11,7 @@ WHAM description + simulation test paper published: [https://doi.org/10.1016/j.f
 
 * New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
 * Added `proj.opts$percentFXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$percentFXSPR = 75`.
+* Added `proj.opts$useFMSY` and `proj.opts$percentFMSY` options, to project population and catches at (a percentage of) F_MSY.
 
 ### Bug fixes
 
@@ -22,6 +23,8 @@ WHAM description + simulation test paper published: [https://doi.org/10.1016/j.f
 * Setting up projections with multiple Ecovs (again thanks to @h-du-pontavice, [42a6a4](https://github.com/timjmiller/wham/commit/42a6a4950e85613219525e89c5590c37f3a6369f))
 * Selectivity parameter initial values set to middle of range if unspecified in `prepare_wham_input`
 * Fixed `fit_tmb` to make `$final_gradient` reported by wham equivalent to `sdreport()$gradient.fixed`. Issue was that the `model$env$last.par.best` is not updated by the newton steps after optimization so `model$opt$par` was slightly different (10^(-7) or smaller). [e20bd8](https://github.com/timjmiller/wham/commit/e20bd8d01a32b1cbdb826905257555f9a8b55c75)
+* Fixed default determination of age corresponding to fully selected (total) fishing mortality. Now which_F_age is a vector of annual values (including projection years) and the values are reassigned after fitting before reporting.
+* Added check for F_XSPR to verify percent of SPR0 is correct and, in projections, catch at F from catch is verified. Initial values for these algorithms can be specified by the user. 
 
 wham 1.0.3 (2021-02-05)
 =========================

@@ -37,7 +37,8 @@
 #'   \itemize{
 #'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
 #'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
-#'     \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+#'     \item \code{$use.FXSPR} (T/F), calculate and use F at X% SPR for projections.
+#'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
@@ -48,6 +49,7 @@
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if proj.opts$use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
+#'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
@@ -152,11 +154,7 @@ check_FXSPR = function(mod)
     {
       if(mod$env$data$n_years_proj) years = mod$years_full
       else years = mod$years
-      print(years)
-      print(ind)
       redo_SPR_years = years[ind]
-      print(redo_SPR_years)
-      print(paste(redo_SPR_years, collapse = ","))
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*0.5
       mod$fn(mod$opt$par)
