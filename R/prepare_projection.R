@@ -75,7 +75,7 @@ prepare_projection = function(model, proj.opts)
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
-  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
+  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, proj.opts$use.FMSY, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
     "You have specified these in 'proj.opts':",
@@ -151,7 +151,7 @@ prepare_projection = function(model, proj.opts)
 #     }
 
   data$FXSPR_init = c(data$FXSPR_init,rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
-  data$FMSY_init_proj = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
+  data$FMSY_init = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
   data$F_proj_init = rep(0.1, data$n_years_proj)
   data$F_proj_init[which(data$proj_F_opt == 3)] = data$FXSPR_init[which(data$proj_F_opt == 3)]
   data$F_proj_init[which(data$proj_F_opt == 6)] = data$FMSY_init[which(data$proj_F_opt == 6)]

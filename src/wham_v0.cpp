@@ -1012,7 +1012,7 @@ Type objective_function<Type>::operator() ()
         {
           pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
           t_pred_paa(a) = pred_index_paa(y,i,a);
-          t_paa(a) = index_paa(i,y,a);
+          if(y < n_years_model) t_paa(a) = index_paa(i,y,a);
           // t_keep(a) = keep(keep_Ipaa(i,y,a));
         }
         if(y < n_years_model) if(use_index_paa(y,i) > 0) {
@@ -1100,11 +1100,11 @@ Type objective_function<Type>::operator() ()
     int n = 10;
     vector<Type> log_FMSY(n_years_model + n_years_proj), log_FMSY_i(1);
     matrix<Type> log_FMSY_iter(n_years_model + n_years_proj,n);
-    log_FMSY_iter.col(0) = log(FMSY_init); //starting value
     vector<Type> log_YPR_MSY(n_years_model + n_years_proj), log_SPR_MSY(n_years_model + n_years_proj), log_R_MSY(n_years_model + n_years_proj);
     Type SR_a, SR_b;
     for(int y = 0; y < n_years_model + n_years_proj; y++)
     {
+      log_FMSY_iter(y,0) = log(FMSY_init(y)); //starting value
       for(int a = 0; a < n_ages; a++)
       {
         M(a) = MAA(y,a);

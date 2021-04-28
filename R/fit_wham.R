@@ -175,7 +175,7 @@ check_projF = function(mod)
   if(length(ind))
   {
     y = mod$env$data$n_years_model + ind
-    bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
+    bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4))
     if(length(bad))
     {
       redo_SPR_years = mod$years_full[y[bad]]
@@ -185,29 +185,32 @@ check_projF = function(mod)
       mod$rep = mod$report(mod$opt$par)
       bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
     }
+    y_bad_FXSPR = mod$years_full[y[bad]]
+    if(length(bad)) warning(paste0("Still bad initial values and estimates of FXSPR used to define F in projection years ", paste(y_bad_FXSPR, collapse = ","), "."))
   }
-  y_bad_FXSPR = mod$years_full[y[bad]]
-  if(length(bad)) warning(paste0("Still bad initial values and estimates of FXSPR used to define F in projection years ", paste(y_bad_FXSPR, collapse = ","), "."))
   ind = which(proj_F_opt == 5) #Find F from catch
   if(length(ind))
   {
     y = mod$env$data$n_years_model + ind
-    bad = which(round(mod$env$data$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
+    print(y)
+    print(dim(mod$rep$pred_catch))
+    bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
     if(length(bad))
     {
       for(i in 1:2)
       {
         redo_Catch_years = mod$years_full[y[bad]]
+        print(redo_Catch_years)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
         mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
         mod$fn(mod$opt$par)
         mod$rep = mod$report(mod$opt$par)
-        bad = which(round(mod$env$data$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
+        bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
         if(!length(bad)) break
       }
     }
+    y_bad_Fcatch = mod$years_full[y[bad]]
+    if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), , "."))
   }
-  y_bad_Fcatch = mod$years_full[y[bad]]
-  if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), , "."))
   return(mod)
 }

@@ -31,7 +31,7 @@ Here we assume you already have `wham` installed. If not, see the [Introduction]
 
 In example 3, we demonstrate how to project/forecast WHAM models using the `project_wham()` function options for handling
 
-- fishing mortality / catch (use last F, use average F, use $F_{SPR}$, specify F, specify catch) and the
+- fishing mortality / catch (use last F, use average F, use $F_{SPR}$, use $F_{MSY}$, specify F, specify catch) and the
 
 - environmental covariate (continue ecov process, use last ecov, use average ecov, specify ecov).
 
@@ -66,8 +66,8 @@ setwd(write.dir)
 We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
-file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
+file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=TRUE)
 ```
 
 Confirm you are in the correct directory and it has the required data files:
@@ -159,9 +159,8 @@ Projection options are specifed using the `proj.opts` input to `project_wham()`.
 mod_proj <- list()
 
 # default settings spelled out
-mod_proj[[1]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
-              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+mod_proj[[1]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,                                   use.FXSPR=FALSE, use.FMSY=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+                        cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL,                                cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100, percentFMSY=100),                                   save.sdrep=FALSE)
 
 # equivalent
 # mod_proj[[1]] <- project_wham(mod)
@@ -183,14 +182,14 @@ Note that for all options, **if the original model fit the ecov in years beyond 
 # 5 years, use average ecov from 1992-1996
 mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=1992:1996, proj.ecov=NULL))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=1992:1996, proj.ecov=NULL),                         save.sdrep=FALSE)
 # equivalent
 # mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, avg.ecov.yrs=1992:1996))
 
 # 5 years, use ecov from last year (2011)
 mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=TRUE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=FALSE, use.last.ecov=TRUE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.ecov=TRUE))
 
@@ -200,7 +199,9 @@ mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 #       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.
 mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL,
+              proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)),
+              save.sdrep=FALSE)
 # equivalent
 # mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))
 
@@ -210,58 +211,67 @@ mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 #       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.
 mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL,
+              proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)),                         
+              save.sdrep=FALSE)
 # equivalent
 # mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))
 ```
 
-WHAM implements five options for handling fishing mortality in the projections. Exactly one of these must be specified in `proj.opts`:
+WHAM implements six options for handling fishing mortality in the projections. Exactly one of these must be specified in `proj.opts`:
 
 - (Default) Use last year F. Set `use.last.F = TRUE`. WHAM will use F in the terminal model year for projections.
 
 - Use average F. Set `use.avg.F = TRUE`. WHAM will use F averaged over `proj.opts$avg.yrs` for projections (as is done for M-, maturity-, and weight-at-age).
 
-- Use F at X% SPR. Set `use.FXSPR = TRUE`. WHAM will calculate and apply F at X% SPR, where X was set by `input$data$percentSPR` (default = 40%).
+- Use F at X% SPR. Set `use.FXSPR = TRUE`. WHAM will calculate and apply F at X% SPR, where X was set by `input$data$percentSPR` (default = 40%). There is also a percentFXSPR 
 
 - Specify F. Provide `proj.F`, an F vector with length = `proj.opts$n.yrs`.
 
 - Specify catch. Provide `proj.catch`, a vector of aggregate catch with length = `proj.opts$n.yrs`. WHAM will calculate F across fleets to apply the specified catch.
 
+- Use F that provides MSY. Set `use.FMSY = TRUE`. WHAM will calculate and apply F at MSY. There is a check to make sure that a stock-recruit model is assumed and, if not, F at X% SPR is used instead.
+
 ```{r eval=FALSE}
 # 5 years, specify catch
 mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=c(10, 2000, 1000, 3000, 20), avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.catch=c(10, 2000, 1000, 3000, 20)))
 
 # 5 years, specify F
 mod_proj[[7]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=c(0.001, 1, 0.5, .1, .2), proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[7]] <- project_wham(mod, proj.opts=list(n.yrs=5, proj.F=c(0.001, 1, 0.5, .1, .2)))
 
 # 5 years, use FXSPR
 mod_proj[[8]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FXSPR=TRUE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[8]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.FXSPR=TRUE))
 
 # 3 years, use avg F (avg.yrs defaults to last 5 years, 2007-2011)
 mod_proj[[9]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=FALSE, use.avg.F=TRUE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[9]] <- project_wham(mod, proj.opts=list(use.avg.F=TRUE))
 
 # 10 years, use avg F 1992-1996
 mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, use.avg.F=TRUE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=1992:1996,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 # equivalent
 # mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.avg.F=TRUE, avg.yrs=1992:1996))
+
+# 5 years, use $F_{MSY}$
+mod_proj[[11]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
+              use.FMSY=TRUE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL),                               save.sdrep=FALSE)
 ```
 
 Save projected models
@@ -272,7 +282,7 @@ saveRDS(mod_proj, file="m5_proj.rds")
 
 ## 5. Compare projections
 
-Projecting the model differently should not have changed the marginal negative log-likelihood! Confirm that the NLL is the same for all projected models (within `1e-06`).
+The models with projections are evaluated to obtain optimized random effects but they do not need to be refitted with projections added because the observations and marginal likelihood do not change. However, we can confirm that the NLL is the same for all projected models (within some tolerance).
 
 ```{r include=FALSE}
 data(vign3_nll_proj)
@@ -288,7 +298,7 @@ vign3_nll_orig
 ```
 
 ```{r eval=FALSE}
-nll_proj <-  sapply(mod_proj, function(x) x$opt$obj) # projected models NLL
+nll_proj <-  sapply(mod_proj, function(x) x$fn(x$opt$obj)) # projected models NLL
 round(nll_proj - mod$opt$obj, 6) # difference between original and projected models' NLL
 ```
 
@@ -300,7 +310,7 @@ Now let's plot results from each of the projected models.
 
 ```{r eval=FALSE}
 for(m in 1:length(mod_proj)){
-  plot_wham_output(mod_proj[[m]], dir.main=file.path(getwd(),paste0("proj_",m)), out.type='html')
+  plot_wham_output(mod_proj[[m]], dir.main=file.path(write.dir,paste0("proj_",m)), out.type='html')
 }
 ```
 
@@ -308,14 +318,14 @@ To more easily compare the same plots for each projection, we can copy the plots
 
 ```{r eval=FALSE}
 plots <- c("Ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_status")
-dirs <- file.path(getwd(),plots)
+dirs <- file.path(write.dir,plots)
 lapply(as.list(dirs), FUN=dir.create)
 for(m in 1:length(mod_proj)){
   for(i in 1:(length(plots)-1)){
-     file.copy(from=file.path(getwd(),paste0("proj_",m),"plots_png","results",paste0(plots[i],".png")),
+     file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","results",paste0(plots[i],".png")),
                to=file.path(dirs[i],paste0(plots[i],"_proj_",m,".png")))
   }
-  file.copy(from=file.path(getwd(),paste0("proj_",m),"plots_png","ref_points","Kobe_status.png"),
+  file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","ref_points","Kobe_status.png"),
             to=file.path(dirs[i+1],paste0(plots[i+1],"_proj_",m,".png")))
 }
 ```

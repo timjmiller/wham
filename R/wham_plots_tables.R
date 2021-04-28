@@ -61,6 +61,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   years <- mod$years
   if("logcatch" %in% mod$osa$type){
     dat <- subset(mod$osa, type=="logcatch")
+    dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
@@ -115,6 +116,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
   if("logindex" %in% mod$osa$type){
     dat <- subset(mod$osa, type=="logindex")
+    dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
@@ -173,6 +175,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
   if(!all(mod$env$data$Ecov_model == 0)){
     dat <- subset(mod$osa, type=="Ecov")
+    dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){

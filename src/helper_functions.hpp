@@ -904,11 +904,10 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, vector<int> which_F
   matrix<Type> ssbWAA = extract_matrix_array3(waa, waa_pointer_ssb-1);
 //  log_FXSPR_iter.fill(log(0.2)); //starting value
 //  res.col(5).fill(log(0.2));
-  log_FXSPR_iter.col(0) = log(F_init);
-  res.col(5) = log_FXSPR_iter.col(0);
   vector<Type> log_YPR_FXSPR(ny), sel(na), waacatch(na), waassb(na), mat(na), M(na);
   for(int y = 0; y < ny; y++)
   {
+    log_FXSPR_iter(y,0) = res(y,5) = log(F_init(y));
     M = MAA.row(y);
     waassb = ssbWAA.row(y);
     waacatch = catchWAA.row(y);
@@ -1311,13 +1310,11 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
   matrix<Type> FAA_proj(n_fleets, n_ages);
   vector<Type> FAA_tot_proj(n_ages);
   FAA_tot_proj.setZero();
+  FAA_proj.setZero();
   if(proj_F_opt_y == 1){ // last year F (default)
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA_proj(f,a) = FAA(n_years_model-1,f,a);
   }
-  if(proj_F_opt_y==2)
-  {
-    //array<Type> FAA_toavg(n_fleets,n_toavg, n_ages);
-    FAA_proj.setZero();
+  else { //proj_F_opt_y>1
     //option 1: average F is by fleet and Ftot is sum of fleet averages
     //when there is more than 1 fleet, the sum of predicted catch across fleets will not generally equal the total catch using FAA_tot and waa_totcatch.
     for(int f = 0; f < n_fleets; f++) 
@@ -1331,10 +1328,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     //proj_F_opt_y == 2, average F
     if(proj_F_opt_y == 2){
       //already defined
-      //for(int f = 0; f < n_fleets; f++) FAA_proj = FAA_toavg.colwise().mean();
     }
-  }
-  if(proj_F_opt_y > 2){
     //get selectivity using average over avg.yrs
     matrix<Type> sel_proj(n_fleets,n_ages);
     vector<Type> sel_tot_proj(n_ages);
