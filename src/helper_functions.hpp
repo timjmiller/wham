@@ -890,8 +890,8 @@ struct spr_F {
 };
 
 template <class Type>
-matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
-  matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0)
+matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, vector<int> which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
+  matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<Type> F_init)
 {
   int n = 10;
   int ny = MAA.rows();
@@ -902,16 +902,17 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, ar
   matrix<Type> log_FXSPR_iter(ny,n);
   matrix<Type> catchWAA = extract_matrix_array3(waa, waa_pointer_tot_catch-1);
   matrix<Type> ssbWAA = extract_matrix_array3(waa, waa_pointer_ssb-1);
-  log_FXSPR_iter.fill(log(0.2)); //starting value
-  res.col(5).fill(log(0.2));
+//  log_FXSPR_iter.fill(log(0.2)); //starting value
+//  res.col(5).fill(log(0.2));
   vector<Type> log_YPR_FXSPR(ny), sel(na), waacatch(na), waassb(na), mat(na), M(na);
   for(int y = 0; y < ny; y++)
   {
+    log_FXSPR_iter(y,0) = res(y,5) = log(F_init(y));
     M = MAA.row(y);
     waassb = ssbWAA.row(y);
     waacatch = catchWAA.row(y);
     mat = mature.row(y);
-    sel = FAA.row(y)/FAA(y,which_F_age-1);
+    sel = FAA.row(y)/FAA(y,which_F_age(y)-1);
     spr_F<Type> sprF(M, sel, mat, waassb, fracyr_SSB(y));
     //log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y)));
     for (int i=0; i<n-1; i++)
@@ -1004,12 +1005,12 @@ struct log_catch_F {
 };
 
 template <class Type>
-Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch)
+Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch, Type F_init)
 {
   int n = 10;
   vector<Type> log_F_i(1);
   vector<Type> log_F_iter(n);
-  log_F_iter.fill(log(0.2)); //starting value
+  log_F_iter.fill(log(F_init)); //starting value
   catch_F<Type> catchF(M, sel, waacatch, NAA);
   for (int i=0; i<n-1; i++)
   {
@@ -1022,12 +1023,12 @@ Type get_F_from_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type>
 }
 
 template <class Type>
-Type get_F_from_log_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch)
+Type get_F_from_log_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<Type> sel, vector<Type> waacatch, Type F_init)
 {
   int n = 10;
   vector<Type> log_F_i(1);
   vector<Type> log_F_iter(n);
-  log_F_iter.fill(log(0.2)); //starting value
+  log_F_iter.fill(log(F_init)); //starting value
   log_catch_F<Type> logcatchF(M, sel, waacatch, NAA);
   for (int i=0; i<n-1; i++)
   {
@@ -1041,12 +1042,12 @@ Type get_F_from_log_Catch(Type Catch, vector<Type> NAA, vector<Type> M, vector<T
 
 template <class Type>
 Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waassb,
-  vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0)
+  vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0, Type F_init)
 {
   int n = 10;
   vector<Type> log_FXSPR_i(1);
   vector<Type> log_FXSPR_iter(n);
-  log_FXSPR_iter.fill(log(0.2)); //starting value
+  log_FXSPR_iter.fill(log(F_init)); //starting value
   spr_F<Type> sprF(M, sel, mat, waassb, fracyr_SSB);
   for (int i=0; i<n-1; i++)
   {
@@ -1272,15 +1273,16 @@ Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> m
 template <class Type>
 matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> NAA, matrix<Type> MAA, matrix<Type> mature, 
   vector<Type> waacatch, vector<Type> waassb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
-  int n_years_model, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR){
+  int n_years_model, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, Type F_init, 
+  vector<Type> log_a, vector<Type> log_b, int recruit_model, Type percentFMSY){
     /* 
      get F to project for next time step
               y:  year of projection (>n_years_model)
-     proj_F_opt:  for each year, how to specify F for projection (1 to 5)
+     proj_F_opt:  for each year, how to specify F for projection (1 to 6)
         FAA_tot:  FAA_tot matrix from main code.
             NAA:  NAA matrix from main code
             MAA:  MAA matrix from main code.
-            mature:  maturity matrix from main code.
+         mature:  maturity matrix from main code.
        waacatch:  weight at age in catch to use for year y (use function get_waa_y defined above)
          waassb:  weight at age for SSB to use in year y (use function get_waa_y defined above)
      fracyr_SSB:  vector of yearly fractions of the year when spawning occurs
@@ -1289,8 +1291,13 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
   n_years_model:  number of years before projection begins
     which_F_age:  define which age has max F
      percentSPR:  percentage (0-100) of unfished spawning potential to determine F_percentSPR
-     proj_Fcatch: vector (n_years_proj) of user specified Fishing mortality rates to project
-     percentFXSPR:  percentage (0-100) of F_percentSPR to use in catch, e.g. GOM cod uses F = 75% F_40%SPR
+    proj_Fcatch:  vector (n_years_proj) of user specified Fishing mortality rates to project
+   percentFXSPR:  percentage (0-100) of F_percentSPR to use in catch, e.g. GOM cod uses F = 75% F_40%SPR
+         F_init:  initial value to use for FXSPR or FMSY newton method
+          log_a:  annual log(a) for stock-recruit relationship
+          log_b:  annual log(b) for stock-recruit relationship
+  recruit_model:  integer for which type of recruit model is assumed (= 3 or 4 for using Fmsy)
+    percentFMSY:  percentage (0-100) of FMSY to use in catch.
     */
     //if(y > n_years_model-1){
     //for(int a = 0; a < n_ages; a++) waacatch(a) = waa(waa_pointer_totcatch-1, y, a);
@@ -1303,13 +1310,11 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
   matrix<Type> FAA_proj(n_fleets, n_ages);
   vector<Type> FAA_tot_proj(n_ages);
   FAA_tot_proj.setZero();
+  FAA_proj.setZero();
   if(proj_F_opt_y == 1){ // last year F (default)
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA_proj(f,a) = FAA(n_years_model-1,f,a);
   }
-  if(proj_F_opt_y>1)
-  {
-    //array<Type> FAA_toavg(n_fleets,n_toavg, n_ages);
-    FAA_proj.setZero();
+  else { //proj_F_opt_y>1
     //option 1: average F is by fleet and Ftot is sum of fleet averages
     //when there is more than 1 fleet, the sum of predicted catch across fleets will not generally equal the total catch using FAA_tot and waa_totcatch.
     for(int f = 0; f < n_fleets; f++) 
@@ -1319,29 +1324,29 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       }
       FAA_proj.row(f) /= Type(n_toavg);
     }
+      
+    //proj_F_opt_y == 2, average F
+    if(proj_F_opt_y == 2){
+      //already defined
+    }
     //get selectivity using average over avg.yrs
     matrix<Type> sel_proj(n_fleets,n_ages);
     vector<Type> sel_tot_proj(n_ages);
     vector<Type> FAA_tot_proj = FAA_proj.colwise().sum();
-    for(int a = 0; a < n_ages; a++) sel_tot_proj(a) = FAA_tot_proj(a)/FAA_tot_proj(which_F_age-1);
+    for(int a = 0; a < n_ages; a++) sel_tot_proj(a) = FAA_tot_proj(a)/FAA_tot_proj(which_F_age(y)-1);
     //selectivity at age and fleet as a proportion of full total F (sum across fleets and ages = 1).
-    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) sel_proj(f,a) = FAA_proj(f,a)/FAA_tot_proj(which_F_age-1);
+    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) sel_proj(f,a) = FAA_proj(f,a)/FAA_tot_proj(which_F_age(y)-1);
     vector<Type> M = MAA.row(y);
     vector<Type> NAA_y = NAA.row(y);
     vector<Type> mat = mature.row(y);
-    
-    //proj_F_opt_y == 2, average F
-    if(proj_F_opt_y == 2){
-      //already defined
-      //for(int f = 0; f < n_fleets; f++) FAA_proj = FAA_toavg.colwise().mean();
-    }
-
+    Type fracyr_SSB_y = fracyr_SSB(y);
+    Type log_SPR0_y = log_SPR0(y);
+    Type log_a_y = log_a(y);
+    Type log_b_y = log_b(y);
     if(proj_F_opt_y == 3){ // F at X% SPR
-      Type fracyr_SSB_y = fracyr_SSB(y);
-      Type log_SPR0_y = log_SPR0(y);
       //FAA_tot.row(y) = get_FXSPR(M, sel_proj, waacatch, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_proj;
-      FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y) * sel_tot_proj;
-      FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj * 0.01*percentFXSPR;
+      FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init) * sel_tot_proj * 0.01*percentFXSPR;
+      //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
     }
     if(proj_F_opt_y == 4){ // user-specified F
       if(proj_Fcatch(y-n_years_model) < 1e-10){ // if F = 0, sel_proj is NaN
@@ -1349,7 +1354,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       } else {
         //FAA_tot.row(y) = Type(proj_Fcatch(y-n_years_model)) * sel_proj;
         FAA_tot_proj = Type(proj_Fcatch(y-n_years_model)) * sel_tot_proj;
-        FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+        //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
       }
     }
     if(proj_F_opt_y == 5){ // calculate F from user-specified catch
@@ -1359,10 +1364,14 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       } else {
         //FAA_tot.row(y) = get_F_from_Catch(thecatch, NAA_y, M, sel_proj, waacatch) * sel_proj;
         //FAA_tot_proj = get_F_from_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
-        FAA_tot_proj = get_F_from_log_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch) * sel_tot_proj;
-        FAA_proj = FAA_tot_proj(which_F_age-1) * sel_proj;
+        FAA_tot_proj = get_F_from_log_Catch(thecatch, NAA_y, M, sel_tot_proj, waacatch, F_init) * sel_tot_proj;
+        //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
       }
     }
+    if(proj_F_opt_y == 6){ //Fmsy
+      FAA_tot_proj = get_FMSY(log_a_y, log_b_y, M, sel_tot_proj, waacatch, waassb, mat, fracyr_SSB_y, log_SPR0_y, recruit_model, F_init) * sel_tot_proj * 0.01* percentFMSY;
+    }
+    FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
   }
   return(FAA_proj);
 }
@@ -1373,7 +1382,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, matrix<Type> Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   int waa_pointer_totcatch, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
-  int n_years_model, int n_fleets, int which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR){
+  int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY){
 
   // Population model (get NAA, numbers-at-age, for all years)
   int ny = log_SR_a.size();
@@ -1413,7 +1422,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         vector<Type> waacatch = get_waa_y(waa, y, n_ages, waa_pointer_totcatch);
         vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
-         which_F_age, percentSPR, proj_Fcatch, percentFXSPR);
+         which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), log_SR_a, log_SR_b, recruit_model, percentFMSY);
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);

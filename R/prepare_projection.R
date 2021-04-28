@@ -8,7 +8,8 @@
 #'   \itemize{
 #'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
 #'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
-#'     \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+#'     \item \code{$use.FXSPR} (T/F), calculate and use F at X% SPR for projections.
+#'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
@@ -19,16 +20,18 @@
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
+#'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
 #'   \describe{
 #'     \item{\code{data}}{Named list of data, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'     \item{\code{par}}{Named list of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-#'     \item{\code{map}}{not sure what this does, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
+#'     \item{\code{map}}{Named list of factors that determine which parameters are estimated, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'     \item{\code{random}}{Character vector of parameters to treat as random effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-#'     \item{\code{years}}{Numeric vector of years to fit WHAM model (specified in ASAP3 .dat file)}
-#'     \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group (specified in ASAP3 .dat file)}
+#'     \item{\code{years}}{Numeric vector of representing (non-projection) model years of WHAM model}
+#'     \item{\code{years_full}}{Numeric vector of representing all model and projection years of WHAM model}
+#'     \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group}
 #'     \item{\code{model_name}}{Character, name of stock/model (specified in call to \code{prepare_wham_input})}
 #'   }
 #'
@@ -36,20 +39,22 @@
 #'
 prepare_projection = function(model, proj.opts)
 {
-  if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100)
+  if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                       percentFMSY=100)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
   if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  
-  if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
-    proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
+  if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
+    proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
   if(all(is.null(proj.opts$cont.ecov), is.null(proj.opts$use.last.ecov), is.null(proj.opts$avg.ecov.yrs), is.null(proj.opts$proj.ecov))){
     proj.opts$cont.ecov=TRUE; proj.opts$use.last.ecov=FALSE; proj.opts$avg.ecov.yrs=NULL; proj.opts$proj.ecov=NULL
   }
   if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE
   if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
+  if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY = 100
 
   input1 <- model$input
   data <- input1$data
@@ -70,13 +75,14 @@ prepare_projection = function(model, proj.opts)
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
-  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
+  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, proj.opts$use.FMSY, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
     "You have specified these in 'proj.opts':",
     capture.output(cat("  $use.last.F = ",proj.opts$use.last.F)),
     capture.output(cat("  $use.avg.F = ",proj.opts$use.avg.F)),
     capture.output(cat("  $use.FXSPR = ",proj.opts$use.FXSPR)),
+    capture.output(cat("  $use.FMSY = ",proj.opts$use.FMSY)),
     capture.output(cat("  $proj.F = ",proj.opts$proj.F)),
     capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
@@ -119,6 +125,13 @@ prepare_projection = function(model, proj.opts)
   if(!is.null(proj.opts$use.last.F)) if(proj.opts$use.last.F) data$proj_F_opt[] = 1
   if(!is.null(proj.opts$use.avg.F)) if(proj.opts$use.avg.F) data$proj_F_opt[] = 2
   if(!is.null(proj.opts$use.FXSPR)) if(proj.opts$use.FXSPR) data$proj_F_opt[] = 3
+  if(!is.null(proj.opts$use.FMSY)) if(proj.opts$use.FMSY){
+    if(data$recruit_model > 2) data$proj_F_opt[] = 6
+    else{
+      warning("Trying to use FMSY in projections but there is no stock-recruit model assumed. Will just use FXSPR in this case")
+      data$proj_F_opt[] = 3
+    }
+  }
   if(!is.null(proj.opts$proj.F)){
     data$proj_F_opt[] = 4
     data$proj_Fcatch = proj.opts$proj.F
@@ -129,6 +142,7 @@ prepare_projection = function(model, proj.opts)
   }
   if(data$proj_F_opt[1] %in% 1:3) data$proj_Fcatch = rep(0, proj.opts$n.yrs)
   if(any(data$proj_F_opt == 3)) data$percentFXSPR = proj.opts$percentFXSPR
+  if(any(data$proj_F_opt == 6)) data$percentFMSY = proj.opts$percentFMSY
 #     else {
 # stop(paste("","** Error setting up projections: **",
 #         "percentFXSPR is not used if FXSPR is not used to calculate catch in projections.",
@@ -136,9 +150,14 @@ prepare_projection = function(model, proj.opts)
 #         capture.output(cat(c("use.last.F","use.avg.F","use.FXSPR","proj.F","proj.catch")[data$proj_F_opt])),"",sep='\n'))      
 #     }
 
+  data$FXSPR_init = c(data$FXSPR_init,rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
+  data$FMSY_init = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
+  data$F_proj_init = rep(0.1, data$n_years_proj)
+  data$F_proj_init[which(data$proj_F_opt == 3)] = data$FXSPR_init[which(data$proj_F_opt == 3)]
+  data$F_proj_init[which(data$proj_F_opt == 6)] = data$FMSY_init[which(data$proj_F_opt == 6)]
   #define age for full F in projections
   FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
-  data$which_F_age = which(FAA_proj == max(FAA_proj))[1]
+  data$which_F_age = c(data$which_F_age, rep(which(FAA_proj == max(FAA_proj))[1], data$n_years_proj))
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)

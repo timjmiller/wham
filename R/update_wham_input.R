@@ -136,6 +136,8 @@ update_wham_input <- function(simres, model, n_years_add){
   data$simulate_data = simres$simulate_data
   data$simulate_period = simres$simulate_period
   data$percentSPR = simres$percentSPR
+  data$percentFXSPR = simres$percentFXSPR 
+  data$percentFMSY = simres$percentFMSY
   data$XSPR_R_opt = simres$XSPR_R_opt
   data$XSPR_R_avg_yrs = simres$XSPR_R_avg_yrs
   
@@ -340,6 +342,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   data$proj_F_opt <- 0
   data$proj_Fcatch <- 0
   data$proj_M_opt <- 0
+  data$logR_mean <- 0 # only used for SCAA projections
+  data$logR_sd <- 0 # only used for SCAA projections
+  data$FXSPR_init = rep(0.1, data$n_years_model + data$n_years_proj)
+  data$FMSY_init = rep(0.1, data$n_years_model + data$n_years_proj)
+  data$F_proj_init = 0
 
   # data$obsvec[data$keep_I[data$use_indices==1]+1] - log(data$agg_indices[data$use_indices==1])
   # data$obsvec[data$keep_E[data$Ecov_use_obs==1]+1] - data$Ecov_obs[data$Ecov_use_obs==1]
@@ -353,7 +360,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   #par$log_F1 = rep(-2, data$n_fleets)
   F = matrix(NA, nym,data$n_fleets)
   par$F_devs = matrix(0, nym-1, data$n_fleets)
-  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[1:nym,i,data$which_F_age]))
+  for(i in 1:data$n_fleets) par$F_devs[,i] = diff(log(simres$FAA[cbind(1:nym,i,data$which_F_age[1:nym])]))
    
   #par$F_devs = matrix(0, data$n_years_model-1, data$n_fleets)
   #if(data$N1_model == 1) par$log_N1_pars = c(10,log(0.1))

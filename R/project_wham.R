@@ -43,6 +43,7 @@
 #'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
 #'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
 #'     \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+#'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
@@ -53,6 +54,7 @@
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for to use in projections. Default = all model years.
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
+#'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
@@ -90,18 +92,37 @@
 #' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
 #' tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
 #' }
-project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE,
+project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                              percentFMSY=100),
                         n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts)
     , error = function(e) {model$err_proj <<- conditionMessage(e)})
-
-  # refit model to estimate derived quantities in projection years
-  if(!exists("err")) mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=do.sdrep, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
-    MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep)
+  if("err_proj" %in% names(model)) stop(model$err_proj)
+  else{# refit model to estimate derived quantities in projection years
+  #if(!exists("err")) 
+    #mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=F, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
+      MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
+    mod$fn(model$opt$par)
+    mod$rep = mod$report()
+    mod$parList <- mod$env$parList(x=model$opt$par)
+    mod <- check_FXSPR(mod)
+    mod <- check_projF(mod) #projections added.
+    if(do.sdrep) # only do sdrep if no error
+    {
+      mod$sdrep <- try(TMB::sdreport(mod))
+      mod$is_sdrep <- !is.character(mod$sdrep)
+      if(mod$is_sdrep) mod$na_sdrep <- any(is.na(summary(mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
+      if(!save.sdrep) mod$sdrep <- summary(mod$sdrep) # only save summary to reduce model object size
+    } else {
+      mod$is_sdrep = FALSE
+      mod$na_sdrep = NA
+    }
+  }
   #assigning model$err_proj above already accomplishes this
   #if(exists("err")){
   #  mod <- model # if error, still pass previous/full fit
@@ -110,11 +131,18 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   #}
 
   # pass along previously calculated retros, OSA residuals, error messages, and runtime
-  if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
-  if(!is.null(model$osa)) mod$osa <- model$osa # OSA residuals
-  if(!is.null(model$err)) mod$err <- model$err # error messages
-  if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
-  mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
+  elements <- c("final_gradient","opt","peels","osa","err","err_retro","runtime","TMB_version","dir")
+
+  elements <- elements[which(elements %in% names(model))]
+  print(elements)
+  mod[elements] <- model[elements]
+  #if(!is.null(model$final_gradient)) mod$final_gradient <- model$final_gradient # final_gradient
+  #if(!is.null(model$opt)) mod$opt <- model$opt # optimization results
+  #if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
+  #if(!is.null(model$osa)) mod$osa <- model$osa # OSA residuals
+  #if(!is.null(model$err)) mod$err <- model$err # error messages
+  #if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
+  #mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
 
   # print error message
   if(!is.null(model$err_proj))
@@ -125,3 +153,5 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   }
   return(mod)
 }
+
+

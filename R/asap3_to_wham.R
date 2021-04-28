@@ -146,7 +146,7 @@ asap3_to_wham <- function(asap3, recruit_model = 2, model_name)
   data$use_NAA_re = 0
   data$use_b_prior = 0
   data$random_recruitment = 0 #1 #make sure use_NAA_re = 0, recruitment is still a random effect.
-  data$which_F_age = data$n_ages #plus group by default used to define full F for BRPs
+  data$which_F_age = rep(data$n_ages, data$n_years_model) #plus group by default used to define full F for BRPs
   data$use_steepness = 0 #use regular SR parameterization by default, steepness still can be estimated as derived par.
   data$bias_correct_pe = 0 #bias correct log-normal process errors?
   data$bias_correct_oe = 0 #bias correct log-normal observation errors?
