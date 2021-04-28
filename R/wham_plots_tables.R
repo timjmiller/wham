@@ -5,7 +5,7 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   years_full <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov+dat$n_years_proj_Ecov)
 
   ecov.pred = mod$rep$Ecov_x
-  ecov.obs = dat$Ecov_obs
+  ecov.obs = dat$Ecov_obs[1:dat$n_years_Ecov,]
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
   if(class(mod$sdrep)[1] == "sdreport"){
     sdrep = summary(mod$sdrep)
@@ -19,7 +19,8 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   } else {
     ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
   }
-  ecov.use = dat$Ecov_use_obs
+  ecov.use = dat$Ecov_use_obs[1:dat$n_years_Ecov,]
+  ecov.obs.sig = ecov.obs.sig[1:dat$n_years_Ecov,]
   ecov.obs.sig[ecov.use == 0] <- NA
   ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
 
@@ -3389,7 +3390,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   years_full <- seq(from=dat$year1_Ecov, by=1, length.out=dat$n_years_Ecov+dat$n_years_proj_Ecov)
 
   ecov.pred = mod$rep$Ecov_x
-  ecov.obs = dat$Ecov_obs
+  ecov.obs = dat$Ecov_obs[1:dat$n_years_Ecov,]
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
   if(class(mod$sdrep)[1] == "sdreport"){
     sdrep = summary(mod$sdrep)
@@ -3402,7 +3403,8 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   } else {
     ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
   }
-  ecov.use = dat$Ecov_use_obs
+  ecov.use = dat$Ecov_use_obs[1:dat$n_years_Ecov,]
+  ecov.obs.sig = ecov.obs.sig[1:dat$n_years_Ecov,]
   ecov.obs.sig[ecov.use == 0] <- NA
   ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
 

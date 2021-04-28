@@ -22,6 +22,7 @@ WHAM description + simulation test paper published: [https://doi.org/10.1016/j.f
 * Setting up projections with multiple Ecovs (again thanks to @h-du-pontavice, [42a6a4](https://github.com/timjmiller/wham/commit/42a6a4950e85613219525e89c5590c37f3a6369f))
 * Selectivity parameter initial values set to middle of range if unspecified in `prepare_wham_input`
 * Fixed `fit_tmb` to make `$final_gradient` reported by wham equivalent to `sdreport()$gradient.fixed`. Issue was that the `model$env$last.par.best` is not updated by the newton steps after optimization so `model$opt$par` was slightly different (10^(-7) or smaller). [e20bd8](https://github.com/timjmiller/wham/commit/e20bd8d01a32b1cbdb826905257555f9a8b55c75)
+* Factor order problem caused indices to be out of order when > 9 indices present. [9e0141](https://github.com/timjmiller/wham/commit/9e0141b59bb80d17b9fc79662e3f38b24b8991f1)
 
 wham 1.0.3 (2021-02-05)
 =========================

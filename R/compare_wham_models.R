@@ -39,7 +39,7 @@
 #'     \item{\code{$ci}}{vector of T/F, length = 1 (applied to all models) or number of models}
 #'     \item{\code{$years}}{vector, which years to plot? Default = all (model and projection years).}
 #'     \item{\code{$which}}{vector, which plots to make? Default = all. See details.}
-#'     \item{\code{$relative.to}}{scalar, plot differences relative to selected "base" model.}
+#'     \item{\code{$relative.to}}{character, name of "base" model to plot differences relative to.}
 #'     \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
 #'     \item{\code{$ages.lab}}{vector, overwrite model age labels.}
 #'     \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
