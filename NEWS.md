@@ -12,6 +12,7 @@ WHAM description + simulation test paper published: [https://doi.org/10.1016/j.f
 * New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
 * Added `proj.opts$percentFXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$percentFXSPR = 75`.
 * Added `proj.opts$useFMSY` and `proj.opts$percentFMSY` options, to project population and catches at (a percentage of) F_MSY. ([467532](https://github.com/timjmiller/wham/commit/46753202499cbf256fb79796f8570e045dddb9db))
+* Allow peels to be projected so can do retrospective predictions, as in Fig. 4 of [Xu et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/fog.12236) ([e1e00c](https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f#diff-7f3a4433e0573f6fd6787d47614e0303f714e2d71d9e618ecfb832195987b732))
 
 ### Bug fixes
 
@@ -24,8 +25,9 @@ WHAM description + simulation test paper published: [https://doi.org/10.1016/j.f
 * Selectivity parameter initial values set to middle of range if unspecified in `prepare_wham_input`
 * Fixed `fit_tmb` to make `$final_gradient` reported by wham equivalent to `sdreport()$gradient.fixed`. Issue was that the `model$env$last.par.best` is not updated by the newton steps after optimization so `model$opt$par` was slightly different (10^(-7) or smaller). [e20bd8](https://github.com/timjmiller/wham/commit/e20bd8d01a32b1cbdb826905257555f9a8b55c75)
 * Factor order problem caused indices to be out of order when > 9 indices present. [9e0141](https://github.com/timjmiller/wham/commit/9e0141b59bb80d17b9fc79662e3f38b24b8991f1)
-* Fixed default determination of age corresponding to fully selected (total) fishing mortality. Now which_F_age is a vector of annual values (including projection years) and the values are reassigned after fitting before reporting. ([189b6c](https://github.com/timjmiller/wham/commit/189b6cede494a53763afcda5b0bf6854fed095d5))
+* Fixed default determination of age corresponding to fully selected (total) fishing mortality. Now `which_F_age` is a vector of annual values (including projection years) and the values are reassigned after fitting before reporting. ([189b6c](https://github.com/timjmiller/wham/commit/189b6cede494a53763afcda5b0bf6854fed095d5))
 * Added check for F_XSPR to verify percent of SPR0 is correct and, in projections, catch at F from catch is verified. Initial values for these algorithms can be specified by the user. ([189b6c](https://github.com/timjmiller/wham/commit/189b6cede494a53763afcda5b0bf6854fed095d5))
+* If ecov years differ from model years, peel to same year in `fit_peel` ([e1e00c](https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f))
 
 wham 1.0.3 (2021-02-05)
 =========================

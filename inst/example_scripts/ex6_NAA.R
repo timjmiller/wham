@@ -28,8 +28,8 @@ if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
-file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
+file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=TRUE)
 
 # confirm you are in the working directory and it has the ex2_SNEMAYT.dat file
 list.files()

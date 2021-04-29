@@ -26,7 +26,7 @@ setwd(write.dir)
 
 # copy `ex1_SNEMAYT.dat` to our analysis directory
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
 
 # Read the ASAP3 .dat file into R and convert to input list for wham:
 asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")

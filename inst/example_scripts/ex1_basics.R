@@ -9,7 +9,7 @@ setwd(write.dir)
 
 # copy asap3 data file to working directory
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
 
 # confirm you are in the working directory and it has the ASAP_SNEMAYT.dat file
 list.files()

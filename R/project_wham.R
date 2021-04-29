@@ -134,7 +134,7 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
   elements <- c("final_gradient","opt","peels","osa","err","err_retro","runtime","TMB_version","dir")
 
   elements <- elements[which(elements %in% names(model))]
-  print(elements)
+  # print(elements)
   mod[elements] <- model[elements]
   #if(!is.null(model$final_gradient)) mod$final_gradient <- model$final_gradient # final_gradient
   #if(!is.null(model$opt)) mod$opt <- model$opt # optimization results

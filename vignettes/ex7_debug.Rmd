@@ -1,8 +1,8 @@
 ---
-title: "Debugging WHAM models"
+title: "Ex 7: Debugging WHAM models"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Debugging WHAM models}
+  %\VignetteIndexEntry{Ex 7: Debugging WHAM models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
