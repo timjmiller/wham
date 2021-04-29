@@ -13,6 +13,7 @@ library(wham)
 # create directory for analysis, e.g.
 # main.dir <- file.path(getwd(),"sandbox","wham_testing",paste0("runall-",format(Sys.Date(), "%Y%m%d")))
 main.dir <- "/home/bstock/Documents/wham/sandbox/wham_testing/runall-20210330"
+#main.dir <- getwd()
 wham.dir <- find.package("wham")
 asap.dir <- file.path(wham.dir,"extdata","BASE_3")
 # asap.dir <- "/home/bstock/Documents/wham/inst/extdata/BASE_3"
