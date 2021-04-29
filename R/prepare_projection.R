@@ -161,9 +161,10 @@ prepare_projection = function(model, proj.opts)
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
-  data$mature <- rbind(data$mature, matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
-  data$fracyr_SSB <- c(data$fracyr_SSB, rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
+  data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
   toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+  if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
   tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
   tmp[,1:data$n_years_model,] <- data$waa
   for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
@@ -189,8 +190,10 @@ prepare_projection = function(model, proj.opts)
     random = c(random, "logR_proj")
 
     # pad log_NAA (even though projection years not used)
-    par$log_NAA <- rbind(par$log_NAA, matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
-    map$log_NAA <- factor(c(map$log_NAA, rep(NA, proj.opts$n.yrs*data$n_ages)))
+    # par$log_NAA <- rbind(par$log_NAA, matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    # map$log_NAA <- factor(c(map$log_NAA, rep(NA, proj.opts$n.yrs*data$n_ages)))
+    par$log_NAA <- rbind(par$log_NAA[1:(data$n_years_model-1),], matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    map$log_NAA <- factor(rbind(matrix(as.numeric(map$log_NAA), data$n_years_model-1, data$n_ages)[1:(data$n_years_model-1),], matrix(NA, proj.opts$n.yrs, data$n_ages)))
   } else {
     # recruit RE: pad log_NAA, map ages > 1 to NA
     # all NAA RE: pad log_NAA, estimate all
@@ -199,8 +202,8 @@ prepare_projection = function(model, proj.opts)
       This model already treats recruitment deviations as random effects.","",sep='\n'))
 
     # pad log_NAA
-    log_NAA_mean <- apply(par$log_NAA, 2, mean) # start at mean for each age
-    par$log_NAA <- rbind(par$log_NAA, matrix(log_NAA_mean, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    log_NAA_mean <- apply(par$log_NAA[1:(data$n_years_model-1),], 2, mean) # start at mean for each age
+    par$log_NAA <- rbind(par$log_NAA[1:(data$n_years_model-1),], matrix(log_NAA_mean, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
     tmp <- par$log_NAA
     if(data$n_NAA_sigma == 1) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if RE only on recruitment
     ind.notNA <- which(!is.na(tmp))
@@ -230,7 +233,7 @@ prepare_projection = function(model, proj.opts)
           }
         }
       }
-      par$Ecov_re <- rbind(par$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
+      par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,], Ecov.proj) # pad Ecov_re if necessary
 
       # pad map$Ecov_re
       tmp.re <- matrix(1:length(par$Ecov_re), dim(par$Ecov_re)[1], data$n_Ecov, byrow=FALSE)
@@ -259,7 +262,7 @@ prepare_projection = function(model, proj.opts)
     # ind.proj <- which(is.na(tmp))
     # par$M_re[ind.proj] <- 0
 
-    par$M_re <- rbind(par$M_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    par$M_re <- rbind(par$M_re[1:(data$n_years_model-1),], matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
     tmp <- par$M_re
     if(data$M_re_model %in% c(2,5)){ # iid / 2d ar1
       tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
@@ -277,7 +280,10 @@ prepare_projection = function(model, proj.opts)
     # map$M_re <- factor(tmp)
   }
 
-  return(list(data=data, par = par, map = map, random = random,
+  input2 <- list(data=data, par = par, map = map, random = random,
     years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
-    ages.lab = input1$ages.lab, model_name = input1$model_name))
+    ages.lab = input1$ages.lab, model_name = input1$model_name)
+  attr(input2$par, 'check.passed') = NULL
+  attr(input2$data, 'check.passed') = NULL
+  return(input2)
 }
