@@ -100,10 +100,13 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$wham_version <- paste0(ver, collapse=" / ")
   if(do.fit){
     btime <- Sys.time()
-    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
-    mod$runtime = round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
-    mod = check_FXSPR(mod)
-    if(mod$env$data$do_proj==1) mod = check_projF(mod) #projections added.
+    #mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
+    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
+    mod <- check_which_F_age(mod)
+    if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
+    mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
+    mod <- check_FXSPR(mod)
+    if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
 
     # retrospective analysis
     if(do.retro){
@@ -143,6 +146,21 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   return(mod)
 }
 
+
+check_which_F_age = function(mod)
+{
+  mod$env$data$which_F_age[] = apply(mod$rep$FAA_tot,1, function(x) which(x == max(x))[1])
+  mod$rep = mod$report()
+  return(mod)
+}
+do_sdrep = function(model, save.sdrep = TRUE)
+{
+  model$sdrep <- try(TMB::sdreport(model))
+  model$is_sdrep <- !is.character(model$sdrep)
+  if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
+  if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
+  return(model)
+}
 
 check_FXSPR = function(mod)
 {
