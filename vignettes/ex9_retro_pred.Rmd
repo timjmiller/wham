@@ -118,7 +118,7 @@ res <- compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(kobe
 
 ## 5. Run retrospective predictions
 
-For each model, peel 3-15 years of data and re-fit the model using `retro()`, and then project each peel 3 years by calling `project_wham()`. These projections are done with *F* = 0 and continuing the CPI AR1 process model (without new observations). You can specify how to run the projections using `$proj.opts` (see [`project_wham()`](https://timjmiller.github.io/wham/reference/project_wham.html) and [Ex 3: Projections](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+For each model, peel 3-15 years of data and re-fit the model using `retro()`, and then project each peel 3 years by calling `project_wham()`. These projections are done with *F* = 0 and continuing the CPI AR1 process model (without new observations). You can specify alternative options for the projections using `$proj.opts` (see [`project_wham()`](https://timjmiller.github.io/wham/reference/project_wham.html) and [Ex 3: Projections](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
 ```{r eval=FALSE}
 n.yrs.peel <- 15
@@ -180,6 +180,8 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 plot_retro_pred_R(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj)
 ggsave(file.path(write.dir,"retro_pred_R.png"), device='png', width=8, height=5, units='in')
 ```
+
+The two black lines represent the "true" recruitment from each model, i.e., the recruitment estimates when fitting to the full data. Points and lines are colored by peel from yellow (1996) to dark blue (2008). The points are terminal year recruitment estimates and lines are projected recruitment (3 years).
 
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png){ width=95% }
 
