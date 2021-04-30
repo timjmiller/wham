@@ -81,7 +81,7 @@ plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir)
 m1_check <- check_convergence(m1, ret=TRUE)
 expect_equal(m1_check$convergence, 0) # opt$convergence should be 0
 expect_false(m1_check$na_sdrep) # sdrep should succeed
-expect_lt(m1_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m1_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 # Check m1 parameter values
 # order of logit_selpars changed when modifying prepare_wham_input for time-varying selectivity
 expect_equal(as.numeric(m1$opt$par), ex1_test_results$par[[1]], tolerance=1e-1)
@@ -90,7 +90,7 @@ expect_equal(as.numeric(m1$opt$par), ex1_test_results$par[[1]], tolerance=1e-1)
 m2_check <- check_convergence(m2, ret=TRUE)
 expect_equal(m2_check$convergence, 0) # opt$convergence should be 0
 expect_false(m2_check$na_sdrep) # sdrep should succeed
-expect_lt(m2_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m2_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 # Check m2 parameter values
 expect_equal(as.numeric(m2$opt$par), ex1_test_results$par[[2]], tolerance=1e-1)
 
@@ -98,7 +98,7 @@ expect_equal(as.numeric(m2$opt$par), ex1_test_results$par[[2]], tolerance=1e-1)
 m3_check <- check_convergence(m3, ret=TRUE)
 expect_equal(m3_check$convergence, 0) # opt$convergence should be 0
 expect_false(m3_check$na_sdrep) # sdrep should succeed
-expect_lt(m3_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m3_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 # Check m3 parameter values
 expect_equal(as.numeric(m3$opt$par), ex1_test_results$par[[3]], tolerance=1e-1)
 
@@ -106,7 +106,7 @@ expect_equal(as.numeric(m3$opt$par), ex1_test_results$par[[3]], tolerance=1e-1)
 m4_check <- check_convergence(m4, ret=TRUE)
 expect_equal(m4_check$convergence, 0) # opt$convergence should be 0
 expect_false(m4_check$na_sdrep) # sdrep should succeed
-expect_lt(m4_check$maxgr, 1e-6) # maximum gradient should be < 1e-06
+expect_lt(m4_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 # Check m4 parameter values
 expect_equal(as.numeric(m4$opt$par), ex1_test_results$par[[4]], tolerance=1e-1)
 

@@ -23,6 +23,7 @@ df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
 mods <- vector("list",n.mods)
+mods_proj <- vector("list",n.mods)
 fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
 for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
@@ -51,6 +52,7 @@ for(m in fit.mods){
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
+  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 
   # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values
 }

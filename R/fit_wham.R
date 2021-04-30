@@ -176,7 +176,8 @@ check_FXSPR = function(mod)
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*0.5
       mod$fn(mod$opt$par)
-      mod$rep = mod$report(mod$opt$par)
+      # mod$rep = mod$report(mod$opt$par)
+      mod$rep = mod$report(mod$env$last.par)
       percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
       ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
@@ -200,7 +201,8 @@ check_projF = function(mod)
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
       mod$fn(mod$opt$par)
-      mod$rep = mod$report(mod$opt$par)
+      # mod$rep = mod$report(mod$opt$par)
+      mod$rep = mod$report(mod$env$last.par)
       bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
     }
     y_bad_FXSPR = mod$years_full[y[bad]]
@@ -222,7 +224,8 @@ check_projF = function(mod)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
         mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
         mod$fn(mod$opt$par)
-        mod$rep = mod$report(mod$opt$par)
+        # mod$rep = mod$report(mod$opt$par)
+        mod$rep = mod$report(mod$env$last.par)
         bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
         if(!length(bad)) break
       }
