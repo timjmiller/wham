@@ -233,7 +233,7 @@ prepare_projection = function(model, proj.opts)
           }
         }
       }
-      par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,], Ecov.proj) # pad Ecov_re if necessary
+      par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,,drop=F], Ecov.proj) # pad Ecov_re if necessary
 
       # pad map$Ecov_re
       tmp.re <- matrix(1:length(par$Ecov_re), dim(par$Ecov_re)[1], data$n_Ecov, byrow=FALSE)

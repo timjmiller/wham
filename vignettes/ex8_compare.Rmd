@@ -108,21 +108,20 @@ res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE)
 saveRDS(res, file=file.path(write.dir,"res.rds"))
 ```
 
-# ```{r include=FALSE}
-# data(vign8_res)
-# res <- vign8_res
-# ```
+```{r include=FALSE}
+data(vign8_res)
+```
 
-There are many options, see `?compare_wham_models`. To only get the AIC and retro table, not plots:
+There are many options, see `?compare_wham_models`. To only get the AIC and retro table, not plots (note that ASAP models cannot be included here).
 
 ```{r eval=FALSE}
 res <- compare_wham_models(mods, fdir=write.dir, do.plot=F)
 round(res$tab,2)
 ```
 
-# ```{r echo=FALSE}
-# round(res$tab,2)
-# ```
+```{r echo=FALSE}
+vign8_res
+```
 
 Only get the plots, not the table
 
