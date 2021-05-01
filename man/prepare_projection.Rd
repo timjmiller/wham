@@ -13,7 +13,8 @@ prepare_projection(model, proj.opts)
 \itemize{
   \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
   \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
-  \item \code{$use.FXSPR} (T/F), calculate F at X% SPR for projections.
+  \item \code{$use.FXSPR} (T/F), calculate and use F at X% SPR for projections.
+  \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections.
   \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
   \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
   \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
@@ -24,6 +25,7 @@ prepare_projection(model, proj.opts)
   \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
   \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
   \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
+  \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 }}
 }
 \value{
@@ -31,10 +33,11 @@ same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}
   \describe{
     \item{\code{data}}{Named list of data, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
     \item{\code{par}}{Named list of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-    \item{\code{map}}{not sure what this does, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
+    \item{\code{map}}{Named list of factors that determine which parameters are estimated, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
     \item{\code{random}}{Character vector of parameters to treat as random effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-    \item{\code{years}}{Numeric vector of years to fit WHAM model (specified in ASAP3 .dat file)}
-    \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group (specified in ASAP3 .dat file)}
+    \item{\code{years}}{Numeric vector of representing (non-projection) model years of WHAM model}
+    \item{\code{years_full}}{Numeric vector of representing all model and projection years of WHAM model}
+    \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group}
     \item{\code{model_name}}{Character, name of stock/model (specified in call to \code{prepare_wham_input})}
   }
 }

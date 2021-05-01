@@ -11,7 +11,8 @@ retro(
   do.sdrep = FALSE,
   n.newton = 0,
   MakeADFun.silent = FALSE,
-  retro.silent = FALSE
+  retro.silent = FALSE,
+  save.input = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ retro(
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
 \item{retro.silent}{T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.}
+
+\item{save.input}{T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model
