@@ -98,7 +98,7 @@ expect_equal(as.numeric(m2$opt$par), ex1_test_results$par[[2]], tolerance=1e-1)
 m3_check <- check_convergence(m3, ret=TRUE)
 expect_equal(m3_check$convergence, 0) # opt$convergence should be 0
 expect_false(m3_check$na_sdrep) # sdrep should succeed
-expect_lt(m3_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_lt(m3_check$maxgr, 1e-4) # maximum gradient should be < 1e-06
 # Check m3 parameter values
 expect_equal(as.numeric(m3$opt$par), ex1_test_results$par[[3]], tolerance=1e-1)
 
