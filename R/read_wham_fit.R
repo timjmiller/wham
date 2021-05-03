@@ -7,9 +7,9 @@
 #'
 #' @return a named list with the following elements:
 #'   \describe{
-#'     \item{\code{$years}}{numeric vector, model years only, e.g. `1972:2020`}
-#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. `1972:2022`}
-#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
+#'     \item{\code{$years}}{numeric vector, model years only, e.g. \code{1972:2020}}
+#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. \code{1972:2022}}
+#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
 #'     \item{\code{$selblock_pointer_fleets}}{matrix, years x fleets, indices of selAA used by each fleet in each year}
 #'     \item{\code{$selblock_pointer_indices}}{matrix, years x indices, indices of selAA used by each index in each year}
 #'     \item{\code{$MAA}}{matrix, years x ages, natural mortality}
@@ -32,7 +32,7 @@ read_wham_fit <- function(mod){
   # if sdreport succeeded but didn't save full sdreport object in mod, recalculate it here
   if(mod$is_sdrep & class(mod$sdrep)[1] != "sdreport"){
     mod$sdrep <- TMB::sdreport(mod)
-  } 
+  }
   n_ages <- mod$env$data$n_ages
   n_years <- length(mod$years_full)
 
@@ -67,7 +67,7 @@ read_wham_fit <- function(mod){
   x$log_Y_FXSPR <- std[inds$Y.t,1:2]
   x$log_FXSPR <- std[inds$F.t,1:2]
   x$log_SSB_FXSPR <- std[inds$SSB.t,1:2]
-  # x$Y_FXSPR_CV <- std[inds$Y.t,2] 
+  # x$Y_FXSPR_CV <- std[inds$Y.t,2]
   # x$FXSPR_CV <- std[inds$F.t,2]
   # x$SSB_FXSPR_CV <- std[inds$SSB.t,2]
 
@@ -81,4 +81,4 @@ read_wham_fit <- function(mod){
 
   return(x)
 }
-  
+

@@ -26,16 +26,16 @@ will be used.}
 
 \item{do.plot}{T/F, produce plots? Default = TRUE.}
 
-\item{fdir}{character, path to directory to save table and/or plots. Default = getwd().}
+\item{fdir}{character, path to directory to save table and/or plots. Default = \code{getwd()}.}
 
 \item{table.opts}{list of options for AIC/rho table:
 \describe{
-  \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = 'model_comparison'.}
+  \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = \code{'model_comparison'}.}
   \item{\code{$sort}}{T/F, sort by AIC? Default = TRUE.}
   \item{\code{$calc.rho}}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
   \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
-  \item{\code{$print}}{T/F, print table to console? Default = TRUE.} 
-  \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = TRUE.} 
+  \item{\code{$print}}{T/F, print table to console? Default = TRUE.}
+  \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = TRUE.}
 }}
 
 \item{plot.opts}{list of options for plots:
@@ -48,7 +48,7 @@ will be used.}
   \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
   \item{\code{$ages.lab}}{vector, overwrite model age labels.}
   \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
-  \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = `max(data$which_F_age)` (max age of F to use for full total F).}
+  \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
   \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
   \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
 }}
@@ -56,12 +56,12 @@ will be used.}
 \value{
 a list with the following components:
   \describe{
-    \item{\code{daic}}{Vector of delta-AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)}
-    \item{\code{aic}}{Vector of AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)}
-    \item{\code{rho}}{Matrix of Mohn's rho by model (if `do.table=T` and `table.opts$calc.rho=T`)}
-    \item{\code{best}}{Name of best model (lowest AIC) (if `do.table=T` and `table.opts$calc.aic=T`)}
-    \item{\code{tab}}{Results table of AIC and Mohn's rho (if `do.table=T`)}
-    \item{\code{g}}{List of ggplot2 objects for later modification (if `do.plot=T` and `plot.opts$return.ggplot=T`)}
+    \item{\code{daic}}{Vector of delta-AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+    \item{\code{aic}}{Vector of AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+    \item{\code{rho}}{Matrix of Mohn's rho by model (if \code{do.table=T} and \code{table.opts$calc.rho=T})}
+    \item{\code{best}}{Name of best model (lowest AIC) (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+    \item{\code{tab}}{Results table of AIC and Mohn's rho (if \code{do.table=T})}
+    \item{\code{g}}{List of ggplot2 objects for later modification (if \code{do.plot=T} and \code{plot.opts$return.ggplot=T})}
   }
 }
 \description{
@@ -82,8 +82,8 @@ and a table of AIC and Mohn's rho to aid model comparison.
     \item{9}{2-panel of relative status (SSB / SSB at F_X\%SPR and F / F_X\%SPR)}
     \item{10}{Kobe status (relative SSB vs. relative F)}
   }
-If \code{plot.opts$return.ggplot = TRUE}, a list `g` is returned holding the above ggplot2 objects for later modification.
-`g[[i]]` holds the plot corresponding to `i` above, e.g. `g[[2]]` is the CV plot.
+If \code{plot.opts$return.ggplot = TRUE}, a list \code{g} is returned holding the above ggplot2 objects for later modification.
+\code{g[[i]]} holds the plot corresponding to \code{i} above, e.g. \code{g[[2]]} is the CV plot.
 }
 \examples{
 \dontrun{

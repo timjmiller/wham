@@ -12,9 +12,9 @@ read_wham_fit(mod)
 \value{
 a named list with the following elements:
   \describe{
-    \item{\code{$years}}{numeric vector, model years only, e.g. `1972:2020`}
-    \item{\code{$years_full}}{numeric vector, model + proj years, e.g. `1972:2022`}
-    \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
+    \item{\code{$years}}{numeric vector, model years only, e.g. \code{1972:2020}}
+    \item{\code{$years_full}}{numeric vector, model + proj years, e.g. \code{1972:2022}}
+    \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
     \item{\code{$selblock_pointer_fleets}}{matrix, years x fleets, indices of selAA used by each fleet in each year}
     \item{\code{$selblock_pointer_indices}}{matrix, years x indices, indices of selAA used by each index in each year}
     \item{\code{$MAA}}{matrix, years x ages, natural mortality}

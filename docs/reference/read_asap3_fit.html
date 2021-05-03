@@ -202,9 +202,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a named list with the following elements:</p><dl>
-    <dt><code>$years</code></dt><dd><p>numeric vector, model years only, e.g. `1972:2020`</p></dd>
-    <dt><code>$years_full</code></dt><dd><p>numeric vector, model + proj years, e.g. `1972:2022`. For ASAP this will be the same as `$years`.</p></dd>
-    <dt><code>$selAA</code></dt><dd><p>list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age</p></dd>
+    <dt><code>$years</code></dt><dd><p>numeric vector, model years only, e.g. <code>1972:2020</code></p></dd>
+    <dt><code>$years_full</code></dt><dd><p>numeric vector, model + proj years, e.g. <code>1972:2022</code>. For ASAP this will be the same as <code>$years</code>.</p></dd>
+    <dt><code>$selAA</code></dt><dd><p>list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, <code>selAA[[5]]</code> is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age</p></dd>
     <dt><code>$selblock_pointer_fleets</code></dt><dd><p>matrix, n_years x n_fleets, indices of selAA used by each fleet in each year</p></dd>
     <dt><code>$selblock_pointer_indices</code></dt><dd><p>matrix, n_years x n_indices, indices of selAA used by each index in each year</p></dd>
     <dt><code>$MAA</code></dt><dd><p>matrix, n_years x n_ages, natural mortality</p></dd>

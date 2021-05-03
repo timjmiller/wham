@@ -16,9 +16,9 @@ read_asap3_fit(wd, asap.name, pSPR = 40)
 \value{
 a named list with the following elements:
   \describe{
-    \item{\code{$years}}{numeric vector, model years only, e.g. `1972:2020`}
-    \item{\code{$years_full}}{numeric vector, model + proj years, e.g. `1972:2022`. For ASAP this will be the same as `$years`.}
-    \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
+    \item{\code{$years}}{numeric vector, model years only, e.g. \code{1972:2020}}
+    \item{\code{$years_full}}{numeric vector, model + proj years, e.g. \code{1972:2022}. For ASAP this will be the same as \code{$years}.}
+    \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
     \item{\code{$selblock_pointer_fleets}}{matrix, n_years x n_fleets, indices of selAA used by each fleet in each year}
     \item{\code{$selblock_pointer_indices}}{matrix, n_years x n_indices, indices of selAA used by each index in each year}
     \item{\code{$MAA}}{matrix, n_years x n_ages, natural mortality}

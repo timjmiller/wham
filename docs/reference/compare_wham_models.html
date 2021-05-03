@@ -214,17 +214,17 @@ will be used.</p></td>
     </tr>
     <tr>
       <th>fdir</th>
-      <td><p>character, path to directory to save table and/or plots. Default = getwd().</p></td>
+      <td><p>character, path to directory to save table and/or plots. Default = <code><a href='https://rdrr.io/r/base/getwd.html'>getwd()</a></code>.</p></td>
     </tr>
     <tr>
       <th>table.opts</th>
       <td><p>list of options for AIC/rho table:</p><dl>
-  <dt><code>$fname</code></dt><dd><p>character, filename to save CSV results table (.csv will be appended). Default = 'model_comparison'.</p></dd>
+  <dt><code>$fname</code></dt><dd><p>character, filename to save CSV results table (.csv will be appended). Default = <code>'model_comparison'</code>.</p></dd>
   <dt><code>$sort</code></dt><dd><p>T/F, sort by AIC? Default = TRUE.</p></dd>
   <dt><code>$calc.rho</code></dt><dd><p>T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.</p></dd>
   <dt><code>$calc.aic</code></dt><dd><p>T/F, calculate AIC? Default = TRUE.</p></dd>
-  <dt><code>$print</code></dt><dd><p>T/F, print table to console? Default = TRUE.</p></dd> 
-  <dt><code>$save.csv</code></dt><dd><p>T/F, save table as a CSV file? Default = TRUE.</p></dd> 
+  <dt><code>$print</code></dt><dd><p>T/F, print table to console? Default = TRUE.</p></dd>
+  <dt><code>$save.csv</code></dt><dd><p>T/F, save table as a CSV file? Default = TRUE.</p></dd>
 
 </dl></td>
     </tr>
@@ -239,7 +239,7 @@ will be used.</p></td>
   <dt><code>$alpha</code></dt><dd><p>scalar, (1-alpha)% confidence intervals will be plotted. Default = 0.05 for 95% CI.</p></dd>
   <dt><code>$ages.lab</code></dt><dd><p>vector, overwrite model age labels.</p></dd>
   <dt><code>$kobe.yr</code></dt><dd><p>integer, which year to use in Kobe plot (relative status). Default = terminal model year.</p></dd>
-  <dt><code>$M.age</code></dt><dd><p>integer, which age to use in M time-series plot. Default = `max(data$which_F_age)` (max age of F to use for full total F).</p></dd>
+  <dt><code>$M.age</code></dt><dd><p>integer, which age to use in M time-series plot. Default = <code><a href='https://rdrr.io/r/base/Extremes.html'>max(data$which_F_age)</a></code> (max age of F to use for full total F).</p></dd>
   <dt><code>$return.ggplot</code></dt><dd><p>T/F, return a list of ggplot2 objects for later modification? Default = TRUE.</p></dd>
   <dt><code>$kobe.prob</code></dt><dd><p>T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.</p></dd>
 
@@ -250,12 +250,12 @@ will be used.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a list with the following components:</p><dl>
-    <dt><code>daic</code></dt><dd><p>Vector of delta-AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
-    <dt><code>aic</code></dt><dd><p>Vector of AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
-    <dt><code>rho</code></dt><dd><p>Matrix of Mohn's rho by model (if `do.table=T` and `table.opts$calc.rho=T`)</p></dd>
-    <dt><code>best</code></dt><dd><p>Name of best model (lowest AIC) (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
-    <dt><code>tab</code></dt><dd><p>Results table of AIC and Mohn's rho (if `do.table=T`)</p></dd>
-    <dt><code>g</code></dt><dd><p>List of ggplot2 objects for later modification (if `do.plot=T` and `plot.opts$return.ggplot=T`)</p></dd>
+    <dt><code>daic</code></dt><dd><p>Vector of delta-AIC by model (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
+    <dt><code>aic</code></dt><dd><p>Vector of AIC by model (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
+    <dt><code>rho</code></dt><dd><p>Matrix of Mohn's rho by model (if <code>do.table=T</code> and <code>table.opts$calc.rho=T</code>)</p></dd>
+    <dt><code>best</code></dt><dd><p>Name of best model (lowest AIC) (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
+    <dt><code>tab</code></dt><dd><p>Results table of AIC and Mohn's rho (if <code>do.table=T</code>)</p></dd>
+    <dt><code>g</code></dt><dd><p>List of ggplot2 objects for later modification (if <code>do.plot=T</code> and <code>plot.opts$return.ggplot=T</code>)</p></dd>
   
 </dl>
 
@@ -273,8 +273,8 @@ will be used.</p></td>
     <dt>9</dt><dd><p>2-panel of relative status (SSB / SSB at F_X%SPR and F / F_X%SPR)</p></dd>
     <dt>10</dt><dd><p>Kobe status (relative SSB vs. relative F)</p></dd>
   
-</dl><p>If <code>plot.opts$return.ggplot = TRUE</code>, a list `g` is returned holding the above ggplot2 objects for later modification.
-`g[[i]]` holds the plot corresponding to `i` above, e.g. `g[[2]]` is the CV plot.</p>
+</dl><p>If <code>plot.opts$return.ggplot = TRUE</code>, a list <code>g</code> is returned holding the above ggplot2 objects for later modification.
+<code>g[[i]]</code> holds the plot corresponding to <code>i</code> above, e.g. <code>g[[2]]</code> is the CV plot.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='read_asap3_fit.html'>read_asap3_fit</a>, <code><a href='read_wham_fit.html'>read_wham_fit</a></code></code></p></div>

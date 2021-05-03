@@ -8,9 +8,9 @@
 #'
 #' @return a named list with the following elements:
 #'   \describe{
-#'     \item{\code{$years}}{numeric vector, model years only, e.g. `1972:2020`}
-#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. `1972:2022`. For ASAP this will be the same as `$years`.}
-#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
+#'     \item{\code{$years}}{numeric vector, model years only, e.g. \code{1972:2020}}
+#'     \item{\code{$years_full}}{numeric vector, model + proj years, e.g. \code{1972:2022}. For ASAP this will be the same as \code{$years}.}
+#'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
 #'     \item{\code{$selblock_pointer_fleets}}{matrix, n_years x n_fleets, indices of selAA used by each fleet in each year}
 #'     \item{\code{$selblock_pointer_indices}}{matrix, n_years x n_indices, indices of selAA used by each index in each year}
 #'     \item{\code{$MAA}}{matrix, n_years x n_ages, natural mortality}
@@ -136,7 +136,7 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   log_Y_FXSPR[,1] <- log(mean(recruits)*asap.spr$ypr.spr.vals) # match wham default to use average estimated recruitment (all years)
   log_FXSPR[,1] <- log(asap.spr$f.spr.vals)
 
-  # log_SSB_FXSPR[,1] <- log(R0*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)  
+  # log_SSB_FXSPR[,1] <- log(R0*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec)
   # log_SSB_FXSPR[,2] <- log_R0.std
   log_SSB_FXSPR[,1] <- log(mean(recruits)*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec) # match wham default to use average estimated recruitment (all years)
   # log_SSB_FXSPR[,2] <- sd(log(recruits*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec))/sqrt(length(recruits))
@@ -162,7 +162,7 @@ ypr <- function(nages, wgt.age, M.age, F.mult, sel.age ) {
   }
   z= M.age[nages] + F.mult*sel.age[nages]
   yield=yield + wgt.age[nages]*F.mult*sel.age[nages]*cum.survive/z
-  return(yield)  
+  return(yield)
 }
 
 s.per.recr<-function(nages,fec.age,mat.age,M.age, F.mult, sel.age, spawn.time ) {
@@ -174,7 +174,7 @@ s.per.recr<-function(nages,fec.age,mat.age,M.age, F.mult, sel.age, spawn.time ) 
     z.ts=(M.age[i]+F.mult*sel.age[i])*spawn.time
     spr=spr+cum.survive*fec.age[i]*mat.age[i]*exp(-z.ts)
     cum.survive=cum.survive*exp(-z )
-  } 
+  }
   z= M.age[nages] + F.mult*sel.age[nages]
   z.ts=(M.age[nages]+F.mult*sel.age[nages])*spawn.time
   spr=spr + fec.age[nages]*mat.age[nages]*cum.survive*exp(-z.ts)/( 1- exp(-z ) )
@@ -186,7 +186,7 @@ asap_get_SPR <- function(asap, pspr){
   n.spr <- length(spr.targ.values)
   nages<- asap$parms$nages
   nyears <- asap$parms$nyears
-  years <- seq(asap$parms$styr,asap$parms$endyr)  
+  years <- seq(asap$parms$styr,asap$parms$endyr)
   fec.age <- asap$WAA.mats$WAA.ssb
   mat.age <- asap$maturity
   wgt.age <- asap$WAA.mats$WAA.catch.all
@@ -195,11 +195,11 @@ asap_get_SPR <- function(asap, pspr){
   spawn.time <- asap$options$frac.yr.spawn
   spr0.vals<- asap$SR.annual.parms$s.per.r.vec
   F.start <-0.11  # starting guess for optimization routine to find F_SPR%
-  
+
   f.spr.vals <- matrix(NA, nyears, n.spr)
   ypr.spr.vals <- matrix(NA, nyears, n.spr)
   conv.vals <- matrix(NA, nyears, n.spr)
-  
+
   for (i in 1:n.spr) {
     for (j in 1:nyears) {
       t.spr <- spr.targ.values[i]
@@ -238,58 +238,58 @@ asap_grab_names <- function(wd, asap.name, asap){
 
 asap_grab_aux <- function(wd, asap.name, asap, fleet.names, index.names) {
   aux.list <-  list("npar"=-999, "asap.cor.names"=NA, "asap.cor.mat"=NA,
-                    "asap.std"=NA, "max.grad"=-999, "F.rep"=NA, "Tot.B"=NA , "SSB"=NA, 
+                    "asap.std"=NA, "max.grad"=-999, "F.rep"=NA, "Tot.B"=NA , "SSB"=NA,
                     "Expl.B"=NA, "recr"=NA, "asap.name"=asap.name )
   std.fname <- list.files(wd, pattern=paste0(asap.name,".std"), ignore.case=TRUE, full.names=TRUE)
   cor.fname <- list.files(wd, pattern=paste0(asap.name,".cor"), ignore.case=TRUE, full.names=TRUE)
   par.fname <- list.files(wd, pattern=paste0(asap.name,".par"), ignore.case=TRUE, full.names=TRUE)
   if(all(file.exists(std.fname), file.exists(cor.fname), file.exists(par.fname))){
     # Read in std file from admb
-    asap.std <- read.table(std.fname, header = F, skip=1, stringsAsFactors = FALSE) 
+    asap.std <- read.table(std.fname, header = F, skip=1, stringsAsFactors = FALSE)
     names(asap.std) <- c("index", "name", "value", "stdev" )
     years <- seq(asap$parms$styr, asap$parms$endyr)
-    
+
     # Read in cor file from admb
     ncol.cor <- dim(asap.std) [1]
-    asap.cor <- read.table(cor.fname, header = F, skip=2, col.names=c("index", "name", "value", "stdev", seq(1,ncol.cor)), fill=T) 
+    asap.cor <- read.table(cor.fname, header = F, skip=2, col.names=c("index", "name", "value", "stdev", seq(1,ncol.cor)), fill=T)
     asap.cor.mat <- as.matrix(asap.cor[,5:length(asap.cor[1,])])
     asap.cor.names <- as.character(as.vector(asap.cor[,2]) )
     levels.cor.names <- unique(asap.cor.names)
-    F.rep <- which(asap.cor.names=="Freport") 
-    asap.cor.names[F.rep] <- paste(asap.cor.names[F.rep],years, sep=".")  
-    Tot.B <- which(asap.cor.names=="TotJan1B") 
+    F.rep <- which(asap.cor.names=="Freport")
+    asap.cor.names[F.rep] <- paste(asap.cor.names[F.rep],years, sep=".")
+    Tot.B <- which(asap.cor.names=="TotJan1B")
     asap.cor.names[Tot.B] <- paste(asap.cor.names[Tot.B],years, sep=".")
-    SSB <- which(asap.cor.names=="SSB")  
+    SSB <- which(asap.cor.names=="SSB")
     asap.cor.names[SSB] <- paste(asap.cor.names[SSB],years, sep=".")
-    Expl.B <- which(asap.cor.names=="ExploitableB")  
+    Expl.B <- which(asap.cor.names=="ExploitableB")
     asap.cor.names[Expl.B] <- paste(asap.cor.names[Expl.B],years, sep=".")
-    recr <- which(asap.cor.names=="recruits") 
+    recr <- which(asap.cor.names=="recruits")
     asap.cor.names[recr] <- paste(asap.cor.names[recr],years, sep=".")
-    
-    N.yr1 <- which(asap.cor.names=="log_N_year1_devs")   
+
+    N.yr1 <- which(asap.cor.names=="log_N_year1_devs")
     asap.cor.names[N.yr1] <- paste(asap.cor.names[N.yr1],"Age",seq(2,asap$parms$nages), sep=".")
-    
-    recr.devs <- which(asap.cor.names=="log_recruit_devs")   
+
+    recr.devs <- which(asap.cor.names=="log_recruit_devs")
     asap.cor.names[recr.devs] <- paste(asap.cor.names[recr.devs],years, sep=".")
-    Fmult.yr1 <- which(asap.cor.names=="log_Fmult_year1")   
+    Fmult.yr1 <- which(asap.cor.names=="log_Fmult_year1")
     asap.cor.names[Fmult.yr1] <- paste(asap.cor.names[Fmult.yr1],fleet.names, sep=".")
-    Fmult.devs <- which(asap.cor.names=="log_Fmult_devs")   
+    Fmult.devs <- which(asap.cor.names=="log_Fmult_devs")
     asap.cor.names[Fmult.devs] <- paste(asap.cor.names[Fmult.devs],paste(fleet.names, rep(years[2:length(years)], each=asap$parms$nfleets),  sep="."), sep=".")
-    q.yr1 <- which(asap.cor.names=="log_q_year1")   
+    q.yr1 <- which(asap.cor.names=="log_q_year1")
     asap.cor.names[q.yr1] <- paste(asap.cor.names[q.yr1],index.names, sep=".")
-    
-    q.devs <- which(asap.cor.names=="log_q_devs")   
+
+    q.devs <- which(asap.cor.names=="log_q_devs")
     #asap.cor.names[q.devs] <- paste(asap.cor.names[q.devs],index.names, sep=".")
     if (length(q.devs)>0) asap.cor.names[q.devs] <- paste(asap.cor.names[q.devs],years, sep=".")
     diag(asap.cor.mat) <- rep(NA, ncol.cor)
-    
-    # Read in par file from admb    
-    asap.grad <- readLines(par.fname, n=1) 
+
+    # Read in par file from admb
+    asap.grad <- readLines(par.fname, n=1)
     par.split<- unlist(strsplit(asap.grad, " "))
     max.grad <- par.split[length(par.split)]
     npar <- as.numeric(par.split[ 6])
     aux.list <-  list("npar"=npar, "asap.cor.names"=asap.cor.names, "asap.cor.mat"=asap.cor.mat,
-                      "asap.std"=asap.std, "max.grad"=max.grad, "F.rep"=F.rep[1], "Tot.B"=Tot.B[1], 
+                      "asap.std"=asap.std, "max.grad"=max.grad, "F.rep"=F.rep[1], "Tot.B"=Tot.B[1],
                       "SSB"=SSB[1], "Expl.B"=Expl.B[1] , "recr"=recr[1], "asap.name"=asap.name )
   } else {
     stop(paste0(asap.name,".std or ",asap.name,".STD file not found in 'wd'"))

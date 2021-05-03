@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -111,6 +111,12 @@
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -168,21 +174,65 @@
       <small>Source: <a href='https://github.com/timjmiller/wham/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="wham-1-0-3-2021-02-05" class="section level1">
-<h1 class="page-header" data-toc-text="1.0.3">
-<a href="#wham-1-0-3-2021-02-05" class="anchor"></a>wham 1.0.3 (2021-02-05)</h1>
+    <div id="wham-1-0-4-2021-05-03" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.4">
+<a href="#wham-1-0-4-2021-05-03" class="anchor"></a>wham 1.0.4 (2021-05-03)</h1>
+<p>WHAM description + simulation test paper published: <a href="https://doi.org/10.1016/j.fishres.2021.105967">https://doi.org/10.1016/j.fishres.2021.105967</a></p>
+<div id="major-improvements" class="section level3">
+<h3 class="hasAnchor">
+<a href="#major-improvements" class="anchor"></a>Major improvements</h3>
+<ul>
+<li>New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to <a href='https://github.com/liz-brooks'>@liz-brooks</a> for contributing <code>read_asap3_fit</code>! See <code><a href="../reference/compare_wham_models.html">?compare_wham_models</a></code> and new <a href="https://timjmiller.github.io/wham/articles/ex8_compare.html">vignette 8</a>.</li>
+</ul>
+</div>
 <div id="minor-improvements" class="section level3">
 <h3 class="hasAnchor">
 <a href="#minor-improvements" class="anchor"></a>Minor improvements</h3>
+<ul>
+<li>New <code>save.sdrep = F</code> option to only save <code><a href="https://rdrr.io/r/base/summary.html">summary(sdreport)</a></code> instead of <code>sdreport</code>. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). (<a href="https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d">2f8875</a>).</li>
+<li>Added <code>proj.opts$percentFXSPR</code> option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so <code>proj.opts$percentFXSPR = 75</code>.</li>
+<li>Added <code>proj.opts$useFMSY</code> and <code>proj.opts$percentFMSY</code> options, to project population and catches at (a percentage of) F_MSY. (<a href="https://github.com/timjmiller/wham/commit/46753202499cbf256fb79796f8570e045dddb9db">467532</a>)</li>
+<li>Allow peels to be projected so can do retrospective predictions, as in Fig. 4 of <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/fog.12236">Xu et al. 2018</a>. See new <a href="https://timjmiller.github.io/wham/articles/ex9_retro_pred.html">vignette 9</a>. (<a href="https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f#diff-7f3a4433e0573f6fd6787d47614e0303f714e2d71d9e618ecfb832195987b732">e1e00c</a>)</li>
+</ul>
+</div>
+<div id="bug-fixes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
+<ul>
+<li>Broken links in vignettes (thanks to <a href='https://github.com/tcarruth'>@tcarruth</a>)</li>
+<li>Plotting issue with Ecov OSA residuals and peels (thanks to <a href='https://github.com/h-du-pontavice'>@h-du-pontavice</a>, <a href="https://github.com/timjmiller/wham/commit/1163df4290387174a5336ada98a13dc0f5a9644c">1163df</a>)</li>
+<li>Double logistic selectivity setup in <code>prepare_wham_input</code> (thanks to <a href='https://github.com/tcarruth'>@tcarruth</a>, <a href="https://github.com/timjmiller/wham/commit/f270ddb66d253ac2aaf9a0109631b89036ddcd5e">f270dd</a>)</li>
+<li>
+<code>tryCatch</code> error assignment issues (<a href="https://github.com/timjmiller/wham/commit/9d5c8792769dae9e640da3ad44b7f3e6b74e4a87">9d5c87</a>)</li>
+<li>Remove error in default projection options (<code>percentSPR</code>)</li>
+<li>Setting up projections with multiple Ecovs (again thanks to <a href='https://github.com/h-du-pontavice'>@h-du-pontavice</a>, <a href="https://github.com/timjmiller/wham/commit/42a6a4950e85613219525e89c5590c37f3a6369f">42a6a4</a>)</li>
+<li>Selectivity parameter initial values set to middle of range if unspecified in <code>prepare_wham_input</code>
+</li>
+<li>Fixed <code>fit_tmb</code> to make <code>$final_gradient</code> reported by wham equivalent to <code>sdreport()$gradient.fixed</code>. Issue was that the <code>model$env$last.par.best</code> is not updated by the newton steps after optimization so <code>model$opt$par</code> was slightly different (10^(-7) or smaller). <a href="https://github.com/timjmiller/wham/commit/e20bd8d01a32b1cbdb826905257555f9a8b55c75">e20bd8</a>
+</li>
+<li>Factor order problem caused indices to be out of order when &gt; 9 indices present. <a href="https://github.com/timjmiller/wham/commit/9e0141b59bb80d17b9fc79662e3f38b24b8991f1">9e0141</a>
+</li>
+<li>Fixed default determination of age corresponding to fully selected (total) fishing mortality. Now <code>which_F_age</code> is a vector of annual values (including projection years) and the values are reassigned after fitting before reporting. (<a href="https://github.com/timjmiller/wham/commit/189b6cede494a53763afcda5b0bf6854fed095d5">189b6c</a>)</li>
+<li>Added check for F_XSPR to verify percent of SPR0 is correct and, in projections, catch at F from catch is verified. Initial values for these algorithms can be specified by the user. (<a href="https://github.com/timjmiller/wham/commit/189b6cede494a53763afcda5b0bf6854fed095d5">189b6c</a>)</li>
+<li>If ecov years differ from model years, peel to same year in <code>fit_peel</code> (<a href="https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f">e1e00c</a>)</li>
+</ul>
+</div>
+</div>
+    <div id="wham-1-0-3-2021-02-05" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.3">
+<a href="#wham-1-0-3-2021-02-05" class="anchor"></a>wham 1.0.3 (2021-02-05)</h1>
+<div id="minor-improvements-1" class="section level3">
+<h3 class="hasAnchor">
+<a href="#minor-improvements-1" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>allow for multiple ecov effects on recruitment and M</li>
 <li>add WHAM version to model object (version and GitHub commit). Requires <code>sessioninfo</code> package (within <code>devtools</code>).</li>
 <li>for SCAA (recruitment as fixed effects), treat recruitment in projections as random effects with mean and SD calculated from model years (previously was fixed at <code><a href="https://rdrr.io/r/base/Log.html">exp(10)</a></code>). This approximates ASAP + AgePro, allows for simulating projected recruitment according to the ECDF.</li>
 </ul>
 </div>
-<div id="bug-fixes" class="section level3">
+<div id="bug-fixes-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-1" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>clean up error messages (remove global <code>err</code> object) <a href="https://github.com/timjmiller/wham/commit/53f5ec67a6f60ea85b928debc4a57d0ee6673e78">53f5ec6</a>
 </li>
@@ -194,9 +244,9 @@
     <div id="wham-1-0-2-2020-12-14" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.2">
 <a href="#wham-1-0-2-2020-12-14" class="anchor"></a>wham 1.0.2 (2020-12-14)</h1>
-<div id="minor-improvements-1" class="section level3">
+<div id="minor-improvements-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements-1" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-2" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>add <code>1e-15</code> to predicted proportions to make age composition likelihoods robust to 0 predictions when selAA is fixed at 0. This affects the multinomial, Dirichlet, and Dirichlet-multinomial (options 1-3), since the logistic normal (options 4-7) already did this. <a href="https://github.com/timjmiller/wham/commit/88f15d4a51f69a3d649d76bcac0a8cf299c3135e">88f15d4</a>
 </li>
@@ -205,9 +255,9 @@
 <li>estimate age-specific M for any age(s) (<a href="https://github.com/timjmiller/wham/commit/60f13584e515950bf43f358c5a0cfdb0e8a30241">60f1358</a>)</li>
 </ul>
 </div>
-<div id="bug-fixes-1" class="section level3">
+<div id="bug-fixes-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-1" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-2" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>check for sel par inits outside lower/upper bounds (<a href="https://github.com/timjmiller/wham/commit/4ed394bac38d6054727bc4d3e17c8f4452ae8289">4ed394b</a>)</li>
 <li>fleet weight-at-age pointers fixed (<a href="https://github.com/timjmiller/wham/commit/059e66a1cc6e90554862b3e30e815cf0d5cd18ab">059e66a</a>)</li>
@@ -218,18 +268,18 @@
     <div id="wham-1-0-1-2020-11-12" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.1">
 <a href="#wham-1-0-1-2020-11-12" class="anchor"></a>wham 1.0.1 (2020-11-12)</h1>
-<div id="minor-improvements-2" class="section level3">
+<div id="minor-improvements-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements-2" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-3" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>
 <code>run_all_examples.R</code> script to test all examples work</li>
 <li>new vignette on debugging WHAM models</li>
 </ul>
 </div>
-<div id="bug-fixes-2" class="section level3">
+<div id="bug-fixes-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-2" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-3" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>update <code><a href="https://tidyr.tidyverse.org/reference/gather.html">tidyr::gather</a></code> to <code><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">tidyr::pivot_longer</a></code> (<a href="https://github.com/timjmiller/wham/commit/80bf89a69975a4ac5c037127d094afc3b00b7f59">80bf89a</a>)</li>
 <li>if all selpars fixed then use ASAP file inits (<a href="https://github.com/timjmiller/wham/commit/2887e87aa4af08530765fbf04c002a00afd8efa1">2887e87</a>)</li>

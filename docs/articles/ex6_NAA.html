@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -70,6 +70,12 @@
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -212,14 +218,7 @@
 <p>Load the environmental covariate (Gulf Stream Index, GSI) data into R:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span><span class="st">"GSI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span>
-<span class="co">#&gt;   year        GSI</span>
-<span class="co">#&gt; 1 1954  0.8876748</span>
-<span class="co">#&gt; 2 1955  0.3024170</span>
-<span class="co">#&gt; 3 1956 -1.2004947</span>
-<span class="co">#&gt; 4 1957 -0.2408031</span>
-<span class="co">#&gt; 5 1958 -0.7806940</span>
-<span class="co">#&gt; 6 1959 -1.3218938</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span></code></pre></div>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">example 5</a>, the GSI data file does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value, <span class="math inline">\(\sigma_{GSI}\)</span>, or yearly values as random effects, <span class="math inline">\(\mathrm{log}\sigma_{{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})\)</span>. In this example we choose the simpler option and estimate one observation error parameter, shared across years.</p>
 </div>
 <div id="specify-models" class="section level2">
@@ -378,7 +377,7 @@
 <span class="va">not_conv</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">|</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span>
 <span class="va">mods2</span> <span class="op">&lt;-</span> <span class="va">mods</span>
 <span class="va">mods2</span><span class="op">[</span><span class="va">not_conv</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
-<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
+<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
 <span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="cn">FALSE</span>,<span class="op">]</span>
 <span class="va">ct</span> <span class="op">=</span> <span class="fl">1</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
@@ -477,7 +476,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.18
+0.19
 </td>
 <td style="text-align:right;">
 -623.383
@@ -518,7 +517,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.40
+1.35
 </td>
 <td style="text-align:right;">
 -509.364
@@ -559,7 +558,7 @@ TRUE
 FALSE
 </td>
 <td style="text-align:right;">
-1.55
+1.03
 </td>
 <td style="text-align:right;">
 -526.969
@@ -600,7 +599,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.38
+0.37
 </td>
 <td style="text-align:right;">
 -751.564
@@ -641,7 +640,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.78
+0.75
 </td>
 <td style="text-align:right;">
 -761.869
@@ -682,7 +681,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.84
+0.79
 </td>
 <td style="text-align:right;">
 -756.660
@@ -723,7 +722,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.98
+0.86
 </td>
 <td style="text-align:right;">
 -764.728
@@ -764,7 +763,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-1.36
+1.45
 </td>
 <td style="text-align:right;">
 -520.414
@@ -799,13 +798,13 @@ rec
 Limiting
 </td>
 <td style="text-align:left;">
-FALSE
+TRUE
 </td>
 <td style="text-align:left;">
 FALSE
 </td>
 <td style="text-align:right;">
-0.98
+1.06
 </td>
 <td style="text-align:right;">
 -531.028
@@ -846,7 +845,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.40
+0.44
 </td>
 <td style="text-align:right;">
 -760.977
@@ -887,7 +886,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-0.82
+0.91
 </td>
 <td style="text-align:right;font-weight: bold;">
 -770.789
@@ -928,7 +927,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;">
-0.93
+0.82
 </td>
 <td style="text-align:right;">
 -762.934
@@ -969,7 +968,7 @@ TRUE
 TRUE
 </td>
 <td style="text-align:right;font-weight: bold;">
-1.03
+0.93
 </td>
 <td style="text-align:right;font-weight: bold;">
 -771.602
@@ -1006,7 +1005,7 @@ TRUE
 <div id="retrospective-patterns" class="section level4">
 <h4 class="hasAnchor">
 <a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
-<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (<span class="math inline">\(\rho_R\)</span> = 5.68). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m5-7</code> and <code>m10-13</code> all below 0.32). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(|\rho_{SSB}|\)</span> and <span class="math inline">\(|\rho_{\overline{F}}|\)</span> were negligible for <code>m5-7</code>, &lt; 0.05).</p>
+<p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (very high <span class="math inline">\(\rho_R\)</span>). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m5-7</code> and <code>m10-13</code> all below 0.4). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(|\rho_{SSB}|\)</span> and <span class="math inline">\(|\rho_{\overline{F}}|\)</span> were negligible for <code>m5-7</code>, &lt; 0.05).</p>
 <p>Comparing <code>m11</code> and <code>m13</code>, the models with lowest AIC, <code>m13</code> had slightly lower Mohn’s <span class="math inline">\(\rho_R\)</span>, <span class="math inline">\(\rho_{SSB}\)</span>, and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
 <p>The plots below compare retrospective patterns from the base model (<code>m1</code>, left) to those from the full model (<code>m13</code>, right).</p>
 <div id="numbers-at-age-naa" class="section level6">
