@@ -226,7 +226,7 @@ check_projF = function(mod)
         mod$fn(mod$opt$par)
         # mod$rep = mod$report(mod$opt$par)
         mod$rep = mod$report(mod$env$last.par)
-        bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,]),4))
+        bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
         if(!length(bad)) break
       }
     }

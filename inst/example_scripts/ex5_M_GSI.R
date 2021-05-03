@@ -205,6 +205,14 @@ png(filename = file.path(getwd(), paste0("MAA.png")), width = 8.5, height = 5, r
       scale_fill_viridis())
 dev.off()
 
-# # make sure NLL doesn't change with projections
-# samenll <- mapply(function(x,y) ifelse(all.equal(x$opt$objective, y$opt$objective)==TRUE, TRUE, FALSE), mods, mods_proj)
-# samenll
+# add projections
+mods_proj <- vector("list",n.mods)
+tofit <- c(1:3,5:11)
+for(m in tofit){
+  mods_proj[[m]] <- project_wham(mods[[m]], MakeADFun.silent=TRUE)
+}
+
+# make sure NLL doesn't change with projections
+samenll <- mapply(function(x,y) ifelse(all.equal(x$opt$objective, y$opt$objective)==TRUE, TRUE, FALSE), mods[tofit], mods_proj[tofit])
+samenll
+

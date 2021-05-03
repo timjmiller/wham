@@ -262,7 +262,7 @@ prepare_projection = function(model, proj.opts)
     # ind.proj <- which(is.na(tmp))
     # par$M_re[ind.proj] <- 0
 
-    par$M_re <- rbind(par$M_re[1:(data$n_years_model-1),], matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+    par$M_re <- rbind(par$M_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
     tmp <- par$M_re
     if(data$M_re_model %in% c(2,5)){ # iid / 2d ar1
       tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
