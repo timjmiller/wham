@@ -1,6 +1,6 @@
 Package: wham
 Title: Woods Hole Assessment Model (WHAM)
-Version: 1.0.3.9000
+Version: 1.0.4
 Authors@R: c(
     person("Tim", "Miller", role = c("aut"),
            email = "timothy.j.miller@noaa.gov"),

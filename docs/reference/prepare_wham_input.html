@@ -76,7 +76,7 @@ By default, this will set up a SCAA version like ASAP." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -114,6 +114,12 @@ By default, this will set up a SCAA version like ASAP." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -304,7 +310,7 @@ If <code>NULL</code>, selectivity options from the ASAP data file are used. <cod
                    <dt>"ar1"</dt><dd><p>correlated by age/par (AR1), but not year</p></dd>
                    <dt>"ar1_y"</dt><dd><p>correlated by year (AR1), but not age/par</p></dd>
                    <dt>"2dar1"</dt><dd><p>correlated by year and age/par (2D AR1)</p></dd></dl></p></dd>
-    <dt>$initial_pars</dt><dd><p>Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. <code><a href='https://rdrr.io/r/base/c.html'>c(2,0.2)</a></code> for logistic or <code><a href='https://rdrr.io/r/base/c.html'>c(0.5,0.5,0.5,1,1,0.5)</a></code> for age-specific with 6 ages.</p></dd>
+    <dt>$initial_pars</dt><dd><p>Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. <code><a href='https://rdrr.io/r/base/c.html'>c(2,0.2)</a></code> for logistic or <code><a href='https://rdrr.io/r/base/c.html'>c(0.5,0.5,0.5,1,1,0.5)</a></code> for age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 for logistic, double-logistic, and decreasing-logistic.</p></dd>
     <dt>$fix_pars</dt><dd><p>Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, <code><a href='https://rdrr.io/r/base/list.html'>list(c(4,5),4,c(2,3,4))</a></code> will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.</p></dd>
   
 </dl>

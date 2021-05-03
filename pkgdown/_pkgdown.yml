@@ -24,6 +24,10 @@ navbar:
          href: articles/ex6_NAA.html
       -  text: "Ex 7: Debugging WHAM models"
          href: articles/ex7_debug.html
+      -  text: "Ex 8: Compare ASAP and WHAM model results"
+         href: articles/ex8_compare.html
+      -  text: "Ex 9: Retrospective predictions"
+         href: articles/ex9_retro_pred.html
 
     - text: "Functions"
       icon: far fa-file-code fa-lg
@@ -63,6 +67,8 @@ articles:
       - ex5_GSI_M
       - ex6_NAA
       - ex7_debug
+      - ex8_compare
+      - ex9_retro_pred
 
 reference:
   - title: Functions that users call directly
@@ -87,4 +93,6 @@ reference:
       - '`mohns_rho`'
       - '`prepare_projection`'
       - '`wham_html`'
+      - '`read_asap3_fit`'
+      - '`read_wham_fit`'
       - '`%>%`'

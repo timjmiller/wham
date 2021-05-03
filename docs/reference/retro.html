@@ -75,7 +75,7 @@ to fit the model peeling off 1, 2, ..., n.peels years of data." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -113,6 +113,12 @@ to fit the model peeling off 1, 2, ..., n.peels years of data." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -183,7 +189,8 @@ to fit the model peeling off <code>1, 2, ..., n.peels</code> years of data.</p>
   do.sdrep <span class='op'>=</span> <span class='cn'>FALSE</span>,
   n.newton <span class='op'>=</span> <span class='fl'>0</span>,
   MakeADFun.silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  retro.silent <span class='op'>=</span> <span class='cn'>FALSE</span>
+  retro.silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  save.input <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -216,6 +223,10 @@ to fit the model peeling off <code>1, 2, ..., n.peels</code> years of data.</p>
     <tr>
       <th>retro.silent</th>
       <td><p>T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = <code>FALSE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>save.input</th>
+      <td><p>T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = <code>FALSE</code>.</p></td>
     </tr>
     </table>
 

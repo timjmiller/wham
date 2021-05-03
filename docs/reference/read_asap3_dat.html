@@ -42,9 +42,11 @@
   
 
 <meta property="og:title" content="Read an ASAP3 .dat file into R — read_asap3_dat" />
-<meta property="og:description" content="WHAM is built on ASAP3 and this
+<meta property="og:description" content="WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06
 function provides functionality to use a preexisting ASAP3 input data file. The
-output of read_asap3_dat should then be passed to prepare_wham_input." />
+output of read_asap3_dat should then be passed to prepare_wham_input. 
+If you are not familiar with ASAP3 input files, see the ASAP documentation 
+and code." />
 
 
 
@@ -76,7 +78,7 @@ output of read_asap3_dat should then be passed to prepare_wham_input." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -114,6 +116,12 @@ output of read_asap3_dat should then be passed to prepare_wham_input." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -173,9 +181,11 @@ output of read_asap3_dat should then be passed to prepare_wham_input." />
     </div>
 
     <div class="ref-description">
-    <p>WHAM is built on <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP3</a> and this
+    <p>WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06<!-- %20ASAPdoc.pdf)) and this -->
 function provides functionality to use a preexisting ASAP3 input data file. The
-output of <code>read_asap3_dat</code> should then be passed to <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>.</p>
+output of <code>read_asap3_dat</code> should then be passed to <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>. 
+If you are not familiar with ASAP3 input files, see the ASAP <a href='https://github.com/cmlegault/ASAPplots/tree/master/pdf'>documentation</a> 
+and <a href='https://nmfs-fish-tools.github.io/ASAP/'>code</a>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>read_asap3_dat</span><span class='op'>(</span><span class='va'>filename</span><span class='op'>)</span></pre>
@@ -200,7 +210,7 @@ in the current working directory, or <code>filename</code> can include the path.
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code></p></div>
+    <div class='dont-index'><p><code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://github.com/cmlegault/ASAPplots/tree/master/pdf'>ASAP documentation</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>

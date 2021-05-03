@@ -1,18 +1,18 @@
-wham 1.0.3.9000
+wham 1.0.4 (2021-05-03)
 =========================
 
 WHAM description + simulation test paper published: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967)
 
 ### Major improvements
 
-* New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to @liz-brooks for contributing `read_asap3_fit`! See `?compare_wham_models` and new vignette 8.
+* New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to @liz-brooks for contributing `read_asap3_fit`! See `?compare_wham_models` and new [vignette 8](https://timjmiller.github.io/wham/articles/ex8_compare.html).
 
 ### Minor improvements
 
 * New `save.sdrep = F` option to only save `summary(sdreport)` instead of `sdreport`. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). ([2f8875](https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d)).
 * Added `proj.opts$percentFXSPR` option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so `proj.opts$percentFXSPR = 75`.
 * Added `proj.opts$useFMSY` and `proj.opts$percentFMSY` options, to project population and catches at (a percentage of) F_MSY. ([467532](https://github.com/timjmiller/wham/commit/46753202499cbf256fb79796f8570e045dddb9db))
-* Allow peels to be projected so can do retrospective predictions, as in Fig. 4 of [Xu et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/fog.12236). See new vignette 9. ([e1e00c](https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f#diff-7f3a4433e0573f6fd6787d47614e0303f714e2d71d9e618ecfb832195987b732))
+* Allow peels to be projected so can do retrospective predictions, as in Fig. 4 of [Xu et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/fog.12236). See new [vignette 9](https://timjmiller.github.io/wham/articles/ex9_retro_pred.html). ([e1e00c](https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f#diff-7f3a4433e0573f6fd6787d47614e0303f714e2d71d9e618ecfb832195987b732))
 
 ### Bug fixes
 

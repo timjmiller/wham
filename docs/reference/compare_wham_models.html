@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compare WHAM models — compare_wham_models • wham</title>
+<title>Compare multiple WHAM (or ASAP) models — compare_wham_models • wham</title>
 
 
 <!-- jquery -->
@@ -41,9 +41,9 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Compare WHAM models — compare_wham_models" />
-<meta property="og:description" content="After fitting multiple WHAM models, compare_wham_models produces a table
-of AIC and Mohn's rho to aid model comparison." />
+<meta property="og:title" content="Compare multiple WHAM (or ASAP) models — compare_wham_models" />
+<meta property="og:description" content="After fitting multiple WHAM (or ASAP) models, compare_wham_models produces plots
+and a table of AIC and Mohn's rho to aid model comparison." />
 
 
 
@@ -75,7 +75,7 @@ of AIC and Mohn's rho to aid model comparison." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -113,6 +113,12 @@ of AIC and Mohn's rho to aid model comparison." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -166,24 +172,28 @@ of AIC and Mohn's rho to aid model comparison." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Compare WHAM models</h1>
+    <h1>Compare multiple WHAM (or ASAP) models</h1>
     <small class="dont-index">Source: <a href='https://github.com/timjmiller/wham/blob/master/R/compare_wham_models.R'><code>R/compare_wham_models.R</code></a></small>
     <div class="hidden name"><code>compare_wham_models.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>After fitting multiple WHAM models, <code>compare_wham_models</code> produces a table
-of AIC and Mohn's rho to aid model comparison.</p>
+    <p>After fitting multiple WHAM (or ASAP) models, <code>compare_wham_models</code> produces plots
+and a table of AIC and Mohn's rho to aid model comparison.</p>
     </div>
 
     <pre class="usage"><span class='fu'>compare_wham_models</span><span class='op'>(</span>
   <span class='va'>mods</span>,
-  fname <span class='op'>=</span> <span class='st'>"model_comparison"</span>,
-  sort <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  calc.rho <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  calc.aic <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  do.table <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  do.plot <span class='op'>=</span> <span class='cn'>TRUE</span>,
   fdir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/getwd.html'>getwd</a></span><span class='op'>(</span><span class='op'>)</span>,
-  do.print <span class='op'>=</span> <span class='cn'>TRUE</span>
+  table.opts <span class='op'>=</span> <span class='cn'>NULL</span>,
+  plot.opts <span class='op'>=</span> <span class='cn'>NULL</span>,
+  fname <span class='op'>=</span> <span class='cn'>NULL</span>,
+  sort <span class='op'>=</span> <span class='cn'>NULL</span>,
+  calc.rho <span class='op'>=</span> <span class='cn'>NULL</span>,
+  calc.aic <span class='op'>=</span> <span class='cn'>NULL</span>,
+  do.print <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -191,58 +201,91 @@ of AIC and Mohn's rho to aid model comparison.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>mods</th>
-      <td><p>(named) list of fit WHAM models. If no names are given, "m1", "m2", ...
+      <td><p>(named) list of fit WHAM/ASAP models. To read in ASAP model output, use <code><a href='read_asap3_fit.html'>read_asap3_fit</a></code>. If no names are given, 'm1', 'm2', ...
 will be used.</p></td>
     </tr>
     <tr>
-      <th>fname</th>
-      <td><p>character, filename to save CSV results table (.csv will be appended). Default = "model_comparison".</p></td>
+      <th>do.table</th>
+      <td><p>T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.</p></td>
     </tr>
     <tr>
-      <th>sort</th>
-      <td><p>T/F, sort by AIC? Default = TRUE.</p></td>
-    </tr>
-    <tr>
-      <th>calc.rho</th>
-      <td><p>T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.</p></td>
-    </tr>
-    <tr>
-      <th>calc.aic</th>
-      <td><p>T/F, calculate AIC? Default = TRUE.</p></td>
+      <th>do.plot</th>
+      <td><p>T/F, produce plots? Default = TRUE.</p></td>
     </tr>
     <tr>
       <th>fdir</th>
-      <td><p>character, path to directory to save CSV results table. Default = getwd().</p></td>
+      <td><p>character, path to directory to save table and/or plots. Default = getwd().</p></td>
     </tr>
     <tr>
-      <th>do.print</th>
-      <td><p>T/F, print table to console? Default = TRUE.</p></td>
+      <th>table.opts</th>
+      <td><p>list of options for AIC/rho table:</p><dl>
+  <dt><code>$fname</code></dt><dd><p>character, filename to save CSV results table (.csv will be appended). Default = 'model_comparison'.</p></dd>
+  <dt><code>$sort</code></dt><dd><p>T/F, sort by AIC? Default = TRUE.</p></dd>
+  <dt><code>$calc.rho</code></dt><dd><p>T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.</p></dd>
+  <dt><code>$calc.aic</code></dt><dd><p>T/F, calculate AIC? Default = TRUE.</p></dd>
+  <dt><code>$print</code></dt><dd><p>T/F, print table to console? Default = TRUE.</p></dd> 
+  <dt><code>$save.csv</code></dt><dd><p>T/F, save table as a CSV file? Default = TRUE.</p></dd> 
+
+</dl></td>
+    </tr>
+    <tr>
+      <th>plot.opts</th>
+      <td><p>list of options for plots:</p><dl>
+  <dt><code>$out.type</code></dt><dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code><a href='https://rdrr.io/r/base/system.html'>system('pdftk')</a></code> will work across platforms.)</p></dd>
+  <dt><code>$ci</code></dt><dd><p>vector of T/F, length = 1 (applied to all models) or number of models</p></dd>
+  <dt><code>$years</code></dt><dd><p>vector, which years to plot? Default = all (model and projection years).</p></dd>
+  <dt><code>$which</code></dt><dd><p>vector, which plots to make? Default = all. See details.</p></dd>
+  <dt><code>$relative.to</code></dt><dd><p>character, name of "base" model to plot differences relative to.</p></dd>
+  <dt><code>$alpha</code></dt><dd><p>scalar, (1-alpha)% confidence intervals will be plotted. Default = 0.05 for 95% CI.</p></dd>
+  <dt><code>$ages.lab</code></dt><dd><p>vector, overwrite model age labels.</p></dd>
+  <dt><code>$kobe.yr</code></dt><dd><p>integer, which year to use in Kobe plot (relative status). Default = terminal model year.</p></dd>
+  <dt><code>$M.age</code></dt><dd><p>integer, which age to use in M time-series plot. Default = `max(data$which_F_age)` (max age of F to use for full total F).</p></dd>
+  <dt><code>$return.ggplot</code></dt><dd><p>T/F, return a list of ggplot2 objects for later modification? Default = TRUE.</p></dd>
+  <dt><code>$kobe.prob</code></dt><dd><p>T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.</p></dd>
+
+</dl></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a list with the following components:</p><dl>
-    <dt><code>daic</code></dt><dd><p>Vector of delta-AIC by model</p></dd>
-    <dt><code>aic</code></dt><dd><p>Vector of AIC by model</p></dd>
-    <dt><code>rho</code></dt><dd><p>Matrix of Mohn's rho by model</p></dd>
-    <dt><code>best</code></dt><dd><p>Name of best model (lowest AIC)</p></dd>
-    <dt><code>tab</code></dt><dd><p>Results table of AIC and Mohn's rho</p></dd>
+    <dt><code>daic</code></dt><dd><p>Vector of delta-AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
+    <dt><code>aic</code></dt><dd><p>Vector of AIC by model (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
+    <dt><code>rho</code></dt><dd><p>Matrix of Mohn's rho by model (if `do.table=T` and `table.opts$calc.rho=T`)</p></dd>
+    <dt><code>best</code></dt><dd><p>Name of best model (lowest AIC) (if `do.table=T` and `table.opts$calc.aic=T`)</p></dd>
+    <dt><code>tab</code></dt><dd><p>Results table of AIC and Mohn's rho (if `do.table=T`)</p></dd>
+    <dt><code>g</code></dt><dd><p>List of ggplot2 objects for later modification (if `do.plot=T` and `plot.opts$return.ggplot=T`)</p></dd>
   
 </dl>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p><code>plot.opts$which</code> specifies which plots to make:</p><dl>
+    <dt>1</dt><dd><p>3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment</p></dd>
+    <dt>2</dt><dd><p>CV (coefficient of variation) for SSB, F, and Recruitment</p></dd>
+    <dt>3</dt><dd><p>Fleet selectivity (by block, averaged across years)</p></dd>
+    <dt>4</dt><dd><p>Index selectivity (by block, averaged across years)</p></dd>
+    <dt>5</dt><dd><p>Selectivity tile (fleets + indices, useful for time-varying random effects)</p></dd>
+    <dt>6</dt><dd><p>M time series (natural mortality, can specify which age with plot.opts$M.age)</p></dd>
+    <dt>7</dt><dd><p>M tile (useful for time-varying random effects)</p></dd>
+    <dt>8</dt><dd><p>3-panel of F X% SPR, SSB at F_X%SPR, and yield at F_X%SPR</p></dd>
+    <dt>9</dt><dd><p>2-panel of relative status (SSB / SSB at F_X%SPR and F / F_X%SPR)</p></dd>
+    <dt>10</dt><dd><p>Kobe status (relative SSB vs. relative F)</p></dd>
+  
+</dl><p>If <code>plot.opts$return.ggplot = TRUE</code>, a list `g` is returned holding the above ggplot2 objects for later modification.
+`g[[i]]` holds the plot corresponding to `i` above, e.g. `g[[2]]` is the CV plot.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code></p></div>
+    <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='read_asap3_fit.html'>read_asap3_fit</a>, <code><a href='read_wham_fit.html'>read_wham_fit</a></code></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='va'>base</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_asap3_fit.html'>read_asap3_fit</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>m1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input1</span><span class='op'>)</span>
 <span class='va'>m2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input2</span><span class='op'>)</span>
-<span class='va'>mods</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>m1<span class='op'>=</span><span class='va'>m1</span>, m2<span class='op'>=</span><span class='va'>m2</span><span class='op'>)</span>
+<span class='va'>mods</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>base<span class='op'>=</span><span class='va'>base</span>, m1<span class='op'>=</span><span class='va'>m1</span>, m2<span class='op'>=</span><span class='va'>m2</span><span class='op'>)</span>
 <span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'>compare_wham_models</span><span class='op'>(</span><span class='va'>mods</span><span class='op'>)</span>
-<span class='va'>res</span><span class='op'>$</span><span class='va'>best</span>
-<span class='va'>res</span><span class='op'>$</span><span class='va'>tab</span>
 <span class='op'>}</span>
 
 </div></pre>

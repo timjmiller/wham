@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculate Mohn's rho for a WHAM model with peels — mohns_rho • wham</title>
+<title>Read ASAP3 fit — read_asap3_fit • wham</title>
 
 
 <!-- jquery -->
@@ -41,8 +41,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Calculate Mohn's rho for a WHAM model with peels — mohns_rho" />
-<meta property="og:description" content="Calculate Mohn's rho for a WHAM model with peels" />
+<meta property="og:title" content="Read ASAP3 fit — read_asap3_fit" />
+<meta property="og:description" content="Gets output from a fit ASAP3 model for plotting with WHAM models." />
 
 
 
@@ -171,39 +171,68 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Calculate Mohn's rho for a WHAM model with peels</h1>
-    <small class="dont-index">Source: <a href='https://github.com/timjmiller/wham/blob/master/R/mohns_rho.R'><code>R/mohns_rho.R</code></a></small>
-    <div class="hidden name"><code>mohns_rho.Rd</code></div>
+    <h1>Read ASAP3 fit</h1>
+    <small class="dont-index">Source: <a href='https://github.com/timjmiller/wham/blob/master/R/read_asap3_fit.R'><code>R/read_asap3_fit.R</code></a></small>
+    <div class="hidden name"><code>read_asap3_fit.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Calculate Mohn's rho for a WHAM model with peels</p>
+    <p>Gets output from a fit ASAP3 model for plotting with WHAM models.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mohns_rho</span><span class='op'>(</span><span class='va'>model</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>read_asap3_fit</span><span class='op'>(</span><span class='va'>wd</span>, <span class='va'>asap.name</span>, pSPR <span class='op'>=</span> <span class='fl'>40</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>model</th>
-      <td><p>A fit WHAM model, output from <code><a href='fit_wham.html'>fit_wham</a></code> with <code>do.retro = TRUE</code>.</p></td>
+      <th>wd</th>
+      <td><p>character, directory where ASAP3 output files are located (ex: 'C:/MY/file/directories/model/'). 5 files are needed: <code>.rdat</code>, <code>.dat</code>, <code>.std</code>, <code>.cor</code>, and <code>.par</code>.</p></td>
+    </tr>
+    <tr>
+      <th>asap.name</th>
+      <td><p>character, base name of original .dat file (i.e. without the .dat extension)</p></td>
+    </tr>
+    <tr>
+      <th>pSPR</th>
+      <td><p>scalar, user-specified percent SPR to use for reference points, expressed as 100*SSBPR(Fspr)/SSBPR(F=0). Default = 40.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>rho</code>, a vector of Mohn's rho</p>
+    <p>a named list with the following elements:</p><dl>
+    <dt><code>$years</code></dt><dd><p>numeric vector, model years only, e.g. `1972:2020`</p></dd>
+    <dt><code>$years_full</code></dt><dd><p>numeric vector, model + proj years, e.g. `1972:2022`. For ASAP this will be the same as `$years`.</p></dd>
+    <dt><code>$selAA</code></dt><dd><p>list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, `selAA[[5]]` is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age</p></dd>
+    <dt><code>$selblock_pointer_fleets</code></dt><dd><p>matrix, n_years x n_fleets, indices of selAA used by each fleet in each year</p></dd>
+    <dt><code>$selblock_pointer_indices</code></dt><dd><p>matrix, n_years x n_indices, indices of selAA used by each index in each year</p></dd>
+    <dt><code>$MAA</code></dt><dd><p>matrix, n_years x n_ages, natural mortality</p></dd>
+    <dt><code>$log_SSB</code></dt><dd><p>matrix, n_years x 2, log-scale spawning stock biomass. 1st col = MLE, 2nd col = SE (from .std file in ADMB).</p></dd>
+    <dt><code>$log_F</code></dt><dd><p>matrix, n_years x 2, log-scale fully-selected F. 1st col = MLE, 2nd col = SE (from .std file in ADMB).</p></dd>
+    <dt><code>$log_NAA</code></dt><dd><p>matrix, n_years x n_ages, numbers at age</p></dd>
+    <dt><code>$NAA_CV</code></dt><dd><p>matrix, n_years x n_ages, CV of numbers at age</p></dd>
+    <dt><code>$percentSPR</code></dt><dd><p>scalar, X% SPR used to calculate reference points, default = 40</p></dd>
+    <dt><code>$log_Y_FXSPR</code></dt><dd><p>matrix, n_years x 2, log-scale yield at FXSPR. 1st col = MLE, 2nd col = SE.</p></dd>
+    <dt><code>$log_FXSPR</code></dt><dd><p>matrix, n_years x 2, log-scale FXSPR. 1st col = MLE, 2nd col = SE.</p></dd>
+    <dt><code>$log_SSB_FXSPR</code></dt><dd><p>matrix, n_years x 2, log-scale SSB at FXSPR, i.e. annual numerator of SPR(FXSPR) * Recruits. 1st col = MLE, 2nd col = SE.</p></dd>
+    <dt><code>$log_rel_ssb_F_cov</code></dt><dd><p>list, length n_years, each element is a 2x2 covariance matrix with SSB / SSB_FXSPR first and F / F_FXSPR second</p></dd>
+ 
+</dl>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='retro.html'>retro</a></code></p></div>
+    <div class='dont-index'><p><code><a href='compare_wham_models.html'>compare_wham_models</a></code>, <code><a href='read_wham_fit.html'>read_wham_fit</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"input4_SNEMAYT"</span><span class='op'>)</span> <span class='co'># load SNEMA yellowtail flounder data and parameter settings</span>
-<span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span><span class='op'>)</span> <span class='co'># using default values: do.retro = T, n.peels = 7</span>
-<span class='fu'>mohns_rho</span><span class='op'>(</span><span class='va'>mod</span><span class='op'>)</span> <span class='co'># calculate Mohn's rho</span>
+<span class='va'>base</span> <span class='op'>&lt;-</span> <span class='fu'>read_asap3_fit</span><span class='op'>(</span>wd<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/getwd.html'>getwd</a></span><span class='op'>(</span><span class='op'>)</span>,<span class='st'>'asap_results'</span><span class='op'>)</span>, asap.name<span class='op'>=</span><span class='st'>'BASE_5C.DAT'</span>, pSPR<span class='op'>=</span><span class='fl'>40</span><span class='op'>)</span>
+<span class='va'>m1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input1</span><span class='op'>)</span>
+<span class='va'>m2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input2</span><span class='op'>)</span>
+<span class='va'>mods</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>base<span class='op'>=</span><span class='va'>base</span>, m1<span class='op'>=</span><span class='va'>m1</span>, m2<span class='op'>=</span><span class='va'>m2</span><span class='op'>)</span>
+<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='compare_wham_models.html'>compare_wham_models</a></span><span class='op'>(</span><span class='va'>mods</span><span class='op'>)</span>
 <span class='op'>}</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

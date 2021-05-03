@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -70,6 +70,12 @@
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -179,10 +185,10 @@
 <p>Confirm you are in the correct directory and it has the required data files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt;  [1] "CPI.csv"                "ex1_SNEMAYT.dat"        "ex1_test_results.rds"  </span>
-<span class="co">#&gt;  [4] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
-<span class="co">#&gt;  [7] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
-<span class="co">#&gt; [10] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
+<span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
+<span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex2_SNEMAYT.dat"        "ex2_test_results.rds"  </span>
+<span class="co">#&gt;  [7] "ex4_test_results.rds"   "ex5_summerflounder.dat" "ex5_test_results.rds"  </span>
+<span class="co">#&gt; [10] "ex6_test_results.rds"   "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
@@ -402,7 +408,7 @@
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></code></pre></div>
-<p>Check which models converged. Note that 1 of the 9 models did NOT converge:</p>
+<p>Check which models converged.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">vign4_conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/capture.output.html">capture.output</a></span><span class="op">(</span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign4_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
@@ -472,7 +478,7 @@
 <span class="op">}</span></code></pre></div>
 <p>Compare the models using AIC:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
 <span class="va">df.aic</span><span class="op">[</span><span class="op">!</span><span class="va">pdHess</span>,<span class="op">]</span> <span class="op">=</span> <span class="cn">NA</span>
 <span class="va">minAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
 <span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span> <span class="op">-</span> <span class="va">minAIC</span>,<span class="fl">1</span><span class="op">)</span>
@@ -486,14 +492,14 @@
 <span class="va">df.mods</span></code></pre></div>
 <pre><code>#&gt;   Model  Selectivity Block1_re opt_converged pd_hessian      NLL Runtime dAIC
 #&gt; 1    m1     logistic      none           Yes        Yes -795.146    0.23 47.6
-#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.32 10.0
-#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.37 51.6
-#&gt; 4    m4     logistic     2dar1           Yes        Yes -821.965    0.34  0.0
-#&gt; 5    m5 age-specific      none           Yes        Yes -800.055    0.21 45.8
-#&gt; 6    m6 age-specific       iid           Yes        Yes -800.055    0.76 47.8
-#&gt; 7    m7 age-specific       ar1           Yes        Yes -800.055    0.75 49.8
-#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -822.528    0.27  4.8
-#&gt; 9    m9 age-specific     2dar1           Yes        Yes -823.888    0.86  4.1
+#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.31 10.0
+#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.34 51.6
+#&gt; 4    m4     logistic     2dar1           Yes        Yes -821.965    0.36  0.0
+#&gt; 5    m5 age-specific      none           Yes        Yes -800.055    0.23 45.8
+#&gt; 6    m6 age-specific       iid           Yes        Yes -800.055    0.84 47.8
+#&gt; 7    m7 age-specific       ar1           Yes        Yes -800.055    0.84 49.8
+#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -822.528    0.31  4.8
+#&gt; 9    m9 age-specific     2dar1           Yes        Yes -823.888    1.23  4.1
 #&gt;       AIC
 #&gt; 1 -1462.3
 #&gt; 2 -1499.9
@@ -507,7 +513,7 @@
 <p>Prepare to plot selectivity-at-age for block 1 (fleet).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sjmgarnier/viridis">viridis</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/">viridis</a></span><span class="op">)</span>
 
 <span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Age-specific"</span>,<span class="st">"Logistic"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models_re</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span>
@@ -532,14 +538,14 @@
 <span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">conv</span><span class="op">)</span></code></pre></div>
-<p>Now plot selectivity-at-age for block 1 (fleet) in all models, with unconverged models pale and converged models solid.</p>
+<p>Now plot selectivity-at-age for block 1 (fleet) in all models.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu">ggplot</span><span class="op">(</span><span class="va">df</span>, <span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">geom_tile</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>fill<span class="op">=</span><span class="va">Selectivity</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">geom_label</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span>, label<span class="op">=</span><span class="va">lab</span><span class="op">)</span>, size<span class="op">=</span><span class="fl">5</span>, alpha<span class="op">=</span><span class="fl">1</span>, <span class="co">#fontface = "bold",</span>
       data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Year<span class="op">=</span><span class="fl">1975.5</span>, Age<span class="op">=</span><span class="fl">5.8</span>, lab<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span><span class="op">)</span>, sel_mod<span class="op">=</span><span class="va">sel_mod</span>, sel_cor<span class="op">=</span><span class="va">sel_cor</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>    
     <span class="fu">facet_grid</span><span class="op">(</span>rows<span class="op">=</span><span class="fu">vars</span><span class="op">(</span><span class="va">sel_cor</span><span class="op">)</span>, cols<span class="op">=</span><span class="fu">vars</span><span class="op">(</span><span class="va">sel_mod</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_fill_viridis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html">scale_fill_viridis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_x_continuous</span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu">scale_y_continuous</span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>

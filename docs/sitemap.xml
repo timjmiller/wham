@@ -46,6 +46,12 @@
     <loc>https://timjmiller.github.io/wham//reference/read_asap3_dat.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham//reference/read_asap3_fit.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham//reference/read_wham_fit.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham//reference/retro.html</loc>
   </url>
   <url>
@@ -80,5 +86,11 @@
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham//articles/ex7_debug.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham//articles/ex8_compare.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham//articles/ex9_retro_pred.html</loc>
   </url>
 </urlset>

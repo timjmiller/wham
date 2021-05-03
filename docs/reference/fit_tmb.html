@@ -76,7 +76,7 @@ Internal function called by fit_wham." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -114,6 +114,12 @@ Internal function called by fit_wham." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -178,7 +184,13 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>fit_tmb</span><span class='op'>(</span><span class='va'>model</span>, n.newton <span class='op'>=</span> <span class='fl'>3</span>, do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>, do.check <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>fit_tmb</span><span class='op'>(</span>
+  <span class='va'>model</span>,
+  n.newton <span class='op'>=</span> <span class='fl'>3</span>,
+  do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  do.check <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  save.sdrep <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -193,11 +205,15 @@ Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</
     </tr>
     <tr>
       <th>do.sdrep</th>
-      <td><p>T/F, calculate standard deviations of model parameters? See <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>sdreport</a></code>. Default = <code>TRUE</code>.</p></td>
+      <td><p>T/F, calculate standard deviations of model parameters? See <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>TMB::sdreport</a></code>. Default = <code>TRUE</code>.</p></td>
     </tr>
     <tr>
       <th>do.check</th>
-      <td><p>T/F, check if model parameters are identifiable? Runs <code><a href='https://rdrr.io/pkg/TMBhelper/man/Check_Identifiable.html'>TMBhelper::Check_Identifiable</a></code>. Default = <code>TRUE</code>.</p></td>
+      <td><p>T/F, check if model parameters are identifiable? Runs <code><a href='https://rdrr.io/pkg/TMBhelper/man/check_estimability.html'>TMBhelper::check_estimability</a></code>. Default = <code>TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>save.sdrep</th>
+      <td><p>T/F, save the full <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href='https://rdrr.io/pkg/TMB/man/summary.sdreport.html'>summary.sdreport)</a></code> to reduce model object file size. Default = <code>FALSE</code>.</p></td>
     </tr>
     </table>
 
@@ -211,13 +227,13 @@ Internal function called by <code><a href='fit_wham.html'>fit_wham</a></code>.</
     <dt><code>model$TMB_version</code></dt><dd><p>Version of TMB installed</p></dd>
     <dt><code>model$parList</code></dt><dd><p>List of parameters, <code>model$env$parList()</code></p></dd>
     <dt><code>model$final_gradient</code></dt><dd><p>Final gradient, <code>model$gr()</code></p></dd>
-    <dt><code>model$sdrep</code></dt><dd><p>Estimated standard deviations for model parameters, <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>TMB::sdreport</a></code></p></dd>
+    <dt><code>model$sdrep</code></dt><dd><p>Estimated standard deviations for model parameters, <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>TMB::sdreport</a></code> or <code><a href='https://rdrr.io/pkg/TMB/man/summary.sdreport.html'>summary.sdreport)</a></code></p></dd>
   
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='retro.html'>retro</a></code>, <code><a href='https://rdrr.io/pkg/TMBhelper/man/Check_Identifiable.html'>TMBhelper::Check_Identifiable</a></code></p></div>
+    <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='retro.html'>retro</a></code>, <code><a href='https://rdrr.io/pkg/TMBhelper/man/check_estimability.html'>TMBhelper::check_estimability</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

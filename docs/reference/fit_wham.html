@@ -75,7 +75,7 @@ stats::nlminb. Runs retrospective analysis if specified." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -113,6 +113,12 @@ stats::nlminb. Runs retrospective analysis if specified." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -191,8 +197,10 @@ stats::nlminb. Runs retrospective analysis if specified." />
   do.proj <span class='op'>=</span> <span class='cn'>FALSE</span>,
   proj.opts <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>n.yrs <span class='op'>=</span> <span class='fl'>3</span>, use.last.F <span class='op'>=</span> <span class='cn'>TRUE</span>, use.avg.F <span class='op'>=</span> <span class='cn'>FALSE</span>, use.FXSPR <span class='op'>=</span> <span class='cn'>FALSE</span>,
     proj.F <span class='op'>=</span> <span class='cn'>NULL</span>, proj.catch <span class='op'>=</span> <span class='cn'>NULL</span>, avg.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, cont.ecov <span class='op'>=</span> <span class='cn'>TRUE</span>, use.last.ecov <span class='op'>=</span>
-    <span class='cn'>FALSE</span>, avg.ecov.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, proj.ecov <span class='op'>=</span> <span class='cn'>NULL</span>, cont.Mre <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>,
-  do.fit <span class='op'>=</span> <span class='cn'>TRUE</span>
+    <span class='cn'>FALSE</span>, avg.ecov.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, proj.ecov <span class='op'>=</span> <span class='cn'>NULL</span>, cont.Mre <span class='op'>=</span> <span class='cn'>NULL</span>, avg.rec.yrs <span class='op'>=</span> <span class='cn'>NULL</span>,
+    percentFXSPR <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>,
+  do.fit <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  save.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -243,7 +251,7 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
     </tr>
     <tr>
       <th>do.check</th>
-      <td><p>T/F, check if model parameters are identifiable? Passed to <code><a href='fit_tmb.html'>fit_tmb</a></code>. Runs <code><a href='https://rdrr.io/pkg/TMBhelper/man/Check_Identifiable.html'>TMBhelper::Check_Identifiable</a></code>. Default = <code>TRUE</code>.</p></td>
+      <td><p>T/F, check if model parameters are identifiable? Passed to <code><a href='fit_tmb.html'>fit_tmb</a></code>. Runs <code><a href='https://rdrr.io/pkg/TMBhelper/man/check_estimability.html'>TMBhelper::check_estimability</a></code>. Default = <code>TRUE</code>.</p></td>
     </tr>
     <tr>
       <th>MakeADFun.silent</th>
@@ -259,22 +267,31 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
     </tr>
     <tr>
       <th>proj.opts</th>
-      <td><p>list of options for projections</p><ul>
+      <td><p>a named list with the following components:</p><ul>
 <li><p><code>$n.yrs</code> (integer), number of years to project/forecast. Default = <code>3</code>.</p></li>
 <li><p><code>$use.last.F</code> (T/F), use terminal year F for projections. Default = <code>TRUE</code>.</p></li>
-<li><p><code>$use.FXSPR</code> (T/F), calculate F at X<!-- % SPR for projections. --></p></li>
+<li><p><code>$use.FXSPR</code> (T/F), calculate and use F at X<!-- % SPR for projections. --></p></li>
+<li><p><code>$use.FMSY</code> (T/F), calculate and use FMSY for projections.</p></li>
 <li><p><code>$proj.F</code> (vector), user-specified fishing mortality for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$proj.catch</code> (vector), user-specified aggregate catch for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code><a href='https://rdrr.io/r/utils/head.html'>tail(model$years, 5)</a></code>.</p></li>
-<li><p><code>$cont.Ecov</code> (T/F), continue Ecov process (e.g. random walk or AR1) for projections. Default = <code>TRUE</code>.</p></li>
-<li><p><code>$use.last.Ecov</code> (T/F), use terminal year Ecov for projections.</p></li>
-<li><p><code>$avg.Ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
-<li><p><code>$proj.Ecov</code> (vector), user-specified environmental covariate(s) for projections. Length must equal <code>n.yrs</code>.</p></li>
+<li><p><code>$cont.ecov</code> (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = <code>TRUE</code>.</p></li>
+<li><p><code>$use.last.ecov</code> (T/F), use terminal year ecov for projections.</p></li>
+<li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
+<li><p><code>$proj.ecov</code> (vector), user-specified environmental covariate(s) for projections. Length must equal <code>n.yrs</code>.</p></li>
+<li><p><code>$cont.Mre</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>TRUE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$avg.rec.yrs</code> (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.</p></li>
+<li><p><code>$percentFXSPR</code> (scalar), percent of F_XSPR to use for calculating catch in projections, only used if proj.opts$use.FXSPR = TRUE. For example, GOM cod uses F = 75<!-- % F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100. --></p></li>
+<li><p><code>$percentFMSY</code> (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.</p></li>
 </ul></td>
     </tr>
     <tr>
       <th>do.fit</th>
       <td><p>T/F, fit the model using <code>fit_tmb</code>. Default = <code>TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>save.sdrep</th>
+      <td><p>T/F, save the full <code><a href='https://rdrr.io/pkg/TMB/man/sdreport.html'>TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href='https://rdrr.io/pkg/TMB/man/summary.sdreport.html'>summary.sdreport</a></code> to reduce model object file size. Default = <code>TRUE</code>.</p></td>
     </tr>
     </table>
 

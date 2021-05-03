@@ -75,7 +75,7 @@ which in turn is called by fit_wham if do.proj = TRUE." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -113,6 +113,12 @@ which in turn is called by fit_wham if do.proj = TRUE." />
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -190,7 +196,8 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
       <td><p>a named list with the following components:</p><ul>
 <li><p><code>$n.yrs</code> (integer), number of years to project/forecast. Default = <code>3</code>.</p></li>
 <li><p><code>$use.last.F</code> (T/F), use terminal year F for projections. Default = <code>TRUE</code>.</p></li>
-<li><p><code>$use.FXSPR</code> (T/F), calculate F at X<!-- % SPR for projections. --></p></li>
+<li><p><code>$use.FXSPR</code> (T/F), calculate and use F at X<!-- % SPR for projections. --></p></li>
+<li><p><code>$use.FMSY</code> (T/F), calculate and use FMSY for projections.</p></li>
 <li><p><code>$proj.F</code> (vector), user-specified fishing mortality for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$proj.catch</code> (vector), user-specified aggregate catch for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code><a href='https://rdrr.io/r/utils/head.html'>tail(model$years, 5)</a></code>.</p></li>
@@ -200,6 +207,8 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
 <li><p><code>$proj.ecov</code> (vector), user-specified environmental covariate(s) for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$cont.Mre</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>TRUE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
 <li><p><code>$avg.rec.yrs</code> (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.</p></li>
+<li><p><code>$percentFXSPR</code> (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75<!-- % F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100. --></p></li>
+<li><p><code>$percentFMSY</code> (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.</p></li>
 </ul></td>
     </tr>
     </table>
@@ -209,10 +218,11 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
     <p>same as <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>, a list ready for <code><a href='fit_wham.html'>fit_wham</a></code>:</p><dl>
     <dt><code>data</code></dt><dd><p>Named list of data, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>par</code></dt><dd><p>Named list of parameters, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
-    <dt><code>map</code></dt><dd><p>not sure what this does, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
+    <dt><code>map</code></dt><dd><p>Named list of factors that determine which parameters are estimated, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
     <dt><code>random</code></dt><dd><p>Character vector of parameters to treat as random effects, passed to <code><a href='https://rdrr.io/pkg/TMB/man/MakeADFun.html'>TMB::MakeADFun</a></code></p></dd>
-    <dt><code>years</code></dt><dd><p>Numeric vector of years to fit WHAM model (specified in ASAP3 .dat file)</p></dd>
-    <dt><code>ages.lab</code></dt><dd><p>Character vector of age labels, ending with plus-group (specified in ASAP3 .dat file)</p></dd>
+    <dt><code>years</code></dt><dd><p>Numeric vector of representing (non-projection) model years of WHAM model</p></dd>
+    <dt><code>years_full</code></dt><dd><p>Numeric vector of representing all model and projection years of WHAM model</p></dd>
+    <dt><code>ages.lab</code></dt><dd><p>Character vector of age labels, ending with plus-group</p></dd>
     <dt><code>model_name</code></dt><dd><p>Character, name of stock/model (specified in call to <code>prepare_wham_input</code>)</p></dd>
   
 </dl>

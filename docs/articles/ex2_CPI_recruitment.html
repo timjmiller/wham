@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -70,6 +70,12 @@
     </li>
     <li>
       <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -163,7 +169,7 @@
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>WHAM was built by modifying the ADMB-based ASAP model code <a href="http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf">(Legault and Restrepo 1999)</a>, and is designed to take an ASAP3 .dat file as input. We generally assume in <code>wham</code> that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the <a href="https://www.nefsc.noaa.gov/nft/ASAP.html">ASAP documentation</a>. For this vignette, an example ASAP3 input file is provided, <code>ex2_SNEMAYT.dat</code>. We will also need a data file with an environmental covariate, the Cold Pool Index, <code>CPI.csv</code>.</p>
+<p>WHAM was built by modifying the ADMB-based ASAP model code <a href="http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf">(Legault and Restrepo 1999)</a>, and is designed to take an ASAP3 .dat file as input. We generally assume in <code>wham</code> that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the ASAP <a href="https://github.com/cmlegault/ASAPplots/tree/master/pdf">documentation</a> and <a href="https://nmfs-fish-tools.github.io/ASAP/">code</a>. For this vignette, an example ASAP3 input file is provided, <code>ex2_SNEMAYT.dat</code>. We will also need a data file with an environmental covariate, the Cold Pool Index, <code>CPI.csv</code>.</p>
 <p>Copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
@@ -172,10 +178,10 @@
 <p>Confirm you are in the correct directory and it has the required data files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt;  [1] "CPI.csv"                "ex1_SNEMAYT.dat"        "ex1_test_results.rds"  </span>
-<span class="co">#&gt;  [4] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
-<span class="co">#&gt;  [7] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
-<span class="co">#&gt; [10] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
+<span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
+<span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex2_SNEMAYT.dat"        "ex2_test_results.rds"  </span>
+<span class="co">#&gt;  [7] "ex4_test_results.rds"   "ex5_summerflounder.dat" "ex5_test_results.rds"  </span>
+<span class="co">#&gt; [10] "ex6_test_results.rds"   "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
@@ -305,20 +311,20 @@
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign2_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt; Model 1:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 3.41e-10 
-#&gt; Max gradient parameter: F_devs 
+#&gt; Maximum gradient component: 8.29e-09 
+#&gt; Max gradient parameter: log_NAA_sigma 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 2:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 5.95e-11 
+#&gt; Maximum gradient component: 5.51e-10 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 3:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.04e-09 
-#&gt; Max gradient parameter: logit_selpars 
+#&gt; Maximum gradient component: 6.15e-11 
+#&gt; Max gradient parameter: log_F1 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 4:
@@ -329,19 +335,19 @@
 #&gt; 
 #&gt; Model 5:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 8.28e-10 
+#&gt; Maximum gradient component: 9.68e-11 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 6:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 2.55e-10 
-#&gt; Max gradient parameter: log_NAA_sigma 
+#&gt; Maximum gradient component: 1.21e-09 
+#&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model
 #&gt; 
 #&gt; Model 7:
 #&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-#&gt; Maximum gradient component: 1.01e-09 
+#&gt; Maximum gradient component: 6.21e-10 
 #&gt; Max gradient parameter: logit_selpars 
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 </div>
@@ -364,7 +370,7 @@
 <code class="sourceCode R"><span class="va">not_conv</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">|</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span>
 <span class="va">mods2</span> <span class="op">&lt;-</span> <span class="va">mods</span>
 <span class="va">mods2</span><span class="op">[</span><span class="va">not_conv</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
-<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
+<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
 <span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="cn">FALSE</span>,<span class="op">]</span>
 <span class="va">ct</span> <span class="op">=</span> <span class="fl">1</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
@@ -384,19 +390,19 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/save.html">save</a></span><span class="op">(</span><span class="st">"df.mods"</span>, file<span class="op">=</span><span class="st">"vign2_res.RData"</span><span class="op">)</span>
 <span class="va">df.mods</span></code></pre></div>
 <pre><code>#&gt;   Model Recruitment Ecov_process    Ecov_how conv pdHess      NLL dAIC     AIC
-#&gt; 1    m6    Bev-Holt          ar1 Controlling TRUE   TRUE -829.789  0.0 -1519.6
-#&gt; 2    m5    Bev-Holt          ar1    Limiting TRUE   TRUE -829.409  0.8 -1518.8
-#&gt; 3    m7      Ricker          ar1 Controlling TRUE   TRUE -829.120  1.4 -1518.2
+#&gt; 1    m1      Random           rw         --- TRUE   TRUE -808.943  0.0 -1519.6
+#&gt; 2    m2      Random           rw Controlling TRUE   TRUE -815.937  0.8 -1518.8
+#&gt; 3    m3    Bev-Holt           rw         --- TRUE   TRUE -813.130  1.4 -1518.2
 #&gt; 4    m4    Bev-Holt           rw    Limiting TRUE   TRUE -818.699 20.2 -1499.4
-#&gt; 5    m2      Random           rw Controlling TRUE   TRUE -815.937 23.7 -1495.9
-#&gt; 6    m3    Bev-Holt           rw         --- TRUE   TRUE -813.130 29.3 -1490.3
-#&gt; 7    m1      Random           rw         --- TRUE   TRUE -808.943 35.7 -1483.9
+#&gt; 5    m5    Bev-Holt          ar1    Limiting TRUE   TRUE -829.409 23.7 -1495.9
+#&gt; 6    m6    Bev-Holt          ar1 Controlling TRUE   TRUE -829.789 29.3 -1490.3
+#&gt; 7    m7      Ricker          ar1 Controlling TRUE   TRUE -829.120 35.7 -1483.9
 #&gt;    rho_R rho_SSB rho_Fbar
 #&gt; 1 0.1896  0.0653  -0.1017
 #&gt; 2 0.1961  0.0690  -0.1052
 #&gt; 3 0.1883  0.0621  -0.0987
-#&gt; 4 0.1957  0.0693  -0.1054
-#&gt; 5 0.2046  0.0727  -0.1108
+#&gt; 4 0.1820  0.0670  -0.1042
+#&gt; 5 0.1975  0.0718  -0.1102
 #&gt; 6 0.2121  0.0679  -0.1033
 #&gt; 7 0.2308  0.0714  -0.1106</code></pre>
 </div>

@@ -103,7 +103,7 @@ asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
 ```
 
 Load the environmental covariate (Gulf Stream Index, GSI) data into R:
-```{r}
+```{r eval=FALSE}
 env.dat <- read.csv("GSI.csv", header=T)
 head(env.dat)
 ```

@@ -41,7 +41,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
       </span>
     </div>
 
@@ -79,6 +79,12 @@
     </li>
     <li>
       <a href="articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+    </li>
+    <li>
+      <a href="articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+    </li>
+    <li>
+      <a href="articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
   </ul>
 </li>
@@ -155,6 +161,8 @@
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
 <p>WHAM generalizes and extends R and TMB code from <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a>, <a href="https://doi.org/10.1139/cjfas-2017-0035">Miller and Hyun 2018</a>, and <a href="https://doi.org/10.1139/cjfas-2017-0124">Miller et al. 2018</a>. WHAM has many similarities to ASAP (<a href="https://www.nefsc.noaa.gov/nft/ASAP.html">code</a>, <a href="http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf">Legault and Restrepo 1998</a>), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks (<a href="https://github.com/cmlegault/ASAPplots">ASAPplots</a>).</p>
+<p>A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, <em>M</em>, selectivity, and environment-recruitment: <a href="https://doi.org/10.1016/j.fishres.2021.105967">https://doi.org/10.1016/j.fishres.2021.105967</a>.</p>
+<p><a href="https://doi.org/10.1016/j.fishres.2021.105873">Stock et al. (2021)</a> describes the 2D (year x age) AR(1) correlation structure that can be used on numbers-at-age, <em>M</em>, and selectivity in WHAM (as in <a href="https://doi.org/10.1093/icesjms/fsw046">Berg and Nielsen 2016</a>, <a href="https://doi.org/10.1139/cjfas-2015-0047">Cadigan 2016</a>, and <a href="https://doi.org/10.1139/cjfas-2017-0446">Xu et al. 2019</a>).</p>
 <p>WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:</p>
 <ul>
 <li>R: <a href="https://www.r-project.org/" class="uri">https://www.r-project.org/</a>
@@ -166,7 +174,10 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
+<p>For the latest stable, tested release:</p>
 <pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE)</a></code></pre>
+<p>For the development version with recent bug fixes and features (potentially untested):</p>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")</a></code></pre>
 </div>
 <div id="tutorial" class="section level2">
 <h2 class="hasAnchor">
@@ -218,6 +229,12 @@ if(length(new.packages)) install.packages(new.packages)</a></code></pre>
 </blockquote>
 <blockquote>
 <p>R Core Team. 2020. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.r-project.org/" class="uri">https://www.r-project.org/</a></p>
+</blockquote>
+<blockquote>
+<p>Stock, B. C., and Miller, T. J. 2021. The Woods Hole Assessment Model (WHAM): A general state-space assessment framework that incorporates time- and age-varying processes via random effects and links to environmental covariates. Fisheries Research, 240: 105967. doi: 10.1016/j.fishres.2021.105967</p>
+</blockquote>
+<blockquote>
+<p>Stock, B. C., Xu, H., Miller, T. J., Thorson, J. T., and Nye, J. A. 2021. Implementing two-dimensional autocorrelation in either survival or natural mortality improves a state-space assessment model for Southern New England-Mid Atlantic yellowtail flounder. Fisheries Research, 237: 105873. doi: 10.1016/j.fishres.2021.105873</p>
 </blockquote>
 </div>
 <div id="noaa-disclaimer" class="section level2">
