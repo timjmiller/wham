@@ -1176,6 +1176,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 		my.title <- "Age Comp Residuals for Catch by Fleet "
 		#my.save <- "catch_resid_bubble_plots_"
     resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+    resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
     tylab <- "Residuals (Observed-Predicted)"
     z1 <- resids
     range.resids<-range(abs((as.vector(z1))), na.rm=T)
@@ -1228,6 +1229,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
     par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
     my.title <- "Age Comp Residuals for Index "
     resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+    resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
     tylab <- "Residuals (Observed-Predicted)"
     z1 <- resids
     range.resids<-range(abs((as.vector(z1))), na.rm=T)
