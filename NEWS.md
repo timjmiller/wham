@@ -1,7 +1,9 @@
 wham 1.0.4.9000
 =========================
 
+### Bug fixes
 
+* Don't plot age comp residuals for fleets/indices/years that are not used [6876ee](https://github.com/timjmiller/wham/commit/6876eed1dd4bbdc7b26295356756bb7a30053887)
 
 wham 1.0.4 (2021-05-03)
 =========================
