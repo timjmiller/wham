@@ -1174,7 +1174,7 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
 
 template <class Type>
 Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, matrix<Type> Ecov_lm){
+  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm){
 
   /*
    * y: year (between 1 and n_years_model+n_years_proj)
@@ -1201,7 +1201,7 @@ Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, ve
       pred_recruit = exp(mean_rec_pars(0));
       int nE = Ecov_where.size();
       for(int i=0; i < nE; i++){
-        if(Ecov_where(i) == 1) if(Ecov_how(i) == 1) pred_recruit *= exp(Ecov_lm(y,i));
+        if(Ecov_where(i) == 1) if(Ecov_how(i) == 1) pred_recruit *= exp(Ecov_lm(i)(y,0));
       }
       //pred_NAA(y,0) = exp(mean_rec_pars(0));
       //if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
@@ -1225,7 +1225,7 @@ Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, ve
 
 template <class Type>
 vector<Type> get_pred_NAA_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, matrix<Type> Ecov_lm, matrix<Type> ZAA){
+  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm, matrix<Type> ZAA){
 
   /*
    * y: year (between 1 and n_years_model+n_years_proj)
@@ -1379,7 +1379,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
 
 template <class Type>
 matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSBin, matrix<Type> NAAin, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, matrix<Type> Ecov_lm, int n_NAA_sigma, 
+  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   int waa_pointer_totcatch, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
   int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY){

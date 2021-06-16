@@ -44,6 +44,7 @@
 #'     specific to the \code{$where} process.}
 #'     \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
 #'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b0 + b1*ecov + b2*ecov^2 + ...}).}
+#'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages (default = 1:n.ages to affect all ages))
 #'   }
 #'
 #' \code{ecov$how} specifies HOW the ecov affects the \code{ecov$where} process.
@@ -760,6 +761,14 @@ without changing ASAP file, specify M$initial_means.")
         }
       }
     }
+    if(!is.null(ecov$ages)){
+      if(length(ecov$ages) != data$n_Ecov) stop("ecov$ages must be a list of length n.ecov")
+      for(i in 1:data$n_Ecov){
+        if(!all(ecov$ages[[i]] %in% 1:data$n_ages)) stop("All ecov$ages must be in 1:n.ages")
+      }
+    } else {
+      ecov$ages <- 1:data$n_ages # default: ecov affects all ages
+    }
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='mortality') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
@@ -1052,7 +1061,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
   par$Ecov_re = matrix(rnorm(data$n_years_Ecov*data$n_Ecov), data$n_years_Ecov, data$n_Ecov)
   max.poly <- max(data$Ecov_poly)
-  par$Ecov_beta = matrix(0, nrow=max.poly, ncol=data$n_Ecov) # beta_R in eqns 4-5, Miller et al. (2016)
+  par$Ecov_beta = array(0, dim=c(max.poly, data$n_Ecov, data$n_ages)) # beta_R in eqns 4-5, Miller et al. (2016)
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov
   par$Ecov_process_pars[1,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
@@ -1064,16 +1073,19 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   ind.notNA <- which(!is.na(tmp.pars))
   tmp.pars[ind.notNA] <- 1:length(ind.notNA)
 
-  # turn off only Ecov_beta to fit Ecov process model without effect on population
-  tmp <- par$Ecov_beta
+  # turn off Ecov_beta to fit Ecov process model without effect on population
+  tmp <- array(NA, dim=dim(par$Ecov_beta))
+  ct = 1
   for(j in 1:data$n_Ecov){
-    tmp[,j] <- ifelse(data$Ecov_how[j]==0, NA, 0)
     for(i in 1:max.poly){
-      if(i > data$Ecov_poly[j]) tmp[i,j] = NA
+      for(a in 1:data$n_ages){
+        if(data$Ecov_how[j] > 0 & i >= data$Ecov_poly[j] & a %in% ecov$ages[[j]]) tmp[i,j,a] = ct
+      }
+      ct = ct+1
     }
   }
-  ind.notNA <- which(!is.na(tmp))
-  tmp[ind.notNA] <- 1:length(ind.notNA)
+  # ind.notNA <- which(!is.na(tmp))
+  # tmp[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_beta = factor(tmp)
 
   # turn off Ecov pars if no Ecov (re, process)

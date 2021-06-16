@@ -150,7 +150,7 @@ Type objective_function<Type>::operator() ()
 
   // parameters - environmental covariate ("Ecov")
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
-  PARAMETER_MATRIX(Ecov_beta); // dim = n.poly x n.ecov, beta_R in eqns 4-5, Miller et al. (2016)
+  PARAMETER_ARRAY(Ecov_beta); // dim = n.poly x n.ecov x n.ages, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (Ecov1, sig), AR1: 3 par (mu, sig, phi); ncol = N_ecov
   PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
@@ -418,9 +418,10 @@ Type objective_function<Type>::operator() ()
   }
 
   // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
-  matrix<Type> Ecov_lm(n_years_model + n_years_proj, n_Ecov); // ecov linear model for each Ecov in each model year
-  Ecov_lm.setZero();
-  int n_poly = Ecov_beta.rows();
+  vector<matrix<Type> > Ecov_lm(n_Ecov); // ecov linear model for each Ecov, dim = n_years_model + n_years_proj, n_ages
+  // Ecov_lm.setZero();
+  // ecov_beta is now 3D array, dim = n.poly x n.ecov x n.ages
+  int n_poly = Ecov_beta.rows(); // still works on 3D array bc npoly is first dimension
   for(int i = 0; i < n_Ecov; i++){
     vector<Type> thecol = Ecov_out.col(i);
     matrix<Type> X_poly(n_years_model + n_years_proj, n_poly);
@@ -430,10 +431,14 @@ Type objective_function<Type>::operator() ()
     } else { // n_poly > 1, get poly transformation for ith ecov
       X_poly = poly_trans(thecol, n_poly, n_years_model, n_years_proj);
     }
+    matrix<Type> tmp(n_years_model + n_years_proj, n_ages);
+    tmp.setZero();
+    Ecov_lm(i) = tmp;
     for(int y = 0; y < n_years_model + n_years_proj; y++){
-      for(int j = 0; j < n_poly; j++){
-        // Ecov_lm(y,i) += Ecov_beta(j,i) * pow(X_poly(y,j), j+1);
-        Ecov_lm(y,i) += Ecov_beta(j,i) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
+      for(int a = 0; a < n_ages; a++){
+        for(int j = 0; j < n_poly; j++){
+          Ecov_lm(i)(y,a) += Ecov_beta(j,i,a) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
+        }
       }
     }
   }
@@ -547,7 +552,7 @@ Type objective_function<Type>::operator() ()
   for(int i=0; i < n_Ecov; i++){
     if(Ecov_where(i) == 2) if(Ecov_how(i) == 1){ // if ecov i affects M
       for(int a = 0; a < n_ages; a++){
-        for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(y,i));
+        for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(i)(y,a));
       }
     }
   }
@@ -669,12 +674,12 @@ Type objective_function<Type>::operator() ()
             // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
             if(Ecov_how(i) == 1 | Ecov_how(i) == 4)
             {
-              log_SR_a(y) += Ecov_lm(y,i);
+              log_SR_a(y) += Ecov_lm(i)(y,0);
             }
             // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
             if(Ecov_how(i) == 2 | Ecov_how(i) == 4)
             {
-              log_SR_b(y) += Ecov_lm(y,i);
+              log_SR_b(y) += Ecov_lm(i)(y,0);
             }
           }
         }
@@ -706,11 +711,11 @@ Type objective_function<Type>::operator() ()
           {
             if(Ecov_how(i) == 1) // "controlling" = dens-indep mortality
             {
-              log_SR_a(y) += Ecov_lm(y,i);
+              log_SR_a(y) += Ecov_lm(i)(y,0);
             }
             if(Ecov_how(i) == 4) // "masking" = metabolic/growth (decreases dR/dS)
             { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-              log_SR_b(y) += 1.0 + Ecov_lm(y,i);
+              log_SR_b(y) += 1.0 + Ecov_lm(i)(y,0);
             }
           }
         }
