@@ -1079,7 +1079,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   for(j in 1:data$n_Ecov){
     for(i in 1:max.poly){
       for(a in 1:data$n_ages){
-        if(data$Ecov_how[j] > 0 & i >= data$Ecov_poly[j] & a %in% ecov$ages[[j]]) tmp[i,j,a] = ct
+        if(data$Ecov_how[j] > 0 & i >= data$Ecov_poly[j] & a %in% ecov$ages[[j]]) tmp[i,j,a] = ct # default share ecov_beta across ages
       }
       ct = ct+1
     }
