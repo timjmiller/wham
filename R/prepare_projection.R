@@ -215,7 +215,8 @@ prepare_projection = function(model, proj.opts)
   if(any(data$Ecov_model > 0)){
     if(any(end.beyond < proj.opts$n.yrs)){ # need to pad Ecov_re
       for(j in 1:data$n_Ecov){
-        for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
+        # for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
+        for(i in 1:max(proj.opts$n.yrs-end.beyond)){
           if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
             Ecov.proj[i,j] <- model$rep$Ecov_re[data$ind_Ecov_out_end[j]+1+end.beyond[j],j]
           }
