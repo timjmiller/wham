@@ -1080,8 +1080,14 @@ Type objective_function<Type>::operator() ()
   vector<Type> predR(pred_NAA.rows());
   if(XSPR_R_opt == 1) predR = NAA.col(0);
   if(XSPR_R_opt == 3) predR = pred_NAA.col(0);
-  if(XSPR_R_opt == 2) predR.fill(NAA.col(0).mean());
-  if(XSPR_R_opt == 4) predR.fill(pred_NAA.col(0).mean());
+  if(XSPR_R_opt == 2){
+    vector<Type> predR_toavg = XSPR_R_avg_yrs.unaryExpr(NAA.col(0));
+    predR.fill(predR_toavg.mean());
+  }
+  if(XSPR_R_opt == 4){
+    vector<Type> predR_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
+    predR.fill(predR_toavg.mean());
+  }
   matrix<Type> SPR_res = get_SPR_res(MAA, FAA_tot, which_F_age, waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, predR, fracyr_SSB, log_SPR0, FXSPR_init);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);

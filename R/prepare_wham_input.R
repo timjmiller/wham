@@ -553,7 +553,7 @@ without changing ASAP file, specify M$initial_means.")
   data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   data$XSPR_R_opt = 2 # default = use average R estimates
-  data$XSPR_R_avg_yrs = 1:data$n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  data$XSPR_R_avg_yrs = 1:data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
   
   model_years <- asap3$year1 + 1:asap3$n_years - 1
 
