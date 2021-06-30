@@ -91,21 +91,21 @@ if(length(new.packages)) install.packages(new.packages)
 
 ## References
 
-> Kristensen, K., Nielsen, A., Berg, C. W., Skaug, H., and Bell, B. M. 2016. TMB: Automatic differentiation and Laplace approximation. Journal of Statistical Software 70(5): 1–21. doi: 10.18637/jss.v070.i05.
+> Kristensen, K., Nielsen, A., Berg, C. W., Skaug, H., and Bell, B. M. 2016. TMB: Automatic differentiation and Laplace approximation. Journal of Statistical Software 70(5): 1–21. doi: [10.18637/jss.v070.i05](https://doi.org/10.18637/jss.v070.i05).
 
-> Legault, C. M. and Restrepo, V. R. 1998. A flexible forward age-structured assessment program. ICCAT. Col. Vol. Sci. Pap. 49: 246-253. 
+> Legault, C. M. and Restrepo, V. R. 1998. A flexible forward age-structured assessment program. ICCAT. Col. Vol. Sci. Pap. 49: 246-253. [link](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)
 
-> Miller, T. J., Hare, J. A., and Alade, L. A. 2016. A state-space approach to incorporating environmental effects on recruitment in an age-structured assessment model with an application to Southern New England yellowtail flounder. Canadian Journal of Fisheries and Aquatic Sciences 73(8): 1261-1270. doi: 10.1139/cjfas-2015-0339
+> Miller, T. J., Hare, J. A., and Alade, L. A. 2016. A state-space approach to incorporating environmental effects on recruitment in an age-structured assessment model with an application to Southern New England yellowtail flounder. Canadian Journal of Fisheries and Aquatic Sciences 73(8): 1261-1270. doi: [10.1139/cjfas-2015-0339](https://doi.org/10.1139/cjfas-2015-0339)
 
-> Miller, T. J. and Hyun, S-Y. 2018. Evaluating evidence for alternative natural mortality and process error assumptions using a state-space, age-structured assessment model. Canadian Journal of Fisheries and Aquatic Sciences 75(5): 691-703. doi: 10.1139/cjfas-2017-0035
+> Miller, T. J. and Hyun, S-Y. 2018. Evaluating evidence for alternative natural mortality and process error assumptions using a state-space, age-structured assessment model. Canadian Journal of Fisheries and Aquatic Sciences 75(5): 691-703. doi: [10.1139/cjfas-2017-0035](https://doi.org/10.1139/cjfas-2017-0035)
 
-> Miller, T. J., O’Brien, L., and Fratantoni, P. S. 2018. Temporal and environmental variation in growth and maturity and effects on management reference points of Georges Bank Atlantic cod. Canadian Journal of Fisheries and Aquatic Sciences 75(12): 2159-2171. doi: 10.1139/cjfas-2017-0124
+> Miller, T. J., O’Brien, L., and Fratantoni, P. S. 2018. Temporal and environmental variation in growth and maturity and effects on management reference points of Georges Bank Atlantic cod. Canadian Journal of Fisheries and Aquatic Sciences 75(12): 2159-2171. doi: [10.1139/cjfas-2017-0124](https://doi.org/10.1139/cjfas-2017-0124)
 
 > R Core Team. 2020. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.r-project.org/
 
-> Stock, B. C., and Miller, T. J. 2021. The Woods Hole Assessment Model (WHAM): A general state-space assessment framework that incorporates time- and age-varying processes via random effects and links to environmental covariates. Fisheries Research, 240: 105967. doi: 10.1016/j.fishres.2021.105967
+> Stock, B. C., and Miller, T. J. 2021. The Woods Hole Assessment Model (WHAM): A general state-space assessment framework that incorporates time- and age-varying processes via random effects and links to environmental covariates. Fisheries Research, 240: 105967. doi: [10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967)
 
-> Stock, B. C., Xu, H., Miller, T. J., Thorson, J. T., and Nye, J. A. 2021. Implementing two-dimensional autocorrelation in either survival or natural mortality improves a state-space assessment model for Southern New England-Mid Atlantic yellowtail flounder. Fisheries Research, 237: 105873. doi: 10.1016/j.fishres.2021.105873
+> Stock, B. C., Xu, H., Miller, T. J., Thorson, J. T., and Nye, J. A. 2021. Implementing two-dimensional autocorrelation in either survival or natural mortality improves a state-space assessment model for Southern New England-Mid Atlantic yellowtail flounder. Fisheries Research, 237: 105873. doi: [10.1016/j.fishres.2021.105873](https://doi.org/10.1016/j.fishres.2021.105873)
 
 ## NOAA Disclaimer
 
@@ -118,3 +118,10 @@ mark, trademark, manufacturer, or otherwise, does not constitute or imply their 
 favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a
 DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by
 DOC or the United States Government.
+
+****************************
+
+<img src="https://raw.githubusercontent.com/nmfs-general-modeling-tools/nmfspalette/main/man/figures/noaa-fisheries-rgb-2line-horizontal-small.png" height="75" alt="NOAA Fisheries">
+
+[U.S. Department of Commerce](https://www.commerce.gov/) | [National Oceanographic and Atmospheric Administration](https://www.noaa.gov) | [NOAA Fisheries](https://www.fisheries.noaa.gov/)
+

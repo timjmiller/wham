@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.4.9000</span>
       </span>
     </div>
 
@@ -174,6 +174,18 @@
       <small>Source: <a href='https://github.com/timjmiller/wham/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="wham-1-0-4-9000" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.4.9000">
+<a href="#wham-1-0-4-9000" class="anchor"></a>wham 1.0.4.9000</h1>
+<div id="bug-fixes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
+<ul>
+<li>Don’t plot age comp residuals for fleets/indices/years that are not used <a href="https://github.com/timjmiller/wham/commit/6876eed1dd4bbdc7b26295356756bb7a30053887">6876ee</a>
+</li>
+</ul>
+</div>
+</div>
     <div id="wham-1-0-4-2021-05-03" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.4">
 <a href="#wham-1-0-4-2021-05-03" class="anchor"></a>wham 1.0.4 (2021-05-03)</h1>
@@ -195,9 +207,9 @@
 <li>Allow peels to be projected so can do retrospective predictions, as in Fig. 4 of <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/fog.12236">Xu et al. 2018</a>. See new <a href="https://timjmiller.github.io/wham/articles/ex9_retro_pred.html">vignette 9</a>. (<a href="https://github.com/timjmiller/wham/commit/e1e00c712fcba0d0631dd9321e3bb83b87a1485f#diff-7f3a4433e0573f6fd6787d47614e0303f714e2d71d9e618ecfb832195987b732">e1e00c</a>)</li>
 </ul>
 </div>
-<div id="bug-fixes" class="section level3">
+<div id="bug-fixes-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-1" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>Broken links in vignettes (thanks to <a href='https://github.com/tcarruth'>@tcarruth</a>)</li>
 <li>Plotting issue with Ecov OSA residuals and peels (thanks to <a href='https://github.com/h-du-pontavice'>@h-du-pontavice</a>, <a href="https://github.com/timjmiller/wham/commit/1163df4290387174a5336ada98a13dc0f5a9644c">1163df</a>)</li>
@@ -230,9 +242,9 @@
 <li>for SCAA (recruitment as fixed effects), treat recruitment in projections as random effects with mean and SD calculated from model years (previously was fixed at <code><a href="https://rdrr.io/r/base/Log.html">exp(10)</a></code>). This approximates ASAP + AgePro, allows for simulating projected recruitment according to the ECDF.</li>
 </ul>
 </div>
-<div id="bug-fixes-1" class="section level3">
+<div id="bug-fixes-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-1" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-2" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>clean up error messages (remove global <code>err</code> object) <a href="https://github.com/timjmiller/wham/commit/53f5ec67a6f60ea85b928debc4a57d0ee6673e78">53f5ec6</a>
 </li>
@@ -255,9 +267,9 @@
 <li>estimate age-specific M for any age(s) (<a href="https://github.com/timjmiller/wham/commit/60f13584e515950bf43f358c5a0cfdb0e8a30241">60f1358</a>)</li>
 </ul>
 </div>
-<div id="bug-fixes-2" class="section level3">
+<div id="bug-fixes-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-2" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-3" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>check for sel par inits outside lower/upper bounds (<a href="https://github.com/timjmiller/wham/commit/4ed394bac38d6054727bc4d3e17c8f4452ae8289">4ed394b</a>)</li>
 <li>fleet weight-at-age pointers fixed (<a href="https://github.com/timjmiller/wham/commit/059e66a1cc6e90554862b3e30e815cf0d5cd18ab">059e66a</a>)</li>
@@ -277,9 +289,9 @@
 <li>new vignette on debugging WHAM models</li>
 </ul>
 </div>
-<div id="bug-fixes-3" class="section level3">
+<div id="bug-fixes-4" class="section level3">
 <h3 class="hasAnchor">
-<a href="#bug-fixes-3" class="anchor"></a>Bug fixes</h3>
+<a href="#bug-fixes-4" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>update <code><a href="https://tidyr.tidyverse.org/reference/gather.html">tidyr::gather</a></code> to <code><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">tidyr::pivot_longer</a></code> (<a href="https://github.com/timjmiller/wham/commit/80bf89a69975a4ac5c037127d094afc3b00b7f59">80bf89a</a>)</li>
 <li>if all selpars fixed then use ASAP file inits (<a href="https://github.com/timjmiller/wham/commit/2887e87aa4af08530765fbf04c002a00afd8efa1">2887e87</a>)</li>
