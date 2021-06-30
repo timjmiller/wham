@@ -58,27 +58,27 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   inds$naa <- which(rownames(std) == "log_NAA_rep")
   if("log_FMSY" %in% rownames(std)){
     inds$Fmsy <- which(rownames(std) == "log_FMSY")
-    x$log_FMSY <- cbind(std[inds$Fmsy,1:2], get.ci(std[inds$Fmsy,1:2], alphaCI=alphaCI))
+    x$log_FMSY <- cbind(std[inds$Fmsy,1:2], get.ci(std[inds$Fmsy,1:2], alpha=alphaCI))
     colnames(x$log_FMSY) <- c("log_est","log_se","est","lo","hi")
   }
   if("log_SSB_MSY" %in% rownames(std)){
     inds$SSBmsy <- which(rownames(std) == "log_SSB_MSY")
-    x$log_SSB_MSY <- cbind(std[inds$SSBmsy,1:2], get.ci(std[inds$SSBmsy,1:2], alphaCI=alphaCI))
+    x$log_SSB_MSY <- cbind(std[inds$SSBmsy,1:2], get.ci(std[inds$SSBmsy,1:2], alpha=alphaCI))
     colnames(x$log_SSB_MSY) <- c("log_est","log_se","est","lo","hi")
   }
   if("log_MSY" %in% rownames(std)){
     inds$msy <- which(rownames(std) == "log_MSY")    
-    x$log_MSY <- cbind(std[inds$msy,1:2], get.ci(std[inds$msy,1:2], alphaCI=alphaCI))
+    x$log_MSY <- cbind(std[inds$msy,1:2], get.ci(std[inds$msy,1:2], alpha=alphaCI))
     colnames(x$log_MSY) <- c("log_est","log_se","est","lo","hi")
   }
   inds$catch <- which(rownames(std) == "log_pred_catch")
-  x$log_pred_catch <- cbind(std[inds$catch,1:2], get.ci(std[inds$catch,1:2], alphaCI=alphaCI))
+  x$log_pred_catch <- cbind(std[inds$catch,1:2], get.ci(std[inds$catch,1:2], alpha=alphaCI))
   colnames(x$log_pred_catch) <- c("log_est","log_se","est","lo","hi")
 
-  x$log_SSB <- cbind(std[inds$ssb,1:2], get.ci(std[inds$ssb,1:2], alphaCI=alphaCI))
+  x$log_SSB <- cbind(std[inds$ssb,1:2], get.ci(std[inds$ssb,1:2], alpha=alphaCI))
   colnames(x$log_SSB) <- c("log_est","log_se","est","lo","hi")
   # x$SSB_CV <- std[inds$ssb,2]
-  x$log_F <- cbind(std[inds$full.f,1:2], get.ci(std[inds$full.f,1:2], alphaCI=alphaCI))
+  x$log_F <- cbind(std[inds$full.f,1:2], get.ci(std[inds$full.f,1:2], alpha=alphaCI))
   colnames(x$log_F) <- c("log_est","log_se","est","lo","hi")
   # x$F_CV <- std[inds$full.f,2]
   x$log_NAA <- matrix(std[inds$naa,1], n_years, n_ages)
@@ -87,11 +87,11 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x$log_NAA_hi <- exp(x$log_NAA + qnorm(1-alphaCI/2)*x$NAA_CV)
 
   x$percentSPR <- mod$env$data$percentSPR
-  x$log_Y_FXSPR <- cbind(std[inds$Y.t,1:2], get.ci(std[inds$Y.t,1:2], alphaCI=alphaCI))
+  x$log_Y_FXSPR <- cbind(std[inds$Y.t,1:2], get.ci(std[inds$Y.t,1:2], alpha=alphaCI))
   colnames(x$log_Y_FXSPR) <- c("log_est","log_se","est","lo","hi")
-  x$log_FXSPR <- cbind(std[inds$F.t,1:2], get.ci(std[inds$F.t,1:2], alphaCI=alphaCI))
+  x$log_FXSPR <- cbind(std[inds$F.t,1:2], get.ci(std[inds$F.t,1:2], alpha=alphaCI))
   colnames(x$log_FXSPR) <- c("log_est","log_se","est","lo","hi")
-  x$log_SSB_FXSPR <- cbind(std[inds$SSB.t,1:2], get.ci(std[inds$SSB.t,1:2], alphaCI=alphaCI))
+  x$log_SSB_FXSPR <- cbind(std[inds$SSB.t,1:2], get.ci(std[inds$SSB.t,1:2], alpha=alphaCI))
   colnames(x$log_SSB_FXSPR) <- c("log_est","log_se","est","lo","hi")
   # x$Y_FXSPR_CV <- std[inds$Y.t,2]
   # x$FXSPR_CV <- std[inds$F.t,2]
@@ -113,12 +113,5 @@ read_wham_fit <- function(mod, alphaCI=0.05){
     })    
   }
   return(x)
-}
-
-get.ci <- function(x, alphaCI=0.05){
-  ci <- exp(x[,1] + cbind(0,-qnorm(1-alphaCI/2)*x[,2], qnorm(1-alphaCI/2)*x[,2]))
-  ci[is.nan(ci[,2]),2] = ci[is.nan(ci[,2]),1]
-  ci[is.nan(ci[,3]),3] = ci[is.nan(ci[,3]),1]
-  return(ci)
 }
 

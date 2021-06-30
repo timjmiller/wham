@@ -261,9 +261,9 @@ fancy_scientific <- function(l) {
   }
   parse(text=l)
 }
-get.ci.i <- function(x, plot.opts, i){
-  if(!plot.opts$ci[i]) x[,2] <- 0
-  ci <- exp(x[,1] + cbind(0, -qnorm(1-plot.opts$alpha/2)*x[,2], qnorm(1-plot.opts$alpha/2)*x[,2]))
+get.ci <- function(x, alpha=0.05, getci=TRUE){
+  if(!getci) x[,2] <- 0
+  ci <- exp(x[,1] + cbind(0, -qnorm(1-alpha/2)*x[,2], qnorm(1-alpha/2)*x[,2]))
   ci[is.nan(ci[,2]),2] = ci[is.nan(ci[,2]),1]
   ci[is.nan(ci[,3]),3] = ci[is.nan(ci[,3]),1]
   return(ci)
@@ -312,26 +312,26 @@ plot.SSB.F.R.compare <- function(x, plot.opts){
     base.i <- which(names(x) == plot.opts$relative.to)
     plot.opts$ci <- rep(FALSE, length(x))
     for(i in 1:length(x)){
-      ci <- get.ci.i(x[[i]][["log_SSB"]], plot.opts, i)
-      ci2 <- get.ci.i(x[[base.i]][["log_SSB"]], plot.opts, base.i)
+      ci <- get.ci(x[[i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[i])
+      ci2 <- get.ci(x[[base.i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[base.i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("SSB relative to ",plot.opts$relative.to),
         val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
-      ci <- get.ci.i(x[[i]][["log_F"]], plot.opts, i)
-      ci2 <- get.ci.i(x[[base.i]][["log_F"]], plot.opts, base.i)
+      ci <- get.ci(x[[i]][["log_F"]], plot.opts$alpha, plot.opts$ci[i])
+      ci2 <- get.ci(x[[base.i]][["log_F"]], plot.opts$alpha, plot.opts$ci[base.i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("F relative to ",plot.opts$relative.to),
         val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
-      ci <- get.ci.i(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts, i)
-      ci2 <- get.ci.i(cbind(x[[base.i]]$log_NAA[,1], x[[base.i]]$NAA_CV[,1]), plot.opts, base.i)
+      ci <- get.ci(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[i])
+      ci2 <- get.ci(cbind(x[[base.i]]$log_NAA[,1], x[[base.i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[base.i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("Recruitment relative to ",plot.opts$relative.to),
         val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
     }
   } else {
     for(i in 1:length(x)){
-      ci <- get.ci.i(x[[i]][["log_SSB"]], plot.opts, i)
+      ci <- get.ci(x[[i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-      ci <- get.ci.i(x[[i]][["log_F"]], plot.opts, i)
+      ci <- get.ci(x[[i]][["log_F"]], plot.opts$alpha, plot.opts$ci[i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-      ci <- get.ci.i(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts, i)
+      ci <- get.ci(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[i])
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Recruitment", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
     }
   }
@@ -390,18 +390,18 @@ plot.refpt.compare <- function(x, plot.opts){
   } else {
     for(i in 1:length(x)){
       if(plot.opts$refpt == "XSPR"){
-        ci <- get.ci.i(x[[i]][["log_FXSPR"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci.i(x[[i]][["log_SSB_FXSPR"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_SSB_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci.i(x[[i]][["log_Y_FXSPR"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_Y_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
       } else { # MSY ref pt
-        ci <- get.ci.i(x[[i]][["log_FMSY"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_FMSY"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci.i(x[[i]][["log_SSB_MSY"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_SSB_MSY"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci.i(x[[i]][["log_MSY"]], plot.opts, i)
+        ci <- get.ci(x[[i]][["log_MSY"]], plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
       }
     }
@@ -449,30 +449,30 @@ plot.rel.compare <- function(x, plot.opts){
     if(plot.opts$refpt == "XSPR"){
       for(i in 1:length(x)){
         relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci.i(relF, plot.opts, i)
+        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
         relF2 <- cbind(x[[base.i]][["log_F"]][,1]-x[[base.i]][["log_FXSPR"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci2 <- get.ci.i(relF2, plot.opts, i)
+        ci2 <- get.ci(relF2, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF",
           val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
         relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci.i(relSSB, plot.opts, i)
+        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
         relSSB2 <- cbind(x[[base.i]][["log_SSB"]][,1]-x[[base.i]][["log_SSB_FXSPR"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci2 <- get.ci.i(relSSB2, plot.opts, i)
+        ci2 <- get.ci(relSSB2, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB",
           val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
       }
     } else { # msy ref pt
       for(i in 1:length(x)){
         relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FMSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci.i(relF, plot.opts, i)
+        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
         relF2 <- cbind(x[[base.i]][["log_F"]][,1]-x[[base.i]][["log_FMSY"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci2 <- get.ci.i(relF2, plot.opts, i)
+        ci2 <- get.ci(relF2, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF",
           val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
         relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_MSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci.i(relSSB, plot.opts, i)
+        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
         relSSB2 <- cbind(x[[base.i]][["log_SSB"]][,1]-x[[base.i]][["log_SSB_MSY"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci2 <- get.ci.i(relSSB2, plot.opts, i)
+        ci2 <- get.ci(relSSB2, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB",
           val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
       }      
@@ -483,19 +483,19 @@ plot.rel.compare <- function(x, plot.opts){
     if(plot.opts$refpt == "XSPR"){
       for(i in 1:length(x)){
         relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci.i(relF, plot.opts, i)
+        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
         relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci.i(relSSB, plot.opts, i)
+        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
       }
     } else { # msy ref pt
       for(i in 1:length(x)){
         relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FMSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci.i(relF, plot.opts, i)
+        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
         relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_MSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci.i(relSSB, plot.opts, i)
+        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
       }
     }
