@@ -767,7 +767,8 @@ without changing ASAP file, specify M$initial_means.")
         if(!all(ecov$ages[[i]] %in% 1:data$n_ages)) stop("All ecov$ages must be in 1:n.ages")
       }
     } else {
-      ecov$ages <- 1:data$n_ages # default: ecov affects all ages
+      ecov$ages <- vector("list", data$n_Ecov)
+      for(i in 1:data$n_Ecov) ecov$ages[[i]] <- 1:data$n_ages # default: ecov affects all ages
     }
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
