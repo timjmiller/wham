@@ -38,13 +38,13 @@ WHAM is written in R and TMB, and would not be possible without these superb ope
 
 For the latest stable, tested release:
 
-```
+```r
 devtools::install_github("timjmiller/wham", dependencies=TRUE)
 ```
 
 For the development version with recent bug fixes and features (potentially untested):
 
-```
+```r
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
@@ -53,20 +53,20 @@ devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
 
 Clean, runnable `.R` scripts for each vignette are also available in the `example_scripts` folder of the `wham` package install:
-```
+```r
 library(wham)
 wham.dir <- find.package("wham")
 file.path(wham.dir, "example_scripts")
 ```
 
 You can then run the entire first example script with:
-```
+```r
 setwd("choose/where/to/save/output")
 source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
 ```
 
 You can run ALL examples with (takes 1 hour):
-```
+```r
 library(wham)
 wham.dir <- find.package("wham")
 source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
@@ -75,17 +75,17 @@ source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
 ## Install details
 
 Installation from GitHub does not include the vignettes by default because they can be accessed online anytime at https://timjmiller.github.io/wham/articles. If you want to build the vignettes locally, they look best if you *build using R Studio*:
-```
+```r
 devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
 ```
 
 View installed vignettes:
-```
+```r
 browseVignettes("wham")
 ```
 
 If you're having problems with dependencies not installing, you can try:
-```
+```r
 devtools::install_github("kaskr/adcomp/TMB", dependencies=TRUE)
 devtools::install_github("kaskr/TMB_contrib_R/TMBhelper")
 to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis")
