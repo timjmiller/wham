@@ -4,12 +4,13 @@ wham 1.0.4.9000
 ### Minor improvements
 
 * NOAA pkgdown website template, thanks to @Bai-Li-NOAA [7618bb](https://github.com/timjmiller/wham/commit/7618bb0427743fffbb6db49465fd8c2f73993719)
+* Add `ecov$ages`, allows user to specify that an ecov only affects a subset of ages [e6518f](https://github.com/timjmiller/wham/commit/e6518f8f09f1c252517e6dc89b98776d687d417b) 
 
 ### Bug fixes
 
 * Don't plot age comp residuals for fleets/indices/years that are not used [6876ee](https://github.com/timjmiller/wham/commit/6876eed1dd4bbdc7b26295356756bb7a30053887)
 * Fix `Ecov_re` padding in projections with multiple ecovs that have different lags [a57f3b](https://github.com/timjmiller/wham/commit/a57f3b339881a39dbee3ab0ab190c732f855dec1)
-* Default reference points in projections use model years only (ie, make ref pts consistent across multiple projections) [74a6c3](https://github.com/timjmiller/wham/commit/74a6c3cda74e5f2f14a6471e410b227c407e0790)
+* Default to use static reference points in projections (so ref pts are consistent across multiple projections) [74a6c3](https://github.com/timjmiller/wham/commit/74a6c3cda74e5f2f14a6471e410b227c407e0790)
 
 wham 1.0.4 (2021-05-03)
 =========================

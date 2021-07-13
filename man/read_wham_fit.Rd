@@ -4,10 +4,12 @@
 \alias{read_wham_fit}
 \title{Read WHAM fit}
 \usage{
-read_wham_fit(mod)
+read_wham_fit(mod, alphaCI = 0.05)
 }
 \arguments{
 \item{mod}{output from \code{\link{fit_wham}}}
+
+\item{alphaCI}{(1-alpha)\% confidence intervals will be calculated. Default = 0.05 for 95\% CI.}
 }
 \value{
 a named list with the following elements:

@@ -278,23 +278,22 @@ Otherwise, it must be a named list with the following components:</p><dl>
     <dt>$where</dt><dd><p>Where does the ecov affect the population? <code>"recuit"</code> = recruitment,
     <code>"M"</code> = natural mortality, <code>"none"</code> = fit ecov but without an effect on the population.</p></dd>
     <dt>$how</dt><dd><p>How does the ecov affect the <code>$where</code> process? These options are
-    specific to the <code>$where</code> process.</p></dd>
-    <dt>$link_model</dt><dd><p>Model describing ecov effect on the <code>$where</code> process. Options: 'linear' (default) or 'poly-x'
-    where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \(b0 + b1*ecov + b2*ecov^2 + ...\)).</p></dd>
-  
-</dl>
-
-<p><code>ecov$how</code> specifies HOW the ecov affects the <code>ecov$where</code> process.</p><dl>
+    specific to the <code>$where</code> process. 
+Options for recruitment are described in <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a>:
+  <dl>
     <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
     <dt>= 1</dt><dd><p>"controlling" (dens-indep mortality)</p></dd>
     <dt>= 2</dt><dd><p>"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)</p></dd>
     <dt>= 3</dt><dd><p>"lethal" (threshold, i.e. R --&gt; 0 at some ecov value)</p></dd>
     <dt>= 4</dt><dd><p>"masking" (metabolic/growth, decreases dR/dS)</p></dd>
-    <dt>= 5</dt><dd><p>"directive" (e.g. behavioral)</p></dd>
-  
-</dl><p>Options for M:</p><dl>
+    <dt>= 5</dt><dd><p>"directive" (e.g. behavioral)</p></dd></dl>
+Options for M:
+  <dl>
     <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
-    <dt>= 1</dt><dd><p>effect on mean M (shared across ages)</p></dd>
+    <dt>= 1</dt><dd><p>effect on mean M (shared across ages)</p></dd></dl></p></dd>
+    <dt>$link_model</dt><dd><p>Model describing ecov effect on the <code>$where</code> process. Options: 'linear' (default) or 'poly-x'
+    where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \(b0 + b1*ecov + b2*ecov^2 + ...\)).</p></dd>
+    <dt>$ages</dt><dd><p>Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.</p></dd>
   
 </dl>
 

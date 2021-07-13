@@ -177,11 +177,25 @@
     <div id="wham-1-0-4-9000" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.4.9000">
 <a href="#wham-1-0-4-9000" class="anchor"></a>wham 1.0.4.9000</h1>
+<div id="minor-improvements" class="section level3">
+<h3 class="hasAnchor">
+<a href="#minor-improvements" class="anchor"></a>Minor improvements</h3>
+<ul>
+<li>NOAA pkgdown website template, thanks to <a href='https://github.com/Bai-Li-NOAA'>@Bai-Li-NOAA</a> <a href="https://github.com/timjmiller/wham/commit/7618bb0427743fffbb6db49465fd8c2f73993719">7618bb</a>
+</li>
+<li>Add <code>ecov$ages</code>, allows user to specify that an ecov only affects a subset of ages <a href="https://github.com/timjmiller/wham/commit/e6518f8f09f1c252517e6dc89b98776d687d417b">e6518f</a>
+</li>
+</ul>
+</div>
 <div id="bug-fixes" class="section level3">
 <h3 class="hasAnchor">
 <a href="#bug-fixes" class="anchor"></a>Bug fixes</h3>
 <ul>
 <li>Don’t plot age comp residuals for fleets/indices/years that are not used <a href="https://github.com/timjmiller/wham/commit/6876eed1dd4bbdc7b26295356756bb7a30053887">6876ee</a>
+</li>
+<li>Fix <code>Ecov_re</code> padding in projections with multiple ecovs that have different lags <a href="https://github.com/timjmiller/wham/commit/a57f3b339881a39dbee3ab0ab190c732f855dec1">a57f3b</a>
+</li>
+<li>Default to use static reference points in projections (so ref pts are consistent across multiple projections) <a href="https://github.com/timjmiller/wham/commit/74a6c3cda74e5f2f14a6471e410b227c407e0790">74a6c3</a>
 </li>
 </ul>
 </div>
@@ -197,9 +211,9 @@
 <li>New ability to plot results from multiple ASAP3 and WHAM models together for comparison. Thanks to <a href='https://github.com/liz-brooks'>@liz-brooks</a> for contributing <code>read_asap3_fit</code>! See <code><a href="../reference/compare_wham_models.html">?compare_wham_models</a></code> and new <a href="https://timjmiller.github.io/wham/articles/ex8_compare.html">vignette 8</a>.</li>
 </ul>
 </div>
-<div id="minor-improvements" class="section level3">
+<div id="minor-improvements-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-1" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>New <code>save.sdrep = F</code> option to only save <code><a href="https://rdrr.io/r/base/summary.html">summary(sdreport)</a></code> instead of <code>sdreport</code>. Can make saved models MUCH smaller (e.g. 2 MB vs. 150 MB). (<a href="https://github.com/timjmiller/wham/commit/2f8875323c0d6845a92444a9e7d4aaa92fe29d8d">2f8875</a>).</li>
 <li>Added <code>proj.opts$percentFXSPR</code> option, percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_XSPR, so <code>proj.opts$percentFXSPR = 75</code>.</li>
@@ -233,9 +247,9 @@
     <div id="wham-1-0-3-2021-02-05" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.3">
 <a href="#wham-1-0-3-2021-02-05" class="anchor"></a>wham 1.0.3 (2021-02-05)</h1>
-<div id="minor-improvements-1" class="section level3">
+<div id="minor-improvements-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements-1" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-2" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>allow for multiple ecov effects on recruitment and M</li>
 <li>add WHAM version to model object (version and GitHub commit). Requires <code>sessioninfo</code> package (within <code>devtools</code>).</li>
@@ -256,9 +270,9 @@
     <div id="wham-1-0-2-2020-12-14" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.2">
 <a href="#wham-1-0-2-2020-12-14" class="anchor"></a>wham 1.0.2 (2020-12-14)</h1>
-<div id="minor-improvements-2" class="section level3">
+<div id="minor-improvements-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements-2" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-3" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>add <code>1e-15</code> to predicted proportions to make age composition likelihoods robust to 0 predictions when selAA is fixed at 0. This affects the multinomial, Dirichlet, and Dirichlet-multinomial (options 1-3), since the logistic normal (options 4-7) already did this. <a href="https://github.com/timjmiller/wham/commit/88f15d4a51f69a3d649d76bcac0a8cf299c3135e">88f15d4</a>
 </li>
@@ -280,9 +294,9 @@
     <div id="wham-1-0-1-2020-11-12" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.1">
 <a href="#wham-1-0-1-2020-11-12" class="anchor"></a>wham 1.0.1 (2020-11-12)</h1>
-<div id="minor-improvements-3" class="section level3">
+<div id="minor-improvements-4" class="section level3">
 <h3 class="hasAnchor">
-<a href="#minor-improvements-3" class="anchor"></a>Minor improvements</h3>
+<a href="#minor-improvements-4" class="anchor"></a>Minor improvements</h3>
 <ul>
 <li>
 <code>run_all_examples.R</code> script to test all examples work</li>

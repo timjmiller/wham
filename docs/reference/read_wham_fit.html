@@ -182,7 +182,7 @@ Internal function, called within compare_wham_models." />
 Internal function, called within <code><a href='compare_wham_models.html'>compare_wham_models</a></code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>read_wham_fit</span><span class='op'>(</span><span class='va'>mod</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>read_wham_fit</span><span class='op'>(</span><span class='va'>mod</span>, alphaCI <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -190,6 +190,10 @@ Internal function, called within <code><a href='compare_wham_models.html'>compar
     <tr>
       <th>mod</th>
       <td><p>output from <code><a href='fit_wham.html'>fit_wham</a></code></p></td>
+    </tr>
+    <tr>
+      <th>alphaCI</th>
+      <td><p>(1-alpha)% confidence intervals will be calculated. Default = 0.05 for 95% CI.</p></td>
     </tr>
     </table>
 

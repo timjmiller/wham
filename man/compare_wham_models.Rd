@@ -51,6 +51,7 @@ will be used.}
   \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
   \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
   \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
+  \item{\code{$refpt}}{"XSPR" or "MSY", which reference point to use. Default = "XSPR".}
 }}
 }
 \value{

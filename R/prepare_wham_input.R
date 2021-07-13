@@ -41,14 +41,8 @@
 #'     \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
 #'     \code{"M"} = natural mortality, \code{"none"} = fit ecov but without an effect on the population.}
 #'     \item{$how}{How does the ecov affect the \code{$where} process? These options are
-#'     specific to the \code{$where} process.}
-#'     \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
-#'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b0 + b1*ecov + b2*ecov^2 + ...}).}
-#'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages (default = 1:n.ages to affect all ages))
-#'   }
-#'
-#' \code{ecov$how} specifies HOW the ecov affects the \code{ecov$where} process.
-#" Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
+#'     specific to the \code{$where} process. 
+#' Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
 #'   \describe{
 #'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
 #'     \item{= 1}{"controlling" (dens-indep mortality)}
@@ -61,6 +55,10 @@
 #'   \describe{
 #'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
 #'     \item{= 1}{effect on mean M (shared across ages)}
+#'   }}
+#'     \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
+#'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b0 + b1*ecov + b2*ecov^2 + ...}).}
+#'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.}
 #'   }
 #'
 #' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
