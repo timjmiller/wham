@@ -168,11 +168,11 @@ set_ecov = function(input, ecov)
         stop("Sorry, only the following ecov effects on recruitment are currently implemented.
         Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
       }
-      if(data$Ecov_where[i] == 1 & recruit_model == 1){
+      if(data$Ecov_where[i] == 1 & data$recruit_model == 1){
         stop("Random walk recruitment cannot have an ecov effect on recruitment.
         Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
       }
-      if(data$Ecov_where[i] == 1) if(recruit_model == 4 & ecov$how[i] == 2){
+      if(data$Ecov_where[i] == 1) if(data$recruit_model == 4 & ecov$how[i] == 2){
         stop("'Limiting' ecov effect on Ricker recruitment not implemented.
         Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
         Or set recruit_model = 3 (Bev-Holt).")
