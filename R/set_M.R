@@ -9,12 +9,12 @@ set_M = function(input, M)
   data$M_re_model = 1 # default = no RE / 'none'
   data$M_est <- rep(0, data$n_M_a) # default = don't estimate M
   M_first_est = NA  
-
+  M_re_ini = matrix(NA, data$n_years_model, data$n_M_a)
   if(is.null(input$asap3)) asap3 = NULL
   else {
     asap3 = input$asap3
     M_a_ini <- log(asap3$M[1,])
-    M_re_ini <- matrix(log(asap3$M), data$n_years_model, data$n_M_a) - matrix(M_a_ini, data$n_years_model, data$n_M_a, byrow=T)
+    M_re_ini[] <- matrix(log(asap3$M), data$n_years_model, data$n_M_a) - matrix(M_a_ini, data$n_years_model, data$n_M_a, byrow=T)
   }
 
   # natural mortality options, default = use values from ASAP file, no estimation
@@ -30,7 +30,7 @@ set_M = function(input, M)
     }
     else {
       M_a_ini <- log(rep(0.2, data$n_ages))
-      M_re_ini <- matrix(0, data$n_years_model, data$n_M_a)
+      M_re_ini[] <- 0
     }
   }
   if(!is.null(M)){
@@ -65,13 +65,13 @@ without changing ASAP file, specify M$initial_means.")
       if(length(M$initial_means) != data$n_M_a) stop("Length(M$initial_means) must be # ages (if age-specific M) or 1 (if constant or weight-at-age M)")
       M_a_ini <- log(M$initial_means)
       # overwrite ASAP file M values
-      M_re_ini <- matrix(0, data$n_years_model, data$n_M_a)# if estimating mean M for any ages, initialize yearly deviations at 0
+      M_re_ini[] <- 0# if estimating mean M for any ages, initialize yearly deviations at 0
     }
     if(!is.null(M$est_ages)){
       if(!all(M$est_ages %in% 1:data$n_M_a)) stop("All M$est_ages must be in 1:n.ages (if age-specific M) or 1 (if constant or weight-at-age M)")
       data$M_est[M$est_ages] = 1 # turn on estimation for specified M-at-age
       M_first_est <- M$est_ages[1]
-      M_re_ini <- matrix(0, data$n_years_model, data$n_M_a)# if estimating mean M for any ages, initialize yearly deviations at 0
+      M_re_ini[] <- 0# if estimating mean M for any ages, initialize yearly deviations at 0
     }
   }
   data$n_M_est <- sum(data$M_est)
