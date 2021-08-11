@@ -229,10 +229,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	{
 	  asap3 = asap3$dat
   	input$asap3 = asap3
-	  data$n_ages = asap3$n_ages
-	  data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
-	  data$mature = asap3$maturity
-	  data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
+	  input$data$n_ages = asap3$n_ages
+	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
+	  input$data$mature = asap3$maturity
+	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
   	model_years <- asap3$year1 + 1:asap3$n_years - 1
 	}
 	else
@@ -240,36 +240,33 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 		#if no asap3 is provided, make some default values to 
 		if(is.null(model_years)) model_years = 1975:2014
 		else if(!is.integer(model_years)) stop("model_years has been specified, but it is not an integer vector")
-		data$n_ages = 10
+		input$data$n_ages = 10
 		#data$selblock_models = c(2,2)
-		data$fracyr_SSB = rep(0.25, length(model_years))
-		data$mature = t(matrix(1/(1 + exp(-1*(1:data$n_ages - data$n_ages/2))), data$n_ages, length(model_years)))
-		data$Fbar_ages = 1:data$n_ages
+		input$data$fracyr_SSB = rep(0.25, length(model_years))
+		input$data$mature = t(matrix(1/(1 + exp(-1*(1:input$data$n_ages - input$data$n_ages/2))), input$data$n_ages, length(model_years)))
+		input$data$Fbar_ages = 1:input$data$n_ages
 
 	}
   input$years = input$years_full = model_years
-  input$ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+"))
+  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
   
-  data$n_years_model = length(model_years)
-  data$n_years_catch = length(model_years)
-  data$n_years_indices = length(model_years)
-  data$recruit_model = recruit_model
-  data$which_F_age = rep(data$n_ages,data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
-  data$bias_correct_pe = 1 #bias correct log-normal process errors?
-  data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
-  data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
-  data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
-  data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
-  data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
+  input$data$n_years_model = length(model_years)
+  input$data$n_years_catch = length(model_years)
+  input$data$n_years_indices = length(model_years)
+  input$data$recruit_model = recruit_model
+  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
+  input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
+  input$data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
+  input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
+  input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+  input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
+  input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
+  input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
-  data$XSPR_R_opt = 2 # default = use average R estimates
-  data$XSPR_R_avg_yrs = 1:data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  input$data$XSPR_R_opt = 2 # default = use average R estimates
+  input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 
-  input$data[names(data)] = data
-  input$par[names(par)] = par
-  input$map[names(map)] = map  
   print("start")
   # Catch
   input = set_catch(input)
@@ -316,13 +313,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   print("proj")
 
   #set any parameters as random effects
-  if(input$data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
-  if(any(input$data$selblock_models_re > 1)) random = c(random, "selpars_re")
-  if(input$data$M_re_model > 1) random = c(random, "M_re")
-  if(sum(input$data$Ecov_model) > 0) random = c(random, "Ecov_re")
-  if(input$data$n_NAA_sigma > 0) random = c(random, "log_NAA")
-  #if(missing(input$model_name)) input$model_name = "WHAM for unnamed stock"
-  input$random = random
+  input = set_map(input)
+  print("map")
+
   return(input)
   #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
   #  ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))

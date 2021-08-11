@@ -1,9 +1,10 @@
 set_indices = function(input, index_opts=NULL)
 {
 	data = input$data
-	asap3 = if(is.null(input$asap3)) {
+	if(is.null(input$asap3)) {
 		asap3 = NULL
-		data$n_indices = 1
+    if(is.null(index_opts$n_indices)) data$n_indices = 1
+    else data$n_indices = index_opts$n_indices
 	}
   else {
   	asap3 = input$asap3
@@ -60,24 +61,38 @@ set_indices = function(input, index_opts=NULL)
 	}
 	else
 	{
-		data$units_indices = rep(1,data$n_indices) #biomass
-		data$fracyr_indices =matrix(0.5, data$n_years_model, data$n_indices)
-		data$agg_indices[] = 10
-		data$agg_index_sigma[] = sqrt(log(0.3^2 + 1))
-		data$index_paa[] = 1/data$n_ages
-		data$units_index_paa = rep(2,data$n_indices) #numbers
-		data$index_Neff[] = 100
-		input$par$logit_q = gen.logit(0.3, data$q_lower, data$q_upper)
+		if(is.null(index_opts$units_indices)) data$units_indices = rep(1,data$n_indices) #biomass
+		else data$units_indices = index_opts$units_indices
+		
+		if(is.null(index_opts$fracyr_indices)) data$fracyr_indices =matrix(0.5, data$n_years_model, data$n_indices)
+		else data$fracyr_indices = index_opts$fracyr_indices
+		
+		if(is.null(index_opts$agg_indices)) data$agg_indices[] = 10
+		else 
+
+		if(is.null(index_opts$agg_index_sigma)) data$agg_index_sigma[] = sqrt(log(0.3^2 + 1))
+		else 
+
+		if(is.null(index_opts$index_paa)) data$index_paa[] = 1/data$n_ages
+		else 
+		if(is.null(index_opts$units_index_paa)) data$units_index_paa = rep(2,data$n_indices) #numbers
+		
+		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
+
+		#These are specified at the top, so only change if needed
+		if(!is.null(index_opts$q_lower)) data$q_lower = index_opts$q_lower
+		if(!is.null(index_opts$q_upper)) data$q_upper = index_opts$q_upper
+		
+		if(is.null(index_opts$q)) input$par$logit_q[] = gen.logit(0.3, data$q_lower, data$q_upper)
+		else input$par$logit_q[] = gen.logit(index_opts$q, data$q_lower, data$q_upper)
 	}
 
   data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100
   data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
   data$index_paa[is.na(data$index_paa)] = 0
-  # print(data$use_index_paa[14,1])
   
   data$index_aref = matrix(NA, data$n_years_model, data$n_indices)
-  for(i in 1:data$n_indices) data$index_aref[,i] = get_aref_fn(data$index_paa[i,,])
-  
+  for(i in 1:data$n_indices) data$index_aref[,i] = get_aref_fn(data$index_paa[i,,])  
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))
