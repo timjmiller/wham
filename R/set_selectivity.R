@@ -66,7 +66,6 @@ set_selectivity = function(input, selectivity)
   for(b in 1:data$n_selblocks){
     phase_selpars[b,par_index[[data$selblock_models[b]]]] = 1
   }
-  print(phase_selpars)
   if(is.null(selectivity$initial_pars)) {
     if(!no_asap) {
       for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
@@ -90,16 +89,16 @@ set_selectivity = function(input, selectivity)
       if(!no_asap){
         orig_selpars[[b]] <- selpars_ini[b,par_index[[data$selblock_models[b]]]]
       }
-      selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
     }
     if(no_asap) for(b in 1:data$n_selblocks){
-      selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
+      selpars_ini[b,] <- c(rep(0.5,data$n_ages), rep(data$n_ages/2, 6))#default_selpars[[b]] # default to middle of par range
     }
     if(!no_asap) {
       orig_sel_models <- c(asap3$sel_block_option, asap3$index_sel_option)
       sel_mod_diff_warn <- NULL
       for(b in 1:data$n_selblocks){
         if(data$selblock_models[b] != orig_sel_models[b]){
+          selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
           sel_mod_diff_warn <- paste(sel_mod_diff_warn, paste0("Block ",b,":"), paste0("  ASAP .dat file: ",selopts[orig_sel_models[b]]),paste0("  selectivity$models: ",selopts[data$selblock_models[b]]),paste0("  Changing .dat file inits ",paste0(orig_selpars[[b]], collapse = ", ")," to inits in middle of par range ",paste0(default_selpars[[b]], collapse = ", ")), sep="\n")
         }
       }
