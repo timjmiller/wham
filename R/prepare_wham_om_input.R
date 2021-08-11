@@ -236,23 +236,54 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
     if(recruit_model == 2) basic_info$mean_rec_pars[] = exp(10)
     else basic_info$mean_rec_pars[] = 1
     if(recruit_model == 4) basic_info$mean_rec_pars[2] = exp(-10)
-    
+	  
+	  basic_info$index_units = rep(1, length(basic_info$index_cv)) #biomass
+	  basic_info$index_paa_units = rep(2, length(basic_info$index_cv)) #abundance
   }
   #hard coded inputs
-  basic_info$index_units = rep(1, length(basic_info$index_cv)) #biomass
-  basic_info$index_paa_units = rep(2, length(basic_info$index_cv)) #abundance
-  basic_info$q_lower = rep(0, length(basic_info$index_cv))
-  basic_info$q_upper = rep(1000, length(basic_info$index_cv))
+  #basic_info$q_lower = rep(0, length(basic_info$index_cv))
+  #basic_info$q_upper = rep(1000, length(basic_info$index_cv))
+
+  # data$recruit_model = 2 #random about mean
+  model_years <- basic_info$modyears
+  #data$N1_model = 0 #0: just age-specific numbers at age
+  #data$which_F_age = rep(data$n_ages,data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  if(is.null(NAA_re)) NAA_re = list(use_steepness = basic_info$use_steepness)
+  #data$use_steepness = basic_info$use_steepness #0: regular SR parameterization by default, steepness still can be estimated as derived par.
+  # data$bias_correct_pe = 0 #bias correct log-normal process errors?
+  # data$bias_correct_oe = 0 #bias correct log-normal observation errors?
+  # data$Fbar_ages = 1:data$n_ages
+ #  data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
+ #  data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
+ #  data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+ #  data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
+ #  data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
+ #  data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
+	# data$XSPR_R_opt = 2 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+ #  data$XSPR_R_avg_yrs = 1:data$n_years_model -1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+
   
-  data = par = list()
-  data$n_years_model = data$n_years_catch = data$n_years_indices = length(basic_info$modyears)
-  data$n_ages = length(basic_info$M)
-  data$n_fleets = NCOL(basic_info$F)
-  data$n_indices = length(basic_info$q)
-  data$selblock_models = c(basic_info$sel_model_fleets, basic_info$sel_model_indices)
+  input = prepare_wham_input(NAA_re= NAA_re, selectivity = selectivity, M = M, recruit_model = recruit_model, model_years = model_years, ecov = ecov) #should generate a default input for fit_wham
+  data = input$data
+  par = input$par
+  map = input$map
+
+  #data = par = list()
+  # data$n_years_model = data$n_years_catch = data$n_years_indices = length(basic_info$modyears)
+  # data$n_ages = length(basic_info$M)
+  # data$n_fleets = NCOL(basic_info$F)
+  # data$n_indices = length(basic_info$q)
+  # data$selblock_models = c(basic_info$sel_model_fleets, basic_info$sel_model_indices)
+  # data$n_selblocks = data$n_fleets + data$n_indices
+  data$fracyr_SSB = rep(basic_info$fracyr_spawn, data$n_years_model)
+  data$mature = t(matrix(basic_info$maturity, data$n_ages, data$n_years_model)) #input is just a single vector
+
+  
+
+
+
 
   # Selectivity
-  data$n_selblocks = data$n_fleets + data$n_indices
   if(is.null(selectivity$model)) data$selblock_models = rep(2, data$n_selblocks)
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
@@ -278,9 +309,6 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
   data$n_age_comp_pars_fleets = c(0,1,1,3,1,2)[data$age_comp_model_fleets]
   data$age_comp_model_indices = rep(1, data$n_indices) #multinomial by default
   data$n_age_comp_pars_indices = c(0,1,1,3,1,2)[data$age_comp_model_indices]
-
-  data$fracyr_SSB = rep(basic_info$fracyr_spawn, data$n_years_model)
-  data$mature = t(matrix(basic_info$maturity, data$n_ages, data$n_years_model)) #input is just a single vector
 
   # Weight-at-age
   data$waa_pointer_fleets = 1:data$n_fleets
@@ -322,100 +350,104 @@ prepare_wham_om_input <- function(basic_info, model_name="WHAM setup to simulate
   data$q_lower <- rep(basic_info$q_lower,data$n_indices)
   data$q_upper <- rep(basic_info$q_upper,data$n_indices)
 
+  input = set_selectivity(input, selectivity)
   # Prep selectivity initial values
-  selpars_ini = matrix(0, data$n_selblocks, data$n_ages + 6)
-  if(!is.null(selectivity$initial_pars)) {
-    if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list")
-    if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
-    for(b in 1:data$n_selblocks){
-      if(length(selectivity$initial_pars[[b]]) != data$n_selpars[b]) stop(paste0("Length of vector ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",data$n_selpars[b]))
-      if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] = selectivity$initial_pars[[b]]
-    }
-  }
-  # Prep selectivity map
-  phase_selpars = matrix(1, data$n_selblocks, data$n_ages + 6)
-  if(!is.null(selectivity$fix_pars)) {
-    if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list")
-    if(length(selectivity$fix_pars) != data$n_selblocks) stop("Length of selectivity$fix_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices).
-      Use 'NULL' to not fix any parameters for a block, e.g. list(NULL,4,2) does not fix any pars in block 1")
-    for(b in 1:data$n_selblocks){
-      if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] = -1
-      if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] = -1
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
-    }
-  }
-  for(i in 1:data$n_selblocks){
-    if(data$selblock_models[i] == 1) phase_selpars[i,data$n_ages + 1:6] = -1
-    if(data$selblock_models[i] %in% c(2,4)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
-    if(data$selblock_models[i] == 3) phase_selpars[i,data$n_ages + 1:2] = -1
-  }
+  #selpars_ini = matrix(0, data$n_selblocks, data$n_ages + 6)
+  # selpars_ini = matrix(0.5, data$n_selblocks, data$n_ages + 6)
+  # selpars_ini[,data$n_ages + 1:6] = data$n_ages/2
+  # if(!is.null(selectivity$initial_pars)) {
+  #   if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list")
+  #   if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
+  #   for(b in 1:data$n_selblocks){
+  #     if(length(selectivity$initial_pars[[b]]) != data$n_selpars[b]) stop(paste0("Length of vector ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",data$n_selpars[b]))
+  #     if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] = selectivity$initial_pars[[b]]
+  #     if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] = selectivity$initial_pars[[b]]
+  #     if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] = selectivity$initial_pars[[b]]
+  #   }
+  # }
+  # # Prep selectivity map
+  # phase_selpars = matrix(1, data$n_selblocks, data$n_ages + 6)
+  # if(!is.null(selectivity$fix_pars)) {
+  #   if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list")
+  #   if(length(selectivity$fix_pars) != data$n_selblocks) stop("Length of selectivity$fix_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices).
+  #     Use 'NULL' to not fix any parameters for a block, e.g. list(NULL,4,2) does not fix any pars in block 1")
+  #   for(b in 1:data$n_selblocks){
+  #     if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] = -1
+  #     if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] = -1
+  #     if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
+  #   }
+  # }
+  # for(i in 1:data$n_selblocks){
+  #   if(data$selblock_models[i] == 1) phase_selpars[i,data$n_ages + 1:6] = -1
+  #   if(data$selblock_models[i] %in% c(2,4)) phase_selpars[i,c(1:data$n_ages, data$n_ages + 3:6)] = -1
+  #   if(data$selblock_models[i] == 3) phase_selpars[i,data$n_ages + 1:2] = -1
+  # }
 
-  # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
-  age_specific <- which(data$selblock_models==1)
-  for(b in age_specific){
-    ind = list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
-    ind$indices = which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
-    paa = matrix(nrow = 0, ncol = data$n_ages)
-    if(length(ind$fleets)) for(f in ind$fleets)
-    {
-      y = data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
-      paa = rbind(paa,y)
-    }
-    if(length(ind$indices)) for(i in ind$indices)
-    {
-      y = data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
-      paa = rbind(paa,y)
-    }
-    y = apply(paa,2,sum)
-    selpars_ini[b, which(y < 1e-5)] = 0
-    phase_selpars[b, which(y < 1e-5)] = -1
-  }
-  data$selpars_est <- phase_selpars
-  data$selpars_est[data$selpars_est == -1] = 0
-  data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
-  selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 6)
-  selpars_hi[,1:data$n_ages] = 1
-  selpars_hi[,data$n_ages + 1:6] = data$n_ages
-  temp = matrix(NA, data$n_selblocks, data$n_ages + 6)
-  temp[which(phase_selpars>0)] = 1:sum(phase_selpars>0)
-  data$selpars_lower = selpars_lo #only need these for estimated parameters
-  data$selpars_upper = selpars_hi
-  map = list(logit_selpars = factor(temp))
+  # # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
+  # age_specific <- which(data$selblock_models==1)
+  # for(b in age_specific){
+  #   ind = list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
+  #   ind$indices = which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
+  #   paa = matrix(nrow = 0, ncol = data$n_ages)
+  #   if(length(ind$fleets)) for(f in ind$fleets)
+  #   {
+  #     y = data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
+  #     paa = rbind(paa,y)
+  #   }
+  #   if(length(ind$indices)) for(i in ind$indices)
+  #   {
+  #     y = data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
+  #     paa = rbind(paa,y)
+  #   }
+  #   y = apply(paa,2,sum)
+  #   selpars_ini[b, which(y < 1e-5)] = 0
+  #   phase_selpars[b, which(y < 1e-5)] = -1
+  # }
+  # data$selpars_est <- phase_selpars
+  # data$selpars_est[data$selpars_est == -1] = 0
+  # data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
+  # selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 6)
+  # selpars_hi[,1:data$n_ages] = 1
+  # selpars_hi[,data$n_ages + 1:6] = data$n_ages
+  # temp = matrix(NA, data$n_selblocks, data$n_ages + 6)
+  # temp[which(phase_selpars>0)] = 1:sum(phase_selpars>0)
+  # data$selpars_lower = selpars_lo #only need these for estimated parameters
+  # data$selpars_upper = selpars_hi
+  # map = list(logit_selpars = factor(temp))
 
   # NAA_re options
-  if(is.null(NAA_re)){ # default = SCAA
-    data$n_NAA_sigma <- 0
-    data$NAA_sigma_pointers <- rep(1,data$n_ages)
-  } else {
-    if(NAA_re$sigma == "rec"){
-      data$n_NAA_sigma <- 1
-      data$NAA_sigma_pointers <- rep(1,data$n_ages)
-    } else {
-      if(NAA_re$sigma == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
-        data$n_NAA_sigma <- 2
-        data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
-      } else {
-        if(length(NAA_re$sigma) != data$n_ages) stop("NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
-'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
-or a vector with length == n.ages specifying which sigma_a to use for each age.")
-        if(length(NAA_re$sigma) == data$n_ages){
-          if(is.na(unique(NAA_re$sigma))){
-            data$n_NAA_sigma <- 0
-            data$NAA_sigma_pointers <- rep(1,data$n_ages)            
-          } else {
-            data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
-            data$NAA_sigma_pointers <- NAA_re$sigma
-          }
-        }
-      }
-    }
-  }
-  if(recruit_model > 2 & data$n_NAA_sigma == 0) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects.
-Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
-This message will not appear if you set recruit_model = 2 (random about mean).")
-  data$recruit_model = recruit_model
+  input = set_NAA(input, NAA_re)
+#   if(is.null(NAA_re)){ # default = SCAA
+#     data$n_NAA_sigma <- 0
+#     data$NAA_sigma_pointers <- rep(1,data$n_ages)
+#   } else {
+#     if(NAA_re$sigma == "rec"){
+#       data$n_NAA_sigma <- 1
+#       data$NAA_sigma_pointers <- rep(1,data$n_ages)
+#     } else {
+#       if(NAA_re$sigma == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
+#         data$n_NAA_sigma <- 2
+#         data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+#       } else {
+#         if(length(NAA_re$sigma) != data$n_ages) stop("NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
+# 'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
+# or a vector with length == n.ages specifying which sigma_a to use for each age.")
+#         if(length(NAA_re$sigma) == data$n_ages){
+#           if(is.na(unique(NAA_re$sigma))){
+#             data$n_NAA_sigma <- 0
+#             data$NAA_sigma_pointers <- rep(1,data$n_ages)            
+#           } else {
+#             data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
+#             data$NAA_sigma_pointers <- NAA_re$sigma
+#           }
+#         }
+#       }
+#     }
+#   }
+#   if(recruit_model > 2 & data$n_NAA_sigma == 0) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects.
+# Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
+# This message will not appear if you set recruit_model = 2 (random about mean).")
+#   data$recruit_model = recruit_model
 
   # natural mortality options, default = use values from ASAP file, no estimation
   data$n_M_a = data$n_ages
@@ -423,12 +455,13 @@ This message will not appear if you set recruit_model = 2 (random about mean).")
   data$use_b_prior = 0
   data$M_re_model = 1 # default = no RE / 'none'
   data$M_est <- rep(0, data$n_M_a) # default = don't estimate M
-  M_first_est = 1
-  M0_ini <- log(basic_info$M[1])
-  M_a_ini <- log(basic_info$M) - M0_ini
+  M_first_est = NA
+  #M0_ini <- log(basic_info$M[1])
+  M_a_ini <- log(basic_info$M) #age-specific vector now
+  #M_a_ini <- log(basic_info$M) - M0_ini
   # M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini + M0_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
   #M_re_ini <- matrix(log(asap3$M)-matrix(M_a_ini + M0_ini,data$n_years_model,data$n_M_a,byrow=T), data$n_years_model, data$n_M_a)
-  M_re_ini <- t(matrix(log(basic_info$M)-(M_a_ini + M0_ini),data$n_M_a,data$n_years_model))
+  M_re_ini <- matrix(0,data$n_years_model,data$n_M_a)
   if(!is.null(M)){
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
@@ -459,7 +492,7 @@ without changing ASAP file, specify M$initial_means.")
     if(!is.null(M$initial_means)){
       if(length(M$initial_means) != data$n_M_a) stop("Length(M$initial_means) must be # ages (if age-specific M) or 1 (if weight-at-age M)")
       M0_ini <- log(M$initial_means[1])
-      M_a_ini <- log(M$initial_means) - M0_ini
+      M_a_ini <- log(M$initial_means)
       # Use ASAP file M values
       # M_re_ini <- matrix(log(asap3$M[-1,])-matrix(M_a_ini,data$n_years_model-1,data$n_M_a,byrow=T), data$n_years_model-1, data$n_M_a)
       # overwrite ASAP file M values
@@ -469,36 +502,20 @@ without changing ASAP file, specify M$initial_means.")
       if(!all(M$est_ages %in% 1:data$n_M_a)) stop("All M$est_ages must be in 1:n.ages (if age-specific M) or 1 (if constant or weight-at-age M)")
       data$M_est[M$est_ages] = 1 # turn on estimation for specified M-at-age
       M_first_est <- M$est_ages[1]
-      if(M$model == "age-specific"){
-        if(is.null(M$initial_means)){
-          M0_ini <- log(basic_info$M[M_first_est])
-          M_a_ini <- log(basic_info$M) - M0_ini
-        } else {
-          M0_ini <- log(M$initial_means[M_first_est])
-          M_a_ini <- log(M$initial_means) - M0_ini
-        }
-      }
+#      if(M$model == "age-specific"){
+#        if(is.null(M$initial_means)){
+#          M0_ini <- log(basic_info$M[M_first_est])
+#          M_a_ini <- log(basic_info$M) - M0_ini
+#        } else {
+#          M0_ini <- log(M$initial_means[M_first_est])
+#          M_a_ini <- log(M$initial_means) - M0_ini
+#        }
+#      }
       M_re_ini[] = 0 # if estimating mean M for any ages, initialize yearly deviations at 0
     }
   }
   data$n_M_est <- sum(data$M_est)
 
-  # data$recruit_model = 2 #random about mean
-  data$N1_model = 0 #0: just age-specific numbers at age
-  data$which_F_age = rep(data$n_ages,data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
-  data$use_steepness = basic_info$use_steepness #0: regular SR parameterization by default, steepness still can be estimated as derived par.
-  data$bias_correct_pe = 0 #bias correct log-normal process errors?
-  data$bias_correct_oe = 0 #bias correct log-normal observation errors?
-  data$Fbar_ages = 1:data$n_ages
-  data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
-  data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
-  data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
-  data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
-  data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
-	data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
-  data$XSPR_R_avg_yrs = 1:data$n_years_model #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-  model_years <- basic_info$modyears
 
   # --------------------------------------------------------------------------------
   # Environmental covariate data
@@ -519,19 +536,19 @@ without changing ASAP file, specify M$initial_means.")
     data$Ecov_where <- 1
     data$Ecov_how <- 0
     data$Ecov_poly <- 1
-    data$Ecov_recruit <- 1
-    data$Ecov_growth <- 1
-    data$Ecov_mortality <- 1
+    #data$Ecov_recruit <- 1
+    #data$Ecov_growth <- 1
+    #data$Ecov_mortality <- 1
     data$n_years_Ecov <- 1
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- 0
     data$Ecov_label <- "none"
     data$Ecov_use_re <- matrix(0, nrow=1, ncol=1)
   } else {
-    if(class(ecov$mean) == "matrix") {data$Ecov_obs <- ecov$mean} else{
+    if(class(ecov$mean)[1] == "matrix") {data$Ecov_obs <- ecov$mean} else{
       warning("ecov mean is not a matrix. Coercing to a matrix...")
       data$Ecov_obs <- as.matrix(ecov$mean)
     }
-    if(class(ecov$use_obs) == "matrix"){
+    if(class(ecov$use_obs)[1] == "matrix"){
       data$Ecov_use_obs <- ecov$use_obs
     } else{
       warning("ecov$use_obs is not a matrix with same dimensions as ecov$mean. Coercing to a matrix...")
@@ -542,13 +559,13 @@ without changing ASAP file, specify M$initial_means.")
     # Handle Ecov sigma options
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num Ecovs
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
-    if(class(ecov$logsigma) == "matrix"){
+    if(class(ecov$logsigma)[1] == "matrix"){
       # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
       par.Ecov.obs.logsigma <- ecov$logsigma
       if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$logsigma")
     }
-    if(class(ecov$logsigma) == 'numeric'){
+    if(class(ecov$logsigma)[1] == 'numeric'){
       # if(any(ecov$logsigma <= 0)) stop("ecov$logsigma must be positive")
       data$Ecov_obs_sigma_opt = 1
       print("ecov$logsigma is numeric. Coercing to a matrix...")
@@ -557,7 +574,7 @@ without changing ASAP file, specify M$initial_means.")
       if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(ecov$logsigma, ncol=1)
       if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
     }
-    if(class(ecov$logsigma) == 'character'){
+    if(class(ecov$logsigma)[1] == 'character'){
       if(ecov$logsigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
         data$Ecov_obs_sigma_opt = 2
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
@@ -576,7 +593,7 @@ without changing ASAP file, specify M$initial_means.")
         data$Ecov_obs_sigma_opt = 4
         par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
         map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-0.5, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
+        par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-2.3, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
         map.Ecov.obs.sigma.par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
       }
     }
@@ -658,34 +675,43 @@ without changing ASAP file, specify M$initial_means.")
     }
     data$Ecov_model <- sapply(ecov$process_model, match, c("rw", "ar1"))
 
-    if(!ecov$where %in% c('recruit','M')){
-      stop("Sorry, only ecov effects on recruitment and M currently implemented.
-      Set ecov$where = 'recruit' or 'M'.")
+    if(any(ecov$where == 'recruit') & data$n_NAA_sigma == 0){
+      stop("Cannot estimate ecov effect on recruitment when
+      recruitment in each year is estimated freely as fixed effect parameters.
+      Either remove ecov-recruit effect or estimate recruitment
+      (or all numbers-at-age) as random effects.")
     }
-    data$Ecov_where <- sapply(ecov$where, match, c('recruit','M'))
-    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
-    data$Ecov_growth <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # Ecov index to use for growth?
-    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # Ecov index to use for mortality?
+    if(is.null(ecov$where)) stop("ecov$where must be specified, 'recruit' or 'M'")
+    if(!any(ecov$where %in% c('recruit','M','none'))){
+      stop("Only ecov effects on recruitment and M currently implemented.
+      Set ecov$where = 'recruit', 'M', or 'none'.")
+    }
+   data$Ecov_where <- sapply(ecov$where, match, c('recruit','M'))
+#    data$Ecov_recruit <- ifelse(any(data$Ecov_where == 1), which(data$Ecov_where == 1), 0) # Ecov index to use for recruitment?
+#    data$Ecov_growth <- ifelse(any(data$Ecov_where == 3), which(data$Ecov_where == 3), 0) # Ecov index to use for growth?
+#    data$Ecov_mortality <- ifelse(any(data$Ecov_where == 2), which(data$Ecov_where == 2), 0) # Ecov index to use for mortality?
 
     if(is.null(ecov$how)) stop("ecov$how must be specified")
     if(length(ecov$how) != data$n_Ecov) stop("ecov$how must be a vector of length(n.ecov)")
-    if(data$Ecov_mortality > 0) if(!ecov$how[data$Ecov_mortality] %in% c(0,1)){
-      stop("Sorry, only the following ecov effects on M are currently implemented.
-      Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
-    }
-    if(data$Ecov_recruit > 0) if(!ecov$how[data$Ecov_recruit] %in% c(0,1,2,4)){
-      stop("Sorry, only the following ecov effects on recruitment are currently implemented.
-      Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
-    }
-    if(recruit_model == 1 & data$Ecov_recruit != 0){
-      stop("Random walk recruitment cannot have an ecov effect on recruitment.
-      Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
-    }
-    if(data$Ecov_recruit > 0) if(recruit_model == 4 & ecov$how[data$Ecov_recruit] == 2){
-      stop("'Limiting' ecov effect on Ricker recruitment not implemented.
-      Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
-      Or set recruit_model = 3 (Bev-Holt).")
-    }
+    for(i in 1:data$n_Ecov){
+      if(data$Ecov_where[i] == 2) if(!ecov$how[i] %in% c(0,1)){
+        stop("Sorry, only the following ecov effects on M are currently implemented.
+        Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
+      }
+      if(data$Ecov_where[i] == 1) if(!ecov$how[i] %in% c(0,1,2,4)){
+        stop("Sorry, only the following ecov effects on recruitment are currently implemented.
+        Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
+      }
+      if(data$Ecov_where[i] == 1 & recruit_model == 1){
+        stop("Random walk recruitment cannot have an ecov effect on recruitment.
+        Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
+      }
+      if(data$Ecov_where[i] == 1) if(recruit_model == 4 & ecov$how[i] == 2){
+        stop("'Limiting' ecov effect on Ricker recruitment not implemented.
+        Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
+        Or set recruit_model = 3 (Bev-Holt).")
+      }
+  	}
     data$Ecov_how <- ecov$how
     data$Ecov_poly <- rep(1,data$n_Ecov)
     ecov_str <- as.list(rep('linear',data$n_Ecov))
@@ -699,6 +725,15 @@ without changing ASAP file, specify M$initial_means.")
           ecov_str[[i]] = ecov$link_model[i]
         }
       }
+    }
+    if(!is.null(ecov$ages)){
+      if(length(ecov$ages) != data$n_Ecov) stop("ecov$ages must be a list of length n.ecov")
+      for(i in 1:data$n_Ecov){
+        if(!all(ecov$ages[[i]] %in% 1:data$n_ages)) stop("All ecov$ages must be in 1:n.ages")
+      }
+    } else {
+      ecov$ages <- vector("list", data$n_Ecov)
+      for(i in 1:data$n_Ecov) ecov$ages[[i]] <- 1:data$n_ages # default: ecov affects all ages
     }
     # if(ecov$where=="recruit") data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
     # if(ecov$where=='growth') data$Ecov_how <- match(ecov$how, c('type1','type2','type3'))
@@ -716,14 +751,14 @@ Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
 
       if(data$Ecov_where[i] == 1){ # recruitment
         cat(paste0("Ecov ",i,": ",ecov$label[i],"
-",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how+1]," (",ecov_str[[i]],") effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
+",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how[i]+1]," (",ecov_str[[i]],") effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
 
 In model years:
 "))
       }
       if(data$Ecov_where[i] == 2){ # M
         cat(paste0("Ecov ",i,": ",ecov$label[i],"
-",ecov_str[[i]]," effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
+",c('*NO*',ecov_str[[i]])[data$Ecov_how[i]+1]," effect on: ", c('recruitment','M')[data$Ecov_where[i]],"
 
 In model years:
 "))
@@ -736,6 +771,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','M')[data$Ecov_where[i]]," in ",lastyr+data$Ecov_lag[i],"
 "))
     }
+    data$Ecov_label <- list(data$Ecov_label)
   } # end load Ecov
 
   # add vector of all observations for one step ahead residuals ==========================
@@ -748,8 +784,10 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x <- as.data.frame(data$agg_catch)
   x[data$use_agg_catch==0] <- NA # can't fit to fleets/years with 0 catch
   colnames(x) <- paste0("fleet_", 1:data$n_fleets)
+  obs_levels <- paste0("fleet_", 1:data$n_fleets)
   x$year <- 1:data$n_years_catch
-  tmp <- tidyr::gather(x, fleet, val, -year)
+  # tmp <- tidyr::gather(x, fleet, val, -year) # gather no longer supported...
+  tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
   tmp <- tmp[complete.cases(tmp),]  
   tmp$val <- log(tmp$val) # all obs of 0 catch should have use_agg_catch==0, turned to NA, and removed
   tmp$age <- NA
@@ -760,8 +798,10 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   x <- as.data.frame(data$agg_indices)
   x[data$use_indices==0] <- NA # only include index data to fit in obsvec
   colnames(x) <- paste0("index_", 1:data$n_indices)
+  obs_levels <- c(obs_levels, paste0("index_", 1:data$n_indices))
   x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-  tmp <- tidyr::gather(x, fleet, val, -year)
+  # tmp <- tidyr::gather(x, fleet, val, -year)
+  tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
   tmp <- tmp[complete.cases(tmp),]
   tmp$val <- log(tmp$val) # all obs of 0 catch should have use_indices==0, turned to NA, and already removed
   tmp$age <- NA
@@ -773,8 +813,11 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
     x <- as.data.frame(data$Ecov_obs)
     x[data$Ecov_use_obs==0] <- NA # only include index data to fit in obsvec
     colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
+    obs_levels <- c(obs_levels, paste0("Ecov_", 1:data$n_Ecov))
+    
     x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
-    tmp <- tidyr::gather(x, fleet, val, -year)
+    # tmp <- tidyr::gather(x, fleet, val, -year)
+    tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
     tmp <- tmp[complete.cases(tmp),]
     tmp$age <- NA
     tmp$type <- "Ecov"
@@ -798,11 +841,13 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # obs <- rbind(obs, x[, obs.colnames])
 
   # order by year, fleet, age, type
+  obs$fleet <- factor(obs$fleet, levels=obs_levels)
   o <- order(as.numeric(obs$year), obs$fleet, as.numeric(obs$age), obs$type)
   obs <- obs[o,]
 
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
+  
   data$keep_C <- matrix(NA, nrow=data$n_years_catch, ncol=data$n_fleets)
   xl <- lapply(seq_len(nrow(data$use_agg_catch)), function(r) which(data$use_agg_catch[r,]==1))
   Col <- unlist(xl)
@@ -810,13 +855,17 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   data$keep_C[cbind(Row,Col)] <- subset(obs, type=='logcatch')$ind
 
   data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
+  
+
   xl <- lapply(seq_len(nrow(data$use_indices)), function(r) which(data$use_indices[r,]==1))
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_indices, times=sapply(xl, length))
   data$keep_I[cbind(Row,Col)] <- subset(obs, type=='logindex')$ind
 
   data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
+  
   xl <- lapply(seq_len(nrow(data$Ecov_use_obs)), function(r) which(data$Ecov_use_obs[r,]==1))
+  
   Col <- unlist(xl)
   Row <- rep(1:data$n_years_Ecov, times=sapply(xl, length))
   data$keep_E[cbind(Row,Col)] <- subset(obs, type=='Ecov')$ind
@@ -891,7 +940,9 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   if(!is.null(basic_info$NAA_rho)) par$trans_NAA_rho = log(basic_info$NAA_rho + 1) - log(1 - basic_info$NAA_rho)
   else par$trans_NAA_rho <- c(0,0)
   par$log_NAA = matrix(10, data$n_years_model-1, data$n_ages)
-  
+  par$logR_proj <- 0 # will be set by prepare_projection if SCAA
+  map$logR_proj <- factor(NA)
+   
   # NAA_re and NAA_rho map
   if(!is.null(NAA_re$cor)){
     if(!NAA_re$cor %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
@@ -912,6 +963,8 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$log_NAA = factor(tmp)
   
   # selectivity pars
+  selpars_ini[which(selpars_ini > selpars_hi)] <- selpars_hi[which(selpars_ini > selpars_hi)]
+  selpars_ini[which(selpars_ini < selpars_lo)] <- selpars_lo[which(selpars_ini < selpars_lo)]
   par$logit_selpars = log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] = -10
   par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars>0] = 10
@@ -951,21 +1004,24 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   }
 
   # age comp pars
-  n_catch_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
-  n_index_acomp_pars = c(0,1,1,3,1,2)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
-  if(!is.null(basic_info$catch_paa_pars)) {
-    par$catch_paa_pars = log(basic_info$catch_paa_pars)
-    if(sum(n_catch_acomp_pars>2)) warning("catch_paa_pars will not be correct for fleets with age_comp modeled as (4) zero-one inflated logistic normal")
+  n_catch_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
+  n_index_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
+  par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
+  par$index_paa_pars = rep(0, sum(n_index_acomp_pars))  
+  if(all(data$age_comp_model_fleets %in% c(5,7))){ # start tau/neff at 0
+    neff <- data$catch_Neff
+    neff[neff <= 0] <- NA
+    neff <- apply(neff,2,mean, na.rm=TRUE)[which(apply(data$use_catch_paa,2,sum)>0)]
+    par$catch_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
+  }  
+  if(all(data$age_comp_model_indices %in% c(5,7))){ # start tau/neff at 0
+    neff <- data$index_Neff
+    neff[neff <= 0] <- NA
+    neff <- apply(neff,2,mean, na.rm=TRUE)[which(apply(data$use_index_paa,2,sum)>0)]
+    par$index_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
   }
-  else par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  if(!is.null(basic_info$index_paa_pars)) {
-    par$index_paa_pars = log(basic_info$index_paa_pars)
-    if(sum(n_index_acomp_pars>2)) warning("index_paa_pars will not be correct for fleets with age_comp modeled as (4) zero-one inflated logistic normal")
-  }
-  else par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
 
   # natural mortality pars
-  par$M0 <- M0_ini # mean M
   par$M_a <- M_a_ini # deviations by age
   par$M_re <- M_re_ini # deviations from mean M_a on log-scale, PARAMETER_ARRAY
   par$M_repars <- rep(0, 3)
@@ -982,8 +1038,9 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   # par$Ecov_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
   par$Ecov_re = matrix(rnorm(data$n_years_Ecov*data$n_Ecov), data$n_years_Ecov, data$n_Ecov)
   max.poly <- max(data$Ecov_poly)
-  par$Ecov_beta = matrix(0, nrow=max.poly, ncol=data$n_Ecov) # beta_R in eqns 4-5, Miller et al. (2016)
-  par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (log_sig, Ecov1), AR1: 3 par (mu, phi, log_sig); ncol = N_ecov
+  par$Ecov_beta = array(0, dim=c(max.poly, data$n_Ecov, data$n_ages)) # beta_R in eqns 4-5, Miller et al. (2016)
+  par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov
+  par$Ecov_process_pars[1,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
   par$Ecov_obs_sigma_par <- par.Ecov.obs.sigma.par
 
@@ -993,16 +1050,19 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   ind.notNA <- which(!is.na(tmp.pars))
   tmp.pars[ind.notNA] <- 1:length(ind.notNA)
 
-  # turn off only Ecov_beta to fit Ecov process model without effect on population
-  tmp <- par$Ecov_beta
+  # turn off Ecov_beta to fit Ecov process model without effect on population
+  tmp <- array(NA, dim=dim(par$Ecov_beta))
+  ct = 1
   for(j in 1:data$n_Ecov){
-    tmp[,j] <- ifelse(data$Ecov_how[j]==0, NA, 0)
     for(i in 1:max.poly){
-      if(i > data$Ecov_poly) tmp[i,j] = NA
+      for(a in 1:data$n_ages){
+        if(data$Ecov_how[j] > 0 & i <= data$Ecov_poly[j] & a %in% ecov$ages[[j]]) tmp[i,j,a] = ct # default share ecov_beta across ages
+      }
+      ct = ct+1
     }
   }
-  ind.notNA <- which(!is.na(tmp))
-  tmp[ind.notNA] <- 1:length(ind.notNA)
+  # ind.notNA <- which(!is.na(tmp))
+  # tmp[ind.notNA] <- 1:length(ind.notNA)
   map$Ecov_beta = factor(tmp)
 
   # turn off Ecov pars if no Ecov (re, process)
@@ -1025,10 +1085,7 @@ Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_
   map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
   map$log_index_sig_scale = factor(rep(NA, data$n_indices))
 
-  if(data$n_M_est == 0) map$M0 = factor(NA)
-  # map$M_a = factor(rep(NA, length(par$M_a)))
   tmp <- par$M_a
-  tmp[M_first_est] = NA # M0 represents M for first estimated age, fix that M_a deviation = 0
   tmp[data$M_est==0] = NA
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)

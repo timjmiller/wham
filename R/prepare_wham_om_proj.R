@@ -52,6 +52,20 @@ prepare_wham_om_proj = function(om_input, proj.opts)
   #input1 <- model$input
   data <- input1$data
 
+  # default: 3 projection years
+  if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
+  # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(input1$years, 5)
+  if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
+    proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
+  }
+  if(all(is.null(proj.opts$cont.ecov), is.null(proj.opts$use.last.ecov), is.null(proj.opts$avg.ecov.yrs), is.null(proj.opts$proj.ecov))){
+    proj.opts$cont.ecov=TRUE; proj.opts$use.last.ecov=FALSE; proj.opts$avg.ecov.yrs=NULL; proj.opts$proj.ecov=NULL
+  }
+  if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE
+  if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
+  if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY = 100
+
   # options for M in projections, data$proj_M_opt:
   #   1 = continue random effects (if they exist) - need to pad M_re
   #   2 = use average
@@ -65,13 +79,10 @@ prepare_wham_om_proj = function(om_input, proj.opts)
     data$proj_M_opt <- ifelse(data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
 
-  # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(input1$years, 5)
-
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% input1$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
-  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
+  F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, proj.opts$use.FMSY, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
     "You have specified these in 'proj.opts':",
@@ -92,8 +103,8 @@ prepare_wham_om_proj = function(om_input, proj.opts)
       end.beyond[i] <- min(n.beyond[i], proj.opts$n.yrs)     
       if(end.beyond[i] == proj.opts$n.yrs) print(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
     }
-    Ecov.proj <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), data$n_Ecov)
-    Ecov.map <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), data$n_Ecov)
+    Ecov.proj <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
+    Ecov.map <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
     if(all(end.beyond < proj.opts$n.yrs)){ # if Ecov proj options ARE necessary, check they are valid
       Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
       if(Ecov.opt.ct == 0) proj.opts$cont.ecov = TRUE; Ecov.opt.ct = 1;
@@ -104,7 +115,7 @@ prepare_wham_om_proj = function(om_input, proj.opts)
         capture.output(cat("  $use.last.ecov = ",proj.opts$use.last.ecov)),
         capture.output(cat("  $avg.ecov.yrs = ",proj.opts$avg.ecov.yrs)),
         capture.output(cat("  $proj.ecov = ",proj.opts$proj.ecov)),"",sep='\n'))
-      if(!is.null(proj.opts$avg.ecov.yrs) & any(proj.opts$avg.ecov.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
+      if(!is.null(proj.opts$avg.ecov.yrs) & any(proj.opts$avg.ecov.yrs %in% input1$years == FALSE)) stop(paste("","** Error setting up projections: **",
         "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
     }
   } else { # need to create objects if no Ecov
@@ -141,7 +152,7 @@ prepare_wham_om_proj = function(om_input, proj.opts)
   if(any(data$proj_F_opt == 6)) data$percentFMSY = proj.opts$percentFMSY
 
   data$FXSPR_init = c(data$FXSPR_init,rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
-  data$FMSY_init_proj = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
+  data$FMSY_init = c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
   data$F_proj_init = rep(0.1, data$n_years_proj)
   data$F_proj_init[which(data$proj_F_opt == 3)] = data$FXSPR_init[which(data$proj_F_opt == 3)]
   data$F_proj_init[which(data$proj_F_opt == 6)] = data$FMSY_init[which(data$proj_F_opt == 6)]
@@ -151,9 +162,10 @@ prepare_wham_om_proj = function(om_input, proj.opts)
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
-  data$mature <- rbind(data$mature, matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
-  data$fracyr_SSB <- c(data$fracyr_SSB, rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
+  data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
   toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+  if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
   tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
   tmp[,1:data$n_years_model,] <- data$waa
   for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
@@ -168,10 +180,10 @@ prepare_wham_om_proj = function(om_input, proj.opts)
 
   # SCAA (fixed effect Rec devs): set up logR_proj to treat recruitment as random effects in projections
   if(data$n_NAA_sigma == 0){ # SCAA
-    if(any(proj.opts$avg.rec.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
+    if(any(proj.opts$avg.rec.yrs %in% input1$years == FALSE)) stop(paste("","** Error setting up projections: **",
       "proj.opts$avg.rec.yrs is not a subset of model years.","",sep='\n'))
-    if(is.null(proj.opts$avg.rec.yrs)) proj.opts$avg.rec.yrs <- model$years[-1] # option for which model years to use for mean and SD calc
-    avg.rec.yrs <- match(proj.opts$avg.rec.yrs, model$years[-1])
+    if(is.null(proj.opts$avg.rec.yrs)) proj.opts$avg.rec.yrs <- input1$years[-1] # option for which model years to use for mean and SD calc
+    avg.rec.yrs <- match(proj.opts$avg.rec.yrs, input1$years[-1])
     data$logR_mean <- mean(par$log_NAA[avg.rec.yrs,1])
     data$logR_sd <- sd(par$log_NAA[avg.rec.yrs,1])
     par$logR_proj <- rep(data$logR_mean, proj.opts$n.yrs)
@@ -179,8 +191,10 @@ prepare_wham_om_proj = function(om_input, proj.opts)
     random = c(random, "logR_proj")
 
     # pad log_NAA (even though projection years not used)
-    par$log_NAA <- rbind(par$log_NAA, matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
-    map$log_NAA <- factor(c(map$log_NAA, rep(NA, proj.opts$n.yrs*data$n_ages)))
+    # par$log_NAA <- rbind(par$log_NAA, matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    # map$log_NAA <- factor(c(map$log_NAA, rep(NA, proj.opts$n.yrs*data$n_ages)))
+    par$log_NAA <- rbind(par$log_NAA[1:(data$n_years_model-1),], matrix(10, nrow=proj.opts$n.yrs, ncol=data$n_ages, byrow=TRUE))
+    map$log_NAA <- factor(rbind(matrix(as.numeric(map$log_NAA), data$n_years_model-1, data$n_ages)[1:(data$n_years_model-1),], matrix(NA, proj.opts$n.yrs, data$n_ages)))
   } else {
     # recruit RE: pad log_NAA, map ages > 1 to NA
     # all NAA RE: pad log_NAA, estimate all
@@ -202,7 +216,8 @@ prepare_wham_om_proj = function(om_input, proj.opts)
   if(any(data$Ecov_model > 0)){
     if(any(end.beyond < proj.opts$n.yrs)){ # need to pad Ecov_re
       for(j in 1:data$n_Ecov){
-        for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
+        # for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
+        for(i in 1:max(proj.opts$n.yrs-end.beyond)){
           if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
             Ecov.proj[i,j] <- rep$Ecov_re[data$ind_Ecov_out_end[j]+1+end.beyond[j],j]
           }
@@ -220,7 +235,7 @@ prepare_wham_om_proj = function(om_input, proj.opts)
           }
         }
       }
-      par$Ecov_re <- rbind(par$Ecov_re, Ecov.proj) # pad Ecov_re if necessary
+      par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,,drop=F], Ecov.proj) # pad Ecov_re if necessary
 
       # pad map$Ecov_re
       tmp.re <- matrix(1:length(par$Ecov_re), dim(par$Ecov_re)[1], data$n_Ecov, byrow=FALSE)
@@ -266,11 +281,17 @@ prepare_wham_om_proj = function(om_input, proj.opts)
     # }
     # map$M_re <- factor(tmp)
   }
-  input1$data <- data
-  input1$par <-  par
-  input1$map <- map
-  input1$random <- random
-  return(list(data=data, par = par, map = map, random = input1$random,
+  input2 <- list(data=data, par = par, map = map, random = random,
     years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
-    ages.lab = input1$ages.lab, model_name = input1$model_name, input = input1))
+    ages.lab = input1$ages.lab, model_name = input1$model_name, input = input1)
+  attr(input2$par, 'check.passed') = NULL
+  attr(input2$data, 'check.passed') = NULL
+  #input1$data <- data
+  #input1$par <-  par
+  #input1$map <- map
+  #input1$random <- random
+  return(input2)
+#  return(list(data=data, par = par, map = map, random = input1$random,
+#    years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),
+#    ages.lab = input1$ages.lab, model_name = input1$model_name, input = input1))
 }

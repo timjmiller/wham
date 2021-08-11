@@ -907,11 +907,15 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, vector<int> which_F
   vector<Type> log_YPR_FXSPR(ny), sel(na), waacatch(na), waassb(na), mat(na), M(na);
   for(int y = 0; y < ny; y++)
   {
+    see(y);
     log_FXSPR_iter(y,0) = res(y,5) = log(F_init(y));
     M = MAA.row(y);
     waassb = ssbWAA.row(y);
     waacatch = catchWAA.row(y);
     mat = mature.row(y);
+    see(na);
+    see(which_F_age(y)-1);
+    see(FAA.row(y));
     sel = FAA.row(y)/FAA(y,which_F_age(y)-1);
     spr_F<Type> sprF(M, sel, mat, waassb, fracyr_SSB(y));
     //log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y)));
