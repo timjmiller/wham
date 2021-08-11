@@ -3,13 +3,23 @@ set_M = function(input, M)
   data = input$data
   par = input$par
   map = input$map
-  asap3 = if(is.null(input$asap3)) asap3 = NULL
-  else asap3 = input$asap3
-  
+  data$n_M_a = data$n_ages
+  data$M_model = 2
+  data$use_b_prior = 0
+  data$M_re_model = 1 # default = no RE / 'none'
+  data$M_est <- rep(0, data$n_M_a) # default = don't estimate M
+  M_first_est = NA  
+
+  if(is.null(input$asap3)) asap3 = NULL
+  else {
+    asap3 = input$asap3
+    M_a_ini <- log(asap3$M[1,])
+    M_re_ini <- matrix(log(asap3$M), data$n_years_model, data$n_M_a) - matrix(M_a_ini, data$n_years_model, data$n_M_a, byrow=T)
+  }
+
   # natural mortality options, default = use values from ASAP file, no estimation
   if(is.null(M))
   {
-    data$n_M_a = data$n_ages
     data$M_model = 2
     data$use_b_prior = 0
     data$M_re_model = 1 # default = no RE / 'none'
@@ -17,8 +27,6 @@ set_M = function(input, M)
     M_first_est = NA
     # Use ASAP file M values
     if(!is.null(asap3)){
-      M_a_ini <- log(asap3$M[1,])
-      M_re_ini <- matrix(log(asap3$M), data$n_years_model, data$n_M_a) - matrix(M_a_ini, data$n_years_model, data$n_M_a, byrow=T)
     }
     else {
       M_a_ini <- log(rep(0.2, data$n_ages))
@@ -26,6 +34,7 @@ set_M = function(input, M)
     }
   }
   if(!is.null(M)){
+    print(M)
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
       if(!is.null(M$re)) if(M$model == "age-specific" & M$re == "ar1_a") stop("Cannot estimate age-specific mean M and AR1 deviations M_a.
