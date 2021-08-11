@@ -791,12 +791,12 @@ Type objective_function<Type>::operator() ()
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
-    see(y);
-    see(NAA.rows());
-    see(ZAA.rows());
-    see(mature.rows());
-    see(waa_pointer_ssb);
-    see(fracyr_SSB.size());
+    // see(y);
+    // see(NAA.rows());
+    // see(ZAA.rows());
+    // see(mature.rows());
+    // see(waa_pointer_ssb);
+    // see(fracyr_SSB.size());
     SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
     //for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
