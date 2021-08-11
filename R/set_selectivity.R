@@ -3,6 +3,14 @@ set_selectivity = function(input, selectivity)
   data = input$data
   par = input$par
   map = input$map
+
+  par_index = list(
+    1:data$n_ages,
+    data$n_ages + 1:2,
+    data$n_ages + 3:6,
+    data$n_ages + 1:2
+  )
+
   if(is.null(input$asap3)) {
     asap3 = NULL
     if(is.null(selectivity$n_selblocks)) data$n_selblocks = 2 #1 for fleet, 1 for index
@@ -56,10 +64,9 @@ set_selectivity = function(input, selectivity)
   # Prep selectivity map
   phase_selpars = matrix(-1, data$n_selblocks, data$n_ages + 6)
   for(b in 1:data$n_selblocks){
-    if(data$selblock_models[b] == 1) phase_selpars[b,1:data$n_ages] = 1
-    if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+1:2] = 1
-    if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages+3:6] = 1
-  }  
+    phase_selpars[b,par_index[[data$selblock_models[b]]]] = 1
+  }
+  print(phase_selpars)
   if(is.null(selectivity$initial_pars)) {
     if(!no_asap) {
       for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
@@ -81,18 +88,12 @@ set_selectivity = function(input, selectivity)
         default_selpars[[b]] <- rep(data$n_ages/2, 4) # default to middle of par range
       }
       if(!no_asap){
-        if(data$selblock_models[b] == 1) orig_selpars[[b]] <- selpars_ini[b,1:data$n_ages]
-        if(data$selblock_models[b] %in% c(2,4)) orig_selpars[[b]] <- selpars_ini[b,data$n_ages+1:2]
-        if(data$selblock_models[b] == 3) orig_selpars[[b]] <- selpars_ini[b,data$n_ages+3:6]
+        orig_selpars[[b]] <- selpars_ini[b,par_index[[data$selblock_models[b]]]]
       }
-      if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] <- default_selpars[[b]] # default to middle of par range
-      if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] <- default_selpars[[b]] # default to middle of par range
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] <- default_selpars[[b]] # default to middle of par range
+      selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
     }
     if(no_asap) for(b in 1:data$n_selblocks){
-      if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] <- default_selpars[[b]] # default to middle of par range
-      if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] <- default_selpars[[b]] # default to middle of par range
-      if(data$selblock_models[b] == 3) default_selpars[[b]] <- rep(data$n_ages/2, 4) # default to middle of par range
+      selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
     }
     if(!no_asap) {
       orig_sel_models <- c(asap3$sel_block_option, asap3$index_sel_option)
@@ -112,17 +113,15 @@ set_selectivity = function(input, selectivity)
     if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
     for(b in 1:data$n_selblocks){
       if(length(selectivity$initial_pars[[b]]) != data$n_selpars[b]) stop(paste0("Length of vector ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",data$n_selpars[b]))
-      if(data$selblock_models[b] == 1) selpars_ini[b,1:data$n_ages] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] %in% c(2,4)) selpars_ini[b,data$n_ages+1:2] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] == 3) selpars_ini[b,data$n_ages+3:6] = selectivity$initial_pars[[b]]
+      selpars_ini[b,par_index[[data$selblock_models[b]]]] = selectivity$initial_pars[[b]]
     }
   }
   
   if(is.null(selectivity$fix_pars)){
     if(!no_asap){
-      for(i in 1:asap3$n_fleet_sel_blocks) phase_selpars[i,] = asap3$sel_ini[[i]][,2]
-      for(i in (1:asap3$n_indices)) phase_selpars[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,2]
-    }
+      for(i in 1:asap3$n_fleet_sel_blocks) phase_selpars[i,par_index[[asap3$sel_block_option[i]]]] = asap3$sel_ini[[i]][par_index[[asap3$sel_block_option[i]]],2]
+      for(i in (1:asap3$n_indices)) phase_selpars[i+asap3$n_fleet_sel_blocks,par_index[[asap3$index_sel_option[i]]]] = asap3$index_sel_ini[[i]][par_index[[asap3$index_sel_option[i]]],2]
+    } 
   } else {
     if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list")
     if(length(selectivity$fix_pars) != data$n_selblocks) stop("Length of selectivity$fix_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices).
