@@ -267,54 +267,54 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 
-  print("start")
+  # print("start")
   # Catch
   input = set_catch(input)
-  print("catch")
+  # print("catch")
   # Indices/surveys
   input = set_indices(input)
-  print("indices")
+  # print("indices")
 
   # WAA in case we want to modify how weight-at age is handled
   input = set_WAA(input)
-  print("WAA")
+  # print("WAA")
 
   # NAA and recruitment options
   input = set_NAA(input, NAA_re)
-  print("NAA")
+  # print("NAA")
   
   # Selectivity
   input = set_selectivity(input, selectivity)
-  print("selectivity")
+  # print("selectivity")
   
   # Age composition model
   input = set_age_comp(input, age_comp)
-   print("age_comp")
+   # print("age_comp")
 
   #in case we want to add alternative F options
   input = set_F(input)
-  print("F")
+  # print("F")
 
  	#set up natural mortality 
   input = set_M(input, M)
-  print("M")
+  # print("M")
 
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input = set_ecov(input, ecov)
-  print("ecov")
+  # print("ecov")
 
   # add vector of all observations for one step ahead residuals ==========================
   input = set_osa_obs(input)
-  print("osa_obs")
+  # print("osa_obs")
 
 
   # projection data will always be modified by 'prepare_projection'
   input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
-  print("proj")
+  # print("proj")
 
   #set any parameters as random effects
   input = set_map(input)
-  print("map")
+  # print("map")
 
   return(input)
   #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,

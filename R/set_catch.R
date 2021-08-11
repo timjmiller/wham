@@ -3,15 +3,15 @@ set_catch = function(input, catch_opts= NULL)
   data = input$data
   if(is.null(input$asap3)){
     asap3 = NULL
-    print("here")
-    print(is.null(catch_opts$n_fleets))
+    # print("here")
+    # print(is.null(catch_opts$n_fleets))
     if(is.null(catch_opts$n_fleets)) data$n_fleets = 1
     else data$n_fleets = catch_opts$n_fleets
   } else {
     asap3 = input$asap3
     data$n_fleets = asap3$n_fleets
   }
-  print(data)
+  # print(data)
 
 	data$agg_catch = matrix(NA, data$n_years_model, data$n_fleets)
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
