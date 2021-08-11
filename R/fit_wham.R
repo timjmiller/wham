@@ -88,7 +88,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
   # fit model
   if(missing(model)){
-    mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent)
+    mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent, checkParameterOrder=FALSE)
   } else {mod = model}
 
   mod$years <- input$years
