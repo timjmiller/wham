@@ -34,7 +34,6 @@ set_M = function(input, M)
     }
   }
   if(!is.null(M)){
-    print(M)
     if(!is.null(M$model)){ # M model options
       if(!(M$model %in% c("constant","age-specific","weight-at-age"))) stop("M$model must be either 'constant', 'age-specific', or 'weight-at-age'")
       if(!is.null(M$re)) if(M$model == "age-specific" & M$re == "ar1_a") stop("Cannot estimate age-specific mean M and AR1 deviations M_a.
