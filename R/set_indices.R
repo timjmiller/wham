@@ -22,7 +22,6 @@ set_indices = function(input, index_opts=NULL)
 	  asap3$use_survey <- asap3$use_index[which_indices]
 	  data$n_indices <- asap3$n_indices
 	} 
-  
   data$agg_indices = matrix(NA, data$n_years_model, data$n_indices)
   data$use_indices = matrix(1, data$n_years_model, data$n_indices)
   data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
@@ -34,7 +33,7 @@ set_indices = function(input, index_opts=NULL)
 	if(!is.null(asap3))
 	{
 	  data$units_indices <- asap3$survey_index_units
-	  data$fracyr_indices = matrix(rep((asap3$survey_month-1)/12, each = data$n_years_model), data$n_years_model, data$n_indices) #make sure that this is right
+	  data$fracyr_indices = (asap3$survey_month-1)/12 #make sure that this is right
   	for(i in 1:data$n_indices) data$agg_indices[,i] = asap3$IAA_mats[[i]][,2]
 	  for(i in 1:data$n_indices)
 	  {

@@ -1,4 +1,5 @@
-wham 1.0.5
+
+wham 1.0.4.9000
 =========================
 
 ### Major improvements
@@ -6,7 +7,7 @@ wham 1.0.5
 * Prepare_wham_input is now modularized and can generate a dummy input for fit_wham without an asap3 object. This was instigated to fix the operating model/MSE functions that have been broken since version 1.0.0.
 * Options have been added to NAA_re argument to configure how initial numbers at age and recruitment are treated. Including initial parameter values.
 * Fixed operating model functions and provided a vignette to illustrate their usage.
-
+  
 ### Minor improvements
 
 * Options have been added to NAA_re argument to configure how initial numbers at age and recruitment are treated. Including initial parameter values.
