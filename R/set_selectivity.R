@@ -3,7 +3,7 @@ set_selectivity = function(input, selectivity)
   data = input$data
   par = input$par
   map = input$map
-  asap3 = if(is.null(input$asap3)) {
+  if(is.null(input$asap3)) {
     asap3 = NULL
     if(is.null(selectivity$n_selblocks)) data$n_selblocks = 2 #1 for fleet, 1 for index
     else data$n_selblocks = selectivity$n_selblocks

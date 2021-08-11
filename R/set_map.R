@@ -1,4 +1,5 @@
 set_map <- function(input){
+	random = input$random
   if(input$data$Ecov_obs_sigma_opt == 4) random = "Ecov_obs_logsigma"
   if(any(input$data$selblock_models_re > 1)) random = c(random, "selpars_re")
   if(input$data$M_re_model > 1) random = c(random, "M_re")
