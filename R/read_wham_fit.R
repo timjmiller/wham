@@ -71,9 +71,9 @@ read_wham_fit <- function(mod, alphaCI=0.05){
     x$log_MSY <- cbind(std[inds$msy,1:2], get.ci(std[inds$msy,1:2], alpha=alphaCI))
     colnames(x$log_MSY) <- c("log_est","log_se","est","lo","hi")
   }
-  inds$catch <- which(rownames(std) == "log_pred_catch")
-  x$log_pred_catch <- cbind(std[inds$catch,1:2], get.ci(std[inds$catch,1:2], alpha=alphaCI))
-  colnames(x$log_pred_catch) <- c("log_est","log_se","est","lo","hi")
+  # inds$catch <- which(rownames(std) == "log_pred_catch")
+  # x$log_pred_catch <- cbind(std[inds$catch,1:2], get.ci(std[inds$catch,1:2], alpha=alphaCI))
+  # colnames(x$log_pred_catch) <- c("log_est","log_se","est","lo","hi")
 
   x$log_SSB <- cbind(std[inds$ssb,1:2], get.ci(std[inds$ssb,1:2], alpha=alphaCI))
   colnames(x$log_SSB) <- c("log_est","log_se","est","lo","hi")

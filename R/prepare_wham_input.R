@@ -317,6 +317,11 @@ prepare_wham_input <- function(asap3, model_name="WHAM for unnamed stock", recru
   for(i in 1:data$n_indices) data$agg_index_sigma[,i] = asap3$IAA_mats[[i]][,3]
   data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100
   data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
+  # for plotting, in years where index is not used set sigma = avg of used years
+  tmp <- data$agg_index_sigma
+  tmp[data$use_indices == 0] = NA
+  mean_agg_ind_sigma <- apply(tmp, 2, mean, na.rm=T)
+  for(i in 1:data$n_indices) data$agg_index_sigma[data$use_indices[,i] == 0,i] = mean_agg_ind_sigma[i]
   data$units_index_paa <- asap3$survey_acomp_units
   data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
   for(i in 1:data$n_indices)

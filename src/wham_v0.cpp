@@ -164,10 +164,11 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_CAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> pred_catch_paa(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> pred_catch(n_years_model+n_years_proj,n_fleets);
-  matrix<Type> log_pred_catch(n_years_model+n_years_proj,n_fleets);
+  matrix<Type> pred_log_catch(n_years_model+n_years_proj,n_fleets);
   array<Type> pred_IAA(n_years_model+n_years_proj,n_indices,n_ages);
   array<Type> pred_index_paa(n_years_model+n_years_proj,n_indices,n_ages);
-  matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices);
+  matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices); // not bias corrected
+  matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
@@ -909,20 +910,19 @@ Type objective_function<Type>::operator() ()
         pred_catch(y,f) += waa(waa_pointer_fleets(f)-1,y,a) * pred_CAA(y,f,a);
         tsum += pred_CAA(y,f,a);
       }
-      Type mu = log(pred_catch(y,f));
-      log_pred_catch(y,f) = mu;
+      pred_log_catch(y,f) = log(pred_catch(y,f));
       Type sig = agg_catch_sigma(usey,f)*exp(log_catch_sig_scale(f));
-      if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+      if(bias_correct_oe == 1) pred_log_catch(y,f) -= 0.5*exp(2*log(sig));
       if(y < n_years_model) if(use_agg_catch(y,f) == 1){
-        nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), mu, sig,1);
+        nll_agg_catch(y,f) -= keep(keep_C(y,f)) * dnorm(obsvec(keep_C(y,f)), pred_log_catch(y,f), sig,1);
       }
       SIMULATE if(simulate_data(0) == 1){
         if(simulate_period(0) == 1 & y < n_years_model) {
-          agg_catch(y,f) = exp(rnorm(mu, sig));
+          agg_catch(y,f) = exp(rnorm(pred_log_catch(y,f), sig));
           if(use_agg_catch(y,f) == 1) obsvec(keep_C(y,f)) = log(agg_catch(y,f));
         }
         if(simulate_period(1) == 1 & y > n_years_model - 1) {
-          agg_catch_proj(y-n_years_model,f) = exp(rnorm(mu, sig));
+          agg_catch_proj(y-n_years_model,f) = exp(rnorm(pred_log_catch(y,f), sig));
         }
       }
       if(any_fleet_age_comp(f) == 1){
@@ -990,18 +990,18 @@ Type objective_function<Type>::operator() ()
         tsum += pred_IAA(y,i,a);
       }
 
-      Type mu = log(pred_indices(y,i));
+      pred_log_indices(y,i) = log(pred_indices(y,i));
       Type sig = agg_index_sigma(yuse,i)*exp(log_index_sig_scale(i));
-      if(bias_correct_oe == 1) mu -= 0.5*exp(2*log(sig));
+      if(bias_correct_oe == 1) pred_log_indices(y,i) -= 0.5*exp(2*log(sig));
       // nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
       // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
-      if(y < n_years_model) if(use_indices(y,i) == 1) nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), mu, sig, 1);
+      if(y < n_years_model) if(use_indices(y,i) == 1) nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig, 1);
       SIMULATE if(simulate_data(1) == 1){
         if(simulate_period(0) == 1 & y < n_years_model) {
-          agg_indices(y,i) = exp(rnorm(mu, sig));
+          agg_indices(y,i) = exp(rnorm(pred_log_indices(y,i), sig));
           if(use_indices(y,i) == 1) obsvec(keep_I(y,i)) = log(agg_indices(y,i));
         }
-        if(simulate_period(1) == 1 & y > n_years_model - 1) agg_indices_proj(y-n_years_model,i) = exp(rnorm(mu, sig));
+        if(simulate_period(1) == 1 & y > n_years_model - 1) agg_indices_proj(y-n_years_model,i) = exp(rnorm(pred_log_indices(y,i), sig));
       }
       
       if(any_index_age_comp(i) == 1)
@@ -1177,10 +1177,10 @@ Type objective_function<Type>::operator() ()
   log_index_resid.setZero();
   for(int y = 0; y < n_years_model; y++){
     for(int i = 0; i < n_indices; i++){
-      if(use_indices(y,i) == 1) log_index_resid(y,i) = log(agg_indices(y,i)) - log(pred_indices(y,i));
+      if(use_indices(y,i) == 1) log_index_resid(y,i) = log(agg_indices(y,i)) - pred_log_indices(y,i);
     }
   }
-  matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - log(pred_catch.block(0,0,n_years_model,n_fleets).array());
+  matrix<Type> log_catch_resid = log(agg_catch.block(0,0,n_years_model,n_fleets).array()) - pred_log_catch.block(0,0,n_years_model,n_fleets).array();
   vector<Type> log_SSB =  log(SSB);
   vector<Type> Fbar(n_years_model + n_years_proj);
   Fbar.setZero();
@@ -1202,10 +1202,12 @@ Type objective_function<Type>::operator() ()
   REPORT(FAA_tot);
   REPORT(ZAA);
   REPORT(Fbar);
-  REPORT(pred_catch);
+  REPORT(pred_catch); // baranov eq, not bias-corrected
+  REPORT(pred_log_catch); // bias-corrected
   REPORT(pred_catch_paa);
   REPORT(pred_CAA);
   REPORT(pred_indices);
+  REPORT(pred_log_indices); // bias-corrected
   REPORT(pred_index_paa);
   REPORT(pred_IAA);
   REPORT(Ecov_x);
@@ -1222,8 +1224,6 @@ Type objective_function<Type>::operator() ()
   ADREPORT(log_Fbar);
   ADREPORT(log_NAA_rep);
   ADREPORT(log_SSB);
-  ADREPORT(log_pred_catch);
-  ADREPORT(pred_IAA);
   ADREPORT(log_index_resid);
   ADREPORT(log_catch_resid);
 
