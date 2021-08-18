@@ -13,23 +13,32 @@ set_selectivity = function(input, selectivity)
 
   if(is.null(input$asap3)) {
     asap3 = NULL
-    if(is.null(selectivity$n_selblocks)) data$n_selblocks = 2 #1 for fleet, 1 for index
+    if(is.null(selectivity$n_selblocks)) {
+      data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
+      print(paste0("number of selblocks, ", data$n_selblocks, 
+        ", is being determined by input$data$selblock_pointer_fleets and input$data$selblock_pointer_indices. Those should be 1,...,max(pointers)."))
+      data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
+      #data$n_selblocks = data$n_fleets + data$n_indices  #1 for fleet, 1 for index
+    }
     else data$n_selblocks = selectivity$n_selblocks
   }
   else {
     asap3 = input$asap3
+    which_indices <- which(asap3$use_index ==1) # length = data$n_indices
+    asap3$index_sel_option <- asap3$index_sel_option[which_indices]
+    asap3$index_sel_ini = asap3$index_sel_ini[which_indices]
     data$n_selblocks <- asap3$n_fleet_sel_blocks + data$n_indices
     data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)  
   }
-
   no_asap = is.null(asap3)
   selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
   if(!no_asap) data$n_selblocks <- asap3$n_fleet_sel_blocks + asap3$n_indices
   else data$n_selblocks = data$n_fleets + data$n_indices
   
   if(is.null(selectivity$model)) {
-    if(!no_asap) data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)
-    else data$selblock_models = rep(2, data$n_selblocks)
+    #if(!no_asap) data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)
+    #else 
+    if(no_asap) data$selblock_models = rep(2, data$n_selblocks)
   } 
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (e.g., asap3$n_fleet_sel_blocks + asap3$n_indices)")
@@ -44,21 +53,22 @@ set_selectivity = function(input, selectivity)
     data$selblock_models_re <- match(selectivity$re, c("none","iid","ar1","ar1_y","2dar1"))
   }
 
-  data$n_selpars <- c(data$n_ages,2,4,2)[data$selblock_models] # num selpars per block
-  if(!no_asap)
-  {
-    data$selblock_pointer_fleets = cbind(sapply(asap3$sel_block_assign, function(x) return(x)))
-    data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
-  }
-  else{
-    data$selblock_pointer_fleets = matrix(rep(1:data$n_fleets, each = data$n_years_model), data$n_years_model, data$n_fleets)
-    data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
-  }
+  # if(!no_asap)
+  # {
+  #   data$selblock_pointer_fleets = cbind(sapply(asap3$sel_block_assign, function(x) return(x)))
+  #   data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
+  # }
+  # else{
+  #   data$selblock_pointer_fleets = matrix(rep(1:data$n_fleets, each = data$n_years_model), data$n_years_model, data$n_fleets)
+  #   data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
+  # }
+  
   selblock_pointers <- cbind(data$selblock_pointer_fleets, data$selblock_pointer_indices)
   data$selblock_years <- matrix(0, nrow=data$n_years_model, ncol=data$n_selblocks)
   for(b in 1:data$n_selblocks) data$selblock_years[,b] <- apply(selblock_pointers, 1, function(x) b %in% x)
   data$n_years_selblocks <- apply(data$selblock_years, 2, sum)
   
+  data$n_selpars <- c(data$n_ages,2,4,2)[data$selblock_models] # num selpars per block
   # Prep selectivity initial values  
   selpars_ini = matrix(NA, data$n_selblocks, data$n_ages + 6)
   # Prep selectivity map
@@ -69,7 +79,7 @@ set_selectivity = function(input, selectivity)
   if(is.null(selectivity$initial_pars)) {
     if(!no_asap) {
       for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
-      for(i in 1:asap3$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
+      for(i in 1:data$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
     }
     default_selpars <- list()
     dpars = c(0.5,data$n_ages/2)
@@ -119,7 +129,7 @@ set_selectivity = function(input, selectivity)
   if(is.null(selectivity$fix_pars)){
     if(!no_asap){
       for(i in 1:asap3$n_fleet_sel_blocks) phase_selpars[i,par_index[[asap3$sel_block_option[i]]]] = asap3$sel_ini[[i]][par_index[[asap3$sel_block_option[i]]],2]
-      for(i in (1:asap3$n_indices)) phase_selpars[i+asap3$n_fleet_sel_blocks,par_index[[asap3$index_sel_option[i]]]] = asap3$index_sel_ini[[i]][par_index[[asap3$index_sel_option[i]]],2]
+      for(i in (1:data$n_indices)) phase_selpars[i+asap3$n_fleet_sel_blocks,par_index[[asap3$index_sel_option[i]]]] = asap3$index_sel_ini[[i]][par_index[[asap3$index_sel_option[i]]],2]
     } 
   } else {
     if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list")

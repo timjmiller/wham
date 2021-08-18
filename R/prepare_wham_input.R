@@ -80,6 +80,7 @@
 #'                 }
 #'     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 for logistic, double-logistic, and decreasing-logistic.}
 #'     \item{$fix_pars}{Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, \code{list(c(4,5),4,c(2,3,4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.}
+#'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
 #'   }
 #'
 #' \code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file.
@@ -158,13 +159,14 @@
 #'		 \item{$use_steepness}{T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model>2}. 
 #'		 \item{$recruit_pars}{vector of initial parameters for recruitment model. Only used if recruit_model>1. If use_steepness=F, parameters are "alpha" and "beta"
 #'				otherwise they are steepness and R0}. 
+#'   } 
 #' 
 #' \code{age_comp} specifies the age composition models for fleet(s) and indices.
 #' If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 #' The age composition models available are:
 #'   \describe{
 #'     \item{\code{"multinomial"}}{Multinomial. This is the default because it was the only option in ASAP. 0 parameters.}
-#'     \item{\code{"dir-mult"}}{Dirichlet-multinomial. Effective sample size is estimated by the model (\href{https://www.sciencedirect.com/science/article/abs/pii/S0165783616301941}{Thorson et al. 2017}; \href{https://www.sciencedirect.com/science/article/abs/pii/S016578361830033X}{Thorson 2019}). 1 parameter.}
+#'     \item{\code{"dir-mult"}}{Dirichlet-multinomial. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008}). 1 parameter.}
 #'     \item{\code{"dirichlet"}}{See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}. 1 parameter.}
 #'     \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters.}
 #'     \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See \href{https://doi.org/10.1093/icesjms/fsl024}{Schnute and Haigh (2007)} and \href{https://doi.org/10.1016/j.fishres.2013.12.015}{Francis (2014)}}.
@@ -180,6 +182,49 @@
 #'     \item{$indices}{A vector of the above strings with length = the number of indices.}
 #'   }
 #'
+#' \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
+#' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+#' The current options are:
+#'   \describe{
+#'     \item{$ages}{integer vector of ages (years) with the last being a plus group}
+#'     \item{$years}{integer vector of years that the population model spans.}
+#'     \item{$n_fleets}{number of fleets.}
+#'     \item{$agg_catch}{matrix (length(years) x n_fleets) of annual aggregate catches (biomass) for each fleet.}
+#'     \item{$catch_paa}{array (n_fleets x length(years) x n_ages) of each fleet's age composition data (numbers).}
+#'     \item{$catch_cv}{matrix (length(years) x n_fleets) of annual CVs for each fleet's aggregate catch observations.}
+#'     \item{$catch_Neff}{matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's age composition observation.}
+#'     \item{$use_catch_paa}{0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's age composition observation.}
+#'     \item{$selblock_pointer_fleets}{integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to \code{selectivity} option.}
+#'     \item{$F}{matrix (length(years) x n_fleets) of annual fishing mortality rates for each fleet to initialize the model.}
+#'     \item{$n_indices}{number of indices.}
+#'     \item{$agg_indices}{matrix (length(years) x n_indices) of annual aggregate catches (biomass or number) for each fleet.}
+#'     \item{$index_paa}{array (n_indices x length(years) x n_ages) of each index's age composition data (biomass or number).}
+#'     \item{$index_cv}{matrix (length(years) x n_indices) of annual CVs for each index's aggregate observations.}
+#'     \item{$index_Neff}{matrix (length(years) x n_indices) of annual effective sample sizes for each index's age composition observation.}
+#'     \item{$units_indices}{1/2 matrix (length =  n_indices) indicated whether indices are in biomass or numbers, respectively.}
+#'     \item{$units_index_paa}{1/2 matrix (length = n_indices) indicated whether to use each index's age composition observation are in numbers or biomass.}
+#'     \item{$use_index_paa}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's age composition observation.}
+#'     \item{$selblock_pointer_indices}{integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to \code{selectivity} option.}
+#'     \item{$fracyr_indices}{matrix (length(years) x n_indices) of annual proportions of the year elapsed when each index is observing the population.}
+#'     \item{$waa}{array ((n_fleets + n_indices + 2) x length(years) x length(ages)) of annual weight at at age for each fleet, each index, total catch, and spawning biomass.}
+#'     \item{$maturity}{matrix (length(years) x length(ages)) of annual maturity at age for estimating spawning biomass.}
+#'     \item{$fracyr_SSB}{vector (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.}
+#'     \item{$Fbar_ages}{integer vector of ages to use to average total F at age defining fully selected F for reference points. May not be clearly known until a model is fitted.}
+#'     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
+#'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
+#'     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
+#'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
+#'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points.}
+#'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
+#'     \item{$simulate_process_error}{T/F vector (length = 4). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, and Ecov. Only used if applicable.}
+#'     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
+#'     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
+#'     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
+#'     \item{$bias_correct_observation}{T/F. Perform bias correction of log-normal observations.}
+#'   }
+#' If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
+#' must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.
+#'
 #' @param asap3 (optional) list containing data and parameters (output from \code{\link{read_asap3_dat}})
 #' @param recruit_model numeric, option to specify stock-recruit model (see details)
 #' @param model_name character, name of stock/model
@@ -188,7 +233,7 @@
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
-#' @param model_years (optional) integer vector of years for the model that is only used if asap3 is not provided
+#' @param basic_info (optional) list of basic population information for use when asap3 is not provided (see details)
 #'
 #' @return a named list with the following components:
 #'   \describe{
@@ -209,9 +254,19 @@
 #' input = prepare_wham_input(asap3)
 #' mod = fit_wham(input)
 #' }
+
+#' \dontrun{
+#' # no ASAP3 file, default parameter values and configuration
+#' input = prepare_wham_input()
+#' mod = fit_wham(input, fit = FALSE)
+#' set.seed(8675309)
+#' simdata = mod$simulate(complete=TRUE)
+#' input$data = simdata
+#' fit = fit_wham(input, do.osa = FALSE)
+#' }
 #'
 #' @export
-prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, age_comp=NULL, model_years=NULL){
+prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, age_comp=NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -225,6 +280,34 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
+  if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
+  else basic_info$recruit_model = recruit_model
+
+  waa_opts = NULL
+  waa_names = c("waa")
+  if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
+
+	catch_opts = NULL
+  catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
+  if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
+  
+  index_opts = NULL
+  index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices", 
+  	"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
+  if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
+  
+  F_opts = NULL
+  F_names = c("F")
+  if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
+  
+  waa_opts = NULL
+  waa_names = ("waa")
+  if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
+  
+  q_opts = NULL
+  q_names = c("q","q_lower","q_upper")
+  if(any(names(basic_info) %in% q_names)) q_opts = basic_info[q_names]
+
 	if(!is.null(asap3))
 	{
 	  asap3 = asap3$dat
@@ -233,88 +316,69 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
-  	model_years <- asap3$year1 + 1:asap3$n_years - 1
+  	input$years <- asap3$year1 + 1:asap3$n_years - 1
 	}
 	else
 	{
 		#if no asap3 is provided, make some default values to 
-		if(is.null(model_years)) model_years = 1975:2014
-		else if(!is.integer(model_years)) stop("model_years has been specified, but it is not an integer vector")
-		input$data$n_ages = 10
-		#data$selblock_models = c(2,2)
-		input$data$fracyr_SSB = rep(0.25, length(model_years))
-		input$data$mature = t(matrix(1/(1 + exp(-1*(1:input$data$n_ages - input$data$n_ages/2))), input$data$n_ages, length(model_years)))
-		input$data$Fbar_ages = 1:input$data$n_ages
-
+		input = add_basic_info(input, basic_info)
 	}
-  input$years = input$years_full = model_years
-  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
-  
-  input$data$n_years_model = length(model_years)
-  input$data$n_years_catch = length(model_years)
-  input$data$n_years_indices = length(model_years)
-  input$data$recruit_model = recruit_model
-  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
-  input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
-  input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
-  input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
-  input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
-  input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
-  input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
-  # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
-  input$data$XSPR_R_opt = 2 # default = use average R estimates
-  input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 
   # print("start")
+	#some basic input elements see the function code below
+	input = initial_input_fn(input, basic_info)
+   
   # Catch
-  input = set_catch(input)
-  # print("catch")
+  input = set_catch(input, catch_opts)
+  #print("catch")
+  
   # Indices/surveys
-  input = set_indices(input)
-  # print("indices")
+  input = set_indices(input, index_opts)
+   #print("indices")
 
   # WAA in case we want to modify how weight-at age is handled
-  input = set_WAA(input)
-  # print("WAA")
+  input = set_WAA(input, waa_opts)
+   #print("WAA")
 
   # NAA and recruitment options
   input = set_NAA(input, NAA_re)
-  # print("NAA")
+   #print("NAA")
   
+  input = set_q(input, q_opts)
+   #print("q")
+
   # Selectivity
   input = set_selectivity(input, selectivity)
-  # print("selectivity")
+   #print("selectivity")
   
   # Age composition model
   input = set_age_comp(input, age_comp)
-   # print("age_comp")
+   #print("age_comp")
 
   #in case we want to add alternative F options
-  input = set_F(input)
-  # print("F")
+  input = set_F(input, F_opts)
+   #print("F")
 
  	#set up natural mortality 
   input = set_M(input, M)
-  # print("M")
+   #print("M")
 
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input = set_ecov(input, ecov)
-  # print("ecov")
+   #print("ecov")
 
   # add vector of all observations for one step ahead residuals ==========================
   input = set_osa_obs(input)
-  # print("osa_obs")
+   #print("osa_obs")
 
 
   # projection data will always be modified by 'prepare_projection'
   input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
-  # print("proj")
+   #print("proj")
 
   #set any parameters as random effects
   input = set_map(input)
-  # print("map")
+   #print("map")
 
   return(input)
   #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
@@ -365,3 +429,49 @@ get_aref_fn = function(paa){
 }
 
 gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
+
+
+initial_input_fn = function(input, basic_info){
+	#this function is a helper so that this code can be run in other set up functions like change_wham_input
+  input$years_full = input$years
+  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
+	if(!is.null(basic_info$ages)) {
+		if(!is.integer(basic_info$ages) | length(basic_info$ages) != input$data$n_ages) stop("basic_info$ages has been specified, but it is not an integer vector or it is not = n_ages")
+		else {
+  		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+"))
+		}
+	}
+
+  input$data$n_years_model = length(input$years)
+  input$data$n_years_catch = length(input$years)
+  input$data$n_years_indices = length(input$years)
+  input$data$recruit_model = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input 
+  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  
+  input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
+  input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
+  input$data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
+  input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
+  input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+  input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
+  input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
+  input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
+  # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  input$data$XSPR_R_opt = 2 # default = use average R estimates
+  input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  
+  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
+  if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
+  if(!is.null(basic_info$simulate_process_error)) input$data$simulate_state = basic_info$simulate_process_error
+  if(!is.null(basic_info$simulate_observation_error)) input$data$simulate_data = basic_info$simulate_observation_error
+  if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
+  
+  if(!is.null(basic_info$percentSPR)) input$data$percentSPR = basic_info$percentSPR
+  if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
+  if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
+  if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
+  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs
+
+  return(input)
+
+}

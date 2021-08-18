@@ -1,4 +1,4 @@
-set_WAA = function(input)
+set_WAA = function(input, waa_opts = NULL)
 {
 	# Weight-at-age
   asap3 = if(is.null(input$asap3)) asap3 = NULL
@@ -14,12 +14,20 @@ set_WAA = function(input)
 	}
 	else
 	{
-    L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
-    W = rep(exp(-11)*L^3, each = data$n_years_model)
-		dim_WAA = c(1, data$n_years_model, data$n_ages)
-		WAA_pointers = rep(1,data$n_fleets + 3)
-		data$waa = array(W, dim = dim_WAA)
-		data$waa_pointer_indices = rep(1,data$n_indices)
+    if(is.null(waa_opts$waa)){
+    	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
+	    W = rep(exp(-11)*L^3, each = data$n_years_model)
+			dim_WAA = c(1, data$n_years_model, data$n_ages)
+			WAA_pointers = rep(1,data$n_fleets + 3)
+			data$waa = array(W, dim = dim_WAA)
+			data$waa_pointer_indices = rep(1,data$n_indices)
+		}
+		else {
+			data$waa = waa_opts$waa
+			dim_waa = dim(data$waa)
+			WAA_pointers = c(1:data$n_fleets,data$n_fleets+data$n_indices + c(1,2,2)) #Jan1 = SSB
+			data$waa_pointer_indices = rep(1,data$n_indices) + data$n_fleets
+		}
 	}
 
 	data$waa_pointer_fleets = WAA_pointers[1:data$n_fleets]

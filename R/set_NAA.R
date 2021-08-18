@@ -25,10 +25,11 @@ set_NAA = function(input, NAA_re=NULL)
   if(data$N1_model>1) stop("NAA_re$N1_model can only be 0 or 1 currently")
 
   # NAA_re options
-  if(is.null(NAA_re)){ # default = SCAA
+  if(is.null(NAA_re$sigma)){ # default = SCAA
     data$n_NAA_sigma <- 0
     data$NAA_sigma_pointers <- rep(1,data$n_ages)
-  } else {
+  } 
+  if(!is.null(NAA_re$sigma)) {
     if(NAA_re$sigma == "rec"){
       data$n_NAA_sigma <- 1
       data$NAA_sigma_pointers <- rep(1,data$n_ages)
@@ -52,9 +53,7 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
       }
     }
   }
-
-  if(data$recruit_model > 2 & data$n_NAA_sigma == 0) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects.
-Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
+  if(data$recruit_model > 2 & data$n_NAA_sigma == 0) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects. Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
 This message will not appear if you set recruit_model = 2 (random about mean).")
 
   # NAA_re pars

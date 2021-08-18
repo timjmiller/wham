@@ -36,25 +36,30 @@ set_catch = function(input, catch_opts= NULL)
 	    else for(y in 1:data$n_years_model) if(asap3$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2) data$use_catch_paa[y,i] = 0
 	  }
 	  data$catch_Neff = asap3$catch_Neff	  
+    data$selblock_pointer_fleets = cbind(sapply(asap3$sel_block_assign, function(x) return(x)))
   }
   else
   {
     data$n_fleets = 1
-    if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 100
+    if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 1
     else data$agg_catch = catch_opts$agg_catch
   	
   	if(is.null(catch_opts$catch_paa)) data$catch_paa[] = 1/data$n_ages
     else data$catch_paa[] = catch_opts$catch_paa
 
-		if(is.null(catch_opts$agg_catch_sigma)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
-    else data$agg_catch_sigma = catch_opts$agg_catch_sigma
+		if(is.null(catch_opts$catch_cv)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
+    else data$agg_catch_sigma = matrix(sqrt((log(catch_opts$catch_cv^2 + 1))), data$n_years_model, data$n_fleets)
 	  
     if(is.null(catch_opts$catch_Neff)) data$catch_Neff = matrix(200, data$n_years_model, data$n_fleets)	  
     else data$catch_Neff = catch_opts$catch_Neff
 
+    if(!is.null(catch_opts$use_catch_paa)) data$use_catch_paa[] = catch_opts$use_catch_paa
+
     for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
       if(data$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2 | any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0
     }
+    if(is.null(catch_opts$selblock_pointer_fleets)) data$selblock_pointer_fleets = matrix(rep(1:data$n_fleets, each = data$n_years_model), data$n_years_model, data$n_fleets)
+    else data$selblock_pointer_fleets = catch_opts$selblock_pointer_fleets
   }
 
   data$catch_paa[is.na(data$catch_paa)] = 0

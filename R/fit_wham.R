@@ -142,6 +142,12 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
+  else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
+    mod$rep = mod$report() #par values don't matter because function has not been evaluated
+    mod$parList = mod$env$parList()
+    mod <- check_which_F_age(mod)
+    mod <- check_FXSPR(mod)
+  }
 
   return(mod)
 }
@@ -168,7 +174,7 @@ check_FXSPR = function(mod)
   ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
   if(length(ind))
   {
-    for(i in 1:2)
+    for(i in 1:2) #two tries to fix initial FXSPR value
     {
       if(mod$env$data$n_years_proj) years = mod$years_full
       else years = mod$years
@@ -212,15 +218,15 @@ check_projF = function(mod)
   if(length(ind))
   {
     y = mod$env$data$n_years_model + ind
-    print(y)
-    print(dim(mod$rep$pred_catch))
+    #print(y)
+    #print(dim(mod$rep$pred_catch))
     bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
     if(length(bad))
     {
       for(i in 1:2)
       {
         redo_Catch_years = mod$years_full[y[bad]]
-        print(redo_Catch_years)
+        #print(redo_Catch_years)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
         mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
         mod$fn(mod$opt$par)
