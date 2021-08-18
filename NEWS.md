@@ -4,9 +4,9 @@ wham 1.0.4.9000
 
 ### Major improvements
 
-* Prepare_wham_input is now modularized and can generate a dummy input for fit_wham without an asap3 object. This was instigated to fix the operating model/MSE functions that have been broken since version 1.0.0.
+* prepare_wham_input is now modularized and can take a "basic_info" argument or generate a dummy input for fit_wham without an asap3 object. This provides better organization and helps fix the operating model/MSE features that have been broken since version 1.0.0.
 * Options have been added to NAA_re argument to configure how initial numbers at age and recruitment are treated. Including initial parameter values.
-* Fixed operating model functions and provided a vignette to illustrate their usage.
+* A tenth example and vignette illustrate the usage to generate an assessment model without an asap3 file and a simple management strategy evaluation.
   
 ### Minor improvements
 
@@ -19,6 +19,7 @@ wham 1.0.4.9000
 * Don't plot age comp residuals for fleets/indices/years that are not used [6876ee](https://github.com/timjmiller/wham/commit/6876eed1dd4bbdc7b26295356756bb7a30053887)
 * Fix `Ecov_re` padding in projections with multiple ecovs that have different lags [a57f3b](https://github.com/timjmiller/wham/commit/a57f3b339881a39dbee3ab0ab190c732f855dec1)
 * Default to use static reference points in projections (so ref pts are consistent across multiple projections) [74a6c3](https://github.com/timjmiller/wham/commit/74a6c3cda74e5f2f14a6471e410b227c407e0790)
+* Diagnostic plots for log catch and indices did not use bias correction [issue 46](https://github.com/timjmiller/wham/issues/46). Now they do.
 
 wham 1.0.4 (2021-05-03)
 =========================

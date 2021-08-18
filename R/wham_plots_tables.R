@@ -81,7 +81,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(log(mod$rep$pred_catch[1:length(mod$years),f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
+      plot(mod$rep$pred_log_catch[1:length(mod$years),f], tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -140,7 +140,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(log(mod$rep$pred_indices[1:length(mod$years),f]), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
+      plot(mod$rep$pred_log_indices[1:length(mod$years),f], tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -417,9 +417,7 @@ get.RMSEs.fn <- function(model)
   catch_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_fleets)
   temp = sdrep[rownames(sdrep) %in% "log_index_resid",]
   index_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_indices)
-  temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa[1:model$env$data$n_years_model,,,drop=FALSE],c(2,1,3))
-  temp = sdrep[rownames(sdrep) %in% "log_index_resid",]
-  index_stdresid <- matrix(temp[,1]/temp[,2], model$env$data$n_years_model, model$env$data$n_indices)
+  # temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa[1:model$env$data$n_years_model,,,drop=FALSE],c(2,1,3))
   #temp = model$env$data$catch_paa - aperm(model$rep$pred_catch_paa,c(2,1,3))
 
   out$RMSE$catch <- sqrt(apply(catch_stdresid^2,2,mean, na.rm = TRUE))
@@ -889,17 +887,16 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  pred_catch = mod$rep$pred_catch
-  if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
-    #pred_catch = rbind(mod$rep$pred_catch, as.matrix(mod$rep$catch_proj))
+  if(dat$n_fleets == 1 & dat$do_proj == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
     years_full = mod$years_full
   } else {
-    #pred_catch = mod$rep$pred_catch
     years_full = years
   }
+  pred_log_catch = mod$rep$pred_log_catch
+  pred_catch = exp(pred_log_catch)
+  sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
   catch = dat$agg_catch
-  sigma = dat$agg_catch_sigma
-  log_stdres = (log(catch)-log(pred_catch[1:dim(catch)[1],]))/sigma
+  log_stdres = (log(catch) - pred_log_catch[1:length(years),])/sigma # cpp already bias-corrects if bias_correct_oe = 1
   if(!missing(use.i)) fleets <- use.i
   else fleets <- 1:dat$n_fleets
   if(missing(plot.colors)) plot.colors = mypalette(dat$n_fleets)
@@ -936,11 +933,11 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  pred_index = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))
-  pred_index = sapply(1:dat$n_indices, function(x) apply(pred_index[x,,],1,sum)) #biomass is accounted for on the cpp side
+  pred_index = exp(mod$rep$pred_log_indices[1:length(years),])
   index = dat$agg_indices
-  index[index < 0] = 0 # robustify to missing values entered as -999
-  sigma = dat$agg_index_sigma
+  # index[index < 0] = NA # robustify to missing values entered as negative
+  index[dat$use_indices == 0] = NA # don't plot unused values
+  sigma = dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
   log_stdres = (log(index)-log(pred_index))/sigma
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:dat$n_indices
@@ -951,12 +948,12 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
     if(do.png) png(filename = file.path(od, paste0("Index_4panel_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 		plot(years, index[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Index",
-			ylim=c(0, 1.1*max(index[,i])))
+			ylim=c(0, 1.1*max(index[,i], na.rm=T)))
 		lines(years, pred_index[,i], col=plot.colors[i], lwd=2)
 		log.ob.min <- log(index[,i])-1.96*sigma[,i]
 		log.ob.max <- log(index[,i])+1.96*sigma[,i]
-    y.min <- min(c(log.ob.min,log(pred_index[,i]))[is.finite(c(log.ob.min,log(pred_index[,i])))])
-    y.max <- 1.1*max(c(log.ob.max,log(pred_index[,i]))[is.finite(c(log.ob.max,log(pred_index[,i])))])
+    y.min <- min(c(log.ob.min,log(pred_index[,i]))[is.finite(c(log.ob.min,log(pred_index[,i])))], na.rm=T)
+    y.max <- 1.1*max(c(log.ob.max,log(pred_index[,i]))[is.finite(c(log.ob.max,log(pred_index[,i])))], na.rm=T)
 		plot(years, log(index[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Index)", ylim=c(y.min, y.max))
 		lines(years, log(pred_index[,i]), col=plot.colors[i], lwd=2)
 		arrows(years, log.ob.min, years, log.ob.max, length=0)
@@ -2993,7 +2990,7 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 
 		# get catch at age
     catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[1:n_years,i,] * rep$pred_catch[1:n_years,i]/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
 		cpr <- rep0log(catchpr)
@@ -3033,7 +3030,7 @@ convert_survey_to_at_age <- function(mod)
 		{  # used age composition for the index
 			# get the aggregate index observed and predicted time series
 			agg.ob <- dat$agg_indices[which(dat$use_index_paa[,i]==1),i]
-			agg.pr <- rep$pred_indices[which(dat$use_index_paa[,i]==1),i]
+			agg.pr <- exp(rep$pred_log_indices[which(dat$use_index_paa[,i]==1),i]) # bias corrected
 
 			# get proportions for correct years and ages only
 			props.ob <- dat$index_paa[i,which(dat$use_index_paa[,i]==1),]
@@ -3204,7 +3201,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 		# get catch at age
     catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[1:n_years,i,] * rep$pred_catch[1:n_years,i]/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)

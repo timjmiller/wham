@@ -64,8 +64,8 @@ set_indices = function(input, index_opts=NULL)
 		if(is.null(index_opts$agg_indices)) data$agg_indices[] = 10
 		else data$agg_indices[] = index_opts$agg_indices
 
-		if(is.null(index_opts$index_cv)) data$agg_index_sigma[] = sqrt(log(0.3^2 + 1))
-		else data$agg_index_sigma[] = sqrt(log(index_opts$index_cv^2 + 1))
+		if(is.null(index_opts$index_cv)) data$agg_index_sigma[] = 0.3
+		else data$agg_index_sigma[] = index_opts$index_cv
 
 		if(is.null(index_opts$index_paa)) data$index_paa[] = 1/data$n_ages
 		else data$index_paa[] = index_opts$index_paa
@@ -80,10 +80,16 @@ set_indices = function(input, index_opts=NULL)
     else data$selblock_pointer_indices = index_opts$selblock_pointer_indices
 	}
 
-  data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100
+  data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100  
   data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
+  # for plotting, in years where index is not used set sigma = avg of used years
+  tmp <- data$agg_index_sigma
+  tmp[data$use_indices == 0] = NA
+  mean_agg_ind_sigma <- apply(tmp, 2, mean, na.rm=T)
+  for(i in 1:data$n_indices) data$agg_index_sigma[data$use_indices[,i] == 0,i] = mean_agg_ind_sigma[i]
+  ################################################################################
+
   data$index_paa[is.na(data$index_paa)] = 0
-  
   data$index_aref = matrix(NA, data$n_years_model, data$n_indices)
   for(i in 1:data$n_indices) data$index_aref[,i] = get_aref_fn(data$index_paa[i,,])  
 
