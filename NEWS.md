@@ -20,6 +20,7 @@ wham 1.0.4.9000
 * Fix `Ecov_re` padding in projections with multiple ecovs that have different lags [a57f3b](https://github.com/timjmiller/wham/commit/a57f3b339881a39dbee3ab0ab190c732f855dec1)
 * Default to use static reference points in projections (so ref pts are consistent across multiple projections) [74a6c3](https://github.com/timjmiller/wham/commit/74a6c3cda74e5f2f14a6471e410b227c407e0790)
 * Diagnostic plots for log catch and indices did not use bias correction [issue 46](https://github.com/timjmiller/wham/issues/46). Now they do.
+* Fixed bug in index diagnostic plot when index is in biomass and age comp is in numbers.
 
 wham 1.0.4 (2021-05-03)
 =========================
