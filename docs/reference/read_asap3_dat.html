@@ -42,11 +42,13 @@
   
 
 <meta property="og:title" content="Read an ASAP3 .dat file into R — read_asap3_dat" />
-<meta property="og:description" content="WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06
+<meta property="og:description" content="WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf)) and this
 function provides functionality to use a preexisting ASAP3 input data file. The
-output of read_asap3_dat should then be passed to prepare_wham_input. 
-If you are not familiar with ASAP3 input files, see the ASAP documentation 
+output of read_asap3_dat should then be passed to prepare_wham_input.
+If you are not familiar with ASAP3 input files, see the ASAP documentation
 and code." />
+
+
 
 
 
@@ -62,9 +64,15 @@ and code." />
 
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -181,14 +189,14 @@ and code." />
     </div>
 
     <div class="ref-description">
-    <p>WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06<!-- %20ASAPdoc.pdf)) and this -->
+    <p>WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf)) and this
 function provides functionality to use a preexisting ASAP3 input data file. The
-output of <code>read_asap3_dat</code> should then be passed to <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>. 
-If you are not familiar with ASAP3 input files, see the ASAP <a href='https://github.com/cmlegault/ASAPplots/tree/master/pdf'>documentation</a> 
+output of <code>read_asap3_dat</code> should then be passed to <code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>.
+If you are not familiar with ASAP3 input files, see the ASAP <a href='https://github.com/cmlegault/ASAPplots/tree/master/pdf'>documentation</a>
 and <a href='https://nmfs-fish-tools.github.io/ASAP/'>code</a>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>read_asap3_dat</span><span class='op'>(</span><span class='va'>filename</span><span class='op'>)</span></pre>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>read_asap3_dat</span><span class='op'>(</span><span class='va'>filename</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -213,13 +221,13 @@ in the current working directory, or <code>filename</code> can include the path.
     <div class='dont-index'><p><code><a href='prepare_wham_input.html'>prepare_wham_input</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://github.com/cmlegault/ASAPplots/tree/master/pdf'>ASAP documentation</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='va'>asap3</span> <span class='op'>=</span> <span class='fu'>read_asap3_dat</span><span class='op'>(</span><span class='st'>"ASAP_SNEMAYT.dat"</span><span class='op'>)</span>
-<span class='va'>input</span> <span class='op'>=</span> <span class='fu'><a href='prepare_wham_input.html'>prepare_wham_input</a></span><span class='op'>(</span><span class='va'>asap3</span><span class='op'>)</span>
-<span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span><span class='op'>)</span>
-<span class='op'>}</span>
-
-</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='va'>asap3</span> <span class='op'>=</span> <span class='fu'>read_asap3_dat</span><span class='op'>(</span><span class='st'>"ASAP_SNEMAYT.dat"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>input</span> <span class='op'>=</span> <span class='fu'><a href='prepare_wham_input.html'>prepare_wham_input</a></span><span class='op'>(</span><span class='va'>asap3</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span><span class='op'>)</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+<span class='r-in'></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -231,11 +239,11 @@ in the current working directory, or <code>filename</code> can include the path.
 
       <footer>
       <div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p><p>Developed by Tim Miller, Brian Stock.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -243,6 +251,8 @@ in the current working directory, or <code>filename</code> can include the path.
 
   
 
+
+  
 
   </body>
 </html>

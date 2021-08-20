@@ -8,6 +8,7 @@
 # btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex10_om_mse.R"); etime <- Sys.time(); runtime = etime - btime;
 # btime <- Sys.time(); testthat::test_file("~/work/wham/wham/tests/testthat/test_ex10_om_mse.R"); etime <- Sys.time(); runtime = etime - btime;
 # ~4.2 min
+# BCS I get 6.2 min
 
 context("Ex 10: Operating models and Management Strategy Evaluation")
 

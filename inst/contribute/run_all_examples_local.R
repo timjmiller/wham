@@ -57,3 +57,9 @@ source(file.path(pkg.dir, "inst", "contribute", "ex8_compare_asap.R"))
 write.dir <- file.path(main.dir,"ex9")
 if(!dir.exists(write.dir)) dir.create(write.dir)
 source(file.path(pkg.dir, "inst", "contribute", "ex9_retro_pred.R"))
+
+# Ex 10
+write.dir <- file.path(main.dir,"ex10")
+if(!dir.exists(write.dir)) dir.create(write.dir)
+source(file.path(pkg.dir, "inst", "contribute", "ex10_om_mse.R"))
+

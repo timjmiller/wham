@@ -20,6 +20,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -87,7 +89,7 @@
   </a>
 </li>
 <li>
-  <a href="https://github.com/timjmiller/wham/">
+  <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
     Source code
@@ -103,14 +105,14 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/issues/">
+  <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
-  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
@@ -126,20 +128,20 @@
 
       
 
-      </header><div class="row">
+      </header><script src="ex1_basics_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 1: The basics</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex1_basics.Rmd"><code>vignettes/ex1_basics.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex1_basics.Rmd" class="external-link"><code>vignettes/ex1_basics.Rmd</code></a></small>
       <div class="hidden name"><code>ex1_basics.Rmd</code></div>
 
     </div>
 
     
     
-<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a>, and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate the basic <code>wham</code> workflow:</p>
+<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = the Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339" class="external-link">Miller et al. (2016)</a>, and in this example we apply WHAM to the same stock as in Miller et al. (2016), Southern New England / Mid-Atlantic Yellowtail Flounder. Here, we demonstrate the basic <code>wham</code> workflow:</p>
 <ol style="list-style-type: decimal">
 <li><p>Load <code>wham</code> and data</p></li>
 <li>
@@ -157,45 +159,46 @@
 </ol>
 <div id="load-data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#load-data" class="anchor"></a>1. Load data</h2>
-<p>We assume you have already read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and installed <code>wham</code> and its dependencies. If not, you should be able to just run <code><a href="https://devtools.r-lib.org//reference/remote-reexports.html">devtools::install_github("timjmiller/wham", dependencies=TRUE)</a></code>.</p>
+<a href="#load-data" class="anchor" aria-hidden="true"></a>1. Load data</h2>
+<p>We assume you have already read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and installed <code>wham</code> and its dependencies. If not, you should be able to just run <code>devtools::install_github("timjmiller/wham", dependencies=TRUE)</code>.</p>
 <p>Open R and load the <code>wham</code> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex1_basics.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/home/bstock/R/x86_64-pc-linux-gnu-library/4.1/wham/example_scripts"</span></code></pre></div>
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span>
+<span class="co">#&gt; [1] "/tmp/RtmpoeDAsz/temp_libpath3a4579502884/wham/example_scripts"</span></code></pre></div>
 <p>You can run this entire example script with (2.0 min runtime):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
-<span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_basics.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_basics.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Let’s create a directory for this analysis:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"/path/to/save/output"</span> <span class="co"># modify</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>WHAM was built by modifying the ADMB-based ASAP model code <a href="http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf">(Legault and Restrepo 1999)</a>, and is designed to take an ASAP3 .dat file as input. We generally assume in <code>wham</code> that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the ASAP <a href="https://github.com/cmlegault/ASAPplots/tree/master/pdf">documentation</a> and <a href="https://nmfs-fish-tools.github.io/ASAP/">code</a>. For this vignette, an example ASAP3 input file is provided.</p>
+<span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
+<p>WHAM was built by modifying the ADMB-based ASAP model code <a href="http://sedarweb.org/docs/wsupp/S12RD06%20ASAPdoc.pdf" class="external-link">(Legault and Restrepo 1999)</a>, and is designed to take an ASAP3 .dat file as input. We generally assume in <code>wham</code> that you have an existing ASAP3 .dat file. If you are not familiar with ASAP3 input files, see the ASAP <a href="https://github.com/cmlegault/ASAPplots/tree/master/pdf" class="external-link">documentation</a> and <a href="https://nmfs-fish-tools.github.io/ASAP/" class="external-link">code</a>. For this vignette, an example ASAP3 input file is provided.</p>
 <p>Copy <code>ex1_SNEMAYT.dat</code> to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>Confirm you are in the working directory and it has the <code>ex1_SNEMAYT.dat</code> file:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
-<span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex2_SNEMAYT.dat"        "ex2_test_results.rds"  </span>
-<span class="co">#&gt;  [7] "ex4_test_results.rds"   "ex5_summerflounder.dat" "ex5_test_results.rds"  </span>
-<span class="co">#&gt; [10] "ex6_test_results.rds"   "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
+<span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex10_tests.rds"         "ex2_SNEMAYT.dat"       </span>
+<span class="co">#&gt;  [7] "ex2_test_results.rds"   "ex4_test_results.rds"   "ex5_summerflounder.dat"</span>
+<span class="co">#&gt; [10] "ex5_test_results.rds"   "ex6_test_results.rds"   "ex7_SNEMAYT.dat"       </span>
+<span class="co">#&gt; [13] "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="specify-model" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-model" class="anchor"></a>2. Specify model</h2>
+<a href="#specify-model" class="anchor" aria-hidden="true"></a>2. Specify model</h2>
 <p>We use the <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> function to specify the model name and any settings that differ from the ASAP3 file. Our first model will use:</p>
 <ul>
 <li>recruitment model: random about mean, no S-R function (<code>recruit_model = 2</code>)</li>
@@ -204,11 +207,11 @@
 </ul>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
-                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>,  
-                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>,  
+                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
+                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>The stock-recruit model options in WHAM are:</p>
 <ul>
 <li>1 = random walk,</li>
@@ -220,11 +223,11 @@
 </div>
 <div id="fit-model-and-check-for-convergence" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fit-model-and-check-for-convergence" class="anchor"></a>3. Fit model and check for convergence</h2>
+<a href="#fit-model-and-check-for-convergence" class="anchor" aria-hidden="true"></a>3. Fit model and check for convergence</h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input1</span>, do.osa <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="co"># turn off OSA residuals to save time in ex</span></code></pre></div>
 <p>By default, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> uses 3 extra Newton steps to reduce the absolute value of the gradient (<code>n.newton = 3</code>) and estimates standard errors for derived parameters (<code>do.sdrep = TRUE</code>). <code><a href="../reference/fit_wham.html">fit_wham()</a></code> also does a retrospective analysis with 7 peels by default (<code>do.retro = TRUE</code>, <code>n.peels = 7</code>). For more details, see <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
-<p>We need to check that <code>m1</code> converged (<code>m1$opt$convergence</code> should be 0, and the maximum absolute value of the gradient vector should be &lt; 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> includes a <code>do.check</code> option to run Jim Thorson’s useful function <a href="https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R">TMBhelper::check_estimability()</a>. <code>do.check = FALSE</code> by default. To turn on, set <code>do.check = TRUE</code>. See <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
+<p>We need to check that <code>m1</code> converged (<code>m1$opt$convergence</code> should be 0, and the maximum absolute value of the gradient vector should be &lt; 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> includes a <code>do.check</code> option to run Jim Thorson’s useful function <a href="https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R" class="external-link">TMBhelper::check_estimability()</a>. <code>do.check = FALSE</code> by default. To turn on, set <code>do.check = TRUE</code>. See <code><a href="../reference/fit_wham.html">fit_wham()</a></code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m1</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0
@@ -233,16 +236,16 @@
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <div id="fit-models-m2-m4" class="section level3">
 <h3 class="hasAnchor">
-<a href="#fit-models-m2-m4" class="anchor"></a>Fit models <code>m2</code>-<code>m4</code>
+<a href="#fit-models-m2-m4" class="anchor" aria-hidden="true"></a>Fit models <code>m2</code>-<code>m4</code>
 </h3>
 <p>The second model, <code>m2</code>, is like the first, but changes all the age composition likelihoods from multinomial to logistic normal (treating 0 observations as missing):</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
-                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
-                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
+                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
+                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
+                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
                               age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span>
 <span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input2</span>, do.osa <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="co"># turn off OSA residuals to save time in ex</span></code></pre></div>
 <p>Check that <code>m2</code> converged:</p>
@@ -255,11 +258,11 @@
 <p>The third, <code>m3</code>, is a full state-space model where numbers at all ages are random effects (<code>NAA_re$sigma = "rec+1"</code>):</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
-                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
-                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span>
+                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
+                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
+                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">m3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input3</span>, do.osa <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="co"># turn off OSA residuals to save time in ex</span></code></pre></div>
 <p>Check that <code>m3</code> converged:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -271,11 +274,11 @@
 <p>The last, <code>m4</code>, is like <code>m3</code>, but again changes all the age composition likelihoods to logistic normal:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
-                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
-                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
-                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
+                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">3</span><span class="op">)</span>, 
+                                  initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
+                                  fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
+                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
                               age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span>
 <span class="va">m4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4</span>, do.osa <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="co"># turn off OSA residuals to save time in ex</span></code></pre></div>
 <p>Check that <code>m4</code> converged:</p>
@@ -287,18 +290,18 @@
 #&gt; TMB:sdreport() was performed successfully for this model</code></pre>
 <p>Store all models together in one (named) list:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span>, m3<span class="op">=</span><span class="va">m3</span>, m4<span class="op">=</span><span class="va">m4</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span>, m3<span class="op">=</span><span class="va">m3</span>, m4<span class="op">=</span><span class="va">m4</span><span class="op">)</span></code></pre></div>
 <p>Since the retrospective analyses take a few minutes to run, you may want to save the output for later use:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/save.html">save</a></span><span class="op">(</span><span class="st">"mods"</span>, file<span class="op">=</span><span class="st">"ex1_models.RData"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="st">"mods"</span>, file<span class="op">=</span><span class="st">"ex1_models.RData"</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
 <div id="compare-models" class="section level2">
 <h2 class="hasAnchor">
-<a href="#compare-models" class="anchor"></a>4. Compare models</h2>
+<a href="#compare-models" class="anchor" aria-hidden="true"></a>4. Compare models</h2>
 <p><code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> will make 1) a table comparing multiple WHAM model fits using AIC and Mohn’s rho, and 2) plots of key output (e.g. SSB, F, recruitment, reference points).</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>fname<span class="op">=</span><span class="st">"ex1_table"</span>, sort<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fname<span class="op">=</span><span class="st">"ex1_table"</span>, sort<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt;      dAIC     AIC  rho_R rho_SSB rho_Fbar
 #&gt; m4    0.0 -1481.5 0.2890  0.0261  -0.0286
 #&gt; m2  315.1 -1166.4 5.1190 -0.0205   0.0174
@@ -307,11 +310,11 @@
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">best</span></code></pre></div>
 <pre><code>#&gt; [1] "m4"</code></pre>
-<p>By default, <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> sorts the model comparison table with lowest (best) AIC at the top, and saves it as <code>model_comparison.csv</code>. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. <code>m1</code> vs. <code>m3</code> (both multinomial) and <code>m2</code> vs. <code>m4</code> (both logistic normal).</p>
+<p>By default, <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> sorts the model comparison table with lowest (best) AIC at the top, and saves it as <code>model_comparison.csv</code>. However, in this example the models with alternative likelihoods for the age composition observations are not comparable due to differences in how the observations are defined. Still, the models that treat the age composition observations in the same way can be compared to evaluate whether stochasticity in abundances at age provides better performance, i.e. <code>m1</code> vs. <code>m3</code> (both multinomial) and <code>m2</code> vs. <code>m4</code> (both logistic normal).</p>
 <p>The comparison plots are stored by default in the <code>compare_png</code> folder.</p>
 <div id="project-the-best-model" class="section level3">
 <h3 class="hasAnchor">
-<a href="#project-the-best-model" class="anchor"></a>Project the best model</h3>
+<a href="#project-the-best-model" class="anchor" aria-hidden="true"></a>Project the best model</h3>
 <p>Let’s do projections for the best model, <code>m4</code>, using the default settings (see <code><a href="../reference/project_wham.html">project_wham()</a></code>):</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">m4_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span>model<span class="op">=</span><span class="va">m4</span><span class="op">)</span></code></pre></div>
@@ -319,12 +322,12 @@
 </div>
 <div id="plot-input-data-diagnostics-and-results" class="section level2">
 <h2 class="hasAnchor">
-<a href="#plot-input-data-diagnostics-and-results" class="anchor"></a>5. Plot input data, diagnostics, and results</h2>
-<p>There are 3 options for plotting WHAM output. The default (<code>out.type='html'</code>) creates and opens an HTML file with plots organized into tabs (code modified from <a href="https://github.com/r4ss/r4ss/blob/master/R/SS_html.R"><code>r4ss::SS_html()</code></a>):</p>
+<a href="#plot-input-data-diagnostics-and-results" class="anchor" aria-hidden="true"></a>5. Plot input data, diagnostics, and results</h2>
+<p>There are 3 options for plotting WHAM output. The default (<code>out.type='html'</code>) creates and opens an HTML file with plots organized into tabs (code modified from <a href="https://github.com/r4ss/r4ss/blob/master/R/SS_html.R" class="external-link"><code>r4ss::SS_html()</code></a>):</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">m4_proj</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png" alt="Example HTML file created by plot_wham_output(mod=m4, out.type='html')." style="width:75.0%"><p class="caption">Example HTML file created by <code><a href="../reference/plot_wham_output.html">plot_wham_output(mod=m4, out.type='html')</a></code>.</p>
+<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png" style="width:75.0%" alt=""><p class="caption">Example HTML file created by <code>plot_wham_output(mod=m4, out.type='html')</code>.</p>
 </div>
 <p>Setting <code>out.type='pdf'</code> saves the plots organized into 6 <code>.pdf</code> files corresponding to the tabs in the <code>.html</code> file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). Setting <code>out.type='png'</code> saves the plots as <code>.png</code> files organized into 6 subdirectories.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
@@ -332,37 +335,37 @@
 <p>Many plots are generated—here we display some examples:</p>
 <div id="diagnostics" class="section level3">
 <h3 class="hasAnchor">
-<a href="#diagnostics" class="anchor"></a>Diagnostics</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_2.png" alt="Index 2 4-panel" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png" alt="Likelihood components" style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_1.png" alt="Conditional expected and posterior estimates of age-1 abundance (recruitment)." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_5.png" alt="Conditional expected and posterior estimates of age-5 abundance." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index1.png" alt="Fit to Index 1 age composition data." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index1.png" alt="Residuals for Index 1 age composition." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_fleet1.png" alt="One-step-ahead residuals Fleet 1 catch." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index1.png" alt="One-step-ahead residuals Index 1 catch." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index2.png" alt="One-step-ahead residuals Index 2 catch." style="width:30.0%"></p>
+<a href="#diagnostics" class="anchor" aria-hidden="true"></a>Diagnostics</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_2.png" style="width:45.0%" alt="Index 2 4-panel"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png" style="width:45.0%" alt="Likelihood components"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_1.png" style="width:45.0%" alt="Conditional expected and posterior estimates of age-1 abundance (recruitment)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_5.png" style="width:45.0%" alt="Conditional expected and posterior estimates of age-5 abundance."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index1.png" style="width:45.0%" alt="Fit to Index 1 age composition data."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index1.png" style="width:45.0%" alt="Residuals for Index 1 age composition."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_fleet1.png" style="width:30.0%" alt="One-step-ahead residuals Fleet 1 catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index1.png" style="width:30.0%" alt="One-step-ahead residuals Index 1 catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index2.png" style="width:30.0%" alt="One-step-ahead residuals Index 2 catch."></p>
 </div>
 <div id="input-data" class="section level3">
 <h3 class="hasAnchor">
-<a href="#input-data" class="anchor"></a>Input Data</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png" alt="Catch" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png" alt="Indices of abundance" style="width:45.0%"></p>
+<a href="#input-data" class="anchor" aria-hidden="true"></a>Input Data</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png" style="width:45.0%" alt="Catch"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png" style="width:45.0%" alt="Indices of abundance"></p>
 </div>
 <div id="results" class="section level3">
 <h3 class="hasAnchor">
-<a href="#results" class="anchor"></a>Results</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png" alt="SSB and F" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion.png" alt="Proportion of SSB at age" style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog.png" alt="SSB-Rec on log-scale" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet1.png" alt="Selectivity Fleet 1" style="width:45.0%"></p>
+<a href="#results" class="anchor" aria-hidden="true"></a>Results</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png" style="width:45.0%" alt="SSB and F"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion.png" style="width:45.0%" alt="Proportion of SSB at age"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog.png" style="width:45.0%" alt="SSB-Rec on log-scale"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet1.png" style="width:45.0%" alt="Selectivity Fleet 1"></p>
 </div>
 <div id="reference-points" class="section level3">
 <h3 class="hasAnchor">
-<a href="#reference-points" class="anchor"></a>Reference Points</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png" alt="Stock status (Kobe plot)" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png" alt="Status relative to SPR" style="width:45.0%"></p>
+<a href="#reference-points" class="anchor" aria-hidden="true"></a>Reference Points</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png" style="width:45.0%" alt="Stock status (Kobe plot)"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png" style="width:45.0%" alt="Status relative to SPR"></p>
 </div>
 <div id="retrospective" class="section level3">
 <h3 class="hasAnchor">
-<a href="#retrospective" class="anchor"></a>Retrospective</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro.png" alt="SSB with 7 peels" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro_relative.png" alt="Mohn’s rho (SSB) with 7 peels" style="width:45.0%"></p>
+<a href="#retrospective" class="anchor" aria-hidden="true"></a>Retrospective</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro.png" style="width:45.0%" alt="SSB with 7 peels"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_retro_relative.png" style="width:45.0%" alt="Mohn’s rho (SSB) with 7 peels"></p>
 </div>
 <div id="misc" class="section level3">
 <h3 class="hasAnchor">
-<a href="#misc" class="anchor"></a>Misc</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet1_obs.png" alt="Catch curves (Fleet 1 observed)" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet1.png" alt="Catch at age consistency (Fleet 1 observed)" style="width:45.0%"></p>
+<a href="#misc" class="anchor" aria-hidden="true"></a>Misc</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet1_obs.png" style="width:45.0%" alt="Catch curves (Fleet 1 observed)"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet1.png" style="width:45.0%" alt="Catch at age consistency (Fleet 1 observed)"></p>
 </div>
 </div>
   </div>
@@ -378,11 +381,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p></p>
+<p>Developed by Tim Miller, Brian Stock.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
 </div>
 
       </footer>
@@ -390,6 +395,8 @@
 
   
 
+
+  
 
   </body>
 </html>

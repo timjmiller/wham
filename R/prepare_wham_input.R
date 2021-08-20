@@ -3,8 +3,9 @@
 #' After the data file is read into R by \code{\link{read_asap3_dat}}, this function
 #' prepares the data and parameter settings for \code{\link{fit_wham}}.
 #' By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
-#' As of version 1.X.X, if an asap3 object is not provided, a dummy input is generated with some arbitrary assumptions. The various options described below
-#' such as \code{NAA_re} and \code{selectivity} can still be used without the asap3 object.
+#' As of version 1.X.X, if an asap3 object is not provided, a dummy input is generated with some arbitrary
+#' assumptions. The various options described below, such as \code{NAA_re} and \code{selectivity},
+#' can still be used without the asap3 object.
 #'
 #' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
 #'   \describe{
@@ -15,7 +16,7 @@
 #'   }
 #' Note: we allow fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
 #' but in that case no stock-recruit function is estimated. A warning message is printed if \code{recruit_model > 2} and \code{NAA_re = NULL}.
-#' If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects, 
+#' If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects,
 #' either only age-1 (\code{NAA_re = list(sigma='rec')}) or all ages (\code{NAA_re = list(sigma='rec+1')}, "full state-space" model).
 #' See below for details on \code{NAA_re} specification.
 #'
@@ -43,7 +44,7 @@
 #'     \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
 #'     \code{"M"} = natural mortality, \code{"none"} = fit ecov but without an effect on the population.}
 #'     \item{$how}{How does the ecov affect the \code{$where} process? These options are
-#'     specific to the \code{$where} process. 
+#'     specific to the \code{$where} process.
 #' Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
 #'   \describe{
 #'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
@@ -126,7 +127,7 @@
 #'                      \item{"rec"}{Random effects on recruitment (deviations), all other ages deterministic}
 #'                      \item{"rec+1"}{"Full state space" model with 2 estimated \code{sigma_a}, one for recruitment and one shared among other ages}
 #'                    }
-#'                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the 
+#'                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the
 #'                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 \code{sigma_a}, with recruitment (age-1) deviations having their
 #'                   own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}.
 #'                  }
@@ -143,24 +144,28 @@
 #'   \describe{
 #'		 \item{$N1_model}{Integer determining which way to model the initial numbers at age:
 #'			 \describe{
-#'					\item{0: (default) age-specific fixed effects parameters}
-#' 					\item{1: 2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
+#'					\item{0}{(default) age-specific fixed effects parameters}
+#' 					\item{1}{2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
 #'			 }
+#'		 }
 #'     \item{$N1_pars}{if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
-#'				initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.}
+#'				initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
+#'		 }
 #'		 \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
-#'				and \code{ecov} are properly specified. 
+#'				and \code{ecov} are properly specified.
 #'			 \describe{
-#'				 	 \item{1}{SCAA, estimating all recruitements as fixed effects} 
-#'				 	 \item{2}{estimating a mean recruitment with yearly recruitements as random effects} 
-#'				 	 \item{3}{Beverton-Holt stock-recruitment with yearly recruitements as random effects} 
-#'				 	 \item{4}{Ricker stock-recruitment with yearly recruitements as random effects} 
+#'				 	 \item{1}{SCAA, estimating all recruitements as fixed effects}
+#'				 	 \item{2}{estimating a mean recruitment with yearly recruitements as random effects}
+#'				 	 \item{3}{Beverton-Holt stock-recruitment with yearly recruitements as random effects}
+#'				 	 \item{4}{Ricker stock-recruitment with yearly recruitements as random effects}
 #'			 }
-#'		 \item{$use_steepness}{T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model>2}. 
+#'		 }
+#'		 \item{$use_steepness}{T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model>2}.
 #'		 \item{$recruit_pars}{vector of initial parameters for recruitment model. Only used if recruit_model>1. If use_steepness=F, parameters are "alpha" and "beta"
-#'				otherwise they are steepness and R0}. 
-#'   } 
-#' 
+#'				otherwise they are steepness and R0.
+#'		 }
+#'   }
+#'
 #' \code{age_comp} specifies the age composition models for fleet(s) and indices.
 #' If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 #' The age composition models available are:
@@ -174,7 +179,7 @@
 #'     \item{\code{"logistic-normal-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
 #'   }
 #' An age composition model needs to be specified for each fleet and index. If you would like
-#' all fleets and indices to use the same age composition likelihood, you can simply specify one 
+#' all fleets and indices to use the same age composition likelihood, you can simply specify one
 #' of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
 #' age composition model to be used for all fleets and indices, you must specify a named list with the following entries:
 #'   \describe{
@@ -250,12 +255,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' asap3 = read_asap3_dat("ASAP_SNEMAYT.dat")
+#' asap3 = read_asap3_dat("ex1_SNEMAYT.dat")
 #' input = prepare_wham_input(asap3)
 #' mod = fit_wham(input)
-#' }
-
-#' \dontrun{
+#'
 #' # no ASAP3 file, default parameter values and configuration
 #' input = prepare_wham_input()
 #' mod = fit_wham(input, fit = FALSE)
@@ -273,10 +276,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	map = list()
 	random = character()
   input = list(
-  	data = data, 
-  	par = par, 
-  	map = map, 
-  	random = random, 
+  	data = data,
+  	par = par,
+  	map = map,
+  	random = random,
   	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
@@ -290,20 +293,20 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	catch_opts = NULL
   catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
   if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
-  
+
   index_opts = NULL
-  index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices", 
+  index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
   	"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
   if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
-  
+
   F_opts = NULL
   F_names = c("F")
   if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
-  
+
   waa_opts = NULL
   waa_names = ("waa")
   if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
-  
+
   q_opts = NULL
   q_names = c("q","q_lower","q_upper")
   if(any(names(basic_info) %in% q_names)) q_opts = basic_info[q_names]
@@ -320,18 +323,18 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	}
 	else
 	{
-		#if no asap3 is provided, make some default values to 
+		#if no asap3 is provided, make some default values to
 		input = add_basic_info(input, basic_info)
 	}
 
   # print("start")
 	#some basic input elements see the function code below
 	input = initial_input_fn(input, basic_info)
-   
+
   # Catch
   input = set_catch(input, catch_opts)
   #print("catch")
-  
+
   # Indices/surveys
   input = set_indices(input, index_opts)
    #print("indices")
@@ -343,14 +346,14 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   # NAA and recruitment options
   input = set_NAA(input, NAA_re)
    #print("NAA")
-  
+
   input = set_q(input, q_opts)
    #print("q")
 
   # Selectivity
   input = set_selectivity(input, selectivity)
    #print("selectivity")
-  
+
   # Age composition model
   input = set_age_comp(input, age_comp)
    #print("age_comp")
@@ -359,7 +362,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   input = set_F(input, F_opts)
    #print("F")
 
- 	#set up natural mortality 
+ 	#set up natural mortality
   input = set_M(input, M)
    #print("M")
 
@@ -445,9 +448,9 @@ initial_input_fn = function(input, basic_info){
   input$data$n_years_model = length(input$years)
   input$data$n_years_catch = length(input$years)
   input$data$n_years_indices = length(input$years)
-  input$data$recruit_model = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input 
+  input$data$recruit_model = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
   input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
-  
+
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
   input$data$simulate_state = rep(1,4) #simulate state variables (NAA, M, sel, Ecov)
@@ -459,13 +462,13 @@ initial_input_fn = function(input, basic_info){
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-  
+
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
   if(!is.null(basic_info$simulate_process_error)) input$data$simulate_state = basic_info$simulate_process_error
   if(!is.null(basic_info$simulate_observation_error)) input$data$simulate_data = basic_info$simulate_observation_error
   if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
-  
+
   if(!is.null(basic_info$percentSPR)) input$data$percentSPR = basic_info$percentSPR
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
