@@ -14,8 +14,7 @@
 # ~4.2 min
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
-# library(wham)
-# devtools::load_all(path = pkg.dir)
+library(wham)
 library(ggplot2)
 library(tidyr)
 library(dplyr)
@@ -61,7 +60,8 @@ make_digifish <- function(years = 1975:2014) {
 }
 digifish = make_digifish()
 
-selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", digifish$n_indices))) #fleet, index
+selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", digifish$n_indices)),
+    initial_pars = rep(list(c(5,1)), digifish$n_fleets + digifish$n_indices)) #fleet, index
 
 M = list(initial_means = rep(0.2, length(digifish$ages)))
 
@@ -85,7 +85,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = fit_wham(temp, do.osa = FALSE)
+fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
 fit$mohns_rho = mohns_rho(fit) 
 plot_wham_output(fit)
 
@@ -111,10 +111,11 @@ NAA_re = list(N1_pars = exp(10)*exp(-(0:(length(digifish$ages)-1))*M$initial_mea
 NAA_re$sigma = "rec" #random about mean
 NAA_re$use_steepness = 1 #ok because M, WAA, etc are constant
 NAA_re$recruit_model = 3 #Beverton-Holt
-NAA_re$recruit_pars = c(0.6, exp(10))
+NAA_re$recruit_pars = c(0.5, exp(10))
 
 #make input object for operating model
 bh_input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M)
+
 #make the operating model
 bh_om = fit_wham(bh_input, do.fit = FALSE)
 
@@ -236,5 +237,3 @@ plot(temp$years_full, updated_sim$FAA_tot[,10]/exp(updated_sim$log_FMSY), type =
 abline(v = max(temp$years), lty=2)
 abline(h = 1, col = 'red', lty=2)
 dev.off()
-
-save.image(file.path(write.dir,"ex10.RData"))

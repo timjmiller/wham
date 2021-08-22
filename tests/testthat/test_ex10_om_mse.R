@@ -56,7 +56,8 @@ make_digifish <- function(years = 1975:2014) {
 }
 digifish = make_digifish()
 
-selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", digifish$n_indices))) #fleet, index
+selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", digifish$n_indices)),
+    initial_pars = rep(list(c(5,1)), digifish$n_fleets + digifish$n_indices)) #fleet, index
 
 M = list(initial_means = rep(0.2, length(digifish$ages)))
 
@@ -69,7 +70,7 @@ NAA_re$recruit_pars = exp(10)
 
 #make input and operating model
 input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M))
-om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE))
 
 #simulate data from operating model
 set.seed(8675309)
@@ -118,11 +119,11 @@ NAA_re = list(N1_pars = exp(10)*exp(-(0:(length(digifish$ages)-1))*M$initial_mea
 NAA_re$sigma = "rec" #random about mean
 NAA_re$use_steepness = 1 #ok because M, WAA, etc are constant
 NAA_re$recruit_model = 3 #Beverton-Holt
-NAA_re$recruit_pars = c(0.6, exp(10))
-
+NAA_re$recruit_pars = c(0.5, exp(10))
 
 #make input object for operating model
 bh_input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M))
+
 #make the operating model
 bh_om = suppressWarnings(fit_wham(bh_input, do.fit = FALSE))
 
@@ -141,7 +142,6 @@ expect_equal(bh_fit$mohns_rho, ex10_tests$fit3$mohns_rho, tolerance=1e-6, scale=
 #saveRDS(ex10_tests, "ex10_tests.rds")
 
 #make input for a scaa estimation model (recruitment as fixed effects)
-
 scaa_info = digifish
 data_names = c("agg_catch", "catch_paa", "agg_indices","index_paa")
 scaa_info[data_names] = sim_pop[data_names]
