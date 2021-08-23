@@ -87,7 +87,7 @@ fit$mohns_rho = mohns_rho(fit)
 plot_wham_output(fit)
 expect_equal(fit$opt$obj, ex10_tests$fit1$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex10_tests$fit1$par, tolerance=1e-6, scale=1)
-expect_equal(fit$mohns_rho, ex10_tests$fit1$mohns_rho, tolerance=1e-6, scale=1)
+expect_equal(fit$mohns_rho, ex10_tests$fit1$mohns_rho, tolerance=1e-4, scale=1)
 #ex10_tests$fit1 = list(nll = fit$opt$obj, par = fit$opt$par, mohns_rho = fit$mohns_rho)
 #saveRDS(ex10_tests, "ex10_tests.rds")
 
@@ -108,7 +108,7 @@ scaa_fit = suppressWarnings(fit_wham(scaa_input, do.osa = FALSE, MakeADFun.silen
 scaa_fit$mohns_rho = mohns_rho(scaa_fit)
 expect_equal(scaa_fit$opt$obj, ex10_tests$fit2$nll, tolerance=1e-6, scale=1)
 expect_equal(scaa_fit$opt$par, ex10_tests$fit2$par, tolerance=1e-6, scale=1)
-expect_equal(scaa_fit$mohns_rho, ex10_tests$fit2$mohns_rho, tolerance=1e-6, scale=1)
+expect_equal(scaa_fit$mohns_rho, ex10_tests$fit2$mohns_rho, tolerance=1e-4, scale=1)
 #ex10_tests$fit2 = list(nll = scaa_fit$opt$obj, par = scaa_fit$opt$par, mohns_rho = scaa_fit$mohns_rho)
 #saveRDS(ex10_tests, "ex10_tests.rds")
 
@@ -137,7 +137,7 @@ bh_fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE
 bh_fit$mohns_rho = mohns_rho(bh_fit)
 expect_equal(bh_fit$opt$obj, ex10_tests$fit3$nll, tolerance=1e-6, scale=1)
 expect_equal(bh_fit$opt$par, ex10_tests$fit3$par, tolerance=1e-6, scale=1)
-expect_equal(bh_fit$mohns_rho, ex10_tests$fit3$mohns_rho, tolerance=1e-6, scale=1)
+expect_equal(bh_fit$mohns_rho, ex10_tests$fit3$mohns_rho, tolerance=1e-4, scale=1)
 #ex10_tests$fit3 = list(nll = bh_fit$opt$obj, par = bh_fit$opt$par, mohns_rho = bh_fit$mohns_rho)
 #saveRDS(ex10_tests, "ex10_tests.rds")
 
@@ -157,7 +157,7 @@ scaa_fit = suppressWarnings(fit_wham(scaa_input, do.osa = FALSE, MakeADFun.silen
 scaa_fit$mohns_rho = mohns_rho(scaa_fit)
 expect_equal(scaa_fit$opt$obj, ex10_tests$fit4$nll, tolerance=1e-6, scale=1)
 expect_equal(scaa_fit$opt$par, ex10_tests$fit4$par, tolerance=1e-6, scale=1)
-expect_equal(scaa_fit$mohns_rho, ex10_tests$fit4$mohns_rho, tolerance=1e-6, scale=1)
+expect_equal(scaa_fit$mohns_rho, ex10_tests$fit4$mohns_rho, tolerance=1e-4, scale=1)
 #ex10_tests$fit4 = list(nll = scaa_fit$opt$obj, par = scaa_fit$opt$par, mohns_rho = scaa_fit$mohns_rho)
 #saveRDS(ex10_tests, "ex10_tests.rds")
 
