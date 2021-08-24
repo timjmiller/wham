@@ -58,7 +58,6 @@ prepare_projection = function(model, proj.opts)
 
   input1 <- model$input
   data <- input1$data
-
   # options for M in projections, data$proj_M_opt:
   #   1 = continue random effects (if they exist) - need to pad M_re
   #   2 = use average

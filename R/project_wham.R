@@ -107,12 +107,20 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     #mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
     mod <- fit_wham(input2, n.newton=n.newton, do.sdrep=F, do.retro=F, do.osa=F, do.check=F, do.proj=F, 
       MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
-    mod$fn(model$opt$par)
+    
+    #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
+    is.fit = !is.null(model$opt)
+    if(!is.fit) mle = model$par
+    else {
+      mle = model$opt$par
+      mod$fn(mle)
+    }
+    
     mod$rep = mod$report()
-    mod$parList <- mod$env$parList(x=model$opt$par)
+    mod$parList <- mod$env$parList(x=mle)
     mod <- check_FXSPR(mod)
     mod <- check_projF(mod) #projections added.
-    if(do.sdrep) # only do sdrep if no error
+    if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {
       mod$sdrep <- try(TMB::sdreport(mod))
       mod$is_sdrep <- !is.character(mod$sdrep)

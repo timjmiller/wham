@@ -48,6 +48,8 @@ and a table of AIC and Mohn's rho to aid model comparison." />
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -59,9 +61,15 @@ and a table of AIC and Mohn's rho to aid model comparison." />
 
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -119,6 +127,9 @@ and a table of AIC and Mohn's rho to aid model comparison." />
     </li>
     <li>
       <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+    </li>
+    <li>
+      <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
     </li>
   </ul>
 </li>
@@ -182,7 +193,7 @@ and a table of AIC and Mohn's rho to aid model comparison." />
 and a table of AIC and Mohn's rho to aid model comparison.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compare_wham_models</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>compare_wham_models</span><span class='op'>(</span>
   <span class='va'>mods</span>,
   do.table <span class='op'>=</span> <span class='cn'>TRUE</span>,
   do.plot <span class='op'>=</span> <span class='cn'>TRUE</span>,
@@ -194,7 +205,7 @@ and a table of AIC and Mohn's rho to aid model comparison.</p>
   calc.rho <span class='op'>=</span> <span class='cn'>NULL</span>,
   calc.aic <span class='op'>=</span> <span class='cn'>NULL</span>,
   do.print <span class='op'>=</span> <span class='cn'>NULL</span>
-<span class='op'>)</span></pre>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -231,7 +242,7 @@ will be used.</p></td>
     <tr>
       <th>plot.opts</th>
       <td><p>list of options for plots:</p><dl>
-  <dt><code>$out.type</code></dt><dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code><a href='https://rdrr.io/r/base/system.html'>system('pdftk')</a></code> will work across platforms.)</p></dd>
+  <dt><code>$out.type</code></dt><dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code>system('pdftk')</code> will work across platforms.)</p></dd>
   <dt><code>$ci</code></dt><dd><p>vector of T/F, length = 1 (applied to all models) or number of models</p></dd>
   <dt><code>$years</code></dt><dd><p>vector, which years to plot? Default = all (model and projection years).</p></dd>
   <dt><code>$which</code></dt><dd><p>vector, which plots to make? Default = all. See details.</p></dd>
@@ -239,7 +250,7 @@ will be used.</p></td>
   <dt><code>$alpha</code></dt><dd><p>scalar, (1-alpha)% confidence intervals will be plotted. Default = 0.05 for 95% CI.</p></dd>
   <dt><code>$ages.lab</code></dt><dd><p>vector, overwrite model age labels.</p></dd>
   <dt><code>$kobe.yr</code></dt><dd><p>integer, which year to use in Kobe plot (relative status). Default = terminal model year.</p></dd>
-  <dt><code>$M.age</code></dt><dd><p>integer, which age to use in M time-series plot. Default = <code><a href='https://rdrr.io/r/base/Extremes.html'>max(data$which_F_age)</a></code> (max age of F to use for full total F).</p></dd>
+  <dt><code>$M.age</code></dt><dd><p>integer, which age to use in M time-series plot. Default = <code>max(data$which_F_age)</code> (max age of F to use for full total F).</p></dd>
   <dt><code>$return.ggplot</code></dt><dd><p>T/F, return a list of ggplot2 objects for later modification? Default = TRUE.</p></dd>
   <dt><code>$kobe.prob</code></dt><dd><p>T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.</p></dd>
   <dt><code>$refpt</code></dt><dd><p>"XSPR" or "MSY", which reference point to use. Default = "XSPR".</p></dd>
@@ -281,15 +292,15 @@ will be used.</p></td>
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='read_asap3_fit.html'>read_asap3_fit</a>, <code><a href='read_wham_fit.html'>read_wham_fit</a></code></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='va'>base</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_asap3_fit.html'>read_asap3_fit</a></span><span class='op'>(</span><span class='op'>)</span>
-<span class='va'>m1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input1</span><span class='op'>)</span>
-<span class='va'>m2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input2</span><span class='op'>)</span>
-<span class='va'>mods</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>base<span class='op'>=</span><span class='va'>base</span>, m1<span class='op'>=</span><span class='va'>m1</span>, m2<span class='op'>=</span><span class='va'>m2</span><span class='op'>)</span>
-<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'>compare_wham_models</span><span class='op'>(</span><span class='va'>mods</span><span class='op'>)</span>
-<span class='op'>}</span>
-
-</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='va'>base</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_asap3_fit.html'>read_asap3_fit</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>m1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input1</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>m2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input2</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>mods</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>base<span class='op'>=</span><span class='va'>base</span>, m1<span class='op'>=</span><span class='va'>m1</span>, m2<span class='op'>=</span><span class='va'>m2</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'>compare_wham_models</span><span class='op'>(</span><span class='va'>mods</span><span class='op'>)</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+<span class='r-in'></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -301,11 +312,11 @@ will be used.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p><p>Developed by Tim Miller, Brian Stock.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -313,6 +324,8 @@ will be used.</p></td>
 
   
 
+
+  
 
   </body>
 </html>

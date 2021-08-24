@@ -48,6 +48,8 @@ which in turn is called by fit_wham if do.proj = TRUE." />
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -59,9 +61,15 @@ which in turn is called by fit_wham if do.proj = TRUE." />
 
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -119,6 +127,9 @@ which in turn is called by fit_wham if do.proj = TRUE." />
     </li>
     <li>
       <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+    </li>
+    <li>
+      <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
     </li>
   </ul>
 </li>
@@ -182,7 +193,7 @@ which in turn is called by fit_wham if do.proj = TRUE." />
 which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if <code>do.proj = TRUE</code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prepare_projection</span><span class='op'>(</span><span class='va'>model</span>, <span class='va'>proj.opts</span><span class='op'>)</span></pre>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>prepare_projection</span><span class='op'>(</span><span class='va'>model</span>, <span class='va'>proj.opts</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -200,7 +211,7 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
 <li><p><code>$use.FMSY</code> (T/F), calculate and use FMSY for projections.</p></li>
 <li><p><code>$proj.F</code> (vector), user-specified fishing mortality for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$proj.catch</code> (vector), user-specified aggregate catch for projections. Length must equal <code>n.yrs</code>.</p></li>
-<li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code><a href='https://rdrr.io/r/utils/head.html'>tail(model$years, 5)</a></code>.</p></li>
+<li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code>tail(model$years, 5)</code>.</p></li>
 <li><p><code>$cont.ecov</code> (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = <code>TRUE</code>.</p></li>
 <li><p><code>$use.last.ecov</code> (T/F), use terminal year ecov for projections.</p></li>
 <li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
@@ -242,11 +253,11 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
 
       <footer>
       <div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p><p>Developed by Tim Miller, Brian Stock.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -254,6 +265,8 @@ which in turn is called by <code><a href='fit_wham.html'>fit_wham</a></code> if 
 
   
 
+
+  
 
   </body>
 </html>

@@ -28,6 +28,8 @@ navbar:
          href: articles/ex8_compare.html
       -  text: "Ex 9: Retrospective predictions"
          href: articles/ex9_retro_pred.html
+      -  text: "Ex 10: Operating models and MSE"
+         href: articles/ex10_om_mse.html
 
     - text: "Functions"
       icon: far fa-file-code fa-lg
@@ -69,6 +71,7 @@ articles:
       - ex7_debug
       - ex8_compare
       - ex9_retro_pred
+      - ex10_om_mse
 
 reference:
   - title: Functions that users call directly
@@ -80,9 +83,6 @@ reference:
       - '`project_wham`'
       - '`plot_wham_output`'
       - '`compare_wham_models`'
-      - '`update_wham_input`'
-      - '`prepare_wham_om_input`'
-      - '`prepare_wham_om_proj`'
   - title: Helper functions and the like that users do not call
     contents:
       - '`set_age_sel0`'

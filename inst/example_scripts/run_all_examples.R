@@ -31,3 +31,15 @@ source(file.path(wham.dir, "example_scripts", "ex5_M_GSI.R"))
 # Ex 6
 write.dir <- file.path(main.dir,"ex6")
 source(file.path(wham.dir, "example_scripts", "ex6_NAA.R"))
+
+# Ex 8
+write.dir <- file.path(main.dir,"ex8")
+source(file.path(wham.dir, "example_scripts", "ex8_compare_asap.R"))
+
+# Ex 9
+write.dir <- file.path(main.dir,"ex9")
+source(file.path(wham.dir, "example_scripts", "ex9_retro_pred.R"))
+
+# Ex 10
+write.dir <- file.path(main.dir,"ex10")
+source(file.path(wham.dir, "example_scripts", "ex10_om_mse.R"))

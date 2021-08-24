@@ -20,6 +20,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -77,6 +79,9 @@
     <li>
       <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
+    <li>
+      <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -87,7 +92,7 @@
   </a>
 </li>
 <li>
-  <a href="https://github.com/timjmiller/wham/">
+  <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
     Source code
@@ -103,14 +108,14 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/issues/">
+  <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
-  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
@@ -126,22 +131,22 @@
 
       
 
-      </header><script src="ex6_NAA_files/kePrint-0.0.1/kePrint.js"></script><link href="ex6_NAA_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+      </header><script src="ex6_NAA_files/header-attrs-2.10/header-attrs.js"></script><script src="ex6_NAA_files/kePrint-0.0.1/kePrint.js"></script><link href="ex6_NAA_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 6: Numbers-at-age / survival deviations as random effects</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex6_NAA.Rmd"><code>vignettes/ex6_NAA.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex6_NAA.Rmd" class="external-link"><code>vignettes/ex6_NAA.Rmd</code></a></small>
       <div class="hidden name"><code>ex6_NAA.Rmd</code></div>
 
     </div>
 
     
     
-<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>This is the 6th WHAM example, which blends aspects from <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">Ex 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">Ex 2</a>, and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>. We assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The simpler 1st example is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R">R script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">vignette</a>.</p>
+<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339" class="external-link">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
+<p>This is the 6th WHAM example, which blends aspects from <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">Ex 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">Ex 2</a>, and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Ex 5</a>. We assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The simpler 1st example is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R" class="external-link">R script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">vignette</a>.</p>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">example 1</a>:</p>
 <ul>
 <li>Stock: Southern New England-Mid Atlantic (SNEMA) yellowtail flounder</li>
@@ -184,54 +189,54 @@
 </ol>
 <div id="load-data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#load-data" class="anchor"></a>1. Load data</h2>
+<a href="#load-data" class="anchor" aria-hidden="true"></a>1. Load data</h2>
 <p>Open R and load the <code>wham</code> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex6_NAA.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
 <p>You can run this entire example script with (total run time about 12 minutes):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
-<span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex6_NAA.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex6_NAA.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Let’s create a directory for this analysis:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
 <p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">example 1</a>, and the environmental covariate (Gulf Stream Index, GSI). Let’s copy <code>ex1_SNEMAYT.dat</code> and <code>GSI.csv</code> to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"GSI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"GSI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>Confirm you are in the correct directory and it has the required data files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
 <p>Load the environmental covariate (Gulf Stream Index, GSI) data into R:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span><span class="st">"GSI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"GSI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span></code></pre></div>
 <p>As in <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">example 5</a>, the GSI data file does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value, <span class="math inline">\(\sigma_{GSI}\)</span>, or yearly values as random effects, <span class="math inline">\(\mathrm{log}\sigma_{{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})\)</span>. In this example we choose the simpler option and estimate one observation error parameter, shared across years.</p>
 </div>
 <div id="specify-models" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-models" class="anchor"></a>2. Specify models</h2>
+<a href="#specify-models" class="anchor" aria-hidden="true"></a>2. Specify models</h2>
 <p>Now we specify several models with different options for the numbers-at-age (NAA) transitions, i.e. survival:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>NAA_cor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'---'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span><span class="op">)</span>,
-                      NAA_sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'---'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"rec"</span>,<span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"rec+1"</span>,<span class="fl">4</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"rec"</span>,<span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"rec+1"</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                      GSI_how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">7</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>
-<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="va">Model</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span></code></pre></div>
+<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>NAA_cor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'---'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_y'</span>,<span class="st">'iid'</span>,<span class="st">'ar1_a'</span>,<span class="st">'ar1_y'</span>,<span class="st">'2dar1'</span><span class="op">)</span>,
+                      NAA_sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'---'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"rec"</span>,<span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"rec+1"</span>,<span class="fl">4</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"rec"</span>,<span class="fl">2</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"rec+1"</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
+                      GSI_how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">7</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>
+<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Model</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span></code></pre></div>
 <p>Look at the model table:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.mods</span>
@@ -252,7 +257,7 @@
 </div>
 <div id="numbers-at-age-options" class="section level2">
 <h2 class="hasAnchor">
-<a href="#numbers-at-age-options" class="anchor"></a>3. Numbers-at-age options</h2>
+<a href="#numbers-at-age-options" class="anchor" aria-hidden="true"></a>3. Numbers-at-age options</h2>
 <p>To specify the options for modeling NAA transitions, include an optional list argument, <code>NAA_re</code>, to the <code>prepare_wham_input</code> function (see the <code>prepare_wham_input</code> help page). ASAP3 does not estimate random effects, and therefore these options are not specified in the ASAP data file. By default (<code>NAA_re</code> is <code>NULL</code> or not included), WHAM fits a traditional statistical catch-at-age model (NAA = predicted NAA for all ages, i.e. survival is deterministic). To fit a state-space model, we must specify <code>NAA_re</code>.</p>
 <p><code>NAA_re</code> is a list with the following entries:</p>
 <ul>
@@ -285,14 +290,14 @@
 <code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">&lt;-</span> <span class="cn">NULL</span> <span class="co"># or simply leave out of call to prepare_wham_input</span></code></pre></div>
 <p>To fit model <code>m3</code>, recruitment deviations are correlated random effects:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"ar1_y"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec"</span>, cor<span class="op">=</span><span class="st">"ar1_y"</span><span class="op">)</span></code></pre></div>
 <p>And to fit model <code>m7</code>, numbers at all ages are random effects correlated by year AND age:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"2dar1"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"2dar1"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="linking-recruitment-to-an-environmental-covariate-gsi" class="section level2">
 <h2 class="hasAnchor">
-<a href="#linking-recruitment-to-an-environmental-covariate-gsi" class="anchor"></a>4. Linking recruitment to an environmental covariate (GSI)</h2>
+<a href="#linking-recruitment-to-an-environmental-covariate-gsi" class="anchor" aria-hidden="true"></a>4. Linking recruitment to an environmental covariate (GSI)</h2>
 <p>As described in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>, the environmental covariate options are fed to <code>prepare_wham_input</code> as a list, <code>ecov</code>. This example differs from example 2 in that:</p>
 <ul>
 <li>
@@ -304,12 +309,12 @@
 </ul>
 <p>For example, the <code>ecov</code> list for models <code>m8</code>-<code>m13</code> with the linear GSI-<span class="math inline">\(\beta\)</span> effect:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R">  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+<code class="sourceCode R">  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     label <span class="op">=</span> <span class="st">"GSI"</span>,
-    mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">GSI</span><span class="op">)</span>,
+    mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">GSI</span><span class="op">)</span>,
     logsigma <span class="op">=</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span>
     year <span class="op">=</span> <span class="va">env.dat</span><span class="op">$</span><span class="va">year</span>,
-    use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
+    use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
     lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># GSI in year t affects recruitment in year t+1</span>
     process_model <span class="op">=</span> <span class="st">"ar1"</span>, <span class="co"># GSI modeled as AR1 (random walk would be "rw")</span>
     where <span class="op">=</span> <span class="st">"recruit"</span>,
@@ -319,101 +324,101 @@
 </div>
 <div id="run-all-models" class="section level2">
 <h2 class="hasAnchor">
-<a href="#run-all-models" class="anchor"></a>5. Run all models</h2>
+<a href="#run-all-models" class="anchor" aria-hidden="true"></a>5. Run all models</h2>
 <p>All models use the same options for expected recruitment (Beverton-Holt stock-recruit function) and selectivity (age-specific, with one or two ages fixed at 1).</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="cf">for</span>(m <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n.mods){</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2">  NAA_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">cor=</span>df.mods[m,<span class="st">"NAA_cor"</span>], <span class="dt">sigma=</span>df.mods[m,<span class="st">"NAA_sigma"</span>])</a>
-<a class="sourceLine" id="cb15-3" data-line-number="3">  <span class="cf">if</span>(NAA_list<span class="op">$</span>sigma <span class="op">==</span><span class="st"> '---'</span>) NAA_list =<span class="st"> </span><span class="ot">NULL</span></a>
-<a class="sourceLine" id="cb15-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb15-5" data-line-number="5">  ecov &lt;-<span class="st"> </span><span class="kw">list</span>(</a>
-<a class="sourceLine" id="cb15-6" data-line-number="6">    <span class="dt">label =</span> <span class="st">"GSI"</span>,</a>
-<a class="sourceLine" id="cb15-7" data-line-number="7">    <span class="dt">mean =</span> <span class="kw">as.matrix</span>(env.dat<span class="op">$</span>GSI),</a>
-<a class="sourceLine" id="cb15-8" data-line-number="8">    <span class="dt">logsigma =</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span></a>
-<a class="sourceLine" id="cb15-9" data-line-number="9">    <span class="dt">year =</span> env.dat<span class="op">$</span>year,</a>
-<a class="sourceLine" id="cb15-10" data-line-number="10">    <span class="dt">use_obs =</span> <span class="kw">matrix</span>(<span class="dv">1</span>, <span class="dt">ncol=</span><span class="dv">1</span>, <span class="dt">nrow=</span><span class="kw">dim</span>(env.dat)[<span class="dv">1</span>]), <span class="co"># use all obs (=1)</span></a>
-<a class="sourceLine" id="cb15-11" data-line-number="11">    <span class="dt">lag =</span> <span class="dv">1</span>, <span class="co"># GSI in year t affects Rec in year t + 1</span></a>
-<a class="sourceLine" id="cb15-12" data-line-number="12">    <span class="dt">process_model =</span> <span class="st">'ar1'</span>, <span class="co"># "rw" or "ar1"</span></a>
-<a class="sourceLine" id="cb15-13" data-line-number="13">    <span class="dt">where =</span> <span class="dt">where =</span> <span class="kw">c</span>(<span class="st">"none"</span>,<span class="st">"recruit"</span>)[<span class="kw">as.logical</span>(df.mods<span class="op">$</span>GSI_how[m])<span class="op">+</span><span class="dv">1</span>], <span class="co"># GSI affects recruitment</span></a>
-<a class="sourceLine" id="cb15-14" data-line-number="14">    <span class="dt">how =</span> df.mods<span class="op">$</span>GSI_how[m], <span class="co"># 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting</span></a>
-<a class="sourceLine" id="cb15-15" data-line-number="15">    <span class="dt">link_model =</span> <span class="st">"linear"</span>)</a>
-<a class="sourceLine" id="cb15-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb15-17" data-line-number="17">  input &lt;-<span class="st"> </span><span class="kw">prepare_wham_input</span>(asap3, <span class="dt">recruit_model =</span> <span class="dv">3</span>, <span class="co"># Bev Holt recruitment</span></a>
-<a class="sourceLine" id="cb15-18" data-line-number="18">                              <span class="dt">model_name =</span> <span class="st">"Ex 6: Numbers-at-age"</span>,</a>
-<a class="sourceLine" id="cb15-19" data-line-number="19">                              <span class="dt">selectivity=</span><span class="kw">list</span>(<span class="dt">model=</span><span class="kw">rep</span>(<span class="st">"age-specific"</span>,<span class="dv">3</span>), <span class="dt">re=</span><span class="kw">c</span>(<span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span>), </a>
-<a class="sourceLine" id="cb15-20" data-line-number="20">                                <span class="dt">initial_pars=</span><span class="kw">list</span>(<span class="kw">c</span>(<span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>),<span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>)), </a>
-<a class="sourceLine" id="cb15-21" data-line-number="21">                                <span class="dt">fix_pars=</span><span class="kw">list</span>(<span class="dv">4</span><span class="op">:</span><span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span><span class="op">:</span><span class="dv">6</span>)),</a>
-<a class="sourceLine" id="cb15-22" data-line-number="22">                              <span class="dt">NAA_re =</span> NAA_list,</a>
-<a class="sourceLine" id="cb15-23" data-line-number="23">                              <span class="dt">ecov=</span>ecov,</a>
-<a class="sourceLine" id="cb15-24" data-line-number="24">                              <span class="dt">age_comp =</span> <span class="st">"logistic-normal-miss0"</span>) <span class="co"># logistic normal, treat 0 obs as missing</span></a>
-<a class="sourceLine" id="cb15-25" data-line-number="25"></a>
-<a class="sourceLine" id="cb15-26" data-line-number="26">  <span class="co"># Fit model</span></a>
-<a class="sourceLine" id="cb15-27" data-line-number="27">  mod &lt;-<span class="st"> </span><span class="kw">fit_wham</span>(input, <span class="dt">do.retro=</span>T, <span class="dt">do.osa=</span>F)</a>
-<a class="sourceLine" id="cb15-28" data-line-number="28"></a>
-<a class="sourceLine" id="cb15-29" data-line-number="29">  <span class="co"># Save model</span></a>
-<a class="sourceLine" id="cb15-30" data-line-number="30">  <span class="kw">saveRDS</span>(mod, <span class="dt">file=</span><span class="kw">paste0</span>(df.mods<span class="op">$</span>Model[m],<span class="st">".rds"</span>))</a>
-<a class="sourceLine" id="cb15-31" data-line-number="31"></a>
-<a class="sourceLine" id="cb15-32" data-line-number="32">  <span class="co"># If desired, do projections</span></a>
-<a class="sourceLine" id="cb15-33" data-line-number="33">  <span class="co"># mod_proj &lt;- project_wham(mod)</span></a>
-<a class="sourceLine" id="cb15-34" data-line-number="34">  <span class="co"># saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))</span></a>
-<a class="sourceLine" id="cb15-35" data-line-number="35">}</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(m <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n.mods){</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  NAA_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">cor=</span>df.mods[m,<span class="st">"NAA_cor"</span>], <span class="at">sigma=</span>df.mods[m,<span class="st">"NAA_sigma"</span>])</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(NAA_list<span class="sc">$</span>sigma <span class="sc">==</span> <span class="st">'---'</span>) NAA_list <span class="ot">=</span> <span class="cn">NULL</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  ecov <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">"GSI"</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">as.matrix</span>(env.dat<span class="sc">$</span>GSI),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">logsigma =</span> <span class="st">'est_1'</span>, <span class="co"># estimate obs sigma, 1 value shared across years</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">year =</span> env.dat<span class="sc">$</span>year,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">use_obs =</span> <span class="fu">matrix</span>(<span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">1</span>, <span class="at">nrow=</span><span class="fu">dim</span>(env.dat)[<span class="dv">1</span>]), <span class="co"># use all obs (=1)</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">lag =</span> <span class="dv">1</span>, <span class="co"># GSI in year t affects Rec in year t + 1</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">process_model =</span> <span class="st">'ar1'</span>, <span class="co"># "rw" or "ar1"</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">where =</span> <span class="at">where =</span> <span class="fu">c</span>(<span class="st">"none"</span>,<span class="st">"recruit"</span>)[<span class="fu">as.logical</span>(df.mods<span class="sc">$</span>GSI_how[m])<span class="sc">+</span><span class="dv">1</span>], <span class="co"># GSI affects recruitment</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">how =</span> df.mods<span class="sc">$</span>GSI_how[m], <span class="co"># 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">link_model =</span> <span class="st">"linear"</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  input <span class="ot">&lt;-</span> <span class="fu">prepare_wham_input</span>(asap3, <span class="at">recruit_model =</span> <span class="dv">3</span>, <span class="co"># Bev Holt recruitment</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>                              <span class="at">model_name =</span> <span class="st">"Ex 6: Numbers-at-age"</span>,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>                              <span class="at">selectivity=</span><span class="fu">list</span>(<span class="at">model=</span><span class="fu">rep</span>(<span class="st">"age-specific"</span>,<span class="dv">3</span>), <span class="at">re=</span><span class="fu">c</span>(<span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span>), </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>                                <span class="at">initial_pars=</span><span class="fu">list</span>(<span class="fu">c</span>(<span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>),<span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>),<span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>)), </span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>                                <span class="at">fix_pars=</span><span class="fu">list</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>)),</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                              <span class="at">NAA_re =</span> NAA_list,</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ecov=</span>ecov,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>                              <span class="at">age_comp =</span> <span class="st">"logistic-normal-miss0"</span>) <span class="co"># logistic normal, treat 0 obs as missing</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fit model</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>  mod <span class="ot">&lt;-</span> <span class="fu">fit_wham</span>(input, <span class="at">do.retro=</span>T, <span class="at">do.osa=</span>F)</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Save model</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(mod, <span class="at">file=</span><span class="fu">paste0</span>(df.mods<span class="sc">$</span>Model[m],<span class="st">".rds"</span>))</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If desired, do projections</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mod_proj &lt;- project_wham(mod)</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># saveRDS(mod_proj, file=paste0(df.mods$Model[m],"_proj.rds"))</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="compare-models" class="section level2">
 <h2 class="hasAnchor">
-<a href="#compare-models" class="anchor"></a>6. Compare models</h2>
+<a href="#compare-models" class="anchor" aria-hidden="true"></a>6. Compare models</h2>
 <p>Collect all models into a list.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span>,<span class="st">".rds"</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span>,<span class="st">".rds"</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></code></pre></div>
 <p>Get model convergence and stats.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">opt_conv</span> <span class="op">=</span> <span class="fl">1</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span><span class="op">)</span>
-<span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">opt_conv</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">opt_conv</span> <span class="op">=</span> <span class="fl">1</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span><span class="op">)</span>
+<span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">opt_conv</span><span class="op">)</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span></code></pre></div>
 <p>Only calculate AIC and Mohn’s rho for converged models.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.mods</span><span class="op">$</span><span class="va">runtime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">NLL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">objective</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">df.mods</span><span class="op">$</span><span class="va">runtime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">NLL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">objective</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>
 <span class="va">not_conv</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">|</span> <span class="op">!</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span>
 <span class="va">mods2</span> <span class="op">&lt;-</span> <span class="va">mods</span>
 <span class="va">mods2</span><span class="op">[</span><span class="va">not_conv</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
-<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
+<span class="va">df.aic.tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods2</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
 <span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="cn">FALSE</span>,<span class="op">]</span>
 <span class="va">ct</span> <span class="op">=</span> <span class="fl">1</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
   <span class="kw">if</span><span class="op">(</span><span class="va">not_conv</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">{</span>
-    <span class="va">df.aic</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">5</span><span class="op">)</span>
+    <span class="va">df.aic</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">5</span><span class="op">)</span>
   <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span>
     <span class="va">df.aic</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="va">df.aic.tmp</span><span class="op">[</span><span class="va">ct</span>,<span class="op">]</span>
     <span class="va">ct</span> <span class="op">&lt;-</span> <span class="va">ct</span> <span class="op">+</span> <span class="fl">1</span>
   <span class="op">}</span>
 <span class="op">}</span>
-<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"NA"</span>,<span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span><span class="op">)</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"---"</span>
-<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">df.mods</span>, <span class="va">df.aic</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></code></pre></div>
+<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
+<span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">[</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span>, nsmall<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
+<span class="va">df.aic</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"NA"</span>,<span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span><span class="op">)</span>,<span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"---"</span>
+<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df.mods</span>, <span class="va">df.aic</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></code></pre></div>
 <p>Look at results table.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df.mods</span></code></pre></div>
 <p>Save results table.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html">write.csv</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"ex6_table.csv"</span>,quote<span class="op">=</span><span class="cn">F</span>, row.names<span class="op">=</span><span class="cn">F</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"ex6_table.csv"</span>,quote<span class="op">=</span><span class="cn">F</span>, row.names<span class="op">=</span><span class="cn">F</span><span class="op">)</span></code></pre></div>
 <p>Plot output for models that converged.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mods</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># m1 didn't actually fit a Bev-Holt</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">not_conv</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">not_conv</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
 <div id="results" class="section level2">
 <h2 class="hasAnchor">
-<a href="#results" class="anchor"></a>7. Results</h2>
+<a href="#results" class="anchor" aria-hidden="true"></a>7. Results</h2>
 <p>Two models had very similar AIC and were overwhelmingly supported relative to the other models (<strong>bold</strong> in table below): <code>m11</code> (all NAA are random effects with correlation by age, GSI-Recruitment effect) and <code>m13</code> (all NAA are random effects with correlation by age and year, GSI-Recruitment effect).</p>
 <p>The SCAA and state-space models with independent NAA deviations had the lowest runtime. Estimating NAA deviations only for age-1, i.e. recruitment as random effects, broke the Hessian sparseness, making models <code>m2</code>, <code>m3</code>, <code>m8</code>, and <code>m9</code> the slowest. Adding correlation structure to the NAA deviations increased runtime roughly by a factor of 2 (comparing models <code>m4</code> with <code>m5</code>-<code>m7</code> and <code>m10</code> with <code>m11</code>-<code>m13</code>).</p>
-<p>All models except for <code>m4</code> converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html">TMB::sdreport()</a></code> for details.</p>
+<p>All models except for <code>m4</code> converged and successfully inverted the Hessian to produce SE estimates for (fixed effect) parameters. WHAM stores this information in <code>mod$na_sdrep</code> (should be <code>FALSE</code>), <code>mod$sdrep$pdHess</code> (should be <code>TRUE</code>), and <code>mod$opt$convergence</code> (should be <code>0</code>). See <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport()</a></code> for details.</p>
 <p>We leave the AIC for model <code>m1</code> blank because comparing models in which parameters (here, recruitment deviations) are estimated as fixed effects versus random effects is messy and marginal AIC is not appropriate. Still, we include <code>m1</code> to show 1) that WHAM can fit this NAA option, and 2) the poor retrospective pattern in the status quo assessment. Note that <code>m2</code> is identical to <code>m1</code> except that recruitment deviations are random effects instead of fixed effects. The retrospective patterns are very similar, but <code>m2</code> takes 7x longer to run.</p>
-<table class="table table table-condensed table-responsive">
+<table class="table table table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;">
 Model
@@ -993,7 +998,7 @@ TRUE
 </table>
 <div id="estimated-naa-deviations" class="section level4">
 <h4 class="hasAnchor">
-<a href="#estimated-naa-deviations" class="anchor"></a>Estimated NAA deviations</h4>
+<a href="#estimated-naa-deviations" class="anchor" aria-hidden="true"></a>Estimated NAA deviations</h4>
 <ul>
 <li>All models estimated positive recruitment (age-1) deviations in the 1970s and 80s (red), and more negative deviations since 1990 (blue).</li>
 <li>Models with all numbers-at-age as random effects estimated less extreme recruitment deviations (lighter red and blue for age 1).</li>
@@ -1004,7 +1009,7 @@ TRUE
 </div>
 <div id="retrospective-patterns" class="section level4">
 <h4 class="hasAnchor">
-<a href="#retrospective-patterns" class="anchor"></a>Retrospective patterns</h4>
+<a href="#retrospective-patterns" class="anchor" aria-hidden="true"></a>Retrospective patterns</h4>
 <p>The base model, <code>m1</code>, had a severe retrospective pattern for recruitment (very high <span class="math inline">\(\rho_R\)</span>). The full state-space model effectively alleviated this, whether or not a GSI-Recruitment effect was included (<span class="math inline">\(\rho_R\)</span> for <code>m5-7</code> and <code>m10-13</code> all below 0.4). Adding a GSI-Recruitment link to the state-space models further reduced <span class="math inline">\(\rho_R\)</span>, and also reduced <span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span> (although <span class="math inline">\(|\rho_{SSB}|\)</span> and <span class="math inline">\(|\rho_{\overline{F}}|\)</span> were negligible for <code>m5-7</code>, &lt; 0.05).</p>
 <p>Comparing <code>m11</code> and <code>m13</code>, the models with lowest AIC, <code>m13</code> had slightly lower Mohn’s <span class="math inline">\(\rho_R\)</span>, <span class="math inline">\(\rho_{SSB}\)</span>, and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
 <p>The plots below compare retrospective patterns from the base model (<code>m1</code>, left) to those from the full model (<code>m13</code>, right).</p>
@@ -1023,17 +1028,17 @@ TRUE
 </div>
 <div id="estimated-gsi" class="section level4">
 <h4 class="hasAnchor">
-<a href="#estimated-gsi" class="anchor"></a>Estimated GSI</h4>
+<a href="#estimated-gsi" class="anchor" aria-hidden="true"></a>Estimated GSI</h4>
 <p>Models with a GSI-Recruitment link estimated higher observation error and more smoothing of the GSI than those without. Compare the confidence intervals for <code>m7</code> (left, no GSI-Recruitment link), to those for <code>m13</code> (right, with GSI-Recruitment link).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png" alt="Gulf Stream Index (GSI) time-series model, m7." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png" alt="Gulf Stream Index (GSI) time-series model, m13." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png" style="width:45.0%" alt="Gulf Stream Index (GSI) time-series model, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png" style="width:45.0%" alt="Gulf Stream Index (GSI) time-series model, m13."></p>
 </div>
 <div id="stock-status" class="section level4">
 <h4 class="hasAnchor">
-<a href="#stock-status" class="anchor"></a>Stock status</h4>
+<a href="#stock-status" class="anchor" aria-hidden="true"></a>Stock status</h4>
 <p>The state-space models, with or without the GSI-Recruitment link, estimated similar but slightly exaggerated trends in <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> compared to the base model. Left: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the base model, <code>m1</code>. Right: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the state-space model without GSI effect, <code>m7</code>.</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png" style="width:45.0%"></p>
 <p>Adding the GSI-Recruitment link to the state-space model did not impact the probability that the stock was overfished or experiencing overfishing in the final year, 2016 (<code>m7</code> w/o GSI, left; <code>m13</code> w/ GSI, right).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" alt="Kobe status plot, m7." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" alt="Kobe status plot, m13." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m13."></p>
 </div>
 </div>
   </div>
@@ -1049,11 +1054,13 @@ TRUE
 
 
       <footer><div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p></p>
+<p>Developed by Tim Miller, Brian Stock.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
 </div>
 
       </footer>
@@ -1061,6 +1068,8 @@ TRUE
 
   
 
+
+  
 
   </body>
 </html>

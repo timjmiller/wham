@@ -67,6 +67,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations
   // DATA_INTEGER(use_M_re);
   DATA_INTEGER(M_re_model); // 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
+  // M_est and n_M_est are not use
   DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If constant or weight-at-age M, dim = 1.
   DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_b_prior);
@@ -791,7 +792,12 @@ Type objective_function<Type>::operator() ()
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
-
+    // see(y);
+    // see(NAA.rows());
+    // see(ZAA.rows());
+    // see(mature.rows());
+    // see(waa_pointer_ssb);
+    // see(fracyr_SSB.size());
     SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
     //for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop

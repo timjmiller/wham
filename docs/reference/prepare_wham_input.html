@@ -44,7 +44,12 @@
 <meta property="og:title" content="Prepare input data and parameters for WHAM model — prepare_wham_input" />
 <meta property="og:description" content="After the data file is read into R by read_asap3_dat, this function
 prepares the data and parameter settings for fit_wham.
-By default, this will set up a SCAA version like ASAP." />
+By default, this will set up a SCAA version like ASAP.
+As of version 1.X.X, if an asap3 object is not provided, a dummy input is generated with some arbitrary
+assumptions. The various options described below, such as NAA_re and selectivity,
+can still be used without the asap3 object." />
+
+
 
 
 
@@ -60,9 +65,15 @@ By default, this will set up a SCAA version like ASAP." />
 
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -120,6 +131,9 @@ By default, this will set up a SCAA version like ASAP." />
     </li>
     <li>
       <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+    </li>
+    <li>
+      <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
     </li>
   </ul>
 </li>
@@ -181,26 +195,30 @@ By default, this will set up a SCAA version like ASAP." />
     <div class="ref-description">
     <p>After the data file is read into R by <code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, this function
 prepares the data and parameter settings for <code><a href='fit_wham.html'>fit_wham</a></code>.
-By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>.</p>
+By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>.
+As of version 1.X.X, if an asap3 object is not provided, a dummy input is generated with some arbitrary
+assumptions. The various options described below, such as <code>NAA_re</code> and <code>selectivity</code>,
+can still be used without the asap3 object.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prepare_wham_input</span><span class='op'>(</span>
-  <span class='va'>asap3</span>,
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>prepare_wham_input</span><span class='op'>(</span>
+  asap3 <span class='op'>=</span> <span class='cn'>NULL</span>,
   model_name <span class='op'>=</span> <span class='st'>"WHAM for unnamed stock"</span>,
   recruit_model <span class='op'>=</span> <span class='fl'>2</span>,
   ecov <span class='op'>=</span> <span class='cn'>NULL</span>,
   selectivity <span class='op'>=</span> <span class='cn'>NULL</span>,
   M <span class='op'>=</span> <span class='cn'>NULL</span>,
   NAA_re <span class='op'>=</span> <span class='cn'>NULL</span>,
-  age_comp <span class='op'>=</span> <span class='cn'>NULL</span>
-<span class='op'>)</span></pre>
+  age_comp <span class='op'>=</span> <span class='cn'>NULL</span>,
+  basic_info <span class='op'>=</span> <span class='cn'>NULL</span>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>asap3</th>
-      <td><p>list containing data and parameters (output from <code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>)</p></td>
+      <td><p>(optional) list containing data and parameters (output from <code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>)</p></td>
     </tr>
     <tr>
       <th>model_name</th>
@@ -224,11 +242,15 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
     </tr>
     <tr>
       <th>NAA_re</th>
-      <td><p>(optional) list specifying random effect options on numbers-at-age (see details)</p></td>
+      <td><p>(optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)</p></td>
     </tr>
     <tr>
       <th>age_comp</th>
       <td><p>(optional) character or named list, specifies age composition model for fleet(s) and indices (see details)</p></td>
+    </tr>
+    <tr>
+      <th>basic_info</th>
+      <td><p>(optional) list of basic population information for use when asap3 is not provided (see details)</p></td>
     </tr>
     </table>
 
@@ -255,7 +277,7 @@ By default, this will set up a SCAA version like <a href='https://www.nefsc.noaa
   
 </dl><p>Note: we allow fitting a SCAA model (<code>NAA_re = NULL</code>), which estimates recruitment in every year as separate fixed effect parameters,
 but in that case no stock-recruit function is estimated. A warning message is printed if <code>recruit_model &gt; 2</code> and <code>NAA_re = NULL</code>.
-If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects, 
+If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects,
 either only age-1 (<code>NAA_re = list(sigma='rec')</code>) or all ages (<code>NAA_re = list(sigma='rec+1')</code>, "full state-space" model).
 See below for details on <code>NAA_re</code> specification.</p>
 <p><code>ecov</code> specifies any environmental covariate data and model. Environmental covariate data need not span
@@ -278,7 +300,7 @@ Otherwise, it must be a named list with the following components:</p><dl>
     <dt>$where</dt><dd><p>Where does the ecov affect the population? <code>"recuit"</code> = recruitment,
     <code>"M"</code> = natural mortality, <code>"none"</code> = fit ecov but without an effect on the population.</p></dd>
     <dt>$how</dt><dd><p>How does the ecov affect the <code>$where</code> process? These options are
-    specific to the <code>$where</code> process. 
+    specific to the <code>$where</code> process.
 Options for recruitment are described in <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a>:
   <dl>
     <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
@@ -309,8 +331,9 @@ If <code>NULL</code>, selectivity options from the ASAP data file are used. <cod
                    <dt>"ar1"</dt><dd><p>correlated by age/par (AR1), but not year</p></dd>
                    <dt>"ar1_y"</dt><dd><p>correlated by year (AR1), but not age/par</p></dd>
                    <dt>"2dar1"</dt><dd><p>correlated by year and age/par (2D AR1)</p></dd></dl></p></dd>
-    <dt>$initial_pars</dt><dd><p>Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. <code><a href='https://rdrr.io/r/base/c.html'>c(2,0.2)</a></code> for logistic or <code><a href='https://rdrr.io/r/base/c.html'>c(0.5,0.5,0.5,1,1,0.5)</a></code> for age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 for logistic, double-logistic, and decreasing-logistic.</p></dd>
-    <dt>$fix_pars</dt><dd><p>Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, <code><a href='https://rdrr.io/r/base/list.html'>list(c(4,5),4,c(2,3,4))</a></code> will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.</p></dd>
+    <dt>$initial_pars</dt><dd><p>Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be a vector of length # parameters in the block, i.e. <code>c(2,0.2)</code> for logistic or <code>c(0.5,0.5,0.5,1,1,0.5)</code> for age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 for logistic, double-logistic, and decreasing-logistic.</p></dd>
+    <dt>$fix_pars</dt><dd><p>Which parameters to fix at initial values. List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, <code>list(c(4,5),4,c(2,3,4))</code> will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.</p></dd>
+    <dt>$n_selblocks</dt><dd><p>How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number of fleets + indices. If specified, ensure other components of <code>selectivity</code> are consistent.</p></dd>
   
 </dl>
 
@@ -351,7 +374,7 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
                    <dl>
                      <dt>"rec"</dt><dd><p>Random effects on recruitment (deviations), all other ages deterministic</p></dd>
                      <dt>"rec+1"</dt><dd><p>"Full state space" model with 2 estimated <code>sigma_a</code>, one for recruitment and one shared among other ages</p></dd></dl>
-                  Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the 
+                  Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the
                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 <code>sigma_a</code>, with recruitment (age-1) deviations having their
                   own <code>sigma_R</code>, ages 2-3 sharing <code>sigma_2</code>, and ages 4-6 sharing <code>sigma_3</code>.</p></dd>
     <dt>$cor</dt><dd><p>Correlation structure for the NAA deviations. Options are:
@@ -361,13 +384,31 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
                    <dt>"ar1_y"</dt><dd><p>NAA deviations correlated by year (AR1).</p></dd>
                    <dt>"2dar1"</dt><dd><p>NAA deviations correlated by year and age (2D AR1).</p></dd></dl></p></dd>
   
+</dl><p><code>NAA_re</code> also can be used to configure initial numbers at age and recruitment models. The optional associated components of <code>NAA_re</code> are:</p><dl>
+	 <dt>$N1_model</dt><dd><p>Integer determining which way to model the initial numbers at age:
+		 <dl>
+				<dt>0</dt><dd><p>(default) age-specific fixed effects parameters</p></dd>
+					<dt>1</dt><dd><p>2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.</p></dd></dl></p></dd>
+    <dt>$N1_pars</dt><dd><p>if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
+			initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.</p></dd>
+	 <dt>$recruit_model</dt><dd><p>Integer determining how to model recruitment. Overrides <code>recruit_model</code>. Must make sure <code>NAA_re$sigma</code>, <code>NAA_re$cor</code>
+			and <code>ecov</code> are properly specified.
+		 <dl>
+			 	 <dt>1</dt><dd><p>SCAA, estimating all recruitements as fixed effects</p></dd>
+			 	 <dt>2</dt><dd><p>estimating a mean recruitment with yearly recruitements as random effects</p></dd>
+			 	 <dt>3</dt><dd><p>Beverton-Holt stock-recruitment with yearly recruitements as random effects</p></dd>
+			 	 <dt>4</dt><dd><p>Ricker stock-recruitment with yearly recruitements as random effects</p></dd></dl></p></dd>
+	 <dt>$use_steepness</dt><dd><p>T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model&gt;2</p></dd>.
+	 <dt>$recruit_pars</dt><dd><p>vector of initial parameters for recruitment model. Only used if recruit_model&gt;1. If use_steepness=F, parameters are "alpha" and "beta"
+			otherwise they are steepness and R0.</p></dd>
+  
 </dl>
 
 <p><code>age_comp</code> specifies the age composition models for fleet(s) and indices.
 If <code>NULL</code>, the multinomial is used because this was the only option in ASAP.
 The age composition models available are:</p><dl>
     <dt><code>"multinomial"</code></dt><dd><p>Multinomial. This is the default because it was the only option in ASAP. 0 parameters.</p></dd>
-    <dt><code>"dir-mult"</code></dt><dd><p>Dirichlet-multinomial. Effective sample size is estimated by the model (<a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783616301941'>Thorson et al. 2017</a>; <a href='https://www.sciencedirect.com/science/article/abs/pii/S016578361830033X'>Thorson 2019</a>). 1 parameter.</p></dd>
+    <dt><code>"dir-mult"</code></dt><dd><p>Dirichlet-multinomial. Effective sample size is estimated by the model (<a href='https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf'>Candy 2008</a>). 1 parameter.</p></dd>
     <dt><code>"dirichlet"</code></dt><dd><p>See <a href='https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093'>Francis 2014</a> and <a href='https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532'>Albertsen et al. 2016</a>. 1 parameter.</p></dd>
     <dt><code>"logistic-normal-01-infl"</code></dt><dd><p>Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in <a href='https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628'>Ospina and Ferrari (2012)</a>. 3 parameters.</p></dd>
     <dt><code>"logistic-normal-pool0"</code></dt><dd><p>Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See <a href='https://doi.org/10.1093/icesjms/fsl024'>Schnute and Haigh (2007)</a> and <a href='https://doi.org/10.1016/j.fishres.2013.12.015'>Francis (2014)</a></p></dd>.
@@ -375,7 +416,7 @@ The age composition models available are:</p><dl>
     <dt><code>"logistic-normal-miss0"</code></dt><dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
   
 </dl><p>An age composition model needs to be specified for each fleet and index. If you would like
-all fleets and indices to use the same age composition likelihood, you can simply specify one 
+all fleets and indices to use the same age composition likelihood, you can simply specify one
 of the strings above, i.e. <code>age_comp = "logistic-normal-miss0"</code>. If you do not want the same
 age composition model to be used for all fleets and indices, you must specify a named list with the following entries:</p><dl>
     <dt>$fleets</dt><dd><p>A vector of the above strings with length = the number of fleets.</p></dd>
@@ -383,18 +424,67 @@ age composition model to be used for all fleets and indices, you must specify a 
   
 </dl>
 
+<p><code>basic_info</code> is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
+up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+The current options are:</p><dl>
+    <dt>$ages</dt><dd><p>integer vector of ages (years) with the last being a plus group</p></dd>
+    <dt>$years</dt><dd><p>integer vector of years that the population model spans.</p></dd>
+    <dt>$n_fleets</dt><dd><p>number of fleets.</p></dd>
+    <dt>$agg_catch</dt><dd><p>matrix (length(years) x n_fleets) of annual aggregate catches (biomass) for each fleet.</p></dd>
+    <dt>$catch_paa</dt><dd><p>array (n_fleets x length(years) x n_ages) of each fleet's age composition data (numbers).</p></dd>
+    <dt>$catch_cv</dt><dd><p>matrix (length(years) x n_fleets) of annual CVs for each fleet's aggregate catch observations.</p></dd>
+    <dt>$catch_Neff</dt><dd><p>matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's age composition observation.</p></dd>
+    <dt>$use_catch_paa</dt><dd><p>0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's age composition observation.</p></dd>
+    <dt>$selblock_pointer_fleets</dt><dd><p>integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to <code>selectivity</code> option.</p></dd>
+    <dt>$F</dt><dd><p>matrix (length(years) x n_fleets) of annual fishing mortality rates for each fleet to initialize the model.</p></dd>
+    <dt>$n_indices</dt><dd><p>number of indices.</p></dd>
+    <dt>$agg_indices</dt><dd><p>matrix (length(years) x n_indices) of annual aggregate catches (biomass or number) for each fleet.</p></dd>
+    <dt>$index_paa</dt><dd><p>array (n_indices x length(years) x n_ages) of each index's age composition data (biomass or number).</p></dd>
+    <dt>$index_cv</dt><dd><p>matrix (length(years) x n_indices) of annual CVs for each index's aggregate observations.</p></dd>
+    <dt>$index_Neff</dt><dd><p>matrix (length(years) x n_indices) of annual effective sample sizes for each index's age composition observation.</p></dd>
+    <dt>$units_indices</dt><dd><p>1/2 matrix (length =  n_indices) indicated whether indices are in biomass or numbers, respectively.</p></dd>
+    <dt>$units_index_paa</dt><dd><p>1/2 matrix (length = n_indices) indicated whether to use each index's age composition observation are in numbers or biomass.</p></dd>
+    <dt>$use_index_paa</dt><dd><p>0/1 matrix (length(years) x n_indices) indicated whether to use each index's age composition observation.</p></dd>
+    <dt>$selblock_pointer_indices</dt><dd><p>integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to <code>selectivity</code> option.</p></dd>
+    <dt>$fracyr_indices</dt><dd><p>matrix (length(years) x n_indices) of annual proportions of the year elapsed when each index is observing the population.</p></dd>
+    <dt>$waa</dt><dd><p>array ((n_fleets + n_indices + 2) x length(years) x length(ages)) of annual weight at at age for each fleet, each index, total catch, and spawning biomass.</p></dd>
+    <dt>$maturity</dt><dd><p>matrix (length(years) x length(ages)) of annual maturity at age for estimating spawning biomass.</p></dd>
+    <dt>$fracyr_SSB</dt><dd><p>vector (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.</p></dd>
+    <dt>$Fbar_ages</dt><dd><p>integer vector of ages to use to average total F at age defining fully selected F for reference points. May not be clearly known until a model is fitted.</p></dd>
+    <dt>$q</dt><dd><p>vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.</p></dd>
+    <dt>$percentSPR</dt><dd><p>(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point</p></dd>
+    <dt>$percentFXSPR</dt><dd><p>(0-100) percentage of SPR-based F to use in projections.</p></dd>
+    <dt>$percentFMSY</dt><dd><p>(0-100) percentage of Fmsy to use in projections.</p></dd>
+    <dt>$XSPR_R_avg_yrs</dt><dd><p>which years to average recruitments for calculating SPR-based SSB reference points.</p></dd>
+    <dt>$XSPR_R_opt</dt><dd><p>1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).</p></dd>
+    <dt>$simulate_process_error</dt><dd><p>T/F vector (length = 4). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, and Ecov. Only used if applicable.</p></dd>
+    <dt>$simulate_observation_error</dt><dd><p>T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.</p></dd>
+    <dt>$simulate_period</dt><dd><p>T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.</p></dd>
+    <dt>$bias_correct_process</dt><dd><p>T/F. Perform bias correction of log-normal random effects for NAA.</p></dd>
+    <dt>$bias_correct_observation</dt><dd><p>T/F. Perform bias correction of log-normal observations.</p></dd>
+  
+</dl><p>If other arguments to <code>prepare_wham_input</code> are provided such as <code>selectivity</code>, <code>M</code>, and <code>age_comp</code>, the information provided there
+must be consistent with <code>basic_info</code>. For example the dimensions for number of years, ages, fleets, and indices.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='read_asap3_dat.html'>read_asap3_dat</a></code>, <code><a href='fit_wham.html'>fit_wham</a></code>, <a href='https://www.nefsc.noaa.gov/nft/ASAP.html'>ASAP</a>, <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='va'>asap3</span> <span class='op'>=</span> <span class='fu'><a href='read_asap3_dat.html'>read_asap3_dat</a></span><span class='op'>(</span><span class='st'>"ASAP_SNEMAYT.dat"</span><span class='op'>)</span>
-<span class='va'>input</span> <span class='op'>=</span> <span class='fu'>prepare_wham_input</span><span class='op'>(</span><span class='va'>asap3</span><span class='op'>)</span>
-<span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span><span class='op'>)</span>
-<span class='op'>}</span>
-
-</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='va'>asap3</span> <span class='op'>=</span> <span class='fu'><a href='read_asap3_dat.html'>read_asap3_dat</a></span><span class='op'>(</span><span class='st'>"ex1_SNEMAYT.dat"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>input</span> <span class='op'>=</span> <span class='fu'>prepare_wham_input</span><span class='op'>(</span><span class='va'>asap3</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># no ASAP3 file, default parameter values and configuration</span></span>
+<span class='r-in'><span class='va'>input</span> <span class='op'>=</span> <span class='fu'>prepare_wham_input</span><span class='op'>(</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>mod</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span>, fit <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>8675309</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>simdata</span> <span class='op'>=</span> <span class='va'>mod</span><span class='op'>$</span><span class='fu'>simulate</span><span class='op'>(</span>complete<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>input</span><span class='op'>$</span><span class='va'>data</span> <span class='op'>=</span> <span class='va'>simdata</span></span>
+<span class='r-in'><span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input</span>, do.osa <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+<span class='r-in'></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -406,11 +496,11 @@ age composition model to be used for all fleets and indices, you must specify a 
 
       <footer>
       <div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p><p>Developed by Tim Miller, Brian Stock.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -418,6 +508,8 @@ age composition model to be used for all fleets and indices, you must specify a 
 
   
 
+
+  
 
   </body>
 </html>

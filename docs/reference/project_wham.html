@@ -47,6 +47,8 @@
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -58,9 +60,15 @@
 
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -118,6 +126,9 @@
     </li>
     <li>
       <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+    </li>
+    <li>
+      <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
     </li>
   </ul>
 </li>
@@ -180,7 +191,7 @@
     <p>Provides projections/forecasts for an existing (already fit) WHAM model.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>project_wham</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>project_wham</span><span class='op'>(</span>
   <span class='va'>model</span>,
   proj.opts <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>n.yrs <span class='op'>=</span> <span class='fl'>3</span>, use.last.F <span class='op'>=</span> <span class='cn'>TRUE</span>, use.avg.F <span class='op'>=</span> <span class='cn'>FALSE</span>, use.FXSPR <span class='op'>=</span> <span class='cn'>FALSE</span>,
     use.FMSY <span class='op'>=</span> <span class='cn'>FALSE</span>, proj.F <span class='op'>=</span> <span class='cn'>NULL</span>, proj.catch <span class='op'>=</span> <span class='cn'>NULL</span>, avg.yrs <span class='op'>=</span> <span class='cn'>NULL</span>, cont.ecov <span class='op'>=</span> <span class='cn'>TRUE</span>,
@@ -190,7 +201,7 @@
   do.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>,
   MakeADFun.silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
   save.sdrep <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -208,7 +219,7 @@
 <li><p><code>$use.FMSY</code> (T/F), calculate and use FMSY for projections.</p></li>
 <li><p><code>$proj.F</code> (vector), user-specified fishing mortality for projections. Length must equal <code>n.yrs</code>.</p></li>
 <li><p><code>$proj.catch</code> (vector), user-specified aggregate catch for projections. Length must equal <code>n.yrs</code>.</p></li>
-<li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code><a href='https://rdrr.io/r/utils/head.html'>tail(model$years, 5)</a></code>.</p></li>
+<li><p><code>$avg.yrs</code> (vector), specify which years to average over for calculating reference points. Default = last 5 model years, <code>tail(model$years, 5)</code>.</p></li>
 <li><p><code>$cont.ecov</code> (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = <code>TRUE</code>.</p></li>
 <li><p><code>$use.last.ecov</code> (T/F), use terminal year ecov for projections.</p></li>
 <li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
@@ -284,24 +295,24 @@ beyond the population model, then none of the above need be specified.</p>
     <div class='dont-index'><p><code><a href='fit_wham.html'>fit_wham</a></code>, <code><a href='fit_tmb.html'>fit_tmb</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"input4_SNEMAYT"</span><span class='op'>)</span> <span class='co'># load SNEMA yellowtail flounder input data and model settings</span>
-<span class='va'>mod</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span><span class='op'>)</span> <span class='co'># using default values (do.proj=T)</span>
-
-<span class='va'>mod2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span>, do.retro<span class='op'>=</span><span class='cn'>F</span>, do.osa<span class='op'>=</span><span class='cn'>F</span>, do.proj<span class='op'>=</span><span class='cn'>F</span><span class='op'>)</span> <span class='co'># fit model without projections, retro analysis, or OSA residuals</span>
-<span class='va'>mod_proj</span> <span class='op'>&lt;-</span> <span class='fu'>project_wham</span><span class='op'>(</span><span class='va'>mod2</span><span class='op'>)</span> <span class='co'># add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years</span>
-
-<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>)</span> <span class='co'># list of derived quantities</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>$</span><span class='va'>SSB</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># get 3-year projected SSB estimates (weight, not numbers)</span>
-
-<span class='va'>x</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>sdrep</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># list of estimated parameters and derived quanitites with SE</span>
-<span class='va'>x</span> <span class='op'>=</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>==</span> <span class='st'>"log_SSB"</span>,<span class='op'>]</span> <span class='co'># SSB estimates with SE</span>
-<span class='va'>ssb.mat</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>x</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='fl'>0.975</span><span class='op'>)</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span>,<span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>1000</span> <span class='co'># calculate 95% CI</span>
-<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>ssb.mat</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"SSB"</span>,<span class='st'>"SSB_se"</span>,<span class='st'>"SSB_lower"</span>,<span class='st'>"SSB_upper"</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>ssb.mat</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># 3-year projected SSB estimates with SE and 95% CI</span>
-<span class='op'>}</span>
-</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='st'>"input4_SNEMAYT"</span><span class='op'>)</span> <span class='co'># load SNEMA yellowtail flounder input data and model settings</span></span>
+<span class='r-in'><span class='va'>mod</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span><span class='op'>)</span> <span class='co'># using default values (do.proj=T)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='va'>mod2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='fit_wham.html'>fit_wham</a></span><span class='op'>(</span><span class='va'>input4_SNEMAYT</span>, do.retro<span class='op'>=</span><span class='cn'>F</span>, do.osa<span class='op'>=</span><span class='cn'>F</span>, do.proj<span class='op'>=</span><span class='cn'>F</span><span class='op'>)</span> <span class='co'># fit model without projections, retro analysis, or OSA residuals</span></span>
+<span class='r-in'><span class='va'>mod_proj</span> <span class='op'>&lt;-</span> <span class='fu'>project_wham</span><span class='op'>(</span><span class='va'>mod2</span><span class='op'>)</span> <span class='co'># add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>)</span> <span class='co'># list of derived quantities</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>rep</span><span class='op'>$</span><span class='va'>SSB</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># get 3-year projected SSB estimates (weight, not numbers)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='va'>x</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>mod_proj</span><span class='op'>$</span><span class='va'>sdrep</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># list of estimated parameters and derived quanitites with SE</span></span>
+<span class='r-in'><span class='va'>x</span> <span class='op'>=</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>==</span> <span class='st'>"log_SSB"</span>,<span class='op'>]</span> <span class='co'># SSB estimates with SE</span></span>
+<span class='r-in'><span class='va'>ssb.mat</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>x</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='fl'>0.975</span><span class='op'>)</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span>,<span class='va'>x</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>1000</span> <span class='co'># calculate 95% CI</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>ssb.mat</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"SSB"</span>,<span class='st'>"SSB_se"</span>,<span class='st'>"SSB_lower"</span>,<span class='st'>"SSB_upper"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>tail</a></span><span class='op'>(</span><span class='va'>ssb.mat</span>, <span class='fl'>3</span><span class='op'>)</span> <span class='co'># 3-year projected SSB estimates with SE and 95% CI</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -313,11 +324,11 @@ beyond the population model, then none of the above need be specified.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p><p>Developed by Tim Miller, Brian Stock.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -325,6 +336,8 @@ beyond the population model, then none of the above need be specified.</p>
 
   
 
+
+  
 
   </body>
 </html>

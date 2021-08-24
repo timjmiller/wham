@@ -933,7 +933,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  pred_index = exp(mod$rep$pred_log_indices[1:length(years),])
+  pred_index = exp(mod$rep$pred_log_indices[1:length(years),,drop=F])
   index = dat$agg_indices
   # index[index < 0] = NA # robustify to missing values entered as negative
   index[dat$use_indices == 0] = NA # don't plot unused values
@@ -3054,7 +3054,7 @@ convert_survey_to_at_age <- function(mod)
 			}
 			if (agg.units==1 && prp.units==2)
 			{  # agg in weight, props in numbers
-        index.ob = props.obs * agg.obs/apply(props.obs * waa,1,sum)
+        index.ob = props.ob * agg.ob/apply(props.ob * waa,1,sum)
         index.pr = props.pr * agg.pr/apply(props.pr * waa,1,sum)
 				#index.ob <- wtprop2caa(agg.ob,waa,props.ob)  # use catch function
 				#index.pr <- wtprop2caa(agg.pr,waa,props.pr)
