@@ -16,6 +16,7 @@ test_that("Ex 10 works",{
 # get results to check NLL and par estimates
 path_to_examples <- system.file("extdata", package="wham")
 ex10_tests <- readRDS(file.path(path_to_examples,"ex10_tests.rds"))
+tmp.dir <- tempdir(check=TRUE)
 
 library(ggplot2)
 library(tidyr)
@@ -84,7 +85,7 @@ temp$data = newdata
 #fit estimating model that is the same as the operating model
 fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
-plot_wham_output(fit)
+plot_wham_output(fit, out.type='html', dir.main=tmp.dir)
 expect_equal(fit$opt$obj, ex10_tests$fit1$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex10_tests$fit1$par, tolerance=1e-6, scale=1)
 expect_equal(fit$mohns_rho, ex10_tests$fit1$mohns_rho, tolerance=1e-4, scale=1)
@@ -188,6 +189,7 @@ om <- suppressWarnings(fit_wham(om_input, n.newton=n.newton, do.sdrep=F, do.retr
 plot(om$years_full, log(om$rep$NAA[,1]), type = 'l', xlab = "Year", ylab = "log(Recruits (1000s))")
 lines(om$years_full, log(temp$rep$NAA[,1]), col = "red")
 #the "temp" version of the operating model (red) just has the initial values of numbers at age (exp(10))
+dev.off()
 
 #Define how often an assessment (SCAA) and catch advice will be made
 assess.interval = 3 #years.step = integer()
