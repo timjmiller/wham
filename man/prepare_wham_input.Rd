@@ -51,7 +51,7 @@ a named list with the following components:
 After the data file is read into R by \code{\link{read_asap3_dat}}, this function
 prepares the data and parameter settings for \code{\link{fit_wham}}.
 By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
-As of version 1.X.X, if an asap3 object is not provided, a dummy input is generated with some arbitrary
+As of version 1.0.5, if an asap3 object is not provided, a dummy input is generated with some arbitrary
 assumptions. The various options described below, such as \code{NAA_re} and \code{selectivity},
 can still be used without the asap3 object.
 }

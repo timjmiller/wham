@@ -130,7 +130,7 @@ fit$mohns_rho = mohns_rho(fit)
 plot_wham_output(fit)
 ```
 
-![SSB proportion at age.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/SSB_at_age_proportion.png){ width=30% }![Relative status.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/FSPR_relative.png){ width=30% }![Kobe plot.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/Kobe_status.png){ width=30% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/SSB_at_age_proportion.png){ width=30% }![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/FSPR_relative.png){ width=30% }![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/Kobe_status.png){ width=30% }
 
 Set up a SCAA estimation model (recruitment as fixed effects). The only thing that is different is how the numbers at age are configured.
 ```{r, eval=FALSE}
@@ -237,7 +237,7 @@ plot(om$years_full, log(om$rep$NAA[,1]), type = 'l', xlab = "Year", ylab = "log(
 lines(om$years_full, log(temp$rep$NAA[,1]), col = "red")
 ```
 
-![OM recruitment.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/om_rec.png){ width=100% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_rec.png){ width=80% }
 
 Define how often an assessment (SCAA) and catch advice will be made (3 years)
 ```{r, eval=FALSE}
@@ -294,7 +294,7 @@ for(y in seq(3,39,3)) {
 }
 ```
 
-![OM recruitment, updated.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/om_updated_rec.png){ width=100% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_updated_rec.png){ width=80% }
 
 Now compare the original OM simulated pop with $F$ = 0 (purple) to the estimation model re-fit at 3-year time intervals providing catch advice equal to $F_{40}$ (teal).
 ```{r, eval=FALSE}
@@ -319,4 +319,4 @@ abline(v = max(temp$years), lty=2)
 abline(h = 1, col = 'red', lty=2)
 ```
 
-![MSE results.](https://raw.githubusercontent.com/timjmiller/wham/fix_mse/vignettes/ex10_plots/om_mse.png){ width=100% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_mse.png){ width=80% }
