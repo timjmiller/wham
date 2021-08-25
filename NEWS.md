@@ -1,12 +1,10 @@
 
-wham 1.0.4.9000
+wham 1.0.5 (2021-08-25)
 =========================
 
 ### Major improvements
 
-* prepare_wham_input is now modularized and can take a "basic_info" argument or generate a dummy input for fit_wham without an asap3 object. This provides better organization and helps fix the operating model/MSE features that have been broken since version 1.0.0.
-* Options have been added to NAA_re argument to configure how initial numbers at age and recruitment are treated. Including initial parameter values.
-* A tenth example and vignette illustrate the usage to generate an assessment model without an asap3 file and a simple management strategy evaluation.
+* `prepare_wham_input` is now modularized and can take a "basic_info" argument or generate a dummy input for fit_wham without an asap3 object. This provides better organization and helps fix the operating model/MSE features that have been broken since version 1.0.0. Options have been added to NAA_re argument to configure how initial numbers at age and recruitment are treated. Including initial parameter values. A tenth example and vignette illustrate the usage to generate an assessment model without an asap3 file and a simple management strategy evaluation [9bc161d](https://github.com/timjmiller/wham/commit/87d87c9ded5c3fa58db779cbd1ac8eb911950e4e). 
   
 ### Minor improvements
 
