@@ -189,7 +189,6 @@ om <- suppressWarnings(fit_wham(om_input, n.newton=n.newton, do.sdrep=F, do.retr
 plot(om$years_full, log(om$rep$NAA[,1]), type = 'l', xlab = "Year", ylab = "log(Recruits (1000s))")
 lines(om$years_full, log(temp$rep$NAA[,1]), col = "red")
 #the "temp" version of the operating model (red) just has the initial values of numbers at age (exp(10))
-dev.off()
 
 #Define how often an assessment (SCAA) and catch advice will be made
 assess.interval = 3 #years.step = integer()
@@ -263,6 +262,7 @@ pal = viridisLite::viridis(n=2)
 plot(temp$years_full, updated_sim$FAA_tot[,10]/exp(updated_sim$log_FMSY), type = 'l', xlab = "Year", ylab = "F/FMSY", col = pal[1])
 abline(v = max(temp$years), col = pal[2])
 abline(h = 1, col = pal[2])
+dev.off()
 
 })
 
