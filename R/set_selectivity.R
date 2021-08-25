@@ -32,8 +32,8 @@ set_selectivity = function(input, selectivity)
   }
   no_asap = is.null(asap3)
   selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
-  if(!no_asap) data$n_selblocks <- asap3$n_fleet_sel_blocks + asap3$n_indices
-  else data$n_selblocks = data$n_fleets + data$n_indices
+  # if(!no_asap) data$n_selblocks <- asap3$n_fleet_sel_blocks + asap3$n_indices
+  # if(no_asap) data$n_selblocks = data$n_fleets + data$n_indices
   
   if(is.null(selectivity$model)) {
     #if(!no_asap) data$selblock_models <- c(asap3$sel_block_option, asap3$index_sel_option)
@@ -145,9 +145,9 @@ set_selectivity = function(input, selectivity)
   # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
   age_specific <- which(data$selblock_models==1)
   for(b in age_specific){
-#    if(all(phase_selpars[b,] < 0)){ # if no selpars estimated, keep fixed at specified initial values
-#      phase_selpars[b,] = -1
-#    } else {
+    if(all(phase_selpars[b,] < 0)){ # if no selpars estimated, keep fixed at specified initial values
+     phase_selpars[b,] = -1
+    } else {
       ind = list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
       ind$indices = which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
       paa = matrix(nrow = 0, ncol = data$n_ages)
@@ -164,7 +164,7 @@ set_selectivity = function(input, selectivity)
       y = apply(paa,2,sum)
       selpars_ini[b, which(y < 1e-5)] = 0
       phase_selpars[b, which(y < 1e-5)] = -1
-#    }
+    }
   }
   data$selpars_est <- phase_selpars
   data$selpars_est[data$selpars_est == -1] = 0

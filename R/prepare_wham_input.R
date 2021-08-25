@@ -275,51 +275,51 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	par = list()
 	map = list()
 	random = character()
-  input = list(
-  	data = data,
-  	par = par,
-  	map = map,
-  	random = random,
-  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
+	input = list(
+	  	data = data,
+	  	par = par,
+	  	map = map,
+	  	random = random,
+	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
-  if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
-  else basic_info$recruit_model = recruit_model
+	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
+	else basic_info$recruit_model = recruit_model
 
-  waa_opts = NULL
-  waa_names = c("waa")
-  if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
+	waa_opts = NULL
+	waa_names = c("waa")
+	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
 	catch_opts = NULL
-  catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
-  if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
+	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
+	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 
-  index_opts = NULL
-  index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
-  	"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
-  if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
+	index_opts = NULL
+	index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
+		"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
+	if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
 
-  F_opts = NULL
-  F_names = c("F")
-  if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
+	F_opts = NULL
+	F_names = c("F")
+	if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 
-  waa_opts = NULL
-  waa_names = ("waa")
-  if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
+	waa_opts = NULL
+	waa_names = ("waa")
+	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
-  q_opts = NULL
-  q_names = c("q","q_lower","q_upper")
-  if(any(names(basic_info) %in% q_names)) q_opts = basic_info[q_names]
+	q_opts = NULL
+	q_names = c("q","q_lower","q_upper")
+	if(any(names(basic_info) %in% q_names)) q_opts = basic_info[q_names]
 
 	if(!is.null(asap3))
 	{
 	  asap3 = asap3$dat
-  	input$asap3 = asap3
+  	  input$asap3 = asap3
 	  input$data$n_ages = asap3$n_ages
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
-  	input$years <- asap3$year1 + 1:asap3$n_years - 1
+  	  input$years <- asap3$year1 + 1:asap3$n_years - 1
 	}
 	else
 	{
@@ -327,63 +327,62 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 		input = add_basic_info(input, basic_info)
 	}
 
-  # print("start")
+	# print("start")
 	#some basic input elements see the function code below
 	input = initial_input_fn(input, basic_info)
 
-  # Catch
-  input = set_catch(input, catch_opts)
-  #print("catch")
+	# Catch
+	input = set_catch(input, catch_opts)
+	#print("catch")
 
-  # Indices/surveys
-  input = set_indices(input, index_opts)
-   #print("indices")
+	# Indices/surveys
+	input = set_indices(input, index_opts)
+	#print("indices")
 
-  # WAA in case we want to modify how weight-at age is handled
-  input = set_WAA(input, waa_opts)
-   #print("WAA")
+	# WAA in case we want to modify how weight-at age is handled
+	input = set_WAA(input, waa_opts)
+	#print("WAA")
 
-  # NAA and recruitment options
-  input = set_NAA(input, NAA_re)
-   #print("NAA")
+	# NAA and recruitment options
+	input = set_NAA(input, NAA_re)
+	#print("NAA")
 
-  input = set_q(input, q_opts)
-   #print("q")
+	input = set_q(input, q_opts)
+	#print("q")
 
-  # Selectivity
-  input = set_selectivity(input, selectivity)
-   #print("selectivity")
+	# Selectivity
+	input = set_selectivity(input, selectivity)
+	#print("selectivity")
 
-  # Age composition model
-  input = set_age_comp(input, age_comp)
-   #print("age_comp")
+	# Age composition model
+	input = set_age_comp(input, age_comp)
+	#print("age_comp")
 
-  #in case we want to add alternative F options
-  input = set_F(input, F_opts)
-   #print("F")
+	#in case we want to add alternative F options
+	input = set_F(input, F_opts)
+	#print("F")
 
- 	#set up natural mortality
-  input = set_M(input, M)
-   #print("M")
+	#set up natural mortality
+	input = set_M(input, M)
+	#print("M")
 
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input = set_ecov(input, ecov)
-   #print("ecov")
+	#print("ecov")
 
-  # add vector of all observations for one step ahead residuals ==========================
-  input = set_osa_obs(input)
-   #print("osa_obs")
+	# add vector of all observations for one step ahead residuals ==========================
+	input = set_osa_obs(input)
+	#print("osa_obs")
 
+	# projection data will always be modified by 'prepare_projection'
+	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	#print("proj")
 
-  # projection data will always be modified by 'prepare_projection'
-  input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
-   #print("proj")
+	#set any parameters as random effects
+	input = set_map(input)
+	#print("map")
 
-  #set any parameters as random effects
-  input = set_map(input)
-   #print("map")
-
-  return(input)
+	return(input)
   #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
   #  ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
 }
