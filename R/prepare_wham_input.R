@@ -166,6 +166,25 @@
 #'		 }
 #'   }
 #'
+#' \code{catchability} specifies options for catchability. If \code{NULL} and \code{asap3} is not NULL, a single catchability parameter used with initial values specified in ASAP file. If both are NULL, initial catchabilities for all indices = 0.3.
+#' Otherwise, it is a list with the following optional entries:
+#'   \describe{
+#'     \item{$re}{Time-varying (random effects) for each index. Vector with length = number of indices.
+#'                  If \code{NULL}, catchability parameters are constant over time.
+#'                  Each entry of \code{catchability$re} must be one of the following options:
+#'                  \describe{
+#'                    \item{"none"}{(default) are constant}
+#'                    \item{"iid"}{vary by year and age/par, but uncorrelated}
+#'                    \item{"ar1"}{correlated by year (AR1)}
+#'                  }
+#'                 }
+#'     \item{$initial_q}{Initial catchabilities for each index. vector length = number of indices. Will override values provided in \code{basic_info$q}. If \code{basic_info$q} and \code{asap3} are not provided default q values are 0.3.}
+#'     \item{$q_lower}{Lower bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 0.}
+#'     \item{$q_upper}{Upper bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 1000.}
+#'     \item{$fix_q}{Which catcabilities not estimated. vector of integers indicating which indices have catchability fixed. E.g. c(2,3) when the second and third catchabilties are fixed.}
+#'     \item{$prior}{vector of NULL and sigmas to use for gaussian prior on logit transform of catchability parameter. Length = number of indices. Indices with non-NULL values will have mean logit q as a random effect with mean determined by logit transform of \code{catchability$initial_q} and sigma as standard error.}
+#'   }
+#'
 #' \code{age_comp} specifies the age composition models for fleet(s) and indices.
 #' If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 #' The age composition models available are:
@@ -237,6 +256,7 @@
 #' @param selectivity (optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)
+#' @param catchability (optional) list specifying options for priors and random effects on catchability (see details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
 #' @param basic_info (optional) list of basic population information for use when asap3 is not provided (see details)
 #'
@@ -269,7 +289,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, age_comp=NULL, basic_info = NULL){
+prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -307,19 +327,23 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	waa_names = ("waa")
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
-	q_opts = NULL
-	q_names = c("q","q_lower","q_upper")
-	if(any(names(basic_info) %in% q_names)) q_opts = basic_info[q_names]
+	if(is.null(catchability)){
+		q_opts = NULL
+		q_names = c("q")
+		if(any(names(basic_info) %in% q_names)) q_opts$initial_q = basic_info[q_names]
+	} else {
+		q_opts = catchability
+	}
 
 	if(!is.null(asap3))
 	{
 	  asap3 = asap3$dat
-  	  input$asap3 = asap3
+  	input$asap3 = asap3
 	  input$data$n_ages = asap3$n_ages
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
-  	  input$years <- asap3$year1 + 1:asap3$n_years - 1
+  	input$years <- asap3$year1 + 1:asap3$n_years - 1
 	}
 	else
 	{
@@ -379,8 +403,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#print("proj")
 
 	#set any parameters as random effects
-	input = set_map(input)
-	#print("map")
+	input = set_random(input)
+	#print("random")
 
 	return(input)
   #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,

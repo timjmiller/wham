@@ -55,6 +55,9 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(index_aref);
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
+  DATA_IVECTOR(use_q_prior);
+  DATA_VECTOR(logit_q_prior_sigma);
+  DATA_IVECTOR(q_re_model); //n_indices, 0= no re, >0 = use re 
   DATA_MATRIX(selpars_lower);
   DATA_MATRIX(selpars_upper);
   DATA_INTEGER(n_NAA_sigma); // 0 = SCAA, 1 = logR only, 2 = full state-space with shared sig_a for a > 1
@@ -77,7 +80,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
   DATA_IVECTOR(Fbar_ages);
   //DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
-  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov) in that order) will be simulated.
+  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
   DATA_IVECTOR(simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
   DATA_IVECTOR(simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
@@ -105,8 +108,9 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(Ecov_lag);
   DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
   DATA_IVECTOR(Ecov_poly); // polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
-  DATA_IVECTOR(Ecov_where); // 0 = no Ecov, 1 = recruit, 2 = mortality
+  DATA_IVECTOR(Ecov_where); // 0 = no Ecov, 1 = recruit, 2 = mortality, 3 = q
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
+  DATA_IVECTOR(Ecov_for_q); // (n_indices) 0 = no Ecov, else which Ecov to use
   DATA_INTEGER(year1_Ecov); // first year Ecov
   DATA_INTEGER(year1_model); // first year model
   DATA_IVECTOR(ind_Ecov_out_start); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
@@ -128,7 +132,10 @@ Type objective_function<Type>::operator() ()
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
-  PARAMETER_VECTOR(logit_q);
+  PARAMETER_VECTOR(logit_q); //n_indices (mean/constant q pars)
+  PARAMETER_VECTOR(q_prior_re); //n_indices (if a prior is used for q, this is used instead of logit_q)
+  PARAMETER_ARRAY(q_re); //n_years x n_indices (time series of)
+  PARAMETER_MATRIX(q_repars) //n_indices x 2 (sigma, rho)
   PARAMETER_VECTOR(log_F1);
   PARAMETER_MATRIX(F_devs);
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
@@ -356,10 +363,11 @@ Type objective_function<Type>::operator() ()
         }
         for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
         {
-          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * (Ecov_re(y-1,i) - Ecov_mu), Ecov_sig, 1);
+          //FIXED on q_model branch 
+          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
           SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
             if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
-              Ecov_re(y,i) = rnorm(Ecov_phi * (Ecov_re(y-1,i) - Ecov_mu), Ecov_sig);
+              Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
             }
           }
         }
@@ -573,17 +581,87 @@ Type objective_function<Type>::operator() ()
     nll -= lprior_b;
   }
 
+  ///////NEW CODE
+  // --------------------------------------------------------------------------
+  // Survey catchability models
+  //
+  matrix<Type> nll_q(n_years_model+n_years_proj,n_indices);
+  nll_q.setZero();
+  vector<Type> sigma_q;
+  sigma_q.setZero();
+  vector<Type> rho_q;
+  rho_q.setZero();
+  vector<Type> nll_q_prior(n_indices);
+  nll_q_prior.setZero();
+  matrix<Type> logit_q_mat(n_years_model+n_years_proj, n_indices);
+  logit_q_mat.setZero();
+  for(int i = 0; i < n_indices; i++) {
+    
+    //use prior for q? q_prior_re are random effects with mean logit_q and sd = logit_q_prior_sigma.
+    if(use_q_prior(i) == 1){ 
+      nll_q_prior(i) -= dnorm(q_prior_re(i), logit_q(i), logit_q_prior_sigma(i), 1);
+      SIMULATE if(simulate_state(4) == 1) if(sum(simulate_period) > 0){
+        q_prior_re(i) = rnorm(logit_q(i), logit_q_prior_sigma(i));
+      } 
+      for(int y = 1; y < n_years_model + n_years_proj; y++) logit_q_mat(y,i) += q_prior_re(i);
+    }
+    else for(int y = 1; y < n_years_model + n_years_proj; y++) logit_q_mat(y,i) += logit_q(i);
+    
+    if(q_re_model(i) > 0) // random effects on q, q_re = AR1 deviations on (year,age), dim = n_years x n_M_a
+    {
+      sigma_q(i) = exp(q_repars(i,0)); // conditional sd
+      rho_q(i) = rho_trans(q_repars(i,1)); // autocorrelation
+
+      nll_q(0,i) -= dnorm(q_re(0,i), Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))), 1);
+      SIMULATE if(simulate_state(4) == 1 & simulate_period(0) == 1) {
+        q_re(0,i) = rnorm(Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))));
+      }
+      for(int y = 1; y < n_years_model + n_years_proj; y++)
+      {
+        nll_q(y,i) -= dnorm(q_re(y,i), rho_q(i) * q_re(y-1,i), sigma_q(i), 1);
+        SIMULATE if(simulate_state(4) == 1) {
+          if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)) {
+            q_re(y,i) = rnorm(rho_q(i) * q_re(y-1,i), sigma_q(i));
+          }
+        }
+        logit_q_mat(y,i) += q_re(y,i); //add in q random effects.
+      }
+    }
+  }
+
+  REPORT(logit_q_mat);
+  REPORT(sigma_q);
+  REPORT(rho_q);
+  REPORT(nll_q);
+  REPORT(nll_q_prior);
+  REPORT(q_prior_re); //even if q_prior_re not simulated
+  REPORT(q_re); //even if q_re not simulated.
+  nll += nll_q.sum() + nll_q_prior.sum();
+  
+  for(int y = 0; y < n_years_model + n_years_proj; y++) {
+    for(int ind = 0; ind < n_indices; ind++) {
+      for(int i=0; i < n_Ecov; i++){
+        if(Ecov_where(i) == 3) if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
+          logit_q_mat(y,ind) += Ecov_lm(i)(y,0);
+        }
+      }
+      q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));
+    }
+  }
+  //////////////
+
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
-    q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
+    //q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
+  // add ecov effect on M (by year, shared across ages)
     for(int y = 0; y < n_years_model; y++)
     {
-      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
+      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
     }
     //just use last years selectivity for now
     if(do_proj == 1) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++) {
-      QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
+      QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
     }
   }
 
