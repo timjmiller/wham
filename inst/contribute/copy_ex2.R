@@ -17,7 +17,8 @@ main.dir <- file.path(pkg.dir, "sandbox", paste0("runall-",format(Sys.Date(), "%
 write.dir <- file.path(main.dir,"ex2")
 load(file.path(write.dir,"vign2_res.RData")) # get 'df.mods'
 
-mod.list <- file.path(write.dir, paste0(df.mods$Model,".rds"))
+# mod.list <- file.path(write.dir, paste0(df.mods$Model,".rds"))
+mod.list <- file.path(write.dir, paste0("m",1:dim(df.mods)[1],".rds"))
 mods <- lapply(mod.list, readRDS)
 vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
 
