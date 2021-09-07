@@ -298,7 +298,7 @@ vign3_nll_orig
 ```
 
 ```{r eval=FALSE}
-nll_proj <-  sapply(mod_proj, function(x) x$fn(x$opt$obj)) # projected models NLL
+nll_proj <-  sapply(mod_proj, function(x) x$opt$obj) # projected models NLL
 round(nll_proj - mod$opt$obj, 6) # difference between original and projected models' NLL
 ```
 

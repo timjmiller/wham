@@ -31,7 +31,7 @@ ex2_test_results$nll <- sapply(mods, function(x) x$opt$obj)
 saveRDS(ex2_test_results, file=file.path(pkg.dir, "inst", "extdata", "ex2_test_results.rds"))
 
 # copy plots from sandbox to ex2_plots for vignette
-to.files <- list.files(file.path(pkg.dir, "vignettes", "ex2_plots", full.names = T))
+to.files <- list.files(file.path(pkg.dir, "vignettes", "ex2_plots"), full.names = T)
 from.files <- c(file.path(write.dir,"m1","plots_png","ref_points","Kobe_status.png"),
                 file.path(write.dir,"/m2/plots_png/ref_points/Kobe_status.png"),
                 file.path(write.dir,"/m3/plots_png/ref_points/Kobe_status.png"),

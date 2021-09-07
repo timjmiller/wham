@@ -18,7 +18,7 @@ write.dir <- file.path(main.dir,"ex3")
 
 mod <- readRDS(file.path(write.dir,"m5.rds"))
 mod_proj <- readRDS(file.path(write.dir,"m5_proj.rds"))
-nll_proj <-  sapply(mod_proj, function(x) x$fn(x$opt$obj)
+nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)
 
 vign3_nll_orig <- mod$opt$obj
 vign3_nll_proj <- nll_proj

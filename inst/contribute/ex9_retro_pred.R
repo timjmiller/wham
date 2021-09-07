@@ -92,7 +92,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	      scale_x_continuous(expand=c(0.01,0.01)) + # breaks=scales::breaks_extended(5)
 	      scale_colour_manual(values=cols) +
 	      scale_fill_manual(values=cols) +
-	      guides(color = FALSE, fill=FALSE) +
+	      guides(color = "none", fill="none") +
 	      scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=fancy_scientific) +
 	      theme_bw() +
 	      theme(legend.position=c(.9,.9), legend.box.margin = ggplot2::margin(0,0,0,0), legend.margin = ggplot2::margin(0,0,0,0))
