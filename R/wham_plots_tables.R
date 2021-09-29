@@ -258,7 +258,7 @@ fit.summary.text.plot.fn <- function(mod){
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
   # env.where <- c('Recruitment','Growth','Mortality')
-  env.where <- c('Recruitment','Mortality')  
+  env.where <- c('Recruitment','Mortality',paste0("q for index ", 1:mod$env$data$n_indices))  
   env.how <- c("controlling", "limiting", "lethal", "masking", "directive")
   fleet_selblocks = lapply(1:mod$env$data$n_fleets, function(x) unique(mod$env$data$selblock_pointer_fleets[,x]))
   index_selblocks = lapply(1:mod$env$data$n_indices, function(x) unique(mod$env$data$selblock_pointer_indices[,x]))
@@ -275,9 +275,19 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
   text(5,nl <- nl-0.5,paste0("Recruitment model: ", recs[mod$env$data$recruit_model]))
   if(!all(mod$env$data$Ecov_model == 0)){
-    for(ec in 1:mod$env$data$n_Ecov) text(5,nl <- nl-0.5, paste0("Environmental effect ", ec,": ", mod$env$data$Ecov_label[[1]][ec]," (",env.mod[mod$env$data$Ecov_model[ec]],") on ",env.where[mod$env$data$Ecov_where[ec]], " (", env.how[mod$env$data$Ecov_how[ec]],")"))
+    for(ec in 1:mod$env$data$n_Ecov) {
+      ec.where = env.where[which(mod$env$data$Ecov_where[ec,]==1)]
+      ec.mod = env.mod[mod$env$data$Ecov_model[ec]]
+      ec.label = mod$env$data$Ecov_label[[1]][ec]
+      if(length(ec.mod)) {
+        out = paste0("Environmental covariate ", ec,": ", ec.label," modeled as ",ec.mod,".")
+        if(length(ec.where)) out = paste0(out, paste0(" Effects on ", paste(ec.where,collapse = ','), " estimated."))
+        else out = paste(out, " No effects estimated.")
+        text(5,nl <- nl-0.5, out)
+      }
+    }
   } else {
-    text(5,nl <- nl-0.5, "Environmental effects: none")
+    text(5,nl <- nl-0.5, "No Environmental covariates.")
   }
   text(5,nl <- nl-0.5,paste0("Number of Selectivity blocks: ", mod$env$data$n_selblocks))
   text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
@@ -1354,6 +1364,48 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 		if(do.tex | do.png) dev.off() else par(origpar)
 	}
   # par(origpar)
+}
+
+plot.q.trend<-function(mod, alpha = 0.05)
+{
+  origpar <- par(no.readonly = TRUE)
+  years_full <- mod$years_full
+  years <- mod$years
+  tcol <- col2rgb('black')
+  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+  if(class(mod$sdrep)[1] == "sdreport"){
+    std = summary(mod$sdrep)
+  } else {
+    std = mod$sdrep
+  }
+  par(mfrow=c(2,1), mar=c(1,1,1,1), oma = c(4,4,0,0))
+
+  ssb.ind <- which(rownames(std) == "log_SSB")
+  log.ssb <- std[ssb.ind,1]
+  ssb = exp(log.ssb)/1000
+  ssb.cv <- std[ssb.ind,2]
+  log.ssb.ci <- log.ssb + cbind(qnorm(1-alpha/2)*ssb.cv, -qnorm(1-alpha/2)*ssb.cv)
+  ssb.ci = exp(log.ssb.ci)/1000
+  no.ssb.ci <- all(is.na(ssb.ci))
+  if(!no.ssb.ci){ # have CI
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
+    axis(1, labels = FALSE)
+    axis(2)
+    box()
+    mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    polygon(c(years_full,rev(years_full)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  } else { # no CI but plot SSB trend
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
+    axis(1, labels = FALSE)
+    axis(2)
+    box()
+    mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    # polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  }
+  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+  par(origpar)
 }
 
 plot.SSB.F.trend<-function(mod, alpha = 0.05)

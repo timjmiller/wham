@@ -87,16 +87,17 @@ prepare_projection = function(model, proj.opts)
 
   # check ecov options are valid
   if(any(input1$data$Ecov_model > 0)){
+    n_effects = dim(input1$par$Ecov_beta)[1]
     # if Ecovs already extend beyond population model, Ecov proj options are unnecessary
-    n.beyond <- rep(NA, data$n_Ecov)
-    end.beyond <- rep(NA, data$n_Ecov)
-    for(i in 1:data$n_Ecov){
-      n.beyond[i] <- data$n_years_Ecov-1-data$ind_Ecov_out_end[i]
+    n.beyond <- end.beyond <- integer()
+    for(i in 1:data$n_Ecov) {
+      n.beyond[i] = data$n_years_Ecov-1-max(data$ind_Ecov_out_end[i,])
       end.beyond[i] <- min(n.beyond[i], proj.opts$n.yrs)     
       if(end.beyond[i] == proj.opts$n.yrs) print(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
     }
     Ecov.proj <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
-    Ecov.map <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
+    #this isn't used anywhere
+    #Ecov.map <- matrix(rep(NA, max(proj.opts$n.yrs-end.beyond)*data$n_Ecov), ncol=data$n_Ecov)
     if(all(end.beyond < proj.opts$n.yrs)){ # if Ecov proj options ARE necessary, check they are valid
       Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
       if(Ecov.opt.ct == 0) proj.opts$cont.ecov = TRUE; Ecov.opt.ct = 1;
@@ -210,6 +211,16 @@ prepare_projection = function(model, proj.opts)
     map$log_NAA = factor(tmp)
   }
 
+    # pad q_re
+    par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
+    map$q_re <- rbind(matrix(as.integer(map$q_re), data$n_years_model, data$n_indices), matrix(NA, data$n_years_proj, data$n_indices))
+    if(any(data$use_q_re == 1)){
+      ind = which(data$use_q_re)
+      map$q_re[,ind] <- 1:(length(ind) * (data$n_years_model + data$n_years_proj)) #turn on appropriate columns of q_re
+    }
+    map$q_re <- factor(map$q_re)
+
+
   # pad Ecov_re for projections
   if(any(data$Ecov_model > 0)){
     if(any(end.beyond < proj.opts$n.yrs)){ # need to pad Ecov_re
@@ -217,7 +228,7 @@ prepare_projection = function(model, proj.opts)
         # for(i in 1:(proj.opts$n.yrs-end.beyond[j])){
         for(i in 1:max(proj.opts$n.yrs-end.beyond)){
           if(!is.null(proj.opts$use.last.ecov)) if(proj.opts$use.last.ecov){ # use last Ecov (pad Ecov_re but map to NA)
-            Ecov.proj[i,j] <- model$rep$Ecov_re[data$ind_Ecov_out_end[j]+1+end.beyond[j],j]
+            Ecov.proj[i,j] <- model$rep$Ecov_re[max(data$ind_Ecov_out_end[j,])+1+end.beyond[j],j]
           }
           if(!is.null(proj.opts$avg.ecov.yrs)){ # use average Ecov (pad Ecov_re but map to NA)
             ecov.yrs <- data$year1_Ecov+0:(data$n_years_Ecov-1+data$n_years_proj_Ecov)
