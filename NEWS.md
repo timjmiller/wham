@@ -5,6 +5,8 @@ wham 1.0.5.9000
 
 * Fix errors in `prepare_wham_input` introduced in 1.0.5 when not all index data in `.dat` are used (aggregate or proportion-at-age, all years or a subset) [12abdef](https://github.com/timjmiller/wham/commit/12abdefb22e7b8b5f0640b0389b5e07fc7a00877)
 * Require updated version of `TMBhelper` [issue 47](https://github.com/timjmiller/wham/issues/47)
+* Peel `which_F_age` (fix error when projecting a peel doing retrospective predictions, ex9)
+* Ecov AR1 mean parameterization
 
 wham 1.0.5 (2021-08-25)
 =========================

@@ -17,7 +17,8 @@ main.dir <- file.path(pkg.dir, "sandbox", paste0("runall-",format(Sys.Date(), "%
 write.dir <- file.path(main.dir,"ex2")
 load(file.path(write.dir,"vign2_res.RData")) # get 'df.mods'
 
-mod.list <- file.path(write.dir, paste0(df.mods$Model,".rds"))
+# mod.list <- file.path(write.dir, paste0(df.mods$Model,".rds"))
+mod.list <- file.path(write.dir, paste0("m",1:dim(df.mods)[1],".rds"))
 mods <- lapply(mod.list, readRDS)
 vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
 
@@ -31,7 +32,7 @@ ex2_test_results$nll <- sapply(mods, function(x) x$opt$obj)
 saveRDS(ex2_test_results, file=file.path(pkg.dir, "inst", "extdata", "ex2_test_results.rds"))
 
 # copy plots from sandbox to ex2_plots for vignette
-to.files <- list.files(file.path(pkg.dir, "vignettes", "ex2_plots", full.names = T))
+to.files <- list.files(file.path(pkg.dir, "vignettes", "ex2_plots"), full.names = T)
 from.files <- c(file.path(write.dir,"m1","plots_png","ref_points","Kobe_status.png"),
                 file.path(write.dir,"/m2/plots_png/ref_points/Kobe_status.png"),
                 file.path(write.dir,"/m3/plots_png/ref_points/Kobe_status.png"),

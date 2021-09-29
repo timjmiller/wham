@@ -23,6 +23,7 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   if(!retro.silent) print(peel)
   temp = model
   n_years = temp$data$n_years_catch = temp$data$n_years_indices = temp$data$n_years_model = temp$data$n_years_model - peel
+  temp$data$which_F_age = temp$data$which_F_age[1:n_years]
 
   # peeling ecov is tricky bc ecov_years can be different than model_years - make sure to peel to same year
   if(any(temp$data$Ecov_model != 0)){

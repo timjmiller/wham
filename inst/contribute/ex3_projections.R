@@ -98,7 +98,7 @@ saveRDS(mod_proj, file="m5_proj.rds")
 # mod_proj <- readRDS("m5_proj.rds")
 
 #  check marginal nll is the same
-nll_proj <-  sapply(mod_proj, function(x) x$fn(x$opt$obj)
+nll_proj <-  sapply(mod_proj, function(x) x$fn(x$opt$par))
 mod$opt$obj
 round(nll_proj - mod$opt$obj, 6) # difference between original and projected models' NLL
 

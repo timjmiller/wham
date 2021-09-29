@@ -362,7 +362,6 @@ Type objective_function<Type>::operator() ()
       }
       for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
       {
-        //FIXED on q_model branch 
         nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
         SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
           if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
