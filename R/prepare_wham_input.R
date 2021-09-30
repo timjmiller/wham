@@ -49,7 +49,7 @@
 #'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). A list (length = n_Ecov) of character vectors for modeling
 #'      effects on recruitment, M, and catchabilities for index 1,..., index n_indices (length of the vector is 2 + n_indices).}
 #'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.}
-#'     \item{$how}{How does the ecov affect the \code{$where} process? Currently this only isThese options are
+#'     \item{$how}{How does the ecov affect the \code{$where} process? These options are
 #'     specific to the \code{$where} process.
 #' Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
 #'   \describe{

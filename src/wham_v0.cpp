@@ -646,7 +646,7 @@ Type objective_function<Type>::operator() ()
   for(int y = 0; y < n_years_model + n_years_proj; y++) {
     for(int ind = 0; ind < n_indices; ind++) {
       for(int i=0; i < n_Ecov; i++){
-        if(Ecov_where(i,1+ind) == 1){ // if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
+        if(Ecov_where(i,2+ind) == 1){ // if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
           logit_q_mat(y,ind) += Ecov_lm(i,1+ind,y,0);
         }
       }

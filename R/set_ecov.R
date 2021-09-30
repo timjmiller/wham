@@ -187,18 +187,21 @@ set_ecov = function(input, ecov)
     if(length(ecov$how) != data$n_Ecov) stop("ecov$how must be a vector of length(n.ecov)")
     data$Ecov_how = rep(0, data$n_Ecov) 
     for(i in 1:data$n_Ecov){
-      #if(data$Ecov_where[i,2] == 1) if(!ecov$how[i] %in% c(0,1)){
-      #  stop("Sorry, only the following ecov effects on M are currently implemented.
-      #  Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
-      #}
-      #if(any(data$Ecov_where[i,index_effects] == 1)) if(!ecov$how[i] %in% c(0,1)){
-      #  stop("Sorry, only the following ecov effects on q are currently implemented.
-      #  Set ecov$how = 0 (no effect) or 1 (effect on q).")
-      #}
+      if(data$Ecov_where[i,2] == 1) if(!ecov$how[i] %in% c(0,1)){
+        stop("Sorry, only the following ecov effects on M are currently implemented.
+        Set ecov$how = 0 (no effect) or 1 (effect on mean M, shared across ages).")
+      }
+      if(data$Ecov_where[i,2] == 1 & ecov$how[i] == 0) data$Ecov_where[i,2] = 0 #change back to zero because data$Ecov_where now defines which Ecov_beta to estimate
+      if(any(data$Ecov_where[i,index_effects] == 1)) if(!ecov$how[i] %in% c(0,1)){
+        stop("Sorry, only the following ecov effects on q are currently implemented.
+        Set ecov$how = 0 (no effect) or 1 (effect on q).")
+      }
+      if(any(data$Ecov_where[i,index_effects] == 1) & ecov$how[i] == 0) data$Ecov_where[i,index_effects] = 0 #change back to zero because data$Ecov_where now defines which Ecov_beta to estimate
       if(data$Ecov_where[i,1] == 1) if(!ecov$how[i] %in% c(0,1,2,4)){
         stop("Sorry, only the following ecov effects on recruitment are currently implemented.
         Set ecov$how = 0 (no effect), 1 (controlling), 2 (limiting, Bev-Holt only), or 4 (masking).")
       }
+      if(data$Ecov_where[i,1] == 1 & ecov$how[i] == 0) data$Ecov_where[i,1] = 0 #change back to zero because data$Ecov_where now defines which Ecov_beta to estimate
       if(data$Ecov_where[i,1] == 1 & data$recruit_model == 1){
         stop("Random walk recruitment cannot have an ecov effect on recruitment.
         Either choose a different recruit_model (2, 3, or 4), or remove the Ecov effect.")
