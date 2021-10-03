@@ -39,37 +39,40 @@
 #'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
 #'     Use the observation? Can be used to ignore subsets of the ecov without changing data files.}
 #'     \item{$lag}{integer vector of offsets between the ecov observation/process and their affect on the stock.
-#'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}. May also be a list (length=n_Ecov) of vectors (lenght = 2+n_indices) if multiple effects of one or more Ecovs are modeled.}
+#'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}. May also be a list (length=n_Ecov) of vectors (length = 2+n_indices) if multiple effects of one or more Ecovs are modeled.}
 #'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
 #'     \item{$where}{Character vector for where each ecov affects the population. \code{"recuit"} = recruitment,
-#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov but without an effect on the 
-#'     population. May also be a list (element for each ecov) of multiple character vectors so each ecov can multiple effects.}
-#'     \item{$indices}{indices that each ecov affects. Must be a list of length n.ecov, where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
-#'     \item{$link_model}{vector or (orthogonal polynomial order) models for effects or each ecov on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
-#'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). A list (length = n_Ecov) of character vectors for modeling
-#'      effects on recruitment, M, and catchabilities for index 1,..., index n_indices (length of the vector is 2 + n_indices).}
+#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the 
+#'     population. May also be a list (element for each ecov) of character vectors ("none", "recruit", and/or "M") so each ecov can multiple effects.}
+#'     \item{$indices}{indices that each ecov affects. Must be a list (length = n_Ecov), where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
+#'     \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: 'none', 'linear' (default) or 'poly-x'
+#'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
+#'      effects on (1) recruitment, (2) M, and catchabilities for (3) index 1,..., (2+n_indices) index n_indices (length of the vector is 2 + n_indices).}
 #'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.}
-#'     \item{$how}{How does the ecov affect the \code{$where} process? These options are
-#'     specific to the \code{$where} process.
-#' Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
-#'   \describe{
-#'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
-#'     \item{= 1}{"controlling" (dens-indep mortality)}
-#'     \item{= 2}{"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)}
-#'     \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
-#'     \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
-#'     \item{= 5}{"directive" (e.g. behavioral)}
-#'   }
-#' Options for M:
-#'   \describe{
-#'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
-#'     \item{= 1}{effect on mean M (shared across ages)}
-#'   }
-#' Options for catchability:
-#'   \describe{
-#'     \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
-#'     \item{= 1}{effect on one or more catchabilities (see \code{$indices)})}
-#'   }}
+#'     \item{$how}{How does the ecov affect the \code{$where} process? An integer vector (length = n_Ecov). If corresponding \code{$where} = "none", then this is ignored.
+#'     These options are specific to the \code{$where} process.
+#'       \describe{
+#'         \item{Recruitment options (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}):
+#'           \describe{
+#'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+#'             \item{= 1}{"controlling" (dens-indep mortality)}
+#'             \item{= 2}{"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)}
+#'             \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
+#'             \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
+#'             \item{= 5}{"directive" (e.g. behavioral)}
+#'         }}
+#'         \item{M options:
+#'           \describe{
+#'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+#'             \item{= 1}{effect on mean M (shared across ages)}
+#'         }}
+#'         \item{Catchability options:
+#'           \describe{
+#'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+#'             \item{= 1}{effect on one or more catchabilities (see \code{$indices)})}
+#'         }}
+#'       }
+#'     } 
 #'   }
 #'
 #' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
@@ -189,7 +192,6 @@
 #'        If \code{basic_info$q} and \code{asap3} are not provided, default q values are 0.3.}
 #'     \item{$q_lower}{Lower bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 0.}
 #'     \item{$q_upper}{Upper bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 1000.}
-#'     \item{$fix_q}{Which catcabilities not estimated. vector of integers indicating which indices have catchability fixed. E.g. c(2,3) when the second and third catchabilties are fixed.}
 #'     \item{$prior_sd}{vector of NA and standard deviations to use for gaussian prior on logit transform of catchability parameter. Length = number of indices. 
 #'       Indices with non-NA values will have mean logit q as a random effect with mean determined by logit transform of \code{catchability$initial_q} and  
 #'       sigma as standard error.}

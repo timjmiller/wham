@@ -598,9 +598,9 @@ Type objective_function<Type>::operator() ()
   //
   matrix<Type> nll_q(n_years_model+n_years_proj,n_indices);
   nll_q.setZero();
-  vector<Type> sigma_q;
+  vector<Type> sigma_q(n_indices);
   sigma_q.setZero();
-  vector<Type> rho_q;
+  vector<Type> rho_q(n_indices);
   rho_q.setZero();
   vector<Type> nll_q_prior(n_indices);
   nll_q_prior.setZero();
@@ -647,7 +647,7 @@ Type objective_function<Type>::operator() ()
     for(int ind = 0; ind < n_indices; ind++) {
       for(int i=0; i < n_Ecov; i++){
         if(Ecov_where(i,2+ind) == 1){ // if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
-          logit_q_mat(y,ind) += Ecov_lm(i,1+ind,y,0);
+          logit_q_mat(y,ind) += Ecov_lm(i,2+ind,y,0);
         }
       }
       q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));

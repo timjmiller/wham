@@ -147,6 +147,12 @@ set_ecov = function(input, ecov)
     
     data$Ecov_where = matrix(0, data$n_Ecov, n_effects)
     if(is.character(ecov$where)) ecov$where = as.list(ecov$where) #put in new allowed format so each ecov can have mulitple effects.
+    for(i in 1:data$n_Ecov) {
+      if(any(ecov$where[[i]] == "none")) if(!is.null(ecov$how)) if(ecov$how[i] != 0){
+        warning(paste0("ecov$where[[", i, "]] is 'none', but ecov$how[", i, "] is not 0. Setting this Ecov to not have any effects"))
+        ecov$how[i] = 0
+      }
+    }
 
     if(any(sapply(ecov$where, function(x) any(x == 'recruit'))) & data$n_NAA_sigma == 0){
       stop("Cannot estimate ecov effect on recruitment when
@@ -154,10 +160,10 @@ set_ecov = function(input, ecov)
       Either remove ecov-recruit effect or estimate recruitment
       (or all numbers-at-age) as random effects.")
     }
-    if(is.null(ecov$where)) stop("ecov$where must be specified, 'recruit', 'M', or 'q'")
+    if(is.null(ecov$where)) stop("ecov$where must be specified as 'none', 'recruit', 'M', and/or 'q' for each ecov.")
     if(any(sapply(ecov$where, function(x) any(!(x %in% c('recruit','M','q','none')))))){
       stop("Only ecov effects on recruitment, M, and catchability (q) currently implemented.
-      Set ecov$where = 'recruit', 'M', 'q', or 'none'.")
+      Set ecov$where = 'none' or one or more of 'recruit', 'M', 'q'.")
     }
 
     if(!all(ecov$process_model %in% c(NA,"rw", "ar1"))){
@@ -314,7 +320,7 @@ Model years:
   max.poly <- max(Ecov_poly)
   par$Ecov_beta = array(0, dim=c(n_effects, max.poly, data$n_Ecov, data$n_ages)) # beta_R in eqns 4-5, Miller et al. (2016)
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov
-  par$Ecov_process_pars[1,] = -1.3 # start sig_ecov at 0.27
+  par$Ecov_process_pars[2,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
   par$Ecov_obs_sigma_par <- par.Ecov.obs.sigma.par
 
