@@ -3578,3 +3578,59 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
   }
 }  
 
+#pdf of a univariate logit-normal with any min and max
+dlogitnorm = function(p,mu,sd,min,max) {
+  logitp = log((p-min)/(max-p))
+  (exp(-(logitp - mu)^2/(2 * sd^2))/(sd * sqrt(2*pi))) * (max-p)/((p-min) * (max-p))
+}
+
+plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
+  origpar <- par(no.readonly = TRUE)
+  ind = which(mod$input$data$use_q_prior == 1)
+  if(length(ind) & "sdrep" %in% names(mod)){
+    logit_q = cbind(as.list(mod$sdrep, "Est")$q_prior_re, as.list(mod$sdrep, "Std")$q_prior_re)
+    ht = 10
+    wd = 10*length(ind)
+    priorq = approx_postq = list()
+    if(do.tex) cairo_pdf(file.path(od, "q_prior_post.pdf"), family = fontfam, height = ht, width = wd)
+    if(do.png) png(filename = file.path(od, "q_prior_post.png"), width = wd*144, height = ht*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(1,length(ind)))
+    pal = viridisLite::viridis(n=2)
+    for(i in ind) {
+      qmax = mod$input$data$q_upper[i]
+      x = seq(0.001,qmax,0.001)
+      y = log(x-0) - log((qmax-x))
+      approx_postq[[i]] = dnorm(y, logit_q[i,1], logit_q[i,2])
+      priorq[[i]] = dlogitnorm(x, mod$parList$logit_q[i], 0.3, 0, 1000) 
+      maxx = max(x[which(approx_postq[[i]] > 1e-5)], x[which(priorq[[i]] > 1e-5)], na.rm = T)
+      plot(x,priorq[[i]], type = 'l', xlab = "q", ylab = "pdf", col = pal[1], lwd = 2, ylim = c(0,max(approx_postq[[i]],priorq[[i]], na.rm =T)), xlim = c(0,maxx))
+      lines(x,approx_postq[[i]], col = pal[2], lwd = 2)
+      ci = qmax/(1+ exp(-(logit_q[i,1] + c(-1,1)*qnorm(0.975) * logit_q[i,2])))
+      abline(v= ci, lty = 2)
+      legend("topright", legend = c("prior", "approx. posterior", "95% CI"), col = c(pal, "black"), lty = c(1,1,2), lwd = 2)
+      mtext(paste0("Index ", ind), side = 3, line = 1, outer = F, cex = 1.5)
+    }
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }  
+}
+
+plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
+  origpar <- par(no.readonly = TRUE)
+  if("sdrep" %in% names(mod)){
+    se = summary(mod$sdrep)
+    se = matrix(se[rownames(se) == "logit_q_mat",2], length(mod$years))
+    if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,3,2), oma=c(1,1,1,1))
+    pal = viridisLite::viridis(n=mod$input$data$n_indices)
+    ymax = max(mod$rep$q*exp(1.96*se))
+    plot(mod$years, mod$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+    for( i in 1:mod$input$data$n_indices){
+      lines(mod$years, mod$rep$q[,i], lwd = 2, col = pal[i])
+      polyy = c(mod$rep$q[,i]*exp(-1.96*se[,i]),rev(mod$rep$q[,i]*exp(1.96*se[,i])))
+      polygon(c(mod$years,rev(mod$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    }
+    legend("topright", legend = paste0("Index ", 1:mod$input$data$n_indices), lwd = 2, col = pal, lty = 1)
+  }
+  if(do.tex | do.png) dev.off() else par(origpar)
+}

@@ -339,13 +339,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	waa_names = ("waa")
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
-	if(is.null(catchability)){
-		q_opts = NULL
-		q_names = c("q")
-		if(any(names(basic_info) %in% q_names)) q_opts$initial_q = basic_info[[q_names]]
-	} else {
-		q_opts = catchability
-	}
+	q_opts = catchability
+	if(any(names(basic_info) == "q") & !any(names(q_opts) == "initial_q")) q_opts$initial_q = basic_info$q
 
 	if(!is.null(asap3))
 	{

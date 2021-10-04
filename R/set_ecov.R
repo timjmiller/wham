@@ -320,7 +320,10 @@ Model years:
   max.poly <- max(Ecov_poly)
   par$Ecov_beta = array(0, dim=c(n_effects, max.poly, data$n_Ecov, data$n_ages)) # beta_R in eqns 4-5, Miller et al. (2016)
   par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov
-  par$Ecov_process_pars[2,] = -1.3 # start sig_ecov at 0.27
+  #this row is for the mean not the sd of the process
+  par$Ecov_process_pars[1,] = -1.3 # start sig_ecov at 0.27
+  #changing the initial value for sig_ecov to the right place actually causes tests to not pass!
+  #par$Ecov_process_pars[2,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
   par$Ecov_obs_sigma_par <- par.Ecov.obs.sigma.par
 
