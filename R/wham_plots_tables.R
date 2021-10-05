@@ -258,7 +258,7 @@ fit.summary.text.plot.fn <- function(mod){
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
   # env.where <- c('Recruitment','Growth','Mortality')
-  env.where <- c('Recruitment','Mortality')  
+  env.where <- c('Recruitment','Mortality',paste0("q for index ", 1:mod$env$data$n_indices))  
   env.how <- c("controlling", "limiting", "lethal", "masking", "directive")
   fleet_selblocks = lapply(1:mod$env$data$n_fleets, function(x) unique(mod$env$data$selblock_pointer_fleets[,x]))
   index_selblocks = lapply(1:mod$env$data$n_indices, function(x) unique(mod$env$data$selblock_pointer_indices[,x]))
@@ -275,9 +275,19 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
   text(5,nl <- nl-0.5,paste0("Recruitment model: ", recs[mod$env$data$recruit_model]))
   if(!all(mod$env$data$Ecov_model == 0)){
-    for(ec in 1:mod$env$data$n_Ecov) text(5,nl <- nl-0.5, paste0("Environmental effect ", ec,": ", mod$env$data$Ecov_label[[1]][ec]," (",env.mod[mod$env$data$Ecov_model[ec]],") on ",env.where[mod$env$data$Ecov_where[ec]], " (", env.how[mod$env$data$Ecov_how[ec]],")"))
+    for(ec in 1:mod$env$data$n_Ecov) {
+      ec.where = env.where[which(mod$env$data$Ecov_where[ec,]==1)]
+      ec.mod = env.mod[mod$env$data$Ecov_model[ec]]
+      ec.label = mod$env$data$Ecov_label[[1]][ec]
+      if(length(ec.mod)) {
+        out = paste0("Environmental covariate ", ec,": ", ec.label," modeled as ",ec.mod,".")
+        if(length(ec.where)) out = paste0(out, paste0(" Effects on ", paste(ec.where,collapse = ','), " estimated."))
+        else out = paste(out, " No effects estimated.")
+        text(5,nl <- nl-0.5, out)
+      }
+    }
   } else {
-    text(5,nl <- nl-0.5, "Environmental effects: none")
+    text(5,nl <- nl-0.5, "No Environmental covariates.")
   }
   text(5,nl <- nl-0.5,paste0("Number of Selectivity blocks: ", mod$env$data$n_selblocks))
   text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
@@ -1357,6 +1367,48 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 		if(do.tex | do.png) dev.off() else par(origpar)
 	}
   # par(origpar)
+}
+
+plot.q.trend<-function(mod, alpha = 0.05)
+{
+  origpar <- par(no.readonly = TRUE)
+  years_full <- mod$years_full
+  years <- mod$years
+  tcol <- col2rgb('black')
+  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+  if(class(mod$sdrep)[1] == "sdreport"){
+    std = summary(mod$sdrep)
+  } else {
+    std = mod$sdrep
+  }
+  par(mfrow=c(2,1), mar=c(1,1,1,1), oma = c(4,4,0,0))
+
+  ssb.ind <- which(rownames(std) == "log_SSB")
+  log.ssb <- std[ssb.ind,1]
+  ssb = exp(log.ssb)/1000
+  ssb.cv <- std[ssb.ind,2]
+  log.ssb.ci <- log.ssb + cbind(qnorm(1-alpha/2)*ssb.cv, -qnorm(1-alpha/2)*ssb.cv)
+  ssb.ci = exp(log.ssb.ci)/1000
+  no.ssb.ci <- all(is.na(ssb.ci))
+  if(!no.ssb.ci){ # have CI
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
+    axis(1, labels = FALSE)
+    axis(2)
+    box()
+    mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    polygon(c(years_full,rev(years_full)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  } else { # no CI but plot SSB trend
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
+    axis(1, labels = FALSE)
+    axis(2)
+    box()
+    mtext(side = 2, "SSB (kmt)", outer = FALSE, line = 3)
+    grid(col = gray(0.7))
+    # polygon(c(years,rev(years)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
+  }
+  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+  par(origpar)
 }
 
 plot.SSB.F.trend<-function(mod, alpha = 0.05)
@@ -3529,3 +3581,59 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
   }
 }  
 
+#pdf of a univariate logit-normal with any min and max
+dlogitnorm = function(p,mu,sd,min,max) {
+  logitp = log((p-min)/(max-p))
+  (exp(-(logitp - mu)^2/(2 * sd^2))/(sd * sqrt(2*pi))) * (max-p)/((p-min) * (max-p))
+}
+
+plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
+  origpar <- par(no.readonly = TRUE)
+  ind = which(mod$input$data$use_q_prior == 1)
+  if(length(ind) & "sdrep" %in% names(mod)){
+    logit_q = cbind(as.list(mod$sdrep, "Est")$q_prior_re, as.list(mod$sdrep, "Std")$q_prior_re)
+    ht = 10
+    wd = 10*length(ind)
+    priorq = approx_postq = list()
+    if(do.tex) cairo_pdf(file.path(od, "q_prior_post.pdf"), family = fontfam, height = ht, width = wd)
+    if(do.png) png(filename = file.path(od, "q_prior_post.png"), width = wd*144, height = ht*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(1,length(ind)))
+    pal = viridisLite::viridis(n=2)
+    for(i in ind) {
+      qmax = mod$input$data$q_upper[i]
+      x = seq(0.001,qmax,0.001)
+      y = log(x-0) - log((qmax-x))
+      approx_postq[[i]] = dnorm(y, logit_q[i,1], logit_q[i,2])
+      priorq[[i]] = dlogitnorm(x, mod$parList$logit_q[i], 0.3, 0, 1000) 
+      maxx = max(x[which(approx_postq[[i]] > 1e-5)], x[which(priorq[[i]] > 1e-5)], na.rm = T)
+      plot(x,priorq[[i]], type = 'l', xlab = "q", ylab = "pdf", col = pal[1], lwd = 2, ylim = c(0,max(approx_postq[[i]],priorq[[i]], na.rm =T)), xlim = c(0,maxx))
+      lines(x,approx_postq[[i]], col = pal[2], lwd = 2)
+      ci = qmax/(1+ exp(-(logit_q[i,1] + c(-1,1)*qnorm(0.975) * logit_q[i,2])))
+      abline(v= ci, lty = 2)
+      legend("topright", legend = c("prior", "approx. posterior", "95% CI"), col = c(pal, "black"), lty = c(1,1,2), lwd = 2)
+      mtext(paste0("Index ", ind), side = 3, line = 1, outer = F, cex = 1.5)
+    }
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }  
+}
+
+plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
+  origpar <- par(no.readonly = TRUE)
+  if("sdrep" %in% names(mod)){
+    se = summary(mod$sdrep)
+    se = matrix(se[rownames(se) == "logit_q_mat",2], length(mod$years_full))
+    if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,3,2), oma=c(1,1,1,1))
+    pal = viridisLite::viridis(n=mod$input$data$n_indices)
+    ymax = max(mod$rep$q*exp(1.96*se))
+    plot(mod$years_full, mod$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+    for( i in 1:mod$input$data$n_indices){
+      lines(mod$years_full, mod$rep$q[,i], lwd = 2, col = pal[i])
+      polyy = c(mod$rep$q[,i]*exp(-1.96*se[,i]),rev(mod$rep$q[,i]*exp(1.96*se[,i])))
+      polygon(c(mod$years_full,rev(mod$years_full)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    }
+    legend("topright", legend = paste0("Index ", 1:mod$input$data$n_indices), lwd = 2, col = pal, lty = 1)
+  }
+  if(do.tex | do.png) dev.off() else par(origpar)
+}

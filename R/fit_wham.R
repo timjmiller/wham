@@ -102,11 +102,11 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     btime <- Sys.time()
     #mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
-    mod <- check_which_F_age(mod)
-    if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
+    mod <- check_which_F_age(mod)
     mod <- check_FXSPR(mod)
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
+    if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
 
     # retrospective analysis
     if(do.retro){
@@ -170,6 +170,11 @@ do_sdrep = function(model, save.sdrep = TRUE)
 
 check_FXSPR = function(mod)
 {
+  #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
+  if(is.null(mod$opt)) mle = mod$par
+  else {
+    mle = mod$opt$par
+  }
   percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
   ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
   if(length(ind))
@@ -181,9 +186,8 @@ check_FXSPR = function(mod)
       redo_SPR_years = years[ind]
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*0.5
-      mod$fn(mod$opt$par)
-      # mod$rep = mod$report(mod$opt$par)
-      mod$rep = mod$report(mod$env$last.par)
+      mod$fn(mle)
+      mod$rep = mod$report()
       percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
       ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
@@ -195,6 +199,10 @@ check_FXSPR = function(mod)
 
 check_projF = function(mod)
 {
+  if(is.null(mod$opt)) mle = mod$par
+  else {
+    mle = model$opt$par
+  }
   proj_F_opt = mod$env$data$proj_F_opt
   ind = which(proj_F_opt == 3) #FXSPR
   if(length(ind))
@@ -206,9 +214,8 @@ check_projF = function(mod)
       redo_SPR_years = mod$years_full[y[bad]]
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
-      mod$fn(mod$opt$par)
-      # mod$rep = mod$report(mod$opt$par)
-      mod$rep = mod$report(mod$env$last.par)
+      mod$fn(mle)
+      mod$rep = mod$report()
       bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
     }
     y_bad_FXSPR = mod$years_full[y[bad]]
@@ -229,9 +236,8 @@ check_projF = function(mod)
         #print(redo_Catch_years)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
         mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
-        mod$fn(mod$opt$par)
-        # mod$rep = mod$report(mod$opt$par)
-        mod$rep = mod$report(mod$env$last.par)
+        mod$fn(mle)
+        mod$rep = mod$report()
         bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
         if(!length(bad)) break
       }

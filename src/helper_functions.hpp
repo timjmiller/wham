@@ -135,15 +135,9 @@ Type ddirmultinom_osa(vector<Type> obs, vector<Type> p,  Type phi, int do_log, v
 template<class Type>
 vector<Type> rdirmultinom(Type N, vector<Type> p, Type phi) //dirichlet generated from iid gammas
 {
-  int Nint = CppAD::Integer(N);
-  int dim = p.size();
-  vector<Type> obs(dim);
-  obs.setZero();
-  for(int i = 0; i < Nint; i++)
-  {
-    vector<Type> dp = rdirichlet(p, phi);
-    obs = obs + rmultinom(Type(1),dp);
-  }
+  //int Nint = CppAD::Integer(N);
+  vector<Type> dp = rdirichlet(p, phi);
+  vector<Type> obs = rmultinom(N,dp);
   return(obs);
 }
 
@@ -1178,7 +1172,7 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
 
 template <class Type>
 Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm){
+  vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm){
 
   /*
    * y: year (between 1 and n_years_model+n_years_proj)
@@ -1188,9 +1182,9 @@ Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, ve
    * NAA: matrix of numbers at age
    * log_SR_a: yearly "a" parameters for SR function
    * log_SR_b: yearly "b" parameters for SR function
-   * Ecov_where: integer determining if Ecov is affecting recruitment
+   * Ecov_where: matrix of 0/1 with first column determining if Ecov is affecting recruitment
    * Ecov_how: integer vector with an element that tells how the Ecov is affecting recruitment
-   * Ecov_lm: matrix that holds linear predictor for Ecov
+   * Ecov_lm: array that holds linear predictor for Ecov
    */
   //recruit_model == 1, random walk
   Type pred_recruit = NAA(y-1,0);
@@ -1203,9 +1197,9 @@ Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, ve
     if(recruit_model == 2) // random about mean
     {
       pred_recruit = exp(mean_rec_pars(0));
-      int nE = Ecov_where.size();
+      int nE = Ecov_where.rows();
       for(int i=0; i < nE; i++){
-        if(Ecov_where(i) == 1) if(Ecov_how(i) == 1) pred_recruit *= exp(Ecov_lm(i)(y,0));
+        if(Ecov_where(i,0) == 1) if(Ecov_how(i) == 1) pred_recruit *= exp(Ecov_lm(i,0,y,0));
       }
       //pred_NAA(y,0) = exp(mean_rec_pars(0));
       //if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
@@ -1229,7 +1223,7 @@ Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, ve
 
 template <class Type>
 vector<Type> get_pred_NAA_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm, matrix<Type> ZAA){
+  vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm, matrix<Type> ZAA){
 
   /*
    * y: year (between 1 and n_years_model+n_years_proj)
@@ -1239,9 +1233,9 @@ vector<Type> get_pred_NAA_y(int y, int recruit_model, vector<Type> mean_rec_pars
    * NAA: matrix of numbers at age
    * log_SR_a: yearly "a" parameters for SR function
    * log_SR_b: yearly "b" parameters for SR function
-   * Ecov_where: integer vector determining if Ecov i affects recruitment (= 1)
+   * Ecov_where: matrix of 0/1 integer with first column determining if Ecov i affects recruitment (= 1)
    * Ecov_how: integer vector with an element that tells how the Ecov is affecting recruitment
-   * Ecov_lm: matrix that holds linear predictor for Ecov
+   * Ecov_lm: array that holds linear predictor for Ecov
    * ZAA: matrix of total mortality rate by year and age
    */
   int n_ages = NAA.cols();
@@ -1383,7 +1377,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
 
 template <class Type>
 matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSBin, matrix<Type> NAAin, vector<Type> log_SR_a, 
-  vector<Type> log_SR_b, vector<int> Ecov_where, vector<int> Ecov_how, vector<matrix<Type> > Ecov_lm, int n_NAA_sigma, 
+  vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   int waa_pointer_totcatch, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
   int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY){

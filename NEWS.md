@@ -1,12 +1,27 @@
 wham 1.0.5.9000
 =========================
 
+### Major improvements
+
+* Can specify a prior distribution on fully-selected catchability (logit-scale) which is then estimated as a random effect.
+* Auto-regressive random effects for fully-selected catchability.
+* Environmental covariate effects on fully-selected catchability.
+* One or more environmental covariates can have multiple effects on recruitment, M, and catchability.
+
+### Minor improvements
+
+* Example 11 script and vignette (and tests) added to demonstrated extensions for modeling catchability.
+* New plots added to plot_wham_output.R and wham_plots_tables.R to include new catchability features.
+
 ### Bug fixes
 
 * Fix errors in `prepare_wham_input` introduced in 1.0.5 when not all index data in `.dat` are used (aggregate or proportion-at-age, all years or a subset) [12abdef](https://github.com/timjmiller/wham/commit/12abdefb22e7b8b5f0640b0389b5e07fc7a00877)
 * Require updated version of `TMBhelper` [issue 47](https://github.com/timjmiller/wham/issues/47)
 * Peel `which_F_age` (fix error when projecting a peel doing retrospective predictions, ex9)
 * Ecov AR1 mean parameterization
+* simulation of Dirichlet-multinomial age composition (caught by @seananderson).
+* error reported in [issue 48](https://github.com/timjmiller/wham/issues/48). There is no `opt` element when do.fit = FALSE.
+* `plot_wham_output` now removes any existing plot files in the directories where plots are saved before writing files so that any orphaned files from previous fits are not included in the results and html rendering.
 
 wham 1.0.5 (2021-08-25)
 =========================

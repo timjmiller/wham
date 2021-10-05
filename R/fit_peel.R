@@ -42,6 +42,14 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
     temp$data$ind_Ecov_out_end = model$dat$ind_Ecov_out_end - peel # reduce by model dim, not ecov dim
     temp$data$Ecov_use_obs[(temp$data$n_years_Ecov+1):(temp$data$n_years_Ecov+peel.ecov), ] <- 0
   }
+
+  #peel any q random effects
+  if(any(temp$data$use_q_re >0)) {
+    ind = which(temp$data$use_q_re >0)
+    tmp = matrix(NA, n_years + peel, temp$data$n_indices)
+    tmp[1:n_years,ind] = 1:(n_years*ind)
+    temp$map$q_re = factor(tmp)
+  }
   
   # if("log_NAA" %in% temp$random){
     tmp <- rbind(matrix(1:(temp$data$n_ages*(n_years-1)), n_years-1), matrix(rep(NA, peel*temp$data$n_ages), peel))

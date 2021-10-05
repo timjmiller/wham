@@ -43,3 +43,7 @@ source(file.path(wham.dir, "example_scripts", "ex9_retro_pred.R"))
 # Ex 10
 write.dir <- file.path(main.dir,"ex10")
 source(file.path(wham.dir, "example_scripts", "ex10_om_mse.R"))
+
+# Ex 10
+write.dir <- file.path(main.dir,"ex11")
+source(file.path(wham.dir, "example_scripts", "ex11_catchability.R"))

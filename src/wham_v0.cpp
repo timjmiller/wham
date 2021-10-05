@@ -55,6 +55,9 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(index_aref);
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
+  DATA_IVECTOR(use_q_prior);
+  DATA_VECTOR(logit_q_prior_sigma);
+  DATA_IVECTOR(use_q_re); //n_indices, 0= no re, >0 = use re 
   DATA_MATRIX(selpars_lower);
   DATA_MATRIX(selpars_upper);
   DATA_INTEGER(n_NAA_sigma); // 0 = SCAA, 1 = logR only, 2 = full state-space with shared sig_a for a > 1
@@ -76,8 +79,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
   DATA_IVECTOR(Fbar_ages);
-  //DATA_INTEGER(simulate_state); //if 1 then state parameters will be simulated
-  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov) in that order) will be simulated.
+  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
   DATA_IVECTOR(simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
   DATA_IVECTOR(simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
@@ -102,15 +104,17 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
   DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
   DATA_MATRIX(Ecov_obs);
-  DATA_IVECTOR(Ecov_lag);
-  DATA_IVECTOR(Ecov_how); // 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
-  DATA_IVECTOR(Ecov_poly); // polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
-  DATA_IVECTOR(Ecov_where); // 0 = no Ecov, 1 = recruit, 2 = mortality
+  //Below is not used anymore
+  //DATA_IVECTOR(Ecov_lag);
+  DATA_IVECTOR(Ecov_how); // specific to recruitment effects. 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
+  //Below is not used anymore
+  //DATA_IMATRIX(Ecov_poly); // n_Ecov x 2+n_indices. polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
+  DATA_IMATRIX(Ecov_where); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
   DATA_INTEGER(year1_Ecov); // first year Ecov
   DATA_INTEGER(year1_model); // first year model
-  DATA_IVECTOR(ind_Ecov_out_start); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
-  DATA_IVECTOR(ind_Ecov_out_end); // index of Ecov_x to use for Ecov_out (operates on pop model, lagged)
+  DATA_IMATRIX(ind_Ecov_out_start); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
+  DATA_IMATRIX(ind_Ecov_out_end); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
   DATA_INTEGER(Ecov_obs_sigma_opt); // 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
   DATA_IMATRIX(Ecov_use_re); // 0/1: use Ecov_re? If yes, add to nll. (n_years_Ecov + n_years_proj_Ecov) x n_Ecov
 
@@ -128,7 +132,10 @@ Type objective_function<Type>::operator() ()
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
-  PARAMETER_VECTOR(logit_q);
+  PARAMETER_VECTOR(logit_q); //n_indices (mean/constant q pars)
+  PARAMETER_VECTOR(q_prior_re); //n_indices (if a prior is used for q, this is used instead of logit_q)
+  PARAMETER_ARRAY(q_re); //n_years x n_indices (time series of)
+  PARAMETER_MATRIX(q_repars) //n_indices x 2 (sigma, rho)
   PARAMETER_VECTOR(log_F1);
   PARAMETER_MATRIX(F_devs);
   PARAMETER_VECTOR(log_N1_pars); //length = n_ages or 2
@@ -151,7 +158,7 @@ Type objective_function<Type>::operator() ()
 
   // parameters - environmental covariate ("Ecov")
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
-  PARAMETER_ARRAY(Ecov_beta); // dim = n.poly x n.ecov x n.ages, beta_R in eqns 4-5, Miller et al. (2016)
+  PARAMETER_ARRAY(Ecov_beta); // dim = (2 + n_indices) x n_poly x n_ecov x n_ages, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (Ecov1, sig), AR1: 3 par (mu, sig, phi); ncol = N_ecov
   PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
@@ -179,7 +186,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
   array<Type> QAA(n_years_model+n_years_proj,n_indices,n_ages);
   vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages;
-  vector<Type> q(n_indices);
+  matrix<Type> q(n_years_model+n_years_proj,n_indices);
   vector<Type> t_paa(n_ages);
   vector<Type> t_pred_paa(n_ages);
   int n_toavg = avg_years_ind.size();
@@ -305,76 +312,75 @@ Type objective_function<Type>::operator() ()
 
   // Environmental covariate process model --------------------------------------
   matrix<Type> Ecov_x(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // 'true' estimated Ecov (x_t in Miller et al. 2016 CJFAS)
-  matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   matrix<Type> nll_Ecov(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // nll contribution each Ecov_re
   nll_Ecov.setZero();
 
-  if(Ecov_model(0) == 0){ // no Ecov
-    Ecov_out.setZero(); // set Ecov_out = 0
-  } else { // yes Ecov
-    for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
-      // Ecov model option 1: RW
-      if(Ecov_model(i) == 1){
-        Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
-        Ecov_sig = exp(Ecov_process_pars(1,i));
-        Type Ecov1; // Ecov_x in year 1 (fixed effect)
-        Ecov1 = Ecov_process_pars(0,i);
+// These next two lines don't allow for Ecov_model >0 after the first column of Ecov.
+//  if(Ecov_model(0) == 0){ // no Ecov
+//  } else { // yes Ecov
+  for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
+    // Ecov model option 1: RW
+    if(Ecov_model(i) == 1){
+      Type Ecov_sig; // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
+      Ecov_sig = exp(Ecov_process_pars(1,i));
+      Type Ecov1; // Ecov_x in year 1 (fixed effect)
+      Ecov1 = Ecov_process_pars(0,i);
 
-        Ecov_x(0,i) = Ecov1;
-        nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
-        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(1,i) == 1) {
-          if(simulate_period(0) == 1) {
-            Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
-          }
-        }
-        Ecov_x(1,i) = Ecov_re(1,i);
-        for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
-          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
-            if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
-              Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
-            }
-          }
-          Ecov_x(y,i) = Ecov_re(y,i);
+      Ecov_x(0,i) = Ecov1;
+      nll_Ecov(1,i) -= dnorm(Ecov_re(1,i), Ecov1, Ecov_sig, 1); // Ecov_re(0,i) set to NA
+      SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(1,i) == 1) {
+        if(simulate_period(0) == 1) {
+          Ecov_re(1,i) = rnorm(Ecov1, Ecov_sig);
         }
       }
-
-      // Ecov model option 2: AR1
-      if(Ecov_model(i) == 2){
-        Type Ecov_mu; // mean
-        Type Ecov_phi; // autocorrelation
-        Type Ecov_sig; // conditional sd
-        Ecov_mu = Ecov_process_pars(0,i);
-        Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(2,i)));
-        Ecov_sig = exp(Ecov_process_pars(1,i));
-
-        nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
-        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(0,i) == 1) {
-          if(simulate_period(0) == 1) {
-            Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+      Ecov_x(1,i) = Ecov_re(1,i);
+      for(int y = 2; y < n_years_Ecov + n_years_proj_Ecov; y++){
+        nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_re(y-1,i), Ecov_sig, 1);
+        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
+          if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
+            Ecov_re(y,i) = rnorm(Ecov_re(y-1,i), Ecov_sig);
           }
         }
-        for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
-        {
-          nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
-          SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
-            if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
-              Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
-            }
+        Ecov_x(y,i) = Ecov_re(y,i);
+      }
+    }
+
+    // Ecov model option 2: AR1
+    if(Ecov_model(i) == 2){
+      Type Ecov_mu; // mean
+      Type Ecov_phi; // autocorrelation
+      Type Ecov_sig; // conditional sd
+      Ecov_mu = Ecov_process_pars(0,i);
+      Ecov_phi = -Type(1) + Type(2)/(Type(1) + exp(-Ecov_process_pars(2,i)));
+      Ecov_sig = exp(Ecov_process_pars(1,i));
+
+      nll_Ecov(0,i) -= dnorm(Ecov_re(0,i), Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))), 1);
+      SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(0,i) == 1) {
+        if(simulate_period(0) == 1) {
+          Ecov_re(0,i) = rnorm(Type(0), Ecov_sig*exp(-Type(0.5) * log(Type(1) - pow(Ecov_phi,Type(2)))));
+        }
+      }
+      for(int y = 1; y < n_years_Ecov + n_years_proj_Ecov; y++)
+      {
+        nll_Ecov(y,i) -= dnorm(Ecov_re(y,i), Ecov_phi * Ecov_re(y-1,i), Ecov_sig, 1);
+        SIMULATE if(simulate_state(3) == 1 & Ecov_use_re(y,i) == 1) {
+          if((simulate_period(0) == 1 & y < n_years_Ecov) | (simulate_period(1) == 1 & y > n_years_Ecov-1)) {
+            Ecov_re(y,i) = rnorm(Ecov_phi * Ecov_re(y-1,i), Ecov_sig);
           }
         }
-        for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
       }
+      for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++) Ecov_x(y,i) = Ecov_mu + Ecov_re(y,i);
+    }
 
-      // add to nll if estimated (option in projection years to fix Ecov at last or average value)
-      for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++){
-        if(Ecov_use_re(y,i) == 1){
-          nll += nll_Ecov(y,i);
-        }
+    // add to nll if estimated (option in projection years to fix Ecov at last or average value)
+    for(int y = 0; y < n_years_Ecov + n_years_proj_Ecov; y++){
+      if(Ecov_use_re(y,i) == 1){
+        nll += nll_Ecov(y,i);
       }
-    } // end loop over Ecovs
-    SIMULATE if(simulate_state(3) == 1) if(sum(simulate_period) > 0) REPORT(Ecov_re);
-  }
+    }
+  } // end loop over Ecovs
+  SIMULATE if(simulate_state(3) == 1) if(sum(simulate_period) > 0) REPORT(Ecov_re);
+//  }
 
   // Environmental covariate observation model -------------------------------------
   //TODO: Ecov obs are not yet simulated in projection years!!!!!!!!
@@ -409,37 +415,50 @@ Type objective_function<Type>::operator() ()
     REPORT(Ecov_obs_logsigma);
   }
 
+ 
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
+  int n_effects = Ecov_beta.dim(0); // 2 + n_indices (recruitment, mortality and any catchabilities)
+  array<Type> Ecov_out(n_years_model + n_years_proj, n_effects, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
+  Ecov_out.setZero(); // set Ecov_out = 0
   for(int i = 0; i < n_Ecov; i++){
-    int ct = 0;
-    for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
-      Ecov_out(ct,i) = Ecov_x(y,i);
-      ct++;
+    for(int t = 0; t < n_effects; t++){
+      int ct = 0;
+      for(int y = ind_Ecov_out_start(i,t); y < ind_Ecov_out_end(i,t) + 1 + n_years_proj; y++){
+        Ecov_out(ct,t,i) = Ecov_x(y,i);
+        ct++;
+      }
     }
   }
 
   // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
-  vector<matrix<Type> > Ecov_lm(n_Ecov); // ecov linear model for each Ecov, dim = n_years_model + n_years_proj, n_ages
+  // ecov_beta is now 4D array, dim = (2 + n_indices) x n_poly x n_ecov x n_ages
+  int n_poly = Ecov_beta.dim(1); // now a 4D array dim: (n_effects,n_poly,n_Ecov,n_ages) is second dimension
+  //vector<matrix<Type>> Ecov_lm(n_Ecov)(n_effects); // ecov linear model for each Ecov, dim = n_years_model + n_years_proj, n_ages
   // Ecov_lm.setZero();
-  // ecov_beta is now 3D array, dim = n.poly x n.ecov x n.ages
-  int n_poly = Ecov_beta.rows(); // still works on 3D array bc npoly is first dimension
+  // Ecov_lm stores the linear models for each Ecov and where it is used. dim = n_Ecov, n_effects, n_years_model + n_years_proj, n_ages
+  // n_effects dimension is: 0: recruitment, 1: M, 2-1+n_indices: which catchability it affects
+  array<Type> Ecov_lm(n_Ecov, n_effects,n_years_model + n_years_proj, n_ages); 
+  //vector<matrix<Type> > Ecov_lm(n_Ecov); // ecov linear model for each Ecov, dim = n_years_model + n_years_proj, n_ages
   for(int i = 0; i < n_Ecov; i++){
-    vector<Type> thecol = Ecov_out.col(i);
-    matrix<Type> X_poly(n_years_model + n_years_proj, n_poly);
-    X_poly.setZero();
-    if(n_poly == 1){ // n_poly = 1 if ecov effect is none or linear
-      X_poly = thecol.matrix();
-    } else { // n_poly > 1, get poly transformation for ith ecov
-      X_poly = poly_trans(thecol, n_poly, n_years_model, n_years_proj);
-    }
-    matrix<Type> tmp(n_years_model + n_years_proj, n_ages);
-    tmp.setZero();
-    Ecov_lm(i) = tmp;
-    for(int y = 0; y < n_years_model + n_years_proj; y++){
-      for(int a = 0; a < n_ages; a++){
-        for(int j = 0; j < n_poly; j++){
-          Ecov_lm(i)(y,a) += Ecov_beta(j,i,a) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
+    for(int t = 0; t < n_effects; t++){
+      vector<Type> thecol(n_years_model + n_years_proj);
+      for(int y = 0; y < n_years_model + n_years_proj; y++) thecol(y) = Ecov_out(y,t,i);
+      matrix<Type> X_poly(n_years_model + n_years_proj, n_poly);
+      X_poly.setZero();
+      if(n_poly == 1){ // n_poly = 1 if ecov effect is none or linear
+        X_poly = thecol.matrix();
+      } else { // n_poly > 1, get poly transformation for ith ecov
+        X_poly = poly_trans(thecol, n_poly, n_years_model, n_years_proj);
+      }
+      //matrix<Type> tmp(n_years_model + n_years_proj, n_ages);
+      //tmp.setZero();
+      //Ecov_lm(i)(t) = tmp;
+      for(int y = 0; y < n_years_model + n_years_proj; y++){
+        for(int a = 0; a < n_ages; a++){
+          for(int j = 0; j < n_poly; j++){
+            Ecov_lm(i,t,y,a) += Ecov_beta(t,j,i,a) * X_poly(y,j); // poly transformation returns design matrix, don't need to take powers
+          }
         }
       }
     }
@@ -552,9 +571,9 @@ Type objective_function<Type>::operator() ()
   }
   // add ecov effect on M (by year, shared across ages)
   for(int i=0; i < n_Ecov; i++){
-    if(Ecov_where(i) == 2) if(Ecov_how(i) == 1){ // if ecov i affects M
+    if(Ecov_where(i,1) == 1) { //not sure why Ecov_how is needed for M. if(Ecov_how(i) == 1){ // if ecov i affects M
       for(int a = 0; a < n_ages; a++){
-        for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(i)(y,a));
+        for(int y = 0; y < n_years_model + n_years_proj; y++) MAA(y,a) *= exp(Ecov_lm(i,1,y,a));
       }
     }
   }
@@ -573,19 +592,93 @@ Type objective_function<Type>::operator() ()
     nll -= lprior_b;
   }
 
+  ///////NEW CODE
+  // --------------------------------------------------------------------------
+  // Survey catchability models
+  //
+  matrix<Type> nll_q(n_years_model+n_years_proj,n_indices);
+  nll_q.setZero();
+  vector<Type> sigma_q(n_indices);
+  sigma_q.setZero();
+  vector<Type> rho_q(n_indices);
+  rho_q.setZero();
+  vector<Type> nll_q_prior(n_indices);
+  nll_q_prior.setZero();
+  matrix<Type> logit_q_mat(n_years_model+n_years_proj, n_indices);
+  logit_q_mat.setZero();
+  for(int i = 0; i < n_indices; i++) {
+    
+    //use prior for q? q_prior_re are random effects with mean logit_q (fixed) and sd = logit_q_prior_sigma.
+    if(use_q_prior(i) == 1){ 
+      nll_q_prior(i) -= dnorm(q_prior_re(i), logit_q(i), logit_q_prior_sigma(i), 1);
+      SIMULATE if(simulate_state(4) == 1) if(sum(simulate_period) > 0){
+        q_prior_re(i) = rnorm(logit_q(i), logit_q_prior_sigma(i));
+      } 
+      for(int y = 0; y < n_years_model + n_years_proj; y++) logit_q_mat(y,i) += q_prior_re(i);
+    }
+    else for(int y = 0; y < n_years_model + n_years_proj; y++) logit_q_mat(y,i) += logit_q(i);
+    
+    if(use_q_re(i) > 0) // random effects on q, q_re = AR1 deviations on (year,age), dim = n_years x n_M_a
+    {
+      sigma_q(i) = exp(q_repars(i,0)); // conditional sd
+      rho_q(i) = rho_trans(q_repars(i,1)); // autocorrelation
+
+      nll_q(0,i) -= dnorm(q_re(0,i), Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))), 1);
+      SIMULATE if(simulate_state(4) == 1 & simulate_period(0) == 1) {
+        q_re(0,i) = rnorm(Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))));
+      }
+      logit_q_mat(0,i) += q_re(0,i); //add in q random effects.
+      for(int y = 1; y < n_years_model + n_years_proj; y++)
+      {
+        nll_q(y,i) -= dnorm(q_re(y,i), rho_q(i) * q_re(y-1,i), sigma_q(i), 1);
+        SIMULATE if(simulate_state(4) == 1) {
+          if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)) {
+            q_re(y,i) = rnorm(rho_q(i) * q_re(y-1,i), sigma_q(i));
+          }
+        }
+        logit_q_mat(y,i) += q_re(y,i); //add in q random effects.
+      }
+    }
+  }
+
+  nll += nll_q.sum() + nll_q_prior.sum();
+  
+  for(int y = 0; y < n_years_model + n_years_proj; y++) {
+    for(int ind = 0; ind < n_indices; ind++) {
+      for(int i=0; i < n_Ecov; i++){
+        if(Ecov_where(i,2+ind) == 1){ // if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
+          logit_q_mat(y,ind) += Ecov_lm(i,2+ind,y,0);
+        }
+      }
+      q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));
+    }
+  }
+  //////////////
+
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
-    q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
+    //q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
+  // add ecov effect on M (by year, shared across ages)
     for(int y = 0; y < n_years_model; y++)
     {
-      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
+      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
     }
     //just use last years selectivity for now
     if(do_proj == 1) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++) {
-      QAA(y,i,a) = q(i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
+      QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
     }
   }
+  REPORT(logit_q_mat);
+  ADREPORT(logit_q_mat);
+  REPORT(sigma_q);
+  REPORT(rho_q);
+  REPORT(nll_q);
+  REPORT(nll_q_prior);
+  REPORT(q_prior_re); //even if q_prior_re not simulated
+  REPORT(q_re); //even if q_re not simulated.
+  REPORT(q);
+  REPORT(QAA);
 
   // Construct fishing mortality-at-age (FAA)
   FAA_tot.setZero();
@@ -670,18 +763,18 @@ Type objective_function<Type>::operator() ()
         log_SR_b.fill(mean_rec_pars(1));
       }
       for(int i=0; i < n_Ecov; i++){
-        if(Ecov_where(i) == 1){ // if ecov i affects recruitment
+        if(Ecov_where(i,0) == 1){ // if ecov i affects recruitment
           for(int y = 0; y < n_years_model + n_years_proj; y++)
           {
             // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
             if(Ecov_how(i) == 1 | Ecov_how(i) == 4)
             {
-              log_SR_a(y) += Ecov_lm(i)(y,0);
+              log_SR_a(y) += Ecov_lm(i,0,y,0);
             }
             // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
             if(Ecov_how(i) == 2 | Ecov_how(i) == 4)
             {
-              log_SR_b(y) += Ecov_lm(i)(y,0);
+              log_SR_b(y) += Ecov_lm(i,0,y,0);
             }
           }
         }
@@ -708,16 +801,16 @@ Type objective_function<Type>::operator() ()
         log_SR_b.fill(mean_rec_pars(1));
       }
       for(int i=0; i < n_Ecov; i++){
-        if(Ecov_where(i) == 1){ // if ecov i affects recruitment
+        if(Ecov_where(i,0) == 1){ // if ecov i affects recruitment
           for(int y = 0; y < n_years_model + n_years_proj; y++)
           {
             if(Ecov_how(i) == 1) // "controlling" = dens-indep mortality
             {
-              log_SR_a(y) += Ecov_lm(i)(y,0);
+              log_SR_a(y) += Ecov_lm(i,0,y,0);
             }
             if(Ecov_how(i) == 4) // "masking" = metabolic/growth (decreases dR/dS)
             { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
-              log_SR_b(y) += 1.0 + Ecov_lm(i)(y,0);
+              log_SR_b(y) += 1.0 + Ecov_lm(i,0,y,0);
             }
           }
         }
@@ -1201,8 +1294,6 @@ Type objective_function<Type>::operator() ()
   REPORT(SSB);
   REPORT(selAA);
   REPORT(MAA);
-  REPORT(q);
-  REPORT(QAA);
   REPORT(F);
   REPORT(FAA);
   REPORT(FAA_tot);

@@ -12,6 +12,7 @@ prepare_wham_input(
   selectivity = NULL,
   M = NULL,
   NAA_re = NULL,
+  catchability = NULL,
   age_comp = NULL,
   basic_info = NULL
 )
@@ -30,6 +31,8 @@ prepare_wham_input(
 \item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)}
 
 \item{NAA_re}{(optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)}
+
+\item{catchability}{(optional) list specifying options for priors and random effects on catchability (see details)}
 
 \item{age_comp}{(optional) character or named list, specifies age composition model for fleet(s) and indices (see details)}
 
@@ -87,30 +90,41 @@ Otherwise, it must be a named list with the following components:
     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
     Use the observation? Can be used to ignore subsets of the ecov without changing data files.}
-    \item{$lag}{Offset between the ecov observations and their affect on the stock.
-    I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}.}
+    \item{$lag}{integer vector of offsets between the ecov observation/process and their affect on the stock.
+    I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}. May also be a list (length=n_Ecov) of vectors (length = 2+n_indices) if multiple effects of one or more Ecovs are modeled.}
     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
-    \item{$where}{Where does the ecov affect the population? \code{"recuit"} = recruitment,
-    \code{"M"} = natural mortality, \code{"none"} = fit ecov but without an effect on the population.}
-    \item{$how}{How does the ecov affect the \code{$where} process? These options are
-    specific to the \code{$where} process.
-Options for recruitment are described in \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}:
-  \describe{
-    \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
-    \item{= 1}{"controlling" (dens-indep mortality)}
-    \item{= 2}{"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)}
-    \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
-    \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
-    \item{= 5}{"directive" (e.g. behavioral)}
-  }
-Options for M:
-  \describe{
-    \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
-    \item{= 1}{effect on mean M (shared across ages)}
-  }}
-    \item{$link_model}{Model describing ecov effect on the \code{$where} process. Options: 'linear' (default) or 'poly-x'
-    where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b0 + b1*ecov + b2*ecov^2 + ...}).}
+    \item{$where}{Character vector for where each ecov affects the population. \code{"recruit"} = recruitment,
+    \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the
+    population. May also be a list (element for each ecov) of character vectors ("none", "recruit", "M", and/or "q") so each ecov can multiple effects.}
+    \item{$indices}{indices that each ecov affects. Must be a list (length = n_Ecov), where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
+    \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: 'none', 'linear' (default) or 'poly-x'
+    where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
+     effects on (1) recruitment, (2) M, and catchabilities for (3) index 1,..., (2+n_indices) index n_indices (length of the vector is 2 + n_indices).}
     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.}
+    \item{$how}{How does the ecov affect the \code{$where} process? An integer vector (length = n_Ecov). If corresponding \code{$where} = "none", then this is ignored.
+    These options are specific to the \code{$where} process.
+      \describe{
+        \item{Recruitment options (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}):}{
+          \describe{
+            \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+            \item{= 1}{"controlling" (dens-indep mortality)}
+            \item{= 2}{"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)}
+            \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
+            \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
+            \item{= 5}{"directive" (e.g. behavioral)}
+          }}
+        \item{M options:}{
+          \describe{
+            \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+            \item{= 1}{effect on mean M (shared across ages)}
+          }}
+        \item{Catchability options:}{
+          \describe{
+            \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
+            \item{= 1}{effect on one or more catchabilities (see \code{$indices)})}
+          }}
+      }
+    }
   }
 
 \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
@@ -149,14 +163,14 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
                  }
     \item{$re}{Time- and age-varying (random effects) on M. Note that random effects can only be estimated if
                mean M-at-age parameters are (\code{$est_ages} is not \code{NULL}).
-                 \describe{
-                   \item{"none"}{(default) M constant in time and across ages.}
-                   \item{"iid"}{M varies by year and age, but uncorrelated.}
-                   \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
-                   \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
-                   \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
-                 }
+                \describe{
+                  \item{"none"}{(default) M constant in time and across ages.}
+                  \item{"iid"}{M varies by year and age, but uncorrelated.}
+                  \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
+                  \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
+                  \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
                 }
+              }
     \item{$initial_means}{Initial/mean M-at-age vector, with length = number of ages (if \code{$model = "age-specific"})
                          or 1 (if \code{$model = "weight-at-age" or "constant"}). If \code{NULL}, initial mean M-at-age values are taken
                          from the first row of the MAA matrix in the ASAP data file.}
@@ -215,6 +229,26 @@ To fit a state-space model, specify \code{NAA_re}, a list with the following ent
 	 }
   }
 
+\code{catchability} specifies options for catchability. If \code{NULL} and \code{asap3} is not NULL, a single catchability parameter for each index is used with initial values specified in ASAP file. If both are NULL, initial catchabilities for all indices = 0.3.
+Otherwise, it is a list with the following optional entries:
+  \describe{
+    \item{$re}{Time-varying (random effects) for each index. Vector with length = number of indices.
+                 Each entry of \code{catchability$re} must be one of the following options:
+                 \describe{
+                   \item{"none"}{(default) are constant}
+                   \item{"iid"}{vary by year and age/par, but uncorrelated}
+                   \item{"ar1"}{correlated by year (AR1)}
+                 }
+                }
+    \item{$initial_q}{Initial catchabilities for each index. vector length = number of indices. Will override values provided in \code{basic_info$q}.
+       If \code{basic_info$q} and \code{asap3} are not provided, default q values are 0.3.}
+    \item{$q_lower}{Lower bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 0.}
+    \item{$q_upper}{Upper bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 1000.}
+    \item{$prior_sd}{vector of NA and standard deviations to use for gaussian prior on logit transform of catchability parameter. Length = number of indices.
+      Indices with non-NA values will have mean logit q as a random effect with mean determined by logit transform of \code{catchability$initial_q} and
+      sigma as standard error.}
+  }
+
 \code{age_comp} specifies the age composition models for fleet(s) and indices.
 If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 The age composition models available are:
@@ -270,7 +304,7 @@ The current options are:
     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points.}
     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
-    \item{$simulate_process_error}{T/F vector (length = 4). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, and Ecov. Only used if applicable.}
+    \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
