@@ -41,9 +41,9 @@
 #'     \item{$lag}{integer vector of offsets between the ecov observation/process and their affect on the stock.
 #'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}. May also be a list (length=n_Ecov) of vectors (length = 2+n_indices) if multiple effects of one or more Ecovs are modeled.}
 #'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
-#'     \item{$where}{Character vector for where each ecov affects the population. \code{"recuit"} = recruitment,
-#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the 
-#'     population. May also be a list (element for each ecov) of character vectors ("none", "recruit", and/or "M") so each ecov can multiple effects.}
+#'     \item{$where}{Character vector for where each ecov affects the population. \code{"recruit"} = recruitment,
+#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the
+#'     population. May also be a list (element for each ecov) of character vectors ("none", "recruit", "M", and/or "q") so each ecov can multiple effects.}
 #'     \item{$indices}{indices that each ecov affects. Must be a list (length = n_Ecov), where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
 #'     \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: 'none', 'linear' (default) or 'poly-x'
 #'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
@@ -72,7 +72,7 @@
 #'             \item{= 1}{effect on one or more catchabilities (see \code{$indices)})}
 #'           }}
 #'       }
-#'     } 
+#'     }
 #'   }
 #'
 #' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
@@ -188,12 +188,12 @@
 #'                    \item{"ar1"}{correlated by year (AR1)}
 #'                  }
 #'                 }
-#'     \item{$initial_q}{Initial catchabilities for each index. vector length = number of indices. Will override values provided in \code{basic_info$q}. 
+#'     \item{$initial_q}{Initial catchabilities for each index. vector length = number of indices. Will override values provided in \code{basic_info$q}.
 #'        If \code{basic_info$q} and \code{asap3} are not provided, default q values are 0.3.}
 #'     \item{$q_lower}{Lower bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 0.}
 #'     \item{$q_upper}{Upper bound for catchabilities for each index. vector length = number of indices. For indices with NULL components default lower values are 1000.}
-#'     \item{$prior_sd}{vector of NA and standard deviations to use for gaussian prior on logit transform of catchability parameter. Length = number of indices. 
-#'       Indices with non-NA values will have mean logit q as a random effect with mean determined by logit transform of \code{catchability$initial_q} and  
+#'     \item{$prior_sd}{vector of NA and standard deviations to use for gaussian prior on logit transform of catchability parameter. Length = number of indices.
+#'       Indices with non-NA values will have mean logit q as a random effect with mean determined by logit transform of \code{catchability$initial_q} and
 #'       sigma as standard error.}
 #'   }
 #'
