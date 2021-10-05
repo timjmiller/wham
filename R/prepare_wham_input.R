@@ -52,7 +52,7 @@
 #'     \item{$how}{How does the ecov affect the \code{$where} process? An integer vector (length = n_Ecov). If corresponding \code{$where} = "none", then this is ignored.
 #'     These options are specific to the \code{$where} process.
 #'       \describe{
-#'         \item{Recruitment options (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}):
+#'         \item{Recruitment options (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}):}{
 #'           \describe{
 #'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
 #'             \item{= 1}{"controlling" (dens-indep mortality)}
@@ -60,17 +60,17 @@
 #'             \item{= 3}{"lethal" (threshold, i.e. R --> 0 at some ecov value)}
 #'             \item{= 4}{"masking" (metabolic/growth, decreases dR/dS)}
 #'             \item{= 5}{"directive" (e.g. behavioral)}
-#'         }}
-#'         \item{M options:
+#'           }}
+#'         \item{M options:}{
 #'           \describe{
 #'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
 #'             \item{= 1}{effect on mean M (shared across ages)}
-#'         }}
-#'         \item{Catchability options:
+#'           }}
+#'         \item{Catchability options:}{
 #'           \describe{
 #'             \item{= 0}{none (but fit ecov time-series model in order to compare AIC)}
 #'             \item{= 1}{effect on one or more catchabilities (see \code{$indices)})}
-#'         }}
+#'           }}
 #'       }
 #'     } 
 #'   }

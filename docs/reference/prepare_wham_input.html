@@ -308,21 +308,19 @@ Otherwise, it must be a named list with the following components:</p><dl>
     <dt>$how</dt><dd><p>How does the ecov affect the <code>$where</code> process? An integer vector (length = n_Ecov). If corresponding <code>$where</code> = "none", then this is ignored.
     These options are specific to the <code>$where</code> process.
       <dl>
-        <dt>Recruitment options (see <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a>):
-          <dl>
+        <dt>Recruitment options (see <a href='https://www.sciencedirect.com/science/article/pii/S1385110197000221'>Iles &amp; Beverton (1998)</a>):</dt><dd><p><dl>
             <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
             <dt>= 1</dt><dd><p>"controlling" (dens-indep mortality)</p></dd>
             <dt>= 2</dt><dd><p>"limiting" (carrying capacity, e.g. ecov determines amount of suitable habitat)</p></dd>
             <dt>= 3</dt><dd><p>"lethal" (threshold, i.e. R --&gt; 0 at some ecov value)</p></dd>
             <dt>= 4</dt><dd><p>"masking" (metabolic/growth, decreases dR/dS)</p></dd>
-            <dt>= 5</dt><dd><p>"directive" (e.g. behavioral)</p></dd></dl></dt><dd><p></p></dd>        <dt>M options:
-          <dl>
+            <dt>= 5</dt><dd><p>"directive" (e.g. behavioral)</p></dd></dl></p></dd>
+        <dt>M options:</dt><dd><p><dl>
             <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
-            <dt>= 1</dt><dd><p>effect on mean M (shared across ages)</p></dd></dl></dt><dd><p></p></dd>        <dt>Catchability options:
-          <dl>
+            <dt>= 1</dt><dd><p>effect on mean M (shared across ages)</p></dd></dl></p></dd>
+        <dt>Catchability options:</dt><dd><p><dl>
             <dt>= 0</dt><dd><p>none (but fit ecov time-series model in order to compare AIC)</p></dd>
-            <dt>= 1</dt><dd><p>effect on one or more catchabilities (see <code>$indices)</code>)</p></dd></dl></dt><dd><p></p></dd>      
-</dl></p></dd> 
+            <dt>= 1</dt><dd><p>effect on one or more catchabilities (see <code>$indices)</code>)</p></dd></dl></p></dd></dl></p></dd> 
   
 </dl>
 
