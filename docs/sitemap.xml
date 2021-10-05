@@ -1,126 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://timjmiller.github.io/wham/404.html</loc>
+    <loc>https://timjmiller.github.io/wham//index.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/CONTRIBUTING.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/check_convergence.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/LICENSE-text.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/compare_wham_models.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex10_om_mse.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/fit_peel.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex11_catchability.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/fit_tmb.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex1_basics.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/fit_wham.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/mohns_rho.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex3_projections.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/pipe.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex4_selectivity.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/plot_wham_output.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex5_GSI_M.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/prepare_projection.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex6_NAA.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/prepare_wham_input.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex7_debug.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/project_wham.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex8_compare.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/read_asap3_dat.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/ex9_retro_pred.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/read_asap3_fit.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/articles/index.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/read_wham_fit.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/authors.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/retro.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/index.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/retro_res.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/news/index.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/set_age_sel0.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/check_convergence.html</loc>
+    <loc>https://timjmiller.github.io/wham//reference/wham_html.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/compare_wham_models.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex10_om_mse.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/fit_peel.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex11_catchability.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/fit_tmb.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex1_basics.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/fit_wham.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex2_CPI_recruitment.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/index.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex3_projections.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/mohns_rho.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex4_selectivity.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/pipe.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex5_GSI_M.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/plot_wham_output.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex6_NAA.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/prepare_projection.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex7_debug.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/prepare_wham_input.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex8_compare.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/reference/prepare_wham_om_input.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/prepare_wham_om_proj.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/project_wham.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/read_asap3_dat.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/read_asap3_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/read_wham_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/retro.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/retro_res.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/set_age_sel0.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/setup_wham_om.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/update_wham_input.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/reference/wham_html.html</loc>
+    <loc>https://timjmiller.github.io/wham//articles/ex9_retro_pred.html</loc>
   </url>
 </urlset>

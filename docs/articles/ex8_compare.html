@@ -20,8 +20,6 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
-
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -95,7 +93,7 @@
   </a>
 </li>
 <li>
-  <a href="https://github.com/timjmiller/wham/" class="external-link">
+  <a href="https://github.com/timjmiller/wham/">
     <span class="fab fa-github fa-lg"></span>
      
     Source code
@@ -111,14 +109,14 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
+  <a href="https://github.com/timjmiller/wham/issues/">
     <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
-  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
     <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
@@ -134,13 +132,13 @@
 
       
 
-      </header><script src="ex8_compare_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 8: Compare ASAP and WHAM model results</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex8_compare.Rmd" class="external-link"><code>vignettes/ex8_compare.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex8_compare.Rmd"><code>vignettes/ex8_compare.Rmd</code></a></small>
       <div class="hidden name"><code>ex8_compare.Rmd</code></div>
 
     </div>
@@ -148,22 +146,22 @@
     
     
 <p>This is the 8th WHAM example. We assume you already have <code>wham</code> installed and are relatively familiar with the package. If not, read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and <a href="https://timjmiller.github.io/wham/articles/">Tutorial</a>.</p>
-<p>In this vignette we show how to read in ASAP3 model results and compare to WHAM models, using the <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> function. We use the <a href="https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_HAD_GB_RPT.pdf" class="external-link">2019 Georges Bank haddock stock assessment</a>, which is an update to the VPA benchmark (<a href="https://repository.library.noaa.gov/view/noaa/5227" class="external-link">NEFSC 2008</a>). Thanks to Liz Brooks for sharing the ASAP3 data file and model output in preparation for the 2021 research track assessment–these files and results are very preliminary.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>In this vignette we show how to read in ASAP3 model results and compare to WHAM models, using the <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> function. We use the <a href="https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_HAD_GB_RPT.pdf">2019 Georges Bank haddock stock assessment</a>, which is an update to the VPA benchmark (<a href="https://repository.library.noaa.gov/view/noaa/5227">NEFSC 2008</a>). Thanks to Liz Brooks for sharing the ASAP3 data file and model output in preparation for the 2021 research track assessment--these files and results are very preliminary.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>Create a directory for this analysis:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
 <p>The Georges Bank haddock ASAP data file is distributed in <code>wham</code>. Read in the ASAP file, <code>BASE_3.DAT</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="va">asap.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"BASE_3"</span><span class="op">)</span>
-<span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">asap.dir</span>,<span class="st">"BASE_3.DAT"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="va">asap.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"BASE_3"</span><span class="op">)</span>
+<span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">asap.dir</span>,<span class="st">"BASE_3.DAT"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Define three basic WHAM models with different numbers-at-age random effects:</p>
 <ul>
 <li>
@@ -171,13 +169,13 @@
 <li>
 <code>m2</code>: recruitment as random effects, estimating <span class="math inline">\(\sigma^2_R\)</span>.</li>
 <li>
-<code>m3</code>: all numbers-at-age are random effects, i.e. the full state-space model.</li>
+<code>m3</code>: all numbers-at-age are random effects, i.e. the full state-space model.</li>
 </ul>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>naa_sig<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'none'</span>,<span class="st">'rec'</span>,<span class="st">'rec+1'</span><span class="op">)</span>, naa_cor<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'none'</span>,<span class="st">'iid'</span>,<span class="st">'iid'</span><span class="op">)</span><span class="op">)</span>
-<span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>
-<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Model</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>naa_sig<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'none'</span>,<span class="st">'rec'</span>,<span class="st">'rec+1'</span><span class="op">)</span>, naa_cor<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'none'</span>,<span class="st">'iid'</span>,<span class="st">'iid'</span><span class="op">)</span><span class="op">)</span>
+<span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>
+<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Model</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span>
 
 <span class="co"># look at model table</span>
 <span class="va">df.mods</span>
@@ -187,11 +185,11 @@
 <span class="co">#&gt; 3    m3   rec+1     iid</span></code></pre></div>
 <div id="run-the-wham-models" class="section level2">
 <h2 class="hasAnchor">
-<a href="#run-the-wham-models" class="anchor" aria-hidden="true"></a>Run the WHAM models</h2>
+<a href="#run-the-wham-models" class="anchor"></a>Run the WHAM models</h2>
 <p>All models use the same options for expected recruitment (random about mean, no stock-recruit function) and selectivity as specified in <code>BASE_3.DAT</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">NAA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cor<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"naa_cor"</span><span class="op">]</span>, sigma<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"naa_sig"</span><span class="op">]</span><span class="op">)</span>
+  <span class="va">NAA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>cor<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"naa_cor"</span><span class="op">]</span>, sigma<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"naa_sig"</span><span class="op">]</span><span class="op">)</span>
   <span class="kw">if</span><span class="op">(</span><span class="va">NAA_list</span><span class="op">$</span><span class="va">sigma</span> <span class="op">==</span> <span class="st">'none'</span><span class="op">)</span> <span class="va">NAA_list</span> <span class="op">=</span> <span class="cn">NULL</span>
 
   <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">2</span>,
@@ -199,142 +197,174 @@
                               NAA_re <span class="op">=</span> <span class="va">NAA_list</span><span class="op">)</span>   
 
   <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa<span class="op">=</span><span class="cn">F</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
 <div id="look-at-convergence-and-diagnostics" class="section level2">
 <h2 class="hasAnchor">
-<a href="#look-at-convergence-and-diagnostics" class="anchor" aria-hidden="true"></a>Look at convergence and diagnostics</h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span>
-<span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 means opt converged</span>
-<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span>
+<a href="#look-at-convergence-and-diagnostics" class="anchor"></a>Look at convergence and diagnostics</h2>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span>
+<span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 means opt converged</span>
+<span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span>
 <span class="va">conv_mods</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">[</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span><span class="op">]</span> 
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="va">conv_mods</span><span class="op">)</span><span class="op">{</span>
-  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, out.type<span class="op">=</span><span class="st">'pdf'</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, out.type<span class="op">=</span><span class="st">'pdf'</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>Get output from ASAP model run using <code><a href="../reference/read_asap3_fit.html">read_asap3_fit()</a></code>. Then combine the ASAP model and 3 WHAM models into a named list, <code>mods</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">base</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_fit.html">read_asap3_fit</a></span><span class="op">(</span>wd<span class="op">=</span><span class="va">asap.dir</span>, asap.name<span class="op">=</span><span class="st">"BASE_3"</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">base</span><span class="op">)</span>,<span class="va">mods</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ASAP"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"WHAM-"</span>,<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">base</span><span class="op">)</span>,<span class="va">mods</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ASAP"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"WHAM-"</span>,<span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="comparison-plots" class="section level2">
 <h2 class="hasAnchor">
-<a href="#comparison-plots" class="anchor" aria-hidden="true"></a>Comparison plots</h2>
+<a href="#comparison-plots" class="anchor"></a>Comparison plots</h2>
 <p>Now we can use <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code> to plot key output from all 4 models together for comparison.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kobe.prob<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">res</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"res.rds"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>kobe.prob<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">res</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"res.rds"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>There are many options, see <code><a href="../reference/compare_wham_models.html">?compare_wham_models</a></code>. To only get the AIC and retro table, not plots (note that ASAP models cannot be included here).</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.plot<span class="op">=</span><span class="cn">F</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">tab</span>,<span class="fl">2</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">tab</span>,<span class="fl">2</span><span class="op">)</span></code></pre></div>
 <pre><code>#&gt;          dAIC    AIC rho_R rho_SSB rho_Fbar
 #&gt; WHAM-m1   0.0 5775.7  0.82    0.28    -0.23
 #&gt; WHAM-m3 123.3 5899.0  0.31    0.16    -0.16
 #&gt; WHAM-m2 355.6 6131.3  0.73    0.27    -0.23</code></pre>
 <p>Only get the plots, not the table</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span><span class="op">)</span></code></pre></div>
 <div id="plot-1-3-panel-of-ssb-spawning-stock-biomass-f-fully-selected-fishing-mortality-and-recruitment" class="section level6">
 <h6>Plot 1: 3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_SSB_F_R.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_SSB_F_R.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-2-cv-coefficient-of-variation-for-ssb-f-and-recruitment" class="section level6">
 <h6>Plot 2: CV (coefficient of variation) for SSB, F, and Recruitment</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_CV.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_CV.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-3-fleet-selectivity-by-block-averaged-across-years" class="section level6">
 <h6>Plot 3: Fleet selectivity (by block, averaged across years)</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_fleets.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_fleets.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-4-index-selectivity-by-block-averaged-across-years" class="section level6">
 <h6>Plot 4: Index selectivity (by block, averaged across years)</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_indices.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_indices.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-5-selectivity-tile-fleets-indices-more-useful-for-time-varying-random-effects" class="section level6">
 <h6>Plot 5: Selectivity tile (fleets + indices, more useful for time-varying random effects)</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_tile.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_tile.png" style="width:60.0%">
+</div>
 <p>Plots 6 and 7 are only interesting when M is time-varying, so we omit them there.</p>
 </div>
 <div id="plot-8-3-panel-of-f-x-spr-ssb-at-f_xspr-and-yield-at-f_xspr" class="section level6">
 <h6>Plot 8: 3-panel of F X% SPR, SSB at F_X%SPR, and yield at F_X%SPR</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_ref_pts.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_ref_pts.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-9-2-panel-of-relative-status-ssb-ssb-at-f_xspr-and-f-f_xspr" class="section level6">
 <h6>Plot 9: 2-panel of relative status (SSB / SSB at F_X%SPR and F / F_X%SPR)</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_timeseries.png" style="width:60.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_timeseries.png" style="width:60.0%">
+</div>
 </div>
 <div id="plot-10-kobe-status-relative-ssb-vs--relative-f" class="section level6">
-<h6>Plot 10: Kobe status (relative SSB vs. relative F)</h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_kobe.png" style="width:60.0%"></p>
+<h6>Plot 10: Kobe status (relative SSB vs. relative F)</h6>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_kobe.png" style="width:60.0%">
+</div>
 </div>
 </div>
 <div id="modifying-comparison-plots" class="section level2">
 <h2 class="hasAnchor">
-<a href="#modifying-comparison-plots" class="anchor" aria-hidden="true"></a>Modifying comparison plots</h2>
+<a href="#modifying-comparison-plots" class="anchor"></a>Modifying comparison plots</h2>
 <p>Many modifications can be made using built-in options, see <code>$plot.opts</code> in <code><a href="../reference/compare_wham_models.html">compare_wham_models()</a></code>.</p>
 <p>Plots are saved as png by default, can be pdf</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>out.type<span class="op">=</span><span class="st">'pdf'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>out.type<span class="op">=</span><span class="st">'pdf'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><code>$which</code> lets you choose which of the plots to make <code>$years</code> lets you only plot a subset of model years</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># which = 9 (only plot relative status)</span>
 <span class="co"># years = 1980-2018</span>
-<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>years<span class="op">=</span><span class="fl">1980</span><span class="op">:</span><span class="fl">2018</span>, which<span class="op">=</span><span class="fl">9</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which9_zoom.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_zoom.png" style="width:60.0%"></p>
+<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>years<span class="op">=</span><span class="fl">1980</span><span class="op">:</span><span class="fl">2018</span>, which<span class="op">=</span><span class="fl">9</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which9_zoom.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_zoom.png" style="width:60.0%">
+</div>
 <p><code>$ci</code> can turn off the confidence interval shading for all or some models</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># which = 1 (SSB, F, recruitment)</span>
 <span class="co"># ci = FALSE (remove confidence intervals for all models, can also choose a subset)</span>
-<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ci<span class="op">=</span><span class="cn">FALSE</span>, which<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_noCI.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_noCI.png" style="width:60.0%"></p>
+<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>ci<span class="op">=</span><span class="cn">FALSE</span>, which<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_noCI.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_noCI.png" style="width:60.0%">
+</div>
 <p><code>$relative.to</code> lets you plot differences between the models relative to a base model (here, ASAP)</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># which = 2 (CV of SSB, F, recruitment)</span>
 <span class="co"># relative to ASAP</span>
-<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ci<span class="op">=</span><span class="cn">FALSE</span>, relative.to<span class="op">=</span><span class="st">"ASAP"</span>, which<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which2_relative.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which2_relative.png" style="width:60.0%"></p>
+<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>ci<span class="op">=</span><span class="cn">FALSE</span>, relative.to<span class="op">=</span><span class="st">"ASAP"</span>, which<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which2_relative.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which2_relative.png" style="width:60.0%">
+</div>
 <p><code>$kobe.yr</code> is used to specify the year in the Kobe relative status plot <code>$kobe.prob = F</code> will turn off the probabilities printed in each quadrant for each model (can be crowded with many models)</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># which = 10 (kobe plot)</span>
 <span class="co"># kobe.yr = 2010 (instead of terminal year, 2018)</span>
 <span class="co"># kobe.prob = F (don't print probabilities)</span>
-<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>which<span class="op">=</span><span class="fl">10</span>, kobe.yr<span class="op">=</span><span class="fl">2010</span>, kobe.prob<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which10_2010.png" style="width:60.0%"></p>
+<span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>which<span class="op">=</span><span class="fl">10</span>, kobe.yr<span class="op">=</span><span class="fl">2010</span>, kobe.prob<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which10_2010.png" style="width:60.0%">
+</div>
 <p>The plots made with <code>ggplot2</code> (all except Kobe) are returned in a list, <code>$g</code>, so you can modify them later. For example, to re-make the relative status timeseries plot with different fill and color scales:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_colour_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which9_colorchange.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_colorchange.png" style="width:60.0%"></p>
-<p>Note that even if you’re only making one plot using <code>$which</code>, <code>res$g</code> is still a list of length 10. For example, to plot SSB, F, and recruitment from 1980-2018 relative to ASAP without confidence intervals:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>years<span class="op">=</span><span class="fl">1980</span><span class="op">:</span><span class="fl">2018</span>, ci<span class="op">=</span><span class="cn">FALSE</span>, relative.to<span class="op">=</span><span class="st">"ASAP"</span>, which<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
-<span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span>, name <span class="op">=</span> <span class="st">"Set1"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">cols</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_relative_colorchange.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange.png" style="width:60.0%"></p>
-<p>Any aesthetics that weren’t in the original plot are more complicated. For example, if we want to make the base model line dashed, linetype was not in original plot. We can do:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">mapping</span><span class="op">$</span><span class="va">linetype</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">quote</a></span><span class="op">(</span><span class="va">Model</span><span class="op">)</span>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_colour_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_fill_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which9_colorchange.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">6.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_colorchange.png" style="width:60.0%">
+</div>
+<p>Note that even if you're only making one plot using <code>$which</code>, <code>res$g</code> is still a list of length 10. For example, to plot SSB, F, and recruitment from 1980-2018 relative to ASAP without confidence intervals:</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>years<span class="op">=</span><span class="fl">1980</span><span class="op">:</span><span class="fl">2018</span>, ci<span class="op">=</span><span class="cn">FALSE</span>, relative.to<span class="op">=</span><span class="st">"ASAP"</span>, which<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html">brewer.pal</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span>, name <span class="op">=</span> <span class="st">"Set1"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">cols</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_relative_colorchange.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange.png" style="width:60.0%">
+</div>
+<p>Any aesthetics that weren't in the original plot are more complicated. For example, if we want to make the base model line dashed, linetype was not in original plot. We can do:</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">mapping</span><span class="op">$</span><span class="va">linetype</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html">quote</a></span><span class="op">(</span><span class="va">Model</span><span class="op">)</span>
 <span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">labels</span><span class="op">$</span><span class="va">linetype</span> <span class="op">=</span> <span class="st">"Model"</span>
-<span class="va">ltys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">cols</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_linetype_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">ltys</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_relative_colorchange_linetype.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange_linetype.png" style="width:60.0%"></p>
+<span class="va">ltys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
+<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">cols</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_linetype_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="va">ltys</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which1_relative_colorchange_linetype.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange_linetype.png" style="width:60.0%">
+</div>
 <p>Our final example, changing the labels on the selectivity plot facets</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>which<span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>
-<span class="va">index_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/as_labeller.html" class="external-link">as_labeller</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`Block 4` <span class="op">=</span> <span class="st">"NEFSC - Spring"</span>, `Block 5` <span class="op">=</span> <span class="st">"NEFSC - Fall"</span>,`Block 6` <span class="op">=</span> <span class="st">"DFO"</span>, `Block 7` <span class="op">=</span> <span class="st">"NEFSC - Spring41"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">Block</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span>, strip.position <span class="op">=</span> <span class="st">'right'</span>, labeller <span class="op">=</span> <span class="va">index_names</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which4_labels.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">4.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which4_labels.png" style="width:60.0%"></p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>which<span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>
+<span class="va">index_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/as_labeller.html">as_labeller</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>`Block 4` <span class="op">=</span> <span class="st">"NEFSC - Spring"</span>, `Block 5` <span class="op">=</span> <span class="st">"NEFSC - Fall"</span>,`Block 6` <span class="op">=</span> <span class="st">"DFO"</span>, `Block 7` <span class="op">=</span> <span class="st">"NEFSC - Spring41"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">res</span><span class="op">$</span><span class="va">g</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html">vars</a></span><span class="op">(</span><span class="va">Block</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span>, strip.position <span class="op">=</span> <span class="st">'right'</span>, labeller <span class="op">=</span> <span class="va">index_names</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"which4_labels.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">4.5</span>, height<span class="op">=</span><span class="fl">5.5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which4_labels.png" style="width:60.0%">
+</div>
 <p>Hopefully that is enough to get you started!</p>
 </div>
   </div>
@@ -350,13 +380,11 @@
 
 
       <footer><div class="copyright">
-  <p></p>
-<p>Developed by Tim Miller, Brian Stock.</p>
+  <p>Developed by Tim Miller, Brian Stock.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
@@ -364,8 +392,6 @@
 
   
 
-
-  
 
   </body>
 </html>
