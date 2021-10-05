@@ -30,6 +30,8 @@ navbar:
          href: articles/ex9_retro_pred.html
       -  text: "Ex 10: Operating models and MSE"
          href: articles/ex10_om_mse.html
+      -  text: "Ex 11: Catchability configurations"
+         href: articles/ex11_catchability.html
 
     - text: "Functions"
       icon: far fa-file-code fa-lg
@@ -72,6 +74,7 @@ articles:
       - ex8_compare
       - ex9_retro_pred
       - ex10_om_mse
+      - ex11_catchability
 
 reference:
   - title: Functions that users call directly

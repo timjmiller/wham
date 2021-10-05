@@ -20,8 +20,6 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
-
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -34,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5.9000</span>
       </span>
     </div>
 
@@ -82,6 +80,9 @@
     <li>
       <a href="../articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
     </li>
+    <li>
+      <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -92,7 +93,7 @@
   </a>
 </li>
 <li>
-  <a href="https://github.com/timjmiller/wham/" class="external-link">
+  <a href="https://github.com/timjmiller/wham/">
     <span class="fab fa-github fa-lg"></span>
      
     Source code
@@ -108,14 +109,14 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
+  <a href="https://github.com/timjmiller/wham/issues/">
     <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
-  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
     <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
@@ -131,13 +132,13 @@
 
       
 
-      </header><script src="ex7_debug_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 7: Debugging WHAM models</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex7_debug.Rmd" class="external-link"><code>vignettes/ex7_debug.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex7_debug.Rmd"><code>vignettes/ex7_debug.Rmd</code></a></small>
       <div class="hidden name"><code>ex7_debug.Rmd</code></div>
 
     </div>
@@ -145,39 +146,41 @@
     
     
 <p>In this vignette we show how to use the <code>do.fit = FALSE</code> flag to debug a WHAM model.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>Load the ASAP3 data file.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex7_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
 <p>Prepare the WHAM model (<code>m3</code> from <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>).</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
-                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Try to fit the model… uh oh.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Try to fit the model... uh oh.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">F</span>, do.retro <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>
 <span class="co">#&gt; Order of parameters:</span>
 <span class="co">#&gt;  [1] "log_catch_sig_scale" "log_index_sig_scale" "log_N1_pars"        </span>
 <span class="co">#&gt;  [4] "log_NAA_sigma"       "trans_NAA_rho"       "log_NAA"            </span>
 <span class="co">#&gt;  [7] "logR_proj"           "mean_rec_pars"       "logit_q"            </span>
-<span class="co">#&gt; [10] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
-<span class="co">#&gt; [13] "catch_paa_pars"      "index_paa_pars"      "F_devs"             </span>
-<span class="co">#&gt; [16] "log_F1"              "M_a"                 "M_re"               </span>
-<span class="co">#&gt; [19] "M_repars"            "log_b"               "Ecov_re"            </span>
-<span class="co">#&gt; [22] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
-<span class="co">#&gt; [25] "Ecov_obs_sigma_par" </span>
+<span class="co">#&gt; [10] "q_re"                "q_repars"            "q_prior_re"         </span>
+<span class="co">#&gt; [13] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
+<span class="co">#&gt; [16] "catch_paa_pars"      "index_paa_pars"      "F_devs"             </span>
+<span class="co">#&gt; [19] "log_F1"              "M_a"                 "M_re"               </span>
+<span class="co">#&gt; [22] "M_repars"            "log_b"               "Ecov_re"            </span>
+<span class="co">#&gt; [25] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
+<span class="co">#&gt; [28] "Ecov_obs_sigma_par" </span>
 <span class="co">#&gt; Not matching template order:</span>
-<span class="co">#&gt;  [1] "mean_rec_pars"       "logit_q"             "log_F1"             </span>
-<span class="co">#&gt;  [4] "F_devs"              "log_N1_pars"         "log_NAA_sigma"      </span>
-<span class="co">#&gt;  [7] "trans_NAA_rho"       "log_NAA"             "logR_proj"          </span>
-<span class="co">#&gt; [10] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
-<span class="co">#&gt; [13] "catch_paa_pars"      "index_paa_pars"      "M_a"                </span>
-<span class="co">#&gt; [16] "M_re"                "M_repars"            "log_b"              </span>
-<span class="co">#&gt; [19] "log_catch_sig_scale" "log_index_sig_scale" "Ecov_re"            </span>
-<span class="co">#&gt; [22] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
-<span class="co">#&gt; [25] "Ecov_obs_sigma_par" </span>
+<span class="co">#&gt;  [1] "mean_rec_pars"       "logit_q"             "q_prior_re"         </span>
+<span class="co">#&gt;  [4] "q_re"                "q_repars"            "log_F1"             </span>
+<span class="co">#&gt;  [7] "F_devs"              "log_N1_pars"         "log_NAA_sigma"      </span>
+<span class="co">#&gt; [10] "trans_NAA_rho"       "log_NAA"             "logR_proj"          </span>
+<span class="co">#&gt; [13] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
+<span class="co">#&gt; [16] "catch_paa_pars"      "index_paa_pars"      "M_a"                </span>
+<span class="co">#&gt; [19] "M_re"                "M_repars"            "log_b"              </span>
+<span class="co">#&gt; [22] "log_catch_sig_scale" "log_index_sig_scale" "Ecov_re"            </span>
+<span class="co">#&gt; [25] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
+<span class="co">#&gt; [28] "Ecov_obs_sigma_par" </span>
 <span class="co">#&gt; Your parameter list has been re-ordered.</span>
 <span class="co">#&gt; (Disable this warning with checkParameterOrder=FALSE)</span>
 <span class="co">#&gt; iter: 1  Error in iterate(par) : </span>
@@ -188,66 +191,72 @@
 <span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span>
 <span class="co">#&gt; outer mgc:  NaN</span>
 <span class="co">#&gt; Error in stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, : gradient function must return a numeric vector of length 61</span></code></pre></div>
-<p>What’s wrong? It looks like the likelihood function is returning <code>NaN</code>. It is often easier to diagnose problems like this using the <em>unoptimized</em> model, i.e. look at everything using the initial parameter values. WHAM includes a <code>do.fit = F</code> flag in <code>fit_wham</code> to return the unoptimized model object returned by <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">TMB::MakeADFun</a></code>. Let’s see how it works.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>What's wrong? It looks like the likelihood function is returning <code>NaN</code>. It is often easier to diagnose problems like this using the <em>unoptimized</em> model, i.e. look at everything using the initial parameter values. WHAM includes a <code>do.fit = F</code> flag in <code>fit_wham</code> to return the unoptimized model object returned by <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html">TMB::MakeADFun</a></code>. Let's see how it works.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>
 <span class="co">#&gt; Order of parameters:</span>
 <span class="co">#&gt;  [1] "log_catch_sig_scale" "log_index_sig_scale" "log_N1_pars"        </span>
 <span class="co">#&gt;  [4] "log_NAA_sigma"       "trans_NAA_rho"       "log_NAA"            </span>
 <span class="co">#&gt;  [7] "logR_proj"           "mean_rec_pars"       "logit_q"            </span>
-<span class="co">#&gt; [10] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
-<span class="co">#&gt; [13] "catch_paa_pars"      "index_paa_pars"      "F_devs"             </span>
-<span class="co">#&gt; [16] "log_F1"              "M_a"                 "M_re"               </span>
-<span class="co">#&gt; [19] "M_repars"            "log_b"               "Ecov_re"            </span>
-<span class="co">#&gt; [22] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
-<span class="co">#&gt; [25] "Ecov_obs_sigma_par" </span>
+<span class="co">#&gt; [10] "q_re"                "q_repars"            "q_prior_re"         </span>
+<span class="co">#&gt; [13] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
+<span class="co">#&gt; [16] "catch_paa_pars"      "index_paa_pars"      "F_devs"             </span>
+<span class="co">#&gt; [19] "log_F1"              "M_a"                 "M_re"               </span>
+<span class="co">#&gt; [22] "M_repars"            "log_b"               "Ecov_re"            </span>
+<span class="co">#&gt; [25] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
+<span class="co">#&gt; [28] "Ecov_obs_sigma_par" </span>
 <span class="co">#&gt; Not matching template order:</span>
-<span class="co">#&gt;  [1] "mean_rec_pars"       "logit_q"             "log_F1"             </span>
-<span class="co">#&gt;  [4] "F_devs"              "log_N1_pars"         "log_NAA_sigma"      </span>
-<span class="co">#&gt;  [7] "trans_NAA_rho"       "log_NAA"             "logR_proj"          </span>
-<span class="co">#&gt; [10] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
-<span class="co">#&gt; [13] "catch_paa_pars"      "index_paa_pars"      "M_a"                </span>
-<span class="co">#&gt; [16] "M_re"                "M_repars"            "log_b"              </span>
-<span class="co">#&gt; [19] "log_catch_sig_scale" "log_index_sig_scale" "Ecov_re"            </span>
-<span class="co">#&gt; [22] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
-<span class="co">#&gt; [25] "Ecov_obs_sigma_par" </span>
+<span class="co">#&gt;  [1] "mean_rec_pars"       "logit_q"             "q_prior_re"         </span>
+<span class="co">#&gt;  [4] "q_re"                "q_repars"            "log_F1"             </span>
+<span class="co">#&gt;  [7] "F_devs"              "log_N1_pars"         "log_NAA_sigma"      </span>
+<span class="co">#&gt; [10] "trans_NAA_rho"       "log_NAA"             "logR_proj"          </span>
+<span class="co">#&gt; [13] "logit_selpars"       "selpars_re"          "sel_repars"         </span>
+<span class="co">#&gt; [16] "catch_paa_pars"      "index_paa_pars"      "M_a"                </span>
+<span class="co">#&gt; [19] "M_re"                "M_repars"            "log_b"              </span>
+<span class="co">#&gt; [22] "log_catch_sig_scale" "log_index_sig_scale" "Ecov_re"            </span>
+<span class="co">#&gt; [25] "Ecov_beta"           "Ecov_process_pars"   "Ecov_obs_logsigma"  </span>
+<span class="co">#&gt; [28] "Ecov_obs_sigma_par" </span>
 <span class="co">#&gt; Your parameter list has been re-ordered.</span>
 <span class="co">#&gt; (Disable this warning with checkParameterOrder=FALSE)</span></code></pre></div>
 <p>This runs without an error. The optimization failed because the likelihood was <code>NaN</code>, and now we can see which of the likelihood components was responsible. To do so, we need to look at the <code>REPORT</code>ed objects with <code>"nll"</code> in their name. We can use the <code>$report()</code> function from TMB.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span> <span class="op">=</span> <span class="va">mod</span><span class="op">$</span><span class="fu">report</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>See all of the <code>REPORT</code>ed objects.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>
-<span class="co">#&gt;  [1] "NAA"                "Ecov_beta"          "ZAA"               </span>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>
+<span class="co">#&gt;  [1] "Ecov_beta"          "NAA"                "ZAA"               </span>
 <span class="co">#&gt;  [4] "pred_index_paa"     "nll_NAA"            "selAA"             </span>
 <span class="co">#&gt;  [7] "QAA"                "Ecov_obs_sigma_par" "log_YPR_FXSPR"     </span>
 <span class="co">#&gt; [10] "log_FXSPR_iter"     "log_SPR_FXSPR"      "log_FXSPR"         </span>
-<span class="co">#&gt; [13] "mean_rec_pars"      "logit_selpars"      "NAA_devs"          </span>
-<span class="co">#&gt; [16] "Ecov_process_pars"  "pred_indices"       "Ecov_re"           </span>
-<span class="co">#&gt; [19] "selpars_re"         "pred_catch"         "nll_index_acomp"   </span>
-<span class="co">#&gt; [22] "q"                  "FAA"                "pred_CAA"          </span>
-<span class="co">#&gt; [25] "pred_catch_paa"     "M_a"                "pred_NAA"          </span>
-<span class="co">#&gt; [28] "log_SSB_FXSPR"      "nll_Ecov_obs"       "selpars"           </span>
-<span class="co">#&gt; [31] "nll_agg_indices"    "sel_repars"         "M_repars"          </span>
-<span class="co">#&gt; [34] "Ecov_out"           "M_re"               "nll_Ecov"          </span>
-<span class="co">#&gt; [37] "F"                  "Ecov_x"             "nll_sel"           </span>
-<span class="co">#&gt; [40] "nll_catch_acomp"    "log_SPR0"           "pred_IAA"          </span>
-<span class="co">#&gt; [43] "MAA"                "Fbar"               "log_Y_FXSPR"       </span>
-<span class="co">#&gt; [46] "SSB"                "pred_log_indices"   "FAA_tot"           </span>
-<span class="co">#&gt; [49] "pred_log_catch"     "nll_agg_catch"      "nll"               </span>
-<span class="co">#&gt; [52] "nll_M"</span></code></pre></div>
+<span class="co">#&gt; [13] "mean_rec_pars"      "Ecov_process_pars"  "logit_selpars"     </span>
+<span class="co">#&gt; [16] "NAA_devs"           "pred_indices"       "logit_q_mat"       </span>
+<span class="co">#&gt; [19] "Ecov_re"            "selpars_re"         "pred_catch"        </span>
+<span class="co">#&gt; [22] "nll_index_acomp"    "q"                  "sigma_q"           </span>
+<span class="co">#&gt; [25] "FAA"                "pred_CAA"           "pred_catch_paa"    </span>
+<span class="co">#&gt; [28] "M_a"                "pred_NAA"           "log_SSB_FXSPR"     </span>
+<span class="co">#&gt; [31] "nll_Ecov_obs"       "selpars"            "nll_agg_indices"   </span>
+<span class="co">#&gt; [34] "sel_repars"         "M_repars"           "Ecov_out"          </span>
+<span class="co">#&gt; [37] "M_re"               "q_re"               "nll_Ecov"          </span>
+<span class="co">#&gt; [40] "F"                  "Ecov_x"             "nll_sel"           </span>
+<span class="co">#&gt; [43] "nll_catch_acomp"    "log_SPR0"           "pred_IAA"          </span>
+<span class="co">#&gt; [46] "rho_q"              "MAA"                "nll_q"             </span>
+<span class="co">#&gt; [49] "Fbar"               "log_Y_FXSPR"        "nll_q_prior"       </span>
+<span class="co">#&gt; [52] "SSB"                "pred_log_indices"   "FAA_tot"           </span>
+<span class="co">#&gt; [55] "q_prior_re"         "pred_log_catch"     "nll_agg_catch"     </span>
+<span class="co">#&gt; [58] "nll"                "nll_M"</span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and sum over all individual values.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
+<div class="sourceCode"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt;         nll_NAA nll_index_acomp    nll_Ecov_obs nll_agg_indices        nll_Ecov </span>
 <span class="co">#&gt;        346.2991       3921.8316          0.0000       1562.8441          0.0000 </span>
-<span class="co">#&gt;         nll_sel nll_catch_acomp   nll_agg_catch             nll           nll_M </span>
-<span class="co">#&gt;          0.0000       2844.2380             NaN             NaN          0.0000</span></code></pre></div>
+<span class="co">#&gt;         nll_sel nll_catch_acomp           nll_q     nll_q_prior   nll_agg_catch </span>
+<span class="co">#&gt;          0.0000       2844.2380          0.0000          0.0000             NaN </span>
+<span class="co">#&gt;             nll           nll_M </span>
+<span class="co">#&gt;             NaN          0.0000</span></code></pre></div>
 <p>The likelihood components that are equal to 0 are not used in the model (no random effects on <code>M</code>, <code>Ecov</code>, <code>selectivity</code>, etc.). <code>nll</code> is the total likelihood and is <code>NaN</code>. The one troublesome component is <code>nll_agg_catch</code>. This is the total (aggregate) catch from the fishery in each year. It could be an issue with the catch data or the model-predicted catch, since both are in the likelihood calculation.</p>
-<p>Search the <a href="https://github.com/timjmiller/wham/blob/master/src/wham_v0.cpp" class="external-link">WHAM .cpp file</a> for “nll_agg_catch”. We find that on line 888, this depends on <code>agg_catch</code> (the catch data) and <code>pred_catch</code> (model-predicted catch).</p>
+<p>Search the <a href="https://github.com/timjmiller/wham/blob/master/src/wham_v0.cpp">WHAM .cpp file</a> for "nll_agg_catch". We find that on line 888, this depends on <code>agg_catch</code> (the catch data) and <code>pred_catch</code> (model-predicted catch).</p>
 <p>The catch data looks ok.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">agg_catch</span>
 <span class="co">#&gt;             [,1]</span>
 <span class="co">#&gt;  [1,] 14549.0000</span>
@@ -296,7 +305,7 @@
 <span class="co">#&gt; [44,]   151.9999</span></code></pre></div>
 <p>The predicted catch is calculated on lines 879-880. <code>pred_catch</code> depends on <code>NAA</code> (numbers-at-age), <code>FAA</code> (F at age), <code>ZAA</code> (Z at age), and <code>waa</code> (weight-at-age data).</p>
 <p><code>NAA</code> looks ok.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">NAA</span>
 <span class="co">#&gt;            [,1]     [,2]     [,3]     [,4]     [,5]     [,6]</span>
 <span class="co">#&gt;  [1,] 134809.00 11710.97 25945.08 17508.26 11476.00 13803.70</span>
@@ -344,7 +353,7 @@
 <span class="co">#&gt; [43,]  22026.47 22026.47 22026.47 22026.47 22026.47 22026.47</span>
 <span class="co">#&gt; [44,]  22026.47 22026.47 22026.47 22026.47 22026.47 22026.47</span></code></pre></div>
 <p><code>FAA</code> looks ok - no issues with <code>F</code> or selectivity.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">FAA</span><span class="op">[</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="co"># middle dim is n.fleets = 1</span>
 <span class="co">#&gt;            [,1]       [,2]       [,3]       [,4]       [,5] [,6]</span>
 <span class="co">#&gt;  [1,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span>
@@ -392,7 +401,7 @@
 <span class="co">#&gt; [43,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span>
 <span class="co">#&gt; [44,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span></code></pre></div>
 <p><code>ZAA</code> looks ok - no issues with <code>M</code> either.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">ZAA</span>
 <span class="co">#&gt;            [,1]      [,2]      [,3]      [,4]      [,5]     [,6]</span>
 <span class="co">#&gt;  [1,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span>
@@ -440,7 +449,7 @@
 <span class="co">#&gt; [43,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span>
 <span class="co">#&gt; [44,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span></code></pre></div>
 <p>Ah, here is the problem. The weight at age data has an entry of <code>-99</code>. This means that <code>pred_catch</code> is negative on line 880, and we take the log of a negative number on line 883.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">waa</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>
 <span class="co">#&gt;          [,1]  [,2]  [,3]  [,4]  [,5]  [,6]</span>
 <span class="co">#&gt;  [1,]   0.210 0.296 0.348 0.374 0.382 0.428</span>
@@ -499,13 +508,11 @@
 
 
       <footer><div class="copyright">
-  <p></p>
-<p>Developed by Tim Miller, Brian Stock.</p>
+  <p>Developed by Tim Miller, Brian Stock.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
@@ -513,8 +520,6 @@
 
   
 
-
-  
 
   </body>
 </html>

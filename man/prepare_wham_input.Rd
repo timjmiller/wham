@@ -163,14 +163,14 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
                  }
     \item{$re}{Time- and age-varying (random effects) on M. Note that random effects can only be estimated if
                mean M-at-age parameters are (\code{$est_ages} is not \code{NULL}).
-                 \describe{
-                   \item{"none"}{(default) M constant in time and across ages.}
-                   \item{"iid"}{M varies by year and age, but uncorrelated.}
-                   \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
-                   \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
-                   \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
-                 }
+                \describe{
+                  \item{"none"}{(default) M constant in time and across ages.}
+                  \item{"iid"}{M varies by year and age, but uncorrelated.}
+                  \item{"ar1_a"}{M correlated by age (AR1), constant in time.}
+                  \item{"ar1_y"}{M correlated by year (AR1), constant all ages.}
+                  \item{"2dar1"}{M correlated by year and age (2D AR1), as in \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047}{Cadigan (2016)}.}
                 }
+              }
     \item{$initial_means}{Initial/mean M-at-age vector, with length = number of ages (if \code{$model = "age-specific"})
                          or 1 (if \code{$model = "weight-at-age" or "constant"}). If \code{NULL}, initial mean M-at-age values are taken
                          from the first row of the MAA matrix in the ASAP data file.}

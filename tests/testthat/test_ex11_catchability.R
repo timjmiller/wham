@@ -5,7 +5,7 @@
 
 # library(wham)
 # btime <- Sys.time(); testthat::test_file("~/work/wham/wham/tests/testthat/test_ex11_catchability.R"); etime <- Sys.time(); runtime = etime - btime;
-# ~X min
+# ~4.8 min
 
 context("Ex 11: Priors and time-varying and environmental effects on catchability")
 
@@ -86,7 +86,7 @@ temp$data = newdata
 #fit estimating model that is the same as the operating model
 fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
-plot_wham_output(fit)
+plot_wham_output(fit, dir.main=tmp.dir)
 
 expect_equal(fit$opt$obj, ex11_tests$fit1$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit1$par, tolerance=1e-6, scale=1)
@@ -117,7 +117,7 @@ temp$data = newdata
 #fit estimating model that is the same as the operating model
 fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE))#, retro.silent = TRUE)
 fit$mohns_rho = mohns_rho(fit) 
-plot_wham_output(fit)
+plot_wham_output(fit, dir.main=tmp.dir)
 
 expect_equal(fit$opt$obj, ex11_tests$fit2$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit2$par, tolerance=1e-6, scale=1)
@@ -177,7 +177,7 @@ expect_equal(fit$opt$obj, ex11_tests$fit3$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit3$par, tolerance=1e-6, scale=1)
 expect_equal(fit$mohns_rho, ex11_tests$fit3$mohns_rho, tolerance=1e-4, scale=1)
 
-plot_wham_output(fit)
+plot_wham_output(fit, dir.main=tmp.dir)
 
 pal = viridisLite::viridis(n=2)
 se = summary(fit$sdrep)
@@ -251,7 +251,7 @@ expect_equal(fit$opt$obj, ex11_tests$fit4$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit4$par, tolerance=1e-6, scale=1)
 expect_equal(fit$mohns_rho, ex11_tests$fit4$mohns_rho, tolerance=1e-4, scale=1)
 
-plot_wham_output(fit)
+plot_wham_output(fit, dir.main=tmp.dir)
 
 #compare assumed and estimated ecov process pars
 input$par$Ecov_beta[4,1,1,1]
@@ -333,7 +333,7 @@ expect_equal(fit$opt$obj, ex11_tests$fit5$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit5$par, tolerance=1e-6, scale=1)
 expect_equal(fit$mohns_rho, ex11_tests$fit5$mohns_rho, tolerance=1e-4, scale=1)
 
-plot_wham_output(fit)
+plot_wham_output(fit, dir.main=tmp.dir)
 
 #compare assumed and estimated ecov effect on q for second index
 input$par$Ecov_beta[4,1,1,1]
@@ -358,7 +358,6 @@ fit$parList$q_repars
 #estimated variability in q is lower than truth, but estimate has large SE
 as.list(fit$sdrep, "Std")$q_repars
 
-png(file.path(write.dir,"q_time_series_4.png"), width=7, height=7, res=300, units='in')
 pal = viridisLite::viridis(n=2)
 se = summary(fit$sdrep)
 se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
