@@ -59,6 +59,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   }
 
   cat("Generating plot files... Please wait ~30 seconds...\n")
+  if(out.type == "html") cat("html output works best with Google Chrome browser\n")
   graphics.off() # close any open windows
 
   if(out.type == 'pdf'){
