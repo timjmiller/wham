@@ -1041,9 +1041,10 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 
   if(do.tex) cairo_pdf(file.path(od, paste0("NAA_res_barplot_stacked.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("NAA_res_barplot_stacked.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
-	lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
+	naa_res_plot <- lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
 	  scales = list(x=list(at = x.at, labels = x.lab), alternating = FALSE),
 	  key = list(text = list(lab = as.character(ages)), rectangles = list(col = plot.colors), columns = n.ages, title = "Age"))
+  print(naa_res_plot)
   if(do.tex | do.png) dev.off() else par(origpar)
   # par(origpar)
 }
