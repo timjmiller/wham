@@ -32,8 +32,17 @@ set_catch = function(input, catch_opts= NULL)
 	    temp[which(temp<0)] = 0
 	    data$catch_paa[i,,] = temp/apply(temp,1,sum)
 	    for(y in 1:data$n_years_model) if(asap3$CAA_mats[[i]][y,data$n_ages+1] < 1e-15) data$use_agg_catch[y,i] = 0
-	    if(asap3$use_catch_acomp[i] != 1) data$use_catch_paa[,i] = 0
-	    else for(y in 1:data$n_years_model) if(asap3$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2) data$use_catch_paa[y,i] = 0
+	    if(asap3$use_catch_acomp[i] != 1){
+        data$use_catch_paa[,i] = 0
+      } else { # use catch paa in at least some years - not necessarily all, have to go through year by year
+        for(y in 1:data$n_years_model){
+          if(is.na(sum(data$catch_paa[i,y,] > 1e-15))){ # handle negative or NA paa
+            data$use_catch_paa[y,i] = 0
+          } else {
+            if(asap3$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2) data$use_catch_paa[y,i] = 0
+          }
+        } 
+      }
 	  }
 	  data$catch_Neff = asap3$catch_Neff	  
     data$selblock_pointer_fleets = cbind(sapply(asap3$sel_block_assign, function(x) return(x)))
