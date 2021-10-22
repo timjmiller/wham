@@ -91,5 +91,5 @@ res$best
 m4_proj <- project_wham(model=mods$m4)
 
 # WHAM output plots for best model with projections
-# plot_wham_output(mod=m4, out.type='html')
-plot_wham_output(mod=m4_proj, out.type='html')
+plot_wham_output(mod=m4) # default is png
+# plot_wham_output(mod=m4_proj, out.type='html')

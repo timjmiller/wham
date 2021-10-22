@@ -20,6 +20,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -93,7 +95,7 @@
   </a>
 </li>
 <li>
-  <a href="https://github.com/timjmiller/wham/">
+  <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
     Source code
@@ -109,14 +111,14 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/timjmiller/wham/issues/">
+  <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
      
     Issues
   </a>
 </li>
 <li>
-  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd">
+  <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
      
     Contact
@@ -132,27 +134,27 @@
 
       
 
-      </header><div class="row">
+      </header><script src="ex3_projections_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 3: Projecting / forecasting random effects</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex3_projections.Rmd"><code>vignettes/ex3_projections.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex3_projections.Rmd" class="external-link"><code>vignettes/ex3_projections.Rmd</code></a></small>
       <div class="hidden name"><code>ex3_projections.Rmd</code></div>
 
     </div>
 
     
     
-<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
+<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339" class="external-link">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
 <p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
 <li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a "limiting" (carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
+<li><p>CPI has a “limiting” (carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
 </ul>
 <p>In example 3, we demonstrate how to project/forecast WHAM models using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
 <ul>
@@ -161,62 +163,62 @@
 </ul>
 <div id="load-data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#load-data" class="anchor"></a>1. Load data</h2>
+<a href="#load-data" class="anchor" aria-hidden="true"></a>1. Load data</h2>
 <p>Open R and load the <code>wham</code> package:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at <code>ex3_projections.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
 <p>You can run this entire example script with:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
-<span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex3_projections.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Let's create a directory for this analysis:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex3_projections.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Let’s create a directory for this analysis:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let's copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"CPI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"CPI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>Confirm you are in the correct directory and it has the required data files:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html">list.files</a></span><span class="op">(</span><span class="op">)</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
 <span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex10_tests.rds"         "ex11_tests.rds"        </span>
 <span class="co">#&gt;  [7] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
 <span class="co">#&gt; [10] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
 <span class="co">#&gt; [13] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
 <p>Load the environmental covariate (Cold Pool Index, CPI) data into R:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span><span class="st">"CPI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"CPI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="specify-model" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-model" class="anchor"></a>2. Specify model</h2>
+<a href="#specify-model" class="anchor" aria-hidden="true"></a>2. Specify model</h2>
 <p>Setup model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
 <li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a "controlling" (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
+<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
 </ul>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
   label <span class="op">=</span> <span class="st">"CPI"</span>,
-  mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">CPI</span><span class="op">)</span>, <span class="co"># CPI observations</span>
-  logsigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">CPI_sigma</span><span class="op">)</span><span class="op">)</span>, <span class="co"># CPI standard error is given/fixed as data</span>
+  mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">CPI</span><span class="op">)</span>, <span class="co"># CPI observations</span>
+  logsigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">CPI_sigma</span><span class="op">)</span><span class="op">)</span>, <span class="co"># CPI standard error is given/fixed as data</span>
   year <span class="op">=</span> <span class="va">env.dat</span><span class="op">$</span><span class="va">Year</span>,
-  use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
+  use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, ncol<span class="op">=</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="co"># use all obs (=1)</span>
   lag <span class="op">=</span> <span class="fl">1</span>, <span class="co"># CPI in year t affects recruitment in year t+1</span>
   process_model <span class="op">=</span> <span class="st">"ar1"</span>, <span class="co"># fit CPI as AR1 process</span>
   where <span class="op">=</span> <span class="st">"recruit"</span>, <span class="co"># CPI affects recruitment</span>
@@ -225,7 +227,7 @@
 <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>,
                             model_name <span class="op">=</span> <span class="st">"Ex 3: Projections"</span>,
                             ecov <span class="op">=</span> <span class="va">env</span>,
-                            NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
+                            NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span>,
                             age_comp <span class="op">=</span> <span class="st">"logistic-normal-pool0"</span><span class="op">)</span> <span class="co"># logistic normal pool 0 obs</span>
 
 <span class="co"># selectivity = logistic, not age-specific</span>
@@ -235,59 +237,59 @@
 </div>
 <div id="fit-the-model-without-projections" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fit-the-model-without-projections" class="anchor"></a>3. Fit the model without projections</h2>
+<a href="#fit-the-model-without-projections" class="anchor" aria-hidden="true"></a>3. Fit the model without projections</h2>
 <p>You have two options for projecting a WHAM model:</p>
 <ol style="list-style-type: decimal">
 <li>Fit model without projections and then add projections afterward</li>
 </ol>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># don't run</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span> <span class="co"># default do.proj=FALSE</span>
 <span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
 <li>Add projections with initial model fit (<code>do.proj = TRUE</code>)</li>
 </ol>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># don't run</span>
 <span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.proj <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>The two code blocks above are equivalent; when <code>do.proj = TRUE</code>, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> fits the model without projections and then calls <code><a href="../reference/project_wham.html">project_wham()</a></code> to add them. In this example we choose option #1 because we are going to add several different projections to the same model, <code>mod</code>. We will save each projected model in a list, <code>mod_proj</code>.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="st">"m5.rds"</span><span class="op">)</span> <span class="co"># save unprojected model</span></code></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="st">"m5.rds"</span><span class="op">)</span> <span class="co"># save unprojected model</span></code></pre></div>
 </div>
 <div id="add-projections-to-fit-model" class="section level2">
 <h2 class="hasAnchor">
-<a href="#add-projections-to-fit-model" class="anchor"></a>4. Add projections to fit model</h2>
+<a href="#add-projections-to-fit-model" class="anchor" aria-hidden="true"></a>4. Add projections to fit model</h2>
 <p>Projection options are specifed using the <code>proj.opts</code> input to <code><a href="../reference/project_wham.html">project_wham()</a></code>. The default settings are to project 3 years (<code>n.yrs = 3</code>), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (<code>avg.yrs</code>), use fishing mortality in the last model year (<code>use.last.F = TRUE</code>), and continue the ecov process model (<code>cont.ecov = TRUE</code>). These options are also described in the <code><a href="../reference/project_wham.html">project_wham()</a></code> help page.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"> <span class="co"># save projected models in a list</span>
-<span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># default settings spelled out</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,                                   use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, use.FMSY<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,                                   use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, use.FMSY<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
                         cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span>,                                cont.Mre<span class="op">=</span><span class="cn">NULL</span>, avg.rec.yrs<span class="op">=</span><span class="cn">NULL</span>, percentFXSPR<span class="op">=</span><span class="fl">100</span>, percentFMSY<span class="op">=</span><span class="fl">100</span><span class="op">)</span>,                                   save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[1]] &lt;- project_wham(mod)</span></code></pre></div>
 <p>WHAM implements four options for handling the environmental covariate(s) in the projections. Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p>
 <ul>
-<li><p>(Default) Continue the ecov process model (e.g. random walk, AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).</p></li>
+<li><p>(Default) Continue the ecov process model (e.g. random walk, AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).</p></li>
 <li><p>Use last year ecov. Set <code>use.last.ecov = TRUE</code>. WHAM will use ecov value from the terminal year of the population model for projections.</p></li>
 <li><p>Use average ecov. Provide <code>avg.yrs.ecov</code>, a vector specifying which years to average over the environmental covariate(s) for projections.</p></li>
 <li><p>Specify ecov. Provide <code>proj.ecov</code>, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (<code>proj.opts$n.yrs</code>) x the number of ecovs (<code>ncols(ecov$mean)</code>).</p></li>
 </ul>
 <p>Note that for all options, <strong>if the original model fit the ecov in years beyond the population model, WHAM will use these already-fit ecov values for the projections</strong>. If the ecov model extended at least <code>proj.opts$n.yrs</code> years beyond the population model, then none of the above need be specified.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 5 years, use average ecov from 1992-1996</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">FALSE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="fl">1992</span><span class="op">:</span><span class="fl">1996</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                         save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[2]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, avg.ecov.yrs=1992:1996))</span>
 
 <span class="co"># 5 years, use ecov from last year (2011)</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">FALSE</span>, use.last.ecov<span class="op">=</span><span class="cn">TRUE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
@@ -297,10 +299,10 @@
 <span class="co"># note: only need 4 years of CPI because CPI in last model year (2011) was already fit,</span>
 <span class="co">#       and CPI affects recruitment with lag = 1. I.e., to project model 5 years (2012-2016),</span>
 <span class="co">#       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">FALSE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>,
-              proj.ecov<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.7</span>,<span class="fl">0.4</span>,<span class="fl">0.5</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,
+              proj.ecov<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.7</span>,<span class="fl">0.4</span>,<span class="fl">0.5</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,
               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[4]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)))</span>
@@ -309,10 +311,10 @@
 <span class="co"># note: again, only need 4 years of CPI because CPI in last model year (2011) was already fit,</span>
 <span class="co">#       and CPI affects recruitment with lag = 1. I.e., to project model 5 years (2012-2016),</span>
 <span class="co">#       need CPI from 2011-2015 and CPI_2011 already exists in initial model fit.</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">FALSE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>,
-              proj.ecov<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.6</span>,<span class="op">-</span><span class="fl">1.3</span>,<span class="op">-</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1.2</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,                         
+              proj.ecov<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.6</span>,<span class="op">-</span><span class="fl">1.3</span>,<span class="op">-</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1.2</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,                         
               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[5]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))</span></code></pre></div>
@@ -325,106 +327,106 @@
 <li><p>Specify catch. Provide <code>proj.catch</code>, a vector of aggregate catch with length = <code>proj.opts$n.yrs</code>. WHAM will calculate F across fleets to apply the specified catch.</p></li>
 <li><p>Use F that provides MSY. Set <code>use.FMSY = TRUE</code>. WHAM will calculate and apply F at MSY. There is a check to make sure that a stock-recruit model is assumed and, if not, F at X% SPR is used instead.</p></li>
 </ul>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 5 years, specify catch</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">6</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
-              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">2000</span>, <span class="fl">1000</span>, <span class="fl">3000</span>, <span class="fl">20</span><span class="op">)</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">6</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">2000</span>, <span class="fl">1000</span>, <span class="fl">3000</span>, <span class="fl">20</span><span class="op">)</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[6]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, proj.catch=c(10, 2000, 1000, 3000, 20)))</span>
 
 <span class="co"># 5 years, specify F</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">7</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
-              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">.1</span>, <span class="fl">.2</span><span class="op">)</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">7</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">.1</span>, <span class="fl">.2</span><span class="op">)</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[7]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, proj.F=c(0.001, 1, 0.5, .1, .2)))</span>
 
 <span class="co"># 5 years, use FXSPR</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">8</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">8</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">TRUE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[8]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, use.FXSPR=TRUE))</span>
 
 <span class="co"># 3 years, use avg F (avg.yrs defaults to last 5 years, 2007-2011)</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">TRUE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">9</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">TRUE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[9]] &lt;- project_wham(mod, proj.opts=list(use.avg.F=TRUE))</span>
 
 <span class="co"># 10 years, use avg F 1992-1996</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">10</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">10</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">TRUE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">10</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">10</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">TRUE</span>,
               use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="fl">1992</span><span class="op">:</span><span class="fl">1996</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[10]] &lt;- project_wham(mod, proj.opts=list(n.yrs=10, use.avg.F=TRUE, avg.yrs=1992:1996))</span>
 
 <span class="co"># 5 years, use $F_{MSY}$</span>
-<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">11</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
+<span class="va">mod_proj</span><span class="op">[[</span><span class="fl">11</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
               use.FMSY<span class="op">=</span><span class="cn">TRUE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,
               cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>,                               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>Save projected models</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">mod_proj</span>, file<span class="op">=</span><span class="st">"m5_proj.rds"</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod_proj</span>, file<span class="op">=</span><span class="st">"m5_proj.rds"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="compare-projections" class="section level2">
 <h2 class="hasAnchor">
-<a href="#compare-projections" class="anchor"></a>5. Compare projections</h2>
+<a href="#compare-projections" class="anchor" aria-hidden="true"></a>5. Compare projections</h2>
 <p>The models with projections are evaluated to obtain optimized random effects but they do not need to be refitted with projections added because the observations and marginal likelihood do not change. However, we can confirm that the NLL is the same for all projected models (within some tolerance).</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># original model NLL</span></code></pre></div>
 <pre><code>#&gt; [1] -829.4137
 #&gt; attr(,"logarithm")
 #&gt; [1] TRUE</code></pre>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">nll_proj</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mod_proj</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span><span class="op">)</span> <span class="co"># projected models NLL</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">nll_proj</span> <span class="op">-</span> <span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span>, <span class="fl">6</span><span class="op">)</span> <span class="co"># difference between original and projected models' NLL</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">nll_proj</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mod_proj</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span><span class="op">)</span> <span class="co"># projected models NLL</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">nll_proj</span> <span class="op">-</span> <span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span>, <span class="fl">6</span><span class="op">)</span> <span class="co"># difference between original and projected models' NLL</span></code></pre></div>
 <pre><code>#&gt;  [1] 0 0 0 0 0 0 0 0 0 0 0</code></pre>
-<p>Now let's plot results from each of the projected models.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
+<p>Now let’s plot results from each of the projected models.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>To more easily compare the same plots for each projection, we can copy the plots into new folders organized by plot type instead of model.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Ecov_1"</span>,<span class="st">"F_byfleet"</span>,<span class="st">"SSB_at_age"</span>,<span class="st">"SSB_F_trend"</span>,<span class="st">"SSB_Rec_time"</span>,<span class="st">"Kobe_status"</span><span class="op">)</span>
-<span class="va">dirs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="va">plots</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">as.list</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">)</span>, FUN<span class="op">=</span><span class="va">dir.create</span><span class="op">)</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-     <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"results"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span>,
-               to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ecov_1"</span>,<span class="st">"F_byfleet"</span>,<span class="st">"SSB_at_age"</span>,<span class="st">"SSB_F_trend"</span>,<span class="st">"SSB_Rec_time"</span>,<span class="st">"Kobe_status"</span><span class="op">)</span>
+<span class="va">dirs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="va">plots</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">)</span>, FUN<span class="op">=</span><span class="va">dir.create</span><span class="op">)</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+     <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"results"</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span>,
+               to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
   <span class="op">}</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"ref_points"</span>,<span class="st">"Kobe_status.png"</span><span class="op">)</span>,
-            to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span>,<span class="st">"plots_png"</span>,<span class="st">"ref_points"</span>,<span class="st">"Kobe_status.png"</span><span class="op">)</span>,
+            to<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dirs</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">plots</span><span class="op">[</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">]</span>,<span class="st">"_proj_"</span>,<span class="va">m</span>,<span class="st">".png"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
 <div id="results" class="section level2">
 <h2 class="hasAnchor">
-<a href="#results" class="anchor"></a>6. Results</h2>
+<a href="#results" class="anchor" aria-hidden="true"></a>6. Results</h2>
 <div id="projected-cpi" class="section level3">
 <h3 class="hasAnchor">
-<a href="#projected-cpi" class="anchor"></a>Projected CPI</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_1.png" alt="Projected CPI, 3 years, continue AR1 process." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_2.png" alt="Projected CPI, 5 years, use average Ecov from 1992-1996." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_3.png" alt="Projected CPI, 5 years, use Ecov from last year (2011)." style="width:30.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_4.png" alt="Projected CPI, 5 years, specify high CPI ~ 0.5." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_5.png" alt="5 years, specify low CPI ~ -1.5." style="width:30.0%"></p>
+<a href="#projected-cpi" class="anchor" aria-hidden="true"></a>Projected CPI</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_1.png" style="width:30.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_2.png" style="width:30.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_3.png" style="width:30.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_4.png" style="width:30.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_5.png" style="width:30.0%" alt="5 years, specify low CPI ~ -1.5."></p>
 </div>
 <div id="projected-f-catch" class="section level3">
 <h3 class="hasAnchor">
-<a href="#projected-f-catch" class="anchor"></a>Projected F / catch</h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_6.png" alt="5 years, specify catch." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_7.png" alt="5 years, specify F." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_8.png" alt="5 years, use FXSPR." style="width:30.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_9.png" alt="3 years, use avg F over last 5 years (2007-2011)." style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_10.png" alt="10 years, use avg F 1992-1996." style="width:30.0%"></p>
+<a href="#projected-f-catch" class="anchor" aria-hidden="true"></a>Projected F / catch</h3>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_6.png" style="width:30.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_7.png" style="width:30.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_8.png" style="width:30.0%" alt="5 years, use FXSPR."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_9.png" style="width:30.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_10.png" style="width:30.0%" alt="10 years, use avg F 1992-1996."></p>
 </div>
 <div id="stock-status" class="section level3">
 <h3 class="hasAnchor">
-<a href="#stock-status" class="anchor"></a>Stock status</h3>
+<a href="#stock-status" class="anchor" aria-hidden="true"></a>Stock status</h3>
 <p>In the stock status (Kobe) plots of the projected models, the final model year is in bold and the final projected year is not bold.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_1.png" alt="Stock status, projection 1." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_2.png" alt="Stock status, projection 2." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_3.png" alt="Stock status, projection 3." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_4.png" alt="Stock status, projection 4." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_5.png" alt="Stock status, projection 5." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_6.png" alt="Stock status, projection 6." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_7.png" alt="Stock status, projection 7." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_8.png" alt="Stock status, projection 8." style="width:45.0%"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_9.png" alt="Stock status, projection 9." style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_10.png" alt="Stock status, projection 10." style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_1.png" style="width:45.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_2.png" style="width:45.0%" alt="Stock status, projection 2."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_3.png" style="width:45.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_4.png" style="width:45.0%" alt="Stock status, projection 4."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_5.png" style="width:45.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_6.png" style="width:45.0%" alt="Stock status, projection 6."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_7.png" style="width:45.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_8.png" style="width:45.0%" alt="Stock status, projection 8."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_9.png" style="width:45.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_10.png" style="width:45.0%" alt="Stock status, projection 10."></p>
 </div>
 </div>
   </div>
@@ -440,11 +442,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Tim Miller, Brian Stock.</p>
+  <p></p>
+<p>Developed by Tim Miller, Brian Stock.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
 </div>
 
       </footer>
@@ -452,6 +456,8 @@
 
   
 
+
+  
 
   </body>
 </html>

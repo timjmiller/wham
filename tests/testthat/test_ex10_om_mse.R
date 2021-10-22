@@ -85,7 +85,7 @@ temp$data = newdata
 #fit estimating model that is the same as the operating model
 fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
-plot_wham_output(fit, out.type='html', dir.main=tmp.dir)
+plot_wham_output(fit, dir.main=tmp.dir)
 expect_equal(fit$opt$obj, ex10_tests$fit1$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex10_tests$fit1$par, tolerance=1e-6, scale=1)
 expect_equal(fit$mohns_rho, ex10_tests$fit1$mohns_rho, tolerance=1e-4, scale=1)

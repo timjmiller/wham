@@ -7,7 +7,7 @@
 plot_wham_output(
   mod,
   dir.main = getwd(),
-  out.type = "html",
+  out.type = "png",
   res = 72,
   plot.opts = NULL
 )
@@ -17,7 +17,7 @@ plot_wham_output(
 
 \item{dir.main}{character, directory to save plots to (default = \code{getwd()})}
 
-\item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})}
+\item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'png'})}
 
 \item{res}{resolution to save .png files (dpi)}
 
@@ -27,9 +27,9 @@ plot_wham_output(
 Generates many output plots for a fit WHAM model.
 }
 \details{
-\code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'}
+\code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
 creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-\code{out.type = 'html'} (default) makes an html file for viewing these .png files in a browser
+\code{out.type = 'html'} makes an html file for viewing these .png files in a browser
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 
 \code{plot.opts} holds optional arguments to modify plots:

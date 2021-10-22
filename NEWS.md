@@ -19,9 +19,10 @@ wham 1.0.5.9000
 * Require updated version of `TMBhelper` [issue 47](https://github.com/timjmiller/wham/issues/47)
 * Peel `which_F_age` (fix error when projecting a peel doing retrospective predictions, ex9)
 * Ecov AR1 mean parameterization
-* simulation of Dirichlet-multinomial age composition (caught by @seananderson).
+* simulation of Dirichlet-multinomial age composition ([issue 49](https://github.com/timjmiller/wham/issues/49), caught by @seananderson).
 * error reported in [issue 48](https://github.com/timjmiller/wham/issues/48). There is no `opt` element when do.fit = FALSE.
 * `plot_wham_output` now removes any existing plot files in the directories where plots are saved before writing files so that any orphaned files from previous fits are not included in the results and html rendering.
+* `plot_wham_output` now creates `.png` output by default because of 1) issues opening the `.html` in Firefox on Windows, and 2) it was annoying to close dozens of browser tabs during testing. issues [42](https://github.com/timjmiller/wham/issues/42) and [50](https://github.com/timjmiller/wham/issues/50), thanks to @ejosymart and @JDeroba.
 
 wham 1.0.5 (2021-08-25)
 =========================

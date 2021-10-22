@@ -59,7 +59,7 @@ for(m in 1:n.mods){
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=T, do.osa=T, MakeADFun.silent = TRUE))
-  suppressWarnings(plot_wham_output(mod=mods[[m]], out.type='html', dir.main=tmp.dir))
+  suppressWarnings(plot_wham_output(mod=mods[[m]], dir.main=tmp.dir))
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
 # mods <- lapply(mod.list, readRDS)

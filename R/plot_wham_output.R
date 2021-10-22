@@ -2,9 +2,9 @@
 #'
 #' Generates many output plots for a fit WHAM model.
 #'
-#' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'}
+#' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
 #' creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-#' \code{out.type = 'html'} (default) makes an html file for viewing these .png files in a browser
+#' \code{out.type = 'html'} makes an html file for viewing these .png files in a browser
 #' (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 #' 
 #' \code{plot.opts} holds optional arguments to modify plots:
@@ -17,7 +17,7 @@
 #'
 #' @param mod output from \code{\link{fit_wham}}
 #' @param dir.main character, directory to save plots to (default = \code{getwd()})
-#' @param out.type character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})
+#' @param out.type character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'png'})
 #' @param res resolution to save .png files (dpi)
 #' @param plot.opts (optional) list of plot modifications
 #'
@@ -33,7 +33,7 @@
 #' mod <- fit_wham(input4_SNEMAYT)
 #' plot_wham_output(mod)
 #' }
-plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72, plot.opts = NULL){
+plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72, plot.opts = NULL){
   # if sdreport succeeded but didn't save full sdreport object in mod, recalculate it here
   if(mod$is_sdrep & class(mod$sdrep)[1] != "sdreport"){
     mod$sdrep <- TMB::sdreport(mod)
