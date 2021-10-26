@@ -791,7 +791,6 @@ Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracy
   return SPR_0;
 }
 
-
 /* calculate beverton-holt or ricker equilibrium yield */
 template<class Type>
 struct sr_yield {
@@ -933,6 +932,61 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, vector<int> which_F
     res(y,3) = log_SPR_FXSPR(y);
     res(y,4) = log_YPR_FXSPR(y);
   }
+  return res;
+}
+
+template <class Type>
+vector<Type> get_static_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, int waa_pointer_tot_catch,
+  matrix<Type> mature, Type percentSPR, matrix<Type> NAA, vector<Type> fracyr_SSB, Type F_init, 
+  vector<int> years_M, vector<int> years_mat, vector<int> years_sel, vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_R)
+{
+  int n = 10;
+  //int ny = MAA.rows();
+  int na = MAA.cols();
+  matrix<Type> waacatch = extract_matrix_array3(waa, waa_pointer_tot_catch-1);
+  matrix<Type> waassb = extract_matrix_array3(waa, waa_pointer_ssb-1);
+
+  vector<Type> sel(na), M(na), mat(na), waa_s(na), waa_c(na);
+  sel.setZero(); M.setZero(); mat.setZero(); waa_s.setZero(), waa_c.setZero();
+  Type ssbfrac = 0, R = 0;
+  //get average inputs over specified years
+  for(int y = 0; y < years_R.size(); y++) R += NAA(years_R(y),0)/years_R.size();
+  for(int y = 0; y < years_mat.size(); y++) for(int a = 0; a < na; a++) mat(a) += mature(years_mat(y),a)/years_mat.size();
+  for(int y = 0; y < years_M.size(); y++) for(int a = 0; a < na; a++) M(a) += MAA(years_M(y),a)/years_M.size();
+  for(int y = 0; y < years_waa_catch.size(); y++) for(int a = 0; a < na; a++) waa_c(a) += waacatch(years_waa_catch(y),a)/years_waa_catch.size();
+  for(int y = 0; y < years_waa_ssb.size(); y++) {
+   ssbfrac += fracyr_SSB(years_waa_ssb(y))/years_waa_ssb.size();
+   for(int a = 0; a < na; a++) waa_s(a) += waassb(years_waa_ssb(y),a)/years_waa_ssb.size();
+  }
+  for(int y = 0; y < years_sel.size(); y++) for(int a = 0; a < na; a++) sel(a) += FAA(years_sel(y),a)/years_sel.size();
+  sel = sel/sel(which_F_age-1);
+  see(R);
+  see(mat);
+  see(M);
+  see(ssbfrac);
+  see(waa_s);
+  see(waa_c);
+  see(sel);
+//Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
+  Type spr0 = get_SPR_0(M, mat, waa_s, ssbfrac); 
+
+  vector<Type> res(6+n), log_FXSPR_i(1), log_FXSPR_iter(n);
+  log_FXSPR_iter(0) = res(6) = log(F_init);
+  spr_F<Type> sprF(M, sel, mat, waa_s, ssbfrac);
+  for (int i=0; i<n-1; i++)
+  {
+    log_FXSPR_i(0) = log_FXSPR_iter(i);
+    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
+    //matrix<Type> hess_sr_yield = autodiff::hessian(sprF,log_FXSPR_i);
+    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * spr0)/grad_spr_F(0);// /hess_sr_yield(0,0);
+    res(6+i+1) = log_FXSPR_iter(i+1);
+  }
+  res(0) = log_FXSPR_iter(n-1); //log_FXSPR
+  res(3) = log(get_SPR(res(0), M, sel, mat, waa_s, ssbfrac)); //log_SPR_FXSPR, should be log(X*SPR0/100)
+  res(1) = log(R) + res(3); //log_SSB_FXSPR
+  res(4) = log(get_YPR(res(0), M, sel, waa_c)); //log_YPR_FXSPR
+  res(2) = log(R) + res(4); //log_Y_FXSPR
+  res(5) = log(spr0); //log_SPR0
   return res;
 }
 

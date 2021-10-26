@@ -129,6 +129,16 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
   DATA_SCALAR(logR_sd); // empirical sd recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(F_proj_init); // annual initial values  to use for newton steps to find F for use in projections  (n_years_proj)
+  
+  //static brp info
+  DATA_INTEGER(which_F_age_static); //which age of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
+  DATA_SCALAR(static_FXSPR_init); // initial value to use for newton steps to find FXSPR_static
+  //DATA_IVECTOR(static_brp_years_sel); // model year indices (TMB, starts @ 0) to use for averaging selectivity for static biological reference points
+  //DATA_IVECTOR(static_brp_years_mat); // model year indices (TMB, starts @ 0) to use for averaging maturity for static biological reference points
+  //DATA_IVECTOR(static_brp_years_waa_ssb); // model year indices (TMB, starts @ 0) to use for averaging SSB weight at age for static biological reference points
+  //DATA_IVECTOR(static_brp_years_waa_catch); // model year indices (TMB, starts @ 0) to use for averaging catch weight at age for static biological reference points
+  //DATA_IVECTOR(static_brp_years_M); // model year indices (TMB, starts @ 0) to use for averaging nat mort. for static biological reference points
+  //DATA_IVECTOR(static_brp_years_R); // ******just use XSPR_R_avg_yrs********model year indices (TMB, starts @ 0) to use for averaging recruitment for static biological reference points
 
   // parameters - general
   PARAMETER_VECTOR(mean_rec_pars);
@@ -1194,6 +1204,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> log_SPR_FXSPR = SPR_res.col(3);
   vector<Type> log_YPR_FXSPR = SPR_res.col(4);
   matrix<Type> log_FXSPR_iter = SPR_res.block(0,5,n_years_model + n_years_proj,10);
+
   REPORT(log_FXSPR_iter);
   REPORT(log_FXSPR);
   REPORT(log_SSB_FXSPR);
@@ -1203,6 +1214,28 @@ Type objective_function<Type>::operator() ()
   ADREPORT(log_FXSPR);
   ADREPORT(log_SSB_FXSPR);
   ADREPORT(log_Y_FXSPR);
+
+  //static/avg year results
+  vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA_tot, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, NAA, 
+    fracyr_SSB, static_FXSPR_init, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, XSPR_R_avg_yrs);
+  Type log_FXSPR_static = SPR_res_static(0);
+  Type log_SSB_FXSPR_static = SPR_res_static(1);
+  Type log_Y_FXSPR_static = SPR_res_static(2);
+  Type log_SPR_FXSPR_static = SPR_res_static(3);
+  Type log_YPR_FXSPR_static = SPR_res_static(4);
+  Type log_SPR0_static = SPR_res_static(5);
+  vector<Type> log_FXSPR_iter_static = SPR_res_static.segment(6,10);
+
+  REPORT(log_SPR0_static);
+  REPORT(log_FXSPR_iter_static);
+  REPORT(log_FXSPR_static);
+  REPORT(log_SSB_FXSPR_static);
+  REPORT(log_Y_FXSPR_static);
+  REPORT(log_SPR_FXSPR_static);
+  REPORT(log_YPR_FXSPR_static);
+  ADREPORT(log_FXSPR_static);
+  ADREPORT(log_SSB_FXSPR_static);
+  ADREPORT(log_Y_FXSPR_static);
 
   //If stock-recruit models
   if(recruit_model > 2) //Beverton-Holt or Ricker selected

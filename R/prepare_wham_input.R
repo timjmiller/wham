@@ -479,11 +479,12 @@ initial_input_fn = function(input, basic_info){
   input$data$n_years_catch = length(input$years)
   input$data$n_years_indices = length(input$years)
   input$data$recruit_model = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
-  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F and F RP IN projections, only. prepare_projection changes it to properly define selectivity for projections.
+  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
+  input$data$which_F_age_static = input$data$n_ages #plus group by default used to define full F (total) for static SPR-based ref points.
 
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,5) #simulate state variables (NAA, M, sel, Ecov)
+  input$data$simulate_state = rep(1,5) #simulate state variables (NAA, M, sel, Ecov, q)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
   input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
@@ -492,7 +493,8 @@ initial_input_fn = function(input, basic_info){
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-
+	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
+  
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
   if(!is.null(basic_info$simulate_process_error)) input$data$simulate_state = basic_info$simulate_process_error

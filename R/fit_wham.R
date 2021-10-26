@@ -194,6 +194,24 @@ check_FXSPR = function(mod)
     }
   }
   if(length(ind)) warning(paste0("Still bad initial values and estimates of FXSPR for years ", paste(years[ind], collapse = ","), "."))
+
+  percentSPR_out_static = exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)
+  ind = which(round(percentSPR_out_static,4) != round(mod$env$data$percentSPR/100,4))
+  if(length(ind))
+  {
+    for(i in 1:2) #two tries to fix initial FXSPR value
+    {
+      warning(paste0("Changing initial values for estimating static FXSPR."))
+      mod$env$data$static_FXSPR_init = mod$env$data$static_FXSPR_init*0.5
+      mod$fn(mle)
+      mod$rep = mod$report()
+      percentSPR_out_static = exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)
+      ind = which(round(percentSPR_out_static,4) != round(mod$env$data$percentSPR/100,4))
+      if(!length(ind)) break
+    }
+  }
+  if(length(ind)) warning(paste0("Still bad initial values and estimates of static FXSPR."))
+
   return(mod)     
 }
 
