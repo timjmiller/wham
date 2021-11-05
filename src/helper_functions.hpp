@@ -67,7 +67,6 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
       tot_pred += pred(a);
     }
   }
-  see(tot_pred);
   ll -= N * log(tot_pred);
   if(do_log == 1) return ll;
   else return exp(ll);
@@ -900,15 +899,11 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, matrix<Type> FAA, vector<int> which_F
   vector<Type> log_YPR_FXSPR(ny), sel(na), waacatch(na), waassb(na), mat(na), M(na);
   for(int y = 0; y < ny; y++)
   {
-    // see(y);
     log_FXSPR_iter(y,0) = res(y,5) = log(F_init(y));
     M = MAA.row(y);
     waassb = ssbWAA.row(y);
     waacatch = catchWAA.row(y);
     mat = mature.row(y);
-    // see(na);
-    // see(which_F_age(y)-1);
-    // see(FAA.row(y));
     sel = FAA.row(y)/FAA(y,which_F_age(y)-1);
     spr_F<Type> sprF(M, sel, mat, waassb, fracyr_SSB(y));
     //log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y)));
@@ -960,14 +955,7 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, matrix<Type> FAA, int which_F_
   }
   for(int y = 0; y < years_sel.size(); y++) for(int a = 0; a < na; a++) sel(a) += FAA(years_sel(y),a)/years_sel.size();
   sel = sel/sel(which_F_age-1);
-  see(R);
-  see(mat);
-  see(M);
-  see(ssbfrac);
-  see(waa_s);
-  see(waa_c);
-  see(sel);
-//Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
+  //Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
   Type spr0 = get_SPR_0(M, mat, waa_s, ssbfrac); 
 
   vector<Type> res(6+n), log_FXSPR_i(1), log_FXSPR_iter(n);
