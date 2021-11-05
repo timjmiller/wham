@@ -12,6 +12,7 @@ wham 1.0.5.9000
 
 * Example 11 script and vignette (and tests) added to demonstrated extensions for modeling catchability.
 * New plots added to plot_wham_output.R and wham_plots_tables.R to include new catchability features.
+* Added reporting of SPR-based reference points that use SPR inputs averged over the same years as they would for FXSPR in projection years.
 
 ### Bug fixes
 
