@@ -115,7 +115,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(year1_model); // first year model
   DATA_IMATRIX(ind_Ecov_out_start); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
   DATA_IMATRIX(ind_Ecov_out_end); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
-  DATA_INTEGER(Ecov_obs_sigma_opt); // 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
+  DATA_IVECTOR(Ecov_obs_sigma_opt); // n_Ecov, 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
   DATA_IMATRIX(Ecov_use_re); // 0/1: use Ecov_re? If yes, add to nll. (n_years_Ecov + n_years_proj_Ecov) x n_Ecov
 
   // data for projections
@@ -170,7 +170,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
   PARAMETER_ARRAY(Ecov_beta); // dim = (2 + n_indices) x n_poly x n_ecov x n_ages, beta_R in eqns 4-5, Miller et al. (2016)
   PARAMETER_MATRIX(Ecov_process_pars); // nrows = RW: 2 par (Ecov1, sig), AR1: 3 par (mu, sig, phi); ncol = N_ecov
-  PARAMETER_MATRIX(Ecov_obs_logsigma); // options: given (data), fixed effect(s), or random effects
+  PARAMETER_MATRIX(Ecov_obs_logsigma); // N_Ecov_years x n_Ecov. options: just given (data), or fixed effect(s)
+  PARAMETER_MATRIX(Ecov_obs_logsigma_re); // N_Ecov_years x n_Ecov. columns of random effects used if Ecov_obs_sigma_opt = 4 
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
 
   Type nll= 0.0; //negative log-likelihood
@@ -399,17 +400,19 @@ Type objective_function<Type>::operator() ()
   matrix<Type> Ecov_obs_sigma(n_years_Ecov, n_Ecov);
   for(int i = 0; i < n_Ecov; i++){
     for(int y = 0; y < n_years_Ecov; y++){
-      if(Ecov_use_obs(y,i) == 1){
-        if(Ecov_obs_sigma_opt == 4){
-          Type mu_logsigma = Ecov_obs_sigma_par(0,i);
-          Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
-          nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma(y,i), mu_logsigma, sd_logsigma, 1);
-          SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
-            Ecov_obs_logsigma(y,i) = rnorm(mu_logsigma, sd_logsigma);
-          }
+      if(Ecov_obs_sigma_opt(i) == 4){
+        Type mu_logsigma = Ecov_obs_sigma_par(0,i);
+        Type sd_logsigma = exp(Ecov_obs_sigma_par(1,i));
+        nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma_re(y,i), mu_logsigma, sd_logsigma, 1);
+        SIMULATE if(simulate_data(2) == 1) if(simulate_period(0) == 1) {
+          Ecov_obs_logsigma_re(y,i) = rnorm(mu_logsigma, sd_logsigma);
         }
+        Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma_re(y,i));
+      } else{
         Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
+      }
         // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
+      if(Ecov_use_obs(y,i) == 1){
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
           Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
@@ -1347,6 +1350,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_beta);
   REPORT(mean_rec_pars);
   REPORT(Ecov_obs_sigma_par);
+  REPORT(Ecov_obs_sigma);
 
   ADREPORT(log_F);
   ADREPORT(log_FAA);

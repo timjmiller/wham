@@ -25,14 +25,18 @@
 #' Otherwise, it must be a named list with the following components:
 #'   \describe{
 #'     \item{$label}{Name(s) of the environmental covariate(s). Used in printing.}
-#'     \item{$mean}{Mean observations (matrix). Missing values = NA.}
-#'     \item{$logsigma}{Observation standard error (log). Options:
+#'     \item{$mean}{Mean observations (matrix). number of years x number of covariates. Missing values = NA.}
+#'     \item{$logsigma}{Configure observation standard errors. Options:
 #'       \describe{
-#'         \item{Matrix with same dimensions as \code{$mean}}{Specified values (not estimated) for each time step }
-#'         \item{Single value per ecov, numeric vector or matrix w/ dim 1 x n.ecov}{Specified value (not estimated) shared among time steps}
-#'         \item{Vector with estimate options for each ecov, length = n.ecov}{
+#'         \item{Matrix of log standard errors with same dimensions as \code{$mean}}{Specified values for each time step }
+#'         \item{log standard errors for each covariate, numeric vector or matrix w/ dim 1 x n.ecov}{Specified value the same for all time steps}
+#'         \item{estimation option (for all covariates)}{
 #'           \code{'est_1'}: Estimated, one value shared among time steps.
 #'           \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
+#'         \item{list of two elements}{
+#'           First is the matrix of log standard errors or the vector of single values for each covariate as above. 
+#'           Second is a character vector of estimation options (\code{'NA'}, \code{'est_1'},\code{'est_re'}) for each covariate. 
+#'           For covariates with non-NA values, values in the first element are ignored.}
 #'       }
 #'     }
 #'     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}

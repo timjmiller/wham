@@ -62,8 +62,9 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   F_devs_na_ind = rbind(matrix(1:(temp$data$n_fleets * (n_years-1)), n_years-1), matrix(rep(NA, peel * temp$data$n_fleets), peel))
   temp$map$F_devs = factor(F_devs_na_ind)
 
-  if(temp$data$Ecov_obs_sigma_opt %in% c(3,4)){
+  if(any(temp$data$Ecov_obs_sigma_opt %in% c(3,4))){
     temp$map$Ecov_obs_logsigma = factor(rbind(head(matrix(as.numeric(as.character(temp$map$Ecov_obs_logsigma)), ncol=temp$data$n_Ecov), -peel.ecov), matrix(NA, ncol=temp$data$n_Ecov, nrow=peel.ecov)))
+    #temp$map$Ecov_obs_logsigma_re = factor(rbind(head(matrix(as.numeric(as.character(temp$map$Ecov_obs_logsigma_re)), ncol=temp$data$n_Ecov), -peel.ecov), matrix(NA, ncol=temp$data$n_Ecov, nrow=peel.ecov)))
   }
 
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)

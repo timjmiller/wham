@@ -16,6 +16,8 @@ set_ecov = function(input, ecov)
     data$Ecov_obs <- matrix(1, nrow=1, ncol=1)
     par.Ecov.obs.logsigma <- matrix(-2.3, nrow=1, ncol=1)
     map.Ecov.obs.logsigma <- factor(NA)
+    par.Ecov.obs.logsigma.re <- matrix(-2.3, nrow=1, ncol=1)
+    map.Ecov.obs.logsigma.re <- factor(NA)
     par.Ecov.obs.sigma.par <- matrix(0, nrow=1, ncol=1)
     map.Ecov.obs.sigma.par <- factor(NA)
     data$Ecov_obs_sigma_opt <- 1
@@ -51,46 +53,7 @@ set_ecov = function(input, ecov)
     # Handle Ecov sigma options
     data$n_Ecov <- dim(data$Ecov_obs)[2] # num Ecovs
     n_Ecov_obs <- dim(data$Ecov_obs)[1] # num Ecov obs
-    if(class(ecov$logsigma)[1] == "matrix"){
-      data$Ecov_obs_sigma_opt = 1
-      par.Ecov.obs.logsigma <- ecov$logsigma
-      if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$logsigma")
-    }
-    if(class(ecov$logsigma)[1] == 'numeric'){
-      data$Ecov_obs_sigma_opt = 1
-      print("ecov$logsigma is numeric. Coercing to a matrix...")
-      if(length(ecov$logsigma) == data$n_Ecov) par.Ecov.obs.logsigma <- matrix(rep(ecov$logsigma, each=n_Ecov_obs), ncol=data$n_Ecov)
-      if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(ecov$logsigma, ncol=1)
-      if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
-    }
-    if(class(ecov$logsigma)[1] == 'character'){
-      if(ecov$logsigma == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
-        data$Ecov_obs_sigma_opt = 2
-        par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
-        map.Ecov.obs.logsigma <- matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
-        par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-        map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
-      }
-      if(ecov$logsigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
-        data$Ecov_obs_sigma_opt = 3
-        par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
-        map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-        map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
-      }
-      if(ecov$logsigma == 'est_re'){
-        data$Ecov_obs_sigma_opt = 4
-        par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
-        map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
-        par.Ecov.obs.sigma.par <- matrix(c(rep(-1.3, data$n_Ecov), rep(-2.3, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
-        map.Ecov.obs.sigma.par <- matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
-      }
-    }
-    if(data$Ecov_obs_sigma_opt == 1){ # Ecov sigma given, initialized at given values
-      map.Ecov.obs.logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
-      par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-      map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
-    }
+    data$Ecov_obs_sigma_opt = rep(1, data$n_Ecov) # Ecov sigma given, initialized at given values, not estimated by default
 
     if(length(ecov$year) != n_Ecov_obs) stop("ecov$year is not the same length as # rows in ecov$mean")
     data$Ecov_year <- as.numeric(ecov$year)
@@ -105,6 +68,106 @@ set_ecov = function(input, ecov)
               Setting Ecov labels = 'Ecov 1', 'Ecov 2', ...")
       data$Ecov_label = paste0("Ecov ",1:data$n_Ecov)
     }
+    
+    #default NAs for parameter matrix of observation standard deviations
+    par.Ecov.obs.logsigma = matrix(NA, n_Ecov_obs, data$n_Ecov)
+
+    logsig_more = list()
+    if(is.list(ecov$logsigma)){
+      n = length(ecov$logsigma)
+      if(n>1) logsig_more = ecov$logsigma[[2]] #further elements than the second are ignored.
+      ecov$logsigma = ecov$logsigma[[1]]
+    }
+    if(class(ecov$logsigma)[1] == "matrix"){
+      par.Ecov.obs.logsigma <- ecov$logsigma
+      if(!identical(dim(par.Ecov.obs.logsigma), dim(data$Ecov_obs))) stop("Dimensions of ecov$mean != dimensions of ecov$logsigma")
+    }
+    if(class(ecov$logsigma)[1] == 'numeric'){
+      #data$Ecov_obs_sigma_opt[] = 1 #defined above
+      print("ecov$logsigma is numeric. Coercing to a matrix...")
+      if(length(ecov$logsigma) == data$n_Ecov) par.Ecov.obs.logsigma <- matrix(rep(ecov$logsigma, each=n_Ecov_obs), ncol=data$n_Ecov)
+      if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par.Ecov.obs.logsigma <- matrix(ecov$logsigma, ncol=1)
+      if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
+    }
+
+    #set up and check length of ecov$process_model
+    if(length(ecov$process_model) == 1) ecov$process_model = rep(ecov$process_model, data$n_Ecov) #use the single value for all Ecovs
+    if(length(ecov$process_model) != data$n_Ecov) stop("length of ecov$process_model must be either 1 or the number of Ecovs")
+    
+    for(i in 1:data$n_Ecov) {
+      if(is.na(ecov$process_model[i]) & any(ecov$where[[i]] %in% c("recruit", "M", "q"))){ #ecov$how !=0){
+      stop(paste0("ecov$process_model ", i, " is turned off (NA) but ecov$where includes 'M', 'recruit', or 'q'.
+       Either 1) choose an ecov process model ('rw' or 'ar1'),
+              2) turn off ecov (set ecov$where[i] = 'none' and ecov$process_model = NA),
+           or 3) fit ecov but with no effect on population (ecov$where[i] = 'none', ecov$process_model[i] = 'rw' or 'ar1')."))
+      }
+    }
+
+    #now over write ecov$logsigma with logsig_more if available because the fixed obs var matrices have been defined
+    if(length(logsig_more)) ecov$logsigma = logsig_more
+    
+    #default values for: 
+    #map of random effects
+    map.Ecov.obs.logsigma.re <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
+    #map of observation standard deviation
+    map.Ecov.obs.logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
+    #initial values variance parameter (fixed effects) for random effects 
+    par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
+    #map of variance parameter (fixed effects) for random effects
+    map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+
+    if(class(ecov$logsigma)[1] == 'character'){
+      #check that estimation options are right
+      if(!all(ecov$logsigma %in% c("est_1", "est_re", "NA"))){
+        stop("ecov$logsigma or ecov$logsigma[[2]] is character and must be 'NA' (do not estimate), 'est_1' (single variance parameter), or 'est_re' (iid re annual variance parameters)")
+      }
+      if(length(ecov$logsigma) == 1) ecov$logsigma = rep(ecov$logsigma, data$n_Ecov) #use the single value for all Ecovs
+      #check length of estimation options
+      if(length(ecov$logsigma) != data$n_Ecov) stop("length of ecov$logsigma when character must be either 1 or the number of Ecovs")
+
+      for(i in 1:data$n_Ecov) {
+        if(is.na(ecov$process_model[[i]])){
+          #data$Ecov_obs_sigma_opt[i] == 1 # already defined above        
+        }
+        if(ecov$logsigma[i] == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
+          data$Ecov_obs_sigma_opt[i] = 2
+          par.Ecov.obs.logsigma[,i] <- -1.3 # matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
+          map.Ecov.obs.logsigma[,i] <- i #matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
+          #par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
+          #map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+        }
+        #This option is not discussed anywhere and probably not useful. map for "est_1" could be modified to have estimate blocks of fixed effects
+        # if(ecov$logsigma == 'est_fe'){ # estimate Ecov obs sigma for each Ecov obs
+        #   data$Ecov_obs_sigma_opt[i] = 3
+        #   par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # fixed effect inits
+        #   map.Ecov.obs.logsigma <- matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # est all
+        #   par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
+        #   map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
+        # }
+        if(ecov$logsigma[i] == 'est_re'){
+          data$Ecov_obs_sigma_opt[i] = 4
+          par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
+          map.Ecov.obs.logsigma[,i] <- NA #matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation of fixed effects
+          #map.Ecov.obs.logsigma.re[,i] <- max(0,map.Ecov.obs.logsigma.re, na.rm=T) + 1:n_Ecov_obs # turn on estimation of random effects
+          par.Ecov.obs.sigma.par[,i] <- c(-1.3, -2.3) #matrix(c(rep(-1.3, data$n_Ecov), rep(-2.3, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
+          map.Ecov.obs.sigma.par[,i] <- max(0, map.Ecov.obs.sigma.par, na.rm =T) + 1:2 #matrix(1:(2*data$n_Ecov), nrow=2, ncol=data$n_Ecov)
+        }
+      }
+    }
+
+    # if(length(ecov$year) != n_Ecov_obs) stop("ecov$year is not the same length as # rows in ecov$mean")
+    # data$Ecov_year <- as.numeric(ecov$year)
+    # data$year1_Ecov <- ecov$year[1]
+    # data$year1_model <- input$years[1]
+    # end_model <- tail(input$years,1)
+    # end_Ecov <- tail(ecov$year,1)
+    # if(length(ecov$label) == data$n_Ecov){
+    #   data$Ecov_label <- ecov$label
+    # } else {
+    #   warning("Number of Ecov labels not equal to number of Ecovs
+    #           Setting Ecov labels = 'Ecov 1', 'Ecov 2', ...")
+    #   data$Ecov_label = paste0("Ecov ",1:data$n_Ecov)
+    # }
 
     # # check that Ecov year vector doesn't have missing gaps
     # pad Ecov if it starts after model year1 - max(lag)
@@ -115,7 +178,7 @@ set_ecov = function(input, ecov)
     if(data$year1_Ecov > data$year1_model - max.lag){
       print("one or more ecov does not start by model year 1 - max(lag). Padding ecov...")
       data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), data$Ecov_obs)
-      par.Ecov.obs.logsigma <- rbind(matrix(-1.3, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), par.Ecov.obs.logsigma)
+      par.Ecov.obs.logsigma <- rbind(matrix(par.Ecov.obs.logsigma[1,], nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov, byrow=T), par.Ecov.obs.logsigma)
       map.Ecov.obs.logsigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), map.Ecov.obs.logsigma)
       data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), data$Ecov_use_obs)
       data$Ecov_year <- c(seq(data$year1_model - max.lag, data$year1_Ecov-1), data$Ecov_year)
@@ -126,7 +189,7 @@ set_ecov = function(input, ecov)
     if(end_Ecov < end_model){
       print("Ecov last year is before model last year. Padding Ecov...")
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      par.Ecov.obs.logsigma <- rbind(par.Ecov.obs.logsigma, matrix(-1.3, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
+      par.Ecov.obs.logsigma <- rbind(par.Ecov.obs.logsigma, matrix(par.Ecov.obs.logsigma[NROW(par.Ecov.obs.logsigma),], nrow = end_model-end_Ecov, ncol = data$n_Ecov, byrow=T))
       map.Ecov.obs.logsigma <- rbind(map.Ecov.obs.logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
@@ -134,6 +197,13 @@ set_ecov = function(input, ecov)
     }
     data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
     data$Ecov_use_re <- matrix(1, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
+    
+    #map of random effects
+    #do this now in case of padding 
+    map.Ecov.obs.logsigma.re = matrix(NA, data$n_years_Ecov, data$n_Ecov)
+    #initial values of random effects
+    par.Ecov.obs.logsigma.re = matrix(0, data$n_years_Ecov, data$n_Ecov)
+    for(i in 1:data$n_Ecov) if(ecov$logsigma[i] == 'est_re') map.Ecov.obs.logsigma.re[,i] = max(0, map.Ecov.obs.logsigma.re, na.rm=T) + 1:data$n_years_Ecov
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- matrix(NA, data$n_Ecov, n_effects)
@@ -251,10 +321,10 @@ set_ecov = function(input, ecov)
 
     cat(paste0("Please check that the environmental covariates have been loaded and interpreted correctly.
 
-Model years: ", data$year1_model, " to ", end_model,"
-Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
+      Model years: ", data$year1_model, " to ", end_model,"
+      Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
 
-"))
+    "))
 
     for(i in 1:data$n_Ecov){
       years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
@@ -262,10 +332,10 @@ Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
 
       if(data$Ecov_where[i,1] == 1){ # recruitment
         cat(paste0("Ecov ",i,": ",ecov$label[i],"
-",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how[i]+1]," (",ecov$link[[i]][1],") effect on: recruitment
+          ",c('*NO*','Controlling','Limiting','Lethal','Masking','Directive')[data$Ecov_how[i]+1]," (",ecov$link[[i]][1],") effect on: recruitment
 
-Model years:
-"))
+          Model years:
+        "))
 
         cat(years, fill=TRUE)
 
@@ -279,8 +349,8 @@ Model years:
       if(data$Ecov_where[i,2] == 1){ # M
         cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][2], ") on: M 
 
-Model years:
-"))
+          Model years:
+        "))
         cat(years, fill=TRUE)
 
         cat(paste0("Lag: ",ecov$lag[i,2],"
@@ -293,8 +363,8 @@ Model years:
       for(j in index_effects) if(data$Ecov_where[i,j] == 1){ # q
         cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][j], ") on: q for index ", j + 1 - min(index_effects), " 
 
-Model years:
-"))
+          Model years:
+        "))
         cat(years, fill=TRUE)
 
         cat(paste0("Lag: ",ecov$lag[i,j],"
@@ -303,14 +373,6 @@ Model years:
 
         "))
       }
-
-#cat(years, fill=TRUE)
-
-#cat(paste0("Lag: ",ecov$lag[i],"
-#Ex: ",ecov$label[i]," in ",years[1]," affects ", c('recruitment','M')[data$Ecov_where[i]]," in ",years[1+ecov$lag[i]],"
-#    ",ecov$label[i]," in ",lastyr," affects ", c('recruitment','M')[data$Ecov_where[i]]," in ",lastyr+ecov$lag[i],"
-#
-#"))
     }
     data$Ecov_label <- list(data$Ecov_label)
   } # end load Ecov
@@ -326,6 +388,7 @@ Model years:
   #par$Ecov_process_pars[2,] = -1.3 # start sig_ecov at 0.27
   par$Ecov_obs_logsigma <- par.Ecov.obs.logsigma
   par$Ecov_obs_sigma_par <- par.Ecov.obs.sigma.par
+  par$Ecov_obs_logsigma_re = par.Ecov.obs.logsigma.re
 
   # turn off 3rd Ecov par if it's a RW
   tmp.pars <- par$Ecov_process_pars
@@ -363,6 +426,7 @@ Model years:
   map$Ecov_process_pars = factor(tmp.pars)
   map$Ecov_obs_logsigma <- factor(map.Ecov.obs.logsigma)
   map$Ecov_obs_sigma_par <- factor(map.Ecov.obs.sigma.par)
+  map$Ecov_obs_logsigma_re = factor(map.Ecov.obs.logsigma.re)
 
   input$data = data
   input$par = par
