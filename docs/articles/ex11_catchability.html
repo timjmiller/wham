@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.5.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.5.9000</span>
       </span>
     </div>
 
@@ -134,22 +134,22 @@
 
       
 
-      </header><script src="ex11_catchability_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Ex 11: Catchability configurations</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/master/vignettes/ex11_catchability.Rmd" class="external-link"><code>vignettes/ex11_catchability.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex11_catchability.Rmd" class="external-link"><code>vignettes/ex11_catchability.Rmd</code></a></small>
       <div class="hidden name"><code>ex11_catchability.Rmd</code></div>
 
     </div>
 
     
     
-<div id="background" class="section level2">
-<h2 class="hasAnchor">
-<a href="#background" class="anchor" aria-hidden="true"></a>1. Background</h2>
+<div class="section level2">
+<h2 id="background">1. Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
 <p>This is the 11th WHAM example. We assume you already have <code>wham</code> installed and are relatively familiar with the package. If not, read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and <a href="https://timjmiller.github.io/wham/articles/">Tutorial</a>.</p>
 <p>In this vignette we show how to both simulate and estimate:</p>
 <ul>
@@ -159,27 +159,27 @@
 <li>Different effects of the same environmental covariate on catchability and recruitment.</li>
 </ul>
 </div>
-<div id="setup" class="section level2">
-<h2 class="hasAnchor">
-<a href="#setup" class="anchor" aria-hidden="true"></a>2. Setup</h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="setup">2. Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
+</h2>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></code></pre></div>
 <p>Create a directory for this analysis:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="a-simple-operating-model" class="section level2">
-<h2 class="hasAnchor">
-<a href="#a-simple-operating-model" class="anchor" aria-hidden="true"></a>3. A simple operating model</h2>
-<p>Make a <code>basic_info</code> list of input components defining a simple default stock. We’ll then pass this to <code>prepare_wham_input</code> and <code>fit_wham</code>. This is similar to example 10, but now there are two indices.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="a-simple-operating-model">3. A simple operating model<a class="anchor" aria-label="anchor" href="#a-simple-operating-model"></a>
+</h2>
+<p>Make a <code>basic_info</code> list of input components defining a simple default stock. We'll then pass this to <code>prepare_wham_input</code> and <code>fit_wham</code>. This is similar to example 10, but now there are two indices.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">make_digifish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">years</span> <span class="op">=</span> <span class="fl">1975</span><span class="op">:</span><span class="fl">2014</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">digifish</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
   <span class="va">digifish</span><span class="op">$</span><span class="va">ages</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>
@@ -214,62 +214,64 @@
 <span class="op">}</span>
 <span class="va">digifish</span> <span class="op">=</span> <span class="fu">make_digifish</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>Now define other components needed by <code>prepare_wham_input</code> (selectivity and M).</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">selectivity</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,
     initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_fleets</span> <span class="op">+</span> <span class="va">digifish</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span> <span class="co">#fleet, index</span>
 
 <span class="va">M</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>initial_means <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Here we specify that recruitment deviations are independent random effects, with no stock-recruit relationship.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>N1_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="va">M</span><span class="op">$</span><span class="va">initial_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">sigma</span> <span class="op">=</span> <span class="st">"rec"</span> <span class="co">#random about mean</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">use_steepness</span> <span class="op">=</span> <span class="fl">0</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co">#random effects with a constant mean</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">recruit_pars</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="setting-up-the-q-parameter-for-the-second-index-to-have-a-prior-distribution-" class="section level2">
-<h2 class="hasAnchor">
-<a href="#setting-up-the-q-parameter-for-the-second-index-to-have-a-prior-distribution-" class="anchor" aria-hidden="true"></a>4. Setting up the q parameter for the second index to have a prior distribution.</h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="setting-up-the-q-parameter-for-the-second-index-to-have-a-prior-distribution-">4. Setting up the q parameter for the second index to have a prior distribution.<a class="anchor" aria-label="anchor" href="#setting-up-the-q-parameter-for-the-second-index-to-have-a-prior-distribution-"></a>
+</h2>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">catchability</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>prior_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Now we can make the input list with <code>prepare_wham_input</code></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">digifish</span>, selectivity <span class="op">=</span> <span class="va">selectivity</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re</span>, M <span class="op">=</span> <span class="va">M</span>, catchability <span class="op">=</span> <span class="va">catchability</span><span class="op">)</span></code></pre></div>
 <p>We can then define an operating model (OM) by simulating data (and recruitment) from this input:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="co">#simulate data from operating model</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0101010</span><span class="op">)</span>
 <span class="va">newdata</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>Now put the simulated data in an input file with all the same configuration as the operating model.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">temp</span> <span class="op">=</span> <span class="va">input</span>
 <span class="va">temp</span><span class="op">$</span><span class="va">data</span> <span class="op">=</span> <span class="va">newdata</span></code></pre></div>
 <p>Fit an estimation model that is the same as the operating model (self-test).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">temp</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, retro.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">fit</span><span class="op">$</span><span class="va">mohns_rho</span> <span class="op">=</span> <span class="fu"><a href="../reference/mohns_rho.html">mohns_rho</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <p>This plot of the q prior and approximate posterior is provided by <code>plot_wham_output</code></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">wham</span><span class="fu">:::</span><span class="fu">plot_q_prior_post</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/prior_posterior_q.png" style="width:80.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex11_plots/prior_posterior_q.png" style="width:80.0%">
 </div>
-<div id="add-random-effects-on-q-for-first-index" class="section level2">
-<h2 class="hasAnchor">
-<a href="#add-random-effects-on-q-for-first-index" class="anchor" aria-hidden="true"></a>5. Add random effects on q for first index</h2>
+</div>
+<div class="section level2">
+<h2 id="add-random-effects-on-q-for-first-index">5. Add random effects on q for first index<a class="anchor" aria-label="anchor" href="#add-random-effects-on-q-for-first-index"></a>
+</h2>
 <p>This will add time varying iid random effects on catchability for the first index while still keeping the prior on the second index.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">catchability</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>prior_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.3</span><span class="op">)</span>, re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span> </code></pre></div>
 <p>Generate input as above.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">digifish</span>, selectivity <span class="op">=</span> <span class="va">selectivity</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re</span>, M <span class="op">=</span> <span class="va">M</span>, catchability <span class="op">=</span> <span class="va">catchability</span><span class="op">)</span></code></pre></div>
 <p>The default initial value for the standard deviation of the random effects is 1 but we will simulate with less variation than that</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>input<span class="sc">$</span>par<span class="sc">$</span>q_repars[<span class="dv">1</span>] <span class="ot">=</span> <span class="fu">log</span>(<span class="fl">0.2</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>Now create the operating model, simulate data and fit as above</span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">input<span class="op">$</span>par<span class="op">$</span>q_repars[<span class="dv">1</span>] =<span class="st"> </span><span class="kw">log</span>(<span class="fl">0.2</span>)
+
+Now create the operating model, simulate data and fit as above</code></pre></div>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="co">#simulate data from operating model</span>
@@ -286,7 +288,7 @@
 
 <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <p>This is similar to what is provided in <code>plot_wham_output</code>, but with the true values from the simulation also plotted</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pal</span> <span class="op">=</span> <span class="fu">viridisLite</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span>, <span class="va">fit</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'n'</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="st">"q"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
 <span class="va">se</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">sdrep</span><span class="op">)</span>
@@ -298,13 +300,15 @@
   <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span>, <span class="va">newdata</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Index "</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_indices</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">" Est."</span>, <span class="st">" True"</span><span class="op">)</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">pal</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_1.png" style="width:80.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex11_plots/q_time_series_1.png" style="width:80.0%">
 </div>
-<div id="add-environmental-covariates-to-the-model" class="section level2">
-<h2 class="hasAnchor">
-<a href="#add-environmental-covariates-to-the-model" class="anchor" aria-hidden="true"></a>6. Add Environmental covariates to the model</h2>
+</div>
+<div class="section level2">
+<h2 id="add-environmental-covariates-to-the-model">6. Add Environmental covariates to the model<a class="anchor" aria-label="anchor" href="#add-environmental-covariates-to-the-model"></a>
+</h2>
 <p>First simulate and estimate environmental covariate processes, but no effects of population.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ecov</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Climate variable 1"</span>, <span class="st">"Climate variable 2"</span><span class="op">)</span>,
     process_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"ar1"</span><span class="op">)</span>,
@@ -318,21 +322,21 @@
     how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Note that how[1] conflicts with where[1], but <code>prepare_wham_input</code> will use where[1].</p>
 <p>We will not include a prior distribution for the second index, but we will keep the iid random effects on q for the first index.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">catchability</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">digifish</span>, selectivity <span class="op">=</span> <span class="va">selectivity</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re</span>, M <span class="op">=</span> <span class="va">M</span>, catchability <span class="op">=</span> <span class="va">catchability</span>, ecov <span class="op">=</span> <span class="va">ecov</span><span class="op">)</span></code></pre></div>
 <p>A warning is thrown about the how[1] and where[1] conflict.</p>
 <p>For the simulations, we need to set some values for the standard deviation and correlation parameters of the environmental covariate processes.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_process_pars</span><span class="op">[</span><span class="fl">2</span>,<span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> <span class="co">#sd</span>
 <span class="co">#cor pars are c(0.4,-0.3)</span>
 <span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_process_pars</span><span class="op">[</span><span class="fl">3</span>,<span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>,<span class="op">-</span><span class="fl">0.3</span><span class="op">)</span><span class="op">-</span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>,<span class="op">-</span><span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>The same value for the standard deviation of q random effects on the first index.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">q_repars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.2</span><span class="op">)</span></code></pre></div>
 <p>Now create the operating model and simulate and fit data.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0101010</span><span class="op">)</span>
 <span class="va">newdata</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
@@ -347,7 +351,7 @@
 
 <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
 <p>Again, this is similar to what is provided in <code>plot_wham_output</code>, but with the true values from the simulation also plotted</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pal</span> <span class="op">=</span> <span class="fu">viridisLite</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
 <span class="va">se</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">sdrep</span><span class="op">)</span>
 <span class="va">se</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">se</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span> <span class="op">==</span> <span class="st">"logit_q_mat"</span>,<span class="fl">2</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span><span class="op">)</span><span class="op">)</span>
@@ -359,24 +363,26 @@
   <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span>, <span class="va">newdata</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Index "</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_indices</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">" Est."</span>, <span class="st">" True"</span><span class="op">)</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">pal</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_2.png" style="width:80.0%"></p>
-<p>Let’s take a look at the true and estimated Environmental covariate process pararameters. Columns are the different covariates. Rows are the mean, sd, and correlation parameters, respectively.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex11_plots/q_time_series_2.png" style="width:80.0%">
+</div>
+<p>Let's take a look at the true and estimated Environmental covariate process pararameters. Columns are the different covariates. Rows are the mean, sd, and correlation parameters, respectively.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_process_pars</span>
 <span class="va">fit</span><span class="op">$</span><span class="va">parList</span><span class="op">$</span><span class="va">Ecov_process_pars</span></code></pre></div>
 <p>Compare true and estimated (log) standard deviation of time-varying q. First row, first column.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">q_repars</span>
 <span class="va">fit</span><span class="op">$</span><span class="va">parList</span><span class="op">$</span><span class="va">q_repars</span></code></pre></div>
 <p>The estimated variability in q is lower than truth, but the estimate has large standard error:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">sdrep</span>, <span class="st">"Std"</span><span class="op">)</span><span class="op">$</span><span class="va">q_repars</span></code></pre></div>
 </div>
-<div id="environmental-effects-on-catchability" class="section level2">
-<h2 class="hasAnchor">
-<a href="#environmental-effects-on-catchability" class="anchor" aria-hidden="true"></a>7. Environmental effects on catchability</h2>
+<div class="section level2">
+<h2 id="environmental-effects-on-catchability">7. Environmental effects on catchability<a class="anchor" aria-label="anchor" href="#environmental-effects-on-catchability"></a>
+</h2>
 <p>Allow effects of first Environmental covariate on q for second index.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ecov</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Climate variable 1"</span>, <span class="st">"Climate variable 2"</span><span class="op">)</span>,
     process_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"ar1"</span><span class="op">)</span>,
@@ -389,13 +395,13 @@
     indices <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">2</span>, <span class="cn">NULL</span><span class="op">)</span>,
     how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>As above get rid of prior on second index, add random effects on q for first index, generate input</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">catchability</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">digifish</span>, selectivity <span class="op">=</span> <span class="va">selectivity</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re</span>, M <span class="op">=</span> <span class="va">M</span>, catchability <span class="op">=</span> <span class="va">catchability</span>, ecov <span class="op">=</span> <span class="va">ecov</span><span class="op">)</span></code></pre></div>
 <p>how[1] no longer conflicts with where[1].</p>
 <p>As above set parameter values for simulation.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#set sd and rho of ecov processes</span>
 <span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_process_pars</span><span class="op">[</span><span class="fl">2</span>,<span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> <span class="co">#sd</span>
 <span class="co">#cor pars are c(0.4,-0.3)</span>
@@ -403,14 +409,14 @@
 <span class="co">#set value to simulate variation in q</span>
 <span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">q_repars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.2</span><span class="op">)</span></code></pre></div>
 <p>Also, set value for Ecov_beta effect on q (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">[</span><span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="op">=</span> <span class="fl">0.5</span></code></pre></div>
-<p>Verify that the map argument is setting all the ``ages’’ to use the same value, but only the first value is used for q or recruitment.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<p>Verify that the map argument is setting all the ``ages'' to use the same value, but only the first value is used for q or recruitment.</p>
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">map</span><span class="op">$</span><span class="va">Ecov_beta</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">)</span><span class="op">)</span>
 <span class="va">x</span><span class="op">[</span><span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="op">]</span> </code></pre></div>
 <p>As above, create the operating model, simulate and fit data and compare true and estimated parameters.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0101010</span><span class="op">)</span>
 <span class="va">newdata</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
@@ -451,13 +457,15 @@
   <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span>, <span class="va">newdata</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Index "</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_indices</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">" Est."</span>, <span class="st">" True"</span><span class="op">)</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">pal</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_3.png" style="width:80.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex11_plots/q_time_series_3.png" style="width:80.0%">
 </div>
-<div id="different-effects-on-q-and-recruitment-of-the-same-environmental-covariate-" class="section level2">
-<h2 class="hasAnchor">
-<a href="#different-effects-on-q-and-recruitment-of-the-same-environmental-covariate-" class="anchor" aria-hidden="true"></a>8. Different effects on q and recruitment of the same environmental covariate.</h2>
+</div>
+<div class="section level2">
+<h2 id="different-effects-on-q-and-recruitment-of-the-same-environmental-covariate-">8. Different effects on q and recruitment of the same environmental covariate.<a class="anchor" aria-label="anchor" href="#different-effects-on-q-and-recruitment-of-the-same-environmental-covariate-"></a>
+</h2>
 <p>Add covariates to the model and allow effects of first covariate on q for second index AND recruitment. Then proceed as above.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ecov</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Climate variable 1"</span>, <span class="st">"Climate variable 2"</span><span class="op">)</span>,
     process_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"ar1"</span><span class="op">)</span>,
@@ -490,10 +498,10 @@
 <span class="co">#set value for Ecov_beta effect on q (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)</span>
 <span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">[</span><span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="op">=</span> <span class="fl">0.5</span></code></pre></div>
 <p>Also, set a value for Ecov_beta effect on recruitment (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span></code></pre></div>
 <p>Create the operating model, simulate and fit data, and compare true and estimated parameters.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0101010</span><span class="op">)</span>
 <span class="va">newdata</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
@@ -542,7 +550,9 @@
   <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">years</span>, <span class="va">newdata</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Index "</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_indices</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">" Est."</span>, <span class="st">" True"</span><span class="op">)</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">pal</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_4.png" style="width:80.0%"></p>
+<div class="figure">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex11_plots/q_time_series_4.png" style="width:80.0%">
+</div>
 </div>
   </div>
 
@@ -563,7 +573,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>

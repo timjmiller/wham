@@ -17,7 +17,7 @@
 #' Note: we allow fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
 #' but in that case no stock-recruit function is estimated. A warning message is printed if \code{recruit_model > 2} and \code{NAA_re = NULL}.
 #' If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects,
-#' either only age-1 (\code{NAA_re = list(sigma='rec')}) or all ages (\code{NAA_re = list(sigma='rec+1')}, "full state-space" model).
+#' either only age-1 (\code{NAA_re = list(sigma="rec")}) or all ages (\code{NAA_re = list(sigma="rec+1")}, "full state-space" model).
 #' See below for details on \code{NAA_re} specification.
 #'
 #' \code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
@@ -28,14 +28,14 @@
 #'     \item{$mean}{Mean observations (matrix). number of years x number of covariates. Missing values = NA.}
 #'     \item{$logsigma}{Configure observation standard errors. Options:
 #'       \describe{
-#'         \item{Matrix of log standard errors with same dimensions as \code{$mean}}{Specified values for each time step }
+#'         \item{Matrix of \eqn{log} standard errors with same dimensions as \code{$mean}}{Specified values for each time step }
 #'         \item{log standard errors for each covariate, numeric vector or matrix w/ dim 1 x n.ecov}{Specified value the same for all time steps}
-#'         \item{estimation option (for all covariates)}{
-#'           \code{'est_1'}: Estimated, one value shared among time steps.
-#'           \code{'est_re'}: Estimated value for each time step as random effects with two parameters (mean, var)}
-#'         \item{list of two elements}{
+#'         \item{estimation option (for all covariates). character string:}{
+#'           \code{"est_1"}: Estimated, one value shared among time steps.
+#'           \code{"est_re"}: Estimated value for each time step as random effects with two parameters (mean, var)}
+#'         \item{list of two elements.}{
 #'           First is the matrix of log standard errors or the vector of single values for each covariate as above. 
-#'           Second is a character vector of estimation options (\code{'NA'}, \code{'est_1'},\code{'est_re'}) for each covariate. 
+#'           Second is a character vector of estimation options (\code{NA}, \code{"est_1"},\code{"est_re"}) for each covariate. 
 #'           For covariates with non-NA values, values in the first element are ignored.}
 #'       }
 #'     }
@@ -49,8 +49,8 @@
 #'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the
 #'     population. May also be a list (element for each ecov) of character vectors ("none", "recruit", "M", and/or "q") so each ecov can multiple effects.}
 #'     \item{$indices}{indices that each ecov affects. Must be a list (length = n_Ecov), where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
-#'     \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: 'none', 'linear' (default) or 'poly-x'
-#'     where x = 2, ... (e.g. 'poly-2' specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
+#'     \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: "none", "linear" (default) or "poly-x"
+#'     where x = 2, ... (e.g. "poly-2" specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
 #'      effects on (1) recruitment, (2) M, and catchabilities for (3) index 1,..., (2+n_indices) index n_indices (length of the vector is 2 + n_indices).}
 #'     \item{$ages}{Ages that each ecov affects. Must be a list of length n.ecov, where each element is a vector of ages. Default = list(1:n.ages) to affect all ages.}
 #'     \item{$how}{How does the ecov affect the \code{$where} process? An integer vector (length = n_Ecov). If corresponding \code{$where} = "none", then this is ignored.

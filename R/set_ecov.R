@@ -118,8 +118,8 @@ set_ecov = function(input, ecov)
 
     if(class(ecov$logsigma)[1] == 'character'){
       #check that estimation options are right
-      if(!all(ecov$logsigma %in% c("est_1", "est_re", "NA"))){
-        stop("ecov$logsigma or ecov$logsigma[[2]] is character and must be 'NA' (do not estimate), 'est_1' (single variance parameter), or 'est_re' (iid re annual variance parameters)")
+      if(!all(ecov$logsigma %in% c("est_1", "est_re", NA))){
+        stop("ecov$logsigma or ecov$logsigma[[2]] is character and must be NA (do not estimate), 'est_1' (single variance parameter), or 'est_re' (iid re annual variance parameters)")
       }
       if(length(ecov$logsigma) == 1) ecov$logsigma = rep(ecov$logsigma, data$n_Ecov) #use the single value for all Ecovs
       #check length of estimation options
@@ -129,7 +129,7 @@ set_ecov = function(input, ecov)
         if(is.na(ecov$process_model[[i]])){
           #data$Ecov_obs_sigma_opt[i] == 1 # already defined above        
         }
-        if(ecov$logsigma[i] == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
+        if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
           data$Ecov_obs_sigma_opt[i] = 2
           par.Ecov.obs.logsigma[,i] <- -1.3 # matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov)
           map.Ecov.obs.logsigma[,i] <- i #matrix(rep(1:data$n_Ecov, each=n_Ecov_obs), ncol=data$n_Ecov)
@@ -144,9 +144,9 @@ set_ecov = function(input, ecov)
         #   par.Ecov.obs.sigma.par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
         #   map.Ecov.obs.sigma.par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
         # }
-        if(ecov$logsigma[i] == 'est_re'){
+        if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re'){
           data$Ecov_obs_sigma_opt[i] = 4
-          par.Ecov.obs.logsigma <- matrix(-1.3, nrow=n_Ecov_obs, ncol=data$n_Ecov) # random effect inits
+          #par.Ecov.obs.logsigma.re[,i] <- par.Ecov.obs.logsigma[,i] # random effect inits
           map.Ecov.obs.logsigma[,i] <- NA #matrix(1:(n_Ecov_obs*data$n_Ecov), nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation of fixed effects
           #map.Ecov.obs.logsigma.re[,i] <- max(0,map.Ecov.obs.logsigma.re, na.rm=T) + 1:n_Ecov_obs # turn on estimation of random effects
           par.Ecov.obs.sigma.par[,i] <- c(-1.3, -2.3) #matrix(c(rep(-1.3, data$n_Ecov), rep(-2.3, data$n_Ecov)), ncol=data$n_Ecov, byrow=TRUE) # random effect pars
@@ -203,8 +203,10 @@ set_ecov = function(input, ecov)
     map.Ecov.obs.logsigma.re = matrix(NA, data$n_years_Ecov, data$n_Ecov)
     #initial values of random effects
     par.Ecov.obs.logsigma.re = matrix(0, data$n_years_Ecov, data$n_Ecov)
-    for(i in 1:data$n_Ecov) if(ecov$logsigma[i] == 'est_re') map.Ecov.obs.logsigma.re[,i] = max(0, map.Ecov.obs.logsigma.re, na.rm=T) + 1:data$n_years_Ecov
-
+    for(i in 1:data$n_Ecov) if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re') {
+      map.Ecov.obs.logsigma.re[,i] = max(0, map.Ecov.obs.logsigma.re, na.rm=T) + 1:data$n_years_Ecov
+      par.Ecov.obs.logsigma.re[,i] <- par.Ecov.obs.logsigma[,i] # random effect initialize at values in matrix provided
+    }
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- matrix(NA, data$n_Ecov, n_effects)
     for(i in 1:data$n_Ecov) for(j in 1:n_effects) {
@@ -343,7 +345,7 @@ set_ecov = function(input, ecov)
         Ex: ",ecov$label[i]," in ",years[1]," affects recruitment in ",years[1+ecov$lag[i,1]],"
             ",ecov$label[i]," in ",lastyr," affects recruitment in ",lastyr+ecov$lag[i,1],"
 
-        "))
+        \n"))
       }
 
       if(data$Ecov_where[i,2] == 1){ # M
@@ -357,7 +359,7 @@ set_ecov = function(input, ecov)
         Ex: ",ecov$label[i]," in ",years[1]," affects M in ",years[1+ecov$lag[i,2]],"
             ",ecov$label[i]," in ",lastyr," affects M in ",lastyr+ecov$lag[i,2],"
 
-        "))
+        \n"))
       }
 
       for(j in index_effects) if(data$Ecov_where[i,j] == 1){ # q
@@ -371,7 +373,7 @@ set_ecov = function(input, ecov)
         Ex: ",ecov$label[i]," in ",years[1]," affects index ", j + 1 - min(index_effects), " in ",years[1+ecov$lag[i,j]],"
             ",ecov$label[i]," in ",lastyr," affects M index ", j + 1 - min(index_effects), " in ",lastyr+ecov$lag[i,j],"
 
-        "))
+        \n"))
       }
     }
     data$Ecov_label <- list(data$Ecov_label)

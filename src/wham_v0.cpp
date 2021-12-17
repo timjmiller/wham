@@ -423,6 +423,7 @@ Type objective_function<Type>::operator() ()
   }
   nll += nll_Ecov_obs_sig;
   nll += nll_Ecov_obs;
+  REPORT(nll_Ecov_obs_sig);
   SIMULATE if(simulate_data(2) ==1) if(simulate_period(0) == 1) {
     REPORT(Ecov_obs);
     REPORT(Ecov_obs_logsigma);

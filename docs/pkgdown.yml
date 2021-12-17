@@ -1,6 +1,6 @@
-pandoc: 2.11.4
-pkgdown: 1.6.1.9001
-pkgdown_sha: ce9781a15c7ea07df9fb17a11295ba4abec0b54b
+pandoc: 1.19.2.4
+pkgdown: 2.0.1
+pkgdown_sha: ~
 articles:
   ex10_om_mse: ex10_om_mse.html
   ex11_catchability: ex11_catchability.html
@@ -13,7 +13,7 @@ articles:
   ex7_debug: ex7_debug.html
   ex8_compare: ex8_compare.html
   ex9_retro_pred: ex9_retro_pred.html
-last_built: 2021-10-22T15:56Z
+last_built: 2021-12-17T18:22Z
 urls:
   reference: https://timjmiller.github.io/wham/reference
   article: https://timjmiller.github.io/wham/articles
