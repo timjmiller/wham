@@ -13,7 +13,7 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
     sdrep = mod$sdrep
   }
 
-  ecov.obs.sig = mod$rep$Ecov_obs_sigma
+  ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma is filled with fixed, or estimated values (fe or re) for each covariate depending on the respective options
   # if("Ecov_obs_logsigma" %in% names(mod$env$par)){
   #   ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
   #   if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
@@ -3479,12 +3479,13 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   } else {
     sdrep = mod$sdrep
   }
-  if("Ecov_obs_logsigma" %in% names(mod$env$par)){
-    ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
-    if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
-  } else {
-    ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
-  }
+  ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma is filled with fixed, or estimated values (fe or re) for each covariate depending on the respective options
+  # if("Ecov_obs_logsigma" %in% names(mod$env$par)){
+  #   ecov.obs.sig = matrix(exp(sdrep[rownames(sdrep) %in% "Ecov_obs_logsigma",1]), ncol=dat$n_Ecov) # all the same bc obs_sig_var --> 0
+  #   if(dim(ecov.obs.sig)[1] == 1) ecov.obs.sig = matrix(rep(ecov.obs.sig, dim(ecov.obs)[1]), ncol=dat$n_Ecov, byrow=T)
+  # } else {
+  #   ecov.obs.sig = exp(mod$input$par$Ecov_obs_logsigma)
+  # }
   ecov.use = dat$Ecov_use_obs[1:dat$n_years_Ecov,,drop=F]
   ecov.obs.sig = ecov.obs.sig[1:dat$n_years_Ecov,,drop=F]
   ecov.obs.sig[ecov.use == 0] <- NA
