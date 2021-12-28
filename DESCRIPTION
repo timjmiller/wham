@@ -40,7 +40,9 @@ Imports:
     TMBhelper (>= 1.3.0),
     viridis (>= 0.5.1),
     sessioninfo (>= 1.1.1),
-    abind (>= 1.4-5)
+    abind (>= 1.4-5),
+    rmarkdown (>= 2.11),
+    knitr (>= 1.37)
 Remotes: 
     kaskr/TMB_contrib_R/TMBhelper@fe3634c9,
     kaskr/adcomp/TMB
@@ -55,6 +57,4 @@ VignetteBuilder: knitr
 RoxygenNote: 7.1.2
 Encoding: UTF-8
 Suggests: 
-    knitr,
-    rmarkdown,
     testthat

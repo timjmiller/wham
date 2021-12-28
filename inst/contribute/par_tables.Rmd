@@ -1,0 +1,59 @@
+---
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+    keep_tex: yes
+    number_sections: no
+  word_document: default
+  html_document:
+    df_print: paged
+    keep_md: yes
+header-includes:
+  - \usepackage{longtable}
+  - \usepackage{booktabs}
+  - \usepackage{caption,graphics}
+  - \usepackage{makecell}
+  - \renewcommand\figurename{Fig.}
+  - \captionsetup{labelsep=period, singlelinecheck=false}
+  - \newcommand{\changesize}[1]{\fontsize{#1pt}{#1pt}\selectfont}
+  - \renewcommand{\arraystretch}{1.5}
+  - \renewcommand\theadfont{}
+---
+
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60), warning = FALSE, message = FALSE, fig.align = "center")
+options(knitr.kable.NA = "--")
+library(knitr)
+library(tidyverse)
+library(pander)
+library(kableExtra)
+library(png)
+```
+
+#WHAM output tables
+
+```{r par-table, echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+type = "latex"
+if(knitr::is_latex_output()) type = "latex"
+if(knitr::is_html_output()) type = "html"
+out = readRDS("parameter_estimates_table.RDS")
+out = round(out, 3)
+  out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T,label = "par-table",
+    caption="Parameter estimates, standard errors, and confidence intervals. Rounded to 3 decimal places.") %>%
+    kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+
+out = readRDS("NAA_table.RDS")
+out = round(out, 0)
+  out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = "NAA-table", 
+    caption="Abundance at age (1000s).") %>%
+    kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+
+out = readRDS("FAA_tot_table.RDS")
+out = round(out, 3)
+  out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = "FAA-tot-table",
+    caption="Total fishing mortality at age.") %>%
+    kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+
+```

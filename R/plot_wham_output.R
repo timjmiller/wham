@@ -1,10 +1,11 @@
 #' Plot WHAM output
 #'
-#' Generates many output plots for a fit WHAM model.
+#' Generates many output plots and tables for a fit WHAM model.
 #'
 #' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
 #' creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-#' \code{out.type = 'html'} makes an html file for viewing these .png files in a browser
+#' \code{out.type = 'html'} makes a html files for viewing plot .png files and html tables of parameter estimates in a browser.
+#' \code{out.type = 'pdf' or 'png'} makes LaTeX and pdf files of tables of parameter estimates.
 #' (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 #' 
 #' \code{plot.opts} holds optional arguments to modify plots:
@@ -14,6 +15,7 @@
 #'   }
 #'
 #' Plot functions are located in \code{wham_plots_tables.R}
+#' Table function is located in \code{par_tables_fn.R}
 #'
 #' @param mod output from \code{\link{fit_wham}}
 #' @param dir.main character, directory to save plots to (default = \code{getwd()})
@@ -50,6 +52,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
+  if(out.type %in% c("png", "pdf")) {
+    table.type = "pdf"
+  } else {
+    table.type = "html"
+  }
+
   # if(dir.exists(dir.main)){
   #   warning("Output directory already exists. Potentially overwriting previously saved output...")
   # }
@@ -57,6 +65,11 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     dir.create(dir.main, showWarnings = FALSE)
     # stop("Output directory does not exist. Check 'dir.main' and try again.")
   }
+  dir.res.tables <- file.path(dir.main, "res_tables")
+  if(dir.exists(dir.res.tables)) {
+    file.remove(file.path(dir.res.tables, list.files(dir.res.tables, recursive = TRUE)))
+  }
+  dir.create(dir.res.tables, showWarnings = FALSE)
 
   cat("Generating plot files... Please wait ~30 seconds...\n")
   if(out.type == "html") cat("html output works best with Google Chrome browser\n")
@@ -155,6 +168,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot_catch_curves_for_catch(mod)
     plot_catch_curves_for_index(mod)
     dev.off()
+
   } # end PDF section =============================================================
 
   if(out.type %in% c('png','html')){
@@ -330,9 +344,20 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     dev.off()
   } # end PNG section =====================================================
 
+
   # uses png output, automatically opens in browser
   if(out.type == 'html'){
     wham_html(dir.main = dir.main)
+  }
+  if(table.type == "pdf"){
+    cat(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
+    par_tables_fn(mod, od = dir.res.tables, do.tex = T)
+  }
+  if(table.type == "html"){
+    cat("Making HTML tables.\n")
+    par_tables_fn(mod, od = dir.res.tables, do.html = T)
+    cat("Opening HTML tables in your default web-browser.\n")
+    browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
   }
 }
 

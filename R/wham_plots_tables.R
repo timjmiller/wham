@@ -754,7 +754,8 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
   ggp = ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=type, fill=type)) +
     # ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=type), alpha=0.3, linetype = 0) +
     # ggplot2::geom_line(size=1.1) +
-    ggplot2::geom_smooth(method = "lm", alpha=0.2) +
+    #ggplot2::geom_smooth(method = "lm", alpha=0.2) +
+    ggplot2::geom_smooth(formula = y ~ x, method = "lm", alpha=0.2) +
     ggplot2::geom_point(size=0.8) +
     ggplot2::ylab("Standardized residual") +
     # expand_limits(y=0) +
