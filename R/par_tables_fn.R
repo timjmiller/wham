@@ -33,7 +33,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
 
   if(data$n_NAA_sigma>0) {
     if(data$recruit_model == 2) { #random about mean
-      tvar = length(unique(mod$rep$pred_NAA[,1])) != 1 #see if anything is causing mean recruitment to vary over time
+      tvar = length(unique(mod$rep$pred_NAA[-1,1])) != 1 #see if anything is causing mean recruitment to vary over time
       if(!tvar) {
         fe.names = c(fe.names, "Mean Recruitment")
         fe.vals = c(fe.vals, exp(pars$mean_rec_pars[1]))
@@ -141,19 +141,28 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     ind = unique(data$NAA_sigma_pointer)
     npar = length(ind)
     al = ah = integer()
-    for(i in 1:npar) {
-      al = c(al, ages[min(which(data$NAA_sigma_pointer == ind[i]))])
-      ah = c(ah, ages[max(which(data$NAA_sigma_pointer == ind[i]))])
-      more = ah[i] != al[i]
-      fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", al[i], ifelse(more, paste0("-", ah[i], ")"), ")")))
-      fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[i]))
-      fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[i], sd$log_NAA_sigma[i], type = "exp"))
-    }
     if(data$n_NAA_sigma>1){
+      for(i in 1:npar) {
+        al = c(al, ages[min(which(data$NAA_sigma_pointer == ind[i]))])
+        ah = c(ah, ages[max(which(data$NAA_sigma_pointer == ind[i]))])
+        more = ah[i] != al[i]
+        fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", al[i], ifelse(more, paste0("-", ah[i], ")"), ")")))
+        fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[i]))
+        fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[i], sd$log_NAA_sigma[i], type = "exp"))
+      }
       fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", c("age", "year")))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$trans_NAA_rho)))
       fe.cis = rbind(fe.cis, 
         ci(pars$trans_NAA_rho[1], sd$trans_NAA_rho[1], lo = -1, hi = 1, type = "expit"),
+        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit"))
+    }
+    else {
+      fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", ages[1], ")"))
+      fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[1]))
+      fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[1], sd$log_NAA_sigma[1], type = "exp"))
+      fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", "year"))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$trans_NAA_rho[2])))
+      fe.cis = rbind(fe.cis, 
         ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit"))
     }
   }
