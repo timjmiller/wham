@@ -246,7 +246,7 @@ There are 3 options for plotting WHAM output. The default (`out.type='png'`) cre
 plot_wham_output(mod=m4_proj) # default is png
 ```
 
-Another option is `out.type='html'`, which creates the same `.png` files and then opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html()`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)). On Windows you may need to use Chrome or Internet Explorer to view the `.html` (there have been issues using Firefox on Windows but not Linux).
+Another option is `out.type='html'`, which creates the same `.png` files and then opens an HTML file with plots organized into tabs (code modified from [`r4ss::SS_html()`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R)). This option will also generate and open html tables of estimates for fundamental parameters and numbers and fishing mortality at age. On Windows you may need to use Chrome or Internet Explorer to view the `.html` (there have been issues using Firefox on Windows but not Linux).
 
 ```{r eval=FALSE}
 plot_wham_output(mod=m4_proj, out.type='html')
@@ -254,7 +254,7 @@ plot_wham_output(mod=m4_proj, out.type='html')
 
 ![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/html_screenshot.png){ width=75% }
 
-Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc).
+Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). This option will also generate a pdf of the same tables as those under the `html` option.
 
 Many plots are generated---here we display some examples:
 
