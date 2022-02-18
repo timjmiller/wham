@@ -58,7 +58,13 @@
     <loc>https://timjmiller.github.io/wham/reference/check_convergence.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/reference/check_estimability.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/reference/compare_wham_models.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/extract_fixed.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/reference/fit_peel.html</loc>

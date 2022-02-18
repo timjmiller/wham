@@ -188,7 +188,7 @@ Default: <code>osa.opts = list(method="oneStepGeneric", parallel=TRUE)</code>.</
 <dt>model</dt>
 <dd><p>(optional), a previously fit wham model.</p></dd>
 <dt>do.check</dt>
-<dd><p>T/F, check if model parameters are identifiable? Passed to <code><a href="fit_tmb.html">fit_tmb</a></code>. Runs <code><a href="https://rdrr.io/pkg/TMBhelper/man/check_estimability.html" class="external-link">TMBhelper::check_estimability</a></code>. Default = <code>TRUE</code>.</p></dd>
+<dd><p>T/F, check if model parameters are identifiable? Passed to <code><a href="fit_tmb.html">fit_tmb</a></code>. Runs internal function <code>check_estimability</code>, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = <code>TRUE</code>.</p></dd>
 <dt>MakeADFun.silent</dt>
 <dd><p>T/F, Passed to silent argument of <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">TMB::MakeADFun</a></code>. Default = <code>FALSE</code>.</p></dd>
 <dt>retro.silent</dt>

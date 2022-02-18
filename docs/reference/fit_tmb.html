@@ -143,7 +143,7 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 <dt>do.sdrep</dt>
 <dd><p>T/F, calculate standard deviations of model parameters? See <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code>. Default = <code>TRUE</code>.</p></dd>
 <dt>do.check</dt>
-<dd><p>T/F, check if model parameters are identifiable? Runs <code><a href="https://rdrr.io/pkg/TMBhelper/man/check_estimability.html" class="external-link">TMBhelper::check_estimability</a></code>. Default = <code>TRUE</code>.</p></dd>
+<dd><p>T/F, check if model parameters are identifiable? Runs internal <code>check_estimability</code>, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = <code>TRUE</code>.</p></dd>
 <dt>save.sdrep</dt>
 <dd><p>T/F, save the full <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href="https://rdrr.io/pkg/TMB/man/summary.sdreport.html" class="external-link">summary.sdreport)</a></code> to reduce model object file size. Default = <code>FALSE</code>.</p></dd>
 </dl></div>
@@ -177,7 +177,7 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 </dl></div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code><a href="https://rdrr.io/pkg/TMBhelper/man/check_estimability.html" class="external-link">TMBhelper::check_estimability</a></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code>TMBhelper::check_estimability</code></p></div>
     </div>
 
   </div>

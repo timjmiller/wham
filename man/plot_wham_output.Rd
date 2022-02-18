@@ -24,12 +24,13 @@ plot_wham_output(
 \item{plot.opts}{(optional) list of plot modifications}
 }
 \description{
-Generates many output plots for a fit WHAM model.
+Generates many output plots and tables for a fit WHAM model.
 }
 \details{
 \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
 creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-\code{out.type = 'html'} makes an html file for viewing these .png files in a browser
+\code{out.type = 'html'} makes a html files for viewing plot .png files and html tables of parameter estimates in a browser.
+\code{out.type = 'pdf' or 'png'} makes LaTeX and pdf files of tables of parameter estimates.
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 
 \code{plot.opts} holds optional arguments to modify plots:
@@ -39,6 +40,7 @@ creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files with
   }
 
 Plot functions are located in \code{wham_plots_tables.R}
+Table function is located in \code{par_tables_fn.R}
 }
 \examples{
 \dontrun{

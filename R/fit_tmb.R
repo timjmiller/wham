@@ -7,7 +7,7 @@
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
-#' @param do.check T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::check_estimability]{TMBhelper::check_estimability}}. Default = \code{TRUE}.
+#' @param do.check T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
 #' @return \code{model}, appends the following:
 #'   \describe{
@@ -59,7 +59,7 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
       warning(paste("","Some parameter(s) have high gradients at the MLE:","",
         paste(capture.output(print(model$badpar)), collapse = "\n"), sep="\n"))
     } else {
-      test <- TMBhelper::check_estimability(model)
+      test <- check_estimability(model)
       if(length(test$WhichBad) > 0){
         bad.par <- as.character(test$BadParams$Param[test$BadParams$Param_check=='Bad'])
         bad.par.grep <- grep(bad.par, test$BadParams$Param)
@@ -94,4 +94,77 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
   }
 
   return(model)
+}
+
+
+#' Extract fixed effects
+#' Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+#' Internal function called by \code{\link{check_estimability}}.
+#'
+#' \code{extract_fixed} extracts the best previous value of fixed effects, in a way that works for both mixed and fixed effect models
+#'
+#' @param obj, The compiled object
+#'
+#' @return A vector of fixed-effect estimates
+
+extract_fixed = function( obj ){
+  if( length(obj$env$random)==0 ){
+    Return = obj$env$last.par.best
+  }else{
+    Return = obj$env$last.par.best[-c(obj$env$random)]
+  }
+  return( Return )
+}
+
+
+#' Check for identifiability of fixed effects
+#' Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+#' Internal function called by \code{\link{fit_tmb}}.
+#'
+#' \code{check_estimability} calculates the matrix of second-derivatives of the marginal likelihood
+#' w.r.t. fixed effects, to see if any linear combinations are not estimable (i.e. cannot be
+#' uniquely estimated conditional upon model structure and available data, e.g., resulting
+#' in a likelihood ridge and singular, non-invertable Hessian matrix)
+#'
+#' @param obj The compiled object
+#' @param h optional argument containing pre-computed Hessian matrix
+#'
+#' @return A tagged list of the hessian and the message
+
+#' @export
+check_estimability = function( obj, h ){
+
+  # Extract fixed effects
+  ParHat = extract_fixed( obj )
+
+  # Check for problems
+  Gr = obj$gr( ParHat )
+  if( any(Gr>0.01) ) stop("Some gradients are high, please improve optimization and only then use `Check_Identifiable`")
+
+  # Finite-different hessian
+  List = NULL
+  if(missing(h)){
+    List[["Hess"]] = optimHess( par=ParHat, fn=obj$fn, gr=obj$gr )
+  }else{
+    List[["Hess"]] = h
+  }
+
+  # Check eigendecomposition
+  List[["Eigen"]] = eigen( List[["Hess"]] )
+  List[["WhichBad"]] = which( List[["Eigen"]]$values < sqrt(.Machine$double.eps) )
+
+  # Check result
+  if( length(List[["WhichBad"]])==0 ){
+    # print message
+    message( "All parameters are estimable" )
+  }else{
+    # Check for parameters
+    RowMax = apply( List[["Eigen"]]$vectors[,List[["WhichBad"]],drop=FALSE], MARGIN=1, FUN=function(vec){max(abs(vec))} )
+    List[["BadParams"]] = data.frame("Param"=names(obj$par), "MLE"=ParHat, "Param_check"=ifelse(RowMax>0.1, "Bad","OK"))
+    # print message
+    print( List[["BadParams"]] )
+  }
+
+  # Return
+  return( invisible(List) )
 }

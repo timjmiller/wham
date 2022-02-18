@@ -82,8 +82,8 @@ browseVignettes("wham")
 
 If you're having problems with dependencies not installing, you can try:
 ```
-devtools::install_github("kaskr/adcomp/TMB", dependencies=TRUE)
-devtools::install_github("kaskr/TMB_contrib_R/TMBhelper")
+remove.packages("TMB")
+install.packages("TMB") #from CRAN, not github
 to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis")
 new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)

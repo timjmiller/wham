@@ -19,7 +19,7 @@ wham 1.0.5.9000
 ### Bug fixes
 
 * Fix errors in `prepare_wham_input` introduced in 1.0.5 when not all index data in `.dat` are used (aggregate or proportion-at-age, all years or a subset) [12abdef](https://github.com/timjmiller/wham/commit/12abdefb22e7b8b5f0640b0389b5e07fc7a00877)
-* Require updated version of `TMBhelper` [issue 47](https://github.com/timjmiller/wham/issues/47)
+* Updated version of `TMBhelper::check_estimability` is now internal [issue 47](https://github.com/timjmiller/wham/issues/47)
 * Peel `which_F_age` (fix error when projecting a peel doing retrospective predictions, ex9)
 * Ecov AR1 mean parameterization
 * simulation of Dirichlet-multinomial age composition ([issue 49](https://github.com/timjmiller/wham/issues/49), caught by @seananderson).

@@ -53,7 +53,7 @@ Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
 
 \item{model}{(optional), a previously fit wham model.}
 
-\item{do.check}{T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs \code{\link[TMBhelper::check_estimability]{TMBhelper::check_estimability}}. Default = \code{TRUE}.}
+\item{do.check}{T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs internal function \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 

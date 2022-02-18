@@ -19,7 +19,7 @@ fit_tmb(
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.}
 
-\item{do.check}{T/F, check if model parameters are identifiable? Runs \code{\link[TMBhelper::check_estimability]{TMBhelper::check_estimability}}. Default = \code{TRUE}.}
+\item{do.check}{T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
 }

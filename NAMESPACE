@@ -2,6 +2,7 @@
 
 export("%>%")
 export(check_convergence)
+export(check_estimability)
 export(compare_wham_models)
 export(fit_peel)
 export(fit_wham)

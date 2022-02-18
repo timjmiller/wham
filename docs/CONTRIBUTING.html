@@ -122,9 +122,9 @@
 <p>If you wish to contribute, please use the NOAA Fisheries Toolbox suggested workflow, summarized below. <a href="https://github.com/nmfs-fish-tools/Resources/blob/master/CONTRIBUTING.md" class="external-link">This page</a> has further guidance and resources. The “fork-and-branch” workflow we follow is described in more detail <a href="https://blog.scottlowe.org/2015/01/27/using-fork-branch-git-workflow/" class="external-link">here</a>.</p>
 <div class="section level2">
 <h2 id="workflow">Workflow<a class="anchor" aria-label="anchor" href="#workflow"></a></h2>
-<ol><li>File an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> describing the fix/feature you are planning.</li>
-<li>Fork wham (create your own copy on GitHub by clicking “Fork”, top right of wham page)</li>
-<li>Clone your fork (download your copy of wham so you can modify it locally, click green “Code” button)</li>
+<ol style="list-style-type: decimal"><li><p>File an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> describing the fix/feature you are planning.</p></li>
+<li><p>Fork wham (create your own copy on GitHub by clicking “Fork”, top right of wham page)</p></li>
+<li><p>Clone your fork (download your copy of wham so you can modify it locally, click green “Code” button)</p></li>
 <li>
 <p>Add the original wham repo as <em>upstream</em> so you can get future changes from devel (see <a href="https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-for-a-fork" class="external-link">here</a>).</p>
 <pre><code>git remote add upstream https://github.com/timjmiller/wham.git</code></pre>
@@ -139,7 +139,7 @@
 git merge upstream/devel</code></pre>
 </li>
 <li>
-<p>Create a new branch for your change with a meaningful name, e.g. <code>selftest</code> to add a function to simulate data from a fit model and refit.</p>
+<p>Create a new branch for your change with a meaningful name, e.g. <code>selftest</code> to add a function to simulate data from a fit model and refit.</p>
 <pre><code>git checkout -b &lt;myfeature&gt;</code></pre>
 </li>
 <li>
@@ -154,16 +154,16 @@ git merge upstream/devel</code></pre>
 <span class="co"># run all tests</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">test</a></span><span class="op">(</span>pkg <span class="op">=</span> <span class="va">wham.source.dir</span><span class="op">)</span></code></pre>
 </li>
-<li>Work on your feature branch, making changes to your local wham files. Periodically merge in updates from the upstream devel branch (#6 above). Try to maintain the current wham coding style.</li>
-<li>Add documentation, test(s), and a vignette if applicable.</li>
-<li>When your feature is finished, rerun the tests and verify that they pass (#8). Helpful scripts for testing and debugging are in the <code>inst/contribute/</code> folder.</li>
-<li>Confirm your branch is up-to-date with the upstream devel.</li>
+<li><p>Work on your feature branch, making changes to your local wham files. Periodically merge in updates from the upstream devel branch (#6 above). Try to maintain the current wham coding style.</p></li>
+<li><p>Add documentation, test(s), and a vignette if applicable.</p></li>
+<li><p>When your feature is finished, rerun the tests and verify that they pass (#8). Helpful scripts for testing and debugging are in the <code>inst/contribute/</code> folder.</p></li>
+<li><p>Confirm your branch is up-to-date with the upstream devel.</p></li>
 <li>
 <p>Commit your changes, and push your local branch to your forked repo (origin, not upstream)</p>
 <pre><code>git commit -m "informative message"
 git push origin &lt;myfeature&gt;</code></pre>
 </li>
-<li>Submit your pull request, following these <a href="https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests" class="external-link">best practices</a>.</li>
+<li><p>Submit your pull request, following these <a href="https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests" class="external-link">best practices</a>.</p></li>
 <li><p>Clean up / delete your feature branch and fork.</p></li>
 </ol></div>
 </div>

@@ -148,22 +148,22 @@
     
     
 <p>This is the 9th WHAM example. We assume you already have <code>wham</code> installed and are relatively familiar with the package. If not, read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and <a href="https://timjmiller.github.io/wham/articles/">Tutorial</a>.</p>
-<p>In this vignette we show how to calculate retrospective predictions, by peeling <em>x</em> years of data, re-fitting models, and then projecting each peel <em>y</em> years. Although this can be done for any variable, we demonstrate how to do so for recruitment, as in Fig. 4 of <a href="https://doi.org/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>. We use the same data and model setup as for <code>m3</code> and <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>.</p>
+<p>In this vignette we show how to calculate retrospective predictions, by peeling <em>x</em> years of data, re-fitting models, and then projecting each peel <em>y</em> years. Although this can be done for any variable, we demonstrate how to do so for recruitment, as in Fig. 4 of <a href="https://doi.org/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>. We use the same data and model setup as for <code>m3</code> and <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>.</p>
 <div class="section level2">
 <h2 id="load-data">1. Load data<a class="anchor" aria-label="anchor" href="#load-data"></a>
 </h2>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>Create a directory for this analysis:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let's copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"CPI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
@@ -179,9 +179,9 @@
 <li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
 <li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
 <li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a "limiting" (e.g. carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
+<li><p>CPI has a “limiting” (e.g. carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
 </ul>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
   label <span class="op">=</span> <span class="st">"CPI"</span>,
   mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">env.dat</span><span class="op">$</span><span class="va">CPI</span><span class="op">)</span>, <span class="co"># CPI observations</span>
@@ -204,7 +204,7 @@
 <div class="section level2">
 <h2 id="fit-the-models">3. Fit the models<a class="anchor" aria-label="anchor" href="#fit-the-models"></a>
 </h2>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
     <span class="va">env</span><span class="op">$</span><span class="va">how</span> <span class="op">=</span> <span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>
     <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>,
@@ -223,14 +223,14 @@
 <div class="section level2">
 <h2 id="look-at-convergence-and-diagnostics">4. Look at convergence and diagnostics<a class="anchor" aria-label="anchor" href="#look-at-convergence-and-diagnostics"></a>
 </h2>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
 <span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span>
 <span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
 <span class="va">df.mods</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 means opt converged</span>
 <span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span></code></pre></div>
 <p>Compare model output - they are pretty similar.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m1 (no CPI)"</span>,<span class="st">"m2 (CPI)"</span><span class="op">)</span>
 <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, fdir<span class="op">=</span><span class="va">write.dir</span>, do.table<span class="op">=</span><span class="cn">F</span>, plot.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kobe.prob<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
@@ -238,7 +238,7 @@
 <h2 id="run-retrospective-predictions">5. Run retrospective predictions<a class="anchor" aria-label="anchor" href="#run-retrospective-predictions"></a>
 </h2>
 <p>For each model, peel 3-15 years of data and re-fit the model using <code><a href="../reference/retro.html">retro()</a></code>, and then project each peel 3 years by calling <code><a href="../reference/project_wham.html">project_wham()</a></code>. These projections are done with <em>F</em> = 0 and continuing the CPI AR1 process model (without new observations). You can specify alternative options for the projections using <code>$proj.opts</code> (see <a href="https://timjmiller.github.io/wham/reference/project_wham.html"><code>project_wham()</code></a> and <a href="https://timjmiller.github.io/wham/articles/ex3_projections.html">Ex 3: Projections</a>).</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n.yrs.peel</span> <span class="op">&lt;-</span> <span class="fl">15</span>
 <span class="va">n.yrs.proj</span> <span class="op">&lt;-</span> <span class="fl">3</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
@@ -249,8 +249,8 @@
 <div class="section level2">
 <h2 id="plot-retrospective-predictions-of-recruitment">6. Plot retrospective predictions of recruitment<a class="anchor" aria-label="anchor" href="#plot-retrospective-predictions-of-recruitment"></a>
 </h2>
-<p>Here is a function to extract and plot the retrospective predictions of recruitment from each model. It can easily be modified to extract other variables of interest, e.g. SSB or F.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>Here is a function to extract and plot the retrospective predictions of recruitment from each model. It can easily be modified to extract other variables of interest, e.g. SSB or F.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plot_retro_pred_R</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mods</span>, <span class="va">peels</span><span class="op">=</span><span class="fl">3</span><span class="op">:</span><span class="va">n.yrs.peel</span>, <span class="va">n.yrs.proj</span><span class="op">=</span><span class="va">n.yrs.proj</span><span class="op">)</span><span class="op">{</span>
     <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow<span class="op">=</span><span class="fl">0</span>, ncol<span class="op">=</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span>
     <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Year"</span>,<span class="st">"Model"</span>,<span class="st">"Peel"</span>,<span class="st">"Recruitment"</span>,<span class="st">"termyr"</span><span class="op">)</span>
@@ -291,13 +291,11 @@
           <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.9</span>,<span class="fl">.9</span><span class="op">)</span>, legend.box.margin <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">margin</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>, legend.margin <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">margin</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span>
     <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">plot_retro_pred_R</span><span class="op">(</span><span class="va">mods</span>, peels<span class="op">=</span><span class="fl">3</span><span class="op">:</span><span class="va">n.yrs.peel</span>, n.yrs.proj<span class="op">=</span><span class="va">n.yrs.proj</span><span class="op">)</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="st">"retro_pred_R.png"</span><span class="op">)</span>, device<span class="op">=</span><span class="st">'png'</span>, width<span class="op">=</span><span class="fl">8</span>, height<span class="op">=</span><span class="fl">5</span>, units<span class="op">=</span><span class="st">'in'</span><span class="op">)</span></code></pre></div>
-<p>The two black lines represent the "true" recruitment from each model, i.e., the recruitment estimates when fitting to the full data. Points and lines are colored by peel from yellow (1996) to dark blue (2008). The points are terminal year recruitment estimates and lines are projected recruitment (3 years).</p>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex9_plots/retro_pred_R.png" style="width:95.0%">
-</div>
+<p>The two black lines represent the “true” recruitment from each model, i.e., the recruitment estimates when fitting to the full data. Points and lines are colored by peel from yellow (1996) to dark blue (2008). The points are terminal year recruitment estimates and lines are projected recruitment (3 years).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex9_plots/retro_pred_R.png" style="width:95.0%"></p>
 </div>
   </div>
 

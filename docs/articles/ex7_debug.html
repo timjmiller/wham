@@ -148,19 +148,19 @@
     
     
 <p>In this vignette we show how to use the <code>do.fit = FALSE</code> flag to debug a WHAM model.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># devtools::install_github("timjmiller/wham", dependencies=TRUE)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
 <p>Load the ASAP3 data file.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex7_SNEMAYT.dat"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Prepare the WHAM model (<code>m3</code> from <a href="https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html">example 1</a>).</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,
                               NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Try to fit the model... uh oh.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>Try to fit the model… uh oh.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">F</span>, do.retro <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>
 <span class="co">#&gt; Order of parameters:</span>
 <span class="co">#&gt;  [1] "log_catch_sig_scale"  "log_index_sig_scale"  "log_N1_pars"         </span>
@@ -194,8 +194,8 @@
 <span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span>
 <span class="co">#&gt; outer mgc:  NaN</span>
 <span class="co">#&gt; Error in stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, : gradient function must return a numeric vector of length 61</span></code></pre></div>
-<p>What's wrong? It looks like the likelihood function is returning <code>NaN</code>. It is often easier to diagnose problems like this using the <em>unoptimized</em> model, i.e. look at everything using the initial parameter values. WHAM includes a <code>do.fit = F</code> flag in <code>fit_wham</code> to return the unoptimized model object returned by <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">TMB::MakeADFun</a></code>. Let's see how it works.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<p>What’s wrong? It looks like the likelihood function is returning <code>NaN</code>. It is often easier to diagnose problems like this using the <em>unoptimized</em> model, i.e. look at everything using the initial parameter values. WHAM includes a <code>do.fit = F</code> flag in <code>fit_wham</code> to return the unoptimized model object returned by <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">TMB::MakeADFun</a></code>. Let’s see how it works.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>
 <span class="co">#&gt; Order of parameters:</span>
 <span class="co">#&gt;  [1] "log_catch_sig_scale"  "log_index_sig_scale"  "log_N1_pars"         </span>
@@ -222,10 +222,10 @@
 <span class="co">#&gt; Your parameter list has been re-ordered.</span>
 <span class="co">#&gt; (Disable this warning with checkParameterOrder=FALSE)</span></code></pre></div>
 <p>This runs without an error. The optimization failed because the likelihood was <code>NaN</code>, and now we can see which of the likelihood components was responsible. To do so, we need to look at the <code>REPORT</code>ed objects with <code>"nll"</code> in their name. We can use the <code>$report()</code> function from TMB.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span> <span class="op">=</span> <span class="va">mod</span><span class="op">$</span><span class="fu">report</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>See all of the <code>REPORT</code>ed objects.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "pred_log_catch"        "q_prior_re"            "selAA"                </span>
 <span class="co">#&gt;  [4] "sigma_q"               "FAA_tot"               "log_SPR0"             </span>
@@ -251,7 +251,7 @@
 <span class="co">#&gt; [64] "pred_index_paa"        "Ecov_out"              "nll_M"                </span>
 <span class="co">#&gt; [67] "log_YPR_FXSPR_static"  "q"</span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and sum over all individual values.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt;  nll_catch_acomp  nll_agg_indices              nll     nll_Ecov_obs </span>
 <span class="co">#&gt;        2844.2380        1562.8441              NaN           0.0000 </span>
@@ -262,9 +262,9 @@
 <span class="co">#&gt;            nll_M </span>
 <span class="co">#&gt;           0.0000</span></code></pre></div>
 <p>The likelihood components that are equal to 0 are not used in the model (no random effects on <code>M</code>, <code>Ecov</code>, <code>selectivity</code>, etc.). <code>nll</code> is the total likelihood and is <code>NaN</code>. The one troublesome component is <code>nll_agg_catch</code>. This is the total (aggregate) catch from the fishery in each year. It could be an issue with the catch data or the model-predicted catch, since both are in the likelihood calculation.</p>
-<p>Search the <a href="https://github.com/timjmiller/wham/blob/master/src/wham_v0.cpp" class="external-link">WHAM .cpp file</a> for "nll_agg_catch". We find that on line 888, this depends on <code>agg_catch</code> (the catch data) and <code>pred_catch</code> (model-predicted catch).</p>
+<p>Search the <a href="https://github.com/timjmiller/wham/blob/master/src/wham_v0.cpp" class="external-link">WHAM .cpp file</a> for “nll_agg_catch”. We find that on line 888, this depends on <code>agg_catch</code> (the catch data) and <code>pred_catch</code> (model-predicted catch).</p>
 <p>The catch data looks ok.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">agg_catch</span>
 <span class="co">#&gt;             [,1]</span>
 <span class="co">#&gt;  [1,] 14549.0000</span>
@@ -313,7 +313,7 @@
 <span class="co">#&gt; [44,]   151.9999</span></code></pre></div>
 <p>The predicted catch is calculated on lines 879-880. <code>pred_catch</code> depends on <code>NAA</code> (numbers-at-age), <code>FAA</code> (F at age), <code>ZAA</code> (Z at age), and <code>waa</code> (weight-at-age data).</p>
 <p><code>NAA</code> looks ok.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">NAA</span>
 <span class="co">#&gt;            [,1]     [,2]     [,3]     [,4]     [,5]     [,6]</span>
 <span class="co">#&gt;  [1,] 134809.00 11710.97 25945.08 17508.26 11476.00 13803.70</span>
@@ -361,7 +361,7 @@
 <span class="co">#&gt; [43,]  22026.47 22026.47 22026.47 22026.47 22026.47 22026.47</span>
 <span class="co">#&gt; [44,]  22026.47 22026.47 22026.47 22026.47 22026.47 22026.47</span></code></pre></div>
 <p><code>FAA</code> looks ok - no issues with <code>F</code> or selectivity.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">FAA</span><span class="op">[</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="co"># middle dim is n.fleets = 1</span>
 <span class="co">#&gt;            [,1]       [,2]       [,3]       [,4]       [,5] [,6]</span>
 <span class="co">#&gt;  [1,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span>
@@ -409,7 +409,7 @@
 <span class="co">#&gt; [43,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span>
 <span class="co">#&gt; [44,] 0.0501933 0.07552447 0.09057153 0.09692876 0.09922137  0.1</span></code></pre></div>
 <p><code>ZAA</code> looks ok - no issues with <code>M</code> either.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">therep</span><span class="op">$</span><span class="va">ZAA</span>
 <span class="co">#&gt;            [,1]      [,2]      [,3]      [,4]      [,5]     [,6]</span>
 <span class="co">#&gt;  [1,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span>
@@ -457,7 +457,7 @@
 <span class="co">#&gt; [43,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span>
 <span class="co">#&gt; [44,] 0.4551933 0.4115245 0.3865715 0.3719288 0.3552214 0.331099</span></code></pre></div>
 <p>Ah, here is the problem. The weight at age data has an entry of <code>-99</code>. This means that <code>pred_catch</code> is negative on line 880, and we take the log of a negative number on line 883.</p>
-<div class="sourceCode"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">waa</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>
 <span class="co">#&gt;          [,1]  [,2]  [,3]  [,4]  [,5]  [,6]</span>
 <span class="co">#&gt;  [1,]   0.210 0.296 0.348 0.374 0.382 0.428</span>

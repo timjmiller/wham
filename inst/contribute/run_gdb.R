@@ -27,7 +27,7 @@ for(i in 1:3) { # newton steps
 }
 mod$sdrep <- TMB::sdreport(mod)
 
-# https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R    
-test <- TMBhelper::check_estimability(mod)
+# originally provided by https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R    
+test <- wham:::check_estimability(mod)
 test$WhichBad
 

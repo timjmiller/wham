@@ -98,4 +98,6 @@ reference:
       - '`wham_html`'
       - '`read_asap3_fit`'
       - '`read_wham_fit`'
+      - '`check_estimability`'
+      - '`extract_fixed`'
       - '`%>%`'
