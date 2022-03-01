@@ -11,7 +11,7 @@ set_NAA = function(input, NAA_re=NULL)
   if(is.null(NAA_re$N1_model)) {
     data$N1_model = 0 #0: just age-specific numbers at age
   } else {
-    data$N1_model == NAA_re$N1_model 
+    data$N1_model = NAA_re$N1_model 
   }
   if(is.null(NAA_re$N1_pars)){
     if(data$N1_model == 0){
