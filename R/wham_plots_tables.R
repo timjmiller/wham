@@ -3653,18 +3653,21 @@ plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
 plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   origpar <- par(no.readonly = TRUE)
   if("sdrep" %in% names(mod)){
-    se = summary(mod$sdrep)
-    se = matrix(se[rownames(se) == "logit_q_mat",2], length(mod$years_full))
+    se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
+    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+    q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+    q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
     if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1))
     pal = viridisLite::viridis(n=mod$input$data$n_indices)
-    ymax = max(mod$rep$q*exp(1.96*se))
-    plot(mod$years_full, mod$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+    ymax = max(q_hi, na.rm = TRUE)
+    plot(mod$years_full, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
     for( i in 1:mod$input$data$n_indices){
-      lines(mod$years_full, mod$rep$q[,i], lwd = 2, col = pal[i])
-      polyy = c(mod$rep$q[,i]*exp(-1.96*se[,i]),rev(mod$rep$q[,i]*exp(1.96*se[,i])))
-      polygon(c(mod$years_full,rev(mod$years_full)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+      lines(mod$years_full, q[,i], lwd = 2, col = pal[i])
+      polygon(c(mod$years_full,rev(mod$years_full)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     }
     legend("topright", legend = paste0("Index ", 1:mod$input$data$n_indices), lwd = 2, col = pal, lty = 1)
   }
