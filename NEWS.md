@@ -18,6 +18,8 @@ wham 1.0.5.9000
 
 ### Bug fixes
 
+* Fix age labeling for selectivity and numbers at age retro plots.
+* Fix typo in set_NAA.r for N1_model option (issue [issue 55](https://github.com/timjmiller/wham/issues/55) caught by @Cole-Monnahan-NOAA).
 * Fix errors in `prepare_wham_input` introduced in 1.0.5 when not all index data in `.dat` are used (aggregate or proportion-at-age, all years or a subset) [12abdef](https://github.com/timjmiller/wham/commit/12abdefb22e7b8b5f0640b0389b5e07fc7a00877)
 * Updated version of `TMBhelper::check_estimability` is now internal [issue 47](https://github.com/timjmiller/wham/issues/47)
 * Peel `which_F_age` (fix error when projecting a peel doing retrospective predictions, ex9)

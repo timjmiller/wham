@@ -254,10 +254,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     dir.res <- file.path(dir.plots, "results")
     dir.create(dir.res, showWarnings = FALSE)
     for(i in 1:mod$env$data$n_fleets){
-      plot.fleet.sel.blocks(mod, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
+      plot.fleet.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
     for(i in 1:mod$env$data$n_indices){
-      plot.index.sel.blocks(mod, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
+      plot.index.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
     if(mod$is_sdrep){
       png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res,family=fontfam)
