@@ -90,12 +90,12 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_fleet",f,".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSAresid_catch_4panel_fleet",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_fleet",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_fleet",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
-      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
+      ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -137,6 +137,73 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
+  if("catchpaa" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type=="catchpaa")
+    dat$fleet <- factor(as.character(dat$fleet))
+    dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
+    dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
+    #dat$residual[which(dat$val < 1e-15)] = NA #
+    n.fleets <- length(table(dat$fleet))
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_fleet",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_fleet",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      fleet = as.character(tmp$fleet[1])
+      if(mod$input$data$age_comp_model_fleets[as.integer(substr(fleet, nchar(fleet), nchar(fleet)))] %in% 3:7){
+        tmp$residual[which(tmp$val < 1e-15)] = NA #no residuals for zeros for continuous models
+      }
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(tmp$residual, na.rm=TRUE)))
+      ylims <- c(-ylim.max, ylim.max)
+
+      plot_years = years[as.integer(tmp$year)]
+      # 1. trend vs. year
+      plot(plot_years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 2. trend vs. age
+      plot(as.integer(tmp$age), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Age", ylab="OSA Residuals",
+           ylim=ylims, xaxt ="n")
+      axis(1, at = unique(as.integer(tmp$age)), labels = mod$ages.lab)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 3. trend vs. cohort
+      plot(min(years) + as.integer(tmp$cohort), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Cohort", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 4. trend vs. observed val
+      plot(tmp$val, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Observed proportion", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 5. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("age composition OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
 
   if("logindex" %in% mod$osa$type){
     dat <- subset(mod$osa, type=="logindex")
@@ -145,12 +212,12 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_catch_4panel_index",f,".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSAresid_catch_4panel_index",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_index",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_index",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
-      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
+      ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
       # make robust to missing years
@@ -196,6 +263,73 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
+  if("indexpaa" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type=="indexpaa")
+    dat$fleet <- factor(as.character(dat$fleet))
+    dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
+    dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
+    #dat$residual[which(dat$val < 1e-15)] = NA #
+    n.fleets <- length(table(dat$fleet))
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets){
+      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_index",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_index",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      fleet = as.character(tmp$fleet[1])
+      if(mod$input$data$age_comp_model_indices[as.integer(substr(fleet, nchar(fleet), nchar(fleet)))] %in% 3:7){
+        tmp$residual[which(tmp$val < 1e-15)] = NA #no residuals for zeros for continuous models
+      }
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(tmp$residual, na.rm=TRUE)))
+      ylims <- c(-ylim.max, ylim.max)
+
+      plot_years = years[as.integer(tmp$year)]
+      # 1. trend vs. year
+      plot(plot_years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 2. trend vs. age
+      plot(as.integer(tmp$age), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Age", ylab="OSA Residuals",
+           ylim=ylims, xaxt ="n")
+      axis(1, at = unique(as.integer(tmp$age)), labels = mod$ages.lab)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 3. trend vs. cohort
+      plot(min(years) + as.integer(tmp$cohort), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Cohort", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 4. trend vs. observed val
+      plot(tmp$val, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Observed proportion", ylab="OSA Residuals",
+           ylim=ylims)
+      abline(h=0, col=plot.colors[f], lwd=2)
+      # 5. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- tmp$residual[!is.na(tmp$residual)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("age composition OSA residual diagnostics: Index ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
 
   if(!all(mod$env$data$Ecov_model == 0)){
     dat <- subset(mod$osa, type=="Ecov")
@@ -221,12 +355,12 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 #      }
       tmp$pred <- mod$rep$Ecov_x[1:dim(tmp)[1],f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSAresid_ecov_4panel_",f,".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSAresid_ecov_4panel_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
-      ylim.max <- max(abs(range(mod$osa$residual, na.rm=TRUE)))
+      ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -276,7 +410,8 @@ mypalette = function(n){
 }
 
 fit.summary.text.plot.fn <- function(mod){
-  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet", "ZI-logistic normal(1)","Logistic normal (pool0)","ZI-logistic normal(2)","Logistic normal (miss0)")
+  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
   selmods = c("Age-specific", "Logistic(+)", "Double-Logistic", "Logistic(-)")
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
@@ -358,7 +493,8 @@ plot.ll.table.fn <- function(mod,plot.colors){
   obs.dists = character(n.obs.ll)
   names(obs.dists) = names(obs.lls)
   obs.dists[grep("Catch", names(obs.lls))] = "log(x) ~ Gaussian"
-  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet", "ZI-logistic normal(1)","logistic normal(1)","ZI-logistic normal(2)","logistic normal(2)")
+  acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
   obs.dists[paste0("Fleet ", 1:n_fleets, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
   obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
 
@@ -1190,7 +1326,7 @@ multinomial.pearson.fn = function(mod, ind = 1)
 #mean(x < 0, na.rm = TRUE)
 
 plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
-                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
+                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa = FALSE, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -1204,19 +1340,40 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 
 	for (i in fleets)
 	{
-    acomp.obs = dat$catch_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_catch_paa[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
-    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_fleet",i,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_fleet",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    print("osa")
+    print(osa)
+    yind = which(dat$use_catch_paa[,i] ==1)
+    if(osa){
+      my.title <- "Age Comp OSA Residuals for Fleet "
+      tylab <- "Quantile Residuals"
+      fname = paste0("Catch_age_comp_osa_resids_fleet_",i)
+      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
+      temp = mod$osa[c(dat$keep_Cpaa[i,yind,]+1),]
+      #no residuals for zeros for continuous models
+      if(dat$age_comp_model_fleets[i] %in% 3:7) temp$residual[which(temp$val < 1e-15)] = NA
+      resids[yind,] = temp$residual
+      resids[which(is.infinite(resids))] = NA #some happen for zeros or last age class
+      resids[, NCOL(resids)] = NA #remove last age class
+      scale.resid.bubble.catch <- 2
+      print(resids)
+    } else{
+      acomp.obs = dat$catch_paa[i,,]
+      acomp.pred = mod$rep$pred_catch_paa[1:length(years),i,]
+      #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+      my.title <- "Age Comp Residuals for Fleet "
+      resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+      resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
+      tylab <- "Residuals (Observed-Predicted)"
+      fname = paste0("Catch_age_comp_resids_fleet_",i)
+      scale.resid.bubble.catch <- 25
+    }
+    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
-		my.title <- "Age Comp Residuals for Catch by Fleet "
-		#my.save <- "catch_resid_bubble_plots_"
-    resids <- acomp.obs - acomp.pred  # NOTE obs-pred
-    resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
-    tylab <- "Residuals (Observed-Predicted)"
     z1 <- resids
-    range.resids<-range(abs((as.vector(z1))), na.rm=T)
-    scale.resid.bubble.catch <- 25
+    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+    else range.resids = c(0,0)
 
     z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
     resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
@@ -1243,7 +1400,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 }
 
 plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
-                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
+                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa=FALSE, use.i, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -1253,23 +1410,55 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
   years = mod$years
 	nyrs <- length(years)
 	if(!missing(use.i)) indices <- use.i
-	else indices <- 1:mod$env$data$n_indices
+	else indices <- 1:dat$n_indices
 
 	for (i in indices)
 	{
-    acomp.obs = mod$env$data$index_paa[i,,]
-    acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
-    acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
-    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_resids_index",i,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_resids_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    print("osa")
+    print(osa)
+    yind = which(dat$use_index_paa[,i] ==1)
+    if(osa){
+      my.title <- "Age Comp OSA Residuals for Index "
+      tylab <- "Quantile Residuals"
+      fname = paste0("Catch_age_comp_osa_resids_index",i)
+      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
+      vals = resids
+      temp = mod$osa[c(dat$keep_Ipaa[i,yind,]+1),]
+      
+      resids[yind,] = temp$residual
+      vals[yind,] = temp$val
+      #no residuals for zeros for continuous models
+      if(dat$age_comp_model_indices[i] %in% 3:7) {
+        #temp$residual[which(temp$val < 1e-15)] = NA
+        for(i in yind){
+          pos = which(vals[i,] > 1e-15)
+          resids[i,which(vals[i,] < 1e-15)] = NA #no resids for zeros
+          resids[i,max(pos)] = NA #remove last age class
+        }
+      }
+      #resids[which(is.infinite(resids))] = NA #some happen for zeros or last age class
+      #resids[, NCOL(resids)] = NA #remove last age class
+      scale.resid.bubble.catch <- 2
+      print(resids)
+    } else{
+      acomp.obs = dat$index_paa[i,,]
+      acomp.pred = mod$rep$pred_index_paa[1:length(years),i,]
+      #acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+      my.title <- "Age Comp Residuals for Index "
+      resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+      resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
+      tylab <- "Residuals (Observed-Predicted)"
+      fname = paste0("Catch_age_comp_resids_index",i)
+      scale.resid.bubble.catch <- 25
+    }
+    
+    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
-    my.title <- "Age Comp Residuals for Index "
-    resids <- acomp.obs - acomp.pred  # NOTE obs-pred
-    resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
-    tylab <- "Residuals (Observed-Predicted)"
     z1 <- resids
-    range.resids<-range(abs((as.vector(z1))), na.rm=T)
-    scale.resid.bubble.catch <- 25
+    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+    else range.resids <- c(0,0)
 
     z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
     resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles

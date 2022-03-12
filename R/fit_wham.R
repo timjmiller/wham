@@ -27,7 +27,7 @@
 #' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
 #'   as \code{mod$osa$residual}.
 #' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
-#'   Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.
+#'   Default: \code{osa.opts = list(method="cdf", parallel=TRUE)}. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs internal function \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
@@ -71,7 +71,7 @@
 #' \dontrun{
 #' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
 #' mod = fit_wham(input4_SNEMAYT) # using default values
-#' mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
+#' mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
 #'
 #' names(mod$rep) # list of derived quantities
 #' mod$rep$SSB # get SSB estimates (weight, not numbers)
@@ -79,7 +79,7 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
-                    do.osa = TRUE, osa.opts = list(method="oneStepGeneric", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
+                    do.osa = TRUE, osa.opts = list(method="cdf", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
                     retro.silent = FALSE, do.proj = FALSE,
                     proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
                                    cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
@@ -123,12 +123,32 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     if(do.osa){
       if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
         cat("Doing OSA residuals...\n");
+        mod$env$data$do_osa = 1
+        full_set = 1:length(input$data$obsvec)
+        input$data$obs$residual = NA
+        if(!is.null(input$data$condition_no_osa)) cat("OSA not available for some age comp likelihoods...\n")
+        #first do continuous obs, condition on obs without osa (probably none)
+        subset. = setdiff(full_set, c(input$data$subset_discrete_osa, input$data$conditional_no_osa))
         OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                     data.term.indicator="keep",
                                     method=osa.opts$method,
-                                    discrete=FALSE, parallel=osa.opts$parallel))
-        input$data$obs$residual <- OSA$residual;
+                                    discrete=FALSE, parallel=osa.opts$parallel,
+                                    subset = subset., conditional = input$data$conditional_no_osa))
+        input$data$obs$residual[subset.] <- OSA$residual;
+        if(!is.null(input$data$subset_discrete_osa)) {
+          cat("Doing OSA for discrete age comp likelihoods...\n")
+          conditional = union(input$data$condition_no_osa, subset.) #all with continuous and without osa 
+          subset. = input$data$subset_discrete_osa
+          #first do continuous
+          OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+                                      data.term.indicator="keep",
+                                      method= osa.opts$method,
+                                      discrete=TRUE, parallel=osa.opts$parallel,
+                                      conditional = conditional))
+          input$data$obs$residual[subset.] <- OSA$residual;
+        }
         mod$osa <- input$data$obs
+        mod$env$data$do_osa = 0 #set this back to not using OSA likelihoods
       } else warning(paste("","** Did not do OSA residual analyses. **",
       "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
     }

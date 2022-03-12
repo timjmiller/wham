@@ -115,30 +115,35 @@ vector<int> order(vector<Type> k){
 }
 
 template <class Type>
-Type dmultinom_osa(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type> keep, int give_log)
+Type dmultinom(vector<Type> x, vector<Type> p, vector<Type> keep, vector<Type> keep_l, vector<Type> keep_h, int give_log, int do_osa)
 {
-  vector<Type> k=keep;
-  vector<Type> l=keep.cdf_lower;
-  vector<Type> h=keep.cdf_upper;
-  vector<int> o=order(k);
-  x=x(o); p=p(o); k=k(o); l=l(o); h=h(o);
-  Type logres=0;
-  Type nUnused=sum(x);
-  Type pUsed=0;
-  Type cdf;
-  for(int i=0; i<x.size(); ++i){
-    if(i!=(x.size()-1)){
-      logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
-      cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true,false);
-      nUnused -= x(i);
-      pUsed += p(i);
-    }else{ // last index 
-      logres += k(i)*Type(0);
-      cdf = Type(1);
+  Type logres = 0;
+  if(do_osa){
+    vector<Type> k=keep;
+    vector<Type> l=keep_l;
+    vector<Type> h=keep_h;
+    vector<int> o=order(k);
+    vector<Type> kno = k;
+    x=x(o); p=p(o); k=k(o); l=l(o); h=h(o);
+    Type nUnused=sum(x);
+    Type pUsed=0;
+    Type cdf;
+    for(int i=0; i<x.size(); ++i){
+      if(i!=(x.size()-1)){
+        logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
+        cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true,false);
+        nUnused -= x(i);
+        pUsed += p(i);
+      }else{ // last index 
+        logres += k(i)*Type(0);
+        cdf = Type(1);
+      }
+      cdf = squeeze(cdf);
+      logres += l[i] * log( cdf );       // NaN protected
+      logres += h[i] * log( 1.0 - cdf ); // NaN protected
     }
-    cdf = squeeze(cdf);
-    logres += l[i] * log( cdf );       // NaN protected
-    logres += h[i] * log( 1.0 - cdf ); // NaN protected
+  } else {
+    logres = dmultinom(x,p,1);
   }
   if(give_log){
     return logres;
@@ -148,47 +153,217 @@ Type dmultinom_osa(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, 
 }
 
 template <class Type>
-Type ddirichlet_osa(vector<Type> x, vector<Type> p, Type phi, data_indicator<vector<Type>, Type> keep, int give_log)
+Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type> keep, int give_log, int do_osa)
 {
-  vector<Type> x = obs;
-  vector<Type> alpha = (p + Type(10e-15)) * phi;
-  vector<Type> k=keep;
-  vector<Type> l=keep.cdf_lower;
-  vector<Type> h=keep.cdf_upper;
-  vector<int> o=order(k);
-  x=x(o); alpha=alpha(o); k=k(o); l=l(o); h=h(o);
-  
-  int n = alpha.size();
-  Type cdf;
-  Type sx = x.sum();
-  Type sa = alpha.sum();
-  sa -= alpha(0);
-  Type logres=k(0)*dbeta(x(0),alpha(0),sa,true);
-  cdf = pbeta(x(0),alpha(0),sa);
-  cdf = squeeze(cdf);
-  logres += l(0) * log( cdf );       
-  logres += h(0) * log( 1.0 - cdf ); 
-  
-  for(int i=1; i<(n-1); ++i){
-    sx -= x(i-1);
-    sa -= alpha(i);
-    logres += k(i)*(dbeta(x(i)/sx,alpha(i),sa,true)-log(sx));
-    cdf = pbeta(x(i)/sx,alpha(i),sa);
-    cdf = squeeze(cdf);
-    logres += l(i) * log( cdf );       
-    logres += h(i) * log( 1.0 - cdf ); 
+  Type logres = 0;
+  if(do_osa){
+    vector<Type> k=keep;
+    vector<Type> l=keep.cdf_lower;
+    vector<Type> h=keep.cdf_upper;
+    vector<int> o=order(k);
+    vector<Type> kno = k;
+    x=x(o); p=p(o); k=k(o); l=l(o); h=h(o);
+    Type nUnused=sum(x);
+    Type pUsed=0;
+    Type cdf;
+    for(int i=0; i<x.size(); ++i){
+      if(i!=(x.size()-1)){
+        logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
+        cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true,false);
+        nUnused -= x(i);
+        pUsed += p(i);
+      }else{ // last index 
+        logres += k(i)*Type(0);
+        cdf = Type(1);
+      }
+      cdf = squeeze(cdf);
+      logres += l[i] * log( cdf );       // NaN protected
+      logres += h[i] * log( 1.0 - cdf ); // NaN protected
+    }
+  } else {
+    logres = dmultinom(x,p,1);
   }
-  logres += k(n-1)*Type(0);
-  cdf=Type(1);
-  cdf = squeeze(cdf);
-  logres += l(n-1) * log( cdf );       
-  logres += h(n-1) * log( 1.0 - cdf ); 
+  if(give_log){
+    return logres;
+  }else{ 
+    return exp(logres);
+  }
+}
+
+template <class Type>
+Type ddirichlet(vector<Type> x, vector<Type> alpha, int do_log)
+{
+  Type phi = alpha.sum();
+  int n = x.size();
+  Type ll = lgamma(phi);
+  for(int i = 0; i < n; i++) ll +=  -lgamma(alpha(i)) + (alpha(i) - 1.0) * log(x(i));
+  if(do_log == 1) return ll;
+  else return exp(ll);
+}
+
+template <class Type>
+Type ddirichlet(vector<Type> x, vector<Type> alpha, data_indicator<vector<Type>, Type> keep, int give_log, int do_osa)
+{
+  Type logres = 0;
+  if(do_osa){
+    vector<Type> k=keep;
+    vector<Type> l=keep.cdf_lower;
+    vector<Type> h=keep.cdf_upper;
+    vector<int> o=order(k);
+    x=x(o); alpha=alpha(o); k=k(o); l=l(o); h=h(o);  
+    int n = alpha.size();
+    Type cdf;
+    Type sx = x.sum();
+    Type sa = alpha.sum();
+    sa -= alpha(0);
+    logres = k(0)*dbeta(x(0),alpha(0),sa,true);
+    cdf = pbeta(x(0),alpha(0),sa);
+    cdf = squeeze(cdf);
+    logres += l(0) * log( cdf );       
+    logres += h(0) * log( 1.0 - cdf ); 
+    
+    for(int i=1; i<(n-1); ++i){
+      sx -= x(i-1);
+      sa -= alpha(i);
+      logres += k(i)*(dbeta(x(i)/sx,alpha(i),sa,true)-log(sx));
+      cdf = pbeta(x(i)/sx,alpha(i),sa);
+      cdf = squeeze(cdf);
+      logres += l(i) * log( cdf );       
+      logres += h(i) * log( 1.0 - cdf ); 
+    }
+    logres += k(n-1)*Type(0);
+    cdf=Type(1);
+    cdf = squeeze(cdf);
+    logres += l(n-1) * log( cdf );       
+    logres += h(n-1) * log( 1.0 - cdf ); 
+  }
+  else{
+    logres = ddirichlet(x,alpha,1);
+  }
   
   if(give_log){
     return logres;
   }else{
     return exp(logres);
   }
+}
+
+template <class Type>
+Type ddirichlet(vector<Type> x, vector<Type> p, Type phi, data_indicator<vector<Type>, Type> keep, int pool0, int give_log, int do_osa)
+{
+  Type logres = 0;
+  int npos = 0;
+  for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) npos++;
+  vector<int> pos_ind(npos);
+  vector<Type> p_pos(npos), x_pos(npos), alpha_pos(npos);
+  Type cdf;
+
+  if(npos>1){ //need at least 2 positive categories
+    if(do_osa){
+      vector<Type> k=keep;
+      vector<Type> l=keep.cdf_lower;
+      vector<Type> h=keep.cdf_upper;
+      vector<int> o=order(k);
+      x=x(o); p=p(o); k=k(o); l=l(o); h=h(o);  
+
+      int index = 0;
+      for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) {
+        pos_ind(index) = a;
+        index++;
+      }
+      
+      if(pool0){ //pooling zeros
+        index = 0;
+        for(int a = 0; a < x.size(); a++)
+        {
+          p_pos(index) += p(a);
+          x_pos(index) += x(a);
+          if(x(a) > Type(1.0e-15) & index < npos-1) index++;
+        }
+      } else { //missing zeros
+        p_pos = p(pos_ind);
+        x_pos = x(pos_ind);
+      }
+      alpha_pos = p_pos * phi;
+
+      int n = alpha_pos.size();
+      Type sx = x_pos.sum();
+      Type sa = alpha_pos.sum();
+      sa -= alpha_pos(0);
+      logres += k(pos_ind(0))*dbeta(x_pos(0),alpha_pos(0),sa,true);
+      cdf = squeeze(pbeta(x_pos(0),alpha_pos(0),sa));
+      logres += l(pos_ind(0)) * log( cdf );       
+      logres += h(pos_ind(0)) * log( 1.0 - cdf ); 
+      for(int i=1; i<(n-1); ++i){
+        sx -= x_pos(i-1);
+        sa -= alpha_pos(i);
+        logres += k(pos_ind(i))*(dbeta(x_pos(i)/sx,alpha_pos(i),sa,true)-log(sx));
+        cdf = squeeze(pbeta(x_pos(i)/sx,alpha_pos(i),sa));
+        logres += l(pos_ind(i)) * log( cdf );       
+        logres += h(pos_ind(i)) * log( 1.0 - cdf ); 
+      }
+      //fill in the zeros and last positive
+      cdf = squeeze(Type(1));
+      logres += k(pos_ind(npos-1)) * Type(0);
+      logres += l(pos_ind(npos-1)) * log( cdf );       
+      logres += h(pos_ind(npos-1)) * log( 1.0 - cdf ); 
+      for(int i=1; i< x.size(); ++i) if(x(i) < 1.0e-15) {
+        logres += k(i) * Type(0);
+        logres += l(i) * log( cdf );       
+        logres += h(i) * log( 1.0 - cdf ); 
+      }
+
+    }
+    else{ //do likelihood without osa machinery
+      int index = 0;
+      for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) {
+        pos_ind(index) = a;
+        index++;
+      }
+      if(pool0){ //pooling zeros
+        index = 0;
+        for(int a = 0; a < x.size(); a++)
+        {
+          p_pos(index) += p(a);
+          x_pos(index) += x(a);
+          if(x(a) > Type(1.0e-15) & index < npos-1) index++;
+        }
+      } else { //missing zeros
+        p_pos = p(pos_ind);
+        x_pos = x(pos_ind);
+      }
+      p_pos /= p_pos.sum(); //need to ensure sum(p) = 1. x should already sum to 1.
+      alpha_pos = p_pos * phi;
+      logres = ddirichlet(x_pos,alpha_pos,1);
+    }
+  } 
+  else {
+    cdf = squeeze(Type(1));
+    for(int i = 0; i < keep.size(); i++) {
+      logres += keep(i) * Type(0); 
+      logres += keep.cdf_lower(i) * log(cdf);
+      logres += keep.cdf_upper(i) * log(1.0 - cdf); 
+    }
+  }
+  
+  if(give_log){
+    return logres;
+  }else{
+    return exp(logres);
+  }
+}
+
+//the usual D-M
+template<class Type>
+Type ddirmultinom(vector<Type> obs, vector<Type> alpha, int do_log)
+{
+  int dim = obs.size();
+  Type N = obs.sum();
+  Type phi=sum(alpha);
+  Type ll = lgamma(N + 1.0) + lgamma(phi) - lgamma(N + phi);
+  for(int a = 0; a < dim; a++) ll += -lgamma(obs(a) + 1.0) + lgamma(obs(a) + alpha(a)) - lgamma(alpha(a));
+  if(do_log == 1) return ll;
+  else return exp(ll);
 }
 
 template<class Type>
@@ -212,29 +387,36 @@ Type pbetabinom(Type x, Type N, Type alpha, Type beta, int do_log)
 
 //the D-M as a series of conditional beta-binomials and added args for osa residuals
 template<class Type> 
-Type ddirmultinom_osa(vector<Type> obs, vector<Type> alpha, data_indicator<vector<Type>, Type> keep, int do_log = 0)
+Type ddirmultinom(vector<Type> obs, vector<Type> alpha, data_indicator<vector<Type>, Type> keep, int do_log, int do_osa)
+//Type ddirmultinom(vector<Type> obs, vector<Type> alpha, vector<Type> keep, vector<Type> keep_l, vector<Type> keep_h, int do_log, int do_osa)
 {
-
-  vector<Type> k=keep;
-  vector<Type> l=keep.cdf_lower;
-  vector<Type> h=keep.cdf_upper;
-
-  vector<int> o=order(k);
-  obs=obs(o); alpha=alpha(o); k=k(o); l=l(o); h=h(o);
- 
   int dim = obs.size();
   Type N = obs.sum(), ll = 0.0;
-  vector<Type> alphas_a(2), obs_a(2);
-  for(int a = 1; a < dim; a++){
-    obs_a(0) = obs(a-1);
-    obs_a(1) = obs.tail(dim-a).sum();
-    alphas_a(0) = alpha(a-1);
-    alphas_a(1) = alpha.tail(dim-a).sum();
-    ll += k(a-1) * ddirmultinom(obs_a, alphas_a, 1); //beta-binomial, just two categories
-    Type cdf = pbetabinom(obs_a(0), obs_a.sum(), alphas_a(0), alphas_a(1),0);
-    cdf = squeeze(cdf);
-    ll += l(a-1) * log( cdf );       
-    ll += h(a-1) * log( 1.0 - cdf ); 
+  if(do_osa){
+    vector<Type> k=keep;
+    vector<Type> l=keep.cdf_lower;
+    vector<Type> h=keep.cdf_upper;
+    vector<int> o=order(k);
+    obs=obs(o); alpha=alpha(o); k=k(o); l=l(o); h=h(o);   
+    vector<Type> alphas_a(2), obs_a(2);
+    for(int a = 1; a < dim; a++){
+      obs_a(0) = obs(a-1);
+      obs_a(1) = obs.tail(dim-a).sum();
+      alphas_a(0) = alpha(a-1);
+      alphas_a(1) = alpha.tail(dim-a).sum();
+      ll += k(a-1) * ddirmultinom(obs_a, alphas_a, 1); //beta-binomial, just two categories
+      Type cdf = pbetabinom(obs_a(0), obs_a.sum(), alphas_a(0), alphas_a(1),0);
+      cdf = squeeze(cdf);
+      ll += l(a-1) * log( cdf );       
+      ll += h(a-1) * log( 1.0 - cdf ); 
+    }
+    ll += k(dim-1)*Type(0);
+    Type cdf= squeeze(Type(1));
+    ll += l(dim-1) * log( cdf );       
+    ll += h(dim-1) * log( 1.0 - cdf ); 
+  }
+  else{
+    ll = ddirmultinom(obs,alpha,1);
   }
   if(do_log == 1) return ll;
   else return exp(ll);
@@ -243,7 +425,7 @@ Type ddirmultinom_osa(vector<Type> obs, vector<Type> alpha, data_indicator<vecto
 //the logistic normal with added args for osa residuals
 //do_mult = 1: do multiplicative transformation rather than additive
 template<class Type>
-Type dlogisticnormal_osa(vector<Type> obs, vector<Type> mu,  matrix<Type> S, data_indicator<vector<Type>, Type> keep, int do_mult, int do_log)
+Type dlogisticnormal(vector<Type> obs, vector<Type> mu,  matrix<Type> S, int do_mult, int do_log)
 {
   using namespace density;
   MVNORM_t<Type> mvnorm(S);
@@ -254,197 +436,343 @@ Type dlogisticnormal_osa(vector<Type> obs, vector<Type> mu,  matrix<Type> S, dat
     for(int i = 0; i < x.size(); i++) x(i) -= log(1-x.head(i+1).sum());
   }
   else x = log(obs.head(obs.size()-1)) - log(obs(obs.size()-1));
-  Type nll = mvnorm(x-mu, keep.head(x.size()));
-  if(sum(keep)>x.size()) nll += log(obs).sum(); //jacobian, do it only when osa residuals not being calculated?
+  
+  Type nll = mvnorm(x-mu);
+  nll += log(obs).sum(); //jacobian
 
   if(do_log == 1) return -nll;
   else return exp(-nll);
 }
 
 
+//function to generate covariance matrix for logistic normal
 template<class Type>
-Type get_acomp_ll_osa(int year, int n_ages, Type Neff, int age_comp_model, vector<Type> paa_obs, vector<Type> paa_pred, vector<Type> age_comp_pars, int aref, data_indicator<vector<Type>, Type> keep)
+matrix<Type> make_LN_Sigma(int dim, vector<Type> pars, int model){
+  matrix<Type> S(dim,dim);
+  S.setZero();
+  for(int i = 0; i< dim; i++) {
+    S(i,i) = exp(2 * pars(0)); 
+    if(model == 1){ //iid. nothing more to
+    }
+    if(model == 2){ //AR1: not ready
+      for(int j = 0; j< dim; j++) {
+        S(i,j) = exp(2 * pars(0)) * pow(1/(1+exp(-pars(1))), abs(i-j)); //only positive correlation?
+      }
+    }
+    if(model == 3){ //AR2: not ready
+    }
+  }
+  return(S);
+}
+
+//this will do osa, additive/multiplicative, miss0/pool0, alternative Sigma structures (iid, AR1,...) 
+template <class Type>
+Type dlogisticnormal(vector<Type> x, vector<Type> p, vector<Type> pars, data_indicator<vector<Type>, Type> keep, int Sigma_model, 
+  int do_mult, int give_log, int pool0, int do_osa)
+{
+  Type logres = 0;
+  int npos = 0;
+  for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) npos++;
+  vector<Type> x_pos(npos), p_pos(npos);
+  x_pos.setZero(); p_pos.setZero();
+  vector<int> pos_ind(npos);
+  Type cdf;
+  matrix<Type> Sigma_full = make_LN_Sigma(p.size(), pars, Sigma_model); //iid
+
+  if(npos>1){ //need at least 2 positive categories
+    if(do_osa){
+      vector<Type> k=keep;
+      vector<Type> l=keep.cdf_lower;
+      vector<Type> h=keep.cdf_upper;
+      vector<int> o=order(k);
+      x=x(o); p=p(o); k=k(o); l=l(o); h=h(o);  
+
+      int index = 0;
+      for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) {
+        pos_ind(index) = a;
+        index++;
+      }
+      matrix<Type> Sigma(npos-1, npos-1); //reduced dimensions for npos-1 values
+      for(int i = 0; i < npos - 1; i++){
+        for(int j = 0; j < npos - 1; j++){
+          Sigma(i,j) = Sigma_full(pos_ind(i),pos_ind(j));
+        }
+      }
+      
+      if(pool0){ //pooling zeros
+        index = 0;
+        for(int a = 0; a < x.size(); a++)
+        {
+          p_pos(index) += p(a);
+          x_pos(index) += x(a);
+          if(x(a) > Type(1.0e-15) & index < npos-1) index++;
+        }
+      } else { //missing zeros
+        p_pos = p(pos_ind);
+        x_pos = x(pos_ind);
+      }
+
+      p_pos = p_pos/p_pos.sum(); //p rescaled to sum to 1 for observed age classes
+      //additive transformation
+      vector<Type> mu = log(p_pos.head(p_pos.size()-1));// - log(p_pos(p_pos.size()-1));
+      vector<Type> y = log(x_pos.head(x_pos.size()-1));
+      if(do_mult){ //multiplicative
+        for(int i = 0; i < y.size(); i++) {
+          y(i) -= log(1-x_pos.head(i+1).sum());
+          mu(i) -= log(1-p_pos.head(i+1).sum());
+        }
+      }else { //additive
+        y = y - log(x_pos(x_pos.size()-1));
+        mu = mu - log(p_pos(p_pos.size()-1));
+      }
+      
+      //first positive value
+      Type m = mu(0);
+      Type sd = pow(Sigma(0,0),0.5);
+      logres += k(pos_ind(0))*dnorm(y(0),m, sd,true);
+      cdf = squeeze(pnorm(y(0),m,sd));
+      logres += l(pos_ind(0)) * log( cdf );       
+      logres += h(pos_ind(0)) * log( 1.0 - cdf ); 
+      
+      //all the information is in the n-1 positive classes.
+      for(int i=1; i<(npos-1); ++i){ //only positive values
+        matrix<Type> S_other(i,i); 
+        matrix<Type> S_row(1,i); 
+        matrix<Type> S_col(i,1);
+        matrix<Type> res_other(i,1);
+        for(int j = 0; j < i; j++) {
+          S_row(0,j) = Sigma(i,j);
+          S_col(j,0) = Sigma(j,i);
+          res_other(j,0) = y(j) - mu(j);
+          for(int a = 0; a < i; a++) S_other(j,a) = Sigma(j,a);
+        }
+        matrix<Type> inv_S_other = atomic::matinv(S_other);
+        m = mu(i) - (S_row * inv_S_other * res_other)(0,0);
+        //mu_cond = mu_i - S_i,other %*% S^-1 %*% (y_other - mu_other)
+        sd = Sigma(i,i) - (S_row * inv_S_other * S_col)(0,0);
+        sd = pow(sd, 0.5);
+        logres += k(pos_ind(i)) * dnorm(y(i),m,sd,true);
+        cdf = squeeze(pnorm(y(i), m, sd));
+        logres += l(pos_ind(i)) * log( cdf );       
+        logres += h(pos_ind(i)) * log( 1.0 - cdf ); 
+      }
+      logres += k(pos_ind(npos-1)) * Type(0);
+      cdf = squeeze(Type(1));
+      logres += l(pos_ind(npos-1)) * log( cdf );       
+      logres += h(pos_ind(npos-1)) * log( 1.0 - cdf ); 
+      
+      //dealing with the zero classes
+      for(int i = 0; i < x.size(); i++) if(x(i) < 1.0e-15) {
+        logres += k(i)*Type(0); 
+        cdf = squeeze(Type(1));
+        logres += l(i) * log(cdf);
+        logres += h(i) * log(1.0 - cdf); 
+      }
+    }
+    else{ //do likelihood without osa machinery
+      int index = 0;
+      for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) {
+        pos_ind(index) = a;
+        index++;
+      }
+      matrix<Type> Sigma(npos-1, npos-1); //reduced dimensions for npos-1 values
+      for(int i = 0; i < npos - 1; i++){
+        for(int j = 0; j < npos - 1; j++){
+          Sigma(i,j) = Sigma_full(pos_ind(i),pos_ind(j));
+        }
+      }
+
+      if(pool0){ //pooling zeros
+        index = 0;
+        for(int a = 0; a < x.size(); a++)
+        {
+          p_pos(index) += p(a);
+          x_pos(index) += x(a);
+          if(x(a) > Type(1.0e-15) & index < npos-1) index++;
+        }
+      } else { //missing zeros
+        p_pos = p(pos_ind);
+        x_pos = x(pos_ind);
+      }
+      p_pos /= p_pos.sum(); //need to ensure sum(p) = 1. x should already sum to 1.
+      vector<Type> mu = log(p_pos.head(p_pos.size()-1));// - log(p_pos(p_pos.size()-1));
+      vector<Type> y = log(x_pos.head(x_pos.size()-1));
+      if(do_mult){ //multiplicative
+        for(int i = 0; i < y.size(); i++) {
+          y(i) -= log(1-x_pos.head(i+1).sum());
+          mu(i) -= log(1-p_pos.head(i+1).sum());
+        }
+      }else { //additive
+        y = y - log(x_pos(x_pos.size()-1));
+        mu = mu - log(p_pos(p_pos.size()-1));
+      }
+
+      using namespace density;
+      MVNORM_t<Type> mvnorm(Sigma);
+      logres += -mvnorm(y-mu);
+      logres -= log(x_pos).sum(); //jacobian, do it only when osa residuals not being calculated.
+    }
+  }
+  else {
+    cdf = squeeze(Type(1));
+    for(int i = 0; i < keep.size(); i++) {
+      logres += keep(i) * Type(0); 
+      logres += keep.cdf_lower(i) * log(cdf);
+      logres += keep.cdf_upper(i) * log(1.0 - cdf); 
+    }
+  }
+  
+  if(give_log){
+    return logres;
+  }else{
+    return exp(logres);
+  }
+}
+
+template<class Type>
+Type dzinf_logisticnormal_1(vector<Type> obs, vector<Type> p, vector<Type> pars, data_indicator<vector<Type>, Type> keep, int do_log, int do_osa)
+{
+  //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
+  //probability of zero is a decreasing (logistic) function of (logit) predicted proportion caught at age.
+  // 3 parameters.
+  //NO OSA available!
+  Type ll = 0;
+  vector<Type> x = obs;
+  vector<Type> X = log(p) - log(1 - p);
+  //prob of zero declines with proportion caught
+  vector<Type> p0 = 1.0/(1.0 + exp(exp(pars(1))*(X - pars(0)))); 
+  
+  int npos = 0;
+  for(int a = 0; a < x.size(); a++) 
+  {
+    if(x(a)> 1.0e-15) {
+      npos++;
+      ll += log(1.0 - squeeze(p0(a))); //positives
+    } else {
+      ll += log(squeeze(p0(a))); //zeros
+    }
+  }
+  if(npos>1){ //need at least two positive categories
+    vector<int> pos_ind(npos);
+    int k = 0;
+    for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15){
+      pos_ind(k) = a;
+      k++;
+    }
+    vector<Type> x_pos = x(pos_ind);
+    vector<Type> p_pos = p(pos_ind);
+    p_pos /= p_pos.sum(); //need to ensure sum(p) = 1. x should already sum to 1.
+    //logistic normal for positive obs
+    vector<Type> mu = log(p_pos.head(p_pos.size()-1)) - log(p_pos(p_pos.size()-1));
+    vector<Type> Sigma_pars(1); Sigma_pars(0) = pars(2);
+    matrix<Type> Sigma = make_LN_Sigma(mu.size(), Sigma_pars, 1); //iid
+    ll += dlogisticnormal(x_pos, mu, Sigma, 0, 1); //no osa for this one
+  }
+  return(ll);
+}
+
+template<class Type>
+Type dzinf_logisticnormal_2(vector<Type> obs, vector<Type> p, vector<Type> pars, data_indicator<vector<Type>, Type> keep, int do_log, int do_osa)
+{
+  //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
+  //probability of zero is a decreasing function of binomial sample size with p = predicted proportion caught at age.
+  // 2 parameters.
+  //NO OSA available!
+  Type ll = 0;
+  vector<Type> x = obs;
+
+  Type n_e = exp(pars(0)); //binomial sample size
+  vector<Type> p0 = exp(n_e * log(1.0-p)); //probability of zero for the binomial distribution.
+ 
+  int npos = 0;
+  for(int a = 0; a < x.size(); a++) 
+  {
+    if(x(a)> 1.0e-15) {
+      npos++;
+      ll += log(1.0 - squeeze(p0(a))); //positives
+    } else {
+      ll += log(squeeze(p0(a))); //zeros
+    }
+  }
+  if(npos>1){ //need at least two positive categories
+    vector<int> pos_ind(npos);
+    int k = 0;
+    for(int a = 0; a < x.size(); a++) if(x(a)> 1.0e-15) {
+      pos_ind(k) = a;
+      k++;
+    }
+    vector<Type> x_pos = x(pos_ind);
+    vector<Type> p_pos = p(pos_ind);
+    p_pos /= p_pos.sum(); //need to ensure sum(p) = 1. x should already sum to 1.
+    //logistic normal for positive obs
+    vector<Type> mu = log(p_pos.head(p_pos.size()-1)) - log(p_pos(p_pos.size()-1));
+    vector<Type> Sigma_pars(1); Sigma_pars(0) = pars(1);
+    matrix<Type> Sigma = make_LN_Sigma(mu.size(), Sigma_pars, 1); //iid
+    ll += dlogisticnormal(x_pos, mu, Sigma, 0, 1); //no osa for this one
+  }
+  return(ll);
+}
+
+template<class Type>
+Type get_acomp_ll(vector<Type> paa_obs, vector<Type> paa_pred, Type Neff, int age_comp_model, vector<Type> age_comp_pars, 
+  data_indicator<vector<Type>, Type> keep, 
+  int do_osa)
 {
   Type ll = 0.0;
-  if(age_comp_model == 1) //multinomial
-  {
-    vector<Type> p = paa_pred + 1.0e-15;
-    vector<Type> x = Neff * paa_obs;
-    ll = dmultinom_osa(x, p, keep, 1);
-  }
-  if(age_comp_model == 2) //dirichlet-multinomial
-  {
-    vector<Type> x = Neff * paa_obs;
-    vector<Type> p = paa_pred + 1.0e-15;
-    vector<Type> alphas = p * exp(age_comp_pars(0));
-    ll = ddirmultinom_osa(x, p, alphas, keep, 1);
-  }
-  if(age_comp_model == 3) //dirichlet
-  {
-    Type obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0;
-    int npos = 0;
-    for(int a = 0; a < paa_obs.size(); a++)
+  int n_ages = paa_obs.size();
+  vector<Type> p = paa_pred + 1.0e-15;
+  //if(use_obs){
+    if(age_comp_model == 1) //multinomial
     {
-      if(paa_obs(a) > Type(1.0e-15)) npos++;
-      pred += paa_pred(a);
-      obs += paa_obs(a);
-      if(paa_obs(a) > Type(1.0e-15))
+      vector<Type> x = Neff * paa_obs;
+      ll = dmultinom(x, p, keep, 1, do_osa);
+    }
+    if(age_comp_model == 2) //dirichlet-multinomial
+    {
+      vector<Type> x = Neff * paa_obs;
+      vector<Type> alphas = p * exp(age_comp_pars(0));
+      ll = ddirmultinom(x, alphas, keep, 1, do_osa);
+    }
+    if(age_comp_model == 3) { //Dirichlet, miss0
+      //0,1: pool 0s, do log 
+      //keep, pool0, give_log, do_osa
+      ll = ddirichlet(paa_obs, p, exp(age_comp_pars(0)), keep, 0,1,do_osa);
+    }
+    if(age_comp_model == 4) { //Dirichlet, pool0
+      //0,1: pool 0s, do log 
+      //keep, pool0, give_log, do_osa
+      ll = ddirichlet(paa_obs, p, exp(age_comp_pars(0)), keep, 1,1,do_osa);
+    }
+    if(age_comp_model == 5) { //logistic-normal, miss0
+      //1,0,1,0: Sigma diagonal, additive transformation, return log, missing 0s
+      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(paa_obs, p, age_comp_pars, keep, 1, 0, 1, 0, do_osa);
+    }
+    if(age_comp_model == 6) { //logistic-normal, miss0, AR1 correlation
+      //2,0,1,0: Sigma with AR1 cor, additive transformation, return log, missing 0s 
+      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(paa_obs, p, age_comp_pars, keep, 2, 0, 1, 0, do_osa);
+    }
+    if(age_comp_model == 7) 
+    {
+      //logistic normal. Pool zero observations with adjacent age classes.
+      //1,0,1,1: Sigma diagonal, additive transformation, return log, pool 0s 
+      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(paa_obs, p, age_comp_pars, keep, 1, 0, 1, 1, do_osa);
+    }
+    if(age_comp_model == 8) 
+    {
+      //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012). 3 parameters
+      //NO OSA available!
+      ll = dzinf_logisticnormal_1(paa_obs, p, age_comp_pars, keep, 1, 0);
+    }
+    if(age_comp_model == 9) 
+    {
+      //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
+      //NO OSA available!
+      ll = dzinf_logisticnormal_2(paa_obs, p, age_comp_pars, keep, 1, 0);
+    }
 
-    for(int a = aref-1; a < n_ages; a++)
-    {
-      obs_2 += paa_obs(a);
-      pred_2 += paa_pred(a);
-    }
-    ll = lgamma(exp(age_comp_pars(0)));
-    for(int a = 0; a < aref-1; a++)
-    {
-      pred += paa_pred(a);
-      obs += paa_obs(a);
-      if(paa_obs(a) > Type(1.0e-15))
-      {
-        ll +=  t_keep(a) * (-lgamma(exp(age_comp_pars(0)) * pred) + (exp(age_comp_pars(0)) * pred - 1.0) * log(obs));
-        pred = 0.0;
-        obs = 0.0;
-      }
-      //else pooling with next age
-    }
-    //add in the last age class(es).
-    ll += t_keep(aref-1) * (-lgamma(exp(age_comp_pars(0)) * pred_2) + (exp(age_comp_pars(0)) * pred_2 - 1.0) * log(obs_2));
-  }
-  if(age_comp_model == 4) //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
-  {
-    vector<Type> X(n_ages), p0(n_ages);
-    Type mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
-    Type pos_pred_sum = 0.0, y = 0.0;
-    X = log(paa_pred + Type(1.0e-15)) - log(1.0 - paa_pred + Type(1.0e-15));
-    p0 = 1.0/(1.0 + exp(exp(age_comp_pars(1))*(X - age_comp_pars(0)))); //prob of zero declines with proportion caught
-    sd = exp(age_comp_pars(2));
-    int last_pos = 0;
-    pos_obs_sum = sum(paa_obs);
-    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
-    {
-      pos_pred_sum += paa_pred(a);
-      last_pos = a;
-    }
-    //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
-    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
-    for(int a = 0; a < n_ages; a++)
-    {
-      if(paa_obs(a) < Type(1.0e-15)) ll += (log(p0(a) + Type(1.0e-15)));
-      // if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
-      else
-      {
-        ll += (log(1.0 - p0(a) + Type(1.0e-15)));
-        // ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
-        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
-        {
-          pos_pred = paa_pred(a)/pos_pred_sum;
-          pos_obs = paa_obs(a)/pos_obs_sum;
-          y = log(pos_obs) - log(pos_obs_l);
-          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
-          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
-        }
-      }
-    }
-    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
-  }
-  if(age_comp_model == 5) //logistic normal. Pool zero observations with adjacent age classes.
-  {
-    Type mu = 0.0, sd = 0.0, obs = 0.0, pred = 0.0, obs_2 = 0.0, pred_2 = 0.0, y = 0.0;
-    for(int a = aref-1; a < n_ages; a++)
-    {
-      obs_2 += paa_obs(a);
-      pred_2 += paa_pred(a);
-    }
-    for(int a = 0; a < aref-1; a++)
-    {
-      pred += paa_pred(a);
-      obs += paa_obs(a);
-      if(paa_obs(a) > Type(1.0e-15))
-      {
-        sd = exp(age_comp_pars(0)-0.5*log(Neff));
-        y = log(obs) - log(obs_2);
-        mu = log(pred + Type(1.0e-15)) - log(pred_2 + Type(1.0e-15));
-        ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(obs));
-        pred = 0.0;
-        obs = 0.0;
-      }
-      //else pooling with next age
-    }
-    for(int a = aref-1; a < n_ages; a++)
-    {
-      ll -= t_keep(a) * log(obs_2); //add in the last age class(es).
-    }
-  }
-  if(age_comp_model == 6) //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
-  {
-    vector<Type> p0(n_ages);
-    Type n_e = 0.0, mu = 0.0, sd = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
-    Type pos_pred_sum = 0.0, y = 0.0;
-    n_e = exp(age_comp_pars(0));
-    p0 = exp(n_e * log(1.0-paa_pred + Type(1.0e-15))); //prob of zero declines with proportion caught
-    sd = exp(age_comp_pars(1));
-    int last_pos = 0;
-    pos_obs_sum = sum(paa_obs);
-    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
-    {
-      pos_pred_sum += paa_pred(a);
-      last_pos = a;
-    }
-    //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
-    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
-    for(int a = 0; a < n_ages; a++)
-    {
-      if(paa_obs(a) < Type(1.0e-15)) ll += (log(p0(a) + Type(1.0e-15)));
-      // if(paa_obs(a) < Type(1.0e-15)) ll += t_keep(a) * (log(p0(a) + Type(1.0e-15)));
-      else
-      {
-        ll += (log(1.0 - p0(a) + Type(1.0e-15)));
-        // ll += t_keep(a) * (log(1.0 - p0(a) + Type(1.0e-15)));
-        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
-        {
-          pos_pred = paa_pred(a)/pos_pred_sum;
-          pos_obs = paa_obs(a)/pos_obs_sum;
-          y = log(pos_obs) - log(pos_obs_l);
-          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
-          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
-        }
-      }
-    }
-    ll -= t_keep(last_pos) * log(pos_obs_l); //add in the last observed age class(es).
-  }
-  if(age_comp_model == 7) //logistic normal treating 0 observations as missing. One parameter.
-  {
-    Type mu = 0.0, pos_obs = 0.0, pos_pred = 0.0, pos_obs_l = 0.0, pos_pred_l = 0.0, pos_obs_sum = 0.0;
-    Type pos_pred_sum = 0.0, y = 0.0;
-    Type sd = exp(age_comp_pars(0));
-    int last_pos = 0;
-    pos_obs_sum = sum(paa_obs);
-    for(int a = 0; a < n_ages; a++) if(paa_obs(a) > Type(1.0e-15))
-    {
-      pos_pred_sum += paa_pred(a);
-      last_pos = a;
-    }
-    //logistic applies only to proportions of non-zero observations
-    pos_obs_l = paa_obs(last_pos)/pos_obs_sum;
-    pos_pred_l = paa_pred(last_pos)/pos_pred_sum;
-    for(int a = 0; a < n_ages; a++)
-    {
-      if(paa_obs(a) > Type(1.0e-15))
-      {
-        if(a < last_pos) //add in logistic-normal for positive observations less than last observed age class
-        {
-          pos_pred = paa_pred(a)/pos_pred_sum;
-          pos_obs = paa_obs(a)/pos_obs_sum;
-          y = log(pos_obs) - log(pos_obs_l);
-          mu = log(pos_pred + Type(1.0e-15)) - log(pos_pred_l + Type(1.0e-15));
-          ll += t_keep(a) * (-0.5 * (log(2.0 * M_PI) + square((y - mu)/sd)) - log(sd) - log(pos_obs));
-        }
-      }
-    }
-    ll -= log(pos_obs_l); //add in the last observed age class(es).
-  }
   return ll;
 }
+

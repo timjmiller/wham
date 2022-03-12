@@ -225,94 +225,69 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
     }
   }
-  acomp_par_count = 0
-  for(i in 1:data$n_fleets){
-    if(sum(data$use_catch_paa[,i]) > 0){
-      if(data$age_comp_model_fleets[i] %in% c(2:3,5:7)){
-        if(data$age_comp_model_fleets[i] == 2){
-          fe.names = c(fe.names, paste0("Fleet ", i , " age comp, Dirichlet-multinomial: dispersion ($\\phi$)"))
-          ind = acomp_par_count+1
+  #acomp_par_count = 0
+  add_age_comp_pars = function(age_comp_models, use_paa, pars, pars_sd, is_fleet = TRUE, fe.names, fe.vals, fe.cis)
+  {
+    n_mods = length(age_comp_models)
+    startname = ifelse(is_fleet, "Fleet ", "Index ")
+    for(i in 1:n_mods){
+      if(sum(use_paa[,i]) > 0){
+        if(age_comp_models[i] %in% c(2:5,7)){
+          if(age_comp_models[i] == 2){
+            fe.names = c(fe.names, paste0(startname, i , " age comp, Dirichlet-multinomial: dispersion ($\\phi$)"))
+            #ind = acomp_par_count+1
+          }
+          if(age_comp_models[i] %in% 3:4){
+            fe.names = c(fe.names, paste0(startname, i , " age comp, Dirichlet: dispersion ($\\phi$)"))
+            #ind = acomp_par_count+1
+          }
+          if(age_comp_models[i] %in% c(5,7)){
+            fe.names = c(fe.names, paste0(startname, i , " age comp, logistic-normal: $\\sigma$"))
+            #ind = acomp_par_count+1
+          }
+          fe.vals = c(fe.vals, exp(pars[i,1]))
+          fe.cis = rbind(fe.cis, ci(pars[i,1], pars_sd[i,1], type = "exp"))
         }
-        if(data$age_comp_model_fleets[i] == 3){
-          fe.names = c(fe.names, paste0("Fleet ", i , " age comp, Dirichlet: dispersion ($\\phi$)"))
-          ind = acomp_par_count+1
+        if(age_comp_models[i] == 6){
+          fe.names = c(fe.names, paste0(startname, i , " age comp, logistic-normal: $", c("\\sigma", "\\rho"), "$"))
+          fe.vals = c(fe.vals, exp(pars[i,1]), 1/(1+exp(-pars[i,2])))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit"))
+          #ind = acomp_par_count+1
         }
-        if(data$age_comp_model_fleets[i] == 5){
-          fe.names = c(fe.names, paste0("Fleet ", i , " age comp, logistic-normal (0-pooled): $\\sigma$"))
-          ind = acomp_par_count+1
+        if(age_comp_models[i] == 8){
+          fe.names = c(fe.names, paste0(startname, i , " age comp, 0/1-inflated logistic-normal: ",
+            c("Declining probablity of 0 parameter 1",
+              "Declining probablity of 0 parameter 2",
+              "logistic-normal $\\sigma$")))
+          fe.vals = c(fe.vals, pars[i,1:2], exp(pars[i,3]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1:2], pars_sd[i,1:2]),
+            ci(pars[i,3], pars_sd[i,3], type = "exp"))
         }
-        if(data$age_comp_model_fleets[i] == 6){
+        if(age_comp_models[i] == 9){
           fe.names = c(fe.names, paste0("Fleet ", i , " age comp, 0/1-inflated logistic-normal: ",
             c("Binomial N parameter probablity of 0",
               "logistic-normal $\\sigma$")))
-          ind = acomp_par_count+1:2
+          fe.vals = c(fe.vals, exp(pars[i,1:2]))
+          fe.cis = rbind(fe.cis, ci(pars[i,1:2], pars_sd[i,1:2], type = "exp"))
         }
-        if(data$age_comp_model_fleets[i] == 7){
-          fe.names = c(fe.names, paste0("Fleet ", i , " age comp, logistic-normal (0-missing): $\\sigma$"))
-          ind = acomp_par_count+1
-        }
-        fe.vals = c(fe.vals, exp(pars$catch_paa_pars[ind]))
-        fe.cis = rbind(fe.cis, ci(pars$catch_paa_pars[ind], sd$catch_paa_pars[ind], type = "exp"))
       }
-      if(data$age_comp_model_fleets[i] == 4){
-        fe.names = c(fe.names, paste0("Fleet ", i , " age comp, 0/1-inflated logistic-normal: ",
-          c("Declining probablity of 0 parameter 1",
-            "Declining probablity of 0 parameter 2",
-            "logistic-normal $\\sigma$")))
-        ind = acomp_par_count+1:2
-        fe.vals = c(fe.vals, pars$catch_paa_pars[ind])
-        fe.cis = rbind(fe.cis, ci(pars$catch_paa_pars[ind], sd$catch_paa_pars[ind]))
-        ind = acomp_par_count+3
-        fe.vals = c(fe.vals, exp(pars$catch_paa_pars[ind]))
-        fe.cis = rbind(fe.cis, ci(pars$catch_paa_pars[ind], sd$catch_paa_pars[ind], type = "exp"))
-      }
-      acomp_par_count = acomp_par_count + data$n_age_comp_pars_fleets[i]
     }
+    return(list(fe.names, fe.vals, fe.cis))
   }
-  acomp_par_count = 0
-  for(i in 1:data$n_indices){
-    if(sum(data$use_index_paa[,i]) > 0){
-      if(data$age_comp_model_indices[i] %in% c(2:3,5:7)){
-        if(data$age_comp_model_indices[i] == 2){
-          fe.names = c(fe.names, paste0("Index ", i , " age comp, Dirichlet-multinomial: dispersion ($\\phi$)"))
-          ind = acomp_par_count+1
-        }
-        if(data$age_comp_model_indices[i] == 3){
-          fe.names = c(fe.names, paste0("Index ", i , " age comp, Dirichlet: dispersion ($\\phi$)"))
-          ind = acomp_par_count+1
-        }
-        if(data$age_comp_model_indices[i] == 5){
-          fe.names = c(fe.names, paste0("Index ", i , " age comp, logistic-normal (0-pooled): $\\sigma$"))
-          ind = acomp_par_count+1
-        }
-        if(data$age_comp_model_indices[i] == 6){
-          fe.names = c(fe.names, paste0("Index ", i , " age comp, 0/1-inflated logistic-normal: ",
-            c("Binomial N parameter probablity of 0",
-              "logistic-normal $\\sigma$")))
-          ind = acomp_par_count+1:2
-        }
-        if(data$age_comp_model_indices[i] == 7){
-          fe.names = c(fe.names, paste0("Index ", i , " age comp, logistic-normal (0-missing): $\\sigma$"))
-          ind = acomp_par_count+1
-        }
-        fe.vals = c(fe.vals, exp(pars$index_paa_pars[ind]))
-        fe.cis = rbind(fe.cis, ci(pars$index_paa_pars[ind], sd$index_paa_pars[ind], type = "exp"))
-      }
-      if(data$age_comp_model_indices[i] == 4){
-        fe.names = c(fe.names, paste0("Index ", i , " age comp, 0/1-inflated logistic-normal: ",
-          c("Declining probablity of 0 parameter 1",
-            "Declining probablity of 0 parameter 2",
-            "logistic-normal $\\sigma$")))
-        ind = acomp_par_count+1:2
-        fe.vals = c(fe.vals, pars$index_paa_pars[ind])
-        fe.cis = rbind(fe.cis, ci(pars$index_paa_pars[ind], sd$index_paa_pars[ind]))
-        ind = acomp_par_count+3
-        fe.vals = c(fe.vals, exp(pars$index_paa_pars[ind]))
-        fe.cis = rbind(fe.cis, ci(pars$index_paa_pars[ind], sd$index_paa_pars[ind], type = "exp"))
-      }
-      acomp_par_count = acomp_par_count + data$n_age_comp_pars_indices[i]
-    }
-  }
+  temp = add_age_comp_pars(data$age_comp_model_fleets, data$use_catch_paa, pars$catch_paa_pars, sd$catch_paa_pars, 
+      is_fleet = TRUE, fe.names, fe.vals, fe.cis)
+  fe.names = temp[[1]]
+  fe.vals = temp[[2]]
+  fe.cis = temp[[3]]
+  temp = add_age_comp_pars(data$age_comp_model_indices, data$use_index_paa, pars$index_paa_pars, sd$index_paa_pars, 
+      is_fleet = FALSE, fe.names, fe.vals, fe.cis)
+  fe.names = temp[[1]]
+  fe.vals = temp[[2]]
+  fe.cis = temp[[3]]
+
 
   if(sum(!is.na(mod$input$map$M_a))){ #any M_a estimated?
     if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M

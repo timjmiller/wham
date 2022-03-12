@@ -32,7 +32,7 @@ Type mydmultinom(vector<Type> obs, vector<Type> pred, int do_log)
   if(do_log == 1) return ll;
   else return exp(ll);
 }
-
+/*
 template<class Type>
 vector<Type> rmultinom(Type N, vector<Type> p)
 {
@@ -60,16 +60,7 @@ vector<Type> rdirichlet(vector<Type> p, Type phi)
   obs = obs/obs.sum();
   return obs;
 }
-template <class Type>
-Type ddirichlet(vector<Type> obs, vector<Type>p, Type phi, int do_log)
-{
-  int n = obs.size();
-  Type ll = lgamma(phi);
-  for(int i = 0; i < n; i++) ll +=  -lgamma(phi * (p(i) + Type(1.0e-15))) + (phi * (p(i) + Type(1.0e-15)) - 1.0) * log(obs(i));
-  if(do_log == 1) return ll;
-  else return exp(ll);
-}
-
+*/
 template<class Type>
 Type ddirmultinom(vector<Type> obs, vector<Type> p,  Type phi, int do_log)
 {
@@ -80,7 +71,7 @@ Type ddirmultinom(vector<Type> obs, vector<Type> p,  Type phi, int do_log)
   if(do_log == 1) return ll;
   else return exp(ll);
 }
-
+/*
 template<class Type>
 vector<Type> rdirmultinom(Type N, vector<Type> p, Type phi) //dirichlet generated from iid gammas
 {
@@ -89,7 +80,7 @@ vector<Type> rdirmultinom(Type N, vector<Type> p, Type phi) //dirichlet generate
   vector<Type> obs = rmultinom(N,dp);
   return(obs);
 }
-
+*/
 
 template<class Type>
 Type get_acomp_ll(int year, int n_ages, Type Neff, int age_comp_model, vector<Type> paa_obs, vector<Type> paa_pred, vector<Type> age_comp_pars, int aref)

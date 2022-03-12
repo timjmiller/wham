@@ -3,6 +3,7 @@ wham 1.0.5.9000
 
 ### Major improvements
 
+* One-step-ahead prediction quantile residuals for age compositon observations for most log-likelihoods (Nielsen et al. in prep.).
 * Can specify a prior distribution on fully-selected catchability (logit-scale) which is then estimated as a random effect.
 * Auto-regressive random effects for fully-selected catchability.
 * Environmental covariate effects on fully-selected catchability.
@@ -10,6 +11,7 @@ wham 1.0.5.9000
 
 ### Minor improvements
 
+* Expanded set of age composition models including allowing AR1 correlation for logistic-normal.
 * Example 11 script and vignette (and tests) added to demonstrated extensions for modeling catchability.
 * New plots added to plot_wham_output.R and wham_plots_tables.R to include new catchability features.
 * Added reporting of SPR-based reference points that use SPR inputs averged over the same years as they would for FXSPR in projection years.
