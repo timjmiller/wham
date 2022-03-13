@@ -102,13 +102,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.catch.age.comp.resids(mod)
     plot.index.age.comp(mod)
     plot.index.age.comp.resids(mod)
+    plot.NAA.res(mod)
     if(!is.null(mod$osa)) {
-      print("mod$osa")
-      #plot.catch.age.comp.resids(mod, do.osa = TRUE)
+      plot.catch.age.comp.resids(mod, osa = TRUE)
       plot.index.age.comp.resids(mod, osa = TRUE)
       plot.osa.residuals(mod)
     }
-    plot.NAA.res(mod)
     if(mod$is_sdrep) plot.all.stdresids.fn(mod)
     # plot.fleet.stdresids.fn(mod)
     # plot.index.stdresids.fn(mod)
@@ -249,12 +248,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     if(!is.null(mod$osa)) {
-      print("mod$osa")
-      #plot.catch.age.comp.resids(mod, do.osa = TRUE)
+      plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
-    if(!is.null(mod$osa)) 
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     # plot.fleet.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res,family=fontfam, od=dir.diag)
     # plot.index.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res,family=fontfam, od=dir.diag)
