@@ -3871,7 +3871,9 @@ plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
 plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   origpar <- par(no.readonly = TRUE)
   if("sdrep" %in% names(mod)){
-    se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    if("q_re" %in% mod$input$random) se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    else se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+      ncol = NROW(mod$rep$logit_q_mat)))
     logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
     logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
     q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))

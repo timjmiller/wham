@@ -93,8 +93,6 @@ set_indices = function(input, index_opts=NULL)
   ################################################################################
 
   data$index_paa[is.na(data$index_paa)] = 0
-  data$index_aref = matrix(NA, data$n_years_model, data$n_indices)
-  for(i in 1:data$n_indices) data$index_aref[,i] = get_aref_fn(data$index_paa[i,,])  
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))

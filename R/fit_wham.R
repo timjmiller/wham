@@ -28,6 +28,7 @@
 #'   as \code{mod$osa$residual}.
 #' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
 #'   Default: \code{osa.opts = list(method="cdf", parallel=TRUE)}. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.
+#' @param do.post.samp T/F, obtain sample from posterior of random effects? Default = \code{TRUE}. NOT YET IMPLEMENTED.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs internal function \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
@@ -79,10 +80,11 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
-                    do.osa = TRUE, osa.opts = list(method="cdf", parallel=TRUE), model=NULL, do.check = FALSE, MakeADFun.silent=FALSE,
-                    retro.silent = FALSE, do.proj = FALSE,
-                    proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                   cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
+                    do.osa = TRUE, osa.opts = list(method="cdf", parallel=TRUE), do.post.samp = TRUE,
+                    model=NULL, do.check = FALSE, MakeADFun.silent=FALSE, retro.silent = FALSE, do.proj = FALSE,
+                    proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, 
+                      proj.catch=NULL, avg.yrs=NULL, cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, 
+                      proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
                     do.fit = TRUE, save.sdrep=TRUE)
 {
 

@@ -420,52 +420,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#print("random")
 
 	return(input)
-  #return(list(data=data, par = par, map = map, random = random, years = model_years, years_full = model_years,
-  #  ages.lab = paste0(1:data$n_ages, c(rep("",data$n_ages-1),"+")), model_name = model_name))
 }
 
-# function to calcluate reference age for age comp data
-#   returns max(age) with non-zero catch for each index/fleet and year
-#   -1 if not more than 1 age with non-zero catch (acomp not fit)
-get_aref_fn = function(paa){
-  n_years = NROW(paa)
-  n_ages = NCOL(paa)
-  aref = rep(-1, n_years)
-  for(y in 1:n_years)
-  {
-    temp = paa[y,]
-    for(a in 1:n_ages) if(temp[a] < 1.0e-15) temp[a] = 0.0
-    if (sum(temp > 1.0e-15)>1)
-    { #both requirements as well as total catch > 0 to include age comp in objective function
-      paa[y,]=temp/sum(temp)
-      for(a in 1:n_ages) if(paa[y,a] > 1.0e-15) aref[y] = a
-      for(a in n_ages:1)
-      {
-        if(paa[y,a] > 1.0e-15)
-        {
-          aref[y] = a #last positive
-          break
-        }
-      }
-      #this part is necessary for logistic-normal age comp (type = 5)
-      #note the aref can be associated with an observed 0 if needed.
-      this_aref = aref[y] - 1 #start one less than last positive
-      for(a in this_aref:1)
-      {
-        if(length(paa[y,a])== 0)
-        {
-          print(y)
-          print(a)
-          print(paa[y,])
-          print(this_aref)
-        }
-        if(paa[y,a] > 1.0e-15) break #next to last is positive, don't change aref
-        else aref[y] = a #move aref down one.
-      }
-    }
-  }
-  return(aref)
-}
 
 gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
 

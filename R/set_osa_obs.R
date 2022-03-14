@@ -153,6 +153,7 @@ set_osa_obs = function(input)
   data$obs <- obs
   data$obsvec <- obs$val
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is caled by fit_wham
+  data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 
 
   input$data = data

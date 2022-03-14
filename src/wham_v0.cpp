@@ -27,9 +27,7 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(selblock_pointer_fleets);
   DATA_IMATRIX(selblock_pointer_indices);
   DATA_IVECTOR(age_comp_model_fleets);
-  //DATA_IVECTOR(n_age_comp_pars_fleets);
   DATA_IVECTOR(age_comp_model_indices);
-  //DATA_IVECTOR(n_age_comp_pars_indices);
   DATA_VECTOR(fracyr_SSB);
   DATA_MATRIX(mature);
   DATA_IVECTOR(waa_pointer_fleets);
@@ -44,7 +42,6 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages
   DATA_IMATRIX(use_catch_paa);
   DATA_MATRIX(catch_Neff);
-  DATA_IMATRIX(catch_aref);
   DATA_IVECTOR(units_indices);
   DATA_MATRIX(fracyr_indices);
   DATA_MATRIX(agg_indices);
@@ -54,7 +51,6 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(index_paa); //n_indices x n_years x n_ages
   DATA_IMATRIX(use_index_paa);
   DATA_MATRIX(index_Neff);
-  DATA_IMATRIX(index_aref);
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
   DATA_IVECTOR(use_q_prior);
@@ -98,6 +94,7 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(keep_E); // Ecov
   DATA_IARRAY(keep_Cpaa);
   DATA_IARRAY(keep_Ipaa);
+  DATA_IVECTOR(do_post_samp); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
 
   // data for environmental covariate(s), Ecov
   DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
@@ -259,7 +256,6 @@ Type objective_function<Type>::operator() ()
         if(selblock_models_re(b) == 3){ // ar1 across parameters in selblock, useful for age-specific pars.
           vector<Type> tmp0 = tmp.matrix().row(0); //random effects are constant across years 
           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
-          //Sigma_sig_sel = sigma;
           nll_sel += SCALE(AR1(rho), Sigma_sig_sel)(tmp0);
           SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) 
           {
@@ -281,14 +277,8 @@ Type objective_function<Type>::operator() ()
       SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) {
         tmp = tmp * Sigma_sig_sel;
         istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
-        /*for(int j=0; j<n_selpars_est(b); j++){
-          selpars_re.segment(istart,n_years_selblocks(b)) = tmp.col(j);
-          istart += n_years_selblocks(b);
-        }*/
         for(int j=0; j<n_selpars_est(b); j++){
           for(int y = 0; y < n_years_selblocks(b); y++){
-            // this wasn't right bc a sel block may be < n_years_model, need to check selblock_years to see if it's in model/proj years
-            // if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1))
             selpars_re(istart) = tmp(y,j);
             istart++;
           }
@@ -318,6 +308,7 @@ Type objective_function<Type>::operator() ()
   REPORT(selpars);
   REPORT(sel_repars);
   REPORT(selpars_re); //even if not simulated
+  if(do_post_samp(2) == 1) ADREPORT(selpars_re);
   REPORT(logit_selpars);
   REPORT(nll_sel);
   selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
@@ -328,9 +319,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> nll_Ecov(n_years_Ecov + n_years_proj_Ecov, n_Ecov); // nll contribution each Ecov_re
   nll_Ecov.setZero();
 
-// These next two lines don't allow for Ecov_model >0 after the first column of Ecov.
-//  if(Ecov_model(0) == 0){ // no Ecov
-//  } else { // yes Ecov
+  // Ecov_model == 0) no Ecov
   for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
     // Ecov model option 1: RW
     if(Ecov_model(i) == 1){
@@ -393,7 +382,7 @@ Type objective_function<Type>::operator() ()
     }
   } // end loop over Ecovs
   SIMULATE if(simulate_state(3) == 1) if(sum(simulate_period) > 0) REPORT(Ecov_re);
-//  }
+  if(Ecov_model.sum() > 0) if(do_post_samp(3) == 1) ADREPORT(Ecov_re);
 
   // Environmental covariate observation model -------------------------------------
   //TODO: Ecov obs are not yet simulated in projection years!!!!!!!!
@@ -413,7 +402,6 @@ Type objective_function<Type>::operator() ()
       } else{
         Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma(y,i));
       }
-        // nll_Ecov_obs -= dnorm(Ecov_obs(y,i), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
       if(Ecov_use_obs(y,i) == 1){
         nll_Ecov_obs -= keep(keep_E(y,i)) * dnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i), 1);
         nll_Ecov_obs -= keep.cdf_lower(keep_E(y,i)) * log(squeeze(pnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i))));
@@ -469,9 +457,6 @@ Type objective_function<Type>::operator() ()
       } else { // n_poly > 1, get poly transformation for ith ecov
         X_poly = poly_trans(thecol, n_poly, n_years_model, n_years_proj);
       }
-      //matrix<Type> tmp(n_years_model + n_years_proj, n_ages);
-      //tmp.setZero();
-      //Ecov_lm(i)(t) = tmp;
       for(int y = 0; y < n_years_model + n_years_proj; y++){
         for(int a = 0; a < n_ages; a++){
           for(int j = 0; j < n_poly; j++){
@@ -496,12 +481,10 @@ Type objective_function<Type>::operator() ()
     if(M_re_model == 2 | M_re_model == 5){ //2D AR1: age, year
       Sigma_M = pow(pow(sigma_M,2) / ((1-pow(rho_M_y,2))*(1-pow(rho_M_a,2))),0.5);
       nll_M += SCALE(SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)), Sigma_M)(M_re); // must be array, not matrix!
-      // if(bias_correct_pe == 1) M_re -= 0.5 * pow(Sigma_M,2);      
       SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
         array<Type> Mre_tmp = M_re;
         SEPARABLE(AR1(rho_M_a),AR1(rho_M_y)).simulate(Mre_tmp);
         Mre_tmp = Sigma_M * Mre_tmp;
-        // if(bias_correct_pe == 1) Mre_tmp -= 0.5 * pow(Sigma_M,2);
         for(int y = 0; y < n_years_model + n_years_proj; y++){
           if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
             for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre_tmp(y,a);
@@ -513,11 +496,9 @@ Type objective_function<Type>::operator() ()
         vector<Type> Mre0 = M_re.matrix().row(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_a,2)),0.5);
         nll_M += SCALE(AR1(rho_M_a), Sigma_M)(Mre0);
-        // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);       
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_a).simulate(Mre0);
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
-          // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             for(int i = 0; i < Mre0.size(); i++){
               M_re(y,i) = Mre0(i);
@@ -528,11 +509,9 @@ Type objective_function<Type>::operator() ()
         vector<Type> Mre0 = M_re.matrix().col(0);
         Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
         nll_M += SCALE(AR1(rho_M_y), Sigma_M)(Mre0);
-        // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);      
         SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_M_y).simulate(Mre0);
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
-          // if(bias_correct_pe == 1) Mre0 -= 0.5 * pow(Sigma_M,2);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if((simulate_period(0) == 1 & y < n_years_model) | (simulate_period(1) == 1 & y > n_years_model-1)){
               M_re(y,0) = Mre0(y);
@@ -541,13 +520,16 @@ Type objective_function<Type>::operator() ()
         }
       }
     }
-    ADREPORT(sigma_M);
-    ADREPORT(rho_M_a);
-    ADREPORT(rho_M_y);
+    if(do_post_samp.sum()==0){
+      ADREPORT(sigma_M);
+      ADREPORT(rho_M_a);
+      ADREPORT(rho_M_y);
+    }
   }
   REPORT(nll_M);
   nll += nll_M;
   REPORT(M_re); //even if M_re not simulated.
+  if(do_post_samp(1) == 1) ADREPORT(M_re);
   REPORT(M_a);
   REPORT(M_repars);
 
@@ -610,10 +592,7 @@ Type objective_function<Type>::operator() ()
     nll -= lprior_b;
   }
 
-  ///////NEW CODE
-  // --------------------------------------------------------------------------
   // Survey catchability models
-  //
   matrix<Type> nll_q(n_years_model+n_years_proj,n_indices);
   nll_q.setZero();
   vector<Type> sigma_q(n_indices);
@@ -664,19 +643,17 @@ Type objective_function<Type>::operator() ()
   for(int y = 0; y < n_years_model + n_years_proj; y++) {
     for(int ind = 0; ind < n_indices; ind++) {
       for(int i=0; i < n_Ecov; i++){
-        if(Ecov_where(i,2+ind) == 1){ // if(Ecov_for_q(ind) == i + 1){ // if ecov i affects q and which index
+        if(Ecov_where(i,2+ind) == 1){ // if ecov i affects q and which index
           logit_q_mat(y,ind) += Ecov_lm(i,2+ind,y,0);
         }
       }
       q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));
     }
   }
-  //////////////
 
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
-    //q(i) = q_lower(i) + (q_upper(i) - q_lower(i))/(1 + exp(-logit_q(i)));
   // add ecov effect on M (by year, shared across ages)
     for(int y = 0; y < n_years_model; y++)
     {
@@ -688,13 +665,14 @@ Type objective_function<Type>::operator() ()
     }
   }
   REPORT(logit_q_mat);
-  ADREPORT(logit_q_mat);
+  if(use_q_re.sum()>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
   REPORT(sigma_q);
   REPORT(rho_q);
   REPORT(nll_q);
   REPORT(nll_q_prior);
   REPORT(q_prior_re); //even if q_prior_re not simulated
-  REPORT(q_re); //even if q_re not simulated.
+  REPORT(q_re);
+  if(do_post_samp(4)==1) ADREPORT(q_re); //even if q_re not simulated.
   REPORT(q);
   REPORT(QAA);
 
@@ -760,7 +738,6 @@ Type objective_function<Type>::operator() ()
     log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y)));
   }
   REPORT(log_SPR0);
-  // ADREPORT(log_SPR0);
 
   // calculate stock-recruit parameters (steepness, R0, a, b)
   if(recruit_model > 2) //BH or Ricker SR
@@ -840,12 +817,13 @@ Type objective_function<Type>::operator() ()
       }
       SR_h_tf = log(SR_h - 0.2);
     }
-    ADREPORT(log_SR_a);
-    ADREPORT(log_SR_b);
-    //vector<Type> logit_SR_h = log(SR_h - 0.2) - log(1 - SR_h);
     vector<Type> log_SR_R0 = log(SR_R0);
-    ADREPORT(SR_h_tf);
-    ADREPORT(log_SR_R0);
+    if(do_post_samp.sum()==0){
+      ADREPORT(log_SR_a);
+      ADREPORT(log_SR_b);
+      ADREPORT(SR_h_tf);
+      ADREPORT(log_SR_R0);
+    }
     REPORT(log_SR_a);
     REPORT(log_SR_b);
     REPORT(SR_h_tf);
@@ -859,15 +837,7 @@ Type objective_function<Type>::operator() ()
     
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
       log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
-    /*
-    // Expected recruitment
-    pred_NAA(y,0) = get_pred_recruit_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
-      log_SR_b, Ecov_recruit, Ecov_how, Ecov_lm);
     
-    // calculate pred_NAA for ages after recruitment
-    for(int a = 1; a < n_ages-1; a++) pred_NAA(y,a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
-    pred_NAA(y,n_ages-1) = NAA(y-1,n_ages-2) * exp(-ZAA(y-1,n_ages-2)) + NAA(y-1,n_ages-1) * exp(-ZAA(y-1,n_ages-1));
-    */
     // calculate NAA
     if(n_NAA_sigma > 1){
       // all NAA are estimated (random effects)
@@ -903,14 +873,7 @@ Type objective_function<Type>::operator() ()
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
-    // see(y);
-    // see(NAA.rows());
-    // see(ZAA.rows());
-    // see(mature.rows());
-    // see(waa_pointer_ssb);
-    // see(fracyr_SSB.size());
     SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
-    //for(int a = 0; a < n_ages; a++) SSB(y) += NAA(y,a) * waa(waa_pointer_ssb-1,y,a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
   } // end pop model loop
 
   // --------------------------------------------------------------------------
@@ -926,6 +889,16 @@ Type objective_function<Type>::operator() ()
   }
   if(n_NAA_sigma > 1){
     for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+  }
+  if(n_NAA_sigma > 0){
+    if(do_post_samp.sum()==0){
+      ADREPORT(NAA_sigma);
+      ADREPORT(NAA_rho_a);
+      ADREPORT(NAA_rho_y);
+    }
+    if(do_post_samp(0) == 1){
+      ADREPORT(log_NAA);
+    }
   }
 
   // likelihood of NAA deviations
@@ -998,9 +971,6 @@ Type objective_function<Type>::operator() ()
     REPORT(log_NAA_sigma);
     REPORT(trans_NAA_rho);
   }
-  ADREPORT(NAA_sigma);
-  ADREPORT(NAA_rho_a);
-  ADREPORT(NAA_rho_y);
   REPORT(NAA_devs);
   REPORT(nll_NAA);
   nll += nll_NAA;
@@ -1045,36 +1015,17 @@ Type objective_function<Type>::operator() ()
         }
       }
       if(any_fleet_age_comp(f) == 1){
-        //vector<Type> acomp_pars(n_age_comp_pars_fleets(f));
-        //for(int j = 0; j < n_age_comp_pars_fleets(f); j++){
-          //acomp_pars(j) = catch_paa_pars(acomp_par_count);
-        //  acomp_par_count++;
-        //}
-        //vector<Type> k(n_ages), l(n_ages), h(n_ages);
-        //vector<int> k_ind(n_ages); 
         for(int a = 0; a < n_ages; a++){
           pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
           t_pred_paa(a) = pred_catch_paa(y,f,a);
-          //if(y < n_years_model) {
-            //t_paa(a) = catch_paa(f,y,a);
-            //t_paa(a) = obsvec(keep_Cpaa(f,y,a));
-            //k(a) = keep(keep_Cpaa(f,y,a));
-            //l(a) = keep.cdf_lower(keep_Cpaa(f,y,a));
-            //h(a) = keep.cdf_upper(keep_Cpaa(f,y,a));
-            //keep_ind(a) = keep_Cpaa(f,y,a);
-          //}
         }
         if(y < n_years_model) if(use_catch_paa(y,f) == 1){
           //NB: indexing in obsvec MUST be: keep_Cpaa(f,y,0),...,keep_Cpaa(f,y,n_ages-1)
-          //nll_catch_acomp(y,f) -= get_acomp_ll(y, n_ages, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(y,f));
           t_paa = obsvec.segment(keep_Cpaa(f,y,0),n_ages);
           nll_catch_acomp(y,f) -= get_acomp_ll(t_paa, t_pred_paa, catch_Neff(y,f), age_comp_model_fleets(f), vector<Type>(catch_paa_pars.row(f)),//acomp_pars, 
             keep.segment(keep_Cpaa(f,y,0),n_ages), do_osa);
-          //nll_catch_acomp(y,f) -= get_acomp_ll(y, catch_Neff(y,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, 
-          //  catch_aref(y,f), k,l,h, do_osa, use_catch_paa(y,f));
         }
-        SIMULATE if(simulate_data(0) == 1){
-          //t_paa = sim_acomp(catch_Neff(usey,f), age_comp_model_fleets(f), t_paa, t_pred_paa, acomp_pars, catch_aref(usey,f));
+        SIMULATE if(simulate_data(0) == 1) if(use_catch_paa(usey,f) == 1){
           t_paa = sim_acomp(t_pred_paa, catch_Neff(usey,f), age_comp_model_fleets(f), t_paa, vector<Type>(catch_paa_pars.row(f)));//acomp_pars);
           if(simulate_period(0) == 1 & y < n_years_model) for(int a = 0; a < n_ages; a++) {
             catch_paa(f,y,a) = t_paa(a);
@@ -1105,7 +1056,6 @@ Type objective_function<Type>::operator() ()
   nll_agg_indices.setZero();
   nll_index_acomp.setZero();
   pred_indices.setZero();
-  //for(int y = 0; y < n_years_indices; y++)
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
     int yuse = y;
@@ -1129,15 +1079,10 @@ Type objective_function<Type>::operator() ()
       pred_log_indices(y,i) = log(pred_indices(y,i));
       Type sig = agg_index_sigma(yuse,i)*exp(log_index_sig_scale(i));
       if(bias_correct_oe == 1) pred_log_indices(y,i) -= 0.5*exp(2*log(sig));
-      // nll_agg_indices(y,i) -= dnorm(log(agg_indices(y,i)), mu, sig, 1);
-      // nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(log(agg_indices(y,i)), mu, sig, 1);
       if(y < n_years_model) if(use_indices(y,i) == 1) {
         nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig, 1);
-        //nll += nll_agg_indices(y,i);
         nll_agg_indices(y,i) -= keep.cdf_lower(keep_I(y,i)) * log(squeeze(pnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig)));
-        //nll += nll_agg_indices(y,i);
         nll_agg_indices(y,i) -= keep.cdf_upper(keep_I(y,i)) * log(1.0 - squeeze(pnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig)));
-        //nll += nll_agg_indices(y,i);
       }
       SIMULATE if(simulate_data(1) == 1){
         if(simulate_period(0) == 1 & y < n_years_model) {
@@ -1149,36 +1094,18 @@ Type objective_function<Type>::operator() ()
       
       if(any_index_age_comp(i) == 1)
       {
-        //vector<Type> acomp_pars(n_age_comp_pars_indices(i));
-        //for(int j = 0; j < n_age_comp_pars_indices(i); j++)
-        //{
-          //acomp_pars(j) = index_paa_pars(acomp_par_count);
-        //  acomp_par_count++;
-        //}
-        //data_indicator<vector<Type>, Type> t_keep(n_ages);
-        //vector<int> keep_ind(n_ages); 
         for(int a = 0; a < n_ages; a++)
         {
           pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
           t_pred_paa(a) = pred_index_paa(y,i,a);
-          //if(y < n_years_model) {
-            //t_paa(a) = index_paa(i,y,a);
-            //t_paa(a) = obsvec(keep_Ipaa(i,y,a));
-            //t_keep(a) = keep(keep_Ipaa(i,y,a));
-            //keep_ind(a) = keep_Ipaa(i,y,a);
-          //}
         }
         if(y < n_years_model) if(use_index_paa(y,i) > 0) {
           //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,n_ages-1)
-          //nll_index_acomp(y,i) -= get_acomp_ll(y, n_ages, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i));
           t_paa = obsvec.segment(keep_Ipaa(i,y,0), n_ages);
           nll_index_acomp(y,i) -= get_acomp_ll(t_paa, t_pred_paa, index_Neff(y,i), age_comp_model_indices(i), vector<Type>(index_paa_pars.row(i)),//acomp_pars, 
             keep.segment(keep_Ipaa(i,y,0),n_ages), do_osa);
-          //nll_index_acomp(y,i) -= get_acomp_ll(y, index_Neff(y,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(y,i), t_keep, do_osa);
-          //nll += nll_index_acomp(y,i);
         }
-        SIMULATE if(simulate_data(1) == 1){
-          //t_paa = sim_acomp(index_Neff(yuse,i), age_comp_model_indices(i), t_paa, t_pred_paa, acomp_pars, index_aref(yuse,i));
+        SIMULATE if(simulate_data(1) == 1) if(use_index_paa(yuse,i) == 1){
           t_paa = sim_acomp(t_pred_paa, index_Neff(yuse,i), age_comp_model_indices(i), t_paa, vector<Type>(index_paa_pars.row(i)));//acomp_pars);
           if(simulate_period(0) == 1 & y < n_years_model) for(int a = 0; a < n_ages; a++) {
             index_paa(i,y,a) = t_paa(a);
@@ -1205,11 +1132,6 @@ Type objective_function<Type>::operator() ()
   SIMULATE if(sum(simulate_data) > 0) REPORT(obsvec);
   // -------------------------------------------------------------------
   // Calculate catch in projection years
-  // if(do_proj == 0){
-  //   vector<Type> catch_proj(1), log_catch_proj(1);
-  //   catch_proj.setZero();
-  //   log_catch_proj.setZero();
-  // }
   if(do_proj == 1){
     vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
     matrix<Type> CAA_proj(n_years_proj, n_ages), catch_fleet_proj(n_years_proj, n_fleets);
@@ -1225,7 +1147,7 @@ Type objective_function<Type>::operator() ()
       log_catch_proj(i) = log(catch_proj(i) + Type(1.0e-15));
     }
     REPORT(catch_proj);
-    ADREPORT(log_catch_proj);
+    if(do_post_samp.sum()==0) ADREPORT(log_catch_proj);
   }
 
   // ------------------------------------------------------------------------------
@@ -1261,9 +1183,11 @@ Type objective_function<Type>::operator() ()
   REPORT(log_Y_FXSPR);
   REPORT(log_SPR_FXSPR);
   REPORT(log_YPR_FXSPR);
-  ADREPORT(log_FXSPR);
-  ADREPORT(log_SSB_FXSPR);
-  ADREPORT(log_Y_FXSPR);
+  if(do_post_samp.sum()==0){
+    ADREPORT(log_FXSPR);
+    ADREPORT(log_SSB_FXSPR);
+    ADREPORT(log_Y_FXSPR);
+  }
 
   //static/avg year results
   vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA_tot, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, NAA, 
@@ -1283,9 +1207,11 @@ Type objective_function<Type>::operator() ()
   REPORT(log_Y_FXSPR_static);
   REPORT(log_SPR_FXSPR_static);
   REPORT(log_YPR_FXSPR_static);
-  ADREPORT(log_FXSPR_static);
-  ADREPORT(log_SSB_FXSPR_static);
-  ADREPORT(log_Y_FXSPR_static);
+  if(do_post_samp.sum()==0){
+    ADREPORT(log_FXSPR_static);
+    ADREPORT(log_SSB_FXSPR_static);
+    ADREPORT(log_Y_FXSPR_static);
+  }
 
   //If stock-recruit models
   if(recruit_model > 2) //Beverton-Holt or Ricker selected
@@ -1339,12 +1265,14 @@ Type objective_function<Type>::operator() ()
     vector<Type> log_SSB_MSY = log_R_MSY + log_SPR_MSY;
     vector<Type> log_MSY = log_R_MSY + log_YPR_MSY;
 
-    ADREPORT(log_FMSY);
-    ADREPORT(log_SSB_MSY);
-    ADREPORT(log_R_MSY);
-    ADREPORT(log_MSY);
-    ADREPORT(log_SPR_MSY);
-    ADREPORT(log_YPR_MSY);
+    if(do_post_samp.sum()==0){
+      ADREPORT(log_FMSY);
+      ADREPORT(log_SSB_MSY);
+      ADREPORT(log_R_MSY);
+      ADREPORT(log_MSY);
+      ADREPORT(log_SPR_MSY);
+      ADREPORT(log_YPR_MSY);
+    }
     REPORT(log_FMSY);
     REPORT(log_FMSY_iter);
     REPORT(log_SSB_MSY);
@@ -1399,14 +1327,16 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_obs_sigma_par);
   REPORT(Ecov_obs_sigma);
 
-  ADREPORT(log_F);
-  ADREPORT(log_FAA);
-  ADREPORT(log_FAA_tot);
-  ADREPORT(log_Fbar);
-  ADREPORT(log_NAA_rep);
-  ADREPORT(log_SSB);
-  ADREPORT(log_index_resid);
-  ADREPORT(log_catch_resid);
+  if(do_post_samp.sum()==0){
+    ADREPORT(log_F);
+    ADREPORT(log_FAA);
+    ADREPORT(log_FAA_tot);
+    ADREPORT(log_Fbar);
+    ADREPORT(log_NAA_rep);
+    ADREPORT(log_SSB);
+    ADREPORT(log_index_resid);
+    ADREPORT(log_catch_resid);
+  }
 
   REPORT(nll);
   REPORT(nll_Ecov);
@@ -1414,8 +1344,10 @@ Type objective_function<Type>::operator() ()
 
   if(Ecov_model.sum() > 0){
     matrix<Type> Ecov_resid = Ecov_obs.array() - Ecov_x.block(0,0,n_years_Ecov,n_Ecov).array();
-    ADREPORT(Ecov_x);
-    ADREPORT(Ecov_resid);
+    if(do_post_samp.sum()==0){
+      ADREPORT(Ecov_x);
+      ADREPORT(Ecov_resid);
+    }
   }
 
   SIMULATE {

@@ -73,9 +73,6 @@ set_catch = function(input, catch_opts= NULL)
 
   data$catch_paa[is.na(data$catch_paa)] = 0
 
-  data$catch_aref = matrix(NA, data$n_years_model, data$n_fleets)
-  for(i in 1:data$n_fleets) data$catch_aref[,i] = get_aref_fn(data$catch_paa[i,,])
-
   input$par$log_catch_sig_scale = rep(0, data$n_fleets)
   input$map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
 

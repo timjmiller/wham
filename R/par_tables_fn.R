@@ -263,15 +263,18 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
               "logistic-normal $\\sigma$")))
           fe.vals = c(fe.vals, pars[i,1:2], exp(pars[i,3]))
           fe.cis = rbind(fe.cis, 
-            ci(pars[i,1:2], pars_sd[i,1:2]),
+            ci(pars[i,1], pars_sd[i,1]),
+            ci(pars[i,2], pars_sd[i,2]),
             ci(pars[i,3], pars_sd[i,3], type = "exp"))
         }
         if(age_comp_models[i] == 9){
-          fe.names = c(fe.names, paste0("Fleet ", i , " age comp, 0/1-inflated logistic-normal: ",
+          fe.names = c(fe.names, paste0(startname, i , " age comp, 0/1-inflated logistic-normal: ",
             c("Binomial N parameter probablity of 0",
               "logistic-normal $\\sigma$")))
           fe.vals = c(fe.vals, exp(pars[i,1:2]))
-          fe.cis = rbind(fe.cis, ci(pars[i,1:2], pars_sd[i,1:2], type = "exp"))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci(pars[i,2], pars_sd[i,2], type = "exp"))
         }
       }
     }
