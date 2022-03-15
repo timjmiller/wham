@@ -40,8 +40,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
   if(mod$is_sdrep & class(mod$sdrep)[1] != "sdreport"){
     mod$sdrep <- TMB::sdreport(mod)
   }  
+  fslash <- function(fp) chartr('\\','/',fp)
+  dir.main = fslash(dir.main)
 
-  # allow overwrite of default ages.lab = 1:n.ages
+# allow overwrite of default ages.lab = 1:n.ages
   if(!is.null(plot.opts)){
     if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab
     if(!is.null(plot.opts[["font.family"]])) fontfam = plot.opts$font.family

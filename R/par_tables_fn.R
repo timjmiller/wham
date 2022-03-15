@@ -499,8 +499,16 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   wham.dir <- find.package("wham")
   pt = list.files(find.package("wham"), pattern = "par_tables.Rmd", recursive = T, full.names = T)[1]
   file.copy(from=pt, to=od, overwrite=TRUE)
+  #print(dir(od))
+  
   if(do.html) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(od, "wham_par_tables.html"), quiet = T)
-  if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
+  #if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
+  if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.
+    origdir = getwd()
+    setwd(od)
+    rmarkdown::render("par_tables.Rmd", output_format = "pdf_document", output_file = "wham_par_tables.pdf", quiet = T)
+    setwd(origdir)
+  }
 
   #delete par_tables.Rmd from od
   #file.remove(file.path(od,"par_tables.Rmd"))
