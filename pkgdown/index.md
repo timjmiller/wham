@@ -88,9 +88,10 @@ If you're having problems with dependencies not installing, you can try:
 ```r
 remove.packages("TMB")
 install.packages("TMB") #from CRAN, not github
-to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis")
+to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
 new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
+tinytex::install_tinytex()
 ```
 
 ## References

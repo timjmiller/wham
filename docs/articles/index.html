@@ -23,7 +23,7 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
      
     Vignettes
@@ -116,7 +116,11 @@
 
     <div class="section ">
       <h3>WHAM tutorial</h3>
-      <p class="section-desc"></p><p>These vignettes provide an introduction to fitting state-space assessment models using the <strong>WHAM</strong> package. They get progressively more complex, so we advise working through them in order unless you are only interested in a specific topic.<br><br> To run ALL examples (takes ~1 hour):<br><code># setwd("choose/where/to/save/output") # otherwise in working directory</code><br><code><a href="https://timjmiller.github.io/wham/">library(wham)</a></code><br><code>wham.dir &lt;- find.package("wham")</code><br><code>source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))</code><br></p>
+      <p class="section-desc"></p><p>These vignettes provide an introduction to fitting state-space
+assessment models using the <strong>WHAM</strong> package. They get
+progressively more complex, so we advise working through them in order
+unless you are only interested in a specific topic.<br><br> To run
+ALL examples (takes ~1 hour):<br><code># setwd("choose/where/to/save/output") # otherwise in working directory</code><br><code><a href="https://timjmiller.github.io/wham/">library(wham)</a></code><br><code>wham.dir &lt;- find.package("wham")</code><br><code>source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))</code><br></p>
 
       <dl><dt><a href="ex1_basics.html">Ex 1: The basics</a></dt>
         <dd>
@@ -150,7 +154,8 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer></div>

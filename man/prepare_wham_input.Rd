@@ -61,7 +61,7 @@ can still be used without the asap3 object.
 \details{
 \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
   \describe{
-    \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
+    \item{= 1}{SCAA (without NAA_re option specified) or Random walk (if NAA_re$sigma specified), i.e. predicted recruitment in year i = recruitment in year i-1}
     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
     \item{= 3}{Beverton-Holt}
     \item{= 4}{Ricker}
@@ -218,17 +218,17 @@ To fit a state-space model, specify \code{NAA_re}, a list with the following ent
     \item{$N1_pars}{if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
 			initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
 	 }
-	 \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
+	 \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
 			and \code{ecov} are properly specified.
 		 \describe{
-			 	 \item{1}{SCAA, estimating all recruitements as fixed effects}
+			 	 \item{1}{SCAA, estimating all recruitements as fixed effects or a random walk if NAA_re$sigma specified}
 			 	 \item{2}{estimating a mean recruitment with yearly recruitements as random effects}
 			 	 \item{3}{Beverton-Holt stock-recruitment with yearly recruitements as random effects}
 			 	 \item{4}{Ricker stock-recruitment with yearly recruitements as random effects}
 		 }
 	 }
 	 \item{$use_steepness}{T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model>2}.
-	 \item{$recruit_pars}{vector of initial parameters for recruitment model. Only used if recruit_model>1. If use_steepness=F, parameters are "alpha" and "beta"
+	 \item{$recruit_pars}{vector of initial parameters for recruitment model. If use_steepness=F, parameters are "alpha" and "beta"
 			otherwise they are steepness and R0.
 	 }
   }
@@ -258,16 +258,18 @@ If \code{NULL}, the multinomial is used because this was the only option in ASAP
 The age composition models available are:
   \describe{
     \item{\code{"multinomial"}}{Multinomial. This is the default because it was the only option in ASAP. 0 parameters.}
-    \item{\code{"dir-mult"}}{Dirichlet-multinomial. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008}). 1 parameter.}
-    \item{\code{"dirichlet"}}{See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}. 1 parameter.}
-    \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters.}
-    \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See \href{https://doi.org/10.1093/icesjms/fsl024}{Schnute and Haigh (2007)} and \href{https://doi.org/10.1016/j.fishres.2013.12.015}{Francis (2014)}}.
-    \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters.}
+    \item{\code{"dir-mult"}}{Dirichlet-multinomial. 1 parameter. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008})}
+    \item{\code{"dirichlet-pool0"}}{Dirichlet, pooling zero observations with adjacent age classes. 1. parameter. See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}}
+    \item{\code{"dirichlet-miss0"}}{}{Dirichlet, treating zero observations as missing. 1 parameter.}
     \item{\code{"logistic-normal-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
+    \item{\code{"logistic-normal-ar1-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
+    \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See \href{https://doi.org/10.1093/icesjms/fsl024}{Schnute and Haigh (2007)} and \href{https://doi.org/10.1016/j.fishres.2013.12.015}{Francis (2014)}}.
+    \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters. . No OSA residuals.}
+    \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.}
   }
-An age composition model needs to be specified for each fleet and index. If you would like
-all fleets and indices to use the same age composition likelihood, you can simply specify one
-of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
+One-step-ahead residuals will be calculated for all but the last two options when \code{do.osa=TRUE} (Nielsen et al. in prep.). An age composition model needs
+to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 
+can simply specify one of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
 age composition model to be used for all fleets and indices, you must specify a named list with the following entries:
   \describe{
     \item{$fleets}{A vector of the above strings with length = the number of fleets.}
@@ -306,7 +308,7 @@ The current options are:
     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
-    \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points.}
+    \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}

@@ -4,12 +4,6 @@
     <loc>https://timjmiller.github.io/wham/404.html</loc>
   </url>
   <url>
-    <loc>https://timjmiller.github.io/wham/CONTRIBUTING.html</loc>
-  </url>
-  <url>
-    <loc>https://timjmiller.github.io/wham/LICENSE-text.html</loc>
-  </url>
-  <url>
     <loc>https://timjmiller.github.io/wham/articles/ex10_om_mse.html</loc>
   </url>
   <url>
@@ -49,7 +43,13 @@
     <loc>https://timjmiller.github.io/wham/authors.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/CONTRIBUTING.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/index.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/LICENSE-text.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/news/index.html</loc>

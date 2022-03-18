@@ -11,7 +11,8 @@ fit_wham(
   do.retro = TRUE,
   n.peels = 7,
   do.osa = TRUE,
-  osa.opts = list(method = "oneStepGeneric", parallel = TRUE),
+  osa.opts = list(method = "cdf", parallel = TRUE),
+  do.post.samp = TRUE,
   model = NULL,
   do.check = FALSE,
   MakeADFun.silent = FALSE,
@@ -49,7 +50,9 @@ fit_wham(
 as \code{mod$osa$residual}.}
 
 \item{osa.opts}{list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
-Default: \code{osa.opts = list(method="oneStepGeneric", parallel=TRUE)}.}
+Default: \code{osa.opts = list(method="cdf", parallel=TRUE)}. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.}
+
+\item{do.post.samp}{T/F, obtain sample from posterior of random effects? Default = \code{TRUE}. NOT YET IMPLEMENTED.}
 
 \item{model}{(optional), a previously fit wham model.}
 
@@ -109,7 +112,7 @@ generic method, you can use \code{osa.opts=list(method="fullGaussian")}.
 \dontrun{
 data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
 mod = fit_wham(input4_SNEMAYT) # using default values
-mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="fullGaussian")) # faster settings for initial model fitting
+mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
 
 names(mod$rep) # list of derived quantities
 mod$rep$SSB # get SSB estimates (weight, not numbers)

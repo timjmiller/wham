@@ -41,7 +41,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
      
     Vignettes
@@ -137,7 +137,8 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Ex 3: Projecting / forecasting random effects</h1>
+      <h1 data-toc-skip>Ex 3: Projecting / forecasting random
+effects</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex3_projections.Rmd" class="external-link"><code>vignettes/ex3_projections.Rmd</code></a></small>
@@ -147,19 +148,39 @@
 
     
     
-<p>In this vignette we walk through an example using the <code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339" class="external-link">Miller et al. (2016)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>, and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>Here we assume you already have <code>wham</code> installed. If not, see the <a href="https://timjmiller.github.io/wham/">Introduction</a>. This is the 3rd <code>wham</code> example, which builds off model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
+<p>In this vignette we walk through an example using the
+<code>wham</code> (WHAM = Woods Hole Assessment Model) package to run a
+state-space age-structured stock assessment model. WHAM is a
+generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0339" class="external-link">Miller et al. (2016)</a>
+and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236" class="external-link">Xu et
+al. (2018)</a>, and in this example we apply WHAM to the same stock,
+Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
+<p>Here we assume you already have <code>wham</code> installed. If not,
+see the <a href="https://timjmiller.github.io/wham/">Introduction</a>.
+This is the 3rd <code>wham</code> example, which builds off model
+<code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+2</a>:</p>
 <ul>
-<li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
-<li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
-<li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
-<li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a “limiting” (carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 2</code>)</p></li>
+<li><p>full state-space model (numbers-at-age are random effects for all
+ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
+<li><p>logistic normal age compositions
+(<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
+<li><p>Beverton-Holt recruitment
+(<code>recruit_model = 3</code>)</p></li>
+<li><p>Cold Pool Index (CPI) fit as an AR1 process
+(<code>ecov$process_model = "ar1"</code>)</p></li>
+<li><p>CPI has a “limiting” (carrying capacity, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles
+and Beverton (1998)</a>) effect on recruitment
+(<code>ecov$where = "recruit"</code>,
+<code>ecov$how = 2</code>)</p></li>
 </ul>
-<p>In example 3, we demonstrate how to project/forecast WHAM models using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
+<p>In example 3, we demonstrate how to project/forecast WHAM models
+using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
 <ul>
-<li><p>fishing mortality / catch (use last F, use average F, use <span class="math inline">\(F_{SPR}\)</span>, use <span class="math inline">\(F_{MSY}\)</span>, specify F, specify catch) and the</p></li>
-<li><p>environmental covariate (continue ecov process, use last ecov, use average ecov, specify ecov).</p></li>
+<li><p>fishing mortality / catch (use last F, use average F, use <span class="math inline">\(F_{SPR}\)</span>, use <span class="math inline">\(F_{MSY}\)</span>, specify F, specify catch) and
+the</p></li>
+<li><p>environmental covariate (continue ecov process, use last ecov,
+use average ecov, specify ecov).</p></li>
 </ul>
 <div class="section level2">
 <h2 id="load-data">1. Load data<a class="anchor" aria-label="anchor" href="#load-data"></a>
@@ -167,7 +188,9 @@
 <p>Open R and load the <code>wham</code> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
-<p>For a clean, runnable <code>.R</code> script, look at <code>ex3_projections.R</code> in the <code>example_scripts</code> folder of the <code>wham</code> package install:</p>
+<p>For a clean, runnable <code>.R</code> script, look at
+<code>ex3_projections.R</code> in the <code>example_scripts</code>
+folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
@@ -181,12 +204,15 @@
 <span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code> to our analysis directory:</p>
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code>
+to our analysis directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"CPI.csv"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>Confirm you are in the correct directory and it has the required data files:</p>
+<p>Confirm you are in the correct directory and it has the required data
+files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
@@ -194,23 +220,33 @@
 <span class="co">#&gt;  [7] "ex2_SNEMAYT.dat"        "ex2_test_results.rds"   "ex4_test_results.rds"  </span>
 <span class="co">#&gt; [10] "ex5_summerflounder.dat" "ex5_test_results.rds"   "ex6_test_results.rds"  </span>
 <span class="co">#&gt; [13] "ex7_SNEMAYT.dat"        "GSI.csv"</span></code></pre></div>
-<p>Read the ASAP3 .dat file into R and convert to input list for wham:</p>
+<p>Read the ASAP3 .dat file into R and convert to input list for
+wham:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex2_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
-<p>Load the environmental covariate (Cold Pool Index, CPI) data into R:</p>
+<p>Load the environmental covariate (Cold Pool Index, CPI) data into
+R:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">env.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"CPI.csv"</span>, header<span class="op">=</span><span class="cn">T</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="specify-model">2. Specify model<a class="anchor" aria-label="anchor" href="#specify-model"></a>
 </h2>
-<p>Setup model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example 2</a>:</p>
+<p>Setup model <code>m5</code> from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+2</a>:</p>
 <ul>
-<li><p>full state-space model (numbers-at-age are random effects for all ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
-<li><p>logistic normal age compositions (<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
-<li><p>Beverton-Holt recruitment (<code>recruit_model = 3</code>)</p></li>
-<li><p>Cold Pool Index (CPI) fit as an AR1 process (<code>ecov$process_model = "ar1"</code>)</p></li>
-<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles and Beverton (1998)</a>) effect on recruitment (<code>ecov$where = "recruit"</code>, <code>ecov$how = 1</code>)</p></li>
+<li><p>full state-space model (numbers-at-age are random effects for all
+ages, <code>NAA_re = list(sigma='rec+1',cor='iid')</code>)</p></li>
+<li><p>logistic normal age compositions
+(<code>age_comp = "logistic-normal-pool0"</code>)</p></li>
+<li><p>Beverton-Holt recruitment
+(<code>recruit_model = 3</code>)</p></li>
+<li><p>Cold Pool Index (CPI) fit as an AR1 process
+(<code>ecov$process_model = "ar1"</code>)</p></li>
+<li><p>CPI has a “controlling” (density-independent mortality, <a href="https://www.sciencedirect.com/science/article/pii/S1385110197000221" class="external-link">Iles
+and Beverton (1998)</a>) effect on recruitment
+(<code>ecov$where = "recruit"</code>,
+<code>ecov$how = 1</code>)</p></li>
 </ul>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
@@ -240,19 +276,26 @@
 </h2>
 <p>You have two options for projecting a WHAM model:</p>
 <ol style="list-style-type: decimal">
-<li>Fit model without projections and then add projections afterward</li>
+<li>Fit model without projections and then add projections
+afterward</li>
 </ol>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># don't run</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span> <span class="co"># default do.proj=FALSE</span>
 <span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></code></pre></div>
 <ol start="2" style="list-style-type: decimal">
-<li>Add projections with initial model fit (<code>do.proj = TRUE</code>)</li>
+<li>Add projections with initial model fit
+(<code>do.proj = TRUE</code>)</li>
 </ol>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># don't run</span>
 <span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.proj <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>The two code blocks above are equivalent; when <code>do.proj = TRUE</code>, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> fits the model without projections and then calls <code><a href="../reference/project_wham.html">project_wham()</a></code> to add them. In this example we choose option #1 because we are going to add several different projections to the same model, <code>mod</code>. We will save each projected model in a list, <code>mod_proj</code>.</p>
+<p>The two code blocks above are equivalent; when
+<code>do.proj = TRUE</code>, <code><a href="../reference/fit_wham.html">fit_wham()</a></code> fits the model
+without projections and then calls <code><a href="../reference/project_wham.html">project_wham()</a></code> to add
+them. In this example we choose option #1 because we are going to add
+several different projections to the same model, <code>mod</code>. We
+will save each projected model in a list, <code>mod_proj</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># run</span>
 <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span>
@@ -261,7 +304,14 @@
 <div class="section level2">
 <h2 id="add-projections-to-fit-model">4. Add projections to fit model<a class="anchor" aria-label="anchor" href="#add-projections-to-fit-model"></a>
 </h2>
-<p>Projection options are specifed using the <code>proj.opts</code> input to <code><a href="../reference/project_wham.html">project_wham()</a></code>. The default settings are to project 3 years (<code>n.yrs = 3</code>), use average maturity-, weight-, and natural mortality-at-age from last 5 model years to calculate reference points (<code>avg.yrs</code>), use fishing mortality in the last model year (<code>use.last.F = TRUE</code>), and continue the ecov process model (<code>cont.ecov = TRUE</code>). These options are also described in the <code><a href="../reference/project_wham.html">project_wham()</a></code> help page.</p>
+<p>Projection options are specifed using the <code>proj.opts</code>
+input to <code><a href="../reference/project_wham.html">project_wham()</a></code>. The default settings are to
+project 3 years (<code>n.yrs = 3</code>), use average maturity-,
+weight-, and natural mortality-at-age from last 5 model years to
+calculate reference points (<code>avg.yrs</code>), use fishing mortality
+in the last model year (<code>use.last.F = TRUE</code>), and continue
+the ecov process model (<code>cont.ecov = TRUE</code>). These options
+are also described in the <code><a href="../reference/project_wham.html">project_wham()</a></code> help page.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"> <span class="co"># save projected models in a list</span>
 <span class="va">mod_proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
@@ -272,14 +322,31 @@
 
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[1]] &lt;- project_wham(mod)</span></code></pre></div>
-<p>WHAM implements four options for handling the environmental covariate(s) in the projections. Exactly one of these must be specified in <code>proj.opts</code> if <code>ecov</code> is in the model:</p>
+<p>WHAM implements four options for handling the environmental
+covariate(s) in the projections. Exactly one of these must be specified
+in <code>proj.opts</code> if <code>ecov</code> is in the model:</p>
 <ul>
-<li><p>(Default) Continue the ecov process model (e.g. random walk, AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov process in the projection years (i.e. continue the random walk / AR1 process).</p></li>
-<li><p>Use last year ecov. Set <code>use.last.ecov = TRUE</code>. WHAM will use ecov value from the terminal year of the population model for projections.</p></li>
-<li><p>Use average ecov. Provide <code>avg.yrs.ecov</code>, a vector specifying which years to average over the environmental covariate(s) for projections.</p></li>
-<li><p>Specify ecov. Provide <code>proj.ecov</code>, a matrix of user-specified environmental covariate(s) to use for projections. Dimensions must be the number of projection years (<code>proj.opts$n.yrs</code>) x the number of ecovs (<code>ncols(ecov$mean)</code>).</p></li>
+<li><p>(Default) Continue the ecov process model (e.g. random walk,
+AR1). Set <code>cont.ecov = TRUE</code>. WHAM will estimate the ecov
+process in the projection years (i.e. continue the random walk / AR1
+process).</p></li>
+<li><p>Use last year ecov. Set <code>use.last.ecov = TRUE</code>. WHAM
+will use ecov value from the terminal year of the population model for
+projections.</p></li>
+<li><p>Use average ecov. Provide <code>avg.yrs.ecov</code>, a vector
+specifying which years to average over the environmental covariate(s)
+for projections.</p></li>
+<li><p>Specify ecov. Provide <code>proj.ecov</code>, a matrix of
+user-specified environmental covariate(s) to use for projections.
+Dimensions must be the number of projection years
+(<code>proj.opts$n.yrs</code>) x the number of ecovs
+(<code>ncols(ecov$mean)</code>).</p></li>
 </ul>
-<p>Note that for all options, <strong>if the original model fit the ecov in years beyond the population model, WHAM will use these already-fit ecov values for the projections</strong>. If the ecov model extended at least <code>proj.opts$n.yrs</code> years beyond the population model, then none of the above need be specified.</p>
+<p>Note that for all options, <strong>if the original model fit the ecov
+in years beyond the population model, WHAM will use these already-fit
+ecov values for the projections</strong>. If the ecov model extended at
+least <code>proj.opts$n.yrs</code> years beyond the population model,
+then none of the above need be specified.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 5 years, use average ecov from 1992-1996</span>
 <span class="va">mod_proj</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
@@ -318,14 +385,28 @@
               save.sdrep<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="co"># equivalent</span>
 <span class="co"># mod_proj[[5]] &lt;- project_wham(mod, proj.opts=list(n.yrs=5, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)))</span></code></pre></div>
-<p>WHAM implements six options for handling fishing mortality in the projections. Exactly one of these must be specified in <code>proj.opts</code>:</p>
+<p>WHAM implements six options for handling fishing mortality in the
+projections. Exactly one of these must be specified in
+<code>proj.opts</code>:</p>
 <ul>
-<li><p>(Default) Use last year F. Set <code>use.last.F = TRUE</code>. WHAM will use F in the terminal model year for projections.</p></li>
-<li><p>Use average F. Set <code>use.avg.F = TRUE</code>. WHAM will use F averaged over <code>proj.opts$avg.yrs</code> for projections (as is done for M-, maturity-, and weight-at-age).</p></li>
-<li><p>Use F at X% SPR. Set <code>use.FXSPR = TRUE</code>. WHAM will calculate and apply F at X% SPR, where X was set by <code>input$data$percentSPR</code> (default = 40%). There is also a percentFXSPR</p></li>
-<li><p>Specify F. Provide <code>proj.F</code>, an F vector with length = <code>proj.opts$n.yrs</code>.</p></li>
-<li><p>Specify catch. Provide <code>proj.catch</code>, a vector of aggregate catch with length = <code>proj.opts$n.yrs</code>. WHAM will calculate F across fleets to apply the specified catch.</p></li>
-<li><p>Use F that provides MSY. Set <code>use.FMSY = TRUE</code>. WHAM will calculate and apply F at MSY. There is a check to make sure that a stock-recruit model is assumed and, if not, F at X% SPR is used instead.</p></li>
+<li><p>(Default) Use last year F. Set <code>use.last.F = TRUE</code>.
+WHAM will use F in the terminal model year for projections.</p></li>
+<li><p>Use average F. Set <code>use.avg.F = TRUE</code>. WHAM will use F
+averaged over <code>proj.opts$avg.yrs</code> for projections (as is done
+for M-, maturity-, and weight-at-age).</p></li>
+<li><p>Use F at X% SPR. Set <code>use.FXSPR = TRUE</code>. WHAM will
+calculate and apply F at X% SPR, where X was set by
+<code>input$data$percentSPR</code> (default = 40%). There is also a
+percentFXSPR</p></li>
+<li><p>Specify F. Provide <code>proj.F</code>, an F vector with length =
+<code>proj.opts$n.yrs</code>.</p></li>
+<li><p>Specify catch. Provide <code>proj.catch</code>, a vector of
+aggregate catch with length = <code>proj.opts$n.yrs</code>. WHAM will
+calculate F across fleets to apply the specified catch.</p></li>
+<li><p>Use F that provides MSY. Set <code>use.FMSY = TRUE</code>. WHAM
+will calculate and apply F at MSY. There is a check to make sure that a
+stock-recruit model is assumed and, if not, F at X% SPR is used
+instead.</p></li>
 </ul>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 5 years, specify catch</span>
@@ -374,7 +455,11 @@
 <div class="section level2">
 <h2 id="compare-projections">5. Compare projections<a class="anchor" aria-label="anchor" href="#compare-projections"></a>
 </h2>
-<p>The models with projections are evaluated to obtain optimized random effects but they do not need to be refitted with projections added because the observations and marginal likelihood do not change. However, we can confirm that the NLL is the same for all projected models (within some tolerance).</p>
+<p>The models with projections are evaluated to obtain optimized random
+effects but they do not need to be refitted with projections added
+because the observations and marginal likelihood do not change. However,
+we can confirm that the NLL is the same for all projected models (within
+some tolerance).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># original model NLL</span></code></pre></div>
 <pre><code><span class="co">#&gt; [1] -829.4137</span>
@@ -389,7 +474,9 @@
 <code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
   <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<p>To more easily compare the same plots for each projection, we can copy the plots into new folders organized by plot type instead of model.</p>
+<p>To more easily compare the same plots for each projection, we can
+copy the plots into new folders organized by plot type instead of
+model.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ecov_1"</span>,<span class="st">"F_byfleet"</span>,<span class="st">"SSB_at_age"</span>,<span class="st">"SSB_F_trend"</span>,<span class="st">"SSB_Rec_time"</span>,<span class="st">"Kobe_status"</span><span class="op">)</span>
 <span class="va">dirs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="va">plots</span><span class="op">)</span>
@@ -409,24 +496,25 @@
 <div class="section level3">
 <h3 id="projected-cpi">Projected CPI<a class="anchor" aria-label="anchor" href="#projected-cpi"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Ecov_1_proj_1.png" style="width:30.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Ecov_1_proj_2.png" style="width:30.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Ecov_1_proj_3.png" style="width:30.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Ecov_1_proj_4.png" style="width:30.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Ecov_1_proj_5.png" style="width:30.0%" alt="5 years, specify low CPI ~ -1.5."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_1.png" style="width:30.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_2.png" style="width:30.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_3.png" style="width:30.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_4.png" style="width:30.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Ecov_1_proj_5.png" style="width:30.0%" alt="5 years, specify low CPI ~ -1.5."></p>
 </div>
 <div class="section level3">
 <h3 id="projected-f-catch">Projected F / catch<a class="anchor" aria-label="anchor" href="#projected-f-catch"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/SSB_F_trend_proj_6.png" style="width:30.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/SSB_F_trend_proj_7.png" style="width:30.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/SSB_F_trend_proj_8.png" style="width:30.0%" alt="5 years, use FXSPR."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/SSB_F_trend_proj_9.png" style="width:30.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/SSB_F_trend_proj_10.png" style="width:30.0%" alt="10 years, use avg F 1992-1996."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_6.png" style="width:30.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_7.png" style="width:30.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_8.png" style="width:30.0%" alt="5 years, use FXSPR."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_9.png" style="width:30.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/SSB_F_trend_proj_10.png" style="width:30.0%" alt="10 years, use avg F 1992-1996."></p>
 </div>
 <div class="section level3">
 <h3 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
 </h3>
-<p>In the stock status (Kobe) plots of the projected models, the final model year is in bold and the final projected year is not bold.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_1.png" style="width:45.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_2.png" style="width:45.0%" alt="Stock status, projection 2."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_3.png" style="width:45.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_4.png" style="width:45.0%" alt="Stock status, projection 4."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_5.png" style="width:45.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_6.png" style="width:45.0%" alt="Stock status, projection 6."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_7.png" style="width:45.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_8.png" style="width:45.0%" alt="Stock status, projection 8."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_9.png" style="width:45.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/articles/ex3_plots/Kobe_status_proj_10.png" style="width:45.0%" alt="Stock status, projection 10."></p>
+<p>In the stock status (Kobe) plots of the projected models, the final
+model year is in bold and the final projected year is not bold.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_1.png" style="width:45.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_2.png" style="width:45.0%" alt="Stock status, projection 2."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_3.png" style="width:45.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_4.png" style="width:45.0%" alt="Stock status, projection 4."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_5.png" style="width:45.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_6.png" style="width:45.0%" alt="Stock status, projection 6."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_7.png" style="width:45.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_8.png" style="width:45.0%" alt="Stock status, projection 8."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_9.png" style="width:45.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/Kobe_status_proj_10.png" style="width:45.0%" alt="Stock status, projection 10."></p>
 </div>
 </div>
   </div>
@@ -448,7 +536,8 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer>

@@ -28,7 +28,7 @@ can still be used without the asap3 object."><!-- mathjax --><script src="https:
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
      
     Vignettes
@@ -196,7 +196,7 @@ can still be used without the asap3 object.</p>
     <div id="details">
     <h2>Details</h2>
     <p><code>recruit_model</code> specifies the stock-recruit model. See <code>wham.cpp</code> for implementation.</p><dl><dt>= 1</dt>
-<dd><p>Random walk, i.e. predicted recruitment in year i = recruitment in year i-1</p></dd>
+<dd><p>SCAA (without NAA_re option specified) or Random walk (if NAA_re$sigma specified), i.e. predicted recruitment in year i = recruitment in year i-1</p></dd>
 
     <dt>= 2</dt>
 <dd><p>(default) Random about mean, i.e. steepness = 1</p></dd>
@@ -452,9 +452,9 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
 			initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.</p></dd>
 
 	 <dt>$recruit_model</dt>
-<dd><p>Integer determining how to model recruitment. Overrides <code>recruit_model</code>. Must make sure <code>NAA_re$sigma</code>, <code>NAA_re$cor</code>
+<dd><p>Integer determining how to model recruitment. Overrides <code>recruit_model</code> argument to <code>prepare_wham_input</code>. Must make sure <code>NAA_re$sigma</code>, <code>NAA_re$cor</code>
 			and <code>ecov</code> are properly specified.</p><dl><dt>1</dt>
-<dd><p>SCAA, estimating all recruitements as fixed effects</p></dd>
+<dd><p>SCAA, estimating all recruitements as fixed effects or a random walk if NAA_re$sigma specified</p></dd>
 
 			 	 <dt>2</dt>
 <dd><p>estimating a mean recruitment with yearly recruitements as random effects</p></dd>
@@ -472,7 +472,7 @@ To fit a state-space model, specify <code>NAA_re</code>, a list with the followi
 <dd><p>T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model&gt;2</p></dd>
 .
 	 <dt>$recruit_pars</dt>
-<dd><p>vector of initial parameters for recruitment model. Only used if recruit_model&gt;1. If use_steepness=F, parameters are "alpha" and "beta"
+<dd><p>vector of initial parameters for recruitment model. If use_steepness=F, parameters are "alpha" and "beta"
 			otherwise they are steepness and R0.</p></dd>
 
   
@@ -513,27 +513,33 @@ The age composition models available are:</p><dl><dt><code>"multinomial"</code><
 <dd><p>Multinomial. This is the default because it was the only option in ASAP. 0 parameters.</p></dd>
 
     <dt><code>"dir-mult"</code></dt>
-<dd><p>Dirichlet-multinomial. Effective sample size is estimated by the model (<a href="https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf" class="external-link">Candy 2008</a>). 1 parameter.</p></dd>
+<dd><p>Dirichlet-multinomial. 1 parameter. Effective sample size is estimated by the model (<a href="https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf" class="external-link">Candy 2008</a>)</p></dd>
 
-    <dt><code>"dirichlet"</code></dt>
-<dd><p>See <a href="https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093" class="external-link">Francis 2014</a> and <a href="https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532" class="external-link">Albertsen et al. 2016</a>. 1 parameter.</p></dd>
+    <dt><code>"dirichlet-pool0"</code></dt>
+<dd><p>Dirichlet, pooling zero observations with adjacent age classes. 1. parameter. See <a href="https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093" class="external-link">Francis 2014</a> and <a href="https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532" class="external-link">Albertsen et al. 2016</a></p></dd>
 
-    <dt><code>"logistic-normal-01-infl"</code></dt>
-<dd><p>Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in <a href="https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628" class="external-link">Ospina and Ferrari (2012)</a>. 3 parameters.</p></dd>
+    <dt><code>"dirichlet-miss0"</code></dt>
+<dd></dd>
+Dirichlet, treating zero observations as missing. 1 parameter.
+    <dt><code>"logistic-normal-miss0"</code></dt>
+<dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
+
+    <dt><code>"logistic-normal-ar1-miss0"</code></dt>
+<dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
 
     <dt><code>"logistic-normal-pool0"</code></dt>
 <dd><p>Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See <a href="https://doi.org/10.1093/icesjms/fsl024" class="external-link">Schnute and Haigh (2007)</a> and <a href="https://doi.org/10.1016/j.fishres.2013.12.015" class="external-link">Francis (2014)</a></p></dd>
 .
-    <dt><code>"logistic-normal-01-infl-2par"</code></dt>
-<dd><p>Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters.</p></dd>
+    <dt><code>"logistic-normal-01-infl"</code></dt>
+<dd><p>Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in <a href="https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628" class="external-link">Ospina and Ferrari (2012)</a>. 3 parameters. . No OSA residuals.</p></dd>
 
-    <dt><code>"logistic-normal-miss0"</code></dt>
-<dd><p>Logistic normal, treating zero observations as missing. 1 parameter.</p></dd>
+    <dt><code>"logistic-normal-01-infl-2par"</code></dt>
+<dd><p>Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.</p></dd>
 
   
-</dl><p>An age composition model needs to be specified for each fleet and index. If you would like
-all fleets and indices to use the same age composition likelihood, you can simply specify one
-of the strings above, i.e. <code>age_comp = "logistic-normal-miss0"</code>. If you do not want the same
+</dl><p>One-step-ahead residuals will be calculated for all but the last two options when <code>do.osa=TRUE</code> (Nielsen et al. in prep.). An age composition model needs
+to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 
+can simply specify one of the strings above, i.e. <code>age_comp = "logistic-normal-miss0"</code>. If you do not want the same
 age composition model to be used for all fleets and indices, you must specify a named list with the following entries:</p><dl><dt>$fleets</dt>
 <dd><p>A vector of the above strings with length = the number of fleets.</p></dd>
 
@@ -628,7 +634,7 @@ The current options are:</p><dl><dt>$ages</dt>
 <dd><p>(0-100) percentage of Fmsy to use in projections.</p></dd>
 
     <dt>$XSPR_R_avg_yrs</dt>
-<dd><p>which years to average recruitments for calculating SPR-based SSB reference points.</p></dd>
+<dd><p>which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)</p></dd>
 
     <dt>$XSPR_R_opt</dt>
 <dd><p>1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).</p></dd>
@@ -687,7 +693,8 @@ must be consistent with <code>basic_info</code>. For example the dimensions for 
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer></div>

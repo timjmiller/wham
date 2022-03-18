@@ -41,7 +41,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
      
     Vignettes
@@ -150,12 +150,17 @@
 <div class="section level2">
 <h2 id="background">1. Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h2>
-<p>This is the 10th WHAM example. We assume you already have <code>wham</code> installed and are relatively familiar with the package. If not, read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and <a href="https://timjmiller.github.io/wham/articles/">Tutorial</a>.</p>
+<p>This is the 10th WHAM example. We assume you already have
+<code>wham</code> installed and are relatively familiar with the
+package. If not, read the <a href="https://timjmiller.github.io/wham/">Introduction</a> and <a href="https://timjmiller.github.io/wham/articles/">Tutorial</a>.</p>
 <p>In this vignette we show how to:</p>
 <ul>
-<li>Make a default wham input file <strong>without an ASAP3 dat file</strong>.</li>
+<li>Make a default wham input file <strong>without an ASAP3 dat
+file</strong>.</li>
 <li>Make an operating model, simulate data, and fit models</li>
-<li>Perform a simple management strategy evaluation (MSE) using an operating model with Beverton-Holt stock recruitment and a SCAA estimating model</li>
+<li>Perform a simple management strategy evaluation (MSE) using an
+operating model with Beverton-Holt stock recruitment and a SCAA
+estimating model</li>
 <li>Make some plots</li>
 </ul>
 </div>
@@ -178,7 +183,9 @@
 <div class="section level2">
 <h2 id="a-simple-operating-model-and-two-estimation-models">3. A simple operating model and two estimation models<a class="anchor" aria-label="anchor" href="#a-simple-operating-model-and-two-estimation-models"></a>
 </h2>
-<p>Make a <code>basic_info</code> list of input components defining a simple default stock. We’ll then pass this to <code>prepare_wham_input</code> and <code>fit_wham</code>.</p>
+<p>Make a <code>basic_info</code> list of input components defining a
+simple default stock. We’ll then pass this to
+<code>prepare_wham_input</code> and <code>fit_wham</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">make_digifish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">years</span> <span class="op">=</span> <span class="fl">1975</span><span class="op">:</span><span class="fl">2014</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">digifish</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
@@ -213,40 +220,48 @@
     <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="va">digifish</span> <span class="op">=</span> <span class="fu">make_digifish</span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p>Now define other components needed by <code>prepare_wham_input</code> (selectivity and M).</p>
+<p>Now define other components needed by <code>prepare_wham_input</code>
+(selectivity and M).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">selectivity</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,
     initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="va">digifish</span><span class="op">$</span><span class="va">n_fleets</span> <span class="op">+</span> <span class="va">digifish</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span> <span class="co">#fleet, index</span>
 
 <span class="va">M</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>initial_means <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Here we specify that recruitment deviations are independent random effects, with no stock-recruit relationship.</p>
+<p>Here we specify that recruitment deviations are independent random
+effects, with no stock-recruit relationship.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>N1_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="va">M</span><span class="op">$</span><span class="va">initial_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">sigma</span> <span class="op">=</span> <span class="st">"rec"</span> <span class="co">#random about mean</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">use_steepness</span> <span class="op">=</span> <span class="fl">0</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co">#random effects with a constant mean</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">recruit_pars</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
-<p>Now we can make the input list with <code>prepare_wham_input</code></p>
+<p>Now we can make the input list with
+<code>prepare_wham_input</code></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">digifish</span>, selectivity <span class="op">=</span> <span class="va">selectivity</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re</span>, M <span class="op">=</span> <span class="va">M</span><span class="op">)</span></code></pre></div>
-<p>We can then define an operating model (OM) by simulating data (and recruitment) from this input:</p>
+<p>We can then define an operating model (OM) by simulating data (and
+recruitment) from this input:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="co">#simulate data from operating model</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span>
 <span class="va">newdata</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>Now put the simulated data in an input file with all the same configuration as the operating model.</p>
+<p>Now put the simulated data in an input file with all the same
+configuration as the operating model.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">temp</span> <span class="op">=</span> <span class="va">input</span>
 <span class="va">temp</span><span class="op">$</span><span class="va">data</span> <span class="op">=</span> <span class="va">newdata</span></code></pre></div>
-<p>Fit an estimation model that is the same as the operating model (self-test).</p>
+<p>Fit an estimation model that is the same as the operating model
+(self-test).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">temp</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, retro.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">fit</span><span class="op">$</span><span class="va">mohns_rho</span> <span class="op">=</span> <span class="fu"><a href="../reference/mohns_rho.html">mohns_rho</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/SSB_at_age_proportion.png" style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/FSPR_relative.png" style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/Kobe_status.png" style="width:30.0%"></p>
-<p>Set up a SCAA estimation model (recruitment as fixed effects). The only thing that is different is how the numbers at age are configured.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/SSB_at_age_proportion.png" style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/FSPR_relative.png" style="width:30.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/Kobe_status.png" style="width:30.0%"></p>
+<p>Set up a SCAA estimation model (recruitment as fixed effects). The
+only thing that is different is how the numbers at age are
+configured.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">scaa_info</span> <span class="op">=</span> <span class="va">digifish</span>
 <span class="va">data_names</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agg_catch"</span>, <span class="st">"catch_paa"</span>, <span class="st">"agg_indices"</span>,<span class="st">"index_paa"</span><span class="op">)</span>
@@ -264,9 +279,11 @@
 <span class="va">scaa_fit</span><span class="op">$</span><span class="va">mohns_rho</span> <span class="op">=</span> <span class="fu"><a href="../reference/mohns_rho.html">mohns_rho</a></span><span class="op">(</span><span class="va">scaa_fit</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="a-2nd-operating-model-with-beverton-holt-stock-recruit-relationship">4. A 2nd operating model with Beverton-Holt stock recruit relationship<a class="anchor" aria-label="anchor" href="#a-2nd-operating-model-with-beverton-holt-stock-recruit-relationship"></a>
+<h2 id="a-2nd-operating-model-with-beverton-holt-stock-recruit-relationship">4. A 2nd operating model with Beverton-Holt stock recruit
+relationship<a class="anchor" aria-label="anchor" href="#a-2nd-operating-model-with-beverton-holt-stock-recruit-relationship"></a>
 </h2>
-<p>Now make another operating model, <code>bh_om</code>, this time assuming a Beverton-Holt stock recruit relationship.</p>
+<p>Now make another operating model, <code>bh_om</code>, this time
+assuming a Beverton-Holt stock recruit relationship.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NAA_re</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>N1_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">digifish</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="va">M</span><span class="op">$</span><span class="va">initial_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
 <span class="va">NAA_re</span><span class="op">$</span><span class="va">sigma</span> <span class="op">=</span> <span class="st">"rec"</span> <span class="co">#random about mean</span>
@@ -285,11 +302,14 @@
 <span class="va">sim_pop</span> <span class="op">=</span> <span class="va">bh_om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">temp</span> <span class="op">=</span> <span class="va">bh_input</span>
 <span class="va">temp</span><span class="op">$</span><span class="va">data</span> <span class="op">=</span> <span class="va">sim_pop</span></code></pre></div>
-<p>Fit an estimation model, <code>bh_fit</code>, that matches the operating model.</p>
+<p>Fit an estimation model, <code>bh_fit</code>, that matches the
+operating model.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">bh_fit</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">temp</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, retro.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">bh_fit</span><span class="op">$</span><span class="va">mohns_rho</span> <span class="op">=</span> <span class="fu"><a href="../reference/mohns_rho.html">mohns_rho</a></span><span class="op">(</span><span class="va">bh_fit</span><span class="op">)</span></code></pre></div>
-<p>Set up and fit a second estimation model with recruitment as fixed effects, i.e. with no stock recruit relationship, recruitment in each year is a separate parameter.</p>
+<p>Set up and fit a second estimation model with recruitment as fixed
+effects, i.e. with no stock recruit relationship, recruitment in each
+year is a separate parameter.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">scaa_info</span> <span class="op">=</span> <span class="va">digifish</span>
 <span class="va">data_names</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agg_catch"</span>, <span class="st">"catch_paa"</span>, <span class="st">"agg_indices"</span>,<span class="st">"index_paa"</span><span class="op">)</span>
@@ -309,38 +329,54 @@
 <div class="section level2">
 <h2 id="closed-loop-simulation-study">5. Closed-loop simulation study<a class="anchor" aria-label="anchor" href="#closed-loop-simulation-study"></a>
 </h2>
-<p>Now we do a closed-loop simulation using the beverton-holt operating model. Catch advice is set at <span class="math inline">\(F_{40\%SPR}\)</span> during the projection years.</p>
-<p>First we use the <code>prepare_projection</code> function to set up an input that includes projection years. We set catch in the projection years to be nearly 0.</p>
+<p>Now we do a closed-loop simulation using the beverton-holt operating
+model. Catch advice is set at <span class="math inline">\(F_{40\%SPR}\)</span> during the projection
+years.</p>
+<p>First we use the <code>prepare_projection</code> function to set up
+an input that includes projection years. We set catch in the projection
+years to be nearly 0.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om_input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_projection.html">prepare_projection</a></span><span class="op">(</span><span class="va">bh_om</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">39</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,
                 use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.catch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">39</span><span class="op">)</span>,
                 cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>Then we use <code>fit_wham</code> with <code>do.fit = FALSE</code> to set up a TMB model that can be used to simulate a population time series and associated catch and index observations with the stochastic assumptions made in the <code>NAA_re</code> options that generated <code>bh_om</code>.</p>
+<p>Then we use <code>fit_wham</code> with <code>do.fit = FALSE</code> to
+set up a TMB model that can be used to simulate a population time series
+and associated catch and index observations with the stochastic
+assumptions made in the <code>NAA_re</code> options that generated
+<code>bh_om</code>.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">om_input</span>, n.newton<span class="op">=</span><span class="va">n.newton</span>, do.sdrep<span class="op">=</span><span class="cn">F</span>, do.retro<span class="op">=</span><span class="cn">F</span>, do.osa<span class="op">=</span><span class="cn">F</span>, do.check<span class="op">=</span><span class="cn">F</span>, do.proj<span class="op">=</span><span class="cn">F</span>,
   MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, save.sdrep<span class="op">=</span><span class="cn">FALSE</span>, do.fit <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></code></pre></div>
-<p>Now generate a time series of the population. A key component is to keep the same seed for each simulation of the MSE.</p>
+<p>Now generate a time series of the population. A key component is to
+keep the same seed for each simulation of the MSE.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span>
 <span class="va">pop_om_base_period</span> <span class="op">=</span> <span class="va">temp</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>Replace the realized abundance parameters in the operating model input, then reset the operating model.</p>
+<p>Replace the realized abundance parameters in the operating model
+input, then reset the operating model.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">log_NAA</span> <span class="op">=</span> <span class="va">pop_om_base_period</span><span class="op">$</span><span class="va">log_NAA</span>
 
 <span class="co"># reset the om</span>
 <span class="va">om</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">om_input</span>, n.newton<span class="op">=</span><span class="va">n.newton</span>, do.sdrep<span class="op">=</span><span class="cn">F</span>, do.retro<span class="op">=</span><span class="cn">F</span>, do.osa<span class="op">=</span><span class="cn">F</span>, do.check<span class="op">=</span><span class="cn">F</span>, do.proj<span class="op">=</span><span class="cn">F</span>,
   MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, save.sdrep<span class="op">=</span><span class="cn">FALSE</span>, do.fit <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></code></pre></div>
-<p>The <code>"temp"</code> version of the operating model (red) just has the initial recruitment value, exp(10). The <code>"om"</code> has the full recruitment time series (black), generated using the specified stock-recruit relationship and nearly 0 catch.</p>
+<p>The <code>"temp"</code> version of the operating model (red) just has
+the initial recruitment value, exp(10). The <code>"om"</code> has the
+full recruitment time series (black), generated using the specified
+stock-recruit relationship and nearly 0 catch.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">om</span><span class="op">$</span><span class="va">years_full</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">om</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'l'</span>, xlab <span class="op">=</span> <span class="st">"Year"</span>, ylab <span class="op">=</span> <span class="st">"log(Recruits (1000s))"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">om</span><span class="op">$</span><span class="va">years_full</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">temp</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/om_rec.png" style="width:80.0%"></p>
-<p>Define how often an assessment (SCAA) and catch advice will be made (3 years)</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_rec.png" style="width:80.0%"></p>
+<p>Define how often an assessment (SCAA) and catch advice will be made
+(3 years)</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">assess.interval</span> <span class="op">=</span> <span class="fl">3</span> <span class="co">#years.step = integer()</span>
 <span class="co"># yearly catch advice</span>
 <span class="va">advice</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">39</span><span class="op">)</span></code></pre></div>
-<p>The first advice model will be completed at the end of the base period. The SCAA model defined as above will be updated every 3 years (<code>assess.interval</code>) of the projection/evaluation period.</p>
+<p>The first advice model will be completed at the end of the base
+period. The SCAA model defined as above will be updated every 3 years
+(<code>assess.interval</code>) of the projection/evaluation period.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">scaa_step</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">scaa_input</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span>, retro.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
@@ -354,7 +390,11 @@
 
 <span class="co"># make catcj advice for the first 3 years of the evaluation period</span>
 <span class="va">advice</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">assess.interval</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">scaa_step_proj</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">pred_catch</span><span class="op">[</span><span class="va">scaa_step_proj</span><span class="op">$</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_years_model</span> <span class="op">+</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span>, <span class="va">assess.interval</span><span class="op">)</span></code></pre></div>
-<p>The feedback loop will use the estimation model catch advice to fish at <span class="math inline">\(F_{40}\)</span> for the 3-year projection period. This will reduce the stock in the OM, which reduces the realized recruitment. This plot will show the (lower) OM recruitment time series updated at the assessment interval.</p>
+<p>The feedback loop will use the estimation model catch advice to fish
+at <span class="math inline">\(F_{40}\)</span> for the 3-year projection
+period. This will reduce the stock in the OM, which reduces the realized
+recruitment. This plot will show the (lower) OM recruitment time series
+updated at the assessment interval.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">y</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">39</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
     <span class="co"># set up projection of operating model</span>
@@ -384,8 +424,9 @@
 
     <span class="va">advice</span><span class="op">[</span><span class="va">y</span> <span class="op">+</span> <span class="fl">1</span><span class="op">:</span><span class="va">assess.interval</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">scaa_step_proj</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">pred_catch</span><span class="op">[</span><span class="va">scaa_step_proj</span><span class="op">$</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_years_model</span> <span class="op">+</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span>, <span class="va">assess.interval</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/om_updated_rec.png" style="width:80.0%"></p>
-<p>Now compare the original OM simulated pop with <span class="math inline">\(F\)</span> = 0 (purple) to the estimation model re-fit at 3-year time intervals providing catch advice equal to <span class="math inline">\(F_{40}\)</span> (teal).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_updated_rec.png" style="width:80.0%"></p>
+<p>Now compare the original OM simulated pop with <span class="math inline">\(F\)</span> = 0 (purple) to the estimation model
+re-fit at 3-year time intervals providing catch advice equal to <span class="math inline">\(F_{40}\)</span> (teal).</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>
 <span class="va">pal</span> <span class="op">=</span> <span class="fu">viridisLite</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">3</span><span class="op">)</span>
@@ -406,7 +447,7 @@
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">temp</span><span class="op">$</span><span class="va">years_full</span>, <span class="va">updated_sim</span><span class="op">$</span><span class="va">FAA_tot</span><span class="op">[</span>,<span class="fl">10</span><span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">updated_sim</span><span class="op">$</span><span class="va">log_FMSY</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'l'</span>, xlab <span class="op">=</span> <span class="st">"Year"</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">y.max</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="st">"F/FMSY"</span>, col <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">temp</span><span class="op">$</span><span class="va">years</span><span class="op">)</span>, lty<span class="op">=</span><span class="fl">2</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">1</span>, col <span class="op">=</span> <span class="st">'red'</span>, lty<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/articles/ex10_plots/om_mse.png" style="width:80.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/om_mse.png" style="width:80.0%"></p>
 </div>
   </div>
 
@@ -427,7 +468,8 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer>

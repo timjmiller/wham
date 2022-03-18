@@ -23,7 +23,7 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
      
     Vignettes
@@ -117,16 +117,34 @@
 <div id="contributing" class="section level1">
 
 <p>Thank you for your interest in contributing to WHAM!</p>
-<p>We welcome simple documentation and bug fixes as well as more substantive code contributions, such as new features. Our current ideas for improving WHAM are on the <a href="https://github.com/timjmiller/wham/wiki/To-do-list" class="external-link">to do list</a>. If you would like to tackle something larger than a bug fix, please file an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> to discuss and make sure we are not working on it already.</p>
-<p>We reserve the <strong>master</strong> branch for <em>stable, tagged <a href="https://github.com/timjmiller/wham/releases" class="external-link">releases</a></em>. The <strong>devel</strong> branch contains <em>unstable but tested</em> updates. We create additional, temporary branches to develop and test larger updates before merging them into devel. While working on a temporary branch, we semi-regularly pull updates from devel to deal with merge conflicts as soon as possible.</p>
-<p>If you wish to contribute, please use the NOAA Fisheries Toolbox suggested workflow, summarized below. <a href="https://github.com/nmfs-fish-tools/Resources/blob/master/CONTRIBUTING.md" class="external-link">This page</a> has further guidance and resources. The “fork-and-branch” workflow we follow is described in more detail <a href="https://blog.scottlowe.org/2015/01/27/using-fork-branch-git-workflow/" class="external-link">here</a>.</p>
+<p>We welcome simple documentation and bug fixes as well as more
+substantive code contributions, such as new features. Our current ideas
+for improving WHAM are on the <a href="https://github.com/timjmiller/wham/wiki/To-do-list" class="external-link">to do
+list</a>. If you would like to tackle something larger than a bug fix,
+please file an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> to discuss
+and make sure we are not working on it already.</p>
+<p>We reserve the <strong>master</strong> branch for <em>stable, tagged
+<a href="https://github.com/timjmiller/wham/releases" class="external-link">releases</a></em>.
+The <strong>devel</strong> branch contains <em>unstable but tested</em>
+updates. We create additional, temporary branches to develop and test
+larger updates before merging them into devel. While working on a
+temporary branch, we semi-regularly pull updates from devel to deal with
+merge conflicts as soon as possible.</p>
+<p>If you wish to contribute, please use the NOAA Fisheries Toolbox
+suggested workflow, summarized below. <a href="https://github.com/nmfs-fish-tools/Resources/blob/master/CONTRIBUTING.md" class="external-link">This
+page</a> has further guidance and resources. The “fork-and-branch”
+workflow we follow is described in more detail <a href="https://blog.scottlowe.org/2015/01/27/using-fork-branch-git-workflow/" class="external-link">here</a>.</p>
 <div class="section level2">
 <h2 id="workflow">Workflow<a class="anchor" aria-label="anchor" href="#workflow"></a></h2>
-<ol style="list-style-type: decimal"><li><p>File an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> describing the fix/feature you are planning.</p></li>
-<li><p>Fork wham (create your own copy on GitHub by clicking “Fork”, top right of wham page)</p></li>
-<li><p>Clone your fork (download your copy of wham so you can modify it locally, click green “Code” button)</p></li>
+<ol style="list-style-type: decimal"><li><p>File an <a href="https://github.com/timjmiller/wham/issues" class="external-link">Issue</a> describing
+the fix/feature you are planning.</p></li>
+<li><p>Fork wham (create your own copy on GitHub by clicking “Fork”, top
+right of wham page)</p></li>
+<li><p>Clone your fork (download your copy of wham so you can modify it
+locally, click green “Code” button)</p></li>
 <li>
-<p>Add the original wham repo as <em>upstream</em> so you can get future changes from devel (see <a href="https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-for-a-fork" class="external-link">here</a>).</p>
+<p>Add the original wham repo as <em>upstream</em> so you can get
+future changes from devel (see <a href="https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/configuring-a-remote-for-a-fork" class="external-link">here</a>).</p>
 <pre><code>git remote add upstream https://github.com/timjmiller/wham.git</code></pre>
 </li>
 <li>
@@ -134,19 +152,22 @@
 <pre><code>git checkout devel</code></pre>
 </li>
 <li>
-<p>Confirm you can fetch and merge changes from the original wham repo (see <a href="https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/syncing-a-fork" class="external-link">here</a>).</p>
+<p>Confirm you can fetch and merge changes from the original wham
+repo (see <a href="https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/syncing-a-fork" class="external-link">here</a>).</p>
 <pre><code>git fetch upstream
 git merge upstream/devel</code></pre>
 </li>
 <li>
-<p>Create a new branch for your change with a meaningful name, e.g. <code>selftest</code> to add a function to simulate data from a fit model and refit.</p>
+<p>Create a new branch for your change with a meaningful name,
+e.g. <code>selftest</code> to add a function to simulate data from a fit
+model and refit.</p>
 <pre><code>git checkout -b &lt;myfeature&gt;</code></pre>
 </li>
 <li>
 <p>Confirm you can run and pass the automated tests</p>
 <pre><code><span class="co"># install.packages("here")</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://here.r-lib.org/" class="external-link">here</a></span><span class="op">)</span>
-<span class="va">wham.source.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">wham.source.dir</span> <span class="op">&lt;-</span> <span class="fu">here</span><span class="op">(</span><span class="op">)</span>
 
 <span class="co"># confirm that the .cpp compiles and wham can be loaded</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">wham.source.dir</span><span class="op">)</span>
@@ -154,16 +175,24 @@ git merge upstream/devel</code></pre>
 <span class="co"># run all tests</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">test</a></span><span class="op">(</span>pkg <span class="op">=</span> <span class="va">wham.source.dir</span><span class="op">)</span></code></pre>
 </li>
-<li><p>Work on your feature branch, making changes to your local wham files. Periodically merge in updates from the upstream devel branch (#6 above). Try to maintain the current wham coding style.</p></li>
-<li><p>Add documentation, test(s), and a vignette if applicable.</p></li>
-<li><p>When your feature is finished, rerun the tests and verify that they pass (#8). Helpful scripts for testing and debugging are in the <code>inst/contribute/</code> folder.</p></li>
-<li><p>Confirm your branch is up-to-date with the upstream devel.</p></li>
+<li><p>Work on your feature branch, making changes to your local wham
+files. Periodically merge in updates from the upstream devel branch (#6
+above). Try to maintain the current wham coding style.</p></li>
+<li><p>Add documentation, test(s), and a vignette if
+applicable.</p></li>
+<li><p>When your feature is finished, rerun the tests and verify that
+they pass (#8). Helpful scripts for testing and debugging are in the
+<code>inst/contribute/</code> folder.</p></li>
+<li><p>Confirm your branch is up-to-date with the upstream
+devel.</p></li>
 <li>
-<p>Commit your changes, and push your local branch to your forked repo (origin, not upstream)</p>
+<p>Commit your changes, and push your local branch to your forked
+repo (origin, not upstream)</p>
 <pre><code>git commit -m "informative message"
 git push origin &lt;myfeature&gt;</code></pre>
 </li>
-<li><p>Submit your pull request, following these <a href="https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests" class="external-link">best practices</a>.</p></li>
+<li><p>Submit your pull request, following these <a href="https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests" class="external-link">best
+practices</a>.</p></li>
 <li><p>Clean up / delete your feature branch and fork.</p></li>
 </ol></div>
 </div>
@@ -183,7 +212,8 @@ git push origin &lt;myfeature&gt;</code></pre>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer></div>

@@ -42,5 +42,5 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by \code{\link{fit_wham}}.
 }
 \seealso{
-\code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::check_estimability}}
+\code{\link{fit_wham}}, \code{\link{retro}}, \code{TMBhelper::check_estimability}
 }

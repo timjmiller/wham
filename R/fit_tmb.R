@@ -21,7 +21,7 @@
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
 #'   }
 #'
-#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{TMBhelper::check_estimability}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{TMBhelper::check_estimability}
 #'
 fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
 {

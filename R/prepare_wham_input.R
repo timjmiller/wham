@@ -9,7 +9,7 @@
 #'
 #' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
 #'   \describe{
-#'     \item{= 1}{Random walk, i.e. predicted recruitment in year i = recruitment in year i-1}
+#'     \item{= 1}{SCAA (without NAA_re option specified) or Random walk (if NAA_re$sigma specified), i.e. predicted recruitment in year i = recruitment in year i-1}
 #'     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
@@ -166,17 +166,17 @@
 #'     \item{$N1_pars}{if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
 #'				initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
 #'		 }
-#'		 \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
+#'		 \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
 #'				and \code{ecov} are properly specified.
 #'			 \describe{
-#'				 	 \item{1}{SCAA, estimating all recruitements as fixed effects}
+#'				 	 \item{1}{SCAA, estimating all recruitements as fixed effects or a random walk if NAA_re$sigma specified}
 #'				 	 \item{2}{estimating a mean recruitment with yearly recruitements as random effects}
 #'				 	 \item{3}{Beverton-Holt stock-recruitment with yearly recruitements as random effects}
 #'				 	 \item{4}{Ricker stock-recruitment with yearly recruitements as random effects}
 #'			 }
 #'		 }
 #'		 \item{$use_steepness}{T/F determining whether to use a steepness parameterization for a stock-recruit relationship. Only used if recruit_model>2}.
-#'		 \item{$recruit_pars}{vector of initial parameters for recruitment model. Only used if recruit_model>1. If use_steepness=F, parameters are "alpha" and "beta"
+#'		 \item{$recruit_pars}{vector of initial parameters for recruitment model. If use_steepness=F, parameters are "alpha" and "beta"
 #'				otherwise they are steepness and R0.
 #'		 }
 #'   }
@@ -256,7 +256,7 @@
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
 #'     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
 #'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
-#'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points.}
+#'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
 #'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
 #'     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
 #'     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
@@ -454,7 +454,7 @@ initial_input_fn = function(input, basic_info){
   input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   input$data$XSPR_R_opt = 2 # default = use average R estimates
-  input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model - 1 #model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
   
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
@@ -467,7 +467,7 @@ initial_input_fn = function(input, basic_info){
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
-  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs
+  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
 
   return(input)
 
