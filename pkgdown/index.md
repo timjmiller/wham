@@ -48,6 +48,26 @@ For the development version with recent bug fixes and features (potentially unte
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
+If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check make sure no packages are loaded (even by e.g. .Rprofile):
+```r
+ls() ## no variables
+search() ## no packages other than Base
+```
+Then:
+```r
+remove.packages("TMB")
+install.packages("TMB") #from CRAN, not github
+to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
+new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+```
+
+If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, this should provide that
+```r
+install.packages("tinytex")
+tinytex::install_tinytex()
+```
+
 ## Tutorial
 
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
@@ -72,7 +92,7 @@ wham.dir <- find.package("wham")
 source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
 ```
 
-## Install details
+## Installing vignettes
 
 Installation from GitHub does not include the vignettes by default because they can be accessed online anytime at https://timjmiller.github.io/wham/articles. If you want to build the vignettes locally, they look best if you *build using R Studio*:
 ```r
@@ -82,16 +102,6 @@ devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes =
 View installed vignettes:
 ```r
 browseVignettes("wham")
-```
-
-If you're having problems with dependencies not installing, you can try:
-```r
-remove.packages("TMB")
-install.packages("TMB") #from CRAN, not github
-to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
-new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-tinytex::install_tinytex()
 ```
 
 ## References
