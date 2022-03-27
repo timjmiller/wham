@@ -359,15 +359,19 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
   if(out.type == 'html'){
     wham_html(dir.main = dir.main)
   }
-  if(table.type == "pdf"){
-    cat(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
-    par_tables_fn(mod, od = dir.res.tables, do.tex = T)
-  }
-  if(table.type == "html"){
-    cat("Making HTML tables.\n")
-    par_tables_fn(mod, od = dir.res.tables, do.html = T)
-    cat("Opening HTML tables in your default web-browser.\n")
-    browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
+  if(rmarkdown::pandoc_available()){
+    if(table.type == "pdf"){
+      cat(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
+      par_tables_fn(mod, od = dir.res.tables, do.tex = T)
+    }
+    if(table.type == "html"){
+      cat("Making HTML tables.\n")
+      par_tables_fn(mod, od = dir.res.tables, do.html = T)
+      cat("Opening HTML tables in your default web-browser.\n")
+      browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
+    }
+  } else {
+    cat("document of parameter tables was not generated because rmarkdown could not find pandoc. Try plot_wham_output() from Rstudio.\n")
   }
 }
 

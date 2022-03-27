@@ -131,23 +131,25 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
         if(!is.null(input$data$condition_no_osa)) cat("OSA not available for some age comp likelihoods...\n")
         #first do continuous obs, condition on obs without osa (probably none)
         subset. = setdiff(full_set, c(input$data$subset_discrete_osa, input$data$conditional_no_osa))
-        OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+        OSA.continuous <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                     data.term.indicator="keep",
                                     method=osa.opts$method,
                                     discrete=FALSE, parallel=osa.opts$parallel,
                                     subset = subset., conditional = input$data$conditional_no_osa))
-        input$data$obs$residual[subset.] <- OSA$residual;
+        input$data$obs$residual[subset.] <- OSA.continuous$residual;
+        mod$OSA.continuous = OSA.continuous
         if(!is.null(input$data$subset_discrete_osa)) {
           cat("Doing OSA for discrete age comp likelihoods...\n")
           conditional = union(input$data$condition_no_osa, subset.) #all with continuous and without osa 
           subset. = input$data$subset_discrete_osa
           #first do continuous
-          OSA <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
+          OSA.discrete <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
                                       data.term.indicator="keep",
                                       method= osa.opts$method,
                                       discrete=TRUE, parallel=osa.opts$parallel,
                                       conditional = conditional))
-          input$data$obs$residual[subset.] <- OSA$residual;
+          input$data$obs$residual[subset.] <- OSA.discrete$residual;
+          mod$OSA.discrete = OSA.discrete
         }
         mod$osa <- input$data$obs
         mod$env$data$do_osa = 0 #set this back to not using OSA likelihoods

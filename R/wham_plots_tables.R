@@ -96,6 +96,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for aggregate catch in fleet ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -166,6 +170,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for catch proportions at age in fleet ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
       ylims <- c(-ylim.max, ylim.max)
 
       #plot_years = rep(years, NCOL(resids))#years[as.integer(tmp$year)]
@@ -228,6 +236,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for aggregate indices in  index ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
       ylims <- c(-ylim.max, ylim.max)
 
       # make robust to missing years
@@ -308,6 +320,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for proportions at age in  index ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }
       ylims <- c(-ylim.max, ylim.max)
 
       #plot_years = rep(years, NCOL(resids))#years[as.integer(tmp$year)]
