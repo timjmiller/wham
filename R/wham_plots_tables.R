@@ -156,7 +156,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       resids[yind,] = tmp$residual
       vals[yind,] = tmp$val
       ages[yind,] = tmp$age
-      pyears[yind,] = tmp$year
+      pyears[yind,] = mod$years[tmp$year]
       cohorts[yind,] = tmp$cohort
       if(mod$input$data$age_comp_model_fleets[f] %in% 3:7){
         for(j in yind){
@@ -180,20 +180,32 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(as.integer(pyears), resids, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 2. trend vs. age
       plot(as.integer(ages), resids, type='p', col=plot.colors[f], pch=19, xlab="Age", ylab="OSA Residuals",
            ylim=ylims, xaxt ="n")
       axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 3. trend vs. cohort
-      plot(min(years) + as.integer(cohorts), tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Cohort", ylab="OSA Residuals",
+      plot(min(years) + as.integer(cohorts), resids, type='p', col=plot.colors[f], pch=19, xlab="Cohort", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 4. trend vs. observed val
       plot(vals, resids, type='p', col=plot.colors[f], pch=19, xlab="Observed proportion", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 5. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
       yfit<-dnorm(xfit)
@@ -306,7 +318,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       resids[yind,] = tmp$residual
       vals[yind,] = tmp$val
       ages[yind,] = tmp$age
-      pyears[yind,] = tmp$year
+      pyears[yind,] = mod$years[tmp$year]
       cohorts[yind,] = tmp$cohort
       if(mod$input$data$age_comp_model_indices[i] %in% 3:7){
         for(j in yind){
@@ -330,24 +342,36 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(as.integer(pyears), resids, type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 2. trend vs. age
       plot(as.integer(ages), resids, type='p', col=plot.colors[i], pch=19, xlab="Age", ylab="OSA Residuals",
            ylim=ylims, xaxt ="n")
       axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 3. trend vs. cohort
       plot(min(years) + as.integer(cohorts), resids, type='p', col=plot.colors[i], pch=19, xlab="Cohort", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 4. trend vs. observed val
       plot(vals, resids, type='p', col=plot.colors[i], pch=19, xlab="Observed proportion", ylab="OSA Residuals",
            ylim=ylims)
+      grid(lty = 2, col = "grey")
       abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 5. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
       yfit<-dnorm(xfit)
-      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[i], freq=F, main=NULL, breaks="scott")
       lines(xfit, yfit)
       # 6. QQ plot modified from car:::qqPlot.default
       notNA <- resids[!is.na(resids)]
