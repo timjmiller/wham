@@ -2,7 +2,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
 {
   library(rmarkdown)
 
-  ci = function(par,se, p=0.975, lo = 0, hi = 1, type = "I"){
+  ci = function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1){
     ci = par + c(-1,1) * qnorm(0.975) * se
 
     if(type == "I") {
@@ -12,8 +12,8 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       return(c(exp(par)*se, exp(ci)))
     }
     if(type == "expit") { #Delta-method: V(lo + (hi-lo)/(1 + exp(-x))) ~ ((hi-lo) * p * (1-p))^2 * V(x)
-      p = 1/(1 + exp(-par))
-      dm.se = abs(hi-lo)*p*(1-p)*se
+      p = 1/(1 + exp(- k * par))
+      dm.se = k * abs(hi-lo)*p*(1-p)*se
       return(c(dm.se, lo + (hi-lo)/(1+ exp(-ci))))
     }
   }
@@ -151,10 +151,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
         fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[i], sd$log_NAA_sigma[i], type = "exp"))
       }
       fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", c("age", "year")))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$trans_NAA_rho)))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-2 * pars$trans_NAA_rho)))
       fe.cis = rbind(fe.cis, 
-        ci(pars$trans_NAA_rho[1], sd$trans_NAA_rho[1], lo = -1, hi = 1, type = "expit"),
-        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit"))
+        ci(pars$trans_NAA_rho[1], sd$trans_NAA_rho[1], lo = -1, hi = 1, type = "expit", k = 2), #see trans_rho in helper.cpp
+        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit", k = 2)) #see trans_rho in helper.cpp
     }
     else {
       fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", ages[1], ")"))
@@ -163,7 +163,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", "year"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$trans_NAA_rho[2])))
       fe.cis = rbind(fe.cis, 
-        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit"))
+        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
 
@@ -217,12 +217,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,2])))
-      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
+      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE AR1 $\\rho$ (year)"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,3])))
-      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
+      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
   #acomp_par_count = 0
@@ -339,12 +339,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     if(data$M_re_model %in% c(3,5)){
       fe.names = c(fe.names, "M RE AR1 $\\rho$ (age)")
       fe.vals = c(fe.vals, exp(pars$M_repars[2]))
-      fe.cis = rbind(fe.cis, ci(pars$M_repars[2], sd$M_repars[2], lo = -1, hi = 1, type = "expit"))
+      fe.cis = rbind(fe.cis, ci(pars$M_repars[2], sd$M_repars[2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$M_re_model %in% c(4,5)) {
       fe.names = c(fe.names, "M RE AR1 $\\rho$ (year)")
       fe.vals = c(fe.vals, exp(pars$M_repars[3]))
-      fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit"))
+      fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
   if(sum(!is.na(mod$input$map$log_catch_sig_scale))){ #any agg catch obs var estimated?
@@ -378,7 +378,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$Ecov_model[i] == 2){
         fe.names = c(fe.names, paste0("Ecov ", data$Ecov_label[[1]][i], ": ", c("AR1 $\\mu$", "AR1 $\\rho$", "AR1 $\\sigma$")))
         fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$Ecov_process_pars[3,i])))
-        fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit"))
+        fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit")) #doesn't use rho_trans
       }
       fe.vals = c(fe.vals, exp(pars$Ecov_process_pars[2,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[2,i], sd$Ecov_process_pars[2,i], type = "exp"))
