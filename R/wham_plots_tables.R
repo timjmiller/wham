@@ -1437,7 +1437,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
       #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
       my.title <- "Age Comp Residuals (Observed-Predicted) for Fleet "
       resids <- acomp.obs - acomp.pred  # NOTE obs-pred
-      resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
+      resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
       fname = paste0("Catch_age_comp_resids_fleet_",i)
       scale.resid.bubble.catch <- 25
     }
