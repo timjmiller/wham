@@ -7,117 +7,12 @@ template <class Type>
 Type rho_trans(Type x){return Type(2)/(Type(1) + exp(-Type(2) * x)) - Type(1);}
 
 template<class Type>
-matrix<Type> extract_matrix_array3(array<Type> a, int index) //matrix has to be the last two dims of the 3d array
-{
+matrix<Type> extract_matrix_array3(array<Type> a, int index){ //matrix has to be the last two dims of the 3d array
   int nr = a.dim(1);
   int nc = a.dim(2);
   matrix<Type> mat(nr, nc);
   for(int i = 0; i < nr; i++) for(int j = 0; j < nc; j++) mat(i,j) = a(index,i,j);
   return mat;
-}
-
-template <class Type>
-matrix<Type> get_P(int n_regions, int n_fleets, int age, int year, int stock, int season, vector<int> fleet_regions, int cum_n_mu, 
-  array<int> n_mu, vector<int> mu_row, vector<int> mu_col, vector<int> mu_pointer, int mig_type, Type time, array<Type> FAA, array<Type>MAA, 
-  vector<Type> mu, matrix<Type> L)
-{
-  Type zero = Type(0);
-  Type one = Type(1);
-  Type half = Type(0.5);
-  Type two = Type(2);
-  int dim = n_regions+n_fleets+1;
-  matrix<Type> P(dim,dim);
-  P.setZero(); //zero it out.
-  vector<Type> F(n_fleets), M(n_regions), Z(n_regions);
-  
-  for(int r = 0; r < n_regions; r++) 
-  {
-    M(r) = MAA(year,age,r) + L(year,r); //add in "extra" mortality
-    Z(r) = M(r);
-  }
-  for(int f = 0; f < n_fleets; f++) 
-  {
-    F(f) = FAA(year,season,f,age);
-    Z(fleet_regions(f)-1) += F(f);
-  }
-  
-  if(n_mu(stock,year,season,age)>0) //migration is happening
-  {
-    if(mig_type == 0) //migration is instantaneous after survival and mortality, so P is easy.
-    {
-      matrix<Type> move(n_regions,n_regions);
-      move.setZero();
-
-      //logistic probability of movement out of regions only; prob staying is 1 - prob move
-      for(int i = 0; i < n_mu(stock,year,season,age); i++) move(mu_row(cum_n_mu + i)-1,mu_col(cum_n_mu + i)-1) = one/(one + exp(-mu(mu_pointer(cum_n_mu + i)-1)));
-      for(int i = 0; i < n_regions; i++) move(i,i) = one - (move.row(i)).sum(); //prob of staying
-
-      //fish and nat mort state: if dead, must stay dead
-      for(int i = n_regions; i < dim; i++) P(i,i) = one; 
-      
-      if(time < 1e-15) 
-      {
-       //prob of survival is 1 when interval is zero
-       for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) P(i,j) =  move(i,j);
-      }
-      else
-      {
-        for(int f = 0; f < n_fleets; f++) P(fleet_regions(f)-1,n_regions + f) = F(f) * (one - exp(-Z(fleet_regions(f)-1) * time))/Z(fleet_regions(f)-1);
-        for(int i = 0; i < n_regions; i++)
-        {
-          //probs of survival and mortality and then moving between regions
-          for(int j = 0; j < n_regions; j++) 
-          {
-            //survival only a function of region starting in, then modify survival in in each region by prob of moving.
-            P(i,j) = exp(-Z(i) * time) * move(i,j); 
-          }
-          //caught only in region starting in since migration happens after survival 
-          
-          //all other dead
-          P(i,dim-1) = M(i) * (one - exp(-Z(i) * time))/Z(i);
-        }
-      }
-    }
-    if(mig_type == 1) //migration occurs continuously during interval, so P is not so easy.
-    {
-       //prob of survival is 1 when interval is zero
-      if(time < 1e-15) for(int i = 0; i < n_regions; i++) P(i,i) = one;
-      else
-      {
-        matrix<Type> A(dim,dim);
-        A.setZero(); //zero it out.
-        for(int i = 0; i < n_regions; i++) A(i,dim-1) = M(i); //other dead
-        for(int f = 0; f < n_fleets; f++) A(fleet_regions(f)-1,n_regions + f) = F(f);
-        for(int i = 0; i < n_mu(stock,year,season,age); i++) A(mu_row(cum_n_mu + i)-1,mu_col(cum_n_mu + i)-1) = exp(mu(mu_pointer(cum_n_mu + i)-1)); //log of transition intensities
-        for(int i = 0; i < n_regions; i++) A(i,i) = -(A.row(i)).sum(); //hazard
-        A = A * time;
-        P = expm(A);
-      }
-    }
-  }
-  else //no migration during this interval, so P is easy.
-  {
-    //prob of survival is 1 when interval is zero
-    if(time < 1e-15) for(int i = 0; i < dim; i++) P(i,i) = one;
-    else
-    {
-      for(int i = 0; i < n_regions; i++) 
-      {
-        P(i,i) = exp(-Z(i) * time);
-        //other dead
-        P(i,dim-1) = M(i) * (one - exp(-Z(i) * time))/Z(i);
-        //if dead, must stay dead
-      }
-      for(int f = 0; f < n_fleets; f++) 
-      {
-        P(fleet_regions(f)-1,n_regions+f) = F(f) * (one - exp(-Z(fleet_regions(f)-1) * time))/Z(fleet_regions(f)-1);
-        P(n_regions+f,n_regions+f) = one;
-      } 
-      //nat mort state: if dead, must stay dead
-      P(dim-1,dim-1) = one; //if dead, must stay dead
-    }
-  }
-  return P;
 }
 
 template <class Type>
@@ -761,6 +656,13 @@ template <class Type>
 vector<Type> get_waa_y(array<Type> waa, int y, int na, int pointer){
   vector<Type> waay(na);
   for(int a = 0; a < na; a++) waay(a) = waa(pointer-1, y, a);
+  return(waay);
+}
+
+template <class Type>
+matrix<Type> get_waa_y(array<Type> waa, int y, int na, vector<int> pointer){
+  matrix<Type> waay(pointer.size(),na);
+  for(int i = 0; i < pointer.size(); i++) for(int a = 0; a < na; a++) waay(i,a) = waa(pointer(i)-1, y, a);
   return(waay);
 }
 
