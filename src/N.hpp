@@ -1,27 +1,7 @@
 template <class Type>
-additive_ln_transform(vector<Type> x, int region, vector<int> do_move){
-  //use additive transformation (e.g., logistic-normal model)
-  //ensures that probabilities of moving and staying add to 1
-  int D = x.size()+1;
-  vector<Type> y(D);
-  y.setZero();
-  int j = 0;
-  for(int i = 0; i < D; i++) {
-    if(i != region) {
-      if(do_move(i)==1) y(i) = exp(x(j)); //else prob of moving will be 0.
-      j++;
-    } else { //prob of staying will be 1- prob of moving
-      y(i) = 1.0;
-    }
-  }
-  y /= sum(y);
-  return(y);
-}
-
-template <class Type>
 matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, 
   matrix<int> can_move, int mig_type, Type time, array<Type> FAA, array<Type>MAA, 
-  array<Type> trans_mu, matrix<Type> L)
+  array<Type> mu, matrix<Type> L)
 //  vector<Type> mu, matrix<Type> L)
 {
   /*Type zero = Type(0);

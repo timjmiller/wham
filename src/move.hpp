@@ -1,3 +1,24 @@
+template <class Type>
+additive_ln_transform(vector<Type> x, int region, vector<int> do_move){
+  //use additive transformation (e.g., logistic-normal model)
+  //ensures that probabilities of moving and staying add to 1
+  int D = x.size()+1;
+  vector<Type> y(D);
+  y.setZero();
+  int j = 0;
+  for(int i = 0; i < D; i++) {
+    if(i != region) {
+      if(do_move(i)==1) y(i) = exp(x(j)); //else prob of moving will be 0.
+      j++;
+    } else { //prob of staying will be 1- prob of moving
+      y(i) = 1.0;
+    }
+  }
+  y /= sum(y);
+  return(y);
+}
+
+
 nll_mu_prior_re
 
 simulate_mu_prior_re
@@ -7,7 +28,7 @@ nll_mu_re
 
 simulate_mu_re
   
-array<Type> get_mu(trans_mu, mu_re, can_move, mig_type)
+array<Type> get_mu(array<Type> trans_mu, array<Type> mu_re, array<int> can_move, int mig_type)
 {
   if(can_move.sum()>0) //migration is happening
   {
