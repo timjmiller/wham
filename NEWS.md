@@ -1,6 +1,10 @@
 wham 1.0.6.9000
 =========================
 
+### Bug fixes
+
+* Fix age of full selection for N1_model = 1 [issue 56][https://github.com/timjmiller/wham/issues/56].
+
 
 wham 1.0.6 (2022-04-08)
 =========================
