@@ -776,3 +776,65 @@ Type get_acomp_ll(vector<Type> paa_obs, vector<Type> paa_pred, Type Neff, int ag
   return ll;
 }
 
+template<class Type>
+Type get_lcomp_ll(vector<Type> pal_obs, vector<Type> pal_pred, Type NeffL, int len_comp_model, vector<Type> len_comp_pars, 
+  data_indicator<vector<Type>, Type> keep, 
+  int do_osa)
+{
+  Type ll = 0.0;
+  int n_lengths = pal_obs.size();
+  vector<Type> p = pal_pred + 1.0e-15;
+  //if(use_obs){
+    if(len_comp_model == 1) //multinomial
+    {
+      vector<Type> x = NeffL * pal_obs;
+      ll = dmultinom(x, p, keep, 1, do_osa);
+    }
+    if(len_comp_model == 2) //dirichlet-multinomial
+    {
+      vector<Type> x = NeffL * pal_obs;
+      vector<Type> alphas = p * exp(len_comp_pars(0));
+      ll = ddirmultinom(x, alphas, keep, 1, do_osa);
+    }
+    if(len_comp_model == 3) { //Dirichlet, miss0
+      //0,1: pool 0s, do log 
+      //keep, pool0, give_log, do_osa
+      ll = ddirichlet(pal_obs, p, exp(len_comp_pars(0)), keep, 0,1,do_osa);
+    }
+    if(len_comp_model == 4) { //Dirichlet, pool0
+      //0,1: pool 0s, do log 
+      //keep, pool0, give_log, do_osa
+      ll = ddirichlet(pal_obs, p, exp(len_comp_pars(0)), keep, 1,1,do_osa);
+    }
+    if(len_comp_model == 5) { //logistic-normal, miss0
+      //1,0,1,0: Sigma diagonal, additive transformation, return log, missing 0s
+      len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(pal_obs, p, len_comp_pars, keep, 1, 0, 1, 0, do_osa);
+    }
+    if(len_comp_model == 6) { //logistic-normal, miss0, AR1 correlation
+      //2,0,1,0: Sigma with AR1 cor, additive transformation, return log, missing 0s 
+      len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(pal_obs, p, len_comp_pars, keep, 2, 0, 1, 0, do_osa);
+    }
+    if(len_comp_model == 7) 
+    {
+      //logistic normal. Pool zero observations with adjacent age classes.
+      //1,0,1,1: Sigma diagonal, additive transformation, return log, pool 0s 
+      len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+      ll = dlogisticnormal(pal_obs, p, len_comp_pars, keep, 1, 0, 1, 1, do_osa);
+    }
+    if(len_comp_model == 8) 
+    {
+      //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012). 3 parameters
+      //NO OSA available!
+      ll = dzinf_logisticnormal_1(pal_obs, p, len_comp_pars, keep, 1, 0);
+    }
+    if(len_comp_model == 9) 
+    {
+      //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
+      //NO OSA available!
+      ll = dzinf_logisticnormal_2(pal_obs, p, len_comp_pars, keep, 1, 0);
+    }
+
+  return ll;
+}

@@ -233,3 +233,55 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, int age_comp_model, vec
   }
   return obs;
 }
+
+template<class Type>
+vector<Type> sim_lcomp(vector<Type> pal_pred, Type NeffL, int len_comp_model, vector<Type> pal_obs, vector<Type> len_comp_pars)
+{
+  int n_lengths = pal_obs.size();
+  vector<Type> obs(n_lengths);
+  vector<Type> p = pal_pred + 1.0e-15;
+  obs.setZero();
+  if(len_comp_model == 1)
+  {
+    obs = rmultinom(NeffL, p);
+    obs = obs/obs.sum();// proportions
+  }
+  if(len_comp_model == 2) //dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
+  {
+    //int N = CppAD::Integer(NeffL);
+    vector<Type> alpha = p * exp(len_comp_pars(0));
+    obs = rdirmultinom(NeffL,alpha);
+    obs = obs/obs.sum();// proportions
+  }
+  if(len_comp_model == 3) { //Dirichlet, miss0
+    obs = rdirichlet(pal_obs, p, exp(len_comp_pars(0)), 0); //0: miss0
+  }
+  if(len_comp_model == 4) { //Dirichlet, pool0
+    obs = rdirichlet(pal_obs, p, exp(len_comp_pars(0)), 1); //1: pool0
+  }
+  if(len_comp_model == 5) { //logistic-normal, miss0
+    len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+    obs = rlogisticnormal(pal_obs, p, len_comp_pars, 1, 0, 0); //1,0,0: Sigma diagonal, additive transformation, missing 0s 
+  }
+  if(len_comp_model == 6) { //logistic-normal, ar1 cor, miss0
+    len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+    obs = rlogisticnormal(pal_obs, p, len_comp_pars, 2, 0, 0); //2,0,0: Sigma AR1 cor, additive transformation, missing 0s 
+  }
+  if(len_comp_model == 7) { //logistic-normal, pool0
+    len_comp_pars(0) -= 0.5*log(NeffL); //an adjustment for interannual variation in sampling effort
+    obs = rlogisticnormal(pal_obs, p, len_comp_pars, 1, 0, 1); //1,0,1: Sigma diagonal, additive transformation, pooling 0s 
+  }
+  if(len_comp_model == 8) 
+  {
+    //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012).
+    //NO OSA available!
+    obs = rzinf_logisticnormal_1(p, len_comp_pars);
+  }
+  if(len_comp_model == 9) 
+  {
+    //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
+    //NO OSA available!
+    obs = rzinf_logisticnormal_2(p, len_comp_pars);
+  }
+  return obs;
+}

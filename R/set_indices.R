@@ -86,6 +86,8 @@ set_indices = function(input, index_opts=NULL)
 		if(is.null(index_opts$units_index_pal)) data$units_index_pal = rep(2,data$n_indices) #numbers
 		else data$units_index_pal = index_opts$units_index_pal
 
+		if(any(data$units_index_pal != 2)) stop('units_index_pal must be 2 (numbers). Other units (weight) will be added when L-W relationship be incorporated.')
+
 		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
 		else data$index_Neff[] = index_opts$index_Neff
 
