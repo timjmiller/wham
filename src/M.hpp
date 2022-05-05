@@ -3,7 +3,7 @@ matrix<Type> get_nll_M(array<Type> M_repars, vector<int> M_re_model, vector<int>
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
   int n_ages = M_re.dim(3);
-  int ny = M_re.dim(2);
+  int n_y = M_re.dim(2);
   matrix<Type> nll_M(n_stocks,n_regions);
   nll_M.setZero();
   for(int r = 0; r< n_regions; r++){
@@ -86,7 +86,7 @@ array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<i
 //provides log_M components that are density-independent.
 template<class Type>
 array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, array<Type> M_a, Type log_b, array<Type> waa, 
-  int waa_pointer, array<Type> Ecov_lm, matrix<int> use_Ecov, int do_proj, int proj_M_opt){
+  int waa_pointer, array<Type> Ecov_lm, array<int> use_Ecov, int do_proj, int proj_M_opt, vector<int> avg_years_ind){
   // Construct base (log) mortality-at-age (MAA)
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
@@ -106,11 +106,12 @@ array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, arra
     }
     // add ecov effect on M (by year, shared across ages)
     for(int i=0; i < use_Ecov.dim(0); i++) for(int a = 0; a < n_ages; a++) {
-      if(use_Ecov(i,a) == 1) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) += Ecov_lm(s,r,a,y,i);
+      if(use_Ecov(i,s,a,r) == 1) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) += Ecov_lm(s,r,a,y,i);
     }
     
     // add to MAA in projection years
     if(do_proj == 1){ 
+      int n_toavg = avg_years_ind.size();
       if(proj_M_opt == 2){ // use average MAA over avg.yrs 
         matrix<Type> MAA_toavg(n_toavg,n_ages);
         for(int a = 0; a < n_ages; a++){

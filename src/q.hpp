@@ -5,7 +5,7 @@ template<class Type>
 vector<Type> get_nll_q_prior(vector<Type> q_prior_re, vector<Type> logit_q, 
   vector<Type> logit_q_prior_sigma, vector<int> use_q_prior){
   int n_indices = q_prior_re.size();
-  vector<Type> nll_q_prior(n);
+  vector<Type> nll_q_prior(n_indices);
   nll_q_prior.setZero();
   for(int i = 0; i < n_indices; i++) if(use_q_prior(i) == 1){
     //use prior for q? q_prior_re are random effects with mean logit_q (fixed) and sd = logit_q_prior_sigma.
@@ -23,7 +23,7 @@ vector<Type> simulate_q_prior_re(vector<Type> q_prior_re, vector<Type> logit_q,
   vector<Type> sim_q_prior_re(n_indices);
   sim_q_prior_re.setZero();
   for(int i = 0; i < n_indices; i++) if(use_q_prior(i) == 1){
-    sim_q_prior_re(i) = rnorm(logit_q(i), logit_q_prior_sigma(i), 1);
+    sim_q_prior_re(i) = rnorm(logit_q(i), logit_q_prior_sigma(i));
   }
   return(sim_q_prior_re);
 }
@@ -128,11 +128,11 @@ matrix<Type> get_q(matrix<Type>logit_q_mat, vector<Type> q_lower, vector<Type> q
 }
 
 template<class Type>
-matrix<Type> get_QAA(matrix<Type> q, vector<matrix<Type>> selAA, matrix<int> selblock_pointer, vector<Type> q_lower, int n_years_model, int n_ages)
+array<Type> get_QAA(matrix<Type> q, vector<matrix<Type>> selAA, matrix<int> selblock_pointer, vector<Type> q_lower, int n_years_model, int n_ages)
 {  
   int n_y = q.dim(0);
   int n_ind = q.dim(1);
-  array<Type> QAA(n_y,n_ind,n_ages)
+  array<Type> QAA(n_ind,n_y,n_ages)
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_ind; i++)
   {
@@ -143,7 +143,7 @@ matrix<Type> get_QAA(matrix<Type> q, vector<matrix<Type>> selAA, matrix<int> sel
     }
     //for projections, just use last years selectivity for now
     if(ny > n_years_model) for(int y = n_years_model; y < n_y; y++) for(int a = 0; a < n_ages; a++) {
-      QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
+      QAA(i,y,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
     }
   }
   return(QAA);

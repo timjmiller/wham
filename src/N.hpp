@@ -1,17 +1,81 @@
 template <class Type>
-matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, 
-  matrix<int> can_move, int mig_type, Type time, array<Type> FAA, array<Type>MAA, 
-  array<Type> mu, matrix<Type> L)
-//  vector<Type> mu, matrix<Type> L)
+matrix<Type> get_nll_N1(array<Type>log_N1, array<Type> N1_repars, matrix<int> N1_where)
 {
-  /*Type zero = Type(0);
-  Type one = Type(1);
-  Type half = Type(0.5);
-  Type two = Type(2); */
-  n_regions = MAA.dim(1);
+  int n_stocks = log_N1.dim(0);
+  int n_regions = log_N1.dim(1);
+  int n_ages = log_N1.dim(3);
+  matrix<Type> nll(s,r);
+  nll.setZero();
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
+    Type mu = N1_repars(s,r,0);
+    Type sigma = exp(N1_repars(s,r,1)); //marginal variance
+    Type rho = rho_trans(N1_repars(s,r,2));
+    vector<Type> re_sr(n_ages);
+    for(int a = 0; a < n_ages; a++) re_sr(a) = log_N1(s,r,a) - mu
+    nll(s,r) += SCALE(AR1(rho), sigma)(re_sr);
+  }
+}
+
+array<Type> simulate_log_N1(array<Type>log_N1, array<Type> N1_repars, matrix<int> N1_where)
+{
+  int n_stocks = log_N1.dim(0);
+  int n_regions = log_N1.dim(1);
+  int n_ages = log_N1.dim(3);
+  array<Type> sim_log_N1(s,r,a);
+  sim_log_N1.setZero();
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
+    Type mu = N1_repars(s,r,0);
+    Type sigma = exp(N1_repars(s,r,1)); //marginal variance
+    Type rho = rho_trans(N1_repars(s,r,2));
+    vector<Type> re_sr(n_ages);
+    AR1(rho).simulate(re_sr);
+    re_sr *= sigma;
+    for(int a = 0; a < n_ages; a++) sim_log_N1(s,r,a) = re_sr(a) + mu
+  }
+  return(simulate_log_N1);
+}
+
+template <class Type>
+array<Type> get_N1(int N1_model, array<Type> log_N1, matrix<int> N1_where){
+  int n_stocks = log_N1.dim(0);
+  int n_regions = log_N1.dim(1);
+  int n_ages = log_N1.dim(3);
+  array<Type> N1(n_stocks, n_regions, n_ages);
+  N1.setZero();
+  if(N1_model == 0 || N1_model == 2)
+  {
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
+      N1(s,r,a) = exp(log_N1(s,r,a));
+    }
+  }
+  return(N1);
+}
+
+template <class Type>
+array<Type> get_pred_N1(int N1_model, array<Type> N1, matrix<int> N1_where){
+  int n_stocks = log_N1.dim(0);
+  int n_regions = log_N1.dim(1);
+  int n_ages = log_N1.dim(3);
+  array<Type> pred_N1(n_stocks, n_regions, n_ages);
+  pred_N1.setZero();
+  if(N1_model == 0)
+  {
+    pred_N1 = N1;
+  } else {
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
+      pred_N1(s,r,a) = exp(N1_repars(s,r,0)); //exp of mean of AR1 process
+    }
+  }
+  return(N1);
+}
+
+template <class Type>
+matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, 
+  matrix<int> can_move, int mig_type, Type time, array<Type> FAA, array<Type>log_M_base, 
+  array<Type> mu, matrix<Type> L)
+{
+  n_regions = log_M_base.dim(1);
   n_fleets = fleet_regions.size();
-  
-  int s = stock;
   int dim = n_regions+n_fleets+1;
   matrix<Type> P(dim,dim);
   P.setZero(); //zero it out.
@@ -19,7 +83,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
   
   for(int r = 0; r < n_regions; r++) 
   {
-    M(r) = MAA(s,r,year,age) + L(year,r); //add in "extra" mortality
+    M(r) = exp(log_M_base(stock,r,year,age)) + L(year,r); //add in "extra" mortality
     Z(r) = M(r);
   }
   for(int f = 0; f < n_fleets; f++) 
@@ -33,22 +97,10 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
   {
     if(mig_type == 0) //migration is instantaneous after survival and mortality, so P is easy.
     {
-      matrix<Type> move(n_regions,n_regions);
-      move.setZero();
-      //additive logistic-normal transform for probability of movement out of regions only; prob staying is 1 - sum(prob move)
-      //for(int i = 0; i < n_mu(stock,year,season,age); i++) move(mu_row(cum_n_mu + i)-1,mu_col(cum_n_mu + i)-1) = one/(one + exp(-mu(mu_pointer(cum_n_mu + i)-1)));
-      
-      for(int i = 0; i < n_regions; i++) {
-        vector<Type> trans_par = trans_mu.row(i);
-        vector<int> do_move = can_move.row(i);
-        vector<Type> pmove = additive_transform(trans_par, i, do_move);
-        for(int j = 0; j < n_regions; j++) move(i,j) = pmove(j);
-      }
-
       if(time < 1e-15) 
       {
        //prob of survival is 1 when interval is zero
-       for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) P(i,j) =  move(i,j);
+       for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) P(i,j) =  mu(stock,age,season,year,i,j);
       }
       else
       {
@@ -59,7 +111,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
           for(int j = 0; j < n_regions; j++) 
           {
             //survival only a function of region starting in, then modify survival in in each region by prob of moving.
-            P(i,j) = exp(-Z(i) * time) * move(i,j); 
+            P(i,j) = exp(-Z(i) * time) * mu(stock,age,season,year,i,j); 
           }
           //caught only in region starting in since migration happens after survival 
           
@@ -78,11 +130,11 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
       {
         matrix<Type> A(dim,dim);
         A.setZero(); //zero it out.
-        for(int i = 0; i < n_regions; i++) A(i,dim-1) = M(i); //other dead
-        for(int f = 0; f < n_fleets; f++) A(fleet_regions(f)-1,n_regions + f) = F(f);
-        //for(int i = 0; i < n_mu(stock,year,season,age); i++) A(mu_row(cum_n_mu + i)-1,mu_col(cum_n_mu + i)-1) = exp(mu(mu_pointer(cum_n_mu + i)-1)); //log of transition intensities
-        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) if(can_move(i,j)==1){
-          A(i,j) = exp(trans_mu(i,j)); //log of transition intensities
+        for(int i = 0; i < n_regions; i++) A(i,dim-1) += M(i); //other dead
+        for(int f = 0; f < n_fleets; f++) A(fleet_regions(f)-1,n_regions + f) += F(f);
+        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) {
+          //need to not put in mu diagonal because it has -sum of mig rates in there already.
+          if(i != j) A(i,j) += mu(stock,age,season,year,i,j)); // transition intensities
         }
         for(int i = 0; i < n_regions; i++) A(i,i) = -(A.row(i)).sum(); //hazard
         A = A * time;
@@ -95,8 +147,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
     //prob of survival is 1 when interval is zero
     if(time < 1e-15) {
       for(int i = 0; i < dim; i++) P(i,i) = 1.0; 
-    } else
-    {
+    } else {
       for(int i = 0; i < n_regions; i++) 
       {
         P(i,i) = exp(-Z(i) * time);
@@ -109,7 +160,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
       } 
     }
   }
-  return P;
+  return(P);
 }
 
 //extract proportions surviving in each region over the interval.
@@ -122,45 +173,56 @@ matrix<Type> get_S(matrix<Type> P, int n_regions){
   return(S);
 }
 
+////fix me: below
 template <class Type>
-matrix<Type> get_nll_N1(array<Type>log_N1, array<Type> N1_repars)
-{
-  int n_stocks = log_N1.dim(0);
-  int n_regions = log_N1.dim(1);
-  int n_ages = log_N1.dim(3);
-  Type mu = N1_repars(s,r,0);
-  Type sigma = exp(N1_repars(s,r,1));
-  Type rho = rho_trans(N1_repars(s,r,2));
-  nll_Ecov(i) += SCALE(AR1(Ecov_phi), Ecov_sig)(re_i);
-  
-}
+Type get_pred_recruit_y(int y, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSB, matrix<Type> NAA, vector<Type> log_SR_a, 
+  vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm){
 
-template <class Type>
-array<Type> set_N1(int N1_model, int n_ages, array<Type>Pmats)
-
-  array<Type> N1(n_stocks, n_regions, n_ages);
-  N1.setZero();
-  if(N1_model == 0)
+  /*
+   * y: year (between 1 and n_years_model+n_years_proj)
+   * recruit_model: which recruitment model (1-4)
+   * mean_rec_pars: vector of any recruitment parameters (defined in main code)
+   * SSB: vector of yearly SSB (uses y-1 for any S-R relationship)
+   * NAA: matrix of numbers at age
+   * log_SR_a: yearly "a" parameters for SR function
+   * log_SR_b: yearly "b" parameters for SR function
+   * Ecov_where: matrix of 0/1 with first column determining if Ecov is affecting recruitment
+   * Ecov_how: integer vector with an element that tells how the Ecov is affecting recruitment
+   * Ecov_lm: array that holds linear predictor for Ecov
+   */
+  //recruit_model == 1, random walk
+  Type pred_recruit = NAA(y-1,0);
+  if(recruit_model == 1) // random walk
   {
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) 
-    {
-      NAA(s,r,0,a) = exp(log_N1_pars(s,r,a));
-    }
+    //pred_NAA(y,0) = NAA(y-1,0);
   }
-  /*if(N1_model == 1) //equilibrium approach
+  else
   {
-    for(int r = 0; r < n_regions; r++) 
+    if(recruit_model == 2) // random about mean
     {
-      FAA_tot(r,0,0,a)
-      for(int s = 0; s < n_stocks; s++) {
-        NAA(s,r,0,0) = exp(log_N1_pars(0));
-        for(int a = 1; a < n_ages; a++) 
-        {
-          matrix<Type> P = get_P(Pmats,s,r,0,a);
-          if(a == n_ages-1) NAA(0,a) = NAA(s,r,0,a-1)/(1.0 + exp(-MAA(s,r,0,a) - exp(log_N1_pars(s,r,1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1)));
-          else NAA(s,r,0,a) = NAA(s,r,0,a-1)* exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1));
-        }
+      pred_recruit = exp(mean_rec_pars(0));
+      int nE = Ecov_where.rows();
+      for(int i=0; i < nE; i++){
+        if(Ecov_where(i,0) == 1) if(Ecov_how(i) == 1) pred_recruit *= exp(Ecov_lm(i,0,y,0));
+      }
+      //pred_NAA(y,0) = exp(mean_rec_pars(0));
+      //if(Ecov_recruit > 0) if(Ecov_how(Ecov_recruit-1) == 1) pred_NAA(y,0) *= exp(Ecov_lm(y,Ecov_recruit-1));
+    }
+    else
+    {
+      if(recruit_model == 3) // BH stock recruit (if ecov effect, already modified SR_a and/or SR_b)
+      {
+        pred_recruit = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
+        //pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1)/(1 + exp(log_SR_b(y))*SSB(y-1));
+      }
+      else // recruit_model = 4, Ricker stock recruit (if ecov effect, already modified SR_a and/or SR_b)
+      {
+        pred_recruit = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
+        //pred_NAA(y,0) = exp(log_SR_a(y)) * SSB(y-1) * exp(-exp(log_SR_b(y)) * SSB(y-1));
       }
     }
-  } */
-  if(N1_model == 2) //ar1 for each stock and region
+  }
+  return(pred_recruit);
+}
+
+

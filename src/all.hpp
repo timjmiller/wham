@@ -1,11 +1,12 @@
 #include <iostream>
 #include "helper_functions.hpp"
 //#include "spr.hpp"
-#include "N.hpp"
 #include "L.hpp"
 #include "Ecov.hpp"
 #include "M.hpp"
 #include "q.hpp"
+#include "move.hpp"
 #include "F.hpp"
+#include "N.hpp"
 #include "age_comp_osa.hpp"
 #include "age_comp_sim.hpp"
