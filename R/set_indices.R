@@ -24,8 +24,12 @@ set_indices = function(input, index_opts=NULL)
 	data$use_indices = matrix(1, data$n_years_model, data$n_indices)
 	data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
+	data$index_pal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths))
 	data$use_index_paa = matrix(1, data$n_years_model, data$n_indices)
+	data$use_index_pal = matrix(1, data$n_years_model, data$n_indices)
 	data$index_Neff = matrix(NA, data$n_years_model, data$n_indices)
+	data$index_NeffL = matrix(NA, data$n_years_model, data$n_indices)
+
 	if(!is.null(asap3))
 	{
 	  data$units_indices <- asap3$survey_index_units
@@ -73,11 +77,23 @@ set_indices = function(input, index_opts=NULL)
 		if(is.null(index_opts$index_paa)) data$index_paa[] = 1/data$n_ages
 		else data$index_paa[] = index_opts$index_paa
 
+		if(is.null(index_opts$index_pal)) data$index_pal[] = 1/data$n_lengths
+		else data$index_pal[] = index_opts$index_pal
+
 		if(is.null(index_opts$units_index_paa)) data$units_index_paa = rep(2,data$n_indices) #numbers
 		else data$units_index_paa = index_opts$units_index_paa
 
+		if(is.null(index_opts$units_index_pal)) data$units_index_pal = rep(2,data$n_indices) #numbers
+		else data$units_index_pal = index_opts$units_index_pal
+
 		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
 		else data$index_Neff[] = index_opts$index_Neff
+
+		if(is.null(index_opts$index_NeffL)) data$index_NeffL[] = 100
+		else data$index_NeffL[] = index_opts$index_NeffL
+
+		if(!is.null(index_opts$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa
+		if(!is.null(index_opts$use_index_pal)) data$use_index_pal[] = index_opts$use_index_pal
 
     if(is.null(index_opts$selblock_pointer_indices)) data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
     else data$selblock_pointer_indices = index_opts$selblock_pointer_indices
@@ -93,6 +109,7 @@ set_indices = function(input, index_opts=NULL)
   ################################################################################
 
   data$index_paa[is.na(data$index_paa)] = 0
+  data$index_pal[is.na(data$index_pal)] = 0
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))

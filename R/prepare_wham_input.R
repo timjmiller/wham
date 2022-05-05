@@ -223,7 +223,14 @@
 #'     \item{$fleets}{A vector of the above strings with length = the number of fleets.}
 #'     \item{$indices}{A vector of the above strings with length = the number of indices.}
 #'   }
-#'
+#' 
+#' \code{len_comp} specifies the length composition models for fleet(s) and indices.
+#' If \code{NULL}, the multinomial is used.
+#' The length composition models available are:
+#'   \describe{
+#'     \item{\code{"multinomial"}}{Multinomial. This is the default. 0 parameters.}
+#'   }
+#' 
 #' \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
 #' The current options are:
@@ -264,7 +271,7 @@
 #'     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
 #'     \item{$bias_correct_observation}{T/F. Perform bias correction of log-normal observations.}
 #'   }
-#' If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
+#' If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, \code{age_comp}, and \code{len_comp}, the information provided there
 #' must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.
 #'
 #' @param asap3 (optional) list containing data and parameters (output from \code{\link{read_asap3_dat}})
@@ -276,6 +283,7 @@
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)
 #' @param catchability (optional) list specifying options for priors and random effects on catchability (see details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
+#' @param len_comp (optional) character or named list, specifies length composition model for fleet(s) and indices (see details)
 #' @param basic_info (optional) list of basic population information for use when asap3 is not provided (see details)
 #'
 #' @return a named list with the following components:
@@ -307,7 +315,7 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, basic_info = NULL){
+prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, growth=NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -321,6 +329,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
+	if(!is.null(asap3) & !is.null(growth)) stop('Growth feature does not work with ASAP3 input. Please use the basic_info argument instead.')
+
 	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
 	else basic_info$recruit_model = recruit_model
 
@@ -329,12 +339,14 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
 	catch_opts = NULL
-	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
+	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
+					"catch_pal", "catch_NeffL", "use_catch_pal", "selblock_pointer_fleets")
 	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 
 	index_opts = NULL
-	index_names = c("n_indices", "agg_indices", "agg_index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
-		"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
+	index_names = c("n_indices", "agg_indices", "index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
+		"units_index_paa", "use_indices", "use_index_paa",
+		"index_pal", "index_NeffL", "units_index_pal", "use_index_pal", "selblock_pointer_indices")
 	if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
 
 	F_opts = NULL
@@ -391,9 +403,17 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	input = set_selectivity(input, selectivity)
 	#print("selectivity")
 
+	# Growth
+	input = set_growth(input, growth)
+	#print("growth")
+
 	# Age composition model
 	input = set_age_comp(input, age_comp)
 	#print("age_comp")
+
+	# Length composition model
+	input = set_len_comp(input, len_comp)
+	#print("len_comp")
 
 	#in case we want to add alternative F options
 	input = set_F(input, F_opts)

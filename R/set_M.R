@@ -10,6 +10,7 @@ set_M = function(input, M)
   data$M_est <- rep(0, data$n_M_a) # default = don't estimate M
   M_first_est = NA  
   M_re_ini = matrix(NA, data$n_years_model, data$n_M_a)
+  
   if(is.null(input$asap3)) asap3 = NULL
   else {
     asap3 = input$asap3

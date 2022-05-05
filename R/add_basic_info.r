@@ -11,6 +11,11 @@ add_basic_info <- function(input, basic_info){
 			input$data$n_ages = length(basic_info$ages)
 		}
 	}
+	input$data$n_lengths = 10
+	if(!is.null(basic_info$lengths)) {
+		input$data$lengths = basic_info$lengths
+		input$data$n_lengths = length(basic_info$lengths)
+	}
 	input$data$fracyr_SSB = rep(0.25, length(input$years))
 	if(!is.null(basic_info$fracyr_SSB)){
 		if(!(length(basic_info$fracyr_SSB) %in% c(1,length(input$years)))) stop("basic_info$fracyr_SSB has been specified, but it's length is not 1 or length(years)")

@@ -14,6 +14,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_indices); //same as n_years_model
   DATA_INTEGER(n_years_model); 
   DATA_INTEGER(n_ages);
+  DATA_INTEGER(n_lengths); // NEWG
+  DATA_VECTOR(lengths); // NEWG
   DATA_INTEGER(n_fleets);
   DATA_INTEGER(n_indices);
   DATA_INTEGER(n_selblocks);
@@ -28,6 +30,8 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(selblock_pointer_indices);
   DATA_IVECTOR(age_comp_model_fleets);
   DATA_IVECTOR(age_comp_model_indices);
+  DATA_IVECTOR(len_comp_model_fleets); // NEWG
+  DATA_IVECTOR(len_comp_model_indices); // NEWG
   DATA_VECTOR(fracyr_SSB);
   DATA_MATRIX(mature);
   DATA_IVECTOR(waa_pointer_fleets);
@@ -42,6 +46,11 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages
   DATA_IMATRIX(use_catch_paa);
   DATA_MATRIX(catch_Neff);
+  
+  DATA_ARRAY(catch_pal); //n_fleets x n_years x n_lengths // NEWG
+  DATA_IMATRIX(use_catch_pal); // NEWG
+  DATA_MATRIX(catch_NeffL); // NEWG
+  
   DATA_IVECTOR(units_indices);
   DATA_MATRIX(fracyr_indices);
   DATA_MATRIX(agg_indices);
@@ -51,6 +60,12 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(index_paa); //n_indices x n_years x n_ages
   DATA_IMATRIX(use_index_paa);
   DATA_MATRIX(index_Neff);
+  
+  DATA_IVECTOR(units_index_pal); // NEWG
+  DATA_ARRAY(index_pal); //n_indices x n_years x n_ages // NEWG
+  DATA_IMATRIX(use_index_pal); // NEWG
+  DATA_MATRIX(index_NeffL);// NEWG
+  
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
   DATA_IVECTOR(use_q_prior);
@@ -69,6 +84,11 @@ Type objective_function<Type>::operator() ()
   //DATA_IVECTOR(M_est); // Is mean M estimated for each age? If M-at-age, dim = length(n_M_a). If constant or weight-at-age M, dim = 1.
   //DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_b_prior);
+  
+  DATA_INTEGER(n_growth); // NEWG TODO: change this parameter name
+  DATA_INTEGER(growth_model); // 1: "vB-classic", 2: "vB-K_age" NEWG
+  DATA_IVECTOR(growth_re_model); // 1 = none, 2 = IID, 3 = ar1_y NEWG
+  
   DATA_IVECTOR(which_F_age); //which age of F to use for full total F for msy/ypr calculations and projections (n_years_model + n_years_proj)
   DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
@@ -156,11 +176,19 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   //PARAMETER_VECTOR(catch_paa_pars);
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
+  PARAMETER_MATRIX(catch_pal_pars); //n_fleets x 3 // NEWG
   //PARAMETER_VECTOR(index_paa_pars);
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
+  PARAMETER_MATRIX(index_pal_pars); //n_indices x 3 // NEWG
   PARAMETER_VECTOR(M_a); // mean M-at-age, fixed effects, length = n_ages if M_model = 2 (age-specific), length = 1 if M_model = 1 (constant) or 3 (weight-at-age M)
   PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean M_a), dim = n_years x n_M_a
   PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
+  
+  // NEWG section: growth parameters:
+  PARAMETER_VECTOR(growth_a); //  length = npars_growth
+  PARAMETER_ARRAY(growth_re); // nyears x npars_growth     
+  PARAMETER_ARRAY(growth_repars); //  npars_growth x npars_re     
+  
   PARAMETER(log_b);
   PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
   PARAMETER_VECTOR(log_index_sig_scale) //n_indices
@@ -176,20 +204,30 @@ Type objective_function<Type>::operator() ()
   Type nll= 0.0; //negative log-likelihood
   vector<int> any_index_age_comp(n_indices);
   vector<int> any_fleet_age_comp(n_fleets);
+  vector<int> any_index_len_comp(n_indices);  // NEWG
+  vector<int> any_fleet_len_comp(n_fleets);  // NEWG
   vector<Type> SSB(n_years_model + n_years_proj);
   matrix<Type> F(n_years_model,n_fleets);
   matrix<Type> log_F(n_years_model,n_fleets);
   array<Type> pred_CAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> pred_catch_paa(n_years_model+n_years_proj,n_fleets,n_ages);
+  array<Type> pred_CAL(n_years_model+n_years_proj,n_fleets,n_lengths); // NEWG
+  array<Type> pred_catch_pal(n_years_model+n_years_proj,n_fleets,n_lengths); // NEWG
   matrix<Type> pred_catch(n_years_model+n_years_proj,n_fleets);
   matrix<Type> pred_log_catch(n_years_model+n_years_proj,n_fleets);
   array<Type> pred_IAA(n_years_model+n_years_proj,n_indices,n_ages);
   array<Type> pred_index_paa(n_years_model+n_years_proj,n_indices,n_ages);
+  array<Type> pred_IAL(n_years_model+n_years_proj,n_indices,n_lengths); // NEWG
+  array<Type> pred_index_pal(n_years_model+n_years_proj,n_indices,n_lengths); // NEWG
   matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices); // not bias corrected
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
+  array<Type> LAA(n_lengths,n_ages,n_years_model + n_years_proj);// NEWG
+  matrix<Type> mLAA(n_years_model + n_years_proj,n_ages);// NEWG
+  matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
+  // matrix<Type> pred_mLAA(n_years_model + n_years_proj,n_ages); // NEWG
   array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
@@ -199,6 +237,8 @@ Type objective_function<Type>::operator() ()
   matrix<Type> q(n_years_model+n_years_proj,n_indices);
   vector<Type> t_paa(n_ages);
   vector<Type> t_pred_paa(n_ages);
+  vector<Type> t_pal(n_lengths); // NEWG
+  vector<Type> t_pred_pal(n_lengths); // NEWG
   int n_toavg = avg_years_ind.size();
 
   //Type SR_a, SR_b, SR_R0, SR_h;
@@ -212,6 +252,18 @@ Type objective_function<Type>::operator() ()
     any_fleet_age_comp(i) = 0;
     for(int y = 0; y < n_years_catch; y++) if(use_catch_paa(y,i) == 1) any_fleet_age_comp(i) = 1;
   }
+  // NEWG section:
+  for(int i = 0; i < n_indices; i++)
+  {
+    any_index_len_comp(i) = 0;
+    for(int y = 0; y < n_years_indices; y++) if(use_index_pal(y,i) == 1) any_index_len_comp(i) = 1;
+  }
+  for(int i = 0; i < n_fleets; i++)
+  {
+    any_fleet_len_comp(i) = 0;
+    for(int y = 0; y < n_years_catch; y++) if(use_catch_pal(y,i) == 1) any_fleet_len_comp(i) = 1;
+  }
+
 
   // Selectivity --------------------------------------------------------------
   vector<array<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
@@ -464,6 +516,86 @@ Type objective_function<Type>::operator() ()
           }
         }
       }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Calculate GROWTH --  NEWG section
+  Type nll_GW = Type(0);
+  
+  // For K parameter:
+  matrix<Type> GW_re = growth_re.matrix(); // CHANGETHIS
+  matrix<Type> GW_repars = growth_repars.matrix(); // CHANGETHIS
+  vector<Type> sigma_GW(n_growth); // first RE parameter
+  vector<Type> rho_GW_y(n_growth);  // second RE parameter
+  Type Sigma_GW = Type(0);
+
+  for(int j = 0; j < n_growth; j++) {
+  
+	  if(growth_re_model(j) > 1) { // Only for ii and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
+		
+		sigma_GW(j) = exp(GW_repars(j,0));
+        rho_GW_y(j) = rho_trans(GW_repars(j,1));  
+		// likelihood of growth parameters deviations
+			vector<Type> GWre0 = GW_re.col(j);
+			Sigma_GW = pow(pow(sigma_GW(j),2) / (1-pow(rho_GW_y(j),2)),0.5);
+			nll_GW += SCALE(AR1(rho_GW_y(j)), Sigma_GW)(GWre0);
+			SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
+			  AR1(rho_GW_y(j)).simulate(GWre0);
+			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
+			  for(int y = 0; y < n_years_model + n_years_proj; y++){
+				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
+				  GW_re(y,j) = GWre0(y);
+				}
+			  }
+			}
+
+		if(do_post_samp.sum()==0){
+		  ADREPORT(sigma_GW);
+		  ADREPORT(rho_GW_y);
+		}
+		
+	  }
+  
+  }
+  
+  REPORT(nll_GW);
+  // nll += nll_GW; do it later
+  REPORT(GW_re); //
+  if(do_post_samp(1) == 1) ADREPORT(GW_re);
+
+  // Construct growth parameters per year NEWG
+  matrix<Type> GW_par(n_years_model + n_years_proj,n_growth); // matrix for growth parameters
+  for(int y = 0; y < n_years_model; y++) { 
+	for(int k = 0; k < n_growth; k++) { 
+		// For growth_model == 1
+		if(k == 2) GW_par(y,k) = growth_a(k) + GW_re(y,k);
+		else GW_par(y,k) = exp(growth_a(k) + GW_re(y,k));
+	}
+  }
+
+
+  // add to growth parameters in projection years CHECK THIS
+  if(do_proj == 1){ 
+
+    for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
+		for(int k = 0; k < n_growth; k++) { 
+			// For growth_model == 1
+			if(k == 2) GW_par(y,k) = growth_a(k) + GW_re(y,k);
+			else GW_par(y,k) = exp(growth_a(k) + GW_re(y,k));
+		}
+	}
+
+  }
+  
+  // add ecov effect on growth paramteres
+  for(int i=0; i < n_Ecov; i++){
+    if(Ecov_where(i,1) == 1) { 
+        for(int y = 0; y < n_years_model + n_years_proj; y++) {
+			for(int k = 0; k < n_growth; k++) { 
+				GW_par(y,k) *= exp(Ecov_lm(i,1,y,0)); // a = 0
+			}
+		}
     }
   }
 
@@ -723,6 +855,42 @@ Type objective_function<Type>::operator() ()
     pred_NAA(0,a) = NAA(0,a);
   }
 
+  // Set initial mean-LAA, SDAA, and transition matrix: NEWG
+  // Some information I need for transition matrix: 
+  Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
+  Type Lminp = min(lengths) - len_bin*0.5;
+  Type Lmaxp = max(lengths) - len_bin*0.5;
+  Type Fac1 = 0.0;
+  Type Fac2 = 0.0;
+  Type Ll1p = 0.0;
+  Type Llp = 0.0;
+  for(int a = 0; a < n_ages; a++)
+  {
+        mLAA(0,a) = GW_par(0,1)*(1.0 - exp(-GW_par(0,0)*((a + 1.0) - GW_par(0,2)))); // for growth_model = 1
+		SDAA(0,a) = ( GW_par(0,3) + ((GW_par(0,4) - GW_par(0,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // 
+		// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
+		for(int l = 0; l < n_lengths; l++) {
+			
+			if(l == 0) { 
+				Fac1 = (Lminp - mLAA(0,a))/SDAA(0,a);
+				LAA(l,a,0) = pnorm(Fac1);  
+			} else {
+				if(l == (n_lengths-1)) { 
+					Fac1 = (Lmaxp - mLAA(0,a))/SDAA(0,a);
+					LAA(l,a,0) = 1.0 - pnorm(Fac1);  
+				} else { 
+				    Ll1p = lengths(l) + len_bin*0.5;
+					Llp = lengths(l) - len_bin*0.5;
+					Fac1 = (Ll1p - mLAA(0,a))/SDAA(0,a);
+					Fac2 = (Llp - mLAA(0,a))/SDAA(0,a);
+					LAA(l,a,0) = pnorm(Fac1) - pnorm(Fac2);  
+				}
+			}
+			
+		}
+  }
+  
+
   // get SPR0
   vector<Type> M(n_ages), sel(n_ages), mat(n_ages), waacatch(n_ages), waassb(n_ages), log_SPR0(n_years_model + n_years_proj);
   int na = n_years_model + n_years_proj;
@@ -831,7 +999,7 @@ Type objective_function<Type>::operator() ()
   }
   
   // ---------------------------------------------------------------------------------
-  // Population model (get NAA, numbers-at-age, for all years)
+  // Population model (get NAA, numbers-at-age, LAA, for all years)
   for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     
@@ -856,6 +1024,38 @@ Type objective_function<Type>::operator() ()
       }
     }
         
+	// Calculate LAA: (beginning of the year y) NEWG
+	  for(int a = 0; a < n_ages; a++)
+	  {
+			if(a == 0) { 
+				mLAA(y,a) = GW_par(y,1)*(1.0 - exp(-GW_par(y,0)*((a + 1.0) - GW_par(y,2)))); // for growth_model = 1
+			} else {
+				mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y,1))*(exp(-GW_par(y,0)) - 1.0);
+			}
+			SDAA(y,a) = ( GW_par(y,3) + ((GW_par(y,4) - GW_par(y,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // 
+			// pred_mLAA(y,a) = mLAA(y,a); // predicted mean length at age, is it necessary?
+			for(int l = 0; l < n_lengths; l++) {
+				
+				if(l == 0) { 
+					Fac1 = (Lminp - mLAA(y,a))/SDAA(y,a);
+					LAA(l,a,y) = pnorm(Fac1);  
+				} else {
+					if(l == (n_lengths-1)) { 
+						Fac1 = (Lmaxp - mLAA(y,a))/SDAA(y,a);
+						LAA(l,a,y) = 1.0 - pnorm(Fac1);  
+					} else { 
+						Ll1p = lengths(l) + len_bin*0.5;
+						Llp = lengths(l) - len_bin*0.5;
+						Fac1 = (Ll1p - mLAA(y,a))/SDAA(y,a);
+						Fac2 = (Llp - mLAA(y,a))/SDAA(y,a);
+						LAA(l,a,y) = pnorm(Fac1) - pnorm(Fac2);  
+					}
+				}
+				
+			}
+	  }	
+		
+		
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
     if(do_proj == 1){ // now need FAA by fleet for projections, use total of average FAA by fleet over avg.yrs
       // get selectivity using average over avg.yrs
@@ -1301,6 +1501,10 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_NAA_rep = log(NAA.array());
 
   REPORT(NAA);
+  REPORT(LAA); // NEWG
+  REPORT(mLAA); // NEWG
+  REPORT(SDAA); // NEWG
+  REPORT(GW_par); // NEWG
   REPORT(pred_NAA);
   REPORT(SSB);
   REPORT(selAA);

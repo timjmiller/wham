@@ -17,6 +17,10 @@ set_catch = function(input, catch_opts= NULL)
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
   data$use_agg_catch = matrix(1, data$n_years_model, data$n_fleets)
   data$use_catch_paa = matrix(1, data$n_years_model, data$n_fleets)
+
+  data$catch_pal = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_lengths))
+  data$use_catch_pal = matrix(1, data$n_years_model, data$n_fleets)  
+  
 	if(!is.null(asap3))
 	{
     data$n_fleets = asap3$n_fleets
@@ -56,22 +60,33 @@ set_catch = function(input, catch_opts= NULL)
   	if(is.null(catch_opts$catch_paa)) data$catch_paa[] = 1/data$n_ages
     else data$catch_paa[] = catch_opts$catch_paa
 
-		if(is.null(catch_opts$catch_cv)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
+  	if(is.null(catch_opts$catch_pal)) data$catch_pal[] = 1/data$n_lengths
+    else data$catch_pal[] = catch_opts$catch_pal
+	
+	if(is.null(catch_opts$catch_cv)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
     else data$agg_catch_sigma = matrix(sqrt((log(catch_opts$catch_cv^2 + 1))), data$n_years_model, data$n_fleets)
 	  
     if(is.null(catch_opts$catch_Neff)) data$catch_Neff = matrix(200, data$n_years_model, data$n_fleets)	  
     else data$catch_Neff = catch_opts$catch_Neff
 
+    if(is.null(catch_opts$catch_NeffL)) data$catch_NeffL = matrix(200, data$n_years_model, data$n_fleets)	  
+    else data$catch_NeffL = catch_opts$catch_NeffL
+
     if(!is.null(catch_opts$use_catch_paa)) data$use_catch_paa[] = catch_opts$use_catch_paa
+    if(!is.null(catch_opts$use_catch_pal)) data$use_catch_pal[] = catch_opts$use_catch_pal
 
     for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
       if(data$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2 | any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0
+    }
+    for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
+      if(data$catch_NeffL[y,i] < 1e-15 | sum(data$catch_pal[i,y,] > 1e-15)<2 | any(is.na(data$catch_pal[i,y,]))) data$use_catch_pal[y,i] = 0
     }
     if(is.null(catch_opts$selblock_pointer_fleets)) data$selblock_pointer_fleets = matrix(rep(1:data$n_fleets, each = data$n_years_model), data$n_years_model, data$n_fleets)
     else data$selblock_pointer_fleets = catch_opts$selblock_pointer_fleets
   }
 
   data$catch_paa[is.na(data$catch_paa)] = 0
+  data$catch_pal[is.na(data$catch_pal)] = 0
 
   input$par$log_catch_sig_scale = rep(0, data$n_fleets)
   input$map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
