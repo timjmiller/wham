@@ -1387,16 +1387,16 @@ Type objective_function<Type>::operator() ()
           nll_index_lcomp(y,i) -= get_lcomp_ll(t_pal, t_pred_pal, index_NeffL(y,i), len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)),//acomp_pars, 
             keep.segment(keep_Ipal(i,y,0),n_lengths), do_osa);
         }
-        // SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
-          // t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
-          // if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
-            // index_pal(i,y,l) = t_pal(l);
-            // obsvec(keep_Ipal(i,y,l)) = t_pal(l);
-          // }
-          // if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
-            // index_pal_proj(i,y-n_years_model,l) = t_pal(l);
-          // }
-        // }
+        SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
+          t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
+          if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
+            index_pal(i,y,l) = t_pal(l);
+            obsvec(keep_Ipal(i,y,l)) = t_pal(l);
+          }
+          if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
+            index_pal_proj(i,y-n_years_model,l) = t_pal(l);
+          }
+        }
       }	  
 	  
     }
