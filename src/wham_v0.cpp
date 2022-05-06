@@ -188,8 +188,8 @@ Type objective_function<Type>::operator() ()
   
   // NEWG section: growth parameters:
   PARAMETER_VECTOR(growth_a); //  length = npars_growth
-  PARAMETER_ARRAY(growth_re); // nyears x npars_growth     
-  PARAMETER_ARRAY(growth_repars); //  npars_growth x npars_re     
+  PARAMETER_MATRIX(growth_re); // nyears x npars_growth     
+  PARAMETER_MATRIX(growth_repars); //  npars_growth x npars_re     
   
   PARAMETER(log_b);
   PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
@@ -531,8 +531,6 @@ Type objective_function<Type>::operator() ()
   Type nll_GW = Type(0);
   
   // For K parameter:
-  matrix<Type> GW_re = growth_re.matrix(); // CHANGETHIS
-  matrix<Type> GW_repars = growth_repars.matrix(); // CHANGETHIS
   vector<Type> sigma_GW(n_growth); // first RE parameter
   vector<Type> rho_GW_y(n_growth);  // second RE parameter
   Type Sigma_GW = Type(0);
@@ -541,10 +539,10 @@ Type objective_function<Type>::operator() ()
   
 	  if(growth_re_model(j) > 1) { // Only for ii and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
 		
-		sigma_GW(j) = exp(GW_repars(j,0));
-        rho_GW_y(j) = rho_trans(GW_repars(j,1));  
+		sigma_GW(j) = exp(growth_repars(j,0));
+        rho_GW_y(j) = rho_trans(growth_repars(j,1));  
 		// likelihood of growth parameters deviations
-			vector<Type> GWre0 = GW_re.col(j);
+			vector<Type> GWre0 = growth_re.col(j);
 			Sigma_GW = pow(pow(sigma_GW(j),2) / (1-pow(rho_GW_y(j),2)),0.5);
 			nll_GW += SCALE(AR1(rho_GW_y(j)), Sigma_GW)(GWre0);
 			SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
@@ -552,7 +550,7 @@ Type objective_function<Type>::operator() ()
 			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  GW_re(y,j) = GWre0(y);
+				  growth_re(y,j) = GWre0(y);
 				}
 			  }
 			}
@@ -567,17 +565,19 @@ Type objective_function<Type>::operator() ()
   }
   
   REPORT(nll_GW);
-  // nll += nll_GW; do it later
-  REPORT(GW_re); //
-  if(do_post_samp(1) == 1) ADREPORT(GW_re);
+  nll += nll_GW; 
+  REPORT(growth_a);
+  REPORT(growth_re);
+  REPORT(growth_repars);
+  if(do_post_samp(1) == 1) ADREPORT(growth_re);
 
   // Construct growth parameters per year NEWG
   matrix<Type> GW_par(n_years_model + n_years_proj,n_growth); // matrix for growth parameters
   for(int y = 0; y < n_years_model; y++) { 
 	for(int k = 0; k < n_growth; k++) { 
 		// For growth_model == 1
-		if(k == 2) GW_par(y,k) = growth_a(k) + GW_re(y,k);
-		else GW_par(y,k) = exp(growth_a(k) + GW_re(y,k));
+		if(k == 2) GW_par(y,k) = growth_a(k) + growth_re(y,k);
+		else GW_par(y,k) = exp(growth_a(k) + growth_re(y,k));
 	}
   }
 
@@ -588,8 +588,8 @@ Type objective_function<Type>::operator() ()
     for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 		for(int k = 0; k < n_growth; k++) { 
 			// For growth_model == 1
-			if(k == 2) GW_par(y,k) = growth_a(k) + GW_re(y,k);
-			else GW_par(y,k) = exp(growth_a(k) + GW_re(y,k));
+			if(k == 2) GW_par(y,k) = growth_a(k) + growth_re(y,k);
+			else GW_par(y,k) = exp(growth_a(k) + growth_re(y,k));
 		}
 	}
 
@@ -1292,7 +1292,7 @@ Type objective_function<Type>::operator() ()
   REPORT(nll_catch_acomp);
   REPORT(nll_catch_lcomp);
   nll += nll_catch_acomp.sum();
-  // nll += nll_catch_lcomp.sum(); // do this later
+  nll += nll_catch_lcomp.sum(); // do this later
   //see(nll);
 
   // -----------------------------------------------------------------------------
@@ -1387,16 +1387,16 @@ Type objective_function<Type>::operator() ()
           nll_index_lcomp(y,i) -= get_lcomp_ll(t_pal, t_pred_pal, index_NeffL(y,i), len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)),//acomp_pars, 
             keep.segment(keep_Ipal(i,y,0),n_lengths), do_osa);
         }
-        SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
-          t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
-          if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
-            index_pal(i,y,l) = t_pal(l);
-            obsvec(keep_Ipal(i,y,l)) = t_pal(l);
-          }
-          if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
-            index_pal_proj(i,y-n_years_model,l) = t_pal(l);
-          }
-        }
+        // SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
+          // t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
+          // if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
+            // index_pal(i,y,l) = t_pal(l);
+            // obsvec(keep_Ipal(i,y,l)) = t_pal(l);
+          // }
+          // if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
+            // index_pal_proj(i,y-n_years_model,l) = t_pal(l);
+          // }
+        // }
       }	  
 	  
     }
@@ -1413,7 +1413,7 @@ Type objective_function<Type>::operator() ()
   REPORT(nll_index_acomp);
   REPORT(nll_index_lcomp);
   nll += nll_index_acomp.sum();
-  // nll += nll_index_lcomp.sum();
+  nll += nll_index_lcomp.sum();
   //see(nll);
   
   SIMULATE if(sum(simulate_data) > 0) REPORT(obsvec);
