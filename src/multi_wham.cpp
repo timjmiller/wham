@@ -20,15 +20,14 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(n_ages_indices);
   DATA_IVECTOR(mig_type); //n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
   
-  DATA_MATRIX(fracseason_SSB); //n_years x n_stocks
-  DATA_MATRIX(fracyr_SSB); //n_years x n_stocks
+  DATA_MATRIX(fracyr_SSB); //n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
   DATA_IVECTOR(spawn_regions); //n_stocks
   DATA_IVECTOR(spawn_seasons); //n_stocks
-  DATA_IARRAY(n_mu) //n_stocks x n_years x x n_seasons x n_ages
-  DATA_IVECTOR(mu_row) //length the total number of migration parameters
-  DATA_IVECTOR(mu_col) //length the total number of migration parameters
-  DATA_IVECTOR(mu_pointer) //n_stocks * n_years * n_ages
-  DATA_INTEGER(n_seasons_recruited); //easiest if this is = to n_seasons 
+  //DATA_IARRAY(n_mu) //n_stocks x n_years x x n_seasons x n_ages
+  //DATA_IVECTOR(mu_row) //length the total number of migration parameters
+  //DATA_IVECTOR(mu_col) //length the total number of migration parameters
+  //DATA_IVECTOR(mu_pointer) //n_stocks * n_years * n_ages
+  //DATA_INTEGER(n_seasons_recruited); //easiest if this is = n_seasons 
   DATA_ARRAY(mature); //n_stocks x n_years x n_ages
   DATA_IVECTOR(waa_pointer_fleets);
   DATA_IVECTOR(waa_pointer_totcatch); //n_regions
@@ -51,7 +50,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(index_regions); //length = n_indices
   DATA_IVECTOR(index_seasons); //n_indices x n_seasons. indicator must only be for one season
   DATA_IVECTOR(units_indices); //length = n_indices
-  DATA_MATRIX(fracyr_indices); //n_years x n_indices
+  DATA_MATRIX(fracyr_indices); //n_years x n_indices: size of interval from beginning of season to time of surve within that season
   DATA_MATRIX(agg_indices); //n_years x n_indices
   DATA_IMATRIX(use_indices);  //n_years x n_indices
   DATA_MATRIX(agg_index_sigma); //n_years x n_indices
@@ -81,19 +80,27 @@ Type objective_function<Type>::operator() ()
   
   DATA_IVECTOR(recruit_model); //length = n_stocks
   DATA_INTEGER(N1_model); //0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
-  DATA_IMATRIX(N1_where); //n_stocks x n_regions: 0/1 whether N1 exists in region at beginning of model. Also controls inclusion of any RE in nll.
+  DATA_IMATRIX(NAA_where); //n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
   DATA_IVECTOR(n_M_a); //length = n_regions
   DATA_IMATRIX(n_M_re); // n_stocks x n_regions how many time-varying RE each year? n_ages? 1? n_est_M?
   DATA_IVECTOR(M_model); //length = n_regions; 1: "all ages all stocks", 2: "by age all stocks", 3: "weight-at-age all stocks", 4: "all ages by stock", 5: "by age by stock", 6: "weight-at-age by stock"
   DATA_IVECTOR(M_re_model); //length = n_regions; 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
-  DATA_IVECTOR(use_b_prior); //length = n_regions; for M_model = 3: M = a*W^b model
+  DATA_INTEGER(use_b_prior); //for M_model = 3: M = a*W^b model, use prior (and re) for log_b
+  DATA_INTEGER(log_b_model); //1: constant, 2: differ by stock, 3: differ by region, 4: differ by both
   DATA_IVECTOR(L_model); //length = n_regions; L_model = 0: don't use L (extra mortality); L_model = 1: use constant L; L_model = 2: use iid re; L_model = 3: use ar1 re 
   DATA_IARRRAY(can_move); //n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
   DATA_IARRRAY(must_move); //n_stocks x ages x n_seasons x n_regions: 0/1 determining if it must leave the region
   DATA_IARRAY(use_mu_prior); //n_stocks x ages x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
-  DATA_IARRAY(use_mu_re); //n_stocks x ages x n_seasons x n_years_model x n_regions x n_regions-1: 0/1 whether to use temporal RE for each movement parameter
+  DATA_INTEGER(mu_model); 
+  // 1 = constant across stocks, ages, time (n_seasons x n_regions x (n_regions -1) pars). 
+  // 2 = differ by age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
+  // 3 = differ by year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
+  // 4 = differ by stock (n_seasons x n_stocks x n_regions x (n_regions -1) pars). 
+  // 5 = differ by stock, age (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
+  // 6 = differ by stock, year (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
+  //DATA_IARRAY(use_mu_re); //n_stocks x ages x n_seasons x n_years_model x n_regions x n_regions-1: 0/1 whether to use temporal RE for each movement parameter
   
-  DATA_IMATRIX(which_F_age); // (n_years_model + n_years_proj) x n_stocks; which age of F to use for full total F for msy/ypr calculations and projections
+  DATA_IVECTOR(which_F_age); // (n_years_model + n_years_proj) x n_stocks; which age of F to use for full total F for msy/ypr calculations and projections
   DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
@@ -211,9 +218,11 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_index_sig_scale) //n_indices
   
   PARAMETER_ARRAY(M_a); // (n_stocks x n_regions x n_ages) mean M-at-age, fixed effects, length = n_ages if M_model = 2 (age-specific), length = 1 if M_model = 1 (constant) or 3 (weight-at-age M)
-  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean M_a), dim = n_stocks x n_regions x n_years x n_ages
+  PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean M_a, dim = n_stocks x n_regions x n_years x n_ages
   PARAMETER_ARRAY(M_repars); // parameters controlling M_re, (n_stocks x n_regions x length = 3 (sigma_M, rho_M_a, rho_M_y))
   PARAMETER_MATRIX(log_b); //n_stocks x n_regions (for M = a * W^b model)
+  PARAMETER_ARRAY(L_re); // random effects for year- and region-varying extra/unknown mortality source, dim = n_years x n_regions
+  PARAMETER_ARRAY(L_repars); // random effects for year- and region-varying extra/unknown mortality source, dim = n_years x n_regions
 
   // parameters - environmental covariate ("Ecov")
   PARAMETER_MATRIX(Ecov_re); // nrows = n_years_Ecov, ncol = N_Ecov
@@ -227,7 +236,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_obs_logsigma_re); // N_Ecov_years x n_Ecov. columns of random effects used if Ecov_obs_sigma_opt = 4 
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
   Type nll = 0.0; //negative log-likelihood
-  
+  int n_years_pop = n_years_model + n_years_proj;
   
   
   /////////////////////////////////////////
@@ -297,7 +306,7 @@ Type objective_function<Type>::operator() ()
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out_*(t) for processes in year t, instead of Ecov_x
   //Recruit
-  array<Type> Ecov_out_R(n_stocks, n_years_model+n_years_proj, n_Ecov);
+  array<Type> Ecov_out_R(n_stocks, n_years_pop, n_Ecov);
   Ecov_out_R.setZero();
   for(int s = 0; s < n_stocks; s++){
     vector<int> t_ind_s = ind_Ecov_out_start_R.col(s);
@@ -307,7 +316,7 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(Ecov_out_R);
   
-  array<Type> Ecov_lm_R(n_stocks, n_regions, n_years_model + n_years_proj, n_Ecov); 
+  array<Type> Ecov_lm_R(n_stocks, n_regions, n_years_pop, n_Ecov); 
   int n_poly_R = Ecov_beta_R.dim(3); // now a 4D array dim: (n_stocks,n_regions, n_Ecov, n_poly)
   matrix<Type> Ecov_beta_R_s_r(n_Ecov,n_poly_R);
   for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
@@ -319,7 +328,7 @@ Type objective_function<Type>::operator() ()
   ///////////////////////
   
   //M
-  array<Type> Ecov_out_M(n_stocks, n_ages, n_regions, n_years_model+n_years_proj, n_Ecov);
+  array<Type> Ecov_out_M(n_stocks, n_ages, n_regions, n_years_pop, n_Ecov);
   Ecov_out_M.setZero();
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
     vector<int> t_ind_s(n_Ecov), t_ind_e(n_Ecov);
@@ -332,7 +341,7 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(Ecov_out_M);
   //M
-  array<Type> Ecov_lm_M(n_stocks, n_regions, n_ages, n_years_model + n_years_proj, n_Ecov); 
+  array<Type> Ecov_lm_M(n_stocks, n_regions, n_ages, n_years_pop, n_Ecov); 
   int n_poly_M = Ecov_beta_M.dim(4); // now a 5D array dim: (n_stocks, n_ages, n_regions, n_Ecov, n_poly)
   for(int a = 0; a < n_ages_model; a++){
     matrix<Type> Ecov_beta_M_s_r(n_Ecov,n_poly_M);
@@ -345,7 +354,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_lm_M);
   
   //q
-  array<Type> Ecov_out_q(n_indices, n_years_model+n_years_proj, n_Ecov);
+  array<Type> Ecov_out_q(n_indices, n_years_pop, n_Ecov);
   for(int i = 0; i < n_indices; i++){
     vector<int> t_ind_s = ind_Ecov_out_start_q.col(i);
     vector<int> t_ind_e = ind_Ecov_out_end_q.col(i);
@@ -353,7 +362,7 @@ Type objective_function<Type>::operator() ()
     for(int j = 0; j < tmp.rows(); j++) for(int k = 0; k < n_Ecov; k++) Ecov_out_q(i,j,k) = tmp(j,k);
   }
   REPORT(Ecov_out_q);
-  array<Type> Ecov_lm_q(n_indices,n_years_model + n_years_proj, n_Ecov); 
+  array<Type> Ecov_lm_q(n_indices,n_years_pop, n_Ecov); 
   int n_poly_q = Ecov_beta_q.dim(2); // now a 3D array dim: (n_indices, n_Ecov, n_poly)
   for(int a = 0; a < n_indices; a++){
     matrix<Type> Ecov_beta_q_a(n_Ecov,n_poly_q);
@@ -366,7 +375,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_lm_q);
   
   //mu
-  array<Type> Ecov_out_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_model+n_years_proj, n_Ecov);
+  array<Type> Ecov_out_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov);
   for(int h = 0; h < n_stocks; h++) for(int i = 0; i < n_regions-1; i++){
     vector<int> t_ind_s(n_Ecov), t_int_e(n_Ecov);
     for(int l = 0; l < n_Ecov; l++) t_ind_s(l) = ind_Ecov_out_start_mu(i,j,l);
@@ -375,7 +384,7 @@ Type objective_function<Type>::operator() ()
     for(int j = 0; j < tmp.rows(); j++) for(int i = 0; i < n_Ecov; i++) Ecov_out_mu(h,i,j,k) = tmp(j,k);
   }
   REPORT(Ecov_out_mu);
-  array<Type> Ecov_lm_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_model + n_years_proj, n_Ecov);
+  array<Type> Ecov_lm_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov);
   int n_poly_mu = Ecov_beta_mu.dim(5); // now a 6D array dim: (n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_Ecov, n_poly)
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages_model; a++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
     matrix<Type> Ecov_beta_mu_s_r(n_Ecov,n_poly_mu);
@@ -388,11 +397,11 @@ Type objective_function<Type>::operator() ()
   // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
   // ecov_beta is now 4D array, dim = (2 + n_indices) x n_poly x n_ecov x n_ages
   //int n_poly = Ecov_beta.dim(1); // now a 4D array dim: (n_effects,n_poly,n_Ecov,n_ages) is second dimension
-  //vector<matrix<Type>> Ecov_lm(n_Ecov)(n_effects); // ecov linear model for each Ecov, dim = n_years_model + n_years_proj, n_ages
+  //vector<matrix<Type>> Ecov_lm(n_Ecov)(n_effects); // ecov linear model for each Ecov, dim = n_years_pop, n_ages
   // Ecov_lm.setZero();
-  // Ecov_lm stores the linear models for each Ecov and where it is used. dim = n_Ecov, n_effects, n_years_model + n_years_proj, n_ages
+  // Ecov_lm stores the linear models for each Ecov and where it is used. dim = n_Ecov, n_effects, n_years_pop, n_ages
   // n_effects dimension is: 0: recruitment, 1: M, 2-1+n_indices: which catchability it affects
-  //array<Type> Ecov_lm(n_Ecov, n_effects,n_years_model + n_years_proj, n_ages); 
+  //array<Type> Ecov_lm(n_Ecov, n_effects,n_years_pop, n_ages); 
   /////////////////////////////////////////
   
   vector<int> any_index_age_comp(n_indices);
@@ -519,11 +528,11 @@ Type objective_function<Type>::operator() ()
   /////////////////////////////////////////
   //extra mortality parameter: missing catch?
   if(L_model.sum()>0) {
-    vector<Type> nll_L = get_nll_L(L_model, L_pars, L_re);
+    vector<Type> nll_L = get_nll_L(L_model, L_repars, L_re);
     nll += nll_L.sum();
     REPORT(nll_L);
     SIMULATE if(do_simulate_L_re==1){
-      L_re = simulate_L_re(L_model, L_pars, L_re);
+      L_re = simulate_L_re(L_model, L_repars, L_re);
       REPORT(L_re);
     }
   }
@@ -556,10 +565,10 @@ Type objective_function<Type>::operator() ()
   REPORT(logit_q_mat);
   if(use_q_re.sum()>0) if(do_post_samp_q==0) ADREPORT(logit_q_mat);
   
-  //n_years_model+n_years_proj x n_indices;
+  //n_years_pop x n_indices;
   matrix<Type> q = get_q(logit_q_mat, q_lower, q_upper);
   REPORT(q);
-  //n_indices x n_years_model + n_years_proj x n_ages;
+  //n_indices x n_years_pop x n_ages;
   array<Type> QAA = get_QAA(q,selAA, selblock_pointer_indices, q_lower, q_upper, n_years_model, n_ages);
   REPORT(QAA);
   /////////////////////////////////////////
@@ -575,6 +584,18 @@ Type objective_function<Type>::operator() ()
     REPORT(M_re);
   }
   if(do_post_samp_M == 1) ADREPORT(M_re);
+
+  //log_b prior for M_model = 3
+  if(use_log_b_prior==1){
+    matrix<Type> nll_log_b = get_nll_log_b(log_b_model, log_b, bias_correct_pe);
+    nll += nll_log_b.sum();
+    REPORT(nll_log_b);
+    SIMULATE if(do_simulate_M_re == 1){
+      log_b = simulate_log_b(log_b_model, log_b, bias_correct);
+      REPORT(log_b);
+    }
+    if(do_post_samp_M == 1) ADREPORT(log_b);
+  }
   
   //n_stocks x n_regions x n_years x n_ages
   array<Type> log_M_base = get_log_M_base(M_re, M_model, n_years_model, M_a, log_b, waa, waa_pointer_M, Ecov_lm, use_Ecov, do_proj, proj_M_opt);
@@ -583,32 +604,38 @@ Type objective_function<Type>::operator() ()
   
   /////////////////////////////////////////
   //movement
+  // mu_model: 
+  // 1 = constant across stocks, ages, time (n_seasons x n_regions x (n_regions -1) pars). 
+  // 2 = differ by age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
+  // 3 = differ by year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
+  // 4 = differ by stock (n_seasons x n_stocks x n_regions x (n_regions -1) pars). 
+  // 5 = differ by stock, age (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
+  // 6 = differ by stock, year (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
   //priors, RE, get full lm link for migration parameters
-  array<Type>mu(n_stocks,n_ages,n_seasons,n_years,n_regions,n_regions-1);
-  mu.setZero();
   if(n_regions>1){//only do this mess if the number of regions is greater than 1.
     if(use_mu_prior.sum()>0) {
-      array<Type> nll_mu_prior = get_nll_mu_prior(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior);
+      array<Type> nll_mu_prior = get_nll_mu_prior(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior, mu_model);
       nll += nll_mu_prior.sum();
       REPORT(nll_mu_prior);
       SIMULATE if(do_simulate_mu_prior_re==1){
-        mu_prior_re = simulate_mu_prior_re(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior);
+        mu_prior_re = simulate_mu_prior_re(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior, mu_model);
         REPORT(mu_prior_re);
       }
     }
     if(use_mu_re.sum()>0) {
-      array<Type> nll_mu_re = get_nll_mu_re(mu_repars, mu_re, use_mu_re, mu_re_model);
+      array<Type> nll_mu_re = get_nll_mu_re(mu_repars, mu_re, mu_model);
       nll += nll_mu_re.sum();
       REPORT(nll_mu_re);
       SIMULATE if(do_simulate_mu_re ==1){
-        mu_re = simulate_mu_re(mu_repars, mu_re, use_mu_re, mu_re_model);
+        mu_re = simulate_mu_re(mu_repars, mu_re, mu_model);
       }
     }
     if(do_post_samp_mu == 1) ADREPORT(mu_re);
-    //n_stocks x n_ages x n_seasons x n_years_model + n_years_proj X n_regions x n_regions-1
-    array<Type> trans_mu_base = get_trans_mu_base(trans_mu, mu_re, mu_prior_re, use_mu_prior, mu_model, n_years_model, Ecov_lm_mu, use_Ecov_mu);
+    //n_stocks x n_ages x n_seasons x n_years_pop X n_regions x n_regions-1
+    //continues random processes in projection years!
+    array<Type> trans_mu_base = get_trans_mu_base(trans_mu, mu_re, mu_prior_re, use_mu_prior, mu_model, Ecov_lm_mu, use_Ecov_mu);
     REPORT(trans_mu_base);
-    //n_stocks x n_ages x n_seasons x n_years_model + n_years_proj x n_regions x n_regions
+    //n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions
     //rows sum to 1 for mig_type = 0 (prob move), rows sum to 0 for mig_type 1 (instantaneous)
     array<Type> mu = get_mu(trans_mu_base, can_move, must_move, mig_type);
     REPORT(mu);
@@ -631,6 +658,7 @@ Type objective_function<Type>::operator() ()
   
   /////////////////////////////////////////
   //Population model and likelihoods
+  //First: initial numbers at age
   if(N1_model ==2) { //Initial numbers at age are random effects
     vector<Type> nll_N1 = get_nll_N1(log_N1, N1_repars);
     nll += nll_N1.sum();
@@ -641,82 +669,42 @@ Type objective_function<Type>::operator() ()
     }
   }
   //n_stocks x n_regions x n_ages
-  array<Type> N1 = get_N1(N1_model, log_N1);
-  REPORT(N1);
   array<Type> pred_N1 = get_pred_N1(N1_model, log_N1, N1_repars);
   REPORT(pred_N1);
 
-  //n_stocks x n_regions x n_years_model + n_years_proj x n_ages
-  array<Type> NAA(n_stocks,n_regions, n_years_model + n_years_proj, n_ages);
-  ///// HERE.
-  NAA.setZero();
+  //fill out NAA (they are all parameters)
+  //n_stocks x n_regions x n_years_pop x n_ages
+  array<Type> NAA = get_NAA(N1_model, log_N1, log_NAA, NAA_where) //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
+  REPORT(NAA);
+  
+  //fill out initial year predicted numbers at age
   array<Type> pred_NAA = NAA;
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
-    NAA(s,r,0,a) = N1(s,r,a);
     pred_NAA(s,r,0,a) = pred_N1(s,r,a);
   }
-
-  //vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*two);
-  matrix<Type> log_SSB(n_years_model,n_stocks);
-  array<Type> pred_CAA(n_years_model + n_years_proj,n_fleets,n_ages);
-  array<Type> pred_stock_CAA(n_years_model + n_years_proj,n_stocks,n_ages,n_regions);
-  array<Type> pred_stock_catch(n_years_model + n_years_proj,n_stocks,n_regions);
-  matrix<Type> pred_catch_region(n_years_model + n_years_proj,n_regions);
-  array<Type> pred_stock_prop_catch(n_years_model + n_years_proj,n_stocks,n_regions);
-  array<Type> pred_catch_paa(n_years_mode + n_years_projl,n_fleets,n_ages);
-  matrix<Type> pred_catch(n_years_model + n_years_proj,n_fleets);
-  array<Type> pred_IAA(n_years_model + n_years_proj,n_indices,n_ages);
-  array<Type> pred_index_paa(n_years_model + n_years_proj,n_indices,n_ages);
-  matrix<Type> pred_indices(n_years_model + n_years_proj,n_indices);
-  matrix<Type> log_pred_catch(n_years_model + n_years_proj,n_fleets);
-  vector<Type> t_paa(n_ages)
-  vector<Type> t_pred_paa(n_ages);
-  //int n_toavg = avg_years_ind.size();
-  //int P_dim = n_regions + n_fleets + 1;
-
-  //n_stocks x n_regions x n_years_model + n_years_proj x n_ages
-  array<Type> NAA(n_stocks,n_regions, n_years_model + n_years_proj, n_ages);
-  ///// HERE.
-  NAA.setZero();
-  pred_NAA.setZero();
-  //for(int a = 0; a < n_ages; a++) see(NAA(0,0,a,0));
-  //for(int a = 0; a < n_ages; a++) see(NAA(1,0,a,1));
-  int ind = 0;
-  for(int s = 0; s < n_stocks; s++) for(int y = 1; y < n_years; y++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) 
-  {
-    if(NAA_re_indicator(s,y-1,a,r))
-    {
-      NAA(s,y,a,r) = exp(log_NAA_re(ind)); //random effects NAA
-      ind ++;
-    }
-  }
   
-  //std::cout << "here 4"  << "\n";
-  int cum_n_mu = 0;
-  
-  //get probability transition matrix, NAA at spawning and NAA for each index.
-  //matrix<Type> P_y = I_mat, P_SSB = I_mat, P_index = I_mat; 
-  array<Type> NAA_SSB(n_stocks,n_years_model + n_years_proj,n_ages);
-  array<Type> all_P(n_stocks,n_years_model + n_years_proj,n_ages,P_dim,P_dim);
-  array<Type> all_P_SSB(n_stocks,n_years_model + n_years_proj,n_ages,n_regions,n_regions); //just survival categories
+  //get probability transition matrices for yearly survival, movement, capture...
+  //also get annual NAA at spawning and NAA for each index along the way.
+  array<Type> annual_Ps(n_stocks,n_years_pop,n_ages,P_dim,P_dim);
+  array<Type> annual_Ps_SSB(n_stocks,n_years_pop,n_ages,n_regions,n_regions); //just survival categories
   array<Type> P_season_terminal(n_seasons,n_stocks,n_ages,P_dim,P_dim);
-  array<Type> NAA_index(n_stocks,n_indices,n_years_model + n_years_proj,n_ages);
-  matrix<Type> P_SSB(P_dim,P_dim), P_index(P_dim,P_dim);
   matrix<Type> I_mat(P_dim,P_dim);
   for(int i = 0; i < P_dim; i++) I_mat(i,i) = 1.0;
+  array<Type> NAA_SSB(n_stocks,n_years_pop,n_ages);
   NAA_SSB.setZero();
+  array<Type> NAA_index(n_stocks,n_indices,n_years_pop,n_ages);
   NAA_index.setZero();
-  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years; y++) for(int a = 0; a < n_ages; a++) 
+  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_ages; a++) 
   {
-    P_y = I_mat; //reset for each year, age, stock
+    matrix<Type> P_y = I_mat; //reset for each year, age, stock
     for(int t = 0; t < n_seasons; t++) 
     {
       //get numbers at age a for stock s in each region at time of spawning
       if(t == spawn_seasons(s)-1)
       {
-        //P_SSB = P_y * get_P(n_regions, n_fleets, a, y, s, t, fleet_regions, cum_n_mu, n_mu, mu_row, mu_col, mu_pointer, mig_type(s), fracyr_SSB(y,s), FAA, MAA, mu, L);
-        P_SSB = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
-        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) all_P_SSB(s,y,a,i,j) = P_SSB(i,j);
+        //P(0,t) x P(t_s-t): PTM over interval from beginning of year to time of spawning within the season
+        matrix<Type> P_SSB = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
+        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) annual_Ps_SSB(s,y,a,i,j) = P_SSB(i,j);
         //spawners only spawning in stock region...
         for(int r = 0; r < n_regions; r++) NAA_SSB(s,y,a) += NAA(s,r,y,a) * P_SSB(r,spawn_regions(s)-1);
       }
@@ -724,122 +712,58 @@ Type objective_function<Type>::operator() ()
       {
         if(t == index_seasons(i)-1)
         { 
-          P_index = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_indices(y,i), FAA, MAA, mu, L);
+          //P(0,t) x P(t_i-t): PTM over interval from beginning of year to time of index within the season
+          matrix<Type> P_index = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_indices(y,i), FAA, log_M_base, mu, L);
           for(int r = 0; r < n_regions; r++) NAA_index(s,i,y,a) += P_index(r,index_regions(i)-1) * NAA(s,y,a,r);
-          /*if(y == 0 && i == 1 && a == 0)
-          {
-            std::cout << "P_index for index " << i << " in year " << y  << "\n";
-            std::cout << P_index << "\n";
-            std::cout << index_regions(i) << "\n";
-            std::cout << NAA_index(s,i,y,a) << "\n";
-            std::cout << NAA(s,y,a,0) << "\n";
-          } */
         }
       }
+      //P(t,u): PTM over entire season interval
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
       if(y == n_years_model-1)//collect each seasonal matrix for the last model year?
       {
-        matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
         for(int d = 0; d < P_dim; d++) for(int dd = 0; dd < P_dim; dd++) P_season_terminal(t,s,a,d,dd) = P_t(d,dd);
       }
-      P_y = P_y * get_P(n_regions, n_fleets, a, y, s, t, fleet_regions, cum_n_mu, n_mu, mu_row, mu_col, mu_pointer, mig_type(s), fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_y = P_y * P_t;
     }
-    for(int i = 0; i < P_dim; i++) for(int j = 0; j < P_dim; j++) all_P_y(s,y,a,i,j) = P_y(i,j);
+    for(int i = 0; i < P_dim; i++) for(int j = 0; j < P_dim; j++) annual_Ps(s,y,a,i,j) = P_y(i,j);
   }
   //std::cout << "here 5"  << "\n";
 
   //get SSB from NAA_SSB, waa and mature
-  matrix<Type> SSB(n_years_model + n_years_proj,n_stocks);
-  SSB.setZero();
-  vector<Type> get_SSB_y(0,NAA,waa,waa_pointer_ssb,mature,P,fracyr_SSB);
-///stopped here
-  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years; y++)
-  {
-    for(int a = 0; a < n_ages; a++) SSB(y,s) += NAA_SSB(s,y,a) * waa(waa_pointer_ssb(s)-1,y,a) * mature(s,y,a);
-  }
+  //n_years_pop x n_stocks
+  //make sure mature has projection years if necessary
+  matrix<Type> SSB = get_SSB(NAA_ssb,waa,waa_pointer_ssb,mature);
   
-  //get predicted numbers at age after year 1.
-  pred_NAA.setZero();
-  for(int s = 0; s < n_stocks; s++) 
-  {
-    for(int y = 1; y < n_years; y++)
-    {
-      for(int r = 0; r < n_regions; r++) 
-      {
-        if(r == spawn_regions(s)-1) //recruiting only in the stock region
-        {
-          if(recruit_model == 1) pred_NAA(s,y,0,r) = NAA(s,y-1,0,r); //random walkNAA(y,1)
-          else
-          {
-            if(recruit_model == 2) pred_NAA(s,y,0,r) = exp(mean_rec_pars(s,0)); //random about mean
-            else //BH stock recruit
-            {
-              if(recruit_model == 3) //BH stock recruit
-              {
-                pred_NAA(s,y,0,r) = exp(mean_rec_pars(s,0) + log(SSB(y-1,s)) - log(one + exp(mean_rec_pars(s,1)) * SSB(y-1,s)));
-              }
-              else //Ricker stock recruit
-              {
-                pred_NAA(s,y,0,r) = exp(mean_rec_pars(s,0) + log(SSB(y-1,s)) - exp(mean_rec_pars(s,1)) * SSB(y-1,s)); 
-              }
-            }
-          }
-        }
-        else pred_NAA(s,y,0,r) = zero; // no recruitment for stock s in other regions.
-      }
-      //probs of  movement and survival and catch
-      vector<Type> t_N(n_regions), t_pred_N(n_regions);
-      for(int a = 1; a < n_ages; a++) 
-      {
-        for(int i = 0; i < n_regions; i++)
-        {
-          for(int j = 0; j < n_regions; j++)
-          {
-           pred_NAA(s,y,a,i) += all_P(s,y-1,a-1,j,i) * NAA(s,y-1,a-1,j);
-          }
-        }
-        /*if(a == 1 && y == 4)
-        {
-          std::cout << "s: " << s << ", y: " << y << ", a: " << a << "\n";
-          std::cout << NAA(s,y-1,a-1,0) << " " << NAA(s,y-1,a-1,1)  << "\n";
-          std::cout << pred_NAA(s,y,a,0) << " " << pred_NAA(s,y,a,1)  << "\n";
-          std::cout << all_P(s,y-1,a-1,0,0) << " " << all_P(s,y-1,a-1,0,1)  << "\n";
-          std::cout << all_P(s,y-1,a-1,1,0) << " " << all_P(s,y-1,a-1,1,1)  << "\n";
-        }*/
-      }
-      //add in extra for plus group
-      for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) 
-      {
-        pred_NAA(s,y,n_ages-1,i) += all_P(s,y-1,n_ages-1,j,i) * NAA(s,y-1,n_ages-1,j);
-      }
-    }
-  }
+  array<Type> pred_NAA = get_pred_NAA(NAA, SSB, spawn_regions, NAA_where, mean_rec_pars, annual_Ps);
 
   //need to be careful here about log_NAA random effects in regions where there will be zero predicted due to migration parameterization
-  Type nll_NAA = zero;
-  for(int s = 0; s < n_stocks; s++) for(int y = 1; y < n_years; y++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) 
-  {
-    if(NAA_re_indicator(s,y-1,a,r) == 1)
-    { 
-     /*if(a == 1)
-      {
-        std::cout << "s: " << s << ", y: " << y << ", a: " << a << ", r: " << r << "\n";
-        std::cout << NAA(s,y,a,r) << " " << pred_NAA(s,y,a,r) << " " << dnorm(log(NAA(s,y,a,r)),log(pred_NAA(s,y,a,r)),exp(log_NAA_sigma(NAA_sigma_pointers(s,a,r)-1)),1) << "\n";
-      }*/
-      nll_NAA -= dnorm(log(NAA(s,y,a,r)),log(pred_NAA(s,y,a,r)),exp(log_NAA_sigma(NAA_sigma_pointers(s,a,r)-1)),1);
-    }
-  }
-  std::cout << "nll_NAA: " << nll_NAA << "\n";
-  nll += nll_NAA;
+  //FIX ME:
+  array<Type> nll_NAA = get_NAA_nll(NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
+  REPORT(nll_NAA);
+  nll += nll_NAA.sum();
 
-  vector<Type> nll_agg_catch(n_fleets), nll_catch_acomp(n_fleets);
+  vector<Type> nll_agg_catch(n_fleets);
+  vector<Type> nll_catch_acomp(n_fleets);
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
+  //vector<Type> sigma2_log_NAA = exp(log_NAA_sigma*two);
+  array<Type> pred_CAA(n_years_pop,n_fleets,n_ages);
   pred_CAA.setZero();
+  array<Type> pred_stock_CAA(n_years_pop,n_stocks,n_ages,n_regions);
   pred_stock_CAA.setZero(); //(n_years,n_stocks,n_ages,n_regions);
+  array<Type> pred_stock_catch(n_years_pop,n_stocks,n_regions);
   pred_stock_catch.setZero(); //(n_years,n_stocks,n_regions);
-  pred_stock_prop_catch.setZero(); //(n_years,n_stocks,n_regions);
+  matrix<Type> pred_catch_region(n_years_pop,n_regions);
   pred_catch_region.setZero(); //(n_years,n_regions);
+  array<Type> pred_stock_prop_catch(n_years_pop,n_stocks,n_regions);
+  pred_stock_prop_catch.setZero(); //(n_years,n_stocks,n_regions);
+  array<Type> pred_catch_paa(n_years_mode + n_years_projl,n_fleets,n_ages);
+  matrix<Type> pred_catch(n_years_pop,n_fleets);
   pred_catch.setZero();
+  matrix<Type> log_pred_catch(n_years_pop,n_fleets);
+  vector<Type> t_paa(n_ages)
+  vector<Type> t_pred_paa(n_ages);
+  //int P_dim = n_regions + n_fleets + 1;
 
   for(int y = 0; y < n_years; y++)
   {
@@ -854,9 +778,9 @@ Type objective_function<Type>::operator() ()
         {
           for(int rr = 0; rr < n_regions; rr++) if(fleet_regions(f)-1 == rr)
           {
-            pred_stock_CAA(y,s,a,rr) += NAA(s,y,a,r) * all_P(s,y,a,r,n_regions + f);
-            pred_stock_catch(y,s,rr) += waa(waa_pointer_fleets(f)-1,y,a) * NAA(s,y,a,r) * all_P(s,y,a,r,n_regions + f);
-            pred_catch_region(y,rr) += NAA(s,y,a,r) * all_P(s,y,a,r,n_regions + f) * waa(waa_pointer_fleets(f)-1,y,a);
+            pred_stock_CAA(y,s,a,rr) += NAA(s,y,a,r) * annual_Ps(s,y,a,r,n_regions + f);
+            pred_stock_catch(y,s,rr) += waa(waa_pointer_fleets(f)-1,y,a) * NAA(s,y,a,r) * annual_Ps(s,y,a,r,n_regions + f);
+            pred_catch_region(y,rr) += NAA(s,y,a,r) * annual_Ps(s,y,a,r,n_regions + f) * waa(waa_pointer_fleets(f)-1,y,a);
           }
           pred_CAA(y,f,a) +=  NAA(s,y,a,r) * all_P(s,y,a,r,n_regions + f);
         }
@@ -899,8 +823,11 @@ Type objective_function<Type>::operator() ()
   vector<Type> nll_agg_indices(n_indices), nll_index_acomp(n_indices);
   nll_agg_indices.setZero();
   nll_index_acomp.setZero();
-  pred_indices.setZero();
+  array<Type> pred_IAA(n_years_pop,n_indices,n_ages);
   pred_IAA.setZero();
+  array<Type> pred_index_paa(n_years_pop,n_indices,n_ages);
+  matrix<Type> pred_indices(n_years_pop,n_indices);
+  pred_indices.setZero();
   for(int y = 0; y < n_years; y++) 
   {
     int acomp_par_count = 0;
@@ -956,45 +883,13 @@ Type objective_function<Type>::operator() ()
       }
     }
   }
-  /*
-  std::cout << "QAA: " << "\n";
-  for(int i = 0; i < n_indices; i++)
-  {
-  std::cout << "index: " << i << "\n";
-    for(int y = 0; y < n_years; y++)
-    {
-      for(int a = 0; a < n_ages; a++)
-      {
-        std::cout << QAA(y,i,a) << " ";
-      }
-      std::cout << "\n";
-    }
-  }
-  std::cout << "pred_IAA: " << "\n";
-  for(int i = 0; i < n_indices; i++)
-  {
-  std::cout << "index: " << i << "\n";
-    for(int y = 0; y < n_years; y++)
-    {
-      for(int a = 0; a < n_ages; a++)
-      {
-        std::cout << pred_IAA(y,i,a) << " ";
-      }
-      std::cout << "\n";
-    }
-  }
-  //std::cout << "NAA_index: " << "\n";
-  //std::cout << NAA_index << "\n";
-  */
-  /*std::cout << "pred_indices: " << "\n";
-  std::cout << pred_indices << "\n";
-  */
   std::cout << "nll_agg_indices: " << "\n" << nll_agg_indices << "\n";
   nll += nll_agg_indices.sum();
   std::cout << "nll_index_acomp: " << "\n" << nll_index_acomp << "\n";
   nll += nll_index_acomp.sum();
   
-  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years; y++) log_SSB(y,s) = log(SSB(y,s));
+  matrix<Type> log_SSB(n_years_pop,n_stocks);
+  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_pop; y++) log_SSB(y,s) = log(SSB(y,s));
   
   //if(reportMode==0){
     REPORT(NAA);

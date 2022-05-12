@@ -46,7 +46,8 @@ array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<i
   int n_regions = M_re.dim(1);
   /int n_ages = M_re.dim(3);
   int ny = M_re.dim(2);
-  array<Type> sim_M_re = M_re;
+  array<Type> sim_M_re(n_stocks,n_regions,n_y,n_ages);// = M_re;
+  sim_M_re.setZero();
   for(int r = 0; r< n_regions; r++){
     if(M_re_model(r) > 1) // random effects on M, M_re = 2D AR1 deviations on M(year,age), dim = n_years x n_M_re(s,r)
     {
@@ -83,10 +84,76 @@ array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<i
   return(sim_M_re);
 }
 
+//nll for prior on M(WAA) (log) exponent
+template<class Type>
+matrix<Type> get_nll_log_b(int log_b_model, matrix<Type>log_b, int bias_correct){
+  int n_stocks = log_b.dim(0);
+  int n_regions = log_b.dim(1);
+  matrix<Type> nll(n_stocks,n_regions);
+  nll.setZero();
+  Type mu = log(0.305);
+  if(bias_correct == 1) mu -= 0.5*exp(2*log(0.08));
+  if(log_b_model == 1){ //constant across stocks, regions
+    Type nll(0,0) = dnorm(log_b(0,0), mu, Type(0.08),1);
+    //for(int r = 0; r < n_regions; r++) for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
+  }
+  if(log_b_model == 2){ //constant across regions, differ by stock
+    for(int r = 0; r < n_regions; r++) {
+      nll(0,r) = dnorm(log_b(0,r), mu, Type(0.08), 1);
+      //for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
+    }
+  }
+  if(log_b_model == 3){ //constant across stocks, differ by region
+    for(int s = 0; s < n_stocks; s++) {
+      nll(s,0) = dnorm(log_b(s,0), mu, Type(0.08), 1);
+      //for(int r = 0; r < n_regions; r++) sim_log_b(r,s) = sim;
+    }
+  }
+  if(log_b_model == 4){ //differ by stocks and region
+    for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
+      nll(s,r) = dnorm(log_b(s,r), mu, Type(0.08), 1);
+      //sim_log_b(r,s) = rnorm(mu, Type(0.08));
+    }
+  }
+  return(nll);
+}
+
+//simulate log exponent for M(WAA)
+template<class Type>
+matrix<Type> simulate_log_b(int log_b_model, matrix<Type>log_b, int bias_correct){
+  int n_stocks = log_b.dim(0);
+  int n_regions = log_b.dim(1);
+  matrix<Type> sim_log_b = log_b;
+  Type mu = log(0.305);
+  if(bias_correct == 1) mu -= 0.5*exp(2*log(0.08));
+  if(log_b_model == 1){ //constant across stocks, regions
+    Type sim = rnorm(mu, Type(0.08));
+    for(int r = 0; r < n_regions; r++) for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
+  }
+  if(log_b_model == 2){ //constant across regions, differ by stock
+    for(int r = 0; r < n_regions; r++) {
+      Type sim = rnorm(mu, Type(0.08));
+      for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
+    }
+  }
+  if(log_b_model == 3){ //constant across stocks, differ by region
+    for(int s = 0; s < n_stocks; s++) {
+      Type sim = rnorm(mu, Type(0.08));
+      for(int r = 0; r < n_regions; r++) sim_log_b(r,s) = sim;
+    }
+  }
+  if(log_b_model == 4){ //differ by stocks and region
+    for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
+      sim_log_b(r,s) = rnorm(mu, Type(0.08));
+    }
+  }
+  return(sim_log_b);
+}
+  
 //provides log_M components that are density-independent.
 template<class Type>
-array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, array<Type> M_a, Type log_b, array<Type> waa, 
-  int waa_pointer, array<Type> Ecov_lm, array<int> use_Ecov, int do_proj, int proj_M_opt, vector<int> avg_years_ind){
+array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, array<Type> M_a, matrix<Type> log_b, array<Type> waa, 
+  vector<int> waa_pointer, array<Type> Ecov_lm, array<int> use_Ecov, int do_proj, int proj_M_opt, vector<int> avg_years_ind){
   // Construct base (log) mortality-at-age (MAA)
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
@@ -101,7 +168,7 @@ array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, arra
       if(M_model == 1){ // constant M
         for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a);
       } else { // M_model = 3, M is allometric function of weight
-        for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a) - exp(log_b) * log(waa(waa_pointer-1,y,a));
+        for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a) - exp(log_b(s,r)) * log(waa(waa_pointer(s)-1,y,a));
       }
     }
     // add ecov effect on M (by year, shared across ages)

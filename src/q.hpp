@@ -68,7 +68,7 @@ matrix<Type> simulate_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> 
   vector<Type> rho_q(n_indices);
   rho_q.setZero();
   for(int i = 0; i < n_indices; i++) {
-    if(use_q_re(i) > 0) // random effects on q, q_re = AR1 deviations on (year,age), dim = n_years x n_M_a
+    if(use_q_re(i) > 0) // random effects on q, q_re = AR1 deviations on year, dim = n_years x n_indices
     {
       sigma_q(i) = exp(q_repars(i,0)); // conditional sd
       rho_q(i) = rho_trans(q_repars(i,1)); // autocorrelation

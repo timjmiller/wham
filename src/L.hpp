@@ -7,7 +7,7 @@ matrix<Type> get_L(vector<int> L_model, matrix<Type> L_pars, matrix<Type> re) {
   L.setZero();
   for(int r = 0; r < n_regions; r++) if(L_model(r)>0) {
     for(int y = 0; y < ny; y++) {
-      L(y,r) = exp(L_pars(r,0));
+      L(y,r) = exp(L_pars(r,0)); //mean
       if(L_model(r)>1){ //use random effects
         L(y,r) *= exp(re(y,r));
       }
