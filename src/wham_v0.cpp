@@ -85,7 +85,7 @@ Type objective_function<Type>::operator() ()
   //DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_b_prior);
   
-  DATA_INTEGER(n_growth); // NEWG TODO: change this parameter name
+  DATA_INTEGER(n_growth_par); // NEWG TODO: change this parameter name
   DATA_INTEGER(growth_model); // 1: "vB-classic", 2: "vB-K_age" NEWG
   DATA_IVECTOR(growth_re_model); // 1 = none, 2 = IID, 3 = ar1_y NEWG
   
@@ -188,7 +188,7 @@ Type objective_function<Type>::operator() ()
   
   // NEWG section: growth parameters:
   PARAMETER_VECTOR(growth_a); //  length = npars_growth
-  PARAMETER_MATRIX(growth_re); // nyears x npars_growth     
+  PARAMETER_ARRAY(growth_re); // nyears x nages x npars_growth     
   PARAMETER_MATRIX(growth_repars); //  npars_growth x npars_re     
   
   PARAMETER(log_b);
@@ -229,7 +229,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected
   
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
-  array<Type> LAA(n_lengths,n_ages,n_years_model + n_years_proj);// NEWG
+  array<Type> LAA(n_years_model + n_years_proj,n_lengths,n_ages);// NEWG
   matrix<Type> mLAA(n_years_model + n_years_proj,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
@@ -531,26 +531,27 @@ Type objective_function<Type>::operator() ()
   Type nll_GW = Type(0);
   
   // For K parameter:
-  vector<Type> sigma_GW(n_growth); // first RE parameter
-  vector<Type> rho_GW_y(n_growth);  // second RE parameter
+  vector<Type> sigma_GW(n_growth_par); // first RE parameter
+  vector<Type> rho_GW_y(n_growth_par);  // second RE parameter
   Type Sigma_GW = Type(0);
 
-  for(int j = 0; j < n_growth; j++) {
+  for(int j = 0; j < n_growth_par; j++) {
   
-	  if(growth_re_model(j) > 1) { // Only for ii and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
+	  if((growth_re_model(j) == 2) | (growth_re_model(j) == 4)) { // Only for ii_y and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
 		
 		sigma_GW(j) = exp(growth_repars(j,0));
         rho_GW_y(j) = rho_trans(growth_repars(j,1));  
 		// likelihood of growth parameters deviations
-			vector<Type> GWre0 = growth_re.col(j);
+			vector<Type> GWre0(n_years_model + n_years_proj);
+			for(int y = 0; y < n_years_model + n_years_proj; y++) GWre0(y) = growth_re(y,0,j); 
 			Sigma_GW = pow(pow(sigma_GW(j),2) / (1-pow(rho_GW_y(j),2)),0.5);
 			nll_GW += SCALE(AR1(rho_GW_y(j)), Sigma_GW)(GWre0);
-			SIMULATE if(simulate_state(1) == 1) if(sum(simulate_period) > 0) {
+			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_GW_y(j)).simulate(GWre0);
 			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  growth_re(y,j) = GWre0(y);
+				  growth_re(y,0,j) = GWre0(y);
 				}
 			  }
 			}
@@ -560,6 +561,34 @@ Type objective_function<Type>::operator() ()
 		  ADREPORT(rho_GW_y);
 		}
 		
+	  }
+	  
+	  if((growth_re_model(j) == 3) | (growth_re_model(j) == 5)) { // Only for ii_c and Ar1_c
+		  
+		sigma_GW(j) = exp(growth_repars(j,0));
+        rho_GW_y(j) = rho_trans(growth_repars(j,1));  
+		// likelihood of growth parameters deviations
+			vector<Type> GWre0(n_years_model + n_years_proj + n_ages - 1);
+			for(int i = 0; i < (n_ages - 1); i++) GWre0(i) = growth_re(0,n_ages - i - 1,j); // for cohorts at y = 0 except a = 0
+			for(int i = (n_ages - 1); i < (n_years_model + n_years_proj + n_ages - 1); i++) GWre0(i) = growth_re(i-n_ages+1,0,j); // for cohorts y>=0 
+			Sigma_GW = pow(pow(sigma_GW(j),2) / (1-pow(rho_GW_y(j),2)),0.5);
+			nll_GW += SCALE(AR1(rho_GW_y(j)), Sigma_GW)(GWre0);
+			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			  AR1(rho_GW_y(j)).simulate(GWre0);
+			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
+			  for(int i = 0; i < (n_ages - 1); i++) growth_re(0,n_ages - i - 1,j) = GWre0(i); // replace cohorts at y = 0 
+			  for(int y = 0; y < n_years_model + n_years_proj; y++){
+				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
+				  growth_re(y,0,j) = GWre0(y + n_ages - 1); 
+				}
+			  }
+			}
+
+		if(do_post_samp.sum()==0){
+		  ADREPORT(sigma_GW);
+		  ADREPORT(rho_GW_y);
+		}
+		  
 	  }
   
   }
@@ -572,39 +601,46 @@ Type objective_function<Type>::operator() ()
   if(do_post_samp(1) == 1) ADREPORT(growth_re);
 
   // Construct growth parameters per year NEWG
-  matrix<Type> GW_par(n_years_model + n_years_proj,n_growth); // matrix for growth parameters
-  for(int y = 0; y < n_years_model; y++) { 
-	for(int k = 0; k < n_growth; k++) { 
-		// For growth_model == 1
-		if(k == 2) GW_par(y,k) = growth_a(k) + growth_re(y,k);
-		else GW_par(y,k) = exp(growth_a(k) + growth_re(y,k));
-	}
-  }
-
+  array<Type> GW_par(n_years_model + n_years_proj,n_ages,n_growth_par); // array for growth parameters
+  for(int k = 0; k < n_growth_par; k++) { 
+	  for(int y = 0; y < n_years_model; y++) { 
+			for(int a = 0; a < n_ages; y++) { 
+					// For growth_model == 1
+					if(k == 2) GW_par(y,a,k) = exp(growth_a(k)*-1 + 1 + growth_re(y,a,k)); // for t0
+					else GW_par(y,a,k) = exp(growth_a(k) + growth_re(y,a,k));
+			}
+	  }
+   }
 
   // add to growth parameters in projection years CHECK THIS
   if(do_proj == 1){ 
 
-    for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
-		for(int k = 0; k < n_growth; k++) { 
-			// For growth_model == 1
-			if(k == 2) GW_par(y,k) = growth_a(k) + growth_re(y,k);
-			else GW_par(y,k) = exp(growth_a(k) + growth_re(y,k));
-		}
-	}
-
-  }
-  
-  // add ecov effect on growth paramteres
-  for(int i=0; i < n_Ecov; i++){
-    if(Ecov_where(i,1) == 1) { 
-        for(int y = 0; y < n_years_model + n_years_proj; y++) {
-			for(int k = 0; k < n_growth; k++) { 
-				GW_par(y,k) *= exp(Ecov_lm(i,1,y,0)); // a = 0
+	  for(int k = 0; k < n_growth_par; k++) { 
+		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
+			for(int a = 0; a < n_ages; a++) { 
+				// For growth_model == 1
+				if(k == 2) GW_par(y,a,k) = exp(growth_a(k)*-1 + 1 + growth_re(y,a,k));
+				else GW_par(y,a,k) = exp(growth_a(k) + growth_re(y,a,k));
 			}
 		}
-    }
+	  }
+	  
   }
+  
+  // add ecov effect on growth paramteres NEWG CHECK THIS LATER. It should be parameter-specific
+  // for(int i=0; i < n_Ecov; i++){
+    // if(Ecov_where(i,2) == 1) {  // 2 for growth
+	
+		// for(int k = 0; k < n_growth_par; k++) { 
+			// for(int y = 0; y < n_years_model + n_years_proj; y++) {
+				// for(int a = 0; a < n_ages; a++) { 
+					// GW_par(y,a,k) *= exp(Ecov_lm(i,1,y,0));
+				// }
+			// }
+		// }
+		
+    // }
+  // }
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
@@ -873,24 +909,24 @@ Type objective_function<Type>::operator() ()
   Type Llp = 0.0;
   for(int a = 0; a < n_ages; a++)
   {
-        mLAA(0,a) = GW_par(0,1)*(1.0 - exp(-GW_par(0,0)*((a + 1.0) - GW_par(0,2)))); // for growth_model = 1
-		SDAA(0,a) = ( GW_par(0,3) + ((GW_par(0,4) - GW_par(0,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // for growth_model = 1
+        mLAA(0,a) = GW_par(0,a,1)*(1.0 - exp(-GW_par(0,a,0)*((a + 1.0) - GW_par(0,a,2)))); // for growth_model = 1
+		SDAA(0,a) = ( GW_par(0,a,3) + ((GW_par(0,a,4) - GW_par(0,a,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // for growth_model = 1
 		// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
 		for(int l = 0; l < n_lengths; l++) {
 			
 			if(l == 0) { 
 				Fac1 = (Lminp - mLAA(0,a))/SDAA(0,a);
-				LAA(l,a,0) = pnorm(Fac1);  
+				LAA(0,l,a) = pnorm(Fac1);  
 			} else {
 				if(l == (n_lengths-1)) { 
 					Fac1 = (Lmaxp - mLAA(0,a))/SDAA(0,a);
-					LAA(l,a,0) = 1.0 - pnorm(Fac1);  
+					LAA(0,l,a) = 1.0 - pnorm(Fac1);  
 				} else { 
 				    Ll1p = lengths(l) + len_bin*0.5;
 					Llp = lengths(l) - len_bin*0.5;
 					Fac1 = (Ll1p - mLAA(0,a))/SDAA(0,a);
 					Fac2 = (Llp - mLAA(0,a))/SDAA(0,a);
-					LAA(l,a,0) = pnorm(Fac1) - pnorm(Fac2);  
+					LAA(0,l,a) = pnorm(Fac1) - pnorm(Fac2);  
 				}
 			}
 			
@@ -1035,27 +1071,27 @@ Type objective_function<Type>::operator() ()
 	  for(int a = 0; a < n_ages; a++)
 	  {
 			if(a == 0) { 
-				mLAA(y,a) = GW_par(y,1)*(1.0 - exp(-GW_par(y,0)*((a + 1.0) - GW_par(y,2)))); // for growth_model = 1
+				mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
 			} else {
-				mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y,1))*(exp(-GW_par(y,0)) - 1.0);
+				mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)) - 1.0);
 			}
-			SDAA(y,a) = ( GW_par(y,3) + ((GW_par(y,4) - GW_par(y,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // 
+			SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*mLAA(0,a);  // 
 			// pred_mLAA(y,a) = mLAA(y,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {
 				
 				if(l == 0) { 
 					Fac1 = (Lminp - mLAA(y,a))/SDAA(y,a);
-					LAA(l,a,y) = pnorm(Fac1);  
+					LAA(y,l,a) = pnorm(Fac1);  
 				} else {
 					if(l == (n_lengths-1)) { 
 						Fac1 = (Lmaxp - mLAA(y,a))/SDAA(y,a);
-						LAA(l,a,y) = 1.0 - pnorm(Fac1);  
+						LAA(y,l,a) = 1.0 - pnorm(Fac1);  
 					} else { 
 						Ll1p = lengths(l) + len_bin*0.5;
 						Llp = lengths(l) - len_bin*0.5;
 						Fac1 = (Ll1p - mLAA(y,a))/SDAA(y,a);
 						Fac2 = (Llp - mLAA(y,a))/SDAA(y,a);
-						LAA(l,a,y) = pnorm(Fac1) - pnorm(Fac2);  
+						LAA(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
 					}
 				}
 				
@@ -1208,7 +1244,7 @@ Type objective_function<Type>::operator() ()
         tsum += pred_CAA(y,f,a);
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * LAA(l,a,y);
+			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * LAA(y,l,a);
 			lsum(l) += pred_CAAL(y,f,l,a);
 		}
       }
@@ -1321,7 +1357,7 @@ Type objective_function<Type>::operator() ()
 		
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * LAA(l,a,y); // Only numbers allowed so far
+			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * LAA(y,l,a); // Only numbers allowed so far
 			lsumI(l) += pred_IAAL(y,i,l,a);
 		}
       }

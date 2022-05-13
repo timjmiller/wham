@@ -466,9 +466,9 @@ initial_input_fn = function(input, basic_info){
 
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,5) #simulate state variables (NAA, M, sel, Ecov, q)
+  input$data$simulate_state = rep(1,6) #simulate state variables (NAA, M, sel, Ecov, q, growth)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+  input$data$simulate_period = c(1,0) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
   input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
