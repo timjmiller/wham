@@ -187,7 +187,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
   
   // NEWG section: growth parameters:
-  PARAMETER_VECTOR(growth_a); //  length = npars_growth
+  PARAMETER_VECTOR(growth_a); //  could be 5 parameters or input_LAA
   PARAMETER_ARRAY(growth_re); // nyears x nages x npars_growth     
   PARAMETER_MATRIX(growth_repars); //  npars_growth x npars_re     
   

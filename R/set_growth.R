@@ -3,66 +3,74 @@ set_growth = function(input, growth)
   data = input$data
   par = input$par
   map = input$map
-  
-  n_par = 5 # 5 parameters: K, Linf, t0, CV1, CV2
-  n_re_par = 2  
-	
-  data$n_growth_a = data$n_ages # all ages but only used for K so far
-  data$growth_re_model = rep(1, times = n_par) # constant all
-  data$n_growth_par = n_par # 5 parameters to estimate: K, Linf, t0, CV1, CV2, in that order
-  data$growth_model = 1 # 1: vB-classic
-  data$growth_est <- rep(0, times = n_par) # default = don't estimate growth parameters
-  
-  growth_re_ini = array(NA, dim = c(data$n_years_model, data$n_ages, data$n_growth_par))
-  
+    
+  n_re_par = 2 # number of parameters for RE
+
   if(is.null(input$asap3)) asap3 = NULL
   else {
     stop('Growth module does not work with ASAP3 input')
   }
   # growth default options:
-  if(is.null(growth)) {
-    data$growth_model = 1
-    data$growth_re_model = rep(1, times = n_par) # default = no RE / 'none'
-    data$growth_est <- rep(0, times = n_par) # default = don't estimate M
-  }
-
+  n_par_def = 5 # 5 parameters: K, Linf, t0, CV1, CV2 
+  data$growth_model = 1 # 1: vB-classic, 2: use LAA as input
+  data$growth_re_model = rep(1, times = n_par_def) # default = no RE / 'none'
+  data$growth_est <- rep(0, times = n_par_def) # default = don't estimate M
+  data$n_growth_par = n_par_def # 5 parameters to estimate: K, Linf, t0, CV1, CV2, in that order
+  growth_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par_def))
+  growth_ini = c(log(0.2), log(100), log(0.01*-1 + 1), log(0.1), log(0.1)) 
+  
   # prepare growth options:
   if(!is.null(growth)){
 
+    n_par = c(5, 1) # for model 1 and 2, respectively
+
     if(!is.null(growth$model)){ # growth model to be used
-      if(!(growth$model %in% c("vB_classic"))) stop("growth$model must be 'vB_classic'")
-      data$growth_model <- match(growth$model, c("vB_classic")) # 1
-      if(growth$model %in% c("vB_classic")){
-        data$n_growth_par = n_par # 5 parameters to estimate
-        data$growth_est = rep(0, times = n_par) # estimate?
-        data$growth_ini = c(log(0.2), log(100), log(0.01*-1 + 1), log(0.1), log(0.1)) # taken from growth argument?
+      if(!(growth$model %in% c("vB_classic", "input_LAA"))) stop("growth$model must be 'vB_classic' or 'input_LAA'")
+      data$growth_model <- match(growth$model, c("vB_classic", "input_LAA")) # 1
+      if(growth$model %in% c("vB_classic", "input_LAA")){
+        data$n_growth_par = n_par[data$growth_model] # 5 parameters to estimate
+        data$growth_est = rep(0, times = n_par[data$growth_model]) # estimate?
+        data$growth_re_model = rep(1, times = n_par[data$growth_model]) # default = no RE / 'none'
+        growth_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par[data$growth_model]))
       }
     }
 
+    if(is.null(growth$input_LAA) & data$growth_model == 2) stop("'input_LAA' must be provided when growth model is 2.")
+
     if(!is.null(growth$re)){
-      if(length(growth$re) != n_par) stop("Length(growth$re) must be equal to the number of parameters of the chosen growth model.")
-      if(!(growth$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[1] (k) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-      if(!(growth$re[2] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[2] (Linf) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-      if(!(growth$re[3] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[3] (t0) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-      if(!(growth$re[4] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[4] (CV1) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-      if(!(growth$re[5] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[5] (CV2) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-      data$growth_re_model[1] <- match(growth$re[1], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-      data$growth_re_model[2] <- match(growth$re[2], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-      data$growth_re_model[3] <- match(growth$re[3], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-      data$growth_re_model[4] <- match(growth$re[4], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-      data$growth_re_model[5] <- match(growth$re[5], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+      if(length(growth$re) != n_par[data$growth_model]) stop("Length(growth$re) must be equal to the number of parameters of the chosen growth model (equal to 1 for 'input_LAA').")
+      
+      if(data$growth_model == 1) {
+        if(!(growth$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[1] (k) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        if(!(growth$re[2] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[2] (Linf) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        if(!(growth$re[3] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[3] (t0) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        if(!(growth$re[4] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[4] (CV1) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        if(!(growth$re[5] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[5] (CV2) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        data$growth_re_model[1] <- match(growth$re[1], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+        data$growth_re_model[2] <- match(growth$re[2], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+        data$growth_re_model[3] <- match(growth$re[3], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+        data$growth_re_model[4] <- match(growth$re[4], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+        data$growth_re_model[5] <- match(growth$re[5], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+      }
+      if(data$growth_model == 2) {
+        if(!identical(dim(growth$input_LAA), c(data$n_years_model, data$n_ages))) stop("Dimensions of 'input_LAA' must be the number of years and ages, respectively.")
+        if(!(growth$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[1] must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
+        data$growth_re_model[1] <- match(growth$re[1], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+        growth_ini = growth$input_LAA # LAA
+      }
     }
+
+    if(!is.null(growth$init_vals) & data$growth_model == 2) stop("'init_vals' must be omitted when growth model is 'input_LAA'.")
+    if(!is.null(growth$est_pars) & data$growth_model == 2) stop("'est_pars' must be omitted when growth model is 'input_LAA'.")
 
     if(!is.null(growth$init_vals)){
       if(length(growth$init_vals) != data$n_growth_par) stop("Length(growth$init_vals) must be equal to the number of parameters of the chosen growth model.")
       growth_ini <- c(log(growth$init_vals[1:2]), log(growth$init_vals[3]*-1 + 1), log(growth$init_vals[4:5]))
-	    growth_re_ini[] <- 0#  initialize yearly deviations at 0
     }
 	
   	if(!is.null(growth$est_pars)){
         if(length(growth$est_pars) > data$n_growth_par) stop("Should be equal or less than the number of parameters of the chosen growth model.")
         data$growth_est[growth$est_pars] = 1
-  	    growth_re_ini[] <- 0#  initialize yearly deviations at 0
   	}
 
   }
@@ -70,7 +78,7 @@ set_growth = function(input, growth)
 
   # growth pars --------------------------
   
-  par$growth_a = growth_ini
+  par$growth_a = as.matrix(growth_ini)
   par$growth_re = growth_re_ini
   par$growth_repars = matrix(0, ncol = n_re_par, nrow = data$n_growth_par)
   par$growth_repars[,1] = log(0.1) # start sigma at 0.1, rho at 0
