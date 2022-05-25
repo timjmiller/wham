@@ -639,12 +639,13 @@ Type objective_function<Type>::operator() ()
   }
 
   nll += nll_q.sum() + nll_q_prior.sum();
-  
+  int Ecov_effects_on_q = 0;
   for(int y = 0; y < n_years_model + n_years_proj; y++) {
     for(int ind = 0; ind < n_indices; ind++) {
       for(int i=0; i < n_Ecov; i++){
         if(Ecov_where(i,2+ind) == 1){ // if ecov i affects q and which index
           logit_q_mat(y,ind) += Ecov_lm(i,2+ind,y,0);
+          Ecov_effects_on_q++;
         }
       }
       q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));
@@ -665,7 +666,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   REPORT(logit_q_mat);
-  if(use_q_re.sum()>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
+  if(use_q_re.sum()>0 || Ecov_effects_on_q>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
   REPORT(sigma_q);
   REPORT(rho_q);
   REPORT(nll_q);

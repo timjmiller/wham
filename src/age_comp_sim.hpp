@@ -115,7 +115,7 @@ vector<Type> rlogisticnormal(vector<Type> x, vector<Type> p, vector<Type> pars, 
 
     using namespace density;
     MVNORM_t<Type> mvnorm(Sigma);
-    vector<Type> y = exp(mvnorm.simulate());
+    vector<Type> y = exp(mu + mvnorm.simulate());
     if(do_mult){
       for(int i = 0; i < npos-1; i++) y = y/(1 + (y.head(i+1))).prod();
     } else {
