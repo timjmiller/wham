@@ -95,7 +95,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
   DATA_IVECTOR(Fbar_ages);
-  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
+  DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q, growth) in that order) will be simulated.
   DATA_IVECTOR(simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
   DATA_IVECTOR(simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
@@ -531,7 +531,7 @@ Type objective_function<Type>::operator() ()
   // Calculate GROWTH --  NEWG section
   Type nll_GW = Type(0);
   
-  // For K parameter:
+  // For all growth parameters:
   vector<Type> sigma_GW(n_growth_par); // first RE parameter
   vector<Type> rho_GW_y(n_growth_par);  // second RE parameter
 
@@ -606,13 +606,17 @@ Type objective_function<Type>::operator() ()
   array<Type> GW_par(n_years_model + n_years_proj,n_ages,n_growth_par); // array for growth parameters, either for 1 and 2
   for(int j = 0; j < n_growth_par; j++) { 
 	  for(int y = 0; y < n_years_model; y++) { 
-			for(int a = 0; a < n_ages; y++) { 
+			for(int a = 0; a < n_ages; a++) { 
 			
 					if(growth_model == 1) {
 						// For growth_model == 1
-						if(j == 2) GW_par(y,a,j) = exp(growth_a(j,0)*-1 + 1 + growth_re(y,a,j)); // for t0
-						else GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
+						if(j == 2) { 
+							GW_par(y,a,j) = (exp(growth_a(j,0) + growth_re(y,a,j)) - 1)*-1; // for t0
+						} else {
+							GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
+						}
 					}
+					
 					if(growth_model == 2) {
 						// For growth_model == 2
 						GW_par(y,a,j) = exp(growth_a(y,a) + growth_re(y,a,j)); // this is mean-LAA matrix
@@ -628,12 +632,16 @@ Type objective_function<Type>::operator() ()
 	  for(int j = 0; j < n_growth_par; j++) { 
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 
-			
+								
 					if(growth_model == 1) {
 						// For growth_model == 1
-						if(j == 2) GW_par(y,a,j) = exp(growth_a(j,0)*-1 + 1 + growth_re(y,a,j)); // for t0
-						else GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
+						if(j == 2) { 
+							GW_par(y,a,j) = (exp(growth_a(j,0) + growth_re(y,a,j)) - 1)*-1; // for t0
+						} else {
+							GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
+						}
 					}
+					
 					if(growth_model == 2) {
 						// For growth_model == 2
 						GW_par(y,a,j) = exp(growth_a(n_years_model - 1,a) + growth_re(y,a,j)); // use last row for proj in input_LAA, correct?
@@ -1447,16 +1455,16 @@ Type objective_function<Type>::operator() ()
           nll_index_lcomp(y,i) -= get_lcomp_ll(t_pal, t_pred_pal, index_NeffL(y,i), len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)),//acomp_pars, 
             keep.segment(keep_Ipal(i,y,0),n_lengths), do_osa);
         }
-        // SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
-          // t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
-          // if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
-            // index_pal(i,y,l) = t_pal(l);
-            // obsvec(keep_Ipal(i,y,l)) = t_pal(l);
-          // }
-          // if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
-            // index_pal_proj(i,y-n_years_model,l) = t_pal(l);
-          // }
-        // }
+        SIMULATE if(simulate_data(1) == 1) if(use_index_pal(yuse,i) == 1){
+          t_pal = sim_lcomp(t_pred_pal, index_NeffL(yuse,i), len_comp_model_indices(i), t_pal, vector<Type>(index_pal_pars.row(i))); 
+          if((simulate_period(0) == 1) & (y < n_years_model)) for(int l = 0; l < n_lengths; l++) {
+            index_pal(i,y,l) = t_pal(l);
+            obsvec(keep_Ipal(i,y,l)) = t_pal(l);
+          }
+          if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int l = 0; l < n_lengths; l++) {
+            index_pal_proj(i,y-n_years_model,l) = t_pal(l);
+          }
+        }
       }	  
 	  
     }

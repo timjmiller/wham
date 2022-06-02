@@ -1291,12 +1291,13 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
     acomp.pred = aperm(mod$rep$pred_catch_paa[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet_",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    y_max = max(mod$rep$pred_catch_paa) + 0.025
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- paste0("Fleet ", i)
     for (j in 1:length(years))
     {
       plot(1:length(ages), acomp.obs[j,], type='p', col=plot.colors[i], pch=1, xlab="", ylab="",
-        ylim=c(0, 1), axes = FALSE)
+        ylim=c(0, y_max), axes = FALSE)
       if(j %% 15 == 1)
       {
         title(my.title, outer=TRUE, line=0)
@@ -1325,6 +1326,60 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 	}  #end loop on n_fleets
   # par(origpar)
 }
+
+plot.catch.len.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, plot.colors, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  years = mod$years
+  lengths = mod$env$data$lengths
+  lengths.lab = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  if(!missing(use.i)) fleets <- use.i
+  else fleets <- 1:mod$env$data$n_fleets
+  if(missing(plot.colors)) plot.colors = mypalette(mod$env$data$n_fleets)
+
+  for (i in fleets)
+  {
+    lcomp.obs = mod$env$data$catch_pal[i,,]
+    lcomp.pred = aperm(mod$rep$pred_catch_pal[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
+    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_len_comp_fleet_",i,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Catch_len_comp_fleet_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    y_max = max(mod$rep$pred_catch_pal) + 0.025
+    par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+    my.title <- paste0("Fleet ", i)
+    for (j in 1:length(years))
+    {
+      plot(lengths, lcomp.obs[j,], type='p', col=plot.colors[i], pch=1, xlab="", ylab="",
+        ylim=c(0, y_max), axes = FALSE)
+      if(j %% 15 == 1)
+      {
+        title(my.title, outer=TRUE, line=0)
+        mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+        mtext(side = 1, "Length (cm)", line = 2, outer = TRUE)
+      }
+      if(j %% 15 %in% 1:5) axis(2)
+      else axis(2, labels = FALSE)
+      if(j %in% seq(5,length(years)+1,5)) axis(1, at = lengths.lab, labels = lengths.lab)
+      else axis(1, labels = FALSE)
+      grid()
+      box()
+      lines(lengths, lcomp.pred[j,], col=plot.colors[i],  lwd=2)
+      title(paste("Year = ", years[j], sep=""), outer = FALSE)
+
+      # if 5x3 multipanel is full, save png and open new one
+      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+        dev.off()
+        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
+        if(do.png) png(filename = file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+      }
+    }  #end loop on n_years
+    if(length(years) %% 15 != 0) frame()
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }  #end loop on n_fleets
+  # par(origpar)
+}
+
+
 
 plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, plot.colors, od)
 {

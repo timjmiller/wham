@@ -102,6 +102,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.NAA.4.panel(mod)
     plot.catch.age.comp(mod)
     plot.catch.age.comp.resids(mod)
+    plot.catch.len.comp(mod)
     plot.index.age.comp(mod)
     plot.index.age.comp.resids(mod)
     plot.NAA.res(mod)
@@ -239,6 +240,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     for(i in 1:mod$env$data$n_fleets){
       plot.catch.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.catch.len.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     for(i in 1:mod$env$data$n_indices){

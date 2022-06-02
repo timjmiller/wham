@@ -37,6 +37,11 @@ set_growth = function(input, growth)
 
     if(is.null(growth$input_LAA) & data$growth_model == 2) stop("'input_LAA' must be provided when growth model is 2.")
 
+    if(data$growth_model == 2) {
+      if(!identical(dim(growth$input_LAA), c(data$n_years_model, data$n_ages))) stop("Dimensions of 'input_LAA' must be the number of years and ages, respectively.")
+      growth_ini = log(growth$input_LAA) # LAA
+    }
+
     if(!is.null(growth$re)){
       if(length(growth$re) != n_par[data$growth_model]) stop("Length(growth$re) must be equal to the number of parameters of the chosen growth model (equal to 1 for 'input_LAA').")
       
@@ -49,10 +54,8 @@ set_growth = function(input, growth)
         data$growth_re_model[3] <- match(growth$re[3], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
       }
       if(data$growth_model == 2) {
-        if(!identical(dim(growth$input_LAA), c(data$n_years_model, data$n_ages))) stop("Dimensions of 'input_LAA' must be the number of years and ages, respectively.")
         if(!(growth$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[1] must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
         data$growth_re_model[1] <- match(growth$re[1], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-        growth_ini = log(growth$input_LAA) # LAA
       }
     }
 
