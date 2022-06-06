@@ -232,6 +232,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
   array<Type> LAA(n_years_model + n_years_proj,n_lengths,n_ages);// NEWG
   matrix<Type> mLAA(n_years_model + n_years_proj,n_ages);// NEWG
+  matrix<Type> fracyr_LAA(n_lengths,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
@@ -1264,7 +1265,8 @@ Type objective_function<Type>::operator() ()
     int usey = y;
     if(y > n_years_model-1) usey = n_years_model-1;
     //int acomp_par_count = 0;
-	matrix<Type> fracyr_LAA = pred_LAA(mLAA.row(y), SDAA.row(y), GW_par, lengths, y, 0.5); // fracyr = 0.5 for fleets. only works for growth_model = 1 so far
+	Type fracfleet = 0.5; // fracyr = 0.5 for fleets.
+	fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracfleet); // only works for growth_model = 1 so far
     for(int f = 0; f < n_fleets; f++)
     {
       pred_catch(y,f) = 0.0;
@@ -1382,7 +1384,7 @@ Type objective_function<Type>::operator() ()
     {
       Type tsum = 0.0;
 	  vector<Type> lsumI(n_lengths);
-	  matrix<Type> fracyr_LAA = pred_LAA(mLAA.row(y), SDAA.row(y), GW_par, lengths, y, fracyr_indices(yuse,i)); // only works for growth_model = 1 so far
+	  fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracyr_indices(yuse,i)); // only works for growth_model = 1 so far
       for(int a = 0; a < n_ages; a++)
       {
         pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(yuse,i));

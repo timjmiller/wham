@@ -830,11 +830,15 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 
 template <class Type>
 matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, array<Type> GW_par, vector<Type> lengths, 
-						int this_year, Type fracyr){
+						int y, Type fracyr){
 
   Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
   Type Lminp = min(lengths) - len_bin*0.5;
   Type Lmaxp = max(lengths) - len_bin*0.5;
+  Type Fac1 = 0.0;
+  Type Fac2 = 0.0;
+  Type Ll1p = 0.0;
+  Type Llp = 0.0;
   int n_ages = mLAA_jan1.size();
   int n_lengths = lengths.size();
   matrix<Type> out(n_lengths, n_ages);
@@ -843,7 +847,7 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, array<Type> GW_
   
   	  for(int a = 0; a < n_ages; a++)
 	  {  
-		    mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(this_year,a,1))*(exp(-GW_par(this_year,a,0)*fracyr) - 1.0);
+		    mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
 
 			for(int l = 0; l < n_lengths; l++) {
 				
