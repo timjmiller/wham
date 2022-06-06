@@ -827,3 +827,45 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   out.col(out.cols()-1) = SSB;
   return(out);
 }
+
+template <class Type>
+matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, array<Type> GW_par, vector<Type> lengths, 
+						int this_year, Type fracyr){
+
+  Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
+  Type Lminp = min(lengths) - len_bin*0.5;
+  Type Lmaxp = max(lengths) - len_bin*0.5;
+  int n_ages = mLAA_jan1.size();
+  int n_lengths = lengths.size();
+  matrix<Type> out(n_lengths, n_ages);
+  vector<Type> mLAA(n_ages);
+  
+  
+  	  for(int a = 0; a < n_ages; a++)
+	  {  
+		    mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(this_year,a,1))*(exp(-GW_par(this_year,a,0)*fracyr) - 1.0);
+
+			for(int l = 0; l < n_lengths; l++) {
+				
+				if(l == 0) { 
+					Fac1 = (Lminp - mLAA(a))/SDAA(a);
+					out(l,a) = pnorm(Fac1);  
+				} else {
+					if(l == (n_lengths-1)) { 
+						Fac1 = (Lmaxp - mLAA(a))/SDAA(a);
+						out(l,a) = 1.0 - pnorm(Fac1);  
+					} else { 
+						Ll1p = lengths(l) + len_bin*0.5;
+						Llp = lengths(l) - len_bin*0.5;
+						Fac1 = (Ll1p - mLAA(a))/SDAA(a);
+						Fac2 = (Llp - mLAA(a))/SDAA(a);
+						out(l,a) = pnorm(Fac1) - pnorm(Fac2);  
+					}
+				}
+				
+			}
+	  }
+
+  return(out);
+}
+

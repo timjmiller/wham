@@ -1102,10 +1102,10 @@ Type objective_function<Type>::operator() ()
 				if(a == 0) { 
 					mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
 				} else {
-					mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)) - 1.0);
+					mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
 				}
 			}
-			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0);
+			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
 			
 			SDAA(y,a) = ( CV_len(0) + ((CV_len(1) - CV_len(0))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
 			// pred_mLAA(y,a) = mLAA(y,a); // predicted mean length at age, is it necessary?
@@ -1264,6 +1264,7 @@ Type objective_function<Type>::operator() ()
     int usey = y;
     if(y > n_years_model-1) usey = n_years_model-1;
     //int acomp_par_count = 0;
+	matrix<Type> fracyr_LAA = pred_LAA(mLAA.row(y), SDAA.row(y), GW_par, lengths, y, 0.5); // fracyr = 0.5 for fleets. only works for growth_model = 1 so far
     for(int f = 0; f < n_fleets; f++)
     {
       pred_catch(y,f) = 0.0;
@@ -1276,7 +1277,7 @@ Type objective_function<Type>::operator() ()
         tsum += pred_CAA(y,f,a);
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * LAA(y,l,a);
+			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * fracyr_LAA(l,a);
 			lsum(l) += pred_CAAL(y,f,l,a);
 		}
       }
@@ -1381,6 +1382,7 @@ Type objective_function<Type>::operator() ()
     {
       Type tsum = 0.0;
 	  vector<Type> lsumI(n_lengths);
+	  matrix<Type> fracyr_LAA = pred_LAA(mLAA.row(y), SDAA.row(y), GW_par, lengths, y, fracyr_indices(yuse,i)); // only works for growth_model = 1 so far
       for(int a = 0; a < n_ages; a++)
       {
         pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(yuse,i));
@@ -1389,7 +1391,7 @@ Type objective_function<Type>::operator() ()
 		
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * LAA(y,l,a); // Only numbers allowed so far
+			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * fracyr_LAA(l,a); // Only numbers allowed so far
 			lsumI(l) += pred_IAAL(y,i,l,a);
 		}
       }

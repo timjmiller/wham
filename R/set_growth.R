@@ -25,9 +25,9 @@ set_growth = function(input, growth)
     n_par = c(3, 1) # for model 1 and 2, respectively
 
     if(!is.null(growth$model)){ # growth model to be used
-      if(!(growth$model %in% c("vB_classic", "input_LAA"))) stop("growth$model must be 'vB_classic' or 'input_LAA'")
-      data$growth_model <- match(growth$model, c("vB_classic", "input_LAA")) # 1
-      if(growth$model %in% c("vB_classic", "input_LAA")){
+      if(!(growth$model %in% c("vB_classic", "stock_LAA"))) stop("growth$model must be 'vB_classic' or 'stock_LAA'")
+      data$growth_model <- match(growth$model, c("vB_classic", "stock_LAA")) # 1
+      if(growth$model %in% c("vB_classic", "stock_LAA")){
         data$n_growth_par = n_par[data$growth_model] # 5 parameters to estimate
         data$growth_est = rep(0, times = n_par[data$growth_model]) # estimate?
         data$growth_re_model = rep(1, times = n_par[data$growth_model]) # default = no RE / 'none'
@@ -35,15 +35,15 @@ set_growth = function(input, growth)
       }
     }
 
-    if(is.null(growth$input_LAA) & data$growth_model == 2) stop("'input_LAA' must be provided when growth model is 2.")
+    if(is.null(growth$stock_LAA) & data$growth_model == 2) stop("'stock_LAA' must be provided when growth model is 2.")
 
     if(data$growth_model == 2) {
-      if(!identical(dim(growth$input_LAA), c(data$n_years_model, data$n_ages))) stop("Dimensions of 'input_LAA' must be the number of years and ages, respectively.")
-      growth_ini = log(growth$input_LAA) # LAA
+      if(!identical(dim(growth$stock_LAA), c(data$n_years_model, data$n_ages))) stop("Dimensions of 'stock_LAA' must be the number of years and ages, respectively.")
+      growth_ini = log(growth$stock_LAA) # LAA
     }
 
     if(!is.null(growth$re)){
-      if(length(growth$re) != n_par[data$growth_model]) stop("Length(growth$re) must be equal to the number of parameters of the chosen growth model (equal to 1 for 'input_LAA').")
+      if(length(growth$re) != n_par[data$growth_model]) stop("Length(growth$re) must be equal to the number of parameters of the chosen growth model (equal to 1 for 'stock_LAA').")
       
       if(data$growth_model == 1) {
         if(!(growth$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("growth$re[1] (k) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
@@ -59,8 +59,8 @@ set_growth = function(input, growth)
       }
     }
 
-    if(!is.null(growth$init_vals) & data$growth_model == 2) stop("'init_vals' must be omitted when growth model is 'input_LAA'.")
-    if(!is.null(growth$est_pars) & data$growth_model == 2) stop("'est_pars' must be omitted when growth model is 'input_LAA'.")
+    if(!is.null(growth$init_vals) & data$growth_model == 2) stop("'init_vals' must be omitted when growth model is 'stock_LAA'.")
+    if(!is.null(growth$est_pars) & data$growth_model == 2) stop("'est_pars' must be omitted when growth model is 'stock_LAA'.")
 
     if(!is.null(growth$init_vals)){
       if(length(growth$init_vals) != data$n_growth_par) stop("Length(growth$init_vals) must be equal to the number of parameters of the chosen growth model.")
