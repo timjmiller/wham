@@ -340,13 +340,15 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 	catch_opts = NULL
 	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
-					"catch_pal", "catch_NeffL", "use_catch_pal", "selblock_pointer_fleets")
+					"catch_pal", "catch_NeffL", "use_catch_pal", "catch_alk", "catch_alk_Neff", "use_catch_alk",
+					"selblock_pointer_fleets")
 	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 
 	index_opts = NULL
 	index_names = c("n_indices", "agg_indices", "index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
 		"units_index_paa", "use_indices", "use_index_paa",
-		"index_pal", "index_NeffL", "units_index_pal", "use_index_pal", "selblock_pointer_indices")
+		"index_pal", "index_NeffL", "units_index_pal", "use_index_pal", "index_alk", "index_alk_Neff", "use_index_alk",
+		"selblock_pointer_indices")
 	if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
 
 	F_opts = NULL

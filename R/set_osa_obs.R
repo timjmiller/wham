@@ -124,6 +124,37 @@ set_osa_obs = function(input)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
+
+    # 6. alk index
+    for(i in 1:data$n_indices){
+      #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
+      x <- data$index_alk[i,,,]
+      x[which(data$use_index_alk[,i]==0),,] <- NA # only include catch data to fit in obsvec
+      indices = paste0("index_", 1:data$n_indices)
+      if(data$use_index_alk[y,i]!=0) 
+      {
+        tmp = data.frame(year = y, fleet = indices[i], bin = apply(expand.grid(1:data$n_ages,data$lengths), 1, paste, collapse="_"), # bin is age_len
+                          type = 'indexalk', val = as.vector(t(x[y,,])))
+        obs <- rbind(obs, tmp[, obs.colnames])
+      }
+    }
+
+
+    # 6.1 alk catch 
+    for(i in 1:data$n_fleets){
+      #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
+      x <- data$catch_alk[i,,,]
+      x[which(data$use_catch_alk[,i]==0),,] <- NA # only include catch data to fit in obsvec
+      #x = as.data.frame(x)
+      fleets = paste0("fleet_", 1:data$n_fleets)
+      if(data$use_catch_alk[y,i]!=0) {
+        tmp = data.frame(year = y, fleet = fleets[i], bin = apply(expand.grid(1:data$n_ages,data$lengths), 1, paste, collapse="_"), # bin is age_len
+                          type = 'catchalk', val = as.vector(t(x[y,,])))
+        obs <- rbind(obs, tmp[, obs.colnames])
+      }
+    }
+
+
   # # 5. paa index
   #dimnames(data$index_paa) <- list(
   #  fleet=paste0("index_", 1:data$n_indices),
@@ -234,6 +265,35 @@ set_osa_obs = function(input)
   }
   # subtract 1 bc TMB indexes from 0
   data$keep_Ipal <- data$keep_Ipal - 1
+
+
+  # keep_Calk:
+  data$keep_Calk <- array(NA, dim=c(data$n_fleets, data$n_years_model, data$n_lengths*data$n_ages))
+  for(i in 1:data$n_fleets) {
+    for(y in 1:data$n_years_model) if(data$use_catch_alk[y,i]==1){
+      data$keep_Calk[i,y,] <- subset(obs, year == y & type=='catchalk' & fleet==paste0("fleet_",i))$ind
+      #subset for oneStepPredict can't include these
+      if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, data$keep_Calk[i,y,])
+      if(data$age_comp_model_fleets[i] %in% 8:9) data$condition_no_osa = c(data$condition_no_osa, data$keep_Calk[i,y,])
+    }
+  }
+
+  # subtract 1 bc TMB indexes from 0
+  data$keep_Calk <- data$keep_Calk - 1
+ 
+
+ # keep_Ialk:
+  data$keep_Ialk <- array(NA, dim=c(data$n_indices, data$n_years_model, data$n_lengths*data$n_ages))
+  for(i in 1:data$n_indices) {
+    for(y in 1:data$n_years_model) if(data$use_index_alk[y,i]==1){
+      data$keep_Ialk[i,y,] <- subset(obs, year == y & type=='indexalk' & fleet==paste0("index_",i))$ind 
+      #subset for oneStepPredict can't include these
+      if(data$age_comp_model_indices[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, data$keep_Ialk[i,y,])
+      if(data$age_comp_model_indices[i] %in% 8:9) data$condition_no_osa = c(data$condition_no_osa, data$keep_Ialk[i,y,])
+    }
+  }
+  # subtract 1 bc TMB indexes from 0
+  data$keep_Ialk <- data$keep_Ialk - 1
 
   #these are the models in order
   #all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0","logistic-normal-miss0","logistic-normal-ar1-miss0",
