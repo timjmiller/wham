@@ -243,7 +243,7 @@ check_projF = function(mod)
 {
   if(is.null(mod$opt)) mle = mod$par
   else {
-    mle = model$opt$par
+    mle = mod$opt$par
   }
   proj_F_opt = mod$env$data$proj_F_opt
   ind = which(proj_F_opt == 3) #FXSPR
