@@ -3383,7 +3383,9 @@ convert_survey_to_at_age <- function(mod)
 			agg.units <- dat$units_indices[i]
 			prp.units <- dat$units_index_paa[i]
 
-      waa <- dat$waa[dat$waa_pointer_indices[i],dat$use_index_paa[,i]==1,]
+      waa <- dat$waa[dat$waa_pointer_indices[i],which(dat$use_index_paa[,i]==1),]
+      print(dim(waa))
+      print(dim(props.ob))
 			# get weight (matrix if necessary)
 			if (agg.units==1 | prp.units==1)
 			{  # either in weight
