@@ -1283,7 +1283,7 @@ Type objective_function<Type>::operator() ()
   nll_catch_acomp.setZero();
   nll_catch_lcomp.setZero(); // NEWG
   nll_catch_alk.setZero();
-  
+  vector<Type> lsum(n_lengths);
   for(int y = 0; y < n_years_model+n_years_proj; y++)
   {
     //for now just use uncertainty from last year of catch
@@ -1294,9 +1294,9 @@ Type objective_function<Type>::operator() ()
 	fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracfleet); // only works for growth_model = 1 so far
     for(int f = 0; f < n_fleets; f++)
     {
+	  lsum.setZero();
       pred_catch(y,f) = 0.0;
       Type tsum = 0.0;
-	  vector<Type> lsum(n_lengths);
       for(int a = 0; a < n_ages; a++)
       {
         pred_CAA(y,f,a) =  NAA(y,a) * FAA(y,f,a) * (1 - exp(-ZAA(y,a)))/ZAA(y,a);
@@ -1435,6 +1435,7 @@ Type objective_function<Type>::operator() ()
   nll_index_lcomp.setZero();
   nll_index_alk.setZero();
   pred_indices.setZero();
+  vector<Type> lsumI(n_lengths);
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
     int yuse = y;
@@ -1442,8 +1443,8 @@ Type objective_function<Type>::operator() ()
     //int acomp_par_count = 0;
     for(int i = 0; i < n_indices; i++)
     {
+	  lsumI.setZero();
       Type tsum = 0.0;
-	  vector<Type> lsumI(n_lengths);
 	  fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracyr_indices(yuse,i)); // only works for growth_model = 1 so far
       for(int a = 0; a < n_ages; a++)
       {
