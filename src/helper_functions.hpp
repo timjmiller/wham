@@ -17,17 +17,18 @@ matrix<Type> extract_matrix_array3(array<Type> a, int index) //matrix has to be 
 }
 
 template <class Type>
-vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
+vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, vector<Type> lengths, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
 {
-  vector<matrix<Type> > selAA(n_selblocks);
+  vector<matrix<Type> > selAL(n_selblocks);
   for(int b = 0; b < n_selblocks; b++)
   {
     matrix<Type> tmp(n_years, n_ages);
+	matrix<Type> tmpL(n_years, n_lengths); // only for len selex
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
     { //logistic or double-logistic
       if(selblock_models(b) == 2)
-      { //increasing logistic
+      { //increasing age-logistic
         for(int y = 0; y < n_years; y++)
         {
           Type a50 = selpars(b)(y,0); // a50 parameter in year y
@@ -62,24 +63,41 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
         }
         else //model 4: declining logistic
         {
-          for(int y = 0; y < n_years; y++)
-          {
-            Type a50 = selpars(b)(y,0); // a50 parameter in year y
-            Type k = selpars(b)(y,1); //  1/slope in year y
-            Type age = 0.0;
-            for (int a = 0; a < n_ages; a++)
-            {
-              age += 1.0;
-              tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
-            }
-            for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
-          }
+          if(selblock_models(b) == 4)
+		  {
+			  for(int y = 0; y < n_years; y++)
+			  {
+				Type a50 = selpars(b)(y,0); // a50 parameter in year y
+				Type k = selpars(b)(y,1); //  1/slope in year y
+				Type age = 0.0;
+				for (int a = 0; a < n_ages; a++)
+				{
+				  age += 1.0;
+				  tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
+				}
+				for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
+			  }
+		  } else { // len-logistic
+				for(int y = 0; y < n_years; y++)
+				{
+				  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+				  Type k = selpars(b)(y,1); //  1/slope in year y
+				  for(int l = 0; l < n_lengths; l++)
+				  {
+					tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
+				  }
+				  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+				}
+		  }
         }
       }
     }
-    selAA(b) = tmp;
+	
+    if(selblock_models(b) < 5) selAL(b) = tmp;
+	else selAL(b) = tmpL;
+	
   }
-  return selAA;
+  return selAL;
 }
 
 template <class Type>

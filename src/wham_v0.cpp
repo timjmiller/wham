@@ -254,6 +254,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
   matrix<Type> ZAA(n_years_model + n_years_proj,n_ages);
   array<Type> QAA(n_years_model+n_years_proj,n_indices,n_ages);
+  vector<matrix<Type> > selAL(n_selblocks); // Could be selex at age or len
   vector<matrix<Type> > selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages;
   matrix<Type> q(n_years_model+n_years_proj,n_indices);
   vector<Type> t_paa(n_ages); // used also for ALK
@@ -309,7 +310,8 @@ Type objective_function<Type>::operator() ()
 
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
     if(selblock_models(b) == 2) jstart = n_ages;
-    if(selblock_models(b) == 3) jstart = n_ages + 2;
+    if(selblock_models(b) == 3) jstart = n_ages + 2; // What about model = 4?
+    if(selblock_models(b) == 5) jstart = n_ages + 6;
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
@@ -394,7 +396,7 @@ Type objective_function<Type>::operator() ()
   if(do_post_samp(2) == 1) ADREPORT(selpars_re);
   REPORT(logit_selpars);
   REPORT(nll_sel);
-  selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
+  selAL = get_selectivity(n_years_model, n_ages, n_lengths, lengths, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year. This could be selex-at-len as well
   nll += nll_sel;
 
   // Environmental covariate process model --------------------------------------
@@ -875,6 +877,75 @@ Type objective_function<Type>::operator() ()
     }
   }
 
+  // Calculate mean-LAA, SDAA, and transition matrix, for all years: NEWG
+  // Some information I need for transition matrix: 
+  Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
+  Type Lminp = min(lengths) - len_bin*0.5;
+  Type Lmaxp = max(lengths) - len_bin*0.5;
+  Type Fac1 = 0.0;
+  Type Fac2 = 0.0;
+  Type Ll1p = 0.0;
+  Type Llp = 0.0;
+  for(int y = 0; y < n_years_model + n_years_proj; y++)
+  {
+	  for(int a = 0; a < n_ages; a++)
+	  {
+			if(growth_model == 1) {
+				if(y == 0) {
+					mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
+				} else {
+					if(a == 0) { 
+						mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
+					} else {
+						mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
+					}
+				}
+			}
+			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
+			
+			SDAA(y,a) = ( CV_len(0) + ((CV_len(1) - CV_len(0))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
+			// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
+			for(int l = 0; l < n_lengths; l++) {
+				
+				if(l == 0) { 
+					Fac1 = (Lminp - mLAA(y,a))/SDAA(y,a);
+					LAA(y,l,a) = pnorm(Fac1);  
+				} else {
+					if(l == (n_lengths-1)) { 
+						Fac1 = (Lmaxp - mLAA(y,a))/SDAA(y,a);
+						LAA(y,l,a) = 1.0 - pnorm(Fac1);  
+					} else { 
+						Ll1p = lengths(l) + len_bin*0.5;
+						Llp = lengths(l) - len_bin*0.5;
+						Fac1 = (Ll1p - mLAA(y,a))/SDAA(y,a);
+						Fac2 = (Llp - mLAA(y,a))/SDAA(y,a);
+						LAA(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
+					}
+				}
+				
+			}
+	  }
+  }
+  
+  // Transform selex-at-len to selex-at-age when model = 5
+  for(int b = 0; b < n_selblocks; b++) {
+	  if(selblock_models(b) < 5) { // for age models
+		  selAA(b) = selAL(b);  // same as calculated in selAL
+	  } else { // transform for all years
+	      matrix<Type> matemp(n_years_model, n_ages);
+		  for(int y = 0; y < n_years_model; y++){
+			  for(int a = 0; a < n_ages; a++) {
+			  Type sumSelex = 0.0;
+				  for(int l = 0; l < n_lengths; l++) {
+					sumSelex += LAA(y,l,a)*selAL(b)(y,l);
+				  }
+			  matemp(y,a) = sumSelex;
+			  }
+		  }
+		  selAA(b) = matemp;
+	  }
+  }
+  
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
@@ -946,43 +1017,6 @@ Type objective_function<Type>::operator() ()
     SSB(0) += NAA(0,a) * waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0));
     pred_NAA(0,a) = NAA(0,a);
   }
-
-  // Set initial mean-LAA, SDAA, and transition matrix: NEWG
-  // Some information I need for transition matrix: 
-  Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
-  Type Lminp = min(lengths) - len_bin*0.5;
-  Type Lmaxp = max(lengths) - len_bin*0.5;
-  Type Fac1 = 0.0;
-  Type Fac2 = 0.0;
-  Type Ll1p = 0.0;
-  Type Llp = 0.0;
-  for(int a = 0; a < n_ages; a++)
-  {
-        if(growth_model == 1) mLAA(0,a) = GW_par(0,a,1)*(1.0 - exp(-GW_par(0,a,0)*((a + 1.0) - GW_par(0,a,2)))); // for growth_model = 1
-		if(growth_model == 2) mLAA(0,a) = GW_par(0,a,0); // for growth_model = 2
-		SDAA(0,a) = ( CV_len(0) + ((CV_len(1) - CV_len(0))/(n_ages - 1.0))*a )*mLAA(0,a);  // 
-		// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
-		for(int l = 0; l < n_lengths; l++) {
-			
-			if(l == 0) { 
-				Fac1 = (Lminp - mLAA(0,a))/SDAA(0,a);
-				LAA(0,l,a) = pnorm(Fac1);  
-			} else {
-				if(l == (n_lengths-1)) { 
-					Fac1 = (Lmaxp - mLAA(0,a))/SDAA(0,a);
-					LAA(0,l,a) = 1.0 - pnorm(Fac1);  
-				} else { 
-				    Ll1p = lengths(l) + len_bin*0.5;
-					Llp = lengths(l) - len_bin*0.5;
-					Fac1 = (Ll1p - mLAA(0,a))/SDAA(0,a);
-					Fac2 = (Llp - mLAA(0,a))/SDAA(0,a);
-					LAA(0,l,a) = pnorm(Fac1) - pnorm(Fac2);  
-				}
-			}
-			
-		}
-  }
-  
 
   // get SPR0
   vector<Type> M(n_ages), sel(n_ages), mat(n_ages), waacatch(n_ages), waassb(n_ages), log_SPR0(n_years_model + n_years_proj);
@@ -1117,43 +1151,6 @@ Type objective_function<Type>::operator() ()
       }
     }
         
-	// Calculate LAA: (beginning of the year y) NEWG
-	  for(int a = 0; a < n_ages; a++)
-	  {
-
-			if(growth_model == 1) {
-				if(a == 0) { 
-					mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
-				} else {
-					mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
-				}
-			}
-			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
-			
-			SDAA(y,a) = ( CV_len(0) + ((CV_len(1) - CV_len(0))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
-			// pred_mLAA(y,a) = mLAA(y,a); // predicted mean length at age, is it necessary?
-			for(int l = 0; l < n_lengths; l++) {
-				
-				if(l == 0) { 
-					Fac1 = (Lminp - mLAA(y,a))/SDAA(y,a);
-					LAA(y,l,a) = pnorm(Fac1);  
-				} else {
-					if(l == (n_lengths-1)) { 
-						Fac1 = (Lmaxp - mLAA(y,a))/SDAA(y,a);
-						LAA(y,l,a) = 1.0 - pnorm(Fac1);  
-					} else { 
-						Ll1p = lengths(l) + len_bin*0.5;
-						Llp = lengths(l) - len_bin*0.5;
-						Fac1 = (Ll1p - mLAA(y,a))/SDAA(y,a);
-						Fac2 = (Llp - mLAA(y,a))/SDAA(y,a);
-						LAA(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
-					}
-				}
-				
-			}
-	  }	
-		
-		
     // calculate F and Z in projection years, here bc need NAA(y) if using F from catch
     if(do_proj == 1){ // now need FAA by fleet for projections, use total of average FAA by fleet over avg.yrs
       // get selectivity using average over avg.yrs
@@ -1760,6 +1757,7 @@ Type objective_function<Type>::operator() ()
   REPORT(GW_par); // NEWG
   REPORT(pred_NAA);
   REPORT(SSB);
+  REPORT(selAL);
   REPORT(selAA);
   REPORT(MAA);
   REPORT(F);
