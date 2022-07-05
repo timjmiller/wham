@@ -311,7 +311,10 @@ Type objective_function<Type>::operator() ()
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
     if(selblock_models(b) == 2) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2; // What about model = 4?
+    if(selblock_models(b) == 4) jstart = n_ages; // What about model = 4?
     if(selblock_models(b) == 5) jstart = n_ages + 6;
+    if(selblock_models(b) == 6) jstart = n_ages + 8;
+    if(selblock_models(b) == 7) jstart = n_ages + 6;
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)

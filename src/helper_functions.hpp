@@ -77,17 +77,51 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 				}
 				for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
 			  }
-		  } else { // len-logistic
-				for(int y = 0; y < n_years; y++)
-				{
-				  Type l50 = selpars(b)(y,0); // l50 parameter in year y
-				  Type k = selpars(b)(y,1); //  1/slope in year y
-				  for(int l = 0; l < n_lengths; l++)
-				  {
-					tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
-				  }
-				  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+		  } else { 
+				
+				if(selblock_models(b) == 5) { // len-logistic
+					for(int y = 0; y < n_years; y++)
+					{
+					  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+					  Type k = selpars(b)(y,1); //  1/slope in year y
+					  for(int l = 0; l < n_lengths; l++)
+					  {
+						tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
+					  }
+					  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+					}
+				} else {
+					
+					if(selblock_models(b) == 6) { // len-double logistic
+						
+					  for(int y = 0; y < n_years; y++)
+					  {
+						Type l50_1 = selpars(b)(y,0); // l50 parameter in year y
+						Type k_1 = selpars(b)(y,1); //  1/slope in year y
+						Type l50_2 = selpars(b)(y,2);
+						Type k_2 = selpars(b)(y,3);
+						for (int l = 0; l < n_lengths; l++)
+						{
+						  tmpL(y,l) = (1.0/(1.0 + exp(-(lengths(l) - l50_1)/k_1))) * (1.0/(1.0 + exp((lengths(l) - l50_2)/k_2)));
+						}
+					  }
+						
+					} else { // len-decreasing logistic
+						for(int y = 0; y < n_years; y++)
+						{
+						  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+						  Type k = selpars(b)(y,1); //  1/slope in year y
+						  for(int l = 0; l < n_lengths; l++)
+						  {
+							tmpL(y,l) = 1.0/(1.0 + exp((lengths(l) - l50)/k));
+						  }
+						  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+						}
+					}
+					
 				}
+				
+				
 		  }
         }
       }
