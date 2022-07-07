@@ -28,8 +28,8 @@ navbar:
          href: articles/ex8_compare.html
       -  text: "Ex 9: Retrospective predictions"
          href: articles/ex9_retro_pred.html
-      -  text: "Ex 10: Operating models and MSE"
-         href: articles/ex10_om_mse.html
+      -  text: "Ex 10: Simulation and MSE"
+         href: articles/ex10_simulation.html
       -  text: "Ex 11: Catchability configurations"
          href: articles/ex11_catchability.html
 
@@ -73,7 +73,7 @@ articles:
       - ex7_debug
       - ex8_compare
       - ex9_retro_pred
-      - ex10_om_mse
+      - ex10_simulation
       - ex11_catchability
 
 reference:

@@ -73,7 +73,7 @@ catchability = list(prior_sd = c(NA, 0.3))
 
 #make input and operating model
 input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability))
-om = suppressWarnings(fit_wham(input, do.fit = FALSE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 
 #simulate data from operating model
 set.seed(0101010)
@@ -104,7 +104,7 @@ input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity =
 
 #set value to simulate variation in q
 input$par$q_repars[1] = log(0.2)
-om = suppressWarnings(fit_wham(input, do.fit = FALSE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 
 #simulate data from operating model
 set.seed(0101010)
@@ -162,7 +162,7 @@ input$par$Ecov_process_pars[2,] = log(c(0.1,0.2)) #sd
 input$par$Ecov_process_pars[3,] = log((c(0.4,-0.3)-(-1))/(1-c(0.4,-0.3)))
 #set value to simulate variation in q
 input$par$q_repars[1] = log(0.2)
-om = suppressWarnings(fit_wham(input, do.fit = FALSE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 
@@ -236,7 +236,7 @@ input$par$Ecov_beta[4,1,1,] = 0.5
 x = array(input$map$Ecov_beta, dim = dim(input$par$Ecov_beta))
 x[4,1,1,] #all the ages mapped to use the same value. Only the first value is used for q or recruitment.
 
-om = suppressWarnings(fit_wham(input, do.fit = FALSE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 
@@ -318,7 +318,7 @@ input$par$Ecov_beta[4,1,1,] = 0.5
 input$par$Ecov_beta[1,1,1,] = -0.5
 
 
-om = suppressWarnings(fit_wham(input, do.fit = FALSE))
+om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 

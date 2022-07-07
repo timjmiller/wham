@@ -21,6 +21,13 @@ Overview of WHAM presentation (Jan 8 2021):
   <iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
+
+Some further developments are covered here (Jan 25 2022): 
+
+<figure class="video_container">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/qDg2NKTbMR4?controls=0&amp;start=87" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
 ## Background
 
 WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
@@ -62,8 +69,7 @@ new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
 
-If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, this should provide that
-```r
+If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:```r
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
@@ -72,7 +78,7 @@ tinytex::install_tinytex()
 
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
 
-Clean, runnable `.R` scripts for each vignette are also available in the `example_scripts` folder of the `wham` package install:
+Clean, runnable `.R` scripts for most of the vignettes are also available in the `example_scripts` folder of the `wham` package install:
 ```r
 library(wham)
 wham.dir <- find.package("wham")
