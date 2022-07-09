@@ -16,7 +16,6 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_ages);
   DATA_INTEGER(n_lengths); // NEWG
   DATA_VECTOR(lengths); // NEWG
-  DATA_VECTOR(CV_len); // NEWG
   DATA_INTEGER(n_fleets);
   DATA_INTEGER(n_indices);
   DATA_INTEGER(n_selblocks);
@@ -638,11 +637,7 @@ Type objective_function<Type>::operator() ()
 			
 					if(growth_model == 1) {
 						// For growth_model == 1
-						if(j == 2) { 
-							GW_par(y,a,j) = (exp(growth_a(j,0) + growth_re(y,a,j)) - 1)*-1; // for t0
-						} else {
-							GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
-						}
+						GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
 					}
 					
 					if(growth_model == 2) {
@@ -663,11 +658,7 @@ Type objective_function<Type>::operator() ()
 								
 					if(growth_model == 1) {
 						// For growth_model == 1
-						if(j == 2) { 
-							GW_par(y,a,j) = (exp(growth_a(j,0) + growth_re(y,a,j)) - 1)*-1; // for t0
-						} else {
-							GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); // for K and Linf
-						}
+						GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
 					}
 					
 					if(growth_model == 2) {
@@ -895,10 +886,10 @@ Type objective_function<Type>::operator() ()
 	  {
 			if(growth_model == 1) {
 				if(y == 0) {
-					mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
+					mLAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); // for growth_model = 1
 				} else {
 					if(a == 0) { 
-						mLAA(y,a) = GW_par(y,a,1)*(1.0 - exp(-GW_par(y,a,0)*((a + 1.0) - GW_par(y,a,2)))); // for growth_model = 1
+						mLAA(y,a) = GW_par(y,a,2); 
 					} else {
 						mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
 					}
@@ -906,7 +897,7 @@ Type objective_function<Type>::operator() ()
 			}
 			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
 			
-			SDAA(y,a) = ( CV_len(0) + ((CV_len(1) - CV_len(0))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
+			SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
 			// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {
 				

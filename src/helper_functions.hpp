@@ -24,6 +24,8 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
   {
     matrix<Type> tmp(n_years, n_ages);
 	matrix<Type> tmpL(n_years, n_lengths); // only for len selex
+	tmp.setZero();
+	tmpL.setZero();
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
     { //logistic or double-logistic
@@ -57,8 +59,9 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
             {
               age += 1.0;
      	        tmp(y,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
-              tmp(y,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
+				tmp(y,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
             }
+			for(int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/max(tmp); // standardize from 0 to 1?
           }
         }
         else //model 4: declining logistic
@@ -104,6 +107,7 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 						{
 						  tmpL(y,l) = (1.0/(1.0 + exp(-(lengths(l) - l50_1)/k_1))) * (1.0/(1.0 + exp((lengths(l) - l50_2)/k_2)));
 						}
+						for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/max(tmpL); // standardize from 0 to 1?
 					  }
 						
 					} else { // len-decreasing logistic
