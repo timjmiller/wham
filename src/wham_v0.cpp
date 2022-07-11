@@ -309,11 +309,11 @@ Type objective_function<Type>::operator() ()
 
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
     if(selblock_models(b) == 2) jstart = n_ages;
-    if(selblock_models(b) == 3) jstart = n_ages + 2; // What about model = 4?
-    if(selblock_models(b) == 4) jstart = n_ages; // What about model = 4?
-    if(selblock_models(b) == 5) jstart = n_ages + 6;
-    if(selblock_models(b) == 6) jstart = n_ages + 8;
-    if(selblock_models(b) == 7) jstart = n_ages + 6;
+    if(selblock_models(b) == 3) jstart = n_ages + 2; // 
+    if(selblock_models(b) == 4) jstart = n_ages; // 
+    if(selblock_models(b) == 5) jstart = n_ages + 8;
+    if(selblock_models(b) == 6) jstart = n_ages + 10;
+    if(selblock_models(b) == 7) jstart = n_ages + 8;
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
@@ -889,7 +889,7 @@ Type objective_function<Type>::operator() ()
 					mLAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); // for growth_model = 1
 				} else {
 					if(a == 0) { 
-						mLAA(y,a) = GW_par(y,a,2); 
+						mLAA(y,a) = GW_par(y,a,2);  
 					} else {
 						mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
 					}
@@ -897,7 +897,7 @@ Type objective_function<Type>::operator() ()
 			}
 			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
 			
-			SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*mLAA(y,a);  // 
+			SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*mLAA(y,a);  //
 			// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {
 				
