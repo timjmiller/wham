@@ -315,7 +315,8 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, growth=NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
+prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, 
+	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -354,10 +355,6 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	F_opts = NULL
 	F_names = c("F")
 	if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
-
-	waa_opts = NULL
-	waa_names = ("waa")
-	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
 	q_opts = catchability
 	if(any(names(basic_info) == "q") & !any(names(q_opts) == "initial_q")) q_opts$initial_q = basic_info$q
@@ -408,6 +405,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	# Growth
 	input = set_growth(input, growth)
 	#print("growth")
+
+	# LW
+	input = set_LW(input, LW)
+	#print("LW")
 
 	# Age composition model
 	input = set_age_comp(input, age_comp)
@@ -468,7 +469,7 @@ initial_input_fn = function(input, basic_info){
 
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,6) #simulate state variables (NAA, M, sel, Ecov, q, growth)
+  input$data$simulate_state = rep(1,7) #simulate state variables (NAA, M, sel, Ecov, q, growth, LW)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
   input$data$simulate_period = c(1,0) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
