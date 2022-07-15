@@ -81,14 +81,22 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     # PDF input_data -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"input_data.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
     plot.catch.by.fleet(mod)
-    for(i in 1:mod$env$data$n_fleets) plot.catch.age.comp.bubbles(mod, i=i)
+    for(i in 1:mod$env$data$n_fleets) { 
+      plot.catch.age.comp.bubbles(mod, i=i)
+      plot.catch.len.comp.bubbles(mod, i=i)
+    }
     plot.index.input(mod)
-    for(i in 1:mod$env$data$n_indices) plot.index.age.comp.bubbles(mod, i=i)
-    plot.waa(mod,"ssb")
-    plot.waa(mod,"jan1")
-    plot.waa(mod,"totcatch")
-    for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
-    for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
+    for(i in 1:mod$env$data$n_indices) {
+      plot.index.age.comp.bubbles(mod, i=i)
+      plot.index.len.comp.bubbles(mod, i=i)
+    }
+    if(mod$env$data$waa_info == 1) {
+      plot.waa(mod,"ssb")
+      plot.waa(mod,"jan1")
+      plot.waa(mod,"totcatch")
+      for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
+      for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
+    }
     plot.maturity(mod)
     dev.off()
 
@@ -102,13 +110,18 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.NAA.4.panel(mod)
     plot.catch.age.comp(mod)
     plot.catch.age.comp.resids(mod)
+    plot.catch.len.comp.resids(mod)
     plot.catch.len.comp(mod)
     plot.index.age.comp(mod)
+    plot.index.len.comp(mod)
     plot.index.age.comp.resids(mod)
+    plot.index.len.comp.resids(mod)
     plot.NAA.res(mod)
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE)
+      plot.catch.len.comp.resids(mod, osa = TRUE)
       plot.index.age.comp.resids(mod, osa = TRUE)
+      plot.index.len.comp.resids(mod, osa = TRUE)
       plot.osa.residuals(mod)
     }
     if(mod$is_sdrep) plot.all.stdresids.fn(mod)
@@ -135,6 +148,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.recr.ssb.yr(mod, loglog=TRUE)
       plot.SARC.R.SSB(mod)
       plot.cv(mod)
+    }
+    if(mod$env$data$waa_info == 0) {
+      plot.waa(mod,"ssb")
+      plot.waa(mod,"jan1")
+      plot.waa(mod,"totcatch")
+      for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
+      for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
     }
     plot.fleet.F(mod)
     plot.M(mod)
@@ -197,6 +217,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.catch.age.comp.bubbles(mod, i=i)
       dev.off()
+      png(file.path(dir.data, paste0("catch_len_comp_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.catch.len.comp.bubbles(mod, i=i)
+      dev.off()
     }
     png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.index.input(mod)
@@ -205,25 +228,30 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.index.age.comp.bubbles(mod, i=i)
       dev.off()
-    }
-    png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.waa(mod,"ssb")
-    dev.off()
-    png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.waa(mod,"jan1")
-    dev.off()
-    png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.waa(mod,"totcatch")
-    dev.off()
-    for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.waa(mod,"fleets", ind=i)
+      png(file.path(dir.data, paste0("index",i,"_len_comp.png")),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.index.len.comp.bubbles(mod, i=i)
       dev.off()
     }
-    for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.waa(mod,"indices", ind=i)
+    if(mod$env$data$waa_info == 1) {
+      png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"ssb")
       dev.off()
+      png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"jan1")
+      dev.off()
+      png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"totcatch")
+      dev.off()
+      for(i in 1:mod$env$data$n_fleets){
+        png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        plot.waa(mod,"fleets", ind=i)
+        dev.off()
+      }
+      for(i in 1:mod$env$data$n_indices){
+        png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        plot.waa(mod,"indices", ind=i)
+        dev.off()
+      }
     }
     png(file.path(dir.data,"maturity.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.maturity(mod)
@@ -243,18 +271,23 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.catch.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.len.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.catch.len.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     for(i in 1:mod$env$data$n_indices){
       plot.index.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.index.len.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.index.len.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.res(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.catch.len.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.index.len.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
@@ -289,6 +322,27 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.NAA(mod, prop=TRUE)
     dev.off()
+    if(mod$env$data$waa_info == 0) {
+      png(file.path(dir.res,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"ssb")
+      dev.off()
+      png(file.path(dir.res,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"jan1")
+      dev.off()
+      png(file.path(dir.res,"weight_at_age_catch.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.waa(mod,"totcatch")
+      dev.off()
+      for(i in 1:mod$env$data$n_fleets){
+        png(file.path(dir.res, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        plot.waa(mod,"fleets", ind=i)
+        dev.off()
+      }
+      for(i in 1:mod$env$data$n_indices){
+        png(file.path(dir.res, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        plot.waa(mod,"indices", ind=i)
+        dev.off()
+      }
+    }
     if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
       png(file.path(dir.res,"SSB_Rec_fit.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SR.pred.line(mod)

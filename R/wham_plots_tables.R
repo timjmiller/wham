@@ -1291,34 +1291,37 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
     acomp.pred = aperm(mod$rep$pred_catch_paa[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet_",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    y_max = max(mod$rep$pred_catch_paa) + 0.025
+    y_max = max(c(as.vector(acomp.obs), as.vector(acomp.pred))) * 1.05
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- paste0("Fleet ", i)
     for (j in 1:length(years))
     {
-      plot(1:length(ages), acomp.obs[j,], type='p', col=plot.colors[i], pch=1, xlab="", ylab="",
-        ylim=c(0, y_max), axes = FALSE)
-      if(j %% 15 == 1)
-      {
-        title(my.title, outer=TRUE, line=0)
-        mtext(side = 2, "Proportion", line = 2, outer = TRUE)
-        mtext(side = 1, "Age", line = 2, outer = TRUE)
-      }
-      if(j %% 15 %in% 1:5) axis(2)
-      else axis(2, labels = FALSE)
-      if(j %in% seq(5,length(years)+1,5)) axis(1, at = ages, labels = ages.lab)
-      else axis(1, labels = FALSE)
-      grid()
-      box()
-      lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
-      title(paste("Year = ", years[j], sep=""), outer = FALSE)
+      if(mod$env$data$use_catch_paa[j,i] > 0) {
+        plot(1:length(ages), acomp.obs[j,], type='n', col=plot.colors[i], pch=1, xlab="", ylab="",
+          ylim=c(0, y_max), axes = FALSE)
+        polygon(x = c(ages[1], ages, ages[length(ages)]), y = c(0, acomp.obs[j,], 0), col = 'gray75', border = 'black')
+        if(j %% 15 == 1)
+        {
+          title(my.title, outer=TRUE, line=0)
+          mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+          mtext(side = 1, "Age", line = 2, outer = TRUE)
+        }
+        if(j %% 15 %in% 1:5) axis(2)
+        else axis(2, labels = FALSE)
+        if(j %in% seq(5,length(years)+1,5)) axis(1, at = ages, labels = ages.lab)
+        else axis(1, labels = FALSE)
+        grid()
+        box()
+        lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
+        title(paste("Year = ", years[j], sep=""), outer = FALSE)
 
-      # if 5x3 multipanel is full, save png and open new one
-      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
-        dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        # if 5x3 multipanel is full, save png and open new one
+        if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+          dev.off()
+          if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_fleet_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        }
       }
     }  #end loop on n_years
     if(length(years) %% 15 != 0) frame()
@@ -1332,7 +1335,8 @@ plot.catch.len.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
   origpar <- par(no.readonly = TRUE)
   years = mod$years
   lengths = mod$env$data$lengths
-  lengths.lab = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
   if(!missing(use.i)) fleets <- use.i
   else fleets <- 1:mod$env$data$n_fleets
   if(missing(plot.colors)) plot.colors = mypalette(mod$env$data$n_fleets)
@@ -1343,34 +1347,37 @@ plot.catch.len.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
     lcomp.pred = aperm(mod$rep$pred_catch_pal[1:mod$env$data$n_years_model,,,drop=FALSE], c(2,1,3))[i,,]
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_len_comp_fleet_",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_len_comp_fleet_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    y_max = max(mod$rep$pred_catch_pal) + 0.025
+    y_max = max(c(as.vector(lcomp.obs), as.vector(lcomp.pred))) * 1.05
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- paste0("Fleet ", i)
     for (j in 1:length(years))
     {
-      plot(lengths, lcomp.obs[j,], type='p', col=plot.colors[i], pch=1, xlab="", ylab="",
-        ylim=c(0, y_max), axes = FALSE)
-      if(j %% 15 == 1)
-      {
-        title(my.title, outer=TRUE, line=0)
-        mtext(side = 2, "Proportion", line = 2, outer = TRUE)
-        mtext(side = 1, "Length (cm)", line = 2, outer = TRUE)
-      }
-      if(j %% 15 %in% 1:5) axis(2)
-      else axis(2, labels = FALSE)
-      if(j %in% seq(5,length(years)+1,5)) axis(1, at = lengths.lab, labels = lengths.lab)
-      else axis(1, labels = FALSE)
-      grid()
-      box()
-      lines(lengths, lcomp.pred[j,], col=plot.colors[i],  lwd=2)
-      title(paste("Year = ", years[j], sep=""), outer = FALSE)
+      if(mod$env$data$use_catch_pal[j,i] > 0) {
+        plot(lengths, lcomp.obs[j,], type='n', col=plot.colors[i], pch=1, xlab="", ylab="",
+          ylim=c(0, y_max), axes = FALSE)
+        polygon(x = c(lengths[1], lengths, lengths[length(lengths)]), y = c(0, lcomp.obs[j,], 0), col = 'gray75', border = 'black')
+        if(j %% 15 == 1)
+        {
+          title(my.title, outer=TRUE, line=0)
+          mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+          mtext(side = 1, "Length (cm)", line = 2, outer = TRUE)
+        }
+        if(j %% 15 %in% 1:5) axis(2)
+        else axis(2, labels = FALSE)
+        if(j %in% seq(5,length(years)+1,5)) axis(1, at = lengths, labels = lengths.lab)
+        else axis(1, labels = FALSE)
+        grid()
+        box()
+        lines(lengths, lcomp.pred[j,], col=plot.colors[i],  lwd=2)
+        title(paste("Year = ", years[j], sep=""), outer = FALSE)
 
-      # if 5x3 multipanel is full, save png and open new one
-      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
-        dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        # if 5x3 multipanel is full, save png and open new one
+        if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+          dev.off()
+          if(do.tex) cairo_pdf(file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) png(filename = file.path(od, paste0("Catch_len_comp_fleet_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        }
       }
     }  #end loop on n_years
     if(length(years) %% 15 != 0) frame()
@@ -1398,33 +1405,37 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
     acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index_",i,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    y_max = max(c(as.vector(acomp.obs), as.vector(acomp.pred))) * 1.05
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- paste0("Index ", i)
     for (j in 1:length(years))
     {
-      plot(1:length(ages), acomp.obs[j,], type='p', col=plot.colors[i], pch=1, xlab="", ylab="",
-        ylim=c(0, 1), axes = FALSE)
-      if(j %% 15 == 1)
-      {
-        title(my.title, outer=TRUE, line=0)
-        mtext(side = 2, "Proportion", line = 2, outer = TRUE)
-        mtext(side = 1, "Age", line = 2, outer = TRUE)
-      }
-      if(j %% 15 %in% 1:5) axis(2)
-      else axis(2, labels = FALSE)
-      if(j %in% seq(5,length(years)+1,5)) axis(1, at = ages, labels = ages.lab)
-      else axis(1, labels = FALSE)
-      grid()
-      box()
-      lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
-      title(paste("Year = ", years[j], sep=""), outer = FALSE)
+      if(mod$env$data$use_index_paa[j,i] > 0) {
+        plot(1:length(ages), acomp.obs[j,], type='n', col=plot.colors[i], pch=1, xlab="", ylab="",
+          ylim=c(0, y_max), axes = FALSE)
+        polygon(x = c(ages[1], ages, ages[length(ages)]), y = c(0, acomp.obs[j,], 0), col = 'gray75', border = 'black')
+        if(j %% 15 == 1)
+        {
+          title(my.title, outer=TRUE, line=0)
+          mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+          mtext(side = 1, "Age", line = 2, outer = TRUE)
+        }
+        if(j %% 15 %in% 1:5) axis(2)
+        else axis(2, labels = FALSE)
+        if(j %in% seq(5,length(years)+1,5)) axis(1, at = ages, labels = ages.lab)
+        else axis(1, labels = FALSE)
+        grid()
+        box()
+        lines(1:length(ages), acomp.pred[j,], col=plot.colors[i],  lwd=2)
+        title(paste("Year = ", years[j], sep=""), outer = FALSE)
 
-      # if 5x3 multipanel is full, save png and open new one
-      if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
-        dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        # if 5x3 multipanel is full, save png and open new one
+        if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+          dev.off()
+          if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_index_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_index_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        }
       }
     }  #end loop on n_years
     if(length(years) %% 15 != 0) frame()
@@ -1432,6 +1443,64 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 	}  #end loop on n_indices
   # par(origpar)
 }
+
+plot.index.len.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, plot.colors, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  years = mod$years
+  lengths = mod$env$data$lengths
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  if(!missing(use.i)) indices <- use.i
+  else indices <- 1:mod$env$data$n_indices
+  if(missing(plot.colors)) plot.colors = mypalette(mod$env$data$n_indices)
+
+  for (i in indices)
+  {
+    lcomp.obs = mod$env$data$index_pal[i,,]
+    lcomp.pred = aperm(mod$rep$pred_IAL[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+    lcomp.pred = lcomp.pred/apply(lcomp.pred,1,sum)
+    if(do.tex) cairo_pdf(file.path(od, paste0("Index_len_comp_index_",i,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Index_len_comp_index_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    y_max = max(c(as.vector(lcomp.obs), as.vector(lcomp.pred))) * 1.05
+    par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+    my.title <- paste0("Index ", i)
+    for (j in 1:length(years))
+    {
+      if(mod$env$data$use_index_pal[j,i] > 0) {
+        plot(lengths, lcomp.obs[j,], type='n', col=plot.colors[i], pch=1, xlab="", ylab="",
+          ylim=c(0, y_max), axes = FALSE)
+        polygon(x = c(lengths[1], lengths, lengths[length(lengths)]), y = c(0, lcomp.obs[j,], 0), col = 'gray75', border = 'black')
+        if(j %% 15 == 1)
+        {
+          title(my.title, outer=TRUE, line=0)
+          mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+          mtext(side = 1, "Length (cm)", line = 2, outer = TRUE)
+        }
+        if(j %% 15 %in% 1:5) axis(2)
+        else axis(2, labels = FALSE)
+        if(j %in% seq(5,length(years)+1,5)) axis(1, at = lengths, labels = lengths.lab)
+        else axis(1, labels = FALSE)
+        grid()
+        box()
+        lines(lengths, lcomp.pred[j,], col=plot.colors[i],  lwd=2)
+        title(paste("Year = ", years[j], sep=""), outer = FALSE)
+
+        # if 5x3 multipanel is full, save png and open new one
+        if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
+          dev.off()
+          if(do.tex) cairo_pdf(file.path(od, paste0("Index_len_comp_index_",i,"_",letters[j/15],".pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) png(filename = file.path(od, paste0("Index_len_comp_index_",i,"_",letters[j/15],".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        }
+      }
+    }  #end loop on n_years
+    if(length(years) %% 15 != 0) frame()
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }  #end loop on n_indices
+  # par(origpar)
+}
+
 
 multinomial.pearson.fn = function(mod, ind = 1)
 {
@@ -1527,6 +1596,90 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
   # par(origpar)
 }
 
+plot.catch.len.comp.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
+                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa = FALSE, use.i, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  lengths = mod$env$data$lengths
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  n_lengths <- dat$n_lengths
+  years = mod$years
+  nyrs <- length(years)
+  if(!missing(use.i)) fleets <- use.i
+  else fleets <- 1:mod$env$data$n_fleets
+  tylab <- "Year"
+
+  for (i in fleets)
+  {
+    yind = which(dat$use_catch_pal[,i] ==1)
+    if(osa){
+      my.title <- "Length Comp OSA Quantile Residuals for Fleet "
+      fname = paste0("Catch_len_comp_osa_resids_fleet_",i)
+      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_lengths)
+      vals = resids
+      temp = mod$osa[c(dat$keep_Cpal[i,yind,]+1),]
+      
+      resids[yind,] = temp$residual
+      vals[yind,] = temp$val
+      #no residuals for zeros for continuous models
+      if(dat$len_comp_model_fleets[i] %in% 3:7) {
+        #temp$residual[which(temp$val < 1e-15)] = NA
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      }
+      #remove last age class for multinom, dir-mult
+      if(dat$len_comp_model_fleets[i] %in% 1:2) resids[,NCOL(resids)] = NA 
+
+      scale.resid.bubble.catch <- 2
+    } else{
+      lcomp.obs = dat$catch_pal[i,,]
+      lcomp.pred = mod$rep$pred_catch_pal[1:length(years),i,]
+      #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+      my.title <- "Length Comp Residuals (Observed-Predicted) for Fleet "
+      resids <- lcomp.obs - lcomp.pred  # NOTE obs-pred
+      resids[dat$use_catch_pal[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
+      fname = paste0("Catch_len_comp_resids_fleet_",i)
+      scale.resid.bubble.catch <- 25
+    }
+    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+    z1 <- resids
+    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+    else range.resids = c(0,0)
+
+    z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+    resid.col <- matrix(NA, nrow=nyrs, ncol=n_lengths)   # set color for residual bubbles
+    resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+    plot(lengths, rev(lengths),  xlim = range(lengths), ylim = c(years[nyrs],(years[1]-2)), xlab = "Length (cm)", ylab = tylab,
+      type = "n", axes=F)
+    axis(1, at= lengths, lab=lengths.lab)
+    axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+    box()
+    abline(h=years, col="lightgray")
+    segments(x0=lengths, y0=rep(years[1],n_lengths), x1=lengths, y1=rep(years[nyrs],n_lengths), col = "lightgray", lty = 1)
+
+    for (j in 1:nyrs) points(lengths, rep(years[j], n_lengths), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+
+    bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+    bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+    legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+    legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+    legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+    title (paste0(my.title,i), outer=T, line=-1)
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }   #end loop n_fleets
+  # par(origpar)
+}
+
+
+
 plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
                                        do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa=FALSE, use.i, od)
 {
@@ -1608,6 +1761,90 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	}   #end loop n_fleets
   # par(origpar)
 }
+
+plot.index.len.comp.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
+                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa=FALSE, use.i, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  lengths = mod$env$data$lengths
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  n_lengths <- dat$n_lengths
+  years = mod$years
+  nyrs <- length(years)
+  if(!missing(use.i)) indices <- use.i
+  else indices <- 1:dat$n_indices
+
+  for (i in indices)
+  {
+    yind = which(dat$use_index_pal[,i] ==1)
+    if(osa){
+      my.title <- "Length Comp OSA Quantile Residuals for Index "
+      fname = paste0("Index_len_comp_osa_resids_index_",i)
+      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_lengths)
+      vals = resids
+      temp = mod$osa[c(dat$keep_Ipal[i,yind,]+1),]
+      
+      resids[yind,] = temp$residual
+      vals[yind,] = temp$val
+      #no residuals for zeros for continuous models
+      if(dat$len_comp_model_indices[i] %in% 3:7) {
+        #temp$residual[which(temp$val < 1e-15)] = NA
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      }
+      #remove last age class for multinom, dir-mult
+      if(dat$len_comp_model_indices[i] %in% 1:2) resids[,NCOL(resids)] = NA 
+      scale.resid.bubble.catch <- 2
+    } else{
+      lcomp.obs = dat$index_pal[i,,]
+      lcomp.pred = mod$rep$pred_index_pal[1:length(years),i,]
+      #acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+      my.title <- "Length Comp Residuals (Observed-Predicted) for Index "
+      resids <- lcomp.obs - lcomp.pred  # NOTE obs-pred
+      resids[dat$use_index_pal[,i]==0,] = NA # don't plot residuals for index paa not fit in model
+      fname = paste0("Index_len_comp_resids_index_",i)
+      scale.resid.bubble.catch <- 25
+    }
+    tylab <- "Year"
+    
+    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+    z1 <- resids
+    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+    else range.resids <- c(0,0)
+
+    z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+    resid.col <- matrix(NA, nrow=nyrs, ncol=n_lengths)   # set color for residual bubbles
+    resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+    plot(lengths, rev(lengths),  xlim = range(lengths), ylim = c(years[nyrs],(years[1]-2)), xlab = "Length (cm)", ylab = tylab,
+      type = "n", axes=F)
+    axis(1, at= lengths, lab=lengths.lab)
+    axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+    box()
+    abline(h=years, col="lightgray")
+    segments(x0=lengths, y0=rep(years[1],n_lengths), x1=lengths, y1=rep(years[nyrs],n_lengths), col = "lightgray", lty = 1)
+
+    for (j in 1:nyrs) if(dat$use_index_pal[j,i] == 1)
+      points(lengths, rep(years[j], n_lengths), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+
+    bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+    bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+    legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+    legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+    legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+    title (paste0(my.title,i), outer=T, line=-1)
+    if(do.tex | do.png) dev.off() else par(origpar)
+  }   #end loop n_fleets
+  # par(origpar)
+}
+
 
 plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
 {
@@ -1836,7 +2073,7 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
   years_full <-  mod$years_full
 	n.yrs <- length(years_full)
   ssbfrac = dat$fracyr_SSB
-	ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * dat$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
+	ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * mod$rep$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
 	ssb.max <- max(apply(ssb.aa,1,sum))
 
 	par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
@@ -2265,6 +2502,45 @@ plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
   par(origpar)
 }
 
+# Bubble plots of catch len comps (set is.catch.flag to False to plot Discard len comps)
+plot.catch.len.comp.bubbles <- function(mod, bubble.col = "#8c8c8caa", i=1)
+{
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  years = mod$years
+  lengths = mod$env$data$lengths
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  nyrs = length(years)
+  n_lengths = mod$env$data$n_lengths
+  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  n_fleets = dat$n_fleets
+  # for (i in 1:n_fleets)
+  # {
+    lcomp.obs <- dat$catch_pal[i,,]
+    catch.yrs <- which(dat$use_catch_pal[,i] == 1)
+    my.title <- "Length Comps for Catch for Fleet "
+    if (length(catch.yrs)>0)
+    {
+      scale.catch.obs <- 5
+      z3 <- as.matrix(lcomp.obs) * scale.catch.obs
+
+      plot(lengths, rev(lengths),  xlim = range(lengths), ylim = c(years[nyrs],(years[1]-2)), xlab = "Length (cm)", ylab = "", type = "n", axes=FALSE)
+      axis(1, at= lengths, lab = lengths.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=lengths, y0=rep(years[1],n_lengths), x1=lengths, y1=rep(years[nyrs],n_lengths), col = "lightgray", lty = 1)
+      for (j in 1:nyrs) points(lengths, rep(years[j], n_lengths), cex=z3[j,], col="black", bg = bubble.col, pch = 21)
+
+      bubble.legend1 <- c(0.05,0.2,0.4)
+      bubble.legend2 <- bubble.legend1 * scale.catch.obs
+      legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=T , col='black', pt.bg = bubble.col)
+      title (paste0(my.title,i), outer=TRUE, line=-1)
+    } # end catch.yrs test
+  # }   #end loop n_fleets
+  par(origpar)
+}
 #------------------------------------
 plot.index.input <- function(mod, plot.colors)
 {
@@ -2353,6 +2629,48 @@ plot.index.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 }
 
 #------------------------------------
+# Bubble plots of index len comps
+plot.index.len.comp.bubbles <- function(mod, bubble.col = "#8c8c8caa", i=1)
+{
+  origpar <- par(no.readonly = TRUE)
+  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  years = mod$years
+  nyrs = length(years)
+  lengths = mod$env$data$lengths
+  lengths.lab = rep(NA, times = mod$env$data$n_lengths)
+  lengths.lab[seq(from = 1, to = mod$env$data$n_lengths, by = 10)] = mod$env$data$lengths[seq(from = 1, to = mod$env$data$n_lengths, by = 10)]
+  dat = mod$env$data
+  n_indices = dat$n_indices
+  n_lengths <- mod$env$data$n_lengths
+
+  # for (i in 1:n_indices)
+  # {
+    lcomp.obs <- dat$index_pal[i,,]
+    index.yrs <- which(dat$use_index_pal[,i] == 1)
+    my.title <- "Length Comps for Index "
+    if (length(index.yrs)>0)
+    {
+      scale.index.obs <- 5
+      z3 <- as.matrix(lcomp.obs) * scale.index.obs
+
+      plot(lengths, rev(lengths),  xlim = range(lengths), ylim = c(years[nyrs],(years[1]-2)),
+      xlab = "Length (cm)", ylab = "", type = "n", axes=FALSE)
+      axis(1, at= lengths, lab=lengths.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=lengths, y0=rep(years[1],n_lengths), x1=lengths, y1=rep(years[nyrs],n_lengths), col = "lightgray", lty = 1)
+      for (j in 1:nyrs) points(lengths, rep(years[j], n_lengths), cex=z3[j,], col="black", bg = bubble.col, pch = 21)
+
+      bubble.legend1 <- c(0.05,0.2,0.4)
+      bubble.legend2 <- bubble.legend1 * scale.index.obs
+      legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=TRUE, col='black', pt.bg = bubble.col)
+      title (paste0(my.title,i), outer=T, line=-1)
+    } # end index.yrs test
+  # }   #end loop n_fleets
+  par(origpar)
+}
+#------------------------------------
 plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 {
   origpar <- par(no.readonly = TRUE)
@@ -2376,12 +2694,15 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
     # indices = paste0("Index ", 1:dat$n_indices),
     totcatch = "Total Catch"
   )
-  waa = dat$waa[point,,]
+  waa = mod$rep$waa[point,,]
   n = ifelse(length(dim(waa)) == 2, 1, dim(waa)[1])
 	for(i in 1:n)
 	{
-		if(n>1) WAA.plot <- dat$waa[i,,]
-    else WAA.plot = waa
+		if(n>1) {
+      WAA.plot = mod$rep$waa[i,,]
+    } else {
+      WAA.plot = waa
+    } 
 		plot(years,years,xlab="Year",ylab="Weight",ylim=c(0,max(WAA.plot)),type='n')
 		for (a in 1:dat$n_ages)
 		{
@@ -2469,8 +2790,8 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	#fec.age <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -2556,9 +2877,9 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
   years_full = mod$years_full
   n_years_full = length(years_full)
 
-  fec.age <- dat$waa[dat$waa_pointer_ssb,,]
+  fec.age <- mod$rep$waa[dat$waa_pointer_ssb,,]
 	mat.age <- dat$mature
-	wgt.age <- dat$waa[dat$waa_pointer_totcatch,,]
+	wgt.age <- mod$rep$waa[dat$waa_pointer_totcatch,,]
 	M.age <- mod$rep$MAA
 	sel.age <- mod$rep$FAA_tot/apply(mod$rep$FAA_tot,1,max)
 
@@ -2773,12 +3094,12 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
   if(all(!is.nan(unique(rel.ssb.vals)))){
-    plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
-    grid(col = gray(0.7))
     polyy = exp(c(ci[,1],rev(ci[,2])))
     polyx = c(years_full,rev(years_full))
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
+    plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,max(polyy)*1.05), type = 'l')
+    grid(col = gray(0.7))
     polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
     abline(h=1, lty = 2)
     abline(h=0.5, lty = 2, col = 'red')
@@ -2981,8 +3302,8 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
   n_years = length(years)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -3067,8 +3388,8 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
   n_years = length(years)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -3173,7 +3494,8 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     }
     if(what == "NAA")
     {
-      par(mfcol = c(ceiling(NCOL(res[[1]])/2),2))
+      #par(mfcol = c(ceiling(NCOL(res[[1]])/2),2))
+      auto.mfrow(NCOL(res[[1]]))
       for(i in 1:NCOL(res[[1]]))
       {
         y.range1 <- range(sapply(res, function(x) range(x[,i])))
@@ -3223,7 +3545,8 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 
     if(what == "NAA")
     {
-      par(mfcol = c(ceiling(NCOL(rel.res[[1]])/2),2))
+      #par(mfcol = c(ceiling(NCOL(rel.res[[1]])/2),2))
+      auto.mfrow(NCOL(res[[1]]))
       for(i in 1:NCOL(res[[1]]))
       {
         y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,i]))))
@@ -3281,7 +3604,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 #-------------------------------------------------------------------------------
 # function to compute catch at age (matrix)
 # from proportions at age (matrix), weight at age (matrix) and total weight (vector)
-wtprop2caa <- function(fleet)#totwt,waa,props)
+wtprop2caa <- function(fleet)#totwt,waa,props) # this is not used
 {
 
   return(paa * totwt/apply(paa*waa,1,sum))
@@ -3383,8 +3706,8 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 		if (dat$n_fleets >= 2) title1 = paste("Catch for Fleet ",i, sep="")
 
 		# get catch at age
-    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
 		cpr <- rep0log(catchpr)
@@ -3434,7 +3757,7 @@ convert_survey_to_at_age <- function(mod)
 			agg.units <- dat$units_indices[i]
 			prp.units <- dat$units_index_paa[i]
 
-      waa <- dat$waa[dat$waa_pointer_indices[i],dat$use_index_paa[,i]==1,]
+      waa <- mod$rep$waa[dat$waa_pointer_indices[i],dat$use_index_paa[,i]==1,]
 			# get weight (matrix if necessary)
 			if (agg.units==1 | prp.units==1)
 			{  # either in weight
@@ -3594,8 +3917,8 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		if (dat$n_fleets >= 2) title1 = paste0("Catch for Fleet ",i)
 
 		# get catch at age
-    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+    catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
 		# replace zeros with NA and take logs
 		cob <- rep0log(catchob)
@@ -3987,4 +4310,28 @@ plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
     legend("topright", legend = paste0("Index ", 1:mod$input$data$n_indices), lwd = 2, col = pal, lty = 1)
   }
   if(do.tex | do.png) dev.off() else par(origpar)
+}
+
+auto.mfrow <- function(nplots) {
+
+    if(nplots <= 3) par(mfrow=c(1, nplots))
+    else if(nplots <= 4)  par(mfrow=c(2,2))
+    else if(nplots <= 6)  par(mfrow=c(2,3))
+    else if(nplots <= 9)  par(mfrow=c(3,3))
+    else if(nplots <= 12) par(mfrow=c(3,4))
+    else if(nplots <= 16) par(mfrow=c(4,4))
+    else if(nplots <= 20) par(mfrow=c(4,5))
+    else if(nplots <= 25) par(mfrow=c(5,5))
+    else if(nplots <= 30) par(mfrow=c(5,6))
+    else if(nplots <= 36) par(mfrow=c(6,6))
+    else if(nplots <= 42) par(mfrow=c(6,7))
+    else if(nplots <= 49) par(mfrow=c(7,7))
+    else if(nplots <= 56) par(mfrow=c(7,8))
+    else if(nplots <= 64) par(mfrow=c(8,8))
+    else if(nplots <= 72) par(mfrow=c(8,9))
+    else if(nplots <= 81) par(mfrow=c(9,9))
+    else if(nplots <= 90) par(mfrow=c(9,10))
+    else if(nplots <= 100) par(mfrow=c(10,10))
+    else if(nplots <= 110) par(mfrow=c(10,11))
+    else if(nplots <= 121) par(mfrow=c(11,11)) # ok more than 121 ages is very unlikely
 }

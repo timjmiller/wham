@@ -895,10 +895,10 @@ Type objective_function<Type>::operator() ()
 		}
 		
 	  }
-	  
-	REPORT(waa);
-	
+	  	
   }
+
+  REPORT(waa); // report waa matrix anyways, important for plots
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
