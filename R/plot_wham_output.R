@@ -140,8 +140,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.M(mod)
     plot.tile.age.year(mod, type="selAA")
     plot.tile.age.year(mod, type="MAA")
-    plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
-    plot_q(mod)
+    condQ = as.list(mod$sdrep, "Std. Error")$logit_q
+    if(!is.na(condQ)) plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
+    if(!is.na(condQ)) plot_q(mod)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod)
     dev.off()
 
@@ -315,8 +316,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     dev.off()
     plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
-    plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
+    condQ = as.list(mod$sdrep, "Std. Error")$logit_q
+    if(!is.na(condQ)) plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
+    if(!is.na(condQ)) plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
 
     # PNG reference points -----------------
