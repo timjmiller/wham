@@ -193,13 +193,25 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "1/slope (increasing)")))
       ind = data$n_ages + 1:2
     }
-    if(data$selblock_models[i] == 3){ #double logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)")))
-      ind = data$n_ages + 3:6
+    if(data$selblock_models[i] == 3){ #double normal
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("age peak", "top","asc-width", "desc-width", "init", "final")))
+      ind = data$n_ages + 3:8
     }
     if(data$selblock_models[i] == 4){ #increasing logistic
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "-1/slope (decreasing)")))
       ind = data$n_ages + 1:2
+    }
+    if(data$selblock_models[i] == 5){ #increasing logistic length
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$l_{50}$", "1/slope (increasing)")))
+      ind = data$n_ages + 9:10
+    }
+    if(data$selblock_models[i] == 6){ #double normal length
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("length peak", "top","asc-width", "desc-width", "init", "final")))
+      ind = data$n_ages + 11:16
+    }
+    if(data$selblock_models[i] == 7){ #decreasing logistic
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$l_{50}$", "-1/slope (decreasing)")))
+      ind = data$n_ages + 9:10
     }
     fe.vals = c(fe.vals, ((data$selpars_lower + data$selpars_upper-data$selpars_lower)/(1 + exp(-pars$logit_selpars)))[i,ind])
     for(a in ind) {
@@ -280,17 +292,80 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
     return(list(fe.names, fe.vals, fe.cis))
   }
+  add_len_comp_pars = function(len_comp_models, use_pal, pars, pars_sd, is_fleet = TRUE, fe.names, fe.vals, fe.cis)
+  {
+    n_mods = length(len_comp_models)
+    startname = ifelse(is_fleet, "Fleet ", "Index ")
+    for(i in 1:n_mods){
+      if(sum(use_pal[,i]) > 0){
+        if(len_comp_models[i] %in% c(2:5,7)){
+          if(len_comp_models[i] == 2){
+            fe.names = c(fe.names, paste0(startname, i , " len comp, Dirichlet-multinomial: dispersion ($\\phi$)"))
+            #ind = acomp_par_count+1
+          }
+          if(len_comp_models[i] %in% 3:4){
+            fe.names = c(fe.names, paste0(startname, i , " len comp, Dirichlet: dispersion ($\\phi$)"))
+            #ind = acomp_par_count+1
+          }
+          if(len_comp_models[i] %in% c(5,7)){
+            fe.names = c(fe.names, paste0(startname, i , " len comp, logistic-normal: $\\sigma$"))
+            #ind = acomp_par_count+1
+          }
+          fe.vals = c(fe.vals, exp(pars[i,1]))
+          fe.cis = rbind(fe.cis, ci(pars[i,1], pars_sd[i,1], type = "exp"))
+        }
+        if(len_comp_models[i] == 6){
+          fe.names = c(fe.names, paste0(startname, i , " len comp, logistic-normal: $", c("\\sigma", "\\rho"), "$"))
+          fe.vals = c(fe.vals, exp(pars[i,1]), 1/(1+exp(-pars[i,2])))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit"))
+          #ind = acomp_par_count+1
+        }
+        if(len_comp_models[i] == 8){
+          fe.names = c(fe.names, paste0(startname, i , " len comp, 0/1-inflated logistic-normal: ",
+            c("Declining probablity of 0 parameter 1",
+              "Declining probablity of 0 parameter 2",
+              "logistic-normal $\\sigma$")))
+          fe.vals = c(fe.vals, pars[i,1:2], exp(pars[i,3]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1]),
+            ci(pars[i,2], pars_sd[i,2]),
+            ci(pars[i,3], pars_sd[i,3], type = "exp"))
+        }
+        if(len_comp_models[i] == 9){
+          fe.names = c(fe.names, paste0(startname, i , " len comp, 0/1-inflated logistic-normal: ",
+            c("Binomial N parameter probablity of 0",
+              "logistic-normal $\\sigma$")))
+          fe.vals = c(fe.vals, exp(pars[i,1:2]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci(pars[i,2], pars_sd[i,2], type = "exp"))
+        }
+      }
+    }
+    return(list(fe.names, fe.vals, fe.cis))
+  }
   temp = add_age_comp_pars(data$age_comp_model_fleets, data$use_catch_paa, pars$catch_paa_pars, sd$catch_paa_pars, 
       is_fleet = TRUE, fe.names, fe.vals, fe.cis)
   fe.names = temp[[1]]
   fe.vals = temp[[2]]
   fe.cis = temp[[3]]
+  temp2 = add_len_comp_pars(data$len_comp_model_fleets, data$use_catch_pal, pars$catch_pal_pars, sd$catch_pal_pars, 
+      is_fleet = TRUE, fe.names, fe.vals, fe.cis)
+  fe.names = temp2[[1]]
+  fe.vals = temp2[[2]]
+  fe.cis = temp2[[3]]
   temp = add_age_comp_pars(data$age_comp_model_indices, data$use_index_paa, pars$index_paa_pars, sd$index_paa_pars, 
       is_fleet = FALSE, fe.names, fe.vals, fe.cis)
   fe.names = temp[[1]]
   fe.vals = temp[[2]]
   fe.cis = temp[[3]]
-
+  temp2 = add_len_comp_pars(data$len_comp_model_fleets, data$use_index_pal, pars$index_pal_pars, sd$index_pal_pars, 
+      is_fleet = FALSE, fe.names, fe.vals, fe.cis)
+  fe.names = temp2[[1]]
+  fe.vals = temp2[[2]]
+  fe.cis = temp2[[3]]
 
   if(sum(!is.na(mod$input$map$M_a))){ #any M_a estimated?
     if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M
@@ -501,7 +576,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   file.copy(from=pt, to=od, overwrite=TRUE)
   #print(dir(od))
   
-  if(do.html) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(od, "wham_par_tables.html"), quiet = T)
+  if(do.html) {
+    origdir = getwd()
+    new_od = file.path(origdir, od)
+    rmarkdown::render(file.path(new_od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(new_od, "wham_par_tables.html"), quiet = T)
+    setwd(origdir)
+  }
   #if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
   if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.
     origdir = getwd()

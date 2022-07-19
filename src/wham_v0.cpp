@@ -51,9 +51,9 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(catch_pal); //n_fleets x n_years x n_lengths // NEWG
   DATA_IMATRIX(use_catch_pal); // NEWG
   DATA_MATRIX(catch_NeffL); // NEWG
-  DATA_ARRAY(catch_alk); //n_fleets x n_years x n_lengths // NEWG
-  DATA_IMATRIX(use_catch_alk); // NEWG
-  DATA_ARRAY(catch_alk_Neff); // NEWG
+  DATA_ARRAY(catch_caal); //n_fleets x n_years x n_lengths // NEWG
+  DATA_IMATRIX(use_catch_caal); // NEWG
+  DATA_ARRAY(catch_caal_Neff); // NEWG
   
   DATA_IVECTOR(units_indices);
   DATA_MATRIX(fracyr_indices);
@@ -69,9 +69,9 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(index_pal); //n_indices x n_years x n_lengths // NEWG
   DATA_IMATRIX(use_index_pal); // NEWG
   DATA_MATRIX(index_NeffL);// NEWG
-  DATA_ARRAY(index_alk); //n_fleets x n_years x n_lengths // NEWG
-  DATA_IMATRIX(use_index_alk); // NEWG
-  DATA_ARRAY(index_alk_Neff); // NEWG
+  DATA_ARRAY(index_caal); //n_fleets x n_years x n_lengths // NEWG
+  DATA_IMATRIX(use_index_caal); // NEWG
+  DATA_ARRAY(index_caal_Neff); // NEWG
   
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
@@ -126,8 +126,8 @@ Type objective_function<Type>::operator() ()
   DATA_IARRAY(keep_Ipaa);
   DATA_IARRAY(keep_Cpal); // NEWG
   DATA_IARRAY(keep_Ipal); // NEWG
-  DATA_IARRAY(keep_Calk); // NEWG
-  DATA_IARRAY(keep_Ialk); // NEWG
+  DATA_IARRAY(keep_Ccaal); // NEWG
+  DATA_IARRAY(keep_Icaal); // NEWG
   DATA_IVECTOR(do_post_samp); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
 
   // data for environmental covariate(s), Ecov
@@ -224,8 +224,8 @@ Type objective_function<Type>::operator() ()
   vector<int> any_fleet_age_comp(n_fleets);
   vector<int> any_index_len_comp(n_indices);  // NEWG
   vector<int> any_fleet_len_comp(n_fleets);  // NEWG
-  vector<int> any_index_alk(n_indices);  // NEWG
-  vector<int> any_fleet_alk(n_fleets);  // NEWG
+  vector<int> any_index_caal(n_indices);  // NEWG
+  vector<int> any_fleet_caal(n_fleets);  // NEWG
   vector<Type> SSB(n_years_model + n_years_proj);
   matrix<Type> F(n_years_model,n_fleets);
   matrix<Type> log_F(n_years_model,n_fleets);
@@ -235,7 +235,7 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_CAL(n_years_model+n_years_proj,n_fleets,n_lengths); // NEWG
   array<Type> pred_CAAL(n_years_model+n_years_proj,n_fleets,n_lengths,n_ages); // NEWG
   array<Type> pred_catch_pal(n_years_model+n_years_proj,n_fleets,n_lengths); // NEWG
-  array<Type> pred_catch_alk(n_years_model+n_years_proj,n_fleets,n_lengths,n_ages); // NEWG
+  array<Type> pred_catch_caal(n_years_model+n_years_proj,n_fleets,n_lengths,n_ages); // NEWG
   matrix<Type> pred_catch(n_years_model+n_years_proj,n_fleets);
   matrix<Type> pred_log_catch(n_years_model+n_years_proj,n_fleets);
   
@@ -244,7 +244,7 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_index_paa(n_years_model+n_years_proj,n_indices,n_ages);
   array<Type> pred_IAL(n_years_model+n_years_proj,n_indices,n_lengths); // NEWG
   array<Type> pred_index_pal(n_years_model+n_years_proj,n_indices,n_lengths); // NEWG
-  array<Type> pred_index_alk(n_years_model+n_years_proj,n_indices,n_lengths,n_ages); // NEWG
+  array<Type> pred_index_caal(n_years_model+n_years_proj,n_indices,n_lengths,n_ages); // NEWG
   matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices); // not bias corrected
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected  
   
@@ -297,13 +297,13 @@ Type objective_function<Type>::operator() ()
   // NEWG section ALK:
   for(int i = 0; i < n_indices; i++)
   {
-    any_index_alk(i) = 0;
-    for(int y = 0; y < n_years_indices; y++) if(use_index_alk(y,i) == 1) any_index_alk(i) = 1;
+    any_index_caal(i) = 0;
+    for(int y = 0; y < n_years_indices; y++) if(use_index_caal(y,i) == 1) any_index_caal(i) = 1;
   }
   for(int i = 0; i < n_fleets; i++)
   {
-    any_fleet_alk(i) = 0;
-    for(int y = 0; y < n_years_catch; y++) if(use_catch_alk(y,i) == 1) any_fleet_alk(i) = 1;
+    any_fleet_caal(i) = 0;
+    for(int y = 0; y < n_years_catch; y++) if(use_catch_caal(y,i) == 1) any_fleet_caal(i) = 1;
   }
 
   // Selectivity --------------------------------------------------------------
@@ -1429,14 +1429,14 @@ Type objective_function<Type>::operator() ()
 
   // Catch data likelihood
   matrix<Type> nll_agg_catch(n_years_model,n_fleets), nll_catch_acomp(n_years_model,n_fleets), nll_catch_lcomp(n_years_model,n_fleets), agg_catch_proj(n_years_proj,n_fleets);
-  array<Type> nll_catch_alk(n_years_model,n_fleets,n_lengths);
+  array<Type> nll_catch_caal(n_years_model,n_fleets,n_lengths);
   array<Type> catch_paa_proj(n_fleets, n_years_proj, n_ages);
   array<Type> catch_pal_proj(n_fleets, n_years_proj, n_lengths); // NEWG
-  array<Type> catch_alk_proj(n_fleets,n_years_proj,n_lengths, n_ages); // NEWG
+  array<Type> catch_caal_proj(n_fleets,n_years_proj,n_lengths, n_ages); // NEWG
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
   nll_catch_lcomp.setZero(); // NEWG
-  nll_catch_alk.setZero();
+  nll_catch_caal.setZero();
   vector<Type> lsum(n_lengths);
   for(int y = 0; y < n_years_model+n_years_proj; y++)
   {
@@ -1527,29 +1527,29 @@ Type objective_function<Type>::operator() ()
         }
       }
 	  
-	  if(any_fleet_alk(f) == 1)
+	  if(any_fleet_caal(f) == 1)
       {
         for(int l = 0; l < n_lengths; l++)
         {
 			  for(int a = 0; a < n_ages; a++) { 
-				pred_catch_alk(y,f,l,a) = pred_CAAL(y,f,l,a)/lsum(l);
-				t_pred_paa(a) = pred_catch_alk(y,f,l,a); // only for len bin l
+				pred_catch_caal(y,f,l,a) = pred_CAAL(y,f,l,a)/lsum(l);
+				t_pred_paa(a) = pred_catch_caal(y,f,l,a); // only for len bin l
 			  }
 			  
-			  if(y < n_years_model) if(use_catch_alk(y,f) > 0) {
-				  t_paa = obsvec.segment(keep_Calk(f,y,l*n_ages),n_ages);
-				  nll_catch_alk(y,f,l) -= get_acomp_ll(t_paa, t_pred_paa, catch_alk_Neff(y,f,l), age_comp_model_fleets(f), vector<Type>(catch_paa_pars.row(f)),
-													keep.segment(keep_Calk(f,y,l*n_ages),n_ages), do_osa); 
+			  if(y < n_years_model) if(use_catch_caal(y,f) > 0) {
+				  t_paa = obsvec.segment(keep_Ccaal(f,y,l*n_ages),n_ages);
+				  nll_catch_caal(y,f,l) -= get_acomp_ll(t_paa, t_pred_paa, catch_caal_Neff(y,f,l), age_comp_model_fleets(f), vector<Type>(catch_paa_pars.row(f)),
+													keep.segment(keep_Ccaal(f,y,l*n_ages),n_ages), do_osa); 
 			  }
 			  
-			SIMULATE if(simulate_data(1) == 1) if(use_catch_alk(usey,f) == 1){
-			  t_paa = sim_acomp(t_pred_paa, catch_alk_Neff(usey,f,l), age_comp_model_fleets(f), t_paa, vector<Type>(catch_paa_pars.row(f)));
+			SIMULATE if(simulate_data(1) == 1) if(use_catch_caal(usey,f) == 1){
+			  t_paa = sim_acomp(t_pred_paa, catch_caal_Neff(usey,f,l), age_comp_model_fleets(f), t_paa, vector<Type>(catch_paa_pars.row(f)));
 			  if((simulate_period(0) == 1) & (y < n_years_model)) for(int a = 0; a < n_ages; a++) {
-				catch_alk(f,y,l,a) = t_paa(a);
-				obsvec(keep_Calk(f,y,a+n_ages*l)) = t_paa(a);
+				catch_caal(f,y,l,a) = t_paa(a);
+				obsvec(keep_Ccaal(f,y,a+n_ages*l)) = t_paa(a);
 			  }
 			  if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int a = 0; a < n_ages; a++) {
-				catch_alk_proj(f,y-n_years_model,l,a) = t_paa(a);
+				catch_caal_proj(f,y-n_years_model,l,a) = t_paa(a);
 			  }
 			}
 		}
@@ -1560,33 +1560,33 @@ Type objective_function<Type>::operator() ()
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(agg_catch);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_paa);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_pal); // NEWG
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_alk); // NEWG
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_caal); // NEWG
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(agg_catch_proj);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_paa_proj);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_pal_proj); // NEWG
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_alk_proj); // NEWG
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_caal_proj); // NEWG
   REPORT(nll_agg_catch);
   nll += nll_agg_catch.sum();
   //see(nll);
   REPORT(nll_catch_acomp);
   REPORT(nll_catch_lcomp);
-  REPORT(nll_catch_alk);
+  REPORT(nll_catch_caal);
   nll += nll_catch_acomp.sum();
   nll += nll_catch_lcomp.sum(); 
-  nll += nll_catch_alk.sum(); 
+  nll += nll_catch_caal.sum(); 
   //see(nll);
 
   // -----------------------------------------------------------------------------
   // Index/survey data likelihood
   matrix<Type> nll_agg_indices(n_years_catch,n_indices), nll_index_acomp(n_years_catch,n_indices), nll_index_lcomp(n_years_catch,n_indices), agg_indices_proj(n_years_proj, n_indices);
-  array<Type> nll_index_alk(n_years_catch,n_indices,n_lengths);
+  array<Type> nll_index_caal(n_years_catch,n_indices,n_lengths);
   array<Type> index_paa_proj(n_indices,n_years_proj,n_ages);
   array<Type> index_pal_proj(n_indices,n_years_proj,n_lengths); // NEWG
-  array<Type> index_alk_proj(n_indices,n_years_proj,n_lengths, n_ages); // NEWG
+  array<Type> index_caal_proj(n_indices,n_years_proj,n_lengths, n_ages); // NEWG
   nll_agg_indices.setZero();
   nll_index_acomp.setZero();
   nll_index_lcomp.setZero();
-  nll_index_alk.setZero();
+  nll_index_caal.setZero();
   pred_indices.setZero();
   vector<Type> lsumI(n_lengths);
   for(int y = 0; y < n_years_model + n_years_proj; y++)
@@ -1685,30 +1685,30 @@ Type objective_function<Type>::operator() ()
         }
       }
 
-      if(any_index_alk(i) == 1)
+      if(any_index_caal(i) == 1)
       {
         for(int l = 0; l < n_lengths; l++)
         {
 			  for(int a = 0; a < n_ages; a++) { 
-				pred_index_alk(y,i,l,a) = pred_IAAL(y,i,l,a)/lsumI(l);
-				t_pred_paa(a) = pred_index_alk(y,i,l,a); // only for len bin l
+				pred_index_caal(y,i,l,a) = pred_IAAL(y,i,l,a)/lsumI(l);
+				t_pred_paa(a) = pred_index_caal(y,i,l,a); // only for len bin l
 			  }
 			  
-			  if(y < n_years_model) if(use_index_alk(y,i) > 0) {
+			  if(y < n_years_model) if(use_index_caal(y,i) > 0) {
 				  //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,n_ages-1)
-				  t_paa = obsvec.segment(keep_Ialk(i,y,l*n_ages),n_ages);
-				  nll_index_alk(y,i,l) -= get_acomp_ll(t_paa, t_pred_paa, index_alk_Neff(y,i,l), age_comp_model_indices(i), vector<Type>(index_paa_pars.row(i)),
-													keep.segment(keep_Ialk(i,y,l*n_ages),n_ages), do_osa); 
+				  t_paa = obsvec.segment(keep_Icaal(i,y,l*n_ages),n_ages);
+				  nll_index_caal(y,i,l) -= get_acomp_ll(t_paa, t_pred_paa, index_caal_Neff(y,i,l), age_comp_model_indices(i), vector<Type>(index_paa_pars.row(i)),
+													keep.segment(keep_Icaal(i,y,l*n_ages),n_ages), do_osa); 
 			  }
 			  
-			SIMULATE if(simulate_data(1) == 1) if(use_index_alk(yuse,i) == 1){
-			  t_paa = sim_acomp(t_pred_paa, index_alk_Neff(yuse,i,l), age_comp_model_indices(i), t_paa, vector<Type>(index_paa_pars.row(i)));
+			SIMULATE if(simulate_data(1) == 1) if(use_index_caal(yuse,i) == 1){
+			  t_paa = sim_acomp(t_pred_paa, index_caal_Neff(yuse,i,l), age_comp_model_indices(i), t_paa, vector<Type>(index_paa_pars.row(i)));
 			  if((simulate_period(0) == 1) & (y < n_years_model)) for(int a = 0; a < n_ages; a++) {
-				index_alk(i,y,l,a) = t_paa(a);
-				obsvec(keep_Ialk(i,y,a+n_ages*l)) = t_paa(a);
+				index_caal(i,y,l,a) = t_paa(a);
+				obsvec(keep_Icaal(i,y,a+n_ages*l)) = t_paa(a);
 			  }
 			  if((simulate_period(1) == 1) & (y > n_years_model - 1)) for(int a = 0; a < n_ages; a++) {
-				index_alk_proj(i,y-n_years_model,l,a) = t_paa(a);
+				index_caal_proj(i,y-n_years_model,l,a) = t_paa(a);
 			  }
 			}
 		}
@@ -1719,20 +1719,20 @@ Type objective_function<Type>::operator() ()
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(agg_indices);
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(index_paa);
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(index_pal);
-  SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(index_alk);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(index_caal);
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(agg_indices_proj);
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(index_paa_proj);
   SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(index_pal_proj);
-  SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(index_alk_proj);
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(index_caal_proj);
   REPORT(nll_agg_indices);
   nll += nll_agg_indices.sum();
   //see(nll);
   REPORT(nll_index_acomp);
   REPORT(nll_index_lcomp);
-  REPORT(nll_index_alk);
+  REPORT(nll_index_caal);
   nll += nll_index_acomp.sum();
   nll += nll_index_lcomp.sum();
-  nll += nll_index_alk.sum();
+  nll += nll_index_caal.sum();
   //see(nll);
   
   SIMULATE if(sum(simulate_data) > 0) REPORT(obsvec);
@@ -1925,7 +1925,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_log_catch); // bias-corrected
   REPORT(pred_catch_paa);
   REPORT(pred_catch_pal);
-  REPORT(pred_catch_alk);
+  REPORT(pred_catch_caal);
   REPORT(pred_CAA);
   REPORT(pred_CAL);
   REPORT(pred_CAAL);
@@ -1933,7 +1933,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_log_indices); // bias-corrected
   REPORT(pred_index_paa);
   REPORT(pred_index_pal);
-  REPORT(pred_index_alk);
+  REPORT(pred_index_caal);
   REPORT(pred_IAA);
   REPORT(pred_IAL);
   REPORT(pred_IAAL);

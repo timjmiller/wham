@@ -84,11 +84,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     for(i in 1:mod$env$data$n_fleets) { 
       plot.catch.age.comp.bubbles(mod, i=i)
       plot.catch.len.comp.bubbles(mod, i=i)
+      plot.catch.caal.bubbles(mod, i=i)
     }
     plot.index.input(mod)
     for(i in 1:mod$env$data$n_indices) {
       plot.index.age.comp.bubbles(mod, i=i)
       plot.index.len.comp.bubbles(mod, i=i)
+      plot.index.caal.bubbles(mod, i=i)
     }
     if(mod$env$data$waa_info == 1) {
       plot.waa(mod,"ssb")
@@ -111,11 +113,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.catch.age.comp(mod)
     plot.catch.age.comp.resids(mod)
     plot.catch.len.comp.resids(mod)
+    plot.catch.caal.resids(mod)
     plot.catch.len.comp(mod)
     plot.index.age.comp(mod)
     plot.index.len.comp(mod)
     plot.index.age.comp.resids(mod)
     plot.index.len.comp.resids(mod)
+    plot.index.caal.resids(mod)
     plot.NAA.res(mod)
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE)
@@ -158,7 +162,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     }
     plot.fleet.F(mod)
     plot.M(mod)
-    plot.tile.age.year(mod, type="selAA")
+    plot.tile.age.year(mod, type="selex")
     plot.tile.age.year(mod, type="MAA")
     condQ = as.list(mod$sdrep, "Std. Error")$logit_q
     if(!is.na(condQ)) plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
@@ -214,23 +218,18 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.catch.by.fleet(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.catch.age.comp.bubbles(mod, i=i)
-      dev.off()
-      png(file.path(dir.data, paste0("catch_len_comp_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.catch.len.comp.bubbles(mod, i=i)
-      dev.off()
-    }
+      plot.catch.age.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
+      plot.catch.len.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
+      plot.catch.caal.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
+    }    
+
     png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.index.input(mod)
     dev.off()
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.index.age.comp.bubbles(mod, i=i)
-      dev.off()
-      png(file.path(dir.data, paste0("index",i,"_len_comp.png")),width=10,height=10,units="in",res=res,family=fontfam)
-      plot.index.len.comp.bubbles(mod, i=i)
-      dev.off()
+      plot.index.age.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
+      plot.index.len.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
+      plot.index.caal.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
     }
     if(mod$env$data$waa_info == 1) {
       png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
@@ -272,6 +271,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.catch.len.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.len.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.catch.caal.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     for(i in 1:mod$env$data$n_indices){
       plot.index.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
@@ -279,6 +279,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.len.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.index.caal.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
@@ -286,8 +287,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.catch.len.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.catch.caal.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.len.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.index.caal.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
@@ -368,7 +371,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.M(mod)
     dev.off()
-    plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
+    plot.tile.age.year(mod, type="selex", do.png=TRUE, fontfam=fontfam, od=dir.res)
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
     condQ = as.list(mod$sdrep, "Std. Error")$logit_q
     if(!is.na(condQ)) plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
@@ -415,7 +418,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
 
   # uses png output, automatically opens in browser
   if(out.type == 'html'){
-    wham_html(dir.main = dir.main)
+    origdir = getwd()
+    new_od = file.path(origdir, dir.main)
+    wham_html(dir.main = new_od)
+    setwd(origdir)
   }
   if(rmarkdown::pandoc_available()){
     if(table.type == "pdf"){

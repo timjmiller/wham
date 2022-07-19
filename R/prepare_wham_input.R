@@ -307,7 +307,7 @@
 #'     \item{$index_NeffL}{matrix (length(years) x n_indices) of annual effective sample sizes for each index's length composition observation.}
 #'     \item{$units_index_pal}{1/2 matrix (length = n_indices) indicated whether to use each index's length composition observation are in numbers or biomass. Should always be 2.}
 #'     \item{$use_index_pal}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's length composition observation.}
-#'     \item{$use_index_alk}{0/1 array (n_indices x length(years) x n_lengths) indicated whether to use each index's conditional age at length composition.}
+#'     \item{$use_index_caal}{0/1 array (n_indices x length(years) x n_lengths) indicated whether to use each index's conditional age at length composition.}
 #'     \item{$index_alk_Neff}{array (length(years) x n_indices x n_lengths) of annual effective sample sizes for each index's conditional age at length composition.}
 #'     \item{$index_alk}{array (n_indices x length(years) x n_lengths x n_ages) for each index's conditional age at length composition.}
 #'     \item{$selblock_pointer_indices}{integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to \code{selectivity} option.}
@@ -400,14 +400,14 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 	catch_opts = NULL
 	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
-					"catch_pal", "catch_NeffL", "use_catch_pal", "catch_alk", "catch_alk_Neff", "use_catch_alk",
+					"catch_pal", "catch_NeffL", "use_catch_pal", "catch_caal", "catch_caal_Neff", "use_catch_caal",
 					"selblock_pointer_fleets")
 	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 
 	index_opts = NULL
 	index_names = c("n_indices", "agg_indices", "index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
 		"units_index_paa", "use_indices", "use_index_paa",
-		"index_pal", "index_NeffL", "units_index_pal", "use_index_pal", "index_alk", "index_alk_Neff", "use_index_alk",
+		"index_pal", "index_NeffL", "units_index_pal", "use_index_pal", "index_caal", "index_caal_Neff", "use_index_caal",
 		"selblock_pointer_indices")
 	if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
 
