@@ -92,6 +92,9 @@ Type objective_function<Type>::operator() ()
   //DATA_INTEGER(n_M_est); // How many mean M pars are estimated?
   DATA_INTEGER(use_b_prior);
   
+  DATA_IVECTOR(LAA_est); //  NEWG
+  DATA_INTEGER(LAA_re_model); // NEWG
+
   DATA_INTEGER(n_growth_par); // NEWG TODO: change this parameter name
   DATA_INTEGER(growth_model); // 1: "vB-classic", 2: "vB-K_age" NEWG
   DATA_IVECTOR(growth_re_model); // 1 = none, 2 = IID, 3 = ar1_y NEWG
@@ -199,10 +202,14 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(M_repars); // parameters controlling M_re, length = 3 (sigma_M, rho_M_a, rho_M_y)
   
   // NEWG section: growth parameters:
-  PARAMETER_MATRIX(growth_a); //  could be 3 parameters or input_LAA
-  PARAMETER_ARRAY(growth_re); // nyears x nages x npars_growth     
-  PARAMETER_MATRIX(growth_repars); //  npars_growth x npars_re     
-  
+  PARAMETER_MATRIX(growth_a); //  
+  PARAMETER_ARRAY(growth_re); //    
+  PARAMETER_MATRIX(growth_repars); //    
+
+  PARAMETER_VECTOR(LAA_a); //  
+  PARAMETER_MATRIX(LAA_re); //  
+  PARAMETER_MATRIX(LAA_repars); //   
+
   PARAMETER_MATRIX(LW_a); //  could be 3 parameters or input_LAA
   PARAMETER_ARRAY(LW_re); // nyears x nages x npars_growth     
   PARAMETER_MATRIX(LW_repars); //  npars_growth x npars_re     
@@ -249,10 +256,10 @@ Type objective_function<Type>::operator() ()
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected  
   
   matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
-  array<Type> LAA(n_years_model + n_years_proj,n_lengths,n_ages);// NEWG
-  matrix<Type> mLAA(n_years_model + n_years_proj,n_ages);// NEWG
-  matrix<Type> fracyr_LAA(n_lengths,n_ages);// NEWG
-  matrix<Type> fracyr_LAA_index(n_lengths,n_ages);// NEWG
+  array<Type> phi_mat(n_years_model + n_years_proj,n_lengths,n_ages);// NEWG
+  matrix<Type> LAA(n_years_model + n_years_proj,n_ages);// NEWG
+  matrix<Type> fracyr_phi_mat(n_lengths,n_ages);// NEWG
+  matrix<Type> fracyr_phi_mat_index(n_lengths,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
@@ -566,6 +573,8 @@ Type objective_function<Type>::operator() ()
 
   // --------------------------------------------------------------------------
   // Calculate GROWTH --  NEWG section
+  
+  // Growth parameters re section
   Type nll_GW = Type(0);
   
   // For all growth parameters:
@@ -639,21 +648,82 @@ Type objective_function<Type>::operator() ()
   REPORT(growth_repars);
   if(do_post_samp(1) == 1) ADREPORT(growth_re);
 
+  // LAA re section
+  Type nll_LAA = Type(0);
+  
+  Type sigma_LAA; // first RE parameter
+  Type rho_LAA_y;  // second RE parameter
+  Type Sigma_LAA = Type(0);
+
+	  if((LAA_re_model == 2) | (LAA_re_model == 4)) { // Only for ii_y and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
+		
+		sigma_LAA = exp(LAA_repars(0,0));
+        rho_LAA_y = rho_trans(LAA_repars(0,1));  
+		// likelihood of growth parameters deviations
+			vector<Type> LAAre0(n_years_model + n_years_proj);
+			for(int y = 0; y < n_years_model + n_years_proj; y++) LAAre0(y) = LAA_re(y,0); 
+			Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_y,2)),0.5);
+			nll_LAA += SCALE(AR1(rho_LAA_y), Sigma_LAA)(LAAre0);
+			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			  AR1(rho_LAA_y).simulate(LAAre0);
+			  for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
+			  for(int y = 0; y < n_years_model + n_years_proj; y++){
+				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
+				  LAA_re(y,0) = LAAre0(y);
+				}
+			  }
+			}
+
+		if(do_post_samp.sum()==0){
+		  ADREPORT(sigma_LAA);
+		  ADREPORT(rho_LAA_y);
+		}
+		
+	  }
+	  
+	  if((LAA_re_model == 3) | (LAA_re_model == 5)) { // Only for ii_c and Ar1_c
+		  
+		sigma_LAA = exp(LAA_repars(0,0));
+        rho_LAA_y = rho_trans(LAA_repars(0,1));  
+		// likelihood of growth parameters deviations
+			vector<Type> LAAre0(n_years_model + n_years_proj + n_ages - 1);
+			for(int i = 0; i < (n_ages - 1); i++) LAAre0(i) = LAA_re(0,n_ages - i - 1); // for cohorts at y = 0 except a = 0
+			for(int i = (n_ages - 1); i < (n_years_model + n_years_proj + n_ages - 1); i++) LAAre0(i) = LAA_re(i-n_ages+1,0); // for cohorts y>=0 
+			Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_y,2)),0.5);
+			nll_LAA += SCALE(AR1(rho_LAA_y), Sigma_LAA)(LAAre0);
+			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			  AR1(rho_LAA_y).simulate(LAAre0);
+			  for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
+			  for(int i = 0; i < (n_ages - 1); i++) LAA_re(0,n_ages - i - 1) = LAAre0(i); // replace cohorts at y = 0 
+			  for(int y = 0; y < n_years_model + n_years_proj; y++){
+				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
+				  LAA_re(y,0) = LAAre0(y + n_ages - 1); 
+				}
+			  }
+			}
+
+		if(do_post_samp.sum()==0){
+		  ADREPORT(sigma_LAA);
+		  ADREPORT(rho_LAA_y);
+		}
+		  
+	  }
+  
+  
+  REPORT(nll_LAA);
+  nll += nll_LAA; 
+  REPORT(LAA_a);
+  REPORT(LAA_re);
+  REPORT(LAA_repars);
+  if(do_post_samp(1) == 1) ADREPORT(LAA_re);
+
   // Construct growth parameters per year NEWG
   array<Type> GW_par(n_years_model + n_years_proj,n_ages,n_growth_par); // array for growth parameters, either for 1 and 2
   for(int j = 0; j < n_growth_par; j++) { 
 	  for(int y = 0; y < n_years_model; y++) { 
 			for(int a = 0; a < n_ages; a++) { 
 			
-					if(growth_model == 1) {
-						// For growth_model == 1
-						GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
-					}
-					
-					if(growth_model == 2) {
-						// For growth_model == 2
-						GW_par(y,a,j) = exp(growth_a(y,a) + growth_re(y,a,j)); // this is mean-LAA matrix
-					}
+				GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
 					
 			}
 	  }
@@ -666,21 +736,35 @@ Type objective_function<Type>::operator() ()
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 
 								
-					if(growth_model == 1) {
-						// For growth_model == 1
-						GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
-					}
-					
-					if(growth_model == 2) {
-						// For growth_model == 2
-						GW_par(y,a,j) = exp(growth_a(n_years_model - 1,a) + growth_re(y,a,j)); // use last row for proj in input_LAA, correct?
-					}
+				GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
+
 				
 			}
 		}
 	  }
 	  
   }
+
+  // Construct LAA parameters per year NEWG
+  matrix<Type> LAA_par(n_years_model + n_years_proj,n_ages); 
+	  for(int y = 0; y < n_years_model; y++) { 
+			for(int a = 0; a < n_ages; a++) { 
+				LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
+			}
+	  }
+
+
+  // add to LAA parameters in projection years CHECK THIS
+  if(do_proj == 1){ 
+
+		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
+			for(int a = 0; a < n_ages; a++) { 		
+				LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
+			}
+		}
+	  
+  }
+
   
   // add ecov effect on growth paramteres NEWG CHECK THIS LATER. It should be parameter-specific
   // for(int i=0; i < n_Ecov; i++){
@@ -809,34 +893,36 @@ Type objective_function<Type>::operator() ()
 	  {
 			if(growth_model == 1) {
 				if(y == 0) {
-					mLAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); // for growth_model = 1
+					LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); // for growth_model = 1
 				} else {
 					if(a == 0) { 
-						mLAA(y,a) = GW_par(y,a,2);  
+						LAA(y,a) = GW_par(y,a,2);  
 					} else {
-						mLAA(y,a) = mLAA(y-1,a-1) + (mLAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
+						LAA(y,a) = LAA(y-1,a-1) + (LAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
 					}
 				}
 			}
-			if(growth_model == 2) mLAA(y,a) = GW_par(y,a,0); // for growth_model = 2
+			if(growth_model == 2) LAA(y,a) = LAA_par(y,a); // for growth_model = 2
 			
-			SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*mLAA(y,a);  //
-			// pred_mLAA(0,a) = mLAA(0,a); // predicted mean length at age, is it necessary?
+			if(growth_model == 1) SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*LAA(y,a);  //
+			if(growth_model == 2) SDAA(y,a) = ( GW_par(y,a,0) + ((GW_par(y,a,1) - GW_par(y,a,0))/(n_ages - 1.0))*a )*LAA(y,a);  //
+			
+			// pred_LAA(0,a) = LAA(0,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {
 				
 				if(l == 0) { 
-					Fac1 = (Lminp - mLAA(y,a))/SDAA(y,a);
-					LAA(y,l,a) = pnorm(Fac1);  
+					Fac1 = (Lminp - LAA(y,a))/SDAA(y,a);
+					phi_mat(y,l,a) = pnorm(Fac1);  
 				} else {
 					if(l == (n_lengths-1)) { 
-						Fac1 = (Lmaxp - mLAA(y,a))/SDAA(y,a);
-						LAA(y,l,a) = 1.0 - pnorm(Fac1);  
+						Fac1 = (Lmaxp - LAA(y,a))/SDAA(y,a);
+						phi_mat(y,l,a) = 1.0 - pnorm(Fac1);  
 					} else { 
 						Ll1p = lengths(l) + len_bin*0.5;
 						Llp = lengths(l) - len_bin*0.5;
-						Fac1 = (Ll1p - mLAA(y,a))/SDAA(y,a);
-						Fac2 = (Llp - mLAA(y,a))/SDAA(y,a);
-						LAA(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
+						Fac1 = (Ll1p - LAA(y,a))/SDAA(y,a);
+						Fac2 = (Llp - LAA(y,a))/SDAA(y,a);
+						phi_mat(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
 					}
 				}
 				
@@ -855,12 +941,15 @@ Type objective_function<Type>::operator() ()
 	  matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
 	  for(int y = 0; y < n_years_model + n_years_proj; y++) {
 		int yuse = y;
+		int y_1 = y + 1;
 	    if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
-		fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracfleet);
+		if(y == (n_years_model + n_years_proj - 1)) y_1 = y;
+		
+		fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracfleet, growth_model);
 		
 		for(int i = 0; i < n_indices; i++) {
 		
-			fracyr_LAA_index = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracyr_indices(yuse,i));
+			fracyr_phi_mat_index = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(yuse,i), growth_model);
 				
 			for(int a = 0; a < n_ages; a++) { 
 
@@ -869,14 +958,14 @@ Type objective_function<Type>::operator() ()
 					sum_wt = 0;
 					for(int l = 0; l < n_lengths; l++) {
 						watl(y,l) = LW_par(y,a,0)*pow(lengths(l), LW_par(y,a,1));
-						sum_wt += LAA(y,l,a)*watl(y,l);
+						sum_wt += phi_mat(y,l,a)*watl(y,l);
 					}
 					waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st = SSB
 					waa(waa_pointer_ssb - 1,y,a) = sum_wt; // jan-1st = SSB
 					
 					sum_wt_fleet = 0;
 					for(int l = 0; l < n_lengths; l++) {
-						sum_wt_fleet += fracyr_LAA(l,a)*watl(y,l);
+						sum_wt_fleet += fracyr_phi_mat(l,a)*watl(y,l);
 					}
 					for(int f = 0; f < n_fleets; f++) waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; // for fleets
 					waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
@@ -886,7 +975,7 @@ Type objective_function<Type>::operator() ()
 				sum_wt_index = 0;
 				for(int l = 0; l < n_lengths; l++) {
 					if(i > 0) watl(y,l) = LW_par(y,a,0)*pow(lengths(l), LW_par(y,a,1)); // calculate again
-					sum_wt_index += fracyr_LAA_index(l,a)*watl(y,l);
+					sum_wt_index += fracyr_phi_mat_index(l,a)*watl(y,l);
 				}
 				waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices
 				
@@ -1094,7 +1183,7 @@ Type objective_function<Type>::operator() ()
 			  for(int a = 0; a < n_ages; a++) {
 			  Type sumSelex = 0.0;
 				  for(int l = 0; l < n_lengths; l++) {
-					sumSelex += LAA(y,l,a)*selAL(b)(y,l);
+					sumSelex += phi_mat(y,l,a)*selAL(b)(y,l);
 				  }
 			  matemp(y,a) = sumSelex;
 			  }
@@ -1442,9 +1531,11 @@ Type objective_function<Type>::operator() ()
   {
     //for now just use uncertainty from last year of catch
     int usey = y;
+	int y_1 = y + 1;
     if(y > n_years_model-1) usey = n_years_model-1;
+	if(y == (n_years_model + n_years_proj - 1)) y_1 = y;
     //int acomp_par_count = 0;
-	fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracfleet); // only works for growth_model = 1 so far
+	fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracfleet, growth_model); // only works for growth_model = 1 so far
     for(int f = 0; f < n_fleets; f++)
     {
 	  lsum.setZero();
@@ -1457,7 +1548,7 @@ Type objective_function<Type>::operator() ()
         tsum += pred_CAA(y,f,a);
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * fracyr_LAA(l,a);
+			pred_CAAL(y,f,l,a) = pred_CAA(y,f,a) * fracyr_phi_mat(l,a);
 			lsum(l) += pred_CAAL(y,f,l,a);
 		}
       }
@@ -1592,13 +1683,15 @@ Type objective_function<Type>::operator() ()
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
     int yuse = y;
+	int y_1 = y + 1;
     if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
+	if(y == (n_years_model + n_years_proj - 1)) y_1 = y;
     //int acomp_par_count = 0;
     for(int i = 0; i < n_indices; i++)
     {
 	  lsumI.setZero();
       Type tsum = 0.0;
-	  fracyr_LAA = pred_LAA(vector<Type>(mLAA.row(y)), vector<Type>(SDAA.row(y)), GW_par, lengths, y, fracyr_indices(yuse,i)); // only works for growth_model = 1 so far
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(yuse,i), growth_model); // only works for growth_model = 1 so far
       for(int a = 0; a < n_ages; a++)
       {
         pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(yuse,i));
@@ -1607,7 +1700,7 @@ Type objective_function<Type>::operator() ()
 		
 		// NEWG: is there a more efficient way to do this?:
 		for(int l = 0; l < n_lengths; l++) {
-			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * fracyr_LAA(l,a); // Only numbers allowed so far
+			pred_IAAL(y,i,l,a) = pred_IAA(y,i,a) * fracyr_phi_mat(l,a); // Only numbers allowed so far
 			lsumI(l) += pred_IAAL(y,i,l,a);
 		}
       }
@@ -1907,10 +2000,11 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_NAA_rep = log(NAA.array());
 
   REPORT(NAA);
+  REPORT(phi_mat); // NEWG
   REPORT(LAA); // NEWG
-  REPORT(mLAA); // NEWG
   REPORT(SDAA); // NEWG
   REPORT(GW_par); // NEWG
+  REPORT(LAA_par); // NEWG
   REPORT(pred_NAA);
   REPORT(SSB);
   REPORT(selAL);

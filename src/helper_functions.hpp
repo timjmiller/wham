@@ -910,11 +910,11 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 }
 
 template <class Type>
-matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, array<Type> GW_par, vector<Type> lengths, 
-						int y, Type fracyr){
+matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mLAA_jan1_y1, array<Type> GW_par, vector<Type> lengths, 
+						int y, Type fracyr, int growth_model){
 
   Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
-  Type Lminp = min(lengths) - len_bin*0.5;
+  Type Lminp = min(lengths) + len_bin*0.5;
   Type Lmaxp = max(lengths) - len_bin*0.5;
   Type Fac1 = 0.0;
   Type Fac2 = 0.0;
@@ -924,11 +924,19 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, array<Type> GW_
   int n_lengths = lengths.size();
   matrix<Type> out(n_lengths, n_ages);
   vector<Type> mLAA(n_ages);
-  
+  Type Grate = 0.0;
   
   	  for(int a = 0; a < n_ages; a++)
 	  {  
-		    mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
+		    if(growth_model == 1) mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
+			if(growth_model == 2) {
+				if(a < (n_ages - 1)) {
+					Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
+					mLAA(a) = mLAA_jan1(a) + Grate;
+				} else { // for oldest age
+					mLAA(a) = mLAA_jan1(a) + Grate*0.5; // use half of rate of last age? CHECK THIS
+				}
+			}
 
 			for(int l = 0; l < n_lengths; l++) {
 				

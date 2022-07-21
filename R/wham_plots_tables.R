@@ -4608,6 +4608,56 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
         viridis::scale_fill_viridis())
     if(do.tex | do.png) dev.off()
   }
+
+  # mean LAA
+  if(type=="LAA"){ 
+    if(mod$env$data$do_proj == 1){
+      years_full = mod$years_full
+    } else {
+      years_full = years
+    }
+    df.mLAA <- as.data.frame(rep$LAA)
+    df.mLAA$Year <- years_full
+    colnames(df.mLAA) <- c(paste0("Age_",1:n_ages),"Year")
+    df.plot <- df.mLAA %>% tidyr::pivot_longer(-Year,
+              names_to = "Age", 
+              names_prefix = "Age_",
+              names_ptypes = list(Age = character()),
+              values_to = "Mean_LAA")
+    df.plot$Age <- as.factor(as.integer(df.plot$Age))
+    levels(df.plot$Age) = ages.lab
+
+    if(do.tex) cairo_pdf(file.path(od, paste0("LAA_tile.pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("LAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Mean_LAA)) + 
+        ggplot2::geom_tile() +
+        ggplot2::scale_x_continuous(expand=c(0,0)) +
+        ggplot2::scale_y_discrete(expand=c(0,0)) + #, breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
+#        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
+        ggplot2::theme_bw() + 
+        viridis::scale_fill_viridis())
+    if(do.tex | do.png) dev.off()
+  }
+
+  # transition matrix
+  if(type=="phi_mat"){ 
+    df.LAA <- t(rep$phi_mat[1,,]) # only for first year
+    yearLab = years[1]
+
+    if(do.tex) cairo_pdf(file.path(od, paste0("phi_mat_tile.pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("phi_mat_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      par(mar = c(3,4,2,5))
+      image(df.LAA,axes=FALSE, col='transparent', xlab = '', ylab = 'Length (cm)', 
+                  main = paste0('Age-length transition matrix for Year ', yearLab, ' (Jan 1st)'))
+      axis(1, at = seq(from = 0, to = 1, length.out = n_ages), labels = ages.lab)
+      axis(2, at = seq(from = 0, to = 1, length.out = n_lengths), labels = lengths.lab, las = 2)
+      mtext(text = 'Age', side = 1, line = 2)
+      fields::image.plot(df.LAA, add=T, legend.mar = 5, col = rev(viridis(100)))
+      box()
+    if(do.tex | do.png) dev.off()
+  }
+
+
 }  
 
 #pdf of a univariate logit-normal with any min and max

@@ -375,7 +375,7 @@
 #'
 #' @export
 prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, 
-	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
+	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, LAA = NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -462,7 +462,11 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#print("selectivity")
 
 	# Growth
-	input = set_growth(input, growth)
+	input = set_growth(input, growth, LAA)
+	#print("growth")
+
+	# Growth
+	input = set_LAA(input, LAA)
 	#print("growth")
 
 	# LW
