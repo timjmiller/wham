@@ -226,7 +226,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       modify = ""
       if(data$selblock_models[i] == 1) modify = " AR1 $\\rho$ (age)"
       if(data$selblock_models[i] %in% c(2,4)) modify = " $\\rho$ for $a_{50}$ and 1/slope" 
-      if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
+      if(data$selblock_models[i] %in% c(5,7)) modify = " $\\rho$ for $l_{50}$ and 1/slope" 
+      if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for age double-normal pars"
+      if(data$selblock_models[i] == 6) modify = " AR1 $\\rho$ for length double-normal pars"
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
@@ -367,41 +369,59 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   fe.vals = temp2[[2]]
   fe.cis = temp2[[3]]
 
-  if(sum(!is.na(mod$input$map$M_a))){ #any M_a estimated?
-    if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M
-      modify = "M for ages("
-    } else {
-      if(data$M_model != 3) modify = "mean log(M) for ages ("
-      if(data$M_model == 3 | data$Ecov_where[2] == 0) modify = "mean log(M) intercept for log(WAA) effects"
-      if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
-    }
-    age.list = M_a_point = list()
-    M_map = as.integer(as.character(input$map$M_a))
-    ind = unique(M_map[which(!is.na(M_map))])
-    if(data$M_model == 1) {
-      M_a_point[[1]] = 1
-      ages.list = list(mod$ages)
+  # Natural Mortality
+  # Not sure how Ecov impacts this, CHECK LATER
+  # if(sum(!is.na(mod$input$map$M_a))){ # always report M
+    # if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M
+    #   modify = "M for ages("
+    # } else {
+    #   if(data$M_model != 3) modify = "mean log(M) for ages ("
+    #   if(data$M_model == 3 | data$Ecov_where[2] == 0) modify = "mean log(M) intercept for log(WAA) effects"
+    #   if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
+    # }
+    # age.list = M_a_point = list()
+    # M_map = as.integer(as.character(mod$input$map$M_a))
+    # ind = unique(M_map[which(!is.na(M_map))])
+    # if(data$M_model == 1) {
+    #   M_a_point[[1]] = 1
+    #   ages.list = list(mod$ages)
+    # }
+    # if(data$M_model == 2){
+    #   npar = length(ind)
+    #   for(i in 1:npar) {
+    #     M_a_point[[i]] = which(M_map == ind[i])[1]
+    #     age.list[[i]] = mod$ages[which(M_map == ind[i])]
+    #   }
+    # }
+    if(data$M_model == 1){
+      fe.names = c(fe.names, "M for all ages")
+      fe.vals = c(fe.vals, exp(pars$M_a))
+      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
     }
     if(data$M_model == 2){
-      npar = length(ind)
-      for(i in 1:npar) {
-        M_a_point[[i]] = which(M_map == ind[i])[1]
-        age.list[[i]] = mod$ages[which(M_map == ind[i])]
-      }
+      fe.names = c(fe.names, paste0("M for age ", mod$ages.lab))
+      fe.vals = c(fe.vals, exp(pars$M_a))
+      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
     }
-    if(length(age.list)){
-      for(i in 1:length(age.list)){
-        fe.names = c(fe.names, paste0(modify, paste0(age.list[[i]], collapse = ", "),")"))
-        if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){
-          fe.vals = c(fe.vals, exp(pars$M_a[M_a_point]))
-          fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point], type = "exp"))
-        } else {
-          fe.vals = c(fe.vals, pars$M_a[M_a_point])
-          fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point]))
-        }
-      }
+    if(data$M_model == 3){
+      fe.names = c(fe.names, "mean log(M) intercept for log(WAA) effects")
+      fe.vals = c(fe.vals, pars$M_a)
+      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a))
     }
-  }
+    # if(length(age.list)){
+    #   for(i in 1:length(age.list)){
+    #     fe.names = c(fe.names, paste0(modify, paste0(age.list[[i]], collapse = ", "),")"))
+    #     if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){
+    #       fe.vals = c(fe.vals, exp(pars$M_a[M_a_point]))
+    #       fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point], type = "exp"))
+    #     } else {
+    #       fe.vals = c(fe.vals, pars$M_a[M_a_point])
+    #       fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point]))
+    #     }
+    #   }
+    # }
+  # }
+
   if(data$M_model == 3){
     fe.names = c(fe.names, "mean log(M) log(WAA) effect")
     fe.vals = c(fe.vals, exp(pars$log_b))
@@ -422,6 +442,126 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
+
+  # Somatic growth
+    if(data$growth_model == 1){
+      Gpar_vector = as.vector(pars$growth_a)
+      Gpar_names = c('K', 'Linf', 'L1', 'CV1', 'CVA')
+      fe.names = c(fe.names, Gpar_names)
+      fe.vals = c(fe.vals, exp(Gpar_vector))
+
+      for(j in 1:5) {
+        fe.cis = rbind(fe.cis, ci(Gpar_vector[j], as.vector(sd$growth_a)[j], type = "exp"))
+        if(data$growth_re_model[j]%in%c(2,4)){
+          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (year)"))
+          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
+          if(data$growth_re_model[j] == c(4)){
+            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (year)"))
+            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+        if(data$growth_re_model[j]%in%c(3,5)){
+          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (cohort)"))
+          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
+          if(data$growth_re_model[j] == c(5)){
+            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (cohort)"))
+            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+      }
+    }
+
+    if(data$growth_model == 2){
+      Gpar_vector = as.vector(pars$growth_a)
+      Gpar_names = c('CV1', 'CVA')
+      fe.names = c(fe.names, paste0("Mean length for age ", mod$ages.lab))
+      fe.vals = c(fe.vals, exp(pars$LAA_a))
+      for(a in 1:data$n_ages) fe.cis = rbind(fe.cis, ci(pars$LAA_a[a], sd$LAA_a[a], type = "exp"))
+
+        if(data$LAA_re_model%in%c(2,4)){
+          fe.names = c(fe.names, "LAA RE $\\sigma$ (year)")
+          fe.vals = c(fe.vals, exp(pars$LAA_repars[1,1]))
+          fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,1], sd$LAA_repars[1,1], type = "exp"))
+          if(data$LAA_re_model[j] == c(4)){
+            fe.names = c(fe.names, "LAA RE AR1 $\\rho$ (year)")
+            fe.vals = c(fe.vals, exp(pars$LAA_repars[1,2]))
+            fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,2], pars$LAA_repars[1,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+        if(data$LAA_re_model%in%c(3,5)){
+          fe.names = c(fe.names, "LAA RE $\\sigma$ (cohort)")
+          fe.vals = c(fe.vals, exp(pars$LAA_repars[1,1]))
+          fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,1], sd$LAA_repars[1,1], type = "exp"))
+          if(data$LAA_re_model == c(5)){
+            fe.names = c(fe.names, "LAA RE AR1 $\\rho$ (cohort)")
+            fe.vals = c(fe.vals, exp(pars$LAA_repars[1,2]))
+            fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,2], pars$LAA_repars[1,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+
+      for(j in 1:2) {
+        fe.cis = rbind(fe.cis, ci(Gpar_vector[j], as.vector(sd$growth_a)[j], type = "exp"))
+
+        if(data$growth_re_model[j]%in%c(2,4)){
+          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (year)"))
+          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
+          if(data$growth_re_model[j] == c(4)){
+            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (year)"))
+            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+        if(data$growth_re_model[j]%in%c(3,5)){
+          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (cohort)"))
+          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
+          if(data$growth_re_model[j] == c(5)){
+            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (cohort)"))
+            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+      }
+    }
+
+  # LW parameters
+  if(data$waa_info == 0) {
+    LW_vector = as.vector(pars$LW_a)
+    LWpar_names = c("a (length-weight)", "b (length-weight)")
+    fe.names = c(fe.names, LWpar_names)
+    fe.vals = c(fe.vals, exp(LW_vector))
+
+      for(j in 1:2) {
+        fe.cis = rbind(fe.cis, ci(LW_vector[j], as.vector(sd$LW_a)[j], type = "exp"))
+        if(data$LW_re_model[j]%in%c(2,4)){
+          fe.names = c(fe.names, paste0(LWpar_names[j], " RE $\\sigma$ (year)"))
+          fe.vals = c(fe.vals, exp(pars$LW_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$LW_repars[j,1], sd$LW_repars[j,1], type = "exp"))
+          if(data$LW_re_model[j] == c(4)){
+            fe.names = c(fe.names, paste0(LWpar_names[j], " RE AR1 $\\rho$ (year)"))
+            fe.vals = c(fe.vals, exp(pars$LW_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$LW_repars[j,2], pars$LW_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+        if(data$LW_re_model[j]%in%c(3,5)){
+          fe.names = c(fe.names, paste0(LWpar_names[j], " RE $\\sigma$ (cohort)"))
+          fe.vals = c(fe.vals, exp(pars$LW_repars[j,1]))
+          fe.cis = rbind(fe.cis, ci(pars$LW_repars[j,1], sd$LW_repars[j,1], type = "exp"))
+          if(data$LW_re_model[j] == c(5)){
+            fe.names = c(fe.names, paste0(LWpar_names[j], " RE AR1 $\\rho$ (cohort)"))
+            fe.vals = c(fe.vals, exp(pars$LW_repars[j,2]))
+            fe.cis = rbind(fe.cis, ci(pars$LW_repars[j,2], pars$LW_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
+          }
+        }
+      }
+  }
+
+
   if(sum(!is.na(mod$input$map$log_catch_sig_scale))){ #any agg catch obs var estimated?
     sig_map = as.integer(as.character(mod$input$map$log_catch_sig_scale))
     for(i in 1:data$n_fleets){
@@ -513,7 +653,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
       fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. sd."))
-      ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
+      ind = which(!is.na(matrix(mod$input$map$Ecov_obs_logsigma, NROW(mod$input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
