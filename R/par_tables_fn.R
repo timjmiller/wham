@@ -482,28 +482,25 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.vals = c(fe.vals, exp(pars$LAA_a))
       for(a in 1:data$n_ages) fe.cis = rbind(fe.cis, ci(pars$LAA_a[a], sd$LAA_a[a], type = "exp"))
 
-        if(data$LAA_re_model%in%c(2,4)){
-          fe.names = c(fe.names, "LAA RE $\\sigma$ (year)")
-          fe.vals = c(fe.vals, exp(pars$LAA_repars[1,1]))
-          fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,1], sd$LAA_repars[1,1], type = "exp"))
-          if(data$LAA_re_model[j] == c(4)){
-            fe.names = c(fe.names, "LAA RE AR1 $\\rho$ (year)")
-            fe.vals = c(fe.vals, exp(pars$LAA_repars[1,2]))
-            fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,2], pars$LAA_repars[1,2], lo = -1, hi = 1, type = "expit", k = 2))
-          }
-        }
-        if(data$LAA_re_model%in%c(3,5)){
-          fe.names = c(fe.names, "LAA RE $\\sigma$ (cohort)")
-          fe.vals = c(fe.vals, exp(pars$LAA_repars[1,1]))
-          fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,1], sd$LAA_repars[1,1], type = "exp"))
+      if(data$LAA_re_model > 1) {
+        fe.names = c(fe.names, "LAA RE $\\sigma$")
+        fe.vals = c(fe.vals, exp(pars$LAA_repars[1]))
+        fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1], sd$LAA_repars[1], type = "exp"))
+        if(data$LAA_re_model%in%c(4,5)){
+          fe.names = c(fe.names, "LAA RE $\\rho$ (age)")
+          fe.vals = c(fe.vals, exp(pars$LAA_repars[2]))
+          fe.cis = rbind(fe.cis, ci(pars$LAA_repars[2], sd$LAA_repars[2], type = "exp"))
           if(data$LAA_re_model == c(5)){
-            fe.names = c(fe.names, "LAA RE AR1 $\\rho$ (cohort)")
-            fe.vals = c(fe.vals, exp(pars$LAA_repars[1,2]))
-            fe.cis = rbind(fe.cis, ci(pars$LAA_repars[1,2], pars$LAA_repars[1,2], lo = -1, hi = 1, type = "expit", k = 2))
+            fe.names = c(fe.names, "LAA RE $\\rho$ (year)")
+            fe.vals = c(fe.vals, exp(pars$LAA_repars[3]))
+            fe.cis = rbind(fe.cis, ci(pars$LAA_repars[3], pars$LAA_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
           }
         }
+      }
 
       for(j in 1:2) {
+        fe.names = c(fe.names, Gpar_names[j])
+        fe.vals = c(fe.vals, exp(Gpar_vector[j]))
         fe.cis = rbind(fe.cis, ci(Gpar_vector[j], as.vector(sd$growth_a)[j], type = "exp"))
 
         if(data$growth_re_model[j]%in%c(2,4)){

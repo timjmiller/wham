@@ -207,8 +207,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(growth_repars); //    
 
   PARAMETER_VECTOR(LAA_a); //  
-  PARAMETER_MATRIX(LAA_re); //  
-  PARAMETER_MATRIX(LAA_repars); //   
+  PARAMETER_ARRAY(LAA_re); //  
+  PARAMETER_VECTOR(LAA_repars); //   
 
   PARAMETER_MATRIX(LW_a); //  could be 3 parameters or input_LAA
   PARAMETER_ARRAY(LW_re); // nyears x nages x npars_growth     
@@ -650,65 +650,51 @@ Type objective_function<Type>::operator() ()
 
   // LAA re section
   Type nll_LAA = Type(0);
-  
-  Type sigma_LAA; // first RE parameter
-  Type rho_LAA_y;  // second RE parameter
-  Type Sigma_LAA = Type(0);
 
-	  if((LAA_re_model == 2) | (LAA_re_model == 4)) { // Only for ii_y and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
-		
-		sigma_LAA = exp(LAA_repars(0,0));
-        rho_LAA_y = rho_trans(LAA_repars(0,1));  
-		// likelihood of growth parameters deviations
-			vector<Type> LAAre0(n_years_model + n_years_proj);
-			for(int y = 0; y < n_years_model + n_years_proj; y++) LAAre0(y) = LAA_re(y,0); 
-			Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_y,2)),0.5);
-			nll_LAA += SCALE(AR1(rho_LAA_y), Sigma_LAA)(LAAre0);
-			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
-			  AR1(rho_LAA_y).simulate(LAAre0);
-			  for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
-			  for(int y = 0; y < n_years_model + n_years_proj; y++){
-				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  LAA_re(y,0) = LAAre0(y);
-				}
+  if(LAA_re_model > 1) // random effects on LAA
+  {
+  
+  Type sigma_LAA = exp(LAA_repars(0)); // first RE parameter
+  Type rho_LAA_a = rho_trans(LAA_repars(1));
+  Type rho_LAA_y = rho_trans(LAA_repars(2));  // second RE parameter
+  Type Sigma_LAA;
+
+	  if((LAA_re_model == 2) | (LAA_re_model == 5)) { // Only for ii_y and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
+		// likelihood of LAA deviations
+		  Sigma_LAA = pow(pow(sigma_LAA,2) / ((1-pow(rho_LAA_y,2))*(1-pow(rho_LAA_a,2))),0.5);
+		  nll_LAA += SCALE(SEPARABLE(AR1(rho_LAA_a),AR1(rho_LAA_y)), Sigma_LAA)(LAA_re); // must be array, not matrix!
+		  SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			array<Type> LAAre_tmp = LAA_re;
+			SEPARABLE(AR1(rho_LAA_a),AR1(rho_LAA_y)).simulate(LAAre_tmp);
+			LAAre_tmp = Sigma_LAA * LAAre_tmp;
+			for(int y = 0; y < n_years_model + n_years_proj; y++){
+			  if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
+				for(int a = 0; a < n_M_a; a++) LAA_re(y,a) = LAAre_tmp(y,a);
 			  }
 			}
-
-		if(do_post_samp.sum()==0){
-		  ADREPORT(sigma_LAA);
-		  ADREPORT(rho_LAA_y);
-		}
-		
-	  }
-	  
-	  if((LAA_re_model == 3) | (LAA_re_model == 5)) { // Only for ii_c and Ar1_c
+		  }
+	  } else { // for 2 and 3 options
+        vector<Type> LAAre0 = LAA_re.matrix().row(0);
+        Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_a,2)),0.5);
+        nll_LAA += SCALE(AR1(rho_LAA_a), Sigma_LAA)(LAAre0);
+        SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+          AR1(rho_LAA_a).simulate(LAAre0);
+          for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
+          for(int y = 0; y < n_years_model + n_years_proj; y++){
+            for(int i = 0; i < LAAre0.size(); i++){
+              LAA_re(y,i) = LAAre0(i);
+            }
+          }
+        }          
+      }
+	   
+	if(do_post_samp.sum()==0){
+		ADREPORT(sigma_LAA);
+		ADREPORT(rho_LAA_a);
+		ADREPORT(rho_LAA_y);
+	}
 		  
-		sigma_LAA = exp(LAA_repars(0,0));
-        rho_LAA_y = rho_trans(LAA_repars(0,1));  
-		// likelihood of growth parameters deviations
-			vector<Type> LAAre0(n_years_model + n_years_proj + n_ages - 1);
-			for(int i = 0; i < (n_ages - 1); i++) LAAre0(i) = LAA_re(0,n_ages - i - 1); // for cohorts at y = 0 except a = 0
-			for(int i = (n_ages - 1); i < (n_years_model + n_years_proj + n_ages - 1); i++) LAAre0(i) = LAA_re(i-n_ages+1,0); // for cohorts y>=0 
-			Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_y,2)),0.5);
-			nll_LAA += SCALE(AR1(rho_LAA_y), Sigma_LAA)(LAAre0);
-			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
-			  AR1(rho_LAA_y).simulate(LAAre0);
-			  for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
-			  for(int i = 0; i < (n_ages - 1); i++) LAA_re(0,n_ages - i - 1) = LAAre0(i); // replace cohorts at y = 0 
-			  for(int y = 0; y < n_years_model + n_years_proj; y++){
-				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  LAA_re(y,0) = LAAre0(y + n_ages - 1); 
-				}
-			  }
-			}
-
-		if(do_post_samp.sum()==0){
-		  ADREPORT(sigma_LAA);
-		  ADREPORT(rho_LAA_y);
-		}
-		  
-	  }
-  
+  }
   
   REPORT(nll_LAA);
   nll += nll_LAA; 
