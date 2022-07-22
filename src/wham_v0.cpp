@@ -514,7 +514,7 @@ Type objective_function<Type>::operator() ()
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-              M_re(y,0) = Mre0(y);
+              for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre0(y); //all ages mapped to the same annual RE
             }
           }
         }
