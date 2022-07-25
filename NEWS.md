@@ -8,6 +8,7 @@ wham 1.0.6.9000
 
 ### Bug fixes
 
+* Fix bug in simulation of selectivity random effects with "ar1_y" or "ar1" option [190000c]https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655)
 * Fix bug in simulation of M random effects with "ar1_y" option [77bbd94](https://github.com/timjmiller/wham/commit/77bbd946e4881216a439933473d1c58b21c270c3)
 * Fix bug in check_projF which tests whether the F in projections is being specified correctly when FXSPR or F at catch is specified [c643d4b](https://github.com/timjmiller/wham/commit/c643d4ba8339c13dd4b9e3662aaa29f26d309624)
 * Fix index proportions at age data specification in basic_info [issue 64](https://github.com/timjmiller/wham/issues/64) [a3e3afc](https://github.com/timjmiller/wham/commit/a3e3afc9b23e2ca4e3d369581dfcf2b33732686c)
