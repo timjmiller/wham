@@ -89,7 +89,7 @@
       <a href="articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
     <li>
-      <a href="articles/ex10_om_mse.html">Ex 10: Operating models and MSE</a>
+      <a href="articles/ex10_simulation.html">Ex 10: Simulation and MSE</a>
     </li>
     <li>
       <a href="articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
@@ -186,6 +186,9 @@ projections/forecasts (<a href="https://timjmiller.github.io/wham/articles/ex3_p
 <p>Overview of WHAM presentation (Jan 8 2021):</p>
 <figure class="video_container"><iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true">
 </iframe>
+</figure><p>Some further developments are covered here (Jan 25 2022):</p>
+<figure class="video_container"><iframe width="560" height="315" src="https://www.youtube.com/embed/qDg2NKTbMR4?controls=0&amp;start=87" frameborder="0" allowfullscreen="true">
+</iframe>
 </figure><div class="section level2">
 <h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h2>
@@ -241,29 +244,27 @@ make sure no packages are loaded (even by e.g. .Rprofile):</p>
 <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">new.packages</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="va">new.packages</span><span class="op">)</span></code></pre></div>
 <p>If you want pdfs of parameter tables that are generted by
 plot_wham_output you will need a tex installation. If you do not use
-RStudio, this should provide that</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"tinytex"</span><span class="op">)</span>
-<span class="fu">tinytex</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tinytex/man/install_tinytex.html" class="external-link">install_tinytex</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+RStudio, use the tinytex
+package:<code>r install.packages("tinytex") tinytex::install_tinytex()</code></p>
 </div>
 <div class="section level2">
 <h2 id="tutorial">Tutorial<a class="anchor" aria-label="anchor" href="#tutorial"></a>
 </h2>
 <p>We suggest walking through the vignettes to familiarize yourself with
 WHAM: <a href="https://timjmiller.github.io/wham/articles" class="uri">https://timjmiller.github.io/wham/articles</a>.</p>
-<p>Clean, runnable <code>.R</code> scripts for each vignette are also
-available in the <code>example_scripts</code> folder of the
+<p>Clean, runnable <code>.R</code> scripts for most of the vignettes are
+also available in the <code>example_scripts</code> folder of the
 <code>wham</code> package install:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span>
 <span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
 <p>You can then run the entire first example script with:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"choose/where/to/save/output"</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex1_SNEMA_yellowtail_flounder.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>You can run ALL examples with (takes 1 hour):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span>
 <span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"run_all_examples.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -275,10 +276,10 @@ available in the <code>example_scripts</code> folder of the
 because they can be accessed online anytime at <a href="https://timjmiller.github.io/wham/articles" class="uri">https://timjmiller.github.io/wham/articles</a>. If you want
 to build the vignettes locally, they look best if you <em>build using R
 Studio</em>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"timjmiller/wham"</span>, dependencies<span class="op">=</span><span class="cn">TRUE</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, build_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"--no-resave-data"</span>, <span class="st">"--no-manual"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>View installed vignettes:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">

@@ -423,7 +423,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 }
 
 
-gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
+#s may be 2 for most rhos on cpp side which is unusual.
+
+gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
 
 initial_input_fn = function(input, basic_info){

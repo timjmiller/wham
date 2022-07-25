@@ -187,9 +187,6 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_index_paa(n_years_model+n_years_proj,n_indices,n_ages);
   matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices); // not bias corrected
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected
-  matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
-  array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
-  matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
   array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
@@ -260,17 +257,17 @@ Type objective_function<Type>::operator() ()
           SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) 
           {
             AR1(rho).simulate(tmp0);
-            for(int i = 0; i < tmp0.size(); i++) tmp(0,i) = tmp0(i);
+            for(int y = 0; y < tmp.rows(); y++) for(int i = 0; i < tmp0.size(); i++) tmp(y,i) = tmp0(i);
           }
-        } else { // selblock_models_re(b) = 4, ar1_y
-          vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant across years 
+        } else { // selblock_models_re(b) = 4, ar1_y, not sure if this one really makes sense.
+          vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant within years 
           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
           //Sigma_sig_sel = sigma;
           nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp0);
           SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0)  
           {
             AR1(rho_y).simulate(tmp0);
-            tmp.col(0) = tmp0;
+            for(int a = 0; a < tmp.cols(); a++) tmp.col(a) = tmp0;
           }
         }
       }
@@ -514,7 +511,7 @@ Type objective_function<Type>::operator() ()
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-              M_re(y,0) = Mre0(y);
+              for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre0(y); //all ages mapped to the same annual RE
             }
           }
         }
@@ -708,6 +705,11 @@ Type objective_function<Type>::operator() ()
   // Set up population model
   // Year 1 initialize population
   SSB.setZero();
+  matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
+  NAA.setZero();
+  matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
+  pred_NAA.setZero();
+
   for(int a = 0; a < n_ages; a++)
   {
     if(N1_model == 0) NAA(0,a) = exp(log_N1_pars(a));
@@ -833,6 +835,9 @@ Type objective_function<Type>::operator() ()
   
   // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, for all years)
+  array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
+  NAA_devs.setZero();
+
   for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     
@@ -847,13 +852,13 @@ Type objective_function<Type>::operator() ()
       for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
     } else { // only recruitment estimated (either fixed or random effects)
       for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // for ages > 1 survival is deterministic 
-      if((n_NAA_sigma == 0) && (y > n_years_model-1)){ 
+      if((n_NAA_sigma == 0) && (y > n_years_model-1)){  //recruit FE, but recruit RE in projection years
         NAA(y,0) = exp(logR_proj(y-n_years_model)); // SCAA recruit in projections use diff object (random effect)
-        for(int a = 1; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+        for(int a = 1; a < n_ages; a++) NAA_devs(y-1,a) = log(NAA(y,a)) - log(pred_NAA(y,a));
         NAA_devs(y-1,0) = logR_proj(y-n_years_model) - log(pred_NAA(y,0));
-      } else {
+      } else { //recruit RE, or (recruit FE and not projection year)
         NAA(y,0) = exp(log_NAA(y-1,0));
-        for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+        for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log(NAA(y,a)) - log(pred_NAA(y,a));
       }
     }
         
@@ -968,7 +973,6 @@ Type objective_function<Type>::operator() ()
     ZAA = MAA + FAA_tot;
     REPORT(sims);
     REPORT(log_NAA);
-    REPORT(NAA_devs);
     REPORT(log_NAA_sigma);
     REPORT(trans_NAA_rho);
   }

@@ -2,7 +2,7 @@ pandoc: 2.17.1.1
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
-  ex10_om_mse: ex10_om_mse.html
+  ex10_simulation: ex10_simulation.html
   ex11_catchability: ex11_catchability.html
   ex1_basics: ex1_basics.html
   ex2_CPI_recruitment: ex2_CPI_recruitment.html
@@ -13,7 +13,7 @@ articles:
   ex7_debug: ex7_debug.html
   ex8_compare: ex8_compare.html
   ex9_retro_pred: ex9_retro_pred.html
-last_built: 2022-05-02T17:56Z
+last_built: 2022-07-07T15:36Z
 urls:
   reference: https://timjmiller.github.io/wham/reference
   article: https://timjmiller.github.io/wham/articles

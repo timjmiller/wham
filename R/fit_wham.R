@@ -250,7 +250,9 @@ check_projF = function(mod)
   if(length(ind))
   {
     y = mod$env$data$n_years_model + ind
-    bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4))
+    correct_F = round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
+    used_F = round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4)
+    bad = which(correct_F != used_F)
     if(length(bad))
     {
       redo_SPR_years = mod$years_full[y[bad]]
@@ -258,7 +260,9 @@ check_projF = function(mod)
       mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
       mod$fn(mle)
       mod$rep = mod$report()
-      bad = which(round(exp(mod$rep$log_FXSPR[y]),4) != round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age)],4))
+      correct_F = round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
+      used_F = round(mod$rep$FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4)
+      bad = which(correct_F != used_F)
     }
     y_bad_FXSPR = mod$years_full[y[bad]]
     if(length(bad)) warning(paste0("Still bad initial values and estimates of FXSPR used to define F in projection years ", paste(y_bad_FXSPR, collapse = ","), "."))
