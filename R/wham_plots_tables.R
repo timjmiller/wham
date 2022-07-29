@@ -4511,7 +4511,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
 
 #-------------------------------------------------------------------------------
 # 2D tile plot by age and year (e.g. selAA, MAA)
-plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE, fontfam="", od){
+plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE, res = 144, fontfam="", od){
   dat = mod$env$data
   rep = mod$rep
   years = mod$years
@@ -4567,7 +4567,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     save_df$Block <- factor(as.character(save_df$Block), levels=names(table(save_df$Block)))
 
     if(do.tex) cairo_pdf(file.path(od, paste0("selex_tile.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("selex_tile.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.png) png(filename = file.path(od, paste0("selex_tile.png")), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
     print(ggplot2::ggplot(save_df, ggplot2::aes(x=Year, y=Bin, fill=Selectivity)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -4598,7 +4598,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     levels(df.plot$Age) = ages.lab
 
     if(do.tex) cairo_pdf(file.path(od, paste0("MAA_tile.pdf")), family = fontfam, height = 5, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("MAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.png) png(filename = file.path(od, paste0("MAA_tile.png")), width = 8*res, height = 5*res, res = res, pointsize = 12, family = fontfam)
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -4628,7 +4628,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     levels(df.plot$Age) = ages.lab
 
     if(do.tex) cairo_pdf(file.path(od, paste0("LAA_tile.pdf")), family = fontfam, height = 5, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("LAA_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.png) png(filename = file.path(od, paste0("LAA_tile.png")), width = 8*res, height = 5*res, res = res, pointsize = 12, family = fontfam)
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Mean_LAA)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -4645,7 +4645,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     yearLab = years[1]
 
     if(do.tex) cairo_pdf(file.path(od, paste0("phi_mat_tile.pdf")), family = fontfam, height = 5, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("phi_mat_tile.png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.png) png(filename = file.path(od, paste0("phi_mat_tile.png")), width = 8*res, height = 5*res, res = res, pointsize = 12, family = fontfam)
       par(mar = c(3,4,2,5))
       image(df.LAA,axes=FALSE, col='transparent', xlab = '', ylab = 'Length (cm)', 
                   main = paste0('Age-length transition matrix for Year ', yearLab, ' (Jan 1st)'))

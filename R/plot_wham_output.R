@@ -373,10 +373,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.M(mod)
     dev.off()
-    plot.tile.age.year(mod, type="selex", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    plot.tile.age.year(mod, type="LAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    plot.tile.age.year(mod, type="phi_mat", do.png=TRUE, fontfam=fontfam, od=dir.res)
+    plot.tile.age.year(mod, type="selex", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
+    plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
+    plot.tile.age.year(mod, type="LAA", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
+    plot.tile.age.year(mod, type="phi_mat", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
     condQ = as.list(mod$sdrep, "Std. Error")$logit_q
     if(!is.na(condQ)) plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
     if(!is.na(condQ)) plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
