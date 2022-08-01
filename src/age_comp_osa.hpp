@@ -818,6 +818,13 @@ Type get_acomp_ll(vector<Type> paa_obs, vector<Type> paa_pred, Type Neff, int ag
       //NO OSA available!
       ll = dzinf_logisticnormal_2(paa_obs, p, age_comp_pars, keep, 1, 0);
     }
+    if(age_comp_model == 10)
+    {
+      //multivariate Tweedie. 2 parameters
+      //NO OSA available!
+      vector<Type> temp_n = Neff * paa_obs;
+      ll = dmvtweedie(temp_n, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), 1);
+    }
 
   return ll;
 }
