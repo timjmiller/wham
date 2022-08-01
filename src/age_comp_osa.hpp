@@ -353,6 +353,52 @@ Type ddirichlet(vector<Type> x, vector<Type> p, Type phi, data_indicator<vector<
   }
 }
 
+// multivariate-Tweedie
+template<class Type>
+Type dmvtweedie( vector<Type> x, vector<Type> prob, Type phi, Type power, int give_log=0 ){
+
+  // Pre-processing
+  int n_c = x.size();
+  vector<Type> p_exp(n_c);
+  vector<Type> p_obs(n_c);
+  Type Ntotal = x.sum();
+  p_exp = prob / prob.sum();
+
+  Type logres = 0;
+  for( int c=0; c<n_c; c++){
+    // dtweedie( Type y, Type mu, Type phi, Type p, int give_log=0 )
+    logres += dtweedie( x(c), p_exp(c)*Ntotal, phi, power, true );
+  }
+
+  if(give_log) return logres; else return exp(logres);
+}
+
+// Simulate from tweedie
+// Adapted from tweedie::rtweedie function in R
+template<class Type>
+Type rTweedie( Type mu, Type phi, Type power){
+ Type lambda = pow(mu, Type(2.0) - power) / (phi * (Type(2.0) - power));
+ Type alpha = (Type(2.0) - power) / (Type(1.0) - power);
+ Type gam = phi * (power - Type(1.0)) * pow(mu, power - Type(1.0));
+ Type N = rpois(lambda);
+ Type B = rgamma(-N * alpha, gam);   /// Using Shape-Scale parameterization
+ return B;
+}
+
+template<class Type>
+vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
+{
+  int Nint = CppAD::Integer(N);
+  int dim = p.size();
+  vector<Type> obs(dim);
+  //obs.setZero();
+  for(int i = 0; i < dim; i++)
+  {
+    obs(i) = rTweedie( N*p(i), phi, power );
+  }
+  return(obs);
+}
+
 //the usual D-M
 template<class Type>
 Type ddirmultinom(vector<Type> obs, vector<Type> alpha, int do_log)
