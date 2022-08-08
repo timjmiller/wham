@@ -142,8 +142,8 @@ set_selectivity = function(input, selectivity)
     for(b in 1:data$n_selblocks){
       if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] = -1
       if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] = -1
-      if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages+2+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
-      if(data$selblock_models[b] == 5) phase_selpars[b,data$n_ages+6+selectivity$fix_pars[[b]]] = selectivity$initial_pars[[b]]
+      if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages+2+selectivity$fix_pars[[b]]] = -1
+      if(data$selblock_models[b] == 5) phase_selpars[b,data$n_ages+6+selectivity$fix_pars[[b]]] = -1
     }
   }
 
