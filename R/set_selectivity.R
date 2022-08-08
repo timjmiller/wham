@@ -176,9 +176,10 @@ set_selectivity = function(input, selectivity)
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 12)
   selpars_lo[,data$n_ages + 7] = 1 # min age
-  selpars_lo[,data$n_ages + 11:12] = -1
+  selpars_lo[,data$n_ages + 8:12] = -50 
   selpars_hi[,1:data$n_ages] = 1
-  selpars_hi[,data$n_ages + 1:12] = data$n_ages
+  selpars_hi[,data$n_ages + 1:7] = data$n_ages
+  selpars_hi[,data$n_ages + 8:12] = 50 
   
   temp = matrix(NA, data$n_selblocks, data$n_ages + 12)
   temp[which(phase_selpars>0)] = 1:sum(phase_selpars>0)

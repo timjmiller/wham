@@ -222,8 +222,9 @@ Type objective_function<Type>::operator() ()
     selpars_re_mats(b) = tmp2;
 
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
-    if(selblock_models(b) == 2) jstart = n_ages;
+    if(selblock_models(b) == 2 | selblock_models(b) == 4) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2;
+    if(selblock_models(b) == 5) jstart = n_ages + 6;
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
@@ -298,7 +299,7 @@ Type objective_function<Type>::operator() ()
     for(int j=jstart; j<(jstart+n_selpars(b)); j++){ // transform from logit-scale
       for(int i=0; i<n_years_model; i++){
         tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-(logit_selpars(b,j) + selpars_re_mats(b).matrix()(i,j-jstart))));
-      }
+	  }
     }
     selpars(b) = tmp1;
   }
