@@ -60,20 +60,49 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
             }
           }
         }
-        else //model 4: declining logistic
+        else 
         {
-          for(int y = 0; y < n_years; y++)
-          {
-            Type a50 = selpars(b)(y,0); // a50 parameter in year y
-            Type k = selpars(b)(y,1); //  1/slope in year y
-            Type age = 0.0;
-            for (int a = 0; a < n_ages; a++)
-            {
-              age += 1.0;
-              tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
-            }
-            for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
-          }
+			if(selblock_models(b) == 4) {//model 4: declining logistic
+			  for(int y = 0; y < n_years; y++)
+			  {
+				Type a50 = selpars(b)(y,0); // a50 parameter in year y
+				Type k = selpars(b)(y,1); //  1/slope in year y
+				Type age = 0.0;
+				for (int a = 0; a < n_ages; a++)
+				{
+				  age += 1.0;
+				  tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
+				}
+				for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
+			  }
+			} else { // double normal
+				for(int y = 0; y < n_years; y++)
+				  {
+					Type p_1 = selpars(b)(y,0); // 
+					Type p_2 = selpars(b)(y,1); // 
+					Type p_3 = selpars(b)(y,2);
+					Type p_4 = selpars(b)(y,3);
+					Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
+					Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
+					Type age = 0.0;
+					Type binwidth = 1;
+					Type gammax = p_1 + binwidth + (0.99*n_ages - p_1 - binwidth)/(1 + exp(-p_2));
+					Type alpha = 0.0;
+					Type beta = 0.0;
+					Type j_1 = 0.0;
+					Type j_2 = 0.0;
+					Type amin = 1;
+					for (int a = 0; a < n_ages; a++)
+					{
+					  age += 1.0;
+					  alpha = p_5 + (1 - p_5)*(exp(-pow(age - p_1, 2)/exp(p_3)) - exp(-pow(amin - p_1,2)/exp(p_3)))/(1-exp(-pow(amin - p_1,2)/exp(p_3)));
+					  beta = 1 + (p_6 - 1)*(exp(-pow(age - gammax,2)/exp(p_4)) - 1)/(exp(-pow(n_ages - gammax,2)/exp(p_4)) - 1);
+					  j_1 = 1/(1 + exp(-20*(age - p_1)/(1  + fabs(age - p_1))));
+					  j_2 = 1/(1 + exp(-20*(age - gammax)/(1  + fabs(age - gammax))));
+					  tmp(y,a) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+					}
+				  }
+			}				
         }
       }
     }
