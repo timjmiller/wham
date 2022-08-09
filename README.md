@@ -58,7 +58,7 @@ new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
 
-If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, this should provide that
+If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:
 ```
 install.packages("tinytex")
 tinytex::install_tinytex()
@@ -68,7 +68,7 @@ tinytex::install_tinytex()
 
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
 
-Clean, runnable `.R` scripts for each vignette are also available in the `example_scripts` folder of the `wham` package install:
+Clean, runnable `.R` scripts for most vignettes are also available in the `example_scripts` folder of the `wham` package install:
 ```
 library(wham)
 wham.dir <- find.package("wham")

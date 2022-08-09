@@ -1,3 +1,19 @@
+wham 1.0.6.9000
+=========================
+
+### Minor improvements
+
+* Added ability to specify different F options for each year of projections to project_wham and prepare_projection [f763059](https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0)
+* Revised vignette on simulation studies [f763059](https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0)
+
+### Bug fixes
+
+* Fix bug in simulation of selectivity random effects with "ar1_y" or "ar1" option [190000c]https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655)
+* Fix bug in simulation of M random effects with "ar1_y" option [77bbd94](https://github.com/timjmiller/wham/commit/77bbd946e4881216a439933473d1c58b21c270c3)
+* Fix bug in check_projF which tests whether the F in projections is being specified correctly when FXSPR or F at catch is specified [c643d4b](https://github.com/timjmiller/wham/commit/c643d4ba8339c13dd4b9e3662aaa29f26d309624)
+* Fix index proportions at age data specification in basic_info [issue 64](https://github.com/timjmiller/wham/issues/64) [a3e3afc](https://github.com/timjmiller/wham/commit/a3e3afc9b23e2ca4e3d369581dfcf2b33732686c)
+* Fix age of full selection for N1_model = 1 [issue 56](https://github.com/timjmiller/wham/issues/56) [865ca3d](https://github.com/timjmiller/wham/commit/865ca3d304c2d5eddcf044fe3d3776ada42b07aa).
+
 wham 1.0.6 (2022-04-08)
 =========================
 

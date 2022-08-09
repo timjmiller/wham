@@ -58,7 +58,7 @@ for(m in 1:n.mods){
   input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
   # Fit model
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=T, do.osa=T, MakeADFun.silent = TRUE))
+  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=T, do.osa=F, MakeADFun.silent = TRUE))
   suppressWarnings(plot_wham_output(mod=mods[[m]], dir.main=tmp.dir))
 }
 # mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
