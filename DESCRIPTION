@@ -44,6 +44,8 @@ Imports:
     knitr (>= 1.37),
     pander (>= 0.6.4),
     kableExtra (>= 1.3.4)
+Remotes:
+    kaskr/adcomp/TMB
 LinkingTo:
     TMB, 
     RcppEigen

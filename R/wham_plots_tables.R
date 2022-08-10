@@ -84,7 +84,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   if("logcatch" %in% mod$osa$type){
-    dat <- subset(mod$osa, type=="logcatch")
+    dat <- subset(mod$osa, type == "logcatch")
     dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
@@ -142,6 +142,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     }
   }
   if("catchpaa" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type == "catchpaa")
     n.fleets <- mod$input$data$n_fleets
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
@@ -150,22 +151,15 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
       yind = which(mod$input$data$use_catch_paa[,f] ==1)
-      tmp = mod$osa[c(mod$input$data$keep_Cpaa[f,yind,]+1),]
       resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
-      resids[yind,] = tmp$residual
-      vals[yind,] = tmp$val
-      ages[yind,] = tmp$age
-      pyears[yind,] = mod$years[tmp$year]
-      cohorts[yind,] = tmp$cohort
-      if(mod$input$data$age_comp_model_fleets[f] %in% 3:7){
-        for(j in yind){
-          pos = which(vals[j,] > 1e-15)
-          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
-          resids[j,max(pos)] = NA #remove last age class
-        }
-      } else {
-        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      for(j in yind){
+        tmp = subset(dat, year == j & fleet == paste0("fleet_",f))
+        resids[j,tmp$age] = tmp$residual
+        vals[j,tmp$age] = tmp$val
+        ages[j,tmp$age] = tmp$age
+        pyears[j,tmp$age] = mod$years[tmp$year]
+        cohorts[j,tmp$age] = tmp$cohort
       }
 
       # set plot lims using max residual for any component (easier to compare if all the same)
@@ -236,7 +230,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   }
 
   if("logindex" %in% mod$osa$type){
-    dat <- subset(mod$osa, type=="logindex")
+    dat <- subset(mod$osa, type == "logindex")
     dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
@@ -298,10 +292,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     }
   }
   if("indexpaa" %in% mod$osa$type) {
-    dat <- subset(mod$osa, type=="indexpaa")
+    dat <- subset(mod$osa, type == "indexpaa")
     dat$fleet <- factor(as.character(dat$fleet))
     dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
-    dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
+    #dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
     
     n.indices <- mod$input$data$n_indices
     plot.colors = mypalette(n.indices)
@@ -312,22 +306,15 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
       yind = which(mod$input$data$use_index_paa[,i] ==1)
-      tmp = mod$osa[c(mod$input$data$keep_Ipaa[i,yind,]+1),]
       resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
-      resids[yind,] = tmp$residual
-      vals[yind,] = tmp$val
-      ages[yind,] = tmp$age
-      pyears[yind,] = mod$years[tmp$year]
-      cohorts[yind,] = tmp$cohort
-      if(mod$input$data$age_comp_model_indices[i] %in% 3:7){
-        for(j in yind){
-          pos = which(vals[j,] > 1e-15)
-          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
-          resids[j,max(pos)] = NA #remove last age class
-        }
-      } else {
-        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      for(j in yind){
+        tmp = subset(dat, year == j & fleet == paste0("index_",i))
+        resids[j,tmp$age] = tmp$residual
+        vals[j,tmp$age] = tmp$val
+        ages[j,tmp$age] = tmp$age
+        pyears[j,tmp$age] = mod$years[tmp$year]
+        cohorts[j,tmp$age] = tmp$cohort
       }
 
       # set plot lims using max residual for any component (easier to compare if all the same)
@@ -398,7 +385,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   }
 
   if(!all(mod$env$data$Ecov_model == 0)){
-    dat <- subset(mod$osa, type=="Ecov")
+    dat <- subset(mod$osa, type == "Ecov")
     dat$fleet <- factor(as.character(dat$fleet))
     n.fleets <- length(table(dat$fleet))
     plot.colors = mypalette(n.fleets)
@@ -1413,25 +1400,17 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	{
     yind = which(dat$use_catch_paa[,i] ==1)
     if(osa){
+      df = subset(mod$osa, type == "catchpaa")
       my.title <- "Age Comp OSA Quantile Residuals for Fleet "
       fname = paste0("Catch_age_comp_osa_resids_fleet_",i)
       resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
       vals = resids
-      temp = mod$osa[c(dat$keep_Cpaa[i,yind,]+1),]
-      
-      resids[yind,] = temp$residual
-      vals[yind,] = temp$val
-      #no residuals for zeros for continuous models
-      if(dat$age_comp_model_fleets[i] %in% 3:7) {
-        #temp$residual[which(temp$val < 1e-15)] = NA
-        for(j in yind){
-          pos = which(vals[j,] > 1e-15)
-          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
-          resids[j,max(pos)] = NA #remove last age class
-        }
+      for(j in yind){
+        tmp = subset(df, year == j & fleet == paste0("fleet_",i))
+        resids[j,tmp$age] = tmp$residual
+        vals[j,tmp$age] = tmp$val
+        if(dat$age_comp_model_fleets[i] < 3) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
       }
-      #remove last age class for multinom, dir-mult
-      if(dat$age_comp_model_fleets[i] %in% 1:2) resids[,NCOL(resids)] = NA 
 
       scale.resid.bubble.catch <- 2
     } else{
@@ -1493,25 +1472,18 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	{
     yind = which(dat$use_index_paa[,i] ==1)
     if(osa){
+      df = subset(mod$osa, type == "indexpaa")
       my.title <- "Age Comp OSA Quantile Residuals for Index "
       fname = paste0("Catch_age_comp_osa_resids_index_",i)
       resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
       vals = resids
-      temp = mod$osa[c(dat$keep_Ipaa[i,yind,]+1),]
-      
-      resids[yind,] = temp$residual
-      vals[yind,] = temp$val
-      #no residuals for zeros for continuous models
-      if(dat$age_comp_model_indices[i] %in% 3:7) {
-        #temp$residual[which(temp$val < 1e-15)] = NA
-        for(j in yind){
-          pos = which(vals[j,] > 1e-15)
-          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
-          resids[j,max(pos)] = NA #remove last age class
-        }
+      for(j in yind){
+        tmp = subset(df, year == j & fleet == paste0("index_",i))
+        print(tmp)
+        resids[j,tmp$age] = tmp$residual
+        vals[j,tmp$age] = tmp$val
+        if(dat$age_comp_model_indices[i] < 3) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
       }
-      #remove last age class for multinom, dir-mult
-      if(dat$age_comp_model_indices[i] %in% 1:2) resids[,NCOL(resids)] = NA 
       scale.resid.bubble.catch <- 2
     } else{
       acomp.obs = dat$index_paa[i,,]
