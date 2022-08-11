@@ -59,7 +59,8 @@ set_osa_obs = function(input)
       if(data$use_index_paa[y,i] == 1) 
       {
         obs_y = x[y,]
-        if(data$age_comp_model_indices[i] %in% 1:2) obs_y = obs_y * data$index_Neff[y,i]
+        #multinom, D-M, mvtweedie
+        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]
         res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
         obs_y = res[[1]]
         if(data$age_comp_model_indices[i] %in% 3:7) {
@@ -86,7 +87,8 @@ set_osa_obs = function(input)
       fleets = paste0("fleet_", 1:data$n_fleets)
       if(data$use_catch_paa[y,i] == 1) {
         obs_y = x[y,]
-        if(data$age_comp_model_fleets[i] %in% 1:2) obs_y = obs_y * data$catch_Neff[y,i]
+        #multinom, D-M, mvtweedie
+        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
         res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
         obs_y = res[[1]]
         
@@ -148,7 +150,7 @@ set_osa_obs = function(input)
         data$keep_Cpaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
         #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
         #subset for oneStepPredict can't include these
-        if(data$age_comp_model_fleets[i] >= 8) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
+        if(data$age_comp_model_fleets[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
       }
     }
   }
@@ -164,7 +166,7 @@ set_osa_obs = function(input)
         data$keep_Ipaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
         #if(data$age_comp_model_indices[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
         #subset for oneStepPredict can't include these
-        if(data$age_comp_model_indices[i] >= 8) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
+        if(data$age_comp_model_indices[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
       }
     }
   }
@@ -182,18 +184,17 @@ set_osa_obs = function(input)
   return(input)
 }
 
-
 transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE){
     #transforms paa obs for obsvec and appropriate for OSA residuals once model is fit.
     #remove zeros for dirichlet and logistic-normal
     #transform logistic-normal obs to MVN obs (analogous to log-catch and log-indices)
     all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0",
     "logistic-normal-miss0", "logistic-normal-ar1-miss0", "logistic-normal-pool0",
-    "logistic-normal-01-infl","logistic-normal-01-infl-2par")
+    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie")
   # if model %in% 1:2 do nothing for multinomial and D-m
   is_pos = x> zero.criteria
   pos_ind = which(is_pos)
-  if(model>2){
+  if(model>2 & model<10){ #not multinom, D-M, mvtweedie
     npos = sum(is_pos)
     zero_ind = which(!is_pos)
     if(npos>1){ #need at least 2 categories

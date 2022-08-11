@@ -1,4 +1,11 @@
-#' Calculate Mohn's rho for a WHAM model with peels
+#' Calculate one-step-ahead residuals
+#' 
+#' Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
+#' can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
+#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). Certain OSA residual options
+#' are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. See details below.
+#' It is not recommended to run this function (or \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}) with any random effects and
+#' mvtweedie age composition likelihoods as the extensive computational demand. An error will be thrown in such cases.
 #'
 #' @param model A fit WHAM model, output from \code{\link{fit_wham}}.
 #'
@@ -28,6 +35,8 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     stop(paste0("Only osa methods allowed currently in WHAM are oneStepGaussianoffMode and oneStepGaussian"))
   }
   if(!model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
+  if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
+  if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   
   cat("Doing OSA residuals...\n");
   input = model$input
@@ -68,7 +77,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
   }
   if(length(subset.agecomp)){
     cat("Doing OSA for catch and index age comp observations...\n")
-    if(!is.null(input$data$condition_no_osa)) cat("OSA not available for some age comp likelihoods...\n")
+    if(!is.null(input$data$condition_no_osa)) cat("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
     conditional. = c(conditional., input$data$condition_no_osa)
     cat("Doing OSA for age comp observations...\n")
     model$OSA.agecomp = suppressWarnings(TMB::oneStepPredict(

@@ -468,7 +468,7 @@ mypalette = function(n){
 
 fit.summary.text.plot.fn <- function(mod){
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
-    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie")
   selmods = c("Age-specific", "Logistic(+)", "Double-Logistic", "Logistic(-)")
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
@@ -551,7 +551,7 @@ plot.ll.table.fn <- function(mod,plot.colors){
   names(obs.dists) = names(obs.lls)
   obs.dists[grep("Catch", names(obs.lls))] = "log(x) ~ Gaussian"
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
-    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie")
   obs.dists[paste0("Fleet ", 1:n_fleets, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
   obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
 
@@ -1409,7 +1409,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
         tmp = subset(df, year == j & fleet == paste0("fleet_",i))
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
-        if(dat$age_comp_model_fleets[i] < 3) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+        if(dat$age_comp_model_fleets[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
       }
 
       scale.resid.bubble.catch <- 2
@@ -1482,7 +1482,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
         print(tmp)
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
-        if(dat$age_comp_model_indices[i] < 3) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+        if(dat$age_comp_model_indices[i] < c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
       }
       scale.resid.bubble.catch <- 2
     } else{

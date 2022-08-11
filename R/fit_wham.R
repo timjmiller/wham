@@ -120,7 +120,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       #  rm("err")
       #}
     }
-
+    
     # one-step-ahead residuals
     if(do.osa & mod$is_sdrep){
       mod <- make_osa_residuals(mod)

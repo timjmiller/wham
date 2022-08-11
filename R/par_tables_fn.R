@@ -276,6 +276,14 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
             ci(pars[i,1], pars_sd[i,1], type = "exp"),
             ci(pars[i,2], pars_sd[i,2], type = "exp"))
         }
+        if(age_comp_models[i] == 10){
+          fe.names = c(fe.names, paste0(startname, i , " age comp, MV Tweedie: ",
+            c("$\\phi$", "power")))
+          fe.vals = c(fe.vals, exp(pars[i,1:2]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            1 + ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
+        }
       }
     }
     return(list(fe.names, fe.vals, fe.cis))

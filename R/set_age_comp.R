@@ -50,19 +50,13 @@ set_age_comp = function(input, age_comp)
       }
     }
   }
-  #data$n_age_comp_pars_fleets = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets]
-  #data$n_age_comp_pars_indices = c(0,1,1,3,1,2,1)[data$age_comp_model_indices]
 
   # age comp pars
-  #n_catch_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_fleets[which(apply(data$use_catch_paa,2,sum)>0)]]
-  #n_index_acomp_pars = c(0,1,1,3,1,2,1)[data$age_comp_model_indices[which(apply(data$use_index_paa,2,sum)>0)]]
-  par$catch_paa_pars = matrix(0,data$n_fleets, 3) #rep(0, sum(n_catch_acomp_pars))
-  par$index_paa_pars = matrix(0,data$n_indices, 3) #rep(0, sum(n_catch_acomp_pars))
-  #par$catch_paa_pars = rep(0, sum(n_catch_acomp_pars))
-  #par$index_paa_pars = rep(0, sum(n_index_acomp_pars))
+  par$catch_paa_pars = matrix(0,data$n_fleets, 3) 
+  par$index_paa_pars = matrix(0,data$n_indices, 3) 
   neff <- data$catch_Neff
   neff[neff <= 0] <- 1
-  catch_neff <- apply(neff,2,mean, na.rm=TRUE)#[which(apply(data$use_catch_paa,2,sum)>0)]
+  catch_neff <- apply(neff,2,mean, na.rm=TRUE)
   ind = which(data$age_comp_model_fleets %in% 5:7)
   par$catch_paa_pars[ind,1] <- 0.5*log(catch_neff[ind])
   neff <- data$index_Neff
@@ -89,18 +83,6 @@ set_age_comp = function(input, age_comp)
   nest = sum(map$catch_paa_pars,na.rm=TRUE)
   if(nest) map$catch_paa_pars[which(!is.na(map$catch_paa_pars))] = 1:nest
   map$catch_paa_pars = factor(map$catch_paa_pars)
-
-#  if(all(data$age_comp_model_fleets %in% c(5,7))){ # start tau/neff at 0
-#    neff <- data$catch_Neff
-#    neff[neff <= 0] <- NA
-#    par$catch_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
-#  }  
-#  if(all(data$age_comp_model_indices %in% c(5,7))){ # start tau/neff at 0
-#    neff <- data$index_Neff
-#    neff[neff <= 0] <- NA
-#    neff <- apply(neff,2,mean, na.rm=TRUE)[which(apply(data$use_index_paa,2,sum)>0)]
-#    par$index_paa_pars = 0.5*log(neff) # exp(age_comp_pars(0)-0.5*log(Neff))
-#  }
 
 	input$data = data
 	input$par = par

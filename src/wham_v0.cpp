@@ -2,9 +2,8 @@
 #include <TMB.hpp>
 #include <iostream>
 #include "helper_functions.hpp"
-#include "age_comp_osa_rev.hpp"
-//#include "age_comp_sim.hpp"
-#include "age_comp_sim_rev.hpp"
+#include "age_comp_osa.hpp"
+#include "age_comp_sim.hpp"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
