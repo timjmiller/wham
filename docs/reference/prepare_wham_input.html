@@ -536,6 +536,9 @@ Dirichlet, treating zero observations as missing. 1 parameter.
     <dt><code>"logistic-normal-01-infl-2par"</code></dt>
 <dd><p>Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.</p></dd>
 
+    <dt><code>"mvtweedie"</code></dt>
+<dd><p>Multivariate-tweedie, where the product of composition proportions and input sample sizes follows a distribution with mean equal to the product of predicted proportions and input sample size, and other parameters define the ratio of effective to input sample size (with is bounded 0 to Inf) and the probability of zeros. 2 parameters. No OSA residuals.</p></dd>
+
   
 </dl><p>One-step-ahead residuals will be calculated for all but the last two options when <code>do.osa=TRUE</code> (Nielsen et al. in prep.). An age composition model needs
 to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 

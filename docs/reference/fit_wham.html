@@ -184,8 +184,8 @@ stats::nlminb. Runs retrospective analysis if specified."><!-- mathjax --><scrip
 <dd><p>T/F, calculate one-step-ahead (OSA) residuals? Default = <code>TRUE</code>. See details. Returned
 as <code>mod$osa$residual</code>.</p></dd>
 <dt>osa.opts</dt>
-<dd><p>list of options for calculating OSA residuals, passed to <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>.
-Default: <code>osa.opts = list(method="cdf", parallel=TRUE)</code>. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.</p></dd>
+<dd><p>list of 2 options (method, parallel) for calculating OSA residuals, passed to <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>.
+Default: <code>osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)</code>. See <code><a href="make_osa_residuals.html">make_osa_residuals</a></code>.</p></dd>
 <dt>do.post.samp</dt>
 <dd><p>T/F, obtain sample from posterior of random effects? Default = <code>TRUE</code>. NOT YET IMPLEMENTED.</p></dd>
 <dt>model</dt>

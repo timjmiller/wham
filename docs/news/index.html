@@ -118,8 +118,35 @@
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.6.9000" id="wham-1069000">wham 1.0.6.9000<a class="anchor" aria-label="anchor" href="#wham-1069000"></a></h2>
 <div class="section level4">
+<h4 id="major-improvements-1-0-6-9000">Major improvements<a class="anchor" aria-label="anchor" href="#major-improvements-1-0-6-9000"></a></h4>
+<ul><li>Improved stability and reliability of one-step-ahead residuals for
+age compositon observations for most log-likelihoods.</li>
+<li>Multivariate Tweedie age composition likelihood option added
+(Thorson et al. in press) <a href="https://github.com/timjmiller/wham/commit/6f77c164289b029725ecc0882ec50865832b696f" class="external-link">6f77c16</a>.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="minor-improvements-1-0-6-9000">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-1-0-6-9000"></a></h4>
+<ul><li>Added exported make_osa_residuals function that can make OSA
+residuals from an object returned by fit_wham where it is also used
+internally with do.osa=TRUE.</li>
+<li>Added ability to specify different F options for each year of
+projections to project_wham and prepare_projection <a href="https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0" class="external-link">f763059</a>
+</li>
+<li>Revised vignette on simulation studies <a href="https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0" class="external-link">f763059</a>
+</li>
+</ul></div>
+<div class="section level4">
 <h4 id="bug-fixes-1-0-6-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-0-6-9000"></a></h4>
-<ul><li>Fix age of full selection for N1_model = 1 [issue 56][<a href="https://github.com/timjmiller/wham/issues/56" class="external-link uri">https://github.com/timjmiller/wham/issues/56</a>].</li>
+<ul><li>Fix bug in simulation of selectivity random effects with “ar1_y” or
+“ar1” option [190000c]<a href="https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655" class="external-link uri">https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655</a>)</li>
+<li>Fix bug in simulation of M random effects with “ar1_y” option <a href="https://github.com/timjmiller/wham/commit/77bbd946e4881216a439933473d1c58b21c270c3" class="external-link">77bbd94</a>
+</li>
+<li>Fix bug in check_projF which tests whether the F in projections is
+being specified correctly when FXSPR or F at catch is specified <a href="https://github.com/timjmiller/wham/commit/c643d4ba8339c13dd4b9e3662aaa29f26d309624" class="external-link">c643d4b</a>
+</li>
+<li>Fix index proportions at age data specification in basic_info <a href="https://github.com/timjmiller/wham/issues/64" class="external-link">issue 64</a> <a href="https://github.com/timjmiller/wham/commit/a3e3afc9b23e2ca4e3d369581dfcf2b33732686c" class="external-link">a3e3afc</a>
+</li>
+<li>Fix age of full selection for N1_model = 1 <a href="https://github.com/timjmiller/wham/issues/56" class="external-link">issue 56</a> <a href="https://github.com/timjmiller/wham/commit/865ca3d304c2d5eddcf044fe3d3776ada42b07aa" class="external-link">865ca3d</a>.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -127,7 +154,7 @@
 <div class="section level4">
 <h4 id="major-improvements-1-0-6">Major improvements<a class="anchor" aria-label="anchor" href="#major-improvements-1-0-6"></a></h4>
 <ul><li>One-step-ahead prediction quantile residuals for age compositon
-observations for most log-likelihoods (Nielsen et al. in prep.) <a href="https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203" class="external-link">80e3bba</a>.</li>
+observations for most log-likelihoods (Trijoulet et al. in review) <a href="https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203" class="external-link">80e3bba</a>.</li>
 <li>Can specify a prior distribution on fully-selected catchability
 (logit-scale) which is then estimated as a random effect <a href="https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540" class="external-link">fcbc604</a>.</li>
 <li>Auto-regressive random effects for fully-selected catchability <a href="https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540" class="external-link">fcbc604</a>.</li>

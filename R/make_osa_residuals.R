@@ -11,15 +11,15 @@
 #'
 #' @return the same fit TMB model with additional elements for osa residuals:
 #'   \describe{
-#'     \item{\code{$OSA.Ecov}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict} for environmental observations, if applicable.}
-#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict} for aggregate catch and index observations, if applicable.}
-#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict} for age composition observations, if applicable.}
+#'     \item{\code{$OSA.Ecov}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for environmental observations, if applicable.}
+#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for aggregate catch and index observations, if applicable.}
+#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for age composition observations, if applicable.}
 #'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa=TRUE})}
 #'   }
 #'
 #' @export
 #'
-#' @seealso \code{\link{fit_wham}}}
+#' @seealso \code{\link{fit_wham}}
 #'
 #' @examples
 #' \dontrun{

@@ -49,8 +49,8 @@ fit_wham(
 \item{do.osa}{T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
 as \code{mod$osa$residual}.}
 
-\item{osa.opts}{list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
-Default: \code{osa.opts = list(method="cdf", parallel=TRUE)}. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.}
+\item{osa.opts}{list of 2 options (method, parallel) for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
+Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}. See \code{\link{make_osa_residuals}}.}
 
 \item{do.post.samp}{T/F, obtain sample from posterior of random effects? Default = \code{TRUE}. NOT YET IMPLEMENTED.}
 
