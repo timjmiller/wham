@@ -27,6 +27,7 @@ set_osa_obs = function(input)
 
   #step through time adding data
   for(y in 1:data$n_years_model){
+    
     # 2. log index catch
     x <- as.data.frame(data$agg_indices)
     x[data$use_indices == 0] <- NA # only include index data to fit in obsvec
@@ -37,11 +38,6 @@ set_osa_obs = function(input)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
-    #tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
-      #tmp <- tmp[complete.cases(tmp),]
-      #tmp$val <- log(tmp$val) # all obs of 0 catch should have use_indices==0, turned to NA, and already removed
-      #tmp$age <- NA
-      #tmp$type <- "logindex"
 
     # 3. log fleet catch
     x <- as.data.frame(data$agg_catch)
@@ -53,76 +49,64 @@ set_osa_obs = function(input)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
-    #x$year <- 1:data$n_years_catch
-    #tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
-    #tmp <- tmp[complete.cases(tmp),]  
-    #tmp$val <- log(tmp$val) # all obs of 0 catch should have use_agg_catch==0, turned to NA, and removed
-    #tmp$age <- NA
-    #tmp$type <- "logcatch"
-    #obs <- rbind(obs, tmp[, obs.colnames])
-  
+
     # 4. paa index
     for(i in 1:data$n_indices){
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$index_paa[i,,]
       x[which(data$use_index_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
       indices = paste0("index_", 1:data$n_indices)
-      if(data$use_index_paa[y,i]!=0) 
+      if(data$use_index_paa[y,i] == 1) 
       {
-        tmp = data.frame(year = y, fleet = indices[i], age = 1:data$n_ages, type = 'indexpaa', val = x[y,])
-        obs <- rbind(obs, tmp[, obs.colnames])
+        obs_y = x[y,]
+        #multinom, D-M, mvtweedie
+        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]
+        res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
+        obs_y = res[[1]]
+        if(data$age_comp_model_indices[i] %in% 3:7) {
+          ind = res[[2]]
+        } else ind = 1:data$n_ages
+        if(length(ind)) {
+          tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages)[ind], type = 'indexpaa', val = obs_y[ind])
+          #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
+          obs <- rbind(obs, tmp[, obs.colnames])
+        } else {
+          data$use_index_paa[y,i] <- 0 #set to not use because there are not enough positive values 
+          cat(paste0("Setting data$use_index_paa to 0 for index ", i, " and year ", y, "because not enough positive values. \n"))
+        }
       }
     }
 
 
     # 5. paa catch
-    #dimnames(data$catch_paa) <- list(
-    #  fleet=paste0("fleet_", 1:data$n_fleets),
-    #  year=1:data$n_years_catch,
-    #  age=1:data$n_ages)  
     for(i in 1:data$n_fleets){
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$catch_paa[i,,]
       x[which(data$use_catch_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
       #x = as.data.frame(x)
       fleets = paste0("fleet_", 1:data$n_fleets)
-      if(data$use_catch_paa[y,i]!=0) {
-        tmp = data.frame(year = y, fleet = fleets[i], age = 1:data$n_ages, type = 'catchpaa', val = x[y,])
-        obs <- rbind(obs, tmp[, obs.colnames])
+      if(data$use_catch_paa[y,i] == 1) {
+        obs_y = x[y,]
+        #multinom, D-M, mvtweedie
+        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
+        res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
+        obs_y = res[[1]]
+        
+        if(data$age_comp_model_fleets[i] %in% 3:7) {
+          ind = res[[2]]
+        } else ind = 1:data$n_ages
+
+        if(length(ind)) {
+          tmp = data.frame(year = y, fleet = fleets[i], age = (1:data$n_ages)[ind], type = 'catchpaa', val = obs_y[ind])
+          obs <- rbind(obs, tmp[, obs.colnames])
+        } else {
+          data$use_catch_paa[y,i] <- 0 #set to not use because there are not enough positive values
+          cat(paste0("Setting data$use_catch_paa to 0 for fleet ", i, " and year ", y, "because not enough positive values. \n"))
+        }
       }
     }
-    #colnames(x) <- paste0(1:data$n_ages)
-    #x$year <- 1:data$n_years_catch # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-    #tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="age")
-    #tmp$fleet = dimnames(data$catch_paa)[[1]][i]
-    #tmp$type <- "catchpaa"
-    #tmp <- tmp[complete.cases(tmp),]
-    #obs = rbind(obs, tmp[,obs.colnames])
 
-  # # 5. paa index
-  #dimnames(data$index_paa) <- list(
-  #  fleet=paste0("index_", 1:data$n_indices),
-  #  year=1:data$n_years_indices,
-  #  age=1:data$n_ages)
-  #for(i in 1:data$n_indices){
-  #  x <- data$index_paa[i,,]
-  #  x[which(data$use_index_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
-  #  x = as.data.frame(x)
-  #  colnames(x) <- paste0(1:data$n_ages)
-  #  x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
-  #  tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="age")
-  #  tmp$fleet = dimnames(data$index_paa)[[1]][i]
-  #  tmp$type <- "indexpaa"
-  #  tmp <- tmp[complete.cases(tmp),]
-  #  obs = rbind(obs, tmp[,obs.colnames])
   }
-  obs_levels <- paste0("fleet_", 1:data$n_fleets)
-  obs_levels <- c(obs_levels, paste0("index_", 1:data$n_indices))
-  obs_levels <- c(obs_levels, paste0("Ecov_", 1:data$n_Ecov))
-  # order by year, fleet, age, type
-  #obs$fleet <- factor(obs$fleet, levels=obs_levels)
-  #o <- order(obs$fleet, obs$type, as.numeric(obs$year), as.numeric(obs$age))
-  #obs <- obs[o,]
 
   # calculate obsvec indices in keep arrays
   obs$ind <- 1:dim(obs)[1]
@@ -157,41 +141,97 @@ set_osa_obs = function(input)
   data$condition_no_osa = NULL #to condition on age comps for likelihoods we don't have osa residuals set up for.
   data$subset_discrete_osa = NULL #age comp obs for likelihoods we need to specify as discrete obs.
 
-  data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_model, data$n_ages))
+  data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_model, 2))
   for(i in 1:data$n_fleets) {
     for(y in 1:data$n_years_model) if(data$use_catch_paa[y,i]==1){
-      data$keep_Cpaa[i,y,] <- subset(obs, year == y & type=='catchpaa' & fleet==paste0("fleet_",i))$ind
-      #subset for oneStepPredict can't include these
-      if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, data$keep_Cpaa[i,y,])
-      if(data$age_comp_model_fleets[i] %in% 8:9) data$condition_no_osa = c(data$condition_no_osa, data$keep_Cpaa[i,y,])
+      tmp = subset(obs, year == y & type=='catchpaa' & fleet==paste0("fleet_",i))
+      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
+      {
+        data$keep_Cpaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
+        #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
+        #subset for oneStepPredict can't include these
+        if(data$age_comp_model_fleets[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
+      }
     }
   }
   # subtract 1 bc TMB indexes from 0
-  data$keep_Cpaa <- data$keep_Cpaa - 1
+  data$keep_Cpaa[,,1] <- data$keep_Cpaa[,,1] - 1
   
-  data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_model, data$n_ages))
+  data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_model, 2))
   for(i in 1:data$n_indices) {
     for(y in 1:data$n_years_model) if(data$use_index_paa[y,i]==1){
-      data$keep_Ipaa[i,y,] <- subset(obs, year == y & type=='indexpaa' & fleet==paste0("index_",i))$ind 
-      #subset for oneStepPredict can't include these
-      if(data$age_comp_model_indices[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, data$keep_Ipaa[i,y,])
-      if(data$age_comp_model_indices[i] %in% 8:9) data$condition_no_osa = c(data$condition_no_osa, data$keep_Ipaa[i,y,])
+      tmp = subset(obs, year == y & type=='indexpaa' & fleet==paste0("index_",i))
+      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
+      {
+        data$keep_Ipaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
+        #if(data$age_comp_model_indices[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
+        #subset for oneStepPredict can't include these
+        if(data$age_comp_model_indices[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp$ind)
+      }
     }
   }
   # subtract 1 bc TMB indexes from 0
-  data$keep_Ipaa <- data$keep_Ipaa - 1
+  data$keep_Ipaa[,,1] <- data$keep_Ipaa[,,1] - 1
   
-  #these are the models in order
-  #all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0","logistic-normal-miss0","logistic-normal-ar1-miss0",
-  #  "logistic-normal-pool0","logistic-normal-01-infl","logistic-normal-01-infl-2par")
-
   obs$cohort = as.numeric(obs$year) - as.numeric(obs$age)   #make cohort column. could be useful for analyzing age comp OSA residuals
   data$obs <- obs
   data$obsvec <- obs$val
+  data$agesvec <- obs$age #potentially needed for AR1 sigma correlation of logistic-normal paa obs. 
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
   data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 
-
   input$data = data
   return(input)
+}
+
+transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE){
+    #transforms paa obs for obsvec and appropriate for OSA residuals once model is fit.
+    #remove zeros for dirichlet and logistic-normal
+    #transform logistic-normal obs to MVN obs (analogous to log-catch and log-indices)
+    all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0",
+    "logistic-normal-miss0", "logistic-normal-ar1-miss0", "logistic-normal-pool0",
+    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie")
+  # if model %in% 1:2 do nothing for multinomial and D-m
+  is_pos = x> zero.criteria
+  pos_ind = which(is_pos)
+  if(model>2 & model<10){ #not multinom, D-M, mvtweedie
+    npos = sum(is_pos)
+    zero_ind = which(!is_pos)
+    if(npos>1){ #need at least 2 categories
+      if(length(zero_ind)){
+        x_pos = x[pos_ind] # 0s missing or pooled
+        # if(model %in% c(3,5:6)) x_pos = x[pos_ind] # 0s missing
+        # if(model %in% c(4,7)) { # 0s pooled
+        #   index = 0
+        #   x_pos = rep(NA,npos)
+        #   for(a in 1:length(x))
+        #   {
+        #     x_pos[index] = x_pos[index] + x[a]; #just adding zeros. Not necessary? Only necessary for expected proportions
+        #     if((x[a] > zero.criteria) & index < npos) index = index+ 1
+        #   }
+        # }
+        x[zero_ind] <- NA
+      } else x_pos = x
+
+      #transform to multivariate normal obs for logistic-normal.
+      #Necessary because TMB::oneStepPredict needs observation transformations on R side.
+      #Conditional distribution format for logistic-normal would be needed to avoid this. 
+      if(model %in% 5:7){
+        y = log(x_pos[-length(x_pos)])
+        if(do_mult){ #multiplicative
+          for(i in 1:length(y)) {
+            y[i] = y[i] - log(1-sum(x_pos[1:i]))
+          }
+        } else { #additive
+          y = y - log(x_pos[length(x_pos)])
+        }
+        y = c(y,NA) #NA for last category which = 1 - sum of the other categories
+        x_pos = y
+      }
+      x[pos_ind] = x_pos
+    } else { #only 1 positive category
+      x[] = NA
+    }
+  }
+  return(list(x, pos_ind))
 }

@@ -28,7 +28,7 @@ input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec", cor="iid"))
-m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
+m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #Like m1, but change age comp likelihoods to logistic normal
 input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -38,7 +38,7 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
-m2 <- suppressWarnings(fit_wham(input2, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
+m2 <- suppressWarnings(fit_wham(input2, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #full state-space model, abundance is the state vector
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -47,7 +47,7 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"))
-m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
+m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #Like m3, but change age comp likelihoods to logistic normal
 input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -57,7 +57,7 @@ input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0")
-m4 <- suppressWarnings(fit_wham(input4, do.osa = F, MakeADFun.silent=TRUE)) # turn off OSA residuals to save time
+m4 <- suppressWarnings(fit_wham(input4, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 # Save list of all fit models
 mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
