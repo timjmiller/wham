@@ -1,4 +1,4 @@
-#define TMB_LIB_INIT R_init_wham
+0#define TMB_LIB_INIT R_init_wham
 #include <TMB.hpp>
 #include "all.hpp"
 
@@ -664,8 +664,8 @@ Type objective_function<Type>::operator() ()
     nll += nll_N1.sum();
     REPORT(nll_N1);
     SIMULATE if(do_simulate_N==1){
-      N1_par = simulate_N1(N1_model, log_N1, N1_repars);
-      REPORT(N1_par);
+      log_N1 = simulate_N1(N1_model, log_N1, N1_repars);
+      REPORT(log_N1);
     }
   }
   //n_stocks x n_regions x n_ages

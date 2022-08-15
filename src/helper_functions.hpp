@@ -2,6 +2,10 @@ template <class Type>
 Type square(Type x){return x*x;}
 #define see(object) std::cout << #object ":\n" << object << "\n";
 
+// general inverse logit fn
+template <class Type>
+Type invlogit(Type x, Type lo, Type hi){return lo + (hi-lo) * invlogit(x);}
+
 // transformation to ensure correlation parameters are between -1 and 1
 template <class Type>
 Type rho_trans(Type x){return Type(2)/(Type(1) + exp(-Type(2) * x)) - Type(1);}
