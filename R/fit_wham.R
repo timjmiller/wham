@@ -26,8 +26,8 @@
 #' @param n.peels integer, number of peels to use in retrospective analysis. Default = \code{7}.
 #' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
 #'   as \code{mod$osa$residual}.
-#' @param osa.opts list of options for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
-#'   Default: \code{osa.opts = list(method="cdf", parallel=TRUE)}. Discrete versions used for multinomial and Dirichlet-multinomial age composition observations.
+#' @param osa.opts list of 2 options (method, parallel) for calculating OSA residuals, passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
+#'   Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}. See \code{\link{make_osa_residuals}}.
 #' @param do.post.samp T/F, obtain sample from posterior of random effects? Default = \code{TRUE}. NOT YET IMPLEMENTED.
 #' @param model (optional), a previously fit wham model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to \code{\link{fit_tmb}}. Runs internal function \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
@@ -120,42 +120,12 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       #  rm("err")
       #}
     }
-
+    
     # one-step-ahead residuals
-    if(do.osa){
-      if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
-        cat("Doing OSA residuals...\n");
-        mod$env$data$do_osa = 1
-        full_set = 1:length(input$data$obsvec)
-        input$data$obs$residual = NA
-        if(!is.null(input$data$condition_no_osa)) cat("OSA not available for some age comp likelihoods...\n")
-        #first do continuous obs, condition on obs without osa (probably none)
-        subset. = setdiff(full_set, c(input$data$subset_discrete_osa, input$data$conditional_no_osa))
-        OSA.continuous <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
-                                    data.term.indicator="keep",
-                                    method=osa.opts$method,
-                                    discrete=FALSE, parallel=osa.opts$parallel,
-                                    subset = subset., conditional = input$data$conditional_no_osa))
-        input$data$obs$residual[subset.] <- OSA.continuous$residual;
-        mod$OSA.continuous = OSA.continuous
-        if(!is.null(input$data$subset_discrete_osa)) {
-          cat("Doing OSA for discrete age comp likelihoods...\n")
-          conditional = union(input$data$condition_no_osa, subset.) #all with continuous and without osa 
-          subset. = input$data$subset_discrete_osa
-          #first do continuous
-          OSA.discrete <- suppressWarnings(TMB::oneStepPredict(obj=mod, observation.name="obsvec",
-                                      data.term.indicator="keep",
-                                      method= osa.opts$method,
-                                      discrete=TRUE, parallel=osa.opts$parallel,
-                                      conditional = conditional))
-          input$data$obs$residual[subset.] <- OSA.discrete$residual;
-          mod$OSA.discrete = OSA.discrete
-        }
-        mod$osa <- input$data$obs
-        mod$env$data$do_osa = 0 #set this back to not using OSA likelihoods
-      } else warning(paste("","** Did not do OSA residual analyses. **",
-      "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
-    }
+    if(do.osa & mod$is_sdrep){
+      mod <- make_osa_residuals(mod)
+    } else warning(paste("","** Did not do OSA residual analyses. **",
+      "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",sep='\n'))
 
     # projections, calls prepare_projection + fit_wham(do.proj=F)
     if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)

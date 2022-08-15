@@ -643,7 +643,7 @@ Type objective_function<Type>::operator() ()
   REPORT(growth_a);
   REPORT(growth_re);
   REPORT(growth_repars);
-  if(do_post_samp(1) == 1) ADREPORT(growth_re);
+  //if(do_post_samp(1) == 1) ADREPORT(growth_re);
 
   // LAA re section
   Type nll_LAA = Type(0);
@@ -696,7 +696,7 @@ Type objective_function<Type>::operator() ()
   REPORT(LAA_a);
   REPORT(LAA_re);
   REPORT(LAA_repars);
-  if(do_post_samp(1) == 1) ADREPORT(LAA_re);
+  //if(do_post_samp(1) == 1) ADREPORT(LAA_re);
 
   // Construct growth parameters per year NEWG
   array<Type> GW_par(n_years_model + n_years_proj,n_ages,n_growth_par); // array for growth parameters, either for 1 and 2
@@ -837,7 +837,7 @@ Type objective_function<Type>::operator() ()
   REPORT(LW_a);
   REPORT(LW_re);
   REPORT(LW_repars);
-  if(do_post_samp(1) == 1) ADREPORT(LW_re);
+  //if(do_post_samp(1) == 1) ADREPORT(LW_re);
 
   // Construct LW parameters per year NEWG
   array<Type> LW_par(n_years_model + n_years_proj,n_ages,n_LW_par); // array for LW parameters
