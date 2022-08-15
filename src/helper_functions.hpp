@@ -29,7 +29,7 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 	Type len_bin = lengths(1) - lengths(0);
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
-    { //logistic or double-logistic
+    { 
       if(selblock_models(b) == 2)
       { //increasing age-logistic
         for(int y = 0; y < n_years; y++)
@@ -46,33 +46,22 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
         }
       }
       else
-      { //age double normal
+      { 
         if(selblock_models(b) == 3)
         {
+		  // double logistic
           for(int y = 0; y < n_years; y++)
           {
-            Type p_1 = selpars(b)(y,0); // 
-            Type p_2 = selpars(b)(y,1); // 
-            Type p_3 = selpars(b)(y,2);
-            Type p_4 = selpars(b)(y,3);
-            Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
-            Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
+            Type a50_1 = selpars(b)(y,0); // a50 parameter in year y
+            Type k_1 = selpars(b)(y,1); //  1/slope in year y
+            Type a50_2 = selpars(b)(y,2);
+            Type k_2 = selpars(b)(y,3);
             Type age = 0.0;
-			Type binwidth = 1;
-			Type gammax = p_1 + binwidth + (0.99*n_ages - p_1 - binwidth)/(1 + exp(-p_2));
-			Type alpha = 0.0;
-			Type beta = 0.0;
-			Type j_1 = 0.0;
-			Type j_2 = 0.0;
-			Type amin = 1;
             for (int a = 0; a < n_ages; a++)
             {
               age += 1.0;
-			  alpha = p_5 + (1 - p_5)*(exp(-pow(age - p_1, 2)/exp(p_3)) - exp(-pow(amin - p_1,2)/exp(p_3)))/(1-exp(-pow(amin - p_1,2)/exp(p_3)));
-			  beta = 1 + (p_6 - 1)*(exp(-pow(age - gammax,2)/exp(p_4)) - 1)/(exp(-pow(n_ages - gammax,2)/exp(p_4)) - 1);
-			  j_1 = 1/(1 + exp(-20*(age - p_1)/(1  + fabs(age - p_1))));
-			  j_2 = 1/(1 + exp(-20*(age - gammax)/(1  + fabs(age - gammax))));
-     	      tmp(y,a) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+     	        tmp(y,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
+              tmp(y,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
             }
           }
         }
@@ -93,64 +82,87 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 				for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
 			  }
 		  } else { 
-				
-				if(selblock_models(b) == 5) { // len-logistic
-					for(int y = 0; y < n_years; y++)
-					{
-					  Type l50 = selpars(b)(y,0); // l50 parameter in year y
-					  Type k = selpars(b)(y,1); //  1/slope in year y
-					  for(int l = 0; l < n_lengths; l++)
-					  {
-						tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
-					  }
-					  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
-					}
-				} else {
-					
-					if(selblock_models(b) == 6) { // len-double normal
-						
+				if(selblock_models(b) == 5) { // age double normal
 					  for(int y = 0; y < n_years; y++)
-					  {				
+					  {
 						Type p_1 = selpars(b)(y,0); // 
 						Type p_2 = selpars(b)(y,1); // 
 						Type p_3 = selpars(b)(y,2);
 						Type p_4 = selpars(b)(y,3);
 						Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
 						Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
-						Type binwidth = lengths(1) - lengths(0);
-						Type lmax = max(lengths);
-						Type lmin = min(lengths);
-						Type gammax = p_1 + binwidth + (0.99*lmax - p_1 - binwidth)/(1 + exp(-p_2));
+						Type age = 0.0;
+						Type binwidth = 1;
+						Type gammax = p_1 + binwidth + (0.99*n_ages - p_1 - binwidth)/(1 + exp(-p_2));
 						Type alpha = 0.0;
 						Type beta = 0.0;
 						Type j_1 = 0.0;
 						Type j_2 = 0.0;
-						for (int l = 0; l < n_lengths; l++)
+						Type amin = 1;
+						for (int a = 0; a < n_ages; a++)
 						{
-						  alpha = p_5 + (1 - p_5)*(exp(-pow(lengths(l) - p_1, 2)/exp(p_3)) - exp(-pow(lmin - p_1,2)/exp(p_3)))/(1-exp(-pow(lmin - p_1,2)/exp(p_3)));
-						  beta = 1 + (p_6 - 1)*(exp(-pow(lengths(l) - gammax,2)/exp(p_4)) - 1)/(exp(-pow(lmax - gammax,2)/exp(p_4)) - 1);
-						  j_1 = 1/(1 + exp(-20*(lengths(l) - p_1)/(1  + fabs(lengths(l) - p_1))));
-						  j_2 = 1/(1 + exp(-20*(lengths(l) - gammax)/(1  + fabs(lengths(l) - gammax))));
-						  tmpL(y,l) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+						  age += 1.0;
+						  alpha = p_5 + (1 - p_5)*(exp(-pow(age - p_1, 2)/exp(p_3)) - exp(-pow(amin - p_1,2)/exp(p_3)))/(1-exp(-pow(amin - p_1,2)/exp(p_3)));
+						  beta = 1 + (p_6 - 1)*(exp(-pow(age - gammax,2)/exp(p_4)) - 1)/(exp(-pow(n_ages - gammax,2)/exp(p_4)) - 1);
+						  j_1 = 1/(1 + exp(-20*(age - p_1)/(1  + fabs(age - p_1))));
+						  j_2 = 1/(1 + exp(-20*(age - gammax)/(1  + fabs(age - gammax))));
+						  tmp(y,a) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
 						}
 					  }
-						
-					} else { // len-decreasing logistic
+				} else {
+					if(selblock_models(b) == 6) { // len-increasing logistic
 						for(int y = 0; y < n_years; y++)
 						{
 						  Type l50 = selpars(b)(y,0); // l50 parameter in year y
 						  Type k = selpars(b)(y,1); //  1/slope in year y
 						  for(int l = 0; l < n_lengths; l++)
 						  {
-							tmpL(y,l) = 1.0/(1.0 + exp((lengths(l) - l50)/k));
+							tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
 						  }
 						  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+						}
+					} else { // len-decreasing logistic
+						if(selblock_models(b) == 7) {
+							for(int y = 0; y < n_years; y++)
+							{
+							  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+							  Type k = selpars(b)(y,1); //  1/slope in year y
+							  for(int l = 0; l < n_lengths; l++)
+							  {
+								tmpL(y,l) = 1.0/(1.0 + exp((lengths(l) - l50)/k));
+							  }
+							  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+							}
+						} else { // length double normal
+						  for(int y = 0; y < n_years; y++)
+						  {				
+							Type p_1 = selpars(b)(y,0); // 
+							Type p_2 = selpars(b)(y,1); // 
+							Type p_3 = selpars(b)(y,2);
+							Type p_4 = selpars(b)(y,3);
+							Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
+							Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
+							Type binwidth = lengths(1) - lengths(0);
+							Type lmax = max(lengths);
+							Type lmin = min(lengths);
+							Type gammax = p_1 + binwidth + (0.99*lmax - p_1 - binwidth)/(1 + exp(-p_2));
+							Type alpha = 0.0;
+							Type beta = 0.0;
+							Type j_1 = 0.0;
+							Type j_2 = 0.0;
+							for (int l = 0; l < n_lengths; l++)
+							{
+							  alpha = p_5 + (1 - p_5)*(exp(-pow(lengths(l) - p_1, 2)/exp(p_3)) - exp(-pow(lmin - p_1,2)/exp(p_3)))/(1-exp(-pow(lmin - p_1,2)/exp(p_3)));
+							  beta = 1 + (p_6 - 1)*(exp(-pow(lengths(l) - gammax,2)/exp(p_4)) - 1)/(exp(-pow(lmax - gammax,2)/exp(p_4)) - 1);
+							  j_1 = 1/(1 + exp(-20*(lengths(l) - p_1)/(1  + fabs(lengths(l) - p_1))));
+							  j_2 = 1/(1 + exp(-20*(lengths(l) - gammax)/(1  + fabs(lengths(l) - gammax))));
+							  tmpL(y,l) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+							}
+						  }	
 						}
 					}
 					
 				}
-				
-				
 		  }
         }
       }

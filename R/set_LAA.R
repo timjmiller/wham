@@ -6,10 +6,10 @@ set_LAA = function(input, LAA)
     
   n_re_par = 3 # number of parameters for RE
 
-  if(is.null(input$asap3)) asap3 = NULL
-  else {
-    stop('LAA does not work with ASAP3 input')
-  }
+  # if(is.null(input$asap3)) asap3 = NULL
+  # else {
+  #   stop('LAA does not work with ASAP3 input')
+  # }
 
   # LAA default options:
   LAA_re_ini = matrix(0, ncol = data$n_ages, nrow = data$n_years_model)

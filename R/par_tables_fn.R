@@ -189,29 +189,33 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, "Selectivity for age ", mod$ages))
       ind = 1:data$n_ages
     }
-    if(data$selblock_models[i] == 2){ #increasing logistic
+    if(data$selblock_models[i] == 2){ #age increasing logistic
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "1/slope (increasing)")))
       ind = data$n_ages + 1:2
     }
-    if(data$selblock_models[i] == 3){ #double normal
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("age peak", "top","asc-width", "desc-width", "init", "final")))
-      ind = data$n_ages + 3:8
+    if(data$selblock_models[i] == 3){ #age double logistic
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)")))
+      ind = data$n_ages + 3:6
     }
-    if(data$selblock_models[i] == 4){ #increasing logistic
+    if(data$selblock_models[i] == 4){ #age decreasing logistic
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "-1/slope (decreasing)")))
       ind = data$n_ages + 1:2
     }
-    if(data$selblock_models[i] == 5){ #increasing logistic length
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$l_{50}$", "1/slope (increasing)")))
-      ind = data$n_ages + 9:10
+    if(data$selblock_models[i] == 5){ # age double normal
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("age peak", "top","asc-width", "desc-width", "init", "final")))
+      ind = data$n_ages + 7:12
     }
-    if(data$selblock_models[i] == 6){ #double normal length
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("length peak", "top","asc-width", "desc-width", "init", "final")))
-      ind = data$n_ages + 11:16
+    if(data$selblock_models[i] == 6){ #length logistic
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$l_{50}$", "1/slope (increasing)")))
+      ind = data$n_ages + 13:14
     }
     if(data$selblock_models[i] == 7){ #decreasing logistic
       fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$l_{50}$", "-1/slope (decreasing)")))
-      ind = data$n_ages + 9:10
+      ind = data$n_ages + 13:14
+    }
+    if(data$selblock_models[i] == 8){ # len double normal
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("length peak", "top","asc-width", "desc-width", "init", "final")))
+      ind = data$n_ages + 15:20
     }
     fe.vals = c(fe.vals, ((data$selpars_lower + data$selpars_upper-data$selpars_lower)/(1 + exp(-pars$logit_selpars)))[i,ind])
     for(a in ind) {
@@ -370,58 +374,41 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   fe.cis = temp2[[3]]
 
   # Natural Mortality
-  # Not sure how Ecov impacts this, CHECK LATER
-  # if(sum(!is.na(mod$input$map$M_a))){ # always report M
-    # if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M
-    #   modify = "M for ages("
-    # } else {
-    #   if(data$M_model != 3) modify = "mean log(M) for ages ("
-    #   if(data$M_model == 3 | data$Ecov_where[2] == 0) modify = "mean log(M) intercept for log(WAA) effects"
-    #   if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
-    # }
-    # age.list = M_a_point = list()
-    # M_map = as.integer(as.character(mod$input$map$M_a))
-    # ind = unique(M_map[which(!is.na(M_map))])
-    # if(data$M_model == 1) {
-    #   M_a_point[[1]] = 1
-    #   ages.list = list(mod$ages)
-    # }
-    # if(data$M_model == 2){
-    #   npar = length(ind)
-    #   for(i in 1:npar) {
-    #     M_a_point[[i]] = which(M_map == ind[i])[1]
-    #     age.list[[i]] = mod$ages[which(M_map == ind[i])]
-    #   }
-    # }
-    if(data$M_model == 1){
-      fe.names = c(fe.names, "M for all ages")
-      fe.vals = c(fe.vals, exp(pars$M_a))
-      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
+ if(sum(!is.na(mod$input$map$M_a))){ #any M_a estimated?
+    if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){ #no random effects, ecov or WAA effects on M
+      modify = "M for ages("
+    } else {
+      if(data$M_model != 3) modify = "mean log(M) for ages ("
+      if(data$M_model == 3 | data$Ecov_where[2] == 0) modify = "mean log(M) intercept for log(WAA) effects"
+      if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
+    }
+    age.list = M_a_point = list()
+    M_map = as.integer(as.character(input$map$M_a))
+    ind = unique(M_map[which(!is.na(M_map))])
+    if(data$M_model == 1) {
+      M_a_point[[1]] = 1
+      ages.list = list(mod$ages)
     }
     if(data$M_model == 2){
-      fe.names = c(fe.names, paste0("M for age ", mod$ages.lab))
-      fe.vals = c(fe.vals, exp(pars$M_a))
-      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
+      npar = length(ind)
+      for(i in 1:npar) {
+        M_a_point[[i]] = which(M_map == ind[i])[1]
+        age.list[[i]] = mod$ages[which(M_map == ind[i])]
+      }
     }
-    if(data$M_model == 3){
-      fe.names = c(fe.names, "mean log(M) intercept for log(WAA) effects")
-      fe.vals = c(fe.vals, pars$M_a)
-      fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a))
+    if(length(age.list)){
+      for(i in 1:length(age.list)){
+        fe.names = c(fe.names, paste0(modify, paste0(age.list[[i]], collapse = ", "),")"))
+        if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){
+          fe.vals = c(fe.vals, exp(pars$M_a[M_a_point]))
+          fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point], type = "exp"))
+        } else {
+          fe.vals = c(fe.vals, pars$M_a[M_a_point])
+          fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point]))
+        }
+      }
     }
-    # if(length(age.list)){
-    #   for(i in 1:length(age.list)){
-    #     fe.names = c(fe.names, paste0(modify, paste0(age.list[[i]], collapse = ", "),")"))
-    #     if(data$M_re_model == 1 & data$Ecov_where[2] == 0 & data$M_model %in% 1:2){
-    #       fe.vals = c(fe.vals, exp(pars$M_a[M_a_point]))
-    #       fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point], type = "exp"))
-    #     } else {
-    #       fe.vals = c(fe.vals, pars$M_a[M_a_point])
-    #       fe.cis = rbind(fe.cis, ci(pars$M_a[M_a_point], sd$M_a[M_a_point]))
-    #     }
-    #   }
-    # }
-  # }
-
+  }
   if(data$M_model == 3){
     fe.names = c(fe.names, "mean log(M) log(WAA) effect")
     fe.vals = c(fe.vals, exp(pars$log_b))
@@ -442,6 +429,41 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
+  #   if(data$M_model == 1){
+  #     fe.names = c(fe.names, "M for all ages")
+  #     fe.vals = c(fe.vals, exp(pars$M_a))
+  #     fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
+  #   }
+  #   if(data$M_model == 2){
+  #     fe.names = c(fe.names, paste0("M for age ", mod$ages.lab))
+  #     fe.vals = c(fe.vals, exp(pars$M_a))
+  #     fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a, type = "exp"))
+  #   }
+  #   if(data$M_model == 3){
+  #     fe.names = c(fe.names, "mean log(M) intercept for log(WAA) effects")
+  #     fe.vals = c(fe.vals, pars$M_a)
+  #     fe.cis = rbind(fe.cis, ci(pars$M_a, sd$M_a))
+  #   }
+  # if(data$M_model == 3){
+  #   fe.names = c(fe.names, "mean log(M) log(WAA) effect")
+  #   fe.vals = c(fe.vals, exp(pars$log_b))
+  #   fe.cis = rbind(fe.cis, ci(pars$log_b, sd$log_b, type = "exp"))
+  # }
+  # if(data$M_re_model>1){
+  #   fe.names = c(fe.names, "M RE $\\sigma$")
+  #   fe.vals = c(fe.vals, exp(pars$M_repars[1]))
+  #   fe.cis = rbind(fe.cis, ci(pars$M_repars[1], sd$M_repars[1], type = "exp"))
+  #   if(data$M_re_model %in% c(3,5)){
+  #     fe.names = c(fe.names, "M RE AR1 $\\rho$ (age)")
+  #     fe.vals = c(fe.vals, exp(pars$M_repars[2]))
+  #     fe.cis = rbind(fe.cis, ci(pars$M_repars[2], sd$M_repars[2], lo = -1, hi = 1, type = "expit", k = 2))
+  #   }
+  #   if(data$M_re_model %in% c(4,5)) {
+  #     fe.names = c(fe.names, "M RE AR1 $\\rho$ (year)")
+  #     fe.vals = c(fe.vals, exp(pars$M_repars[3]))
+  #     fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
+  #   }
+  # }
 
   # Somatic growth
     if(data$growth_model == 1){

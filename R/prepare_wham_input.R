@@ -389,7 +389,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
-	if(!is.null(asap3) & !is.null(growth)) stop('Growth feature does not work with ASAP3 input. Please use the basic_info argument instead.')
+	#if(!is.null(asap3) & !is.null(growth)) stop('Growth feature does not work with ASAP3 input. Please use the basic_info argument instead.')
 
 	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
 	else basic_info$recruit_model = recruit_model
@@ -421,8 +421,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	if(!is.null(asap3))
 	{
 	  asap3 = asap3$dat
-  	input$asap3 = asap3
+  	  input$asap3 = asap3
 	  input$data$n_ages = asap3$n_ages
+	  input$data$lengths = seq(from = 2, to = 30, by = 2)
+	  input$data$n_lengths = length(input$data$lengths)
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
@@ -509,7 +511,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 }
 
 
-gen.logit <- function(x, low, upp) return(log((x-low)/(upp-x)))
+gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
 
 initial_input_fn = function(input, basic_info){

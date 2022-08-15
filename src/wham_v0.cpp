@@ -255,15 +255,11 @@ Type objective_function<Type>::operator() ()
   matrix<Type> pred_indices(n_years_model+n_years_proj,n_indices); // not bias corrected
   matrix<Type> pred_log_indices(n_years_model+n_years_proj,n_indices); // bias corrected  
   
-  matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
   array<Type> phi_mat(n_years_model + n_years_proj,n_lengths,n_ages);// NEWG
   matrix<Type> LAA(n_years_model + n_years_proj,n_ages);// NEWG
   matrix<Type> fracyr_phi_mat(n_lengths,n_ages);// NEWG
   matrix<Type> fracyr_phi_mat_index(n_lengths,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
-  array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
-  matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
-  // matrix<Type> pred_mLAA(n_years_model + n_years_proj,n_ages); // NEWG
   array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
@@ -325,12 +321,11 @@ Type objective_function<Type>::operator() ()
     selpars_re_mats(b) = tmp2;
 
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
-    if(selblock_models(b) == 2) jstart = n_ages;
+    if(selblock_models(b) == 2 | selblock_models(b) == 4) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2; // 
-    if(selblock_models(b) == 4) jstart = n_ages; // 
-    if(selblock_models(b) == 5) jstart = n_ages + 8;
-    if(selblock_models(b) == 6) jstart = n_ages + 10;
-    if(selblock_models(b) == 7) jstart = n_ages + 8;
+    if(selblock_models(b) == 5) jstart = n_ages + 6;
+    if(selblock_models(b) == 6 | selblock_models(b) == 7) jstart = n_ages + 12;
+    if(selblock_models(b) == 8) jstart = n_ages + 14;
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
@@ -364,17 +359,17 @@ Type objective_function<Type>::operator() ()
           SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0) 
           {
             AR1(rho).simulate(tmp0);
-            for(int i = 0; i < tmp0.size(); i++) tmp(0,i) = tmp0(i);
+            for(int y = 0; y < tmp.rows(); y++) for(int i = 0; i < tmp0.size(); i++) tmp(y,i) = tmp0(i);
           }
-        } else { // selblock_models_re(b) = 4, ar1_y
-          vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant across years 
+        } else { // selblock_models_re(b) = 4, ar1_y, not sure if this one really makes sense.
+          vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant within years 
           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
           //Sigma_sig_sel = sigma;
           nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp0);
           SIMULATE if(simulate_state(2) == 1) if(sum(simulate_period) > 0)  
           {
             AR1(rho_y).simulate(tmp0);
-            tmp.col(0) = tmp0;
+            for(int a = 0; a < tmp.cols(); a++) tmp.col(a) = tmp0;
           }
         }
       }
@@ -599,7 +594,7 @@ Type objective_function<Type>::operator() ()
 			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  growth_re(y,0,j) = GWre0(y);
+				  for(int a = 0; a < n_ages; a++) growth_re(y,a,j) = GWre0(y);
 				}
 			  }
 			}
@@ -624,10 +619,12 @@ Type objective_function<Type>::operator() ()
 			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_GW_y(j)).simulate(GWre0);
 			  for(int i = 0; i < GWre0.size(); i++) GWre0(i) = Sigma_GW * GWre0(i);
-			  for(int i = 0; i < (n_ages - 1); i++) growth_re(0,n_ages - i - 1,j) = GWre0(i); // replace cohorts at y = 0 
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  growth_re(y,0,j) = GWre0(y + n_ages - 1); 
+				  for(int a = 0; a < n_ages; a++) {
+					  if(y == 0) growth_re(y,n_ages-1-a,j) = GWre0(a); 
+					  else growth_re(y,a,j) = GWre0(y-a+n_ages-1);
+				  }
 				}
 			  }
 			}
@@ -669,7 +666,7 @@ Type objective_function<Type>::operator() ()
 			LAAre_tmp = Sigma_LAA * LAAre_tmp;
 			for(int y = 0; y < n_years_model + n_years_proj; y++){
 			  if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				for(int a = 0; a < n_M_a; a++) LAA_re(y,a) = LAAre_tmp(y,a);
+				for(int a = 0; a < n_ages; a++) LAA_re(y,a) = LAAre_tmp(y,a);
 			  }
 			}
 		  }
@@ -681,9 +678,7 @@ Type objective_function<Type>::operator() ()
           AR1(rho_LAA_a).simulate(LAAre0);
           for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
-            for(int i = 0; i < LAAre0.size(); i++){
-              LAA_re(y,i) = LAAre0(i);
-            }
+            for(int i = 0; i < LAAre0.size(); i++) LAA_re(y,i) = LAAre0(i);
           }
         }          
       }
@@ -818,10 +813,12 @@ Type objective_function<Type>::operator() ()
 			SIMULATE if(simulate_state(6) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_LW_y(j)).simulate(LWre0);
 			  for(int i = 0; i < LWre0.size(); i++) LWre0(i) = Sigma_LW * LWre0(i);
-			  for(int i = 0; i < (n_ages - 1); i++) LW_re(0,n_ages - i - 1,j) = LWre0(i); // replace cohorts at y = 0 
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  LW_re(y,0,j) = LWre0(y + n_ages - 1); 
+				  for(int a = 0; a < n_ages; a++) {
+					  if(y == 0) LW_re(y,n_ages-1-a,j) = LWre0(a); 
+					  else LW_re(y,a,j) = LWre0(y-a+n_ages-1);
+				  }
 				}
 			  }
 			}
@@ -1022,7 +1019,7 @@ Type objective_function<Type>::operator() ()
           for(int i = 0; i < Mre0.size(); i++) Mre0(i) = Sigma_M * Mre0(i);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
             if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-              M_re(y,0) = Mre0(y);
+              for(int a = 0; a < n_M_a; a++) M_re(y,a) = Mre0(y); //all ages mapped to the same annual RE
             }
           }
         }
@@ -1072,7 +1069,7 @@ Type objective_function<Type>::operator() ()
           if(M_model == 1){ // constant M
             for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a));
           } else { // M_model = 3, M is allometric function of weight
-            for(int a = 0; a < n_ages; a++)	for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
+            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) MAA(y,a) = exp(M_a(0) + M_re(y,a) - exp(log_b) * log(waa(waa_pointer_jan1-1,y,a)));
           }
         }
       }
@@ -1147,12 +1144,13 @@ Type objective_function<Type>::operator() ()
   }
 
   nll += nll_q.sum() + nll_q_prior.sum();
-  
+  int Ecov_effects_on_q = 0;
   for(int y = 0; y < n_years_model + n_years_proj; y++) {
     for(int ind = 0; ind < n_indices; ind++) {
       for(int i=0; i < n_Ecov; i++){
         if(Ecov_where(i,2+ind) == 1){ // if ecov i affects q and which index
           logit_q_mat(y,ind) += Ecov_lm(i,2+ind,y,0);
+          Ecov_effects_on_q++;
         }
       }
       q(y,ind) = q_lower(ind) + (q_upper(ind) - q_lower(ind))/(1 + exp(-logit_q_mat(y,ind)));
@@ -1192,7 +1190,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   REPORT(logit_q_mat);
-  if(use_q_re.sum()>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
+  if(use_q_re.sum()>0 || Ecov_effects_on_q>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
   REPORT(sigma_q);
   REPORT(rho_q);
   REPORT(nll_q);
@@ -1234,6 +1232,10 @@ Type objective_function<Type>::operator() ()
   // Set up population model
   // Year 1 initialize population
   SSB.setZero();
+  matrix<Type> NAA(n_years_model + n_years_proj,n_ages);
+  NAA.setZero();
+  matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
+  pred_NAA.setZero();
   for(int a = 0; a < n_ages; a++)
   {
     if(N1_model == 0) NAA(0,a) = exp(log_N1_pars(a));
@@ -1242,8 +1244,8 @@ Type objective_function<Type>::operator() ()
       if(a==0) NAA(0,0) = exp(log_N1_pars(0));
       else
       {
-        if(a == n_ages-1) NAA(0,a) = NAA(0,a-1)/(1.0 + exp(-MAA(0,a) - exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1)));
-        else NAA(0,a) = NAA(0,a-1)* exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,n_ages-1));
+        if(a == n_ages-1) NAA(0,a) = NAA(0,a-1)/(1.0 + exp(-MAA(0,a) - exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1)));
+        else NAA(0,a) = NAA(0,a-1)* exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1));
       }
     }
     SSB(0) += NAA(0,a) * waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0));
@@ -1359,6 +1361,8 @@ Type objective_function<Type>::operator() ()
   
   // ---------------------------------------------------------------------------------
   // Population model (get NAA, numbers-at-age, LAA, for all years)
+  array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
+  NAA_devs.setZero();
   for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     
@@ -1373,13 +1377,13 @@ Type objective_function<Type>::operator() ()
       for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
     } else { // only recruitment estimated (either fixed or random effects)
       for(int a = 1; a < n_ages; a++) NAA(y,a) = pred_NAA(y,a); // for ages > 1 survival is deterministic 
-      if((n_NAA_sigma == 0) && (y > n_years_model-1)){ 
+      if((n_NAA_sigma == 0) && (y > n_years_model-1)){  //recruit FE, but recruit RE in projection years
         NAA(y,0) = exp(logR_proj(y-n_years_model)); // SCAA recruit in projections use diff object (random effect)
-        for(int a = 1; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+        for(int a = 1; a < n_ages; a++) NAA_devs(y-1,a) = log(NAA(y,a)) - log(pred_NAA(y,a));
         NAA_devs(y-1,0) = logR_proj(y-n_years_model) - log(pred_NAA(y,0));
-      } else {
+      } else { //recruit RE, or (recruit FE and not projection year)
         NAA(y,0) = exp(log_NAA(y-1,0));
-        for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log_NAA(y-1,a) - log(pred_NAA(y,a));
+        for(int a = 0; a < n_ages; a++) NAA_devs(y-1,a) = log(NAA(y,a)) - log(pred_NAA(y,a));
       }
     }
         
@@ -1494,7 +1498,6 @@ Type objective_function<Type>::operator() ()
     ZAA = MAA + FAA_tot;
     REPORT(sims);
     REPORT(log_NAA);
-    REPORT(NAA_devs);
     REPORT(log_NAA_sigma);
     REPORT(trans_NAA_rho);
   }

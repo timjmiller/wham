@@ -155,7 +155,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
         ncol = mod$input$data$n_ages)
       resids[yind,] = tmp$residual
       vals[yind,] = tmp$val
-      ages[yind,] = tmp$age
+      ages[yind,] = tmp$bin
       pyears[yind,] = mod$years[tmp$year]
       cohorts[yind,] = tmp$cohort
       if(mod$input$data$age_comp_model_fleets[f] %in% 3:7){
@@ -171,7 +171,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for catch proportions at age in fleet ", f, ", so using +/-10 for range of y axis \n")
+        cat("Infinite osa residuals for catch proportions at age in fleet ", f, ", so using +/-10 for range \n")
         ylim.max = 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -231,6 +231,86 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       lines(z, lower, lty=2, col=plot.colors[f])
 
       title (paste0("age composition OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+
+  if("catchpal" %in% mod$osa$type) {
+    n.fleets <- mod$input$data$n_fleets
+    plot.colors = mypalette(n.fleets)
+    for(f in 1:n.fleets) if(any(mod$input$data$use_catch_pal[,f]==1)){
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_pal_6panel_fleet_",f,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_pal_6panel_fleet_",f,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      yind = which(mod$input$data$use_catch_pal[,f] ==1)
+      tmp = mod$osa[c(mod$input$data$keep_Cpal[f,yind,]+1),]
+      resids = vals = lengths = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
+        ncol = mod$input$data$n_lengths)
+      resids[yind,] = tmp$residual
+      vals[yind,] = tmp$val
+      lengths[yind,] = tmp$bin
+      pyears[yind,] = mod$years[tmp$year]
+      cohorts[yind,] = tmp$cohort
+      if(mod$input$data$len_comp_model_fleets[f] %in% 3:7){
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      } else {
+        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      }
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for catch proportions at length in fleet ", f, ", so using +/-10 for range \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      #plot_years = rep(years, NCOL(resids))#years[as.integer(tmp$year)]
+      # 1. trend vs. year
+      plot(as.integer(pyears), resids, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      grid(lty = 2, col = "grey")
+      abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      # 2. trend vs. age
+      plot(as.integer(lengths), resids, type='p', col=plot.colors[f], pch=19, xlab="Length (cm)", ylab="OSA Residuals",
+           ylim=ylims, xaxt ="n")
+      axis(1, at = 1:mod$input$data$n_lengths, labels = mod$env$data$lengths)
+      grid(lty = 2, col = "grey")
+      abline(h=0, col=plot.colors[f], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      # 5. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- resids[!is.na(resids)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[f], pch=19)
+      abline(0,1, col=plot.colors[f])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[f])
+      lines(z, lower, lty=2, col=plot.colors[f])
+
+      title (paste0("length composition OSA residual diagnostics: Fleet ",f), outer=T, line=-1)
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
@@ -301,7 +381,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat <- subset(mod$osa, type=="indexpaa")
     dat$fleet <- factor(as.character(dat$fleet))
     dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
-    dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
+    dat$residual[which(as.integer(dat$bin) == mod$input$data$n_ages)] = NA #remove last age class
     
     n.indices <- mod$input$data$n_indices
     plot.colors = mypalette(n.indices)
@@ -317,7 +397,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
         ncol = mod$input$data$n_ages)
       resids[yind,] = tmp$residual
       vals[yind,] = tmp$val
-      ages[yind,] = tmp$age
+      ages[yind,] = tmp$bin
       pyears[yind,] = mod$years[tmp$year]
       cohorts[yind,] = tmp$cohort
       if(mod$input$data$age_comp_model_indices[i] %in% 3:7){
@@ -333,7 +413,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for proportions at age in  index ", f, ", so using +/-10 for range of y axis \n")
+        cat("Infinite osa residuals for proportions at age in  index ", f, ", so using +/-10 for range \n")
         ylim.max = 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -397,6 +477,93 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     }
   }
 
+  if("indexpal" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type=="indexpal")
+    dat$fleet <- factor(as.character(dat$fleet))
+    dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
+    dat$residual[which(as.integer(dat$bin) == mod$input$data$n_lengths)] = NA #remove last age class
+    
+    n.indices <- mod$input$data$n_indices
+    plot.colors = mypalette(n.indices)
+
+    for(i in 1:n.indices) if(any(mod$input$data$use_index_pal[,i]==1)){
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_pal_6panel_index_",i,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_pal_6panel_index_",i,'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+
+      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      yind = which(mod$input$data$use_index_pal[,i] ==1)
+      tmp = mod$osa[c(mod$input$data$keep_Ipal[i,yind,]+1),]
+      resids = vals = lengths = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
+        ncol = mod$input$data$n_lengths)
+      resids[yind,] = tmp$residual
+      vals[yind,] = tmp$val
+      lengths[yind,] = tmp$bin
+      pyears[yind,] = mod$years[tmp$year]
+      cohorts[yind,] = tmp$cohort
+      if(mod$input$data$len_comp_model_indices[i] %in% 3:7){
+        for(j in yind){
+          pos = which(vals[j,] > 1e-15)
+          resids[j,which(vals[j,] < 1e-15)] = NA #no resids for zeros
+          resids[j,max(pos)] = NA #remove last age class
+        }
+      } else {
+        resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
+      }
+
+      # set plot lims using max residual for any component (easier to compare if all the same)
+      ylim.max <- max(abs(range(resids, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for proportions at length in  index ", f, ", so using +/-10 for range \n")
+        ylim.max = 10
+      }
+      ylims <- c(-ylim.max, ylim.max)
+
+      #plot_years = rep(years, NCOL(resids))#years[as.integer(tmp$year)]
+      # 1. trend vs. year
+      plot(as.integer(pyears), resids, type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="OSA Residuals",
+           ylim=ylims)
+      grid(lty = 2, col = "grey")
+      abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      # 2. trend vs. age
+      plot(as.integer(lengths), resids, type='p', col=plot.colors[i], pch=19, xlab="Age", ylab="OSA Residuals",
+           ylim=ylims, xaxt ="n")
+      axis(1, at = 1:mod$input$data$n_lengths, labels = mod$env$data$lengths)
+      grid(lty = 2, col = "grey")
+      abline(h=0, col=plot.colors[i], lwd=2)
+      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      # 3. trend vs. cohort
+      # 5. histogram
+      xfit<-seq(-ylim.max, ylim.max, length=100)
+      yfit<-dnorm(xfit)
+      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[i], freq=F, main=NULL, breaks="scott")
+      lines(xfit, yfit)
+      # 6. QQ plot modified from car:::qqPlot.default
+      notNA <- resids[!is.na(resids)]
+      ord.x <- notNA[order(notNA)]
+      n <- length(ord.x)
+      P <- ppoints(n)
+      z <- qnorm(P, mean=0, sd=1)
+      plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
+      grid(lty = 1, equilogs = FALSE)
+      box()
+      points(z, ord.x, col=plot.colors[i], pch=19)
+      abline(0,1, col=plot.colors[i])
+      conf = 0.95
+      zz <- qnorm(1 - (1 - conf)/2)
+      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      upper <- z + zz * SE
+      lower <- z - zz * SE
+      lines(z, upper, lty=2, col=plot.colors[i])
+      lines(z, lower, lty=2, col=plot.colors[i])
+
+      title (paste0("length composition OSA residual diagnostics: Index ",i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }
+
   if(!all(mod$env$data$Ecov_model == 0)){
     dat <- subset(mod$osa, type=="Ecov")
     dat$fleet <- factor(as.character(dat$fleet))
@@ -427,6 +594,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
+      if(is.infinite(ylim.max)) {
+        cat("Infinite osa residuals for Environmental observations in series ", f, ", so using +/-10 for range of y axis \n")
+        ylim.max = 10
+      }								 																													 
       ylims <- c(-ylim.max, ylim.max)
 
       # 1. trend vs. year
@@ -4526,7 +4697,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
   # selAA for all blocks using facet_wrap
   if(type=="selex"){ 
     n_selblocks <- dat$n_selblocks
-    sel_mod <- c("age-specific","age-logistic","age-double-normal","age-decreasing-logistic", "len-logistic","len-double-normal","len-decreasing-logistic")[dat$selblock_models]
+    sel_mod <- c("age-specific","logistic","double-logistic","decreasing-logistic", "double-normal","len-logistic","len-decreasing-logistic","len-double-normal")[dat$selblock_models]
     sel_re <- c("no","IID","AR1","AR1_y","2D AR1")[dat$selblock_models_re]
     save_df = NULL
     for(i in 1:n_selblocks) {
@@ -4652,7 +4823,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       axis(1, at = seq(from = 0, to = 1, length.out = n_ages), labels = ages.lab)
       axis(2, at = seq(from = 0, to = 1, length.out = n_lengths), labels = lengths.lab, las = 2)
       mtext(text = 'Age', side = 1, line = 2)
-      fields::image.plot(df.LAA, add=T, legend.mar = 5, col = rev(viridis(100)))
+      fields::image.plot(df.LAA, add=T, legend.mar = 5, col = rev(viridis::viridis(100)))
       box()
     if(do.tex | do.png) dev.off()
   }

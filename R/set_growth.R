@@ -6,10 +6,10 @@ set_growth = function(input, growth, LAA)
     
   n_re_par = 2 # number of parameters for RE
 
-  if(is.null(input$asap3)) asap3 = NULL
-  else {
-    stop('Growth module does not work with ASAP3 input')
-  }
+  # if(is.null(input$asap3)) asap3 = NULL
+  # else {
+  #   stop('Growth module does not work with ASAP3 input')
+  # }
   # growth default options:
   n_par_def = 5 # 5 parameters: K, Linf, L1, CV1, CVA
   data$growth_model = 1 # 1: vB-classic, 2: use LAA as input

@@ -27,11 +27,11 @@ set_indices = function(input, index_opts=NULL)
 	data$index_pal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths))
 	data$use_index_paa = matrix(0, data$n_years_model, data$n_indices)
 	data$use_index_pal = matrix(0, data$n_years_model, data$n_indices)
-	data$index_Neff = matrix(NA, data$n_years_model, data$n_indices)
-	data$index_NeffL = matrix(NA, data$n_years_model, data$n_indices)
+	data$index_Neff = matrix(0, data$n_years_model, data$n_indices)
+	data$index_NeffL = matrix(0, data$n_years_model, data$n_indices)
 	data$index_caal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths, data$n_ages))
 	data$use_index_caal = array(0, dim = c(data$n_years_model, data$n_indices))
-	data$index_caal_Neff = array(NA, dim = c(data$n_years_model, data$n_indices, data$n_lengths))
+	data$index_caal_Neff = array(0, dim = c(data$n_years_model, data$n_indices, data$n_lengths))
 
 	if(!is.null(asap3))
 	{
@@ -56,10 +56,12 @@ set_indices = function(input, index_opts=NULL)
 		if(asap3$use_survey_acomp[i] != 1){
 			data$use_index_paa[,i] = 0
 		} else {
+			data$use_index_paa[,i] = 1
 			for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[i,y,] > 1e-15) < 2) data$use_index_paa[y,i] = 0
 		}
 	  }
 	  data$units_index_paa <- asap3$survey_acomp_units
+	  data$units_index_pal = rep(2,data$n_indices)
 	  for(i in 1:data$n_indices) data$index_Neff[,i] = asap3$IAA_mats[[i]][,4 + data$n_ages]
 	  data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
 	}
@@ -100,7 +102,7 @@ set_indices = function(input, index_opts=NULL)
 		if(is.null(index_opts$index_NeffL)) data$index_NeffL[] = 100
 		else data$index_NeffL[] = index_opts$index_NeffL
 		
-		if(is.null(index_opts$index_caal_Neff)) data$index_caal_Neff[] = 0
+		if(is.null(index_opts$index_caal_Neff)) data$index_caal_Neff[] = 100
 		else data$index_caal_Neff[] = index_opts$index_caal_Neff
 
 		if(!is.null(index_opts$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa
@@ -122,6 +124,7 @@ set_indices = function(input, index_opts=NULL)
 
   data$index_paa[is.na(data$index_paa)] = 0
   data$index_pal[is.na(data$index_pal)] = 0
+  data$index_caal[is.na(data$index_caal)] = 0
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))
