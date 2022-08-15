@@ -294,6 +294,14 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
             ci(pars[i,1], pars_sd[i,1], type = "exp"),
             ci(pars[i,2], pars_sd[i,2], type = "exp"))
         }
+		if(age_comp_models[i] == 10){
+          fe.names = c(fe.names, paste0(startname, i , " age comp, MV Tweedie: ",
+            c("$\\phi$", "power")))
+          fe.vals = c(fe.vals, exp(pars[i,1:2]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            1 + ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
+        }
       }
     }
     return(list(fe.names, fe.vals, fe.cis))
@@ -347,6 +355,14 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
           fe.cis = rbind(fe.cis, 
             ci(pars[i,1], pars_sd[i,1], type = "exp"),
             ci(pars[i,2], pars_sd[i,2], type = "exp"))
+        }
+		if(len_comp_models[i] == 10){
+          fe.names = c(fe.names, paste0(startname, i , " len comp, MV Tweedie: ",
+            c("$\\phi$", "power")))
+          fe.vals = c(fe.vals, exp(pars[i,1:2]))
+          fe.cis = rbind(fe.cis, 
+            ci(pars[i,1], pars_sd[i,1], type = "exp"),
+            1 + ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
         }
       }
     }
@@ -672,7 +688,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
       fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. sd."))
-      ind = which(!is.na(matrix(mod$input$map$Ecov_obs_logsigma, NROW(mod$input$par$Ecov_obs_logsigma))[,i]))[1]
+      ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }

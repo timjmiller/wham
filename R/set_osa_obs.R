@@ -382,11 +382,14 @@ set_osa_obs = function(input)
 
   obs$cohort = NA
   data$agesvec = NA
+  data$lensvec = NA
   find_paa = grep(pattern = 'paa', x = obs$type) # only for paa
+  find_pal = grep(pattern = 'pal', x = obs$type) # only for pal
   obs$cohort[find_paa] = as.numeric(obs$year[find_paa]) - as.numeric(obs$bin[find_paa])   #make cohort column. could be useful for analyzing age comp OSA residuals
   data$obs <- obs
   data$obsvec <- obs$val
-  data$agesvec[find_paa] <- obs$bin[find_paa]																								
+  data$agesvec[find_paa] <- obs$bin[find_paa]
+  data$lensvec[find_pal] <- obs$bin[find_pal]																								  
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
   data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 
