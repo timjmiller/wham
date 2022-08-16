@@ -69,6 +69,11 @@ new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
 
+If on windows you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
+```r
+devtools::install_github("timjmiller/wham", dependencies=TRUE), INSTALL_opts=c("--no-multiarch"))
+```
+
 If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:```r
 install.packages("tinytex")
 tinytex::install_tinytex()

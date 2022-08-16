@@ -11,3 +11,4 @@ Meta
 sandbox
 *.Rproj
 noaa_docs
+.vscode
