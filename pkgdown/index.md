@@ -78,6 +78,10 @@ If you want pdfs of parameter tables that are generted by plot_wham_output you w
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
+and add the path to pandoc in your .Rprofile so Rmarkdown can find your pandoc
+```r
+Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc") 
+```
 
 ## Tutorial
 

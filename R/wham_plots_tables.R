@@ -1479,7 +1479,6 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
       vals = resids
       for(j in yind){
         tmp = subset(df, year == j & fleet == paste0("index_",i))
-        print(tmp)
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
         if(dat$age_comp_model_indices[i] < c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
