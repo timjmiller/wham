@@ -93,8 +93,6 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     model$osa$residual[subset.agecomp] <- model$OSA.agecomp$residual
     conditional. = c(conditional., subset.agecomp)
     ind <- which(input$data$age_comp_model_fleets < 3)
-    print("ind")
-    print(ind)
     if(length(ind)) {
       for(i in ind) {
         NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
@@ -102,7 +100,6 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
       }
     }
     ind <- which(input$data$age_comp_model_indices < 3)
-    print(ind)
     if(length(ind)) {
       for(i in ind) {
         NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("index_", i))
