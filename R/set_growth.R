@@ -6,10 +6,15 @@ set_growth = function(input, growth, LAA)
     
   n_re_par = 2 # number of parameters for RE
 
-  # if(is.null(input$asap3)) asap3 = NULL
-  # else {
-  #   stop('Growth module does not work with ASAP3 input')
-  # }
+  # Include phi_matrix (age length transition matrix):
+  tmp_phi_mat = array(NA, dim = c(dim(data$waa)[1], data$n_lengths, data$n_ages)) # same dim as waa
+  if(is.null(data$input_phi_mat)) {
+    data$input_phi_mat = tmp_phi_mat
+    data$phi_mat_info = 0
+  } else {
+    data$phi_mat_info = 1
+  }
+
   # growth default options:
   n_par_def = 5 # 5 parameters: K, Linf, L1, CV1, CVA
   data$growth_model = 1 # 1: vB-classic, 2: use LAA as input
