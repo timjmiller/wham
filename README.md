@@ -44,6 +44,7 @@ For the development version with recent bug fixes and features (potentially unte
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
+
 If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check make sure no packages are loaded (even by e.g. .Rprofile):
 ```
 ls() ## no variables
@@ -58,11 +59,22 @@ new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
 
+If on windows you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
+```
+devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
+```
+
 If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:
 ```
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
+and add the path to pandoc in your .Rprofile so Rmarkdown can find your pandoc
+```
+Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc") 
+```
+
+
 
 ## Tutorial
 

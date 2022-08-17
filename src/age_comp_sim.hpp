@@ -73,7 +73,6 @@ vector<Type> rdirichlet(vector<Type> x, vector<Type> p, Type phi, int pool0)
 template<class Type>
 vector<Type> rdirichlet(vector<Type> p, Type phi, vector<int> ages, int pool0)
 {
-  int npos = 0;
   vector<Type> p_pos(ages.size()), obs(ages.size());
   p_pos.setZero();
   obs.setZero();  
@@ -298,7 +297,6 @@ Type rTweedie( Type mu, Type phi, Type power){
 template<class Type>
 vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
 {
-  int Nint = CppAD::Integer(N);
   int dim = p.size();
   vector<Type> obs(dim);
   //obs.setZero();
@@ -375,7 +373,7 @@ vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> a
   paa_out.setZero();
   if((age_comp_model <5) | (age_comp_model > 7)) {
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = tf_paa_obs(i); //identity transform, zeros allowed
-    if(age_comp_model < 3 | age_comp_model > 9) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers
+    if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers
   }
   if((age_comp_model > 4) & (age_comp_model < 8)) {
     vector<Type> p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
