@@ -2,18 +2,23 @@
 #' 
 #' Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
 #' can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
-#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). Certain OSA residual options
-#' are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. See details below.
+#' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). OSA residual options
+#' are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. Current options are method: 
+#' oneStepGaussianOffMode (default), oneStepGaussian, or oneStepGeneric, and parallel: TRUE/FALSE. 
+#' See \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for further details.
 #' It is not recommended to run this function (or \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}) with any random effects and
-#' mvtweedie age composition likelihoods as the extensive computational demand. An error will be thrown in such cases.
+#' mvtweedie age composition likelihoods due to extensive computational demand. An error will be thrown in such cases. 
+#' See Trijoulet et al. In review for OSA methods for age composition OSA residuals.
 #'
 #' @param model A fit WHAM model, output from \code{\link{fit_wham}}.
 #'
 #' @return the same fit TMB model with additional elements for osa residuals:
 #'   \describe{
 #'     \item{\code{$OSA.Ecov}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for environmental observations, if applicable.}
-#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for aggregate catch and index observations, if applicable.}
-#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for age composition observations, if applicable.}
+#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for aggregate catch and index 
+#'        observations conditional on any environmental observations, if applicable.}
+#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for age composition observations 
+#'        conditional on any aggregate catch or index, or environmental observations, if applicable.}
 #'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa=TRUE})}
 #'   }
 #'
@@ -31,9 +36,11 @@
 #' 
 make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)){
   # one-step-ahead residuals
-  if(!osa.opts$method %in% c("oneStepGaussianOffMode","oneStepGaussian")){
-    stop(paste0("Only osa methods allowed currently in WHAM are oneStepGaussianoffMode and oneStepGaussian"))
+  if(is.null(osa.opts$method)) osa.opts$method <- "oneStepGaussianOffMode"
+  if(!osa.opts$method %in% c("oneStepGaussianOffMode","oneStepGaussian", "oneStepGeneric")){
+    stop(paste0("Only osa methods allowed for TMB::oneStepPredict currently in WHAM are oneStepGaussianoffMode (default), oneStepGaussian, or oneStepGeneric"))
   }
+  if(is.null(osa.opts$parallel)) osa.opts$parallel <- TRUE
   if(!model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
   if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
