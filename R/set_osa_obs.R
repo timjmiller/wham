@@ -413,8 +413,8 @@ set_osa_obs = function(input)
   if(length(find_pal) > 0) data$lensvec[find_pal] <- as.numeric(obs$bin[find_pal])	
   if(length(find_caal) > 0) data$agesvec[find_caal] <- as.numeric(sapply(strsplit(obs$bin[find_caal],"_"), `[`, 1))																				  
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
-  data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
-
+  data$do_post_samp = rep(0,7) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+  #length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q, growth (or LAA), LW parameters
 
   input$data = data
   return(input)

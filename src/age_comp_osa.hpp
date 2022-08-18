@@ -506,3 +506,11 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
 
   return ll;
 }
+
+template<class Type>
+Type get_waa_ll(Type waa_obs, Type waa_pred, Type Neff)
+{
+	Type ll = 0.0;
+	ll = 0.5*pow((waa_obs-waa_pred)/(pow(waa_pred,2)/Neff),2);
+	return ll;
+}

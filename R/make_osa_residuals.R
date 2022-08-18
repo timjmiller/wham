@@ -37,13 +37,17 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
   if(!model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
   if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
-  
+  if(any(model$input$data$len_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie length composition likelihoods.")
+  if(any(model$input$data$len_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie length composition likelihoods.")
+    
   cat("Doing OSA residuals...\n");
   input = model$input
   model$osa = input$data$obs
   model$osa$residual = NA
   #first do continuous obs, condition on obs without osa (probably none)
   subset.agecomp = which(model$osa$type %in% c("indexpaa", "catchpaa"))
+  subset.lencomp = which(model$osa$type %in% c("indexpal", "catchpal"))
+  subset.caal = which(model$osa$type %in% c("indexcaal", "catchcaal"))
   subset.ecov = which(model$osa$type %in% c("Ecov"))
   subset.aggregate = which(model$osa$type %in% c("logindex", "logcatch"))
   conditional. = NULL
@@ -97,7 +101,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     print(ind)
     if(length(ind)) {
       for(i in ind) {
-        NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
         model$osa$residual[NAind] <- NA
       }
     }
@@ -105,7 +109,77 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     print(ind)
     if(length(ind)) {
       for(i in ind) {
-        NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("index_", i))
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("index_", i))
+        model$osa$residual[NAind] <- NA
+      }
+    }
+  }
+  if(length(subset.lencomp)){
+    cat("Doing OSA for catch and index length comp observations...\n")
+    if(!is.null(input$data$condition_no_osa)) cat("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
+    conditional. = c(conditional., input$data$condition_no_osa)
+    cat("Doing OSA for length comp observations...\n")
+    model$OSA.lencomp = suppressWarnings(TMB::oneStepPredict(
+      obj = model,
+      method = osa.opts$method,
+      subset = subset.lencomp,
+      conditional = conditional.,
+      observation.name = "obsvec",
+      data.term.indicator = "keep",
+      discrete = FALSE,
+      parallel = osa.opts$parallel))
+    #remove any 0 residuals associated with last ages of multinomial and D-M
+    model$osa$residual[subset.lencomp] <- model$OSA.lencomp$residual
+    conditional. = c(conditional., subset.lencomp)
+    ind <- which(input$data$len_comp_model_fleets < 3)
+    print("ind")
+    print(ind)
+    if(length(ind)) {
+      for(i in ind) {
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
+        model$osa$residual[NAind] <- NA
+      }
+    }
+    ind <- which(input$data$len_comp_model_indices < 3)
+    print(ind)
+    if(length(ind)) {
+      for(i in ind) {
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("index_", i))
+        model$osa$residual[NAind] <- NA
+      }
+    }
+  }
+  if(length(subset.caal)){ # double check if this works
+    cat("Doing OSA for catch and index CAAL observations...\n")
+    if(!is.null(input$data$condition_no_osa)) cat("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
+    conditional. = c(conditional., input$data$condition_no_osa)
+    cat("Doing OSA for CAAL observations...\n")
+    model$OSA.caal = suppressWarnings(TMB::oneStepPredict(
+      obj = model,
+      method = osa.opts$method,
+      subset = subset.caal,
+      conditional = conditional.,
+      observation.name = "obsvec",
+      data.term.indicator = "keep",
+      discrete = FALSE,
+      parallel = osa.opts$parallel))
+    #remove any 0 residuals associated with last ages of multinomial and D-M
+    model$osa$residual[subset.caal] <- model$OSA.caal$residual
+    conditional. = c(conditional., subset.caal)
+    ind <- which(input$data$age_comp_model_fleets < 3)
+    print("ind")
+    print(ind)
+    if(length(ind)) {
+      for(i in ind) {
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
+        model$osa$residual[NAind] <- NA
+      }
+    }
+    ind <- which(input$data$age_comp_model_indices < 3)
+    print(ind)
+    if(length(ind)) {
+      for(i in ind) {
+        NAind <- which(model$osa$bin == max(model$osa$bin, na.rm =T) & model$osa$fleet == paste0("index_", i))
         model$osa$residual[NAind] <- NA
       }
     }

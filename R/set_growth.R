@@ -8,11 +8,11 @@ set_growth = function(input, growth, LAA)
 
   # Include phi_matrix (age length transition matrix):
   tmp_phi_mat = array(NA, dim = c(dim(data$waa)[1], data$n_lengths, data$n_ages)) # same dim as waa
-  if(is.null(data$input_phi_mat)) {
-    data$input_phi_mat = tmp_phi_mat
-    data$phi_mat_info = 0
+  if(is.null(data$phi_matrix_input)) {
+    data$phi_matrix_input = tmp_phi_mat
+    data$phi_matrix_info = 0
   } else {
-    data$phi_mat_info = 1
+    data$phi_matrix_info = 1
   }
 
   # growth default options:
