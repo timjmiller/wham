@@ -73,7 +73,6 @@ vector<Type> rdirichlet(vector<Type> x, vector<Type> p, Type phi, int pool0)
 template<class Type>
 vector<Type> rdirichlet(vector<Type> p, Type phi, vector<int> ages, int pool0)
 {
-  int npos = 0;
   vector<Type> p_pos(ages.size()), obs(ages.size());
   p_pos.setZero();
   obs.setZero();  
@@ -299,7 +298,6 @@ Type rTweedie( Type mu, Type phi, Type power){
 template<class Type>
 vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
 {
-  int Nint = CppAD::Integer(N);
   int dim = p.size();
   vector<Type> obs(dim);
   //obs.setZero();
