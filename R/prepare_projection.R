@@ -74,6 +74,22 @@ prepare_projection = function(model, proj.opts)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
 
+  # add options for GW (or LAA) and LW:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(input1$data$growth_model == 1){
+    data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+    for(i in 1:length(data$proj_GW_opt)) data$proj_GW_opt[i] <- ifelse(model$env$data$growth_re_model[i] %in% c(2,3,4,5), 1, 2) #
+  }
+  if(input1$data$growth_model == 2){
+    data$proj_GW_opt <- ifelse(model$env$data$LAA_re_model %in% c(2,5), 1, 2) # 2 = iid, 5 = 2dar1
+  }
+  if(input1$data$waa_type %in% c(2,3)){
+    data$proj_LW_opt = numeric(length(model$env$data$LW_re_model))
+    for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(model$env$data$LW_re_model[i] %in% c(2,3,4,5), 1, 2) # 2 = iid, 5 = 2dar1
+  }
+
+
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
@@ -178,13 +194,14 @@ prepare_projection = function(model, proj.opts)
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
   data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
   data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
-  toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
-  if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
-  tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
-  tmp[,1:data$n_years_model,] <- data$waa
-  for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
-  data$waa <- tmp
-
+  if(input1$data$waa_type == 1){ # only when waa present and used
+    toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+    if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
+    tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
+    tmp[,1:data$n_years_model,] <- data$waa
+    for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
+    data$waa <- tmp
+  }
   # initialize pars at previously estimated values
   par <- model$parList
   # fill_vals <- function(x){as.factor(rep(NA, length(x)))}
@@ -304,6 +321,95 @@ prepare_projection = function(model, proj.opts)
     #   for(i in 1:proj.opts$n.yrs) tmp[data$n_years_model+i,] = i
     # }
     # map$M_re <- factor(tmp)
+  }
+
+  # projection: GW
+  if(data$proj_GW_opt == 1){ 
+
+    if(data$growth_model == 1) {
+      par$growth_re <- abind::abind(par$growth_re, array(0, dim = c(proj.opts$n.yrs, dim(par$growth_re)[2], dim(par$growth_re)[3])), along = 1)
+      tmp <- par$growth_re
+
+      map$growth_re = NULL
+      max_val_par = 0
+      active_sum = -1
+      this_max = 0
+      for(i in 1:data$n_growth_par) {
+
+        # growth_re: "none","iid","ar1_y"
+        tmp1 <- matrix(NA, nrow = dim(tmp)[1], ncol = dim(tmp)[2])
+        if(data$growth_re_model[i] %in% c(2,4)){ # iid ar1- only y
+          tmp1[] = rep(1:nrow(tmp1), times = ncol(tmp1))  # all y estimated
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+        if(data$growth_re_model[i] %in% c(3,5)){ # iid ar1 - only c
+          loop_row = rep(0, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_row[1:ncol(tmp1)] = (ncol(tmp1) - 1):0
+          loop_col = rep(ncol(tmp1) - 1, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_col[(length(loop_col) - ncol(tmp1) + 1):length(loop_col)] = (ncol(tmp1) - 1):0
+
+          for(j in seq_along(loop_col)) {
+            tmp1[(loop_row[j]:loop_col[j])*(nrow(tmp1) + 1) + (j - ncol(tmp1) + 1)] <- j
+          }
+
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+
+        map$growth_re <- c(map$growth_re, as.vector(tmp1) + max_val_par)
+      }
+      map$growth_re = as.factor(map$growth_re)
+    } # growth model = 1
+
+    if(data$growth_model == 2) {
+      par$LAA_re <- rbind(par$LAA_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+      tmp <- par$LAA_re
+      tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
+      map$LAA_re <- factor(tmp)
+    } # growth model = 2
+
+  }
+
+  # projection: LW
+  if(data$proj_LW_opt == 1){ 
+      par$LW_re <- abind::abind(par$LW_re, array(0, dim = c(proj.opts$n.yrs, dim(par$LW_re)[2], dim(par$LW_re)[3])), along = 1)
+      tmp <- par$LW_re
+
+      map$LW_re = NULL
+      max_val_par = 0
+      active_sum = -1
+      this_max = 0
+      for(i in 1:data$n_LW_par) {
+
+        # growth_re: "none","iid","ar1_y"
+        tmp1 <- matrix(NA, nrow = dim(tmp)[1], ncol = dim(tmp)[2])
+        if(data$LW_re_model[i] %in% c(2,4)){ # iid ar1- only y
+          tmp1[] = rep(1:nrow(tmp1), times = ncol(tmp1))  # all y estimated
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+        if(data$LW_re_model[i] %in% c(3,5)){ # iid ar1 - only c
+          loop_row = rep(0, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_row[1:ncol(tmp1)] = (ncol(tmp1) - 1):0
+          loop_col = rep(ncol(tmp1) - 1, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_col[(length(loop_col) - ncol(tmp1) + 1):length(loop_col)] = (ncol(tmp1) - 1):0
+
+          for(j in seq_along(loop_col)) {
+            tmp1[(loop_row[j]:loop_col[j])*(nrow(tmp1) + 1) + (j - ncol(tmp1) + 1)] <- j
+          }
+
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+
+        map$LW_re <- c(map$LW_re, as.vector(tmp1) + max_val_par)
+      }
+      map$LW_re = as.factor(map$LW_re)
   }
 
   input2 <- list(data=data, par = par, map = map, random = random,

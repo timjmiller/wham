@@ -920,6 +920,10 @@ Type objective_function<Type>::operator() ()
 
   // --------------------------------------------------------------------------
   // Weight at age calculations:
+  	Type sum_wt = 0;
+	Type sum_wt_fleet = 0;
+	Type sum_wt_index = 0;
+	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
   if(waa_type == 1) {
   	// Replace pred_waa by waa to be used later:
 	for(int y = 0; y < n_years_model + n_years_proj; y++) {
@@ -937,10 +941,6 @@ Type objective_function<Type>::operator() ()
 	}
   } else {
 	  if(waa_type == 2) { // waa not provided, so use LW parameters, waa array will be replaced by pred_waa
-		  Type sum_wt = 0;
-		  Type sum_wt_fleet = 0;
-		  Type sum_wt_index = 0;
-		  matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
 		  for(int y = 0; y < n_years_model + n_years_proj; y++) {
 			int yuse = y;
 			int y_1 = y + 1;
@@ -990,11 +990,7 @@ Type objective_function<Type>::operator() ()
 	  } else { // waa provided and LW parameters used, likelihood function added
 		  matrix<Type> nll_waa(waa.dim(0), n_years_model);
 		  nll_waa.setZero();
-		  Type sum_wt = 0;
-		  Type sum_wt_fleet = 0;
-		  Type sum_wt_index = 0;
-		  matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
-		  for(int y = 0; y < n_years_model + n_years_proj; y++) {
+		  for(int y = 0; y < n_years_model + n_years_proj; y++) { // only for years_model
 			int yuse = y;
 			int y_1 = y + 1;
 			if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
@@ -1010,8 +1006,10 @@ Type objective_function<Type>::operator() ()
 				}
 				pred_waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st = SSB
 				pred_waa(waa_pointer_ssb - 1,y,a) = sum_wt; // jan-1st = SSB
-				nll_waa(waa_pointer_jan1 - 1,y) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_Neff(waa_pointer_jan1 - 1,y,a)); 
-				nll_waa(waa_pointer_ssb - 1,y) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_Neff(waa_pointer_ssb - 1,y,a)); 
+				if(y < n_years_model) {
+					nll_waa(waa_pointer_jan1 - 1,y) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_Neff(waa_pointer_jan1 - 1,y,a)); 
+					nll_waa(waa_pointer_ssb - 1,y) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_Neff(waa_pointer_ssb - 1,y,a)); 
+				}
 			}
 
 			// For fleets
@@ -1025,8 +1023,10 @@ Type objective_function<Type>::operator() ()
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-					nll_waa(waa_pointer_fleets(f) - 1,y) -= get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_Neff(waa_pointer_fleets(f) - 1,y,a)); 
-					nll_waa(waa_pointer_totcatch - 1,y) -= get_waa_ll(waa(waa_pointer_totcatch - 1,y,a), pred_waa(waa_pointer_totcatch - 1,y,a), waa_Neff(waa_pointer_totcatch - 1,y,a)); 
+					if(y < n_years_model) {
+						nll_waa(waa_pointer_fleets(f) - 1,y) -= get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_Neff(waa_pointer_fleets(f) - 1,y,a)); 
+						nll_waa(waa_pointer_totcatch - 1,y) -= get_waa_ll(waa(waa_pointer_totcatch - 1,y,a), pred_waa(waa_pointer_totcatch - 1,y,a), waa_Neff(waa_pointer_totcatch - 1,y,a)); 
+					}
 				}
 			}
 			
@@ -1040,13 +1040,13 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-					nll_waa(waa_pointer_indices(i) - 1,y) -= get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_Neff(waa_pointer_indices(i) - 1,y,a)); 
+					if(y < n_years_model) nll_waa(waa_pointer_indices(i) - 1,y) -= get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_Neff(waa_pointer_indices(i) - 1,y,a)); 
 				}
 			}
 			
-		  }  
-		REPORT(nll_waa);
-		nll += nll_waa.sum();
+		  }  // loop only for year_model
+		  REPORT(nll_waa);
+		  nll += nll_waa.sum();			
 	  }
   }
   REPORT(pred_waa); // print replaced (or not) waa matrix	  
