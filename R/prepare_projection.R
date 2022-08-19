@@ -43,7 +43,8 @@
 prepare_projection = function(model, proj.opts)
 {
   if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, cont.GWre=NULL,cont.LWre=NULL,
+                                       avg.rec.yrs=NULL, percentFXSPR=100,
                                        percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
@@ -74,21 +75,36 @@ prepare_projection = function(model, proj.opts)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
 
-  # add options for GW (or LAA) and LW:
+  # add options for GW (or LAA):
   #   1 = continue random effects (if they exist) - need to pad M_re
   #   2 = use average
-  if(input1$data$growth_model == 1){
-    data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
-    for(i in 1:length(data$proj_GW_opt)) data$proj_GW_opt[i] <- ifelse(model$env$data$growth_re_model[i] %in% c(2,3,4,5), 1, 2) #
+  if(!is.null(proj.opts$cont.GWre)){
+    if(input1$data$growth_model == 1){
+      data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+      for(i in 1:length(data$proj_GW_opt)) data$proj_GW_opt[i] <- ifelse(model$env$data$growth_re_model[i] %in% c(2,3,4,5), 1, 2) #
+    }
+    if(input1$data$growth_model == 2){
+      data$proj_GW_opt <- ifelse(model$env$data$LAA_re_model %in% c(2,5), 1, 2) # 2 = iid, 5 = 2dar1
+    }
+  } else {
+    if(input1$data$growth_model == 1) {
+      for(i in 1:length(data$proj_GW_opt)) data$proj_GW_opt[i] <- ifelse(model$env$data$growth_re_model[i] %in% c(2,3,4,5), 1, 2) 
+    }
+    if(input1$data$growth_model == 2) data$proj_GW_opt <- ifelse(model$env$data$LAA_re_model %in% c(2,5), 1, 2)
   }
-  if(input1$data$growth_model == 2){
-    data$proj_GW_opt <- ifelse(model$env$data$LAA_re_model %in% c(2,5), 1, 2) # 2 = iid, 5 = 2dar1
+  # add options for GW (or LAA):
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.LWre)){
+    if(input1$data$waa_type %in% c(2,3)){
+      data$proj_LW_opt = numeric(length(model$env$data$LW_re_model))
+      for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(model$env$data$LW_re_model[i] %in% c(2,3,4,5), 1, 2) # 2 = iid, 5 = 2dar1
+    }
+  } else {
+    if(input1$data$waa_type %in% c(2,3)){
+      for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(model$env$data$LW_re_model[i] %in% c(2,3,4,5), 1, 2) # 2 = iid, 5 = 2dar1
+    }
   }
-  if(input1$data$waa_type %in% c(2,3)){
-    data$proj_LW_opt = numeric(length(model$env$data$LW_re_model))
-    for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(model$env$data$LW_re_model[i] %in% c(2,3,4,5), 1, 2) # 2 = iid, 5 = 2dar1
-  }
-
 
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
@@ -324,7 +340,7 @@ prepare_projection = function(model, proj.opts)
   }
 
   # projection: GW
-  if(data$proj_GW_opt == 1){ 
+  if(any(data$proj_GW_opt == 1)){ 
 
     if(data$growth_model == 1) {
       par$growth_re <- abind::abind(par$growth_re, array(0, dim = c(proj.opts$n.yrs, dim(par$growth_re)[2], dim(par$growth_re)[3])), along = 1)
@@ -374,7 +390,7 @@ prepare_projection = function(model, proj.opts)
   }
 
   # projection: LW
-  if(data$proj_LW_opt == 1){ 
+  if(any(data$proj_LW_opt == 1)){ 
       par$LW_re <- abind::abind(par$LW_re, array(0, dim = c(proj.opts$n.yrs, dim(par$LW_re)[2], dim(par$LW_re)[3])), along = 1)
       tmp <- par$LW_re
 

@@ -165,6 +165,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_IVECTOR(proj_GW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_IVECTOR(proj_LW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
   DATA_SCALAR(logR_sd); // empirical sd recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(F_proj_init); // annual initial values  to use for newton steps to find F for use in projections  (n_years_proj)
@@ -708,49 +710,67 @@ Type objective_function<Type>::operator() ()
   for(int j = 0; j < n_growth_par; j++) { 
 	  for(int y = 0; y < n_years_model; y++) { 
 			for(int a = 0; a < n_ages; a++) { 
-			
 				GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
-					
 			}
 	  }
    }
 
-  // add to growth parameters in projection years CHECK THIS
-  if(do_proj == 1){ 
-
-	  for(int j = 0; j < n_growth_par; j++) { 
+  // add to growth parameters in projection years
+  if((do_proj == 1) & (growth_model == 1)){ 
+  	for(int j = 0; j < n_growth_par; j++) { 
+	  if(proj_GW_opt(j) == 2){
+		  matrix<Type> GW_toavg(n_toavg,n_ages);
+		  for(int a = 0; a < n_ages; a++){
+			for(int i = 0; i < n_toavg; i++){
+			  GW_toavg(i,a) = GW_par(avg_years_ind(i),a,j);
+			}
+		  }
+		  vector<Type> GW_proj = GW_toavg.colwise().mean();
+		  for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+			for(int a = 0; a < n_ages; a++){
+			  GW_par(y,a,j) = GW_proj(a);
+			}
+		  }
+	  } else { // proj_GW_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
-			for(int a = 0; a < n_ages; a++) { 
-								
+			for(int a = 0; a < n_ages; a++) { 		
 				GW_par(y,a,j) = exp(growth_a(j,0) + growth_re(y,a,j)); 
-
-				
 			}
 		}
 	  }
-	  
+	}
   }
 
   // Construct LAA parameters per year NEWG
   matrix<Type> LAA_par(n_years_model + n_years_proj,n_ages); 
-	  for(int y = 0; y < n_years_model; y++) { 
-			for(int a = 0; a < n_ages; a++) { 
-				LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
-			}
+  for(int y = 0; y < n_years_model; y++) { 
+		for(int a = 0; a < n_ages; a++) { 
+			LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
+		}
+  }
+
+
+  // add to LAA parameters in projection years
+  if((do_proj == 1) & (growth_model == 2)){ 
+	if(proj_GW_opt(0) == 2){
+	  matrix<Type> GW_toavg(n_toavg,n_ages);
+	  for(int a = 0; a < n_ages; a++){
+		for(int i = 0; i < n_toavg; i++){
+		  GW_toavg(i,a) = LAA_par(avg_years_ind(i),a);
+		}
 	  }
-
-
-  // add to LAA parameters in projection years CHECK THIS
-  if(do_proj == 1){ 
-
+	  vector<Type> GW_proj = GW_toavg.colwise().mean();
+	  for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+		LAA_par.row(y) = GW_proj;
+	  }
+	} else { // proj_GW_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 		
 				LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
 			}
 		}
-	  
+	}
   }
-
   
   // add ecov effect on growth paramteres NEWG CHECK THIS LATER. It should be parameter-specific
   // for(int i=0; i < n_Ecov; i++){
@@ -854,17 +874,33 @@ Type objective_function<Type>::operator() ()
 	  }
    }
 
-  // add to growth parameters in projection years CHECK THIS
-  if(do_proj == 1){ 
-	  for(int j = 0; j < n_LW_par; j++) { 
+
+  // add to LW parameters in projection years
+  if((do_proj == 1) & (waa_type > 1)){ 
+  	for(int j = 0; j < n_LW_par; j++) { 
+	  if(proj_LW_opt(j) == 2){
+		  matrix<Type> LW_toavg(n_toavg,n_ages);
+		  for(int a = 0; a < n_ages; a++){
+			for(int i = 0; i < n_toavg; i++){
+			  LW_toavg(i,a) = LW_par(avg_years_ind(i),a,j);
+			}
+		  }
+		  vector<Type> LW_proj = LW_toavg.colwise().mean();
+		  for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
+			for(int a = 0; a < n_ages; a++){
+			  LW_par(y,a,j) = LW_proj(a);
+			}
+		  }
+	  } else { // proj_GW_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 		
 				LW_par(y,a,j) = exp(LW_a(j,0) + LW_re(y,a,j)); 
 			}
 		}
-	  } 
+	  }
+	}
   }
-
+  
   // --------------------------------------------------------------------------
   // Calculate mean-LAA, SDAA, and transition matrix, for all years: NEWG
   // Some information I need for transition matrix: 
