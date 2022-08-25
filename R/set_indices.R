@@ -96,13 +96,13 @@ set_indices = function(input, index_opts=NULL)
 
 		if(any(data$units_index_pal != 2)) stop('units_index_pal must be 2 (numbers). Other units (weight) will be added when L-W relationship be incorporated.')
 
-		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
+		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 0
 		else data$index_Neff[] = index_opts$index_Neff
 
-		if(is.null(index_opts$index_NeffL)) data$index_NeffL[] = 100
+		if(is.null(index_opts$index_NeffL)) data$index_NeffL[] = 0
 		else data$index_NeffL[] = index_opts$index_NeffL
 		
-		if(is.null(index_opts$index_caal_Neff)) data$index_caal_Neff[] = 100
+		if(is.null(index_opts$index_caal_Neff)) data$index_caal_Neff[] = 0
 		else data$index_caal_Neff[] = index_opts$index_caal_Neff
 
 		if(!is.null(index_opts$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa

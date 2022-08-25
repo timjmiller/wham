@@ -1024,7 +1024,7 @@ Type objective_function<Type>::operator() ()
 			
 		  }
 	  } else { // waa provided and LW parameters used, likelihood function added
-		  matrix<Type> nll_waa(waa.dim(0), n_years_model);
+		  array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
 		  nll_waa.setZero();
 		  for(int y = 0; y < n_years_model + n_years_proj; y++) { // only for years_model
 			int yuse = y;
@@ -1042,10 +1042,10 @@ Type objective_function<Type>::operator() ()
 				}
 				pred_waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st = SSB
 				pred_waa(waa_pointer_ssb - 1,y,a) = sum_wt; // jan-1st = SSB
-				if(y < n_years_model) {
-					nll_waa(waa_pointer_jan1 - 1,y) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_Neff(waa_pointer_jan1 - 1,y,a)); 
-					nll_waa(waa_pointer_ssb - 1,y) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_Neff(waa_pointer_ssb - 1,y,a)); 
-				}
+				// if(y < n_years_model) {
+					// nll_waa(waa_pointer_jan1 - 1,y,a) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_Neff(waa_pointer_jan1 - 1,y,a)); 
+					// nll_waa(waa_pointer_ssb - 1,y,a) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_Neff(waa_pointer_ssb - 1,y,a)); 
+				// }
 			}
 
 			// For fleets
@@ -1059,9 +1059,8 @@ Type objective_function<Type>::operator() ()
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-					if(y < n_years_model) {
-						nll_waa(waa_pointer_fleets(f) - 1,y) -= get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_Neff(waa_pointer_fleets(f) - 1,y,a)); 
-						nll_waa(waa_pointer_totcatch - 1,y) -= get_waa_ll(waa(waa_pointer_totcatch - 1,y,a), pred_waa(waa_pointer_totcatch - 1,y,a), waa_Neff(waa_pointer_totcatch - 1,y,a)); 
+					if((y < n_years_model) &  (waa_Neff(waa_pointer_fleets(f) - 1,y,a) > 0)) { // add here for totalcatch if required
+						nll_waa(waa_pointer_fleets(f) - 1,y,a) -= get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_Neff(waa_pointer_fleets(f) - 1,y,a)); 
 					}
 				}
 			}
@@ -1076,7 +1075,9 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-					if(y < n_years_model) nll_waa(waa_pointer_indices(i) - 1,y) -= get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_Neff(waa_pointer_indices(i) - 1,y,a)); 
+					if((y < n_years_model) &  (waa_Neff(waa_pointer_indices(i) - 1,y,a) > 0)) {
+						nll_waa(waa_pointer_indices(i) - 1,y,a) -= get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_Neff(waa_pointer_indices(i) - 1,y,a)); 
+					}
 				}
 			}
 			
@@ -1697,7 +1698,7 @@ Type objective_function<Type>::operator() ()
           nll_catch_acomp(y,f) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
             vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)), do_osa, paa_obs_y);
         }
-        SIMULATE if(simulate_data(1) == 1) if(use_catch_paa(usey,f) == 1){
+        SIMULATE if(simulate_data(0) == 1) if(use_catch_paa(usey,f) == 1){
           if((simulate_period(0) == 1) & (y < n_years_model)) //model years
           {
             for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_paa(f,y,a);
@@ -1736,7 +1737,7 @@ Type objective_function<Type>::operator() ()
           nll_catch_lcomp(y,f) -= get_acomp_ll(tf_pal_obs, t_pred_pal, catch_NeffL(y,f), lens_obs_y, len_comp_model_fleets(f), 
             vector<Type>(catch_pal_pars.row(f)), keep.segment(keep_Cpal(f,y,0),keep_Cpal(f,y,1)), do_osa, pal_obs_y);
         }
-        SIMULATE if(simulate_data(1) == 1) if(use_catch_pal(usey,f) == 1){
+        SIMULATE if(simulate_data(0) == 1) if(use_catch_pal(usey,f) == 1){
           if((simulate_period(0) == 1) & (y < n_years_model)) //model years
           {
             for(int l = 0; l < n_lengths; l++) pal_obs_y(l) = catch_pal(f,y,l);
@@ -1776,7 +1777,7 @@ Type objective_function<Type>::operator() ()
 			  nll_catch_caal(y,f,l) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_caal_Neff(y,f,l), ages_obs_y, age_comp_model_fleets(f), 
 				vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Ccaal(f,y,l,0),keep_Ccaal(f,y,l,1)), do_osa, paa_obs_y);
 			}
-			SIMULATE if(simulate_data(1) == 1) if(use_catch_caal(usey,f) == 1){
+			SIMULATE if(simulate_data(0) == 1) if(use_catch_caal(usey,f) == 1){
 			  if((simulate_period(0) == 1) & (y < n_years_model)) //model years
 			  {
 				for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_caal(f,y,l,a);

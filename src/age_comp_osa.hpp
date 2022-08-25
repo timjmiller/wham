@@ -438,29 +438,29 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   data_indicator<vector<Type>, Type> keep, int do_osa, vector<Type> paa_obs)
 {
   Type ll = 0.0;
-  vector<Type> p = paa_pred;
+  vector<Type> p = paa_pred+1.0e-15;
     if(age_comp_model == 1) {
       //multinomial
       //tf_paa_obs = Neff * paa_obs
-      ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
+      ll = dmultinom(tf_paa_obs, p, keep, 1, do_osa);
     }
     if(age_comp_model == 2) {
       //dirichlet-multinomial
       //tf_paa_obs = Neff * paa_obs
       vector<Type> alphas = p * exp(age_comp_pars(0));
-      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
+      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, do_osa);
     }
     if(age_comp_model == 3) { 
       //Dirichlet, miss0
       //0,1: pool 0s, do log 
       //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, 1);
+      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, do_osa);
     }
     if(age_comp_model == 4) { 
       //Dirichlet, pool0
       //0,1: pool 0s, do log 
       //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, 1);
+      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, do_osa);
     }
     if(age_comp_model == 5) { 
       //logistic-normal, miss0
@@ -511,6 +511,6 @@ template<class Type>
 Type get_waa_ll(Type waa_obs, Type waa_pred, Type Neff)
 {
 	Type ll = 0.0;
-	ll = 0.5*pow((waa_obs-waa_pred)/(pow(waa_pred,2)/Neff),2);
+	ll = 0.5*pow((waa_obs-waa_pred)/(pow(waa_pred,2)/pow(Neff,0.5)),2);
 	return ll;
 }

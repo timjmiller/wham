@@ -11,8 +11,8 @@ set_selectivity = function(input, selectivity)
     data$n_ages + 1:2,
 	  data$n_ages + 7:12,
     data$n_ages + 13:14,
-    data$n_ages + 15:20,
-    data$n_ages + 13:14
+    data$n_ages + 13:14,
+    data$n_ages + 15:20
   )
 
   if(is.null(input$asap3)) {
@@ -190,12 +190,12 @@ set_selectivity = function(input, selectivity)
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 20)
   selpars_lo[,data$n_ages + 7] = 1 # min age
   selpars_lo[,data$n_ages + 8:12] = -50 
-  selpars_lo[,data$n_ages + 13:15] = min(data$n_lengths) 
+  selpars_lo[,data$n_ages + 13:15] = min(data$lengths) 
   selpars_lo[,data$n_ages + 16:20] = -50 
   selpars_hi[,1:data$n_ages] = 1
   selpars_hi[,data$n_ages + 1:7] = data$n_ages
   selpars_hi[,data$n_ages + 8:12] = 50 
-  selpars_hi[,data$n_ages + 13:15] = max(data$n_lengths) 
+  selpars_hi[,data$n_ages + 13:15] = max(data$lengths) 
   selpars_hi[,data$n_ages + 16:20] = 50 
 
   temp = matrix(NA, data$n_selblocks, data$n_ages + 20)
