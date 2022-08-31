@@ -26,7 +26,6 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 	matrix<Type> tmpL(n_years, n_lengths); // only for len selex
 	tmp.setZero();
 	tmpL.setZero();
-	Type len_bin = lengths(1) - lengths(0);
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
     { 

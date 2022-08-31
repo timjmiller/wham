@@ -41,7 +41,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(waa_pointer_jan1);
   DATA_INTEGER(waa_type);
   DATA_ARRAY(waa);
-  DATA_ARRAY(waa_Neff);
+  DATA_MATRIX(waa_cv);
   DATA_MATRIX(agg_catch);
   DATA_IMATRIX(use_agg_catch);
   DATA_MATRIX(agg_catch_sigma);
@@ -149,6 +149,7 @@ Type objective_function<Type>::operator() ()
   //Below is not used anymore
   //DATA_IMATRIX(Ecov_poly); // n_Ecov x 2+n_indices. polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
   DATA_IMATRIX(Ecov_where); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
+  DATA_INTEGER(Ecov_where_subindex); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
   //DATA_INTEGER(year1_Ecov); // first year Ecov
   //DATA_INTEGER(year1_model); // first year model
@@ -772,20 +773,19 @@ Type objective_function<Type>::operator() ()
 	}
   }
   
-  // add ecov effect on growth paramteres NEWG CHECK THIS LATER. It should be parameter-specific
-  // for(int i=0; i < n_Ecov; i++){
-    // if(Ecov_where(i,2) == 1) {  // 2 for growth
-	
-		// for(int k = 0; k < n_growth_par; k++) { 
-			// for(int y = 0; y < n_years_model + n_years_proj; y++) {
-				// for(int a = 0; a < n_ages; a++) { 
-					// GW_par(y,a,k) *= exp(Ecov_lm(i,1,y,0));
-				// }
-			// }
-		// }
-		
-    // }
-  // }
+  // add ecov effect on growth paramteres
+  for(int j = 0; j < n_growth_par; j++) { 
+	for(int i=0; i < n_Ecov; i++){
+		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
+			for(int y = 0; y < n_years_model + n_years_proj; y++) {
+				for(int a = 0; a < n_ages; a++) { 
+					if(growth_model == 1) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-2,y,0));
+					if(growth_model == 2) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-2,y,a));
+				}
+			}
+		}
+    }
+  }
 
   // --------------------------------------------------------------------------
   // Calculate LW --  NEWG section
@@ -813,7 +813,7 @@ Type objective_function<Type>::operator() ()
 			  for(int i = 0; i < LWre0.size(); i++) LWre0(i) = Sigma_LW * LWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
 				if(((simulate_period(0) == 1) & (y < n_years_model)) | ((simulate_period(1) == 1) & (y > n_years_model-1))){
-				  LW_re(y,0,j) = LWre0(y);
+				  for(int a = 0; a < n_ages; a++) LW_re(y,a,j) = LWre0(y);
 				}
 			  }
 			}
@@ -900,6 +900,19 @@ Type objective_function<Type>::operator() ()
 	  }
 	}
   }
+  
+  // add ecov effect on LW paramteres
+  for(int j = 0; j < n_LW_par; j++) { 
+	for(int i=0; i < n_Ecov; i++){
+		if((Ecov_where(i,n_effects-1) == 1) & ((Ecov_where_subindex-1) == j)) {  // for LW
+			for(int y = 0; y < n_years_model + n_years_proj; y++) {
+				for(int a = 0; a < n_ages; a++) { 
+					LW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-1,y,0));
+				}
+			}
+		}
+    }
+  }  
   
   // --------------------------------------------------------------------------
   // Calculate mean-LAA, SDAA, and transition matrix, for all years: NEWG
@@ -1043,8 +1056,8 @@ Type objective_function<Type>::operator() ()
 				pred_waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st = SSB
 				pred_waa(waa_pointer_ssb - 1,y,a) = sum_wt; // jan-1st = SSB
 				// if(y < n_years_model) {
-					// nll_waa(waa_pointer_jan1 - 1,y,a) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_Neff(waa_pointer_jan1 - 1,y,a)); 
-					// nll_waa(waa_pointer_ssb - 1,y,a) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_Neff(waa_pointer_ssb - 1,y,a)); 
+					// nll_waa(waa_pointer_jan1 - 1,y,a) -= get_waa_ll(waa(waa_pointer_jan1 - 1,y,a), pred_waa(waa_pointer_jan1 - 1,y,a), waa_cv(waa_pointer_jan1 - 1,y,a)); 
+					// nll_waa(waa_pointer_ssb - 1,y,a) -= get_waa_ll(waa(waa_pointer_ssb - 1,y,a), pred_waa(waa_pointer_ssb - 1,y,a), waa_cv(waa_pointer_ssb - 1,y,a)); 
 				// }
 			}
 
@@ -1059,8 +1072,8 @@ Type objective_function<Type>::operator() ()
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-					if((y < n_years_model) &  (waa_Neff(waa_pointer_fleets(f) - 1,y,a) > 0)) { // add here for totalcatch if required
-						nll_waa(waa_pointer_fleets(f) - 1,y,a) -= get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_Neff(waa_pointer_fleets(f) - 1,y,a)); 
+					if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,a) > 0)) { // add here for totalcatch if required
+						nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,a)); 
 					}
 				}
 			}
@@ -1075,8 +1088,8 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-					if((y < n_years_model) &  (waa_Neff(waa_pointer_indices(i) - 1,y,a) > 0)) {
-						nll_waa(waa_pointer_indices(i) - 1,y,a) -= get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_Neff(waa_pointer_indices(i) - 1,y,a)); 
+					if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,a) > 0)) {
+						nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,a)); 
 					}
 				}
 			}
@@ -2207,6 +2220,7 @@ Type objective_function<Type>::operator() ()
   REPORT(SDAA); // NEWG
   REPORT(GW_par); // NEWG
   REPORT(LAA_par); // NEWG
+  REPORT(LW_par); // NEWG
   REPORT(pred_NAA);
   REPORT(SSB);
   REPORT(selAL);
