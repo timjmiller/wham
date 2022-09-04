@@ -12,7 +12,7 @@ set_WAA = function(input, waa_opts = NULL)
 	  for(i in 1:length(asap3$WAA_mats)) data$waa[i,,] = asap3$WAA_mats[[i]]
 	  data$waa_pointer_indices = asap3$index_WAA_pointers
 	  data$waa_type = 1 # 1 = waa info present and used
-	  data$waa_cv = matrix(0, nrow = dim(data$waa)[1], ncol = data$n_ages)
+	  data$waa_cv = array(0, dim = dim(data$waa))
 	}
 	else
 	{
@@ -24,7 +24,7 @@ set_WAA = function(input, waa_opts = NULL)
 			data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM
 			data$waa_pointer_indices = rep(1,data$n_indices) + data$n_fleets
 			if(is.null(data$waa_type)) data$waa_type = 2 # 2 = waa info not provided. use LW
-			if(is.null(data$waa_cv)) data$waa_cv = matrix(0, nrow = dim(data$waa)[1], ncol = data$n_ages) # only used when waa_type == 3
+			if(is.null(data$waa_cv)) data$waa_cv = array(0, dim = dim(data$waa)) # only used when waa_type == 3
 		}
 		else {
 			data$waa = waa_opts$waa
@@ -32,7 +32,7 @@ set_WAA = function(input, waa_opts = NULL)
 			WAA_pointers = c(1:data$n_fleets,data$n_fleets+data$n_indices + c(1,2,2)) #Jan1 = SSB
 			data$waa_pointer_indices = rep(1,data$n_indices) + data$n_fleets
 			if(is.null(data$waa_type)) data$waa_type = 1 # 1 = waa info present and used
-			if(is.null(data$waa_cv)) data$waa_cv = matrix(0, nrow = dim(data$waa)[1], ncol = data$n_ages) # only used when waa_type == 3
+			if(is.null(data$waa_cv)) data$waa_cv = array(0, dim = dim(data$waa)) # only used when waa_type == 3
 		}
 	}
 

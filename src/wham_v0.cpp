@@ -41,7 +41,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(waa_pointer_jan1);
   DATA_INTEGER(waa_type);
   DATA_ARRAY(waa);
-  DATA_MATRIX(waa_cv);
+  DATA_ARRAY(waa_cv);
   DATA_MATRIX(agg_catch);
   DATA_IMATRIX(use_agg_catch);
   DATA_MATRIX(agg_catch_sigma);
@@ -973,6 +973,8 @@ Type objective_function<Type>::operator() ()
 	Type sum_wt_fleet = 0;
 	Type sum_wt_index = 0;
 	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
+	array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
+	nll_waa.setZero();
   if(waa_type == 1) {
   	// Replace pred_waa by waa to be used later:
 	for(int y = 0; y < n_years_model + n_years_proj; y++) {
@@ -1037,8 +1039,6 @@ Type objective_function<Type>::operator() ()
 			
 		  }
 	  } else { // waa provided and LW parameters used, likelihood function added
-		  array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
-		  nll_waa.setZero();
 		  for(int y = 0; y < n_years_model + n_years_proj; y++) { // only for years_model
 			int yuse = y;
 			int y_1 = y + 1;
@@ -1072,8 +1072,8 @@ Type objective_function<Type>::operator() ()
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-					if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,a) > 0)) { // add here for totalcatch if required
-						nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,a)); 
+					if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0)) { // add here for totalcatch if required
+						nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
 					}
 				}
 			}
@@ -1088,18 +1088,18 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-					if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,a) > 0)) {
-						nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,a)); 
+					if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0)) {
+						nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,y,a)); 
 					}
 				}
 			}
 			
 		  }  // loop only for year_model
-		  REPORT(nll_waa);
 		  nll += nll_waa.sum();			
 	  }
   }
   REPORT(pred_waa); // print replaced (or not) waa matrix	  
+  REPORT(nll_waa);
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)

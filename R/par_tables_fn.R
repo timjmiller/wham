@@ -230,9 +230,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       modify = ""
       if(data$selblock_models[i] == 1) modify = " AR1 $\\rho$ (age)"
       if(data$selblock_models[i] %in% c(2,4)) modify = " $\\rho$ for $a_{50}$ and 1/slope" 
-      if(data$selblock_models[i] %in% c(5,7)) modify = " $\\rho$ for $l_{50}$ and 1/slope" 
-      if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for age double-normal pars"
-      if(data$selblock_models[i] == 6) modify = " AR1 $\\rho$ for length double-normal pars"
+      if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for age double-logistic pars"
+      if(data$selblock_models[i] == 5) modify = " AR1 $\\rho$ for age double-normal pars"
+      if(data$selblock_models[i] %in% c(6,7)) modify = " $\\rho$ for $l_{50}$ and 1/slope" 
+      if(data$selblock_models[i] == 8) modify = " AR1 $\\rho$ for length double-normal pars"
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
@@ -565,7 +566,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
 
   # LW parameters
-  if(data$waa_info == 0) {
+  if(data$waa_type == 2 | data$waa_type == 3) {
     LW_vector = as.vector(pars$LW_a)
     LWpar_names = c("a (length-weight)", "b (length-weight)")
     fe.names = c(fe.names, LWpar_names)
@@ -679,6 +680,52 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
           for(p in 1:npoly) {
             fe.vals = c(fe.vals, pars$Ecov_beta[2+j,p,i,1])
             fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[2+j,p,i,1], sd$Ecov_beta[2+j,p,i,1]))
+          }
+        }
+      }
+    }
+    index_growth = ncol(data$Ecov_where) - 1
+    index_LW = ncol(data$Ecov_where) 
+    if(data$Ecov_where[i,index_growth] == 1){ #growth
+      if(any(!is.na(ecov_beta_map[index_growth,,i,]))){
+        npoly = dim(ecov_beta_map)[index_growth]
+        ecov_beta_map_i = matrix(ecov_beta_map[index_growth,,i,],nrow = npoly)
+        ecov_beta_par_i = matrix(pars$Ecov_beta[index_growth,,i,],nrow = npoly)
+        npoly = max(apply(ecov_beta_map_i,index_growth, function(x) sum(!is.na(x))))
+        beta_ind = unique(ecov_beta_map_i[!is.na(ecov_beta_map_i)])
+        ages.list = list()
+        for(k in 1:length(beta_ind)){
+          #find the ages which the beta is being applied to
+          ages.list[[k]] = which(apply(ecov_beta_map_i,index_growth, function(x) any(x == k)))
+          #find the order of the polynomial. Ecov_beta should never be mapped to apply to more than one order of the orthogonal polynomial
+          poly.ind = which(apply(ecov_beta_map_i,1, function(x) any(x == k)))[1]
+          if(length(ages.list[[k]])){
+            modify = 'Growth parameter '
+            fe.names = c(fe.names, paste0(modify, paste0(ages.list[[k]], collapse = ", "), " Ecov: ", data$Ecov_label[[1]][i], " $\\beta_", poly.ind, "$"))
+            fe.vals = c(fe.vals, pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]])
+            fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]], sd$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]]))
+          }
+        }
+      }
+    }
+    if(data$Ecov_where[i,index_LW] == 1){ #LW
+      if(any(!is.na(ecov_beta_map[index_LW,,i,]))){
+        npoly = dim(ecov_beta_map)[index_LW]
+        ecov_beta_map_i = matrix(ecov_beta_map[index_LW,,i,],nrow = npoly)
+        ecov_beta_par_i = matrix(pars$Ecov_beta[index_LW,,i,],nrow = npoly)
+        npoly = max(apply(ecov_beta_map_i,index_LW, function(x) sum(!is.na(x))))
+        beta_ind = unique(ecov_beta_map_i[!is.na(ecov_beta_map_i)])
+        ages.list = list()
+        for(k in 1:length(beta_ind)){
+          #find the ages which the beta is being applied to
+          ages.list[[k]] = which(apply(ecov_beta_map_i,index_LW, function(x) any(x == k)))
+          #find the order of the polynomial. Ecov_beta should never be mapped to apply to more than one order of the orthogonal polynomial
+          poly.ind = which(apply(ecov_beta_map_i,1, function(x) any(x == k)))[1]
+          if(length(ages.list[[k]])){
+            modify = 'LW parameter '
+            fe.names = c(fe.names, paste0(modify, paste0(ages.list[[k]], collapse = ", "), " Ecov: ", data$Ecov_label[[1]][i], " $\\beta_", poly.ind, "$"))
+            fe.vals = c(fe.vals, pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]])
+            fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]], sd$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]]))
           }
         }
       }

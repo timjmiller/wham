@@ -718,12 +718,18 @@ plot.ll.table.fn <- function(mod,plot.colors){
   #n.like <- length(lls)
   n_fleets = mod$env$data$n_fleets
   n_indices = mod$env$data$n_indices
-  obs.lls = lls[names(lls) %in% c("nll_agg_catch", "nll_catch_acomp", "nll_agg_indices", "nll_index_acomp")]
+  obs.lls = lls[names(lls) %in% c("nll_agg_catch", "nll_catch_acomp", "nll_catch_lcomp", "nll_catch_caal", 
+                "nll_agg_indices", "nll_index_acomp", "nll_index_lcomp", "nll_index_caal", "nll_waa")]
   obs.lls = lapply(obs.lls, function(x) apply(x,2,sum))
   names(obs.lls$nll_agg_catch) = paste0("Fleet ", 1:n_fleets, " Catch")
   names(obs.lls$nll_catch_acomp) = paste0("Fleet ", 1:n_fleets, " Age Comp")
+  names(obs.lls$nll_catch_lcomp) = paste0("Fleet ", 1:n_fleets, " Length Comp")
+  names(obs.lls$nll_catch_caal) = paste0("Fleet ", 1:n_fleets, " CAAL")
   names(obs.lls$nll_agg_indices) = paste0("Index ", 1:n_indices, " Catch")
   names(obs.lls$nll_index_acomp) = paste0("Index ", 1:n_indices, " Age Comp")
+  names(obs.lls$nll_index_lcomp) = paste0("Index ", 1:n_indices, " Length Comp")
+  names(obs.lls$nll_index_caal) = paste0("Index ", 1:n_indices, " CAAL")
+  names(obs.lls$nll_waa) = "Weight-at-age"
   names(obs.lls) = NULL
   obs.lls = unlist(obs.lls)
   n.obs.ll = length(obs.lls)
@@ -733,10 +739,12 @@ plot.ll.table.fn <- function(mod,plot.colors){
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
     "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)")
   obs.dists[paste0("Fleet ", 1:n_fleets, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
-  obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
+  obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_indices])
+  obs.dists[paste0("Fleet ", 1:n_fleets, " Length Comp")] = paste0("x ~ ", acm[mod$env$data$len_comp_model_fleets])
+  obs.dists[paste0("Index ", 1:n_indices, " Length Comp")] = paste0("x ~ ", acm[mod$env$data$len_comp_model_indices])
 
-  proc.lls = lls[names(lls) %in% c("nll_M", "nll_NAA", "nll_recruit", "lprior_b")]
-  names(proc.lls) = c("M", "NAA", "recruit", "W_b_M")[match(names(proc.lls),c("nll_M", "nll_NAA", "nll_recruit", "lprior_b"))]
+  proc.lls = lls[names(lls) %in% c("nll_M", "nll_NAA", "nll_GW", "nll_LW", "nll_LAA", "nll_recruit", "lprior_b")]
+  names(proc.lls) = c("M", "NAA", "growth", "length-weight", "mean LAA", "recruit", "W_b_M")[match(names(proc.lls),c("nll_M", "nll_NAA", "nll_GW", "nll_LW", "nll_LAA", "nll_recruit", "lprior_b"))]
   proc.lls = unlist(lapply(proc.lls, sum))
   n.proc.ll = length(proc.lls)
   proc.dists = rep("log(x) ~ Gaussian", n.proc.ll)
@@ -1781,6 +1789,116 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
   # par(origpar)
 }
 
+plot.waa.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 0.25, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
+                                       do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
+{
+  origpar <- par(no.readonly = TRUE)
+  dat = mod$env$data
+  if(missing(ages)) ages = 1:dat$n_ages
+  if(missing(ages.lab)) ages.lab = mod$ages.lab
+  n_ages <- dat$n_ages
+  years = mod$years
+  nyrs <- length(years)
+  tylab <- "Year"
+
+  for (i in unique(dat$waa_pointer_fleets))
+  {
+
+    yzero = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) == 0)
+    ydata = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) > 0)
+
+    waa.obs = dat$waa[i,,]
+    waa.pred = mod$rep$pred_waa[i,,]
+    #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+    #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+    my.title <- "Weight-at-age Residuals (Observed-Predicted) for Fleet "
+    resids <- waa.obs - waa.pred  # NOTE obs-pred
+    resids[yzero,] = NA # don't plot residuals for catch paa not fit in model
+    fname = paste0("Catch_weight_age_resids_fleet_",i)
+    scale.resid.bubble.catch <- 25
+
+    if(length(ydata) > 0) {
+      if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+      z1 <- resids
+      if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+      else range.resids = c(0,0)
+
+      z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+      resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
+      resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+      plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
+        type = "n", axes=F)
+      axis(1, at= ages, lab=ages.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+
+      for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+
+      bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+      bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+      legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+      legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+      legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+      title (paste0(my.title,i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }   #end loop fleet loops
+
+  for (i in unique(dat$waa_pointer_indices))
+  {
+
+    yzero = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) == 0)
+    ydata = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) > 0)
+
+    waa.obs = dat$waa[i,,]
+    waa.pred = mod$rep$pred_waa[i,,]
+    #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+    #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+    my.title <- "Weight-at-age Residuals (Observed-Predicted) for Indices "
+    resids <- waa.obs - waa.pred  # NOTE obs-pred
+    resids[yzero,] = NA # don't plot residuals for catch paa not fit in model
+    fname = paste0("Catch_weight_age_resids_index_",i)
+    scale.resid.bubble.catch <- 25
+
+    if(length(ydata) > 0) {
+      if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+      z1 <- resids
+      if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+      else range.resids = c(0,0)
+
+      z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+      resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
+      resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+      plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
+        type = "n", axes=F)
+      axis(1, at= ages, lab=ages.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+
+      for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+
+      bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+      bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+      legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+      legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+      legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+      title (paste0(my.title,i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    }
+  }   #end loop fleet loops
+
+  # par(origpar)
+}
+
+
 plot.catch.len.comp.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
                                        do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa = FALSE, use.i, od)
 {
@@ -2468,7 +2586,7 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE)
   years_full <-  mod$years_full
 	n.yrs <- length(years_full)
   ssbfrac = dat$fracyr_SSB
-	ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * mod$rep$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
+	ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * mod$rep$pred_waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
 	ssb.max <- max(apply(ssb.aa,1,sum))
 
 	par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
@@ -3199,12 +3317,12 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
     # indices = paste0("Index ", 1:dat$n_indices),
     totcatch = "Total Catch"
   )
-  waa = mod$rep$waa[point,,]
+  waa = dat$waa[point,,]
   n = ifelse(length(dim(waa)) == 2, 1, dim(waa)[1])
 	for(i in 1:n)
 	{
 		if(n>1) {
-      WAA.plot = mod$rep$waa[i,,]
+      WAA.plot = dat$waa[i,,]
     } else {
       WAA.plot = waa
     } 
@@ -3217,6 +3335,50 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 		title(main = paste0("Annual Weight-at-Age for ", labs[i]))
 	}  # end k-loop
 	par(origpar)
+}  # end function
+
+#------------------------------------
+plot.pred.waa <- function(mod,type="ssb",plot.colors,ind=1)
+{
+  origpar <- par(no.readonly = TRUE)
+  years = mod$years_full
+  nyrs = length(years)
+  dat = mod$env$data
+  if(missing(plot.colors)) plot.colors = mypalette(dat$n_ages)
+  point = switch(type,
+    ssb = dat$waa_pointer_ssb,
+    jan1 = dat$waa_pointer_jan1,
+    fleets = dat$waa_pointer_fleets[ind],
+    indices = dat$waa_pointer_indices[ind],
+    totcatch = dat$waa_pointer_totcatch
+  )
+  labs = switch(type,
+    ssb = "SSB",
+    jan1 = "January 1 Biomass",
+    fleets = paste0("Fleet ", ind),
+    indices = paste0("Index ", ind),
+    # fleets = paste0("Fleet ", 1:dat$n_fleets),
+    # indices = paste0("Index ", 1:dat$n_indices),
+    totcatch = "Total Catch"
+  )
+  waa = mod$rep$pred_waa[point,,]
+  n = ifelse(length(dim(waa)) == 2, 1, dim(waa)[1])
+  for(i in 1:n)
+  {
+    if(n>1) {
+      WAA.plot = mod$rep$pred_waa[i,,]
+    } else {
+      WAA.plot = waa
+    } 
+    plot(years,years,xlab="Year",ylab="Weight",ylim=c(0,max(WAA.plot)),type='n')
+    for (a in 1:dat$n_ages)
+    {
+      lines(years,WAA.plot[,a],col=plot.colors[a],lwd=2)
+      lines(years,rep(mean(WAA.plot[,a]),length(years)),lty=2,col=plot.colors[a])
+    }
+    title(main = paste0("Annual Predicted Weight-at-Age for ", labs[i]))
+  }  # end k-loop
+  par(origpar)
 }  # end function
 
 #------------------------------------
@@ -3295,8 +3457,8 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	#fec.age <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -3382,9 +3544,9 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
   years_full = mod$years_full
   n_years_full = length(years_full)
 
-  fec.age <- mod$rep$waa[dat$waa_pointer_ssb,,]
+  fec.age <- mod$rep$pred_waa[dat$waa_pointer_ssb,,]
 	mat.age <- dat$mature
-	wgt.age <- mod$rep$waa[dat$waa_pointer_totcatch,,]
+	wgt.age <- mod$rep$pred_waa[dat$waa_pointer_totcatch,,]
 	M.age <- mod$rep$MAA
 	sel.age <- mod$rep$FAA_tot/apply(mod$rep$FAA_tot,1,max)
 
@@ -3603,7 +3765,8 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     polyx = c(years_full,rev(years_full))
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
-    plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,max(polyy)*1.05), type = 'l')
+    if(!na.sd["ssb"]) plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,max(polyy)*1.05), type = 'l')
+    if(na.sd["ssb"]) plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,max(exp(rel.ssb.vals))*1.05), type = 'l')
     grid(col = gray(0.7))
     polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
     abline(h=1, lty = 2)
@@ -3807,8 +3970,8 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
   n_years = length(years)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -3893,8 +4056,8 @@ plot.exp.spawn <- function(mod, nyrs.ave = 5)
   n_years = length(years)
   avg.ind = (n_years-nyrs.ave+1):n_years
 	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(mod$rep$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(mod$rep$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+	ssb.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
+	catch.waa <- apply(mod$rep$pred_waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
 	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
   sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
@@ -4212,8 +4375,8 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
   		if (dat$n_fleets >= 2) title1 = paste("Catch for Fleet ",i, sep="")
 
   		# get catch at age
-      catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-      catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+      catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$pred_waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+      catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$pred_waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
   		# replace zeros with NA and take logs
   		cob <- rep0log(catchob)
   		cpr <- rep0log(catchpr)
@@ -4264,7 +4427,7 @@ convert_survey_to_at_age <- function(mod)
 			agg.units <- dat$units_indices[i]
 			prp.units <- dat$units_index_paa[i]
 
-      waa <- mod$rep$waa[dat$waa_pointer_indices[i],dat$use_index_paa[,i]==1,]
+      waa <- mod$rep$pred_waa[dat$waa_pointer_indices[i],dat$use_index_paa[,i]==1,]
 			# get weight (matrix if necessary)
 			if (agg.units==1 | prp.units==1)
 			{  # either in weight
@@ -4425,8 +4588,8 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
     if(any(dat$use_catch_paa[,i] > 0)) { # only useful when we have info for all years for a specific fleet?
   		# get catch at age
-      catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
-      catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+      catchob = dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * mod$rep$pred_waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
+      catchpr = rep$pred_catch_paa[1:n_years,i,] * exp(rep$pred_log_catch[1:n_years,i])/apply(rep$pred_catch_paa[1:n_years,i,] * mod$rep$pred_waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
 
   		# replace zeros with NA and take logs
   		cob <- rep0log(catchob)
@@ -4701,7 +4864,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     sel_re <- c("no","IID","AR1","AR1_y","2D AR1")[dat$selblock_models_re]
     save_df = NULL
     for(i in 1:n_selblocks) {
-      if(dat$selblock_models[i] <= 4){ # for age selex
+      if(dat$selblock_models[i] <= 5){ # for age selex
         df.selAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
         colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Block")
         tmp = as.data.frame(rep$selAA[[i]])
@@ -4813,8 +4976,8 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
   # transition matrix
   if(type=="phi_mat"){ 
     yearLab = years[1]
-    if(mod$env$data$phi_mat_info == 0) df.LAA <- t(rep$phi_mat[1,,]) # only for first year
-    else df.LAA <- mod$env$data$input_phi_mat[mod$env$data$waa_pointer_jan1,,] 
+    if(mod$env$data$phi_matrix_info == 0) df.LAA <- t(rep$phi_mat[1,,]) # only for first year
+    if(mod$env$data$phi_matrix_info == 1) df.LAA <- mod$env$data$phi_matrix_input[mod$env$data$waa_pointer_jan1,,] 
 
     if(do.tex) cairo_pdf(file.path(od, paste0("phi_mat_tile.pdf")), family = fontfam, height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0("phi_mat_tile.png")), width = 8*res, height = 5*res, res = res, pointsize = 12, family = fontfam)
