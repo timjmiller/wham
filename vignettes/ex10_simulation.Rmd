@@ -703,7 +703,7 @@ stock_om_input$par$q_repars[1,] = c(log(0.1), wham:::gen.logit(0.5,-1,1, s=2))
 stock_om_input$par$q_repars
 ```
 
-``{r, eval = FALSE}
+```{r, eval = FALSE}
 stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 set.seed(123)
