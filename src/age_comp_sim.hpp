@@ -312,10 +312,12 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
 {
   int n_ages = ages.size();
   vector<Type> obs(n_ages);
-  vector<Type> p = paa_pred + 1.0e-15;
+  vector<Type> p = paa_pred;
   obs.setZero();
   if(age_comp_model == 1)
   {
+    //multinomial
+    p += 1.0e-15; //for log of any p = 0
     obs = rmultinom(Neff, p);
     //obs = obs/obs.sum();// proportions
   }

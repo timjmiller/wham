@@ -21,12 +21,13 @@ Overview of WHAM presentation (Jan 8 2021):
   <iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
-
+<!--- 
 Some further developments are covered here (Jan 25 2022): 
 
 <figure class="video_container">
   <iframe width="560" height="315" src="https://www.youtube.com/embed/qDg2NKTbMR4?controls=0&amp;start=87" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
+--->
 
 ## Background
 

@@ -439,70 +439,71 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
 {
   Type ll = 0.0;
   vector<Type> p = paa_pred;
-    if(age_comp_model == 1) {
-      //multinomial
-      //tf_paa_obs = Neff * paa_obs
-      ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
-    }
-    if(age_comp_model == 2) {
-      //dirichlet-multinomial
-      //tf_paa_obs = Neff * paa_obs
-      vector<Type> alphas = p * exp(age_comp_pars(0));
-      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
-    }
-    if(age_comp_model == 3) { 
-      //Dirichlet, miss0
-      //0,1: pool 0s, do log 
-      //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, 1);
-    }
-    if(age_comp_model == 4) { 
-      //Dirichlet, pool0
-      //0,1: pool 0s, do log 
-      //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, 1);
-    }
-    if(age_comp_model == 5) { 
-      //logistic-normal, miss0
-      //1,0,1,0: Sigma diagonal, additive transformation, return log, missing 0s
-      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-      //need to take off obs for last age class which is NA, but keeps info on which is the last positive age
-      vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
-      data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
-      ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 1, 0, 1, 0, paa_obs);
-    }
-    if(age_comp_model == 6) { 
-      //logistic-normal, miss0, AR1 correlation
-      //2,0,1,0: Sigma with AR1 cor, additive transformation, return log, missing 0s 
-      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-      vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
-      data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
-      ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 2, 0, 1, 0, paa_obs);
-    }
-    if(age_comp_model == 7) {
-      //logistic normal. Pool zero observations with adjacent age classes.
-      //1,0,1,1: Sigma diagonal, additive transformation, return log, pool 0s 
-      age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-      vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
-      data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
-      ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 1, 0, 1, 1, paa_obs);
-    }
-    if(age_comp_model == 8) {
-      //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012). 3 parameters
-      //NO OSA available!
-      ll = dzinf_logisticnormal_1(tf_paa_obs, p, age_comp_pars, ages, keep, 1, 0);
-    }
-    if(age_comp_model == 9) {
-      //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
-      //NO OSA available!
-      ll = dzinf_logisticnormal_2(tf_paa_obs, p, age_comp_pars, ages, keep, 1, 0);
-    }
-    if(age_comp_model == 10) {
-      //multivariate Tweedie. 2 parameters
-      //NO OSA available?
-      //vector<Type> temp_n = Neff * paa_obs;
-      ll = dmvtweedie(tf_paa_obs, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), keep, 1);
-    }
+  if(age_comp_model == 1) {
+    //multinomial
+    //tf_paa_obs = Neff * paa_obs
+    p += 1.0e-15; //for log of any p = 0
+    ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
+  }
+  if(age_comp_model == 2) {
+    //dirichlet-multinomial
+    //tf_paa_obs = Neff * paa_obs
+    vector<Type> alphas = p * exp(age_comp_pars(0));
+    ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
+  }
+  if(age_comp_model == 3) { 
+    //Dirichlet, miss0
+    //0,1: pool 0s, do log 
+    //keep, pool0, give_log, do_osa
+    ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, 1);
+  }
+  if(age_comp_model == 4) { 
+    //Dirichlet, pool0
+    //0,1: pool 0s, do log 
+    //keep, pool0, give_log, do_osa
+    ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, 1);
+  }
+  if(age_comp_model == 5) { 
+    //logistic-normal, miss0
+    //1,0,1,0: Sigma diagonal, additive transformation, return log, missing 0s
+    age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+    //need to take off obs for last age class which is NA, but keeps info on which is the last positive age
+    vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
+    data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
+    ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 1, 0, 1, 0, paa_obs);
+  }
+  if(age_comp_model == 6) { 
+    //logistic-normal, miss0, AR1 correlation
+    //2,0,1,0: Sigma with AR1 cor, additive transformation, return log, missing 0s 
+    age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+    vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
+    data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
+    ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 2, 0, 1, 0, paa_obs);
+  }
+  if(age_comp_model == 7) {
+    //logistic normal. Pool zero observations with adjacent age classes.
+    //1,0,1,1: Sigma diagonal, additive transformation, return log, pool 0s 
+    age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
+    vector<Type> x = tf_paa_obs.head(tf_paa_obs.size()-1);
+    data_indicator<vector<Type>, Type> k = keep.segment(0,keep.size()-1);
+    ll = dlogisticnormal(x, p, age_comp_pars, ages, k, 1, 0, 1, 1, paa_obs);
+  }
+  if(age_comp_model == 8) {
+    //zero-one inflated logistic normal. Inspired by zero-one inflated beta in Ospina and Ferrari (2012). 3 parameters
+    //NO OSA available!
+    ll = dzinf_logisticnormal_1(tf_paa_obs, p, age_comp_pars, ages, keep, 1, 0);
+  }
+  if(age_comp_model == 9) {
+    //zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters
+    //NO OSA available!
+    ll = dzinf_logisticnormal_2(tf_paa_obs, p, age_comp_pars, ages, keep, 1, 0);
+  }
+  if(age_comp_model == 10) {
+    //multivariate Tweedie. 2 parameters
+    //NO OSA available?
+    //vector<Type> temp_n = Neff * paa_obs;
+    ll = dmvtweedie(tf_paa_obs, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), keep, 1);
+  }
 
   return ll;
 }
