@@ -13,6 +13,7 @@ array<Type> get_FAA(matrix<Type>F, matrix<int> fleet_seasons, vector<matrix<Type
   }
   return(FAA);
 }
+//done
 
 template<class Type>
 array<Type> get_FAA_tot(array<Type> FAA, vector<int> fleet_regions, int n_regions){
@@ -31,12 +32,13 @@ array<Type> get_FAA_tot(array<Type> FAA, vector<int> fleet_regions, int n_region
   }
   return(FAA_tot);
 }
+//done
 
 template <class Type>
 array<Type> get_sel_proj(int y, array<Type> FAA, vector<int> avg_years_ind,
   vector<int> which_F_fleet, vector<int> which_F_season, vector<int> which_F_age){
     /* 
-     get FAA to project for next time step
+     get selectivity to project for next time step
                    y:  year of projection (>n_years_model)
                  FAA:  FAA array from main code.
        avg_years_ind:  integer vector of years to average F for projection
@@ -70,6 +72,7 @@ array<Type> get_sel_proj(int y, array<Type> FAA, vector<int> avg_years_ind,
   }
   return(sel_proj);
 }
+//done
 
 template <class Type>
 array<Type> get_FAA_proj(int y, vector<int> proj_F_opt, array<Type> sel_proj, 
@@ -141,6 +144,8 @@ waa_pointer_totcatch:  (n_regions) pointer for waa to use for tot catch (use fun
         F_full_proj = Type(proj_Fcatch(y-n_years_model));
       //}
     }
+    
+    array<Type> sel_proj = get_sel_proj(y, FAA, avg_years_ind, which_F_fleet, which_F_season, which_F_age);
     /*
     array<Type> MAA_y(n_stocks,n_regions,n_ages);
     array<Type> NAA_y= MAA.row(y);
@@ -148,7 +153,6 @@ waa_pointer_totcatch:  (n_regions) pointer for waa to use for tot catch (use fun
     vector<Type> mat_y = mature.row(y);
     vector<Type> fracyr_SSB_y = fracyr_SSB.row(y);
     Type log_SPR0_y = log_SPR0.row(y).sum();
-    
     if(proj_F_opt_y == 3){ // F at X% SPR
       F_full_proj = get_FXSPR(MAA_y, sel_proj, waassb, mat_y, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init) * 0.01* percentFXSPR;
     }

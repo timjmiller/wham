@@ -1,5 +1,12 @@
 template<class Type>
 vector<Type> get_nll_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix<Type> Ecov_re, vector<int> Ecov_use_re){
+  /* 
+     get nll contribtions for any Ecovs
+       Ecov_model: which time series model to use (RW, AR1)
+        Ecov_pars: parameters for time series models for each Ecov (columns)
+          Ecov_re: random effects representing latent covariates
+      Ecov_use_re: whether to include random effects in the likelihood
+  */
   int n_Ecov = Ecov_model.size();
   int n_y = Ecov_re.rows();
   vector<Type> nll_Ecov(n_Ecov); // nll contribution each Ecov_re
@@ -19,7 +26,8 @@ vector<Type> get_nll_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix
     // Ecov model option 2: AR1
     if((Ecov_model(i) == 2) & (Ecov_use_re(i)==1)){
       Type Ecov_mu = Ecov_process_pars(0,i);  // mean
-      Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
+      Type Ecov_phi = invlogit(Ecov_process_pars(2,i), -1, 1, 1); // autocorrelation
+      //Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
       Type Ecov_sig = exp(Ecov_process_pars(1,i)); // marginal sd
       vector<Type> re_i = Ecov_re.col(i);
       nll_Ecov(i) += SCALE(AR1(Ecov_phi), Ecov_sig)(re_i);
@@ -30,6 +38,13 @@ vector<Type> get_nll_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix
 
 template<class Type>
 matrix<Type> get_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix<Type> Ecov_re, vector<int> Ecov_use_re){
+  /* 
+     get Ecov time series spanning years of environmental data and population model
+       Ecov_model: which time series model to use (RW, AR1)
+        Ecov_pars: parameters for time series models for each Ecov (columns)
+          Ecov_re: random effects representing latent covariates
+      Ecov_use_re: whether to include random effects in the likelihood
+  */
 
   int n_Ecov = Ecov_model.size();
   int n_y = Ecov_re.rows();
@@ -56,6 +71,13 @@ matrix<Type> get_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix<Typ
 
 template<class Type>
 matrix<Type> simulate_Ecov_re(vector<int> Ecov_model, matrix<Type> Ecov_pars, matrix<Type> Ecov_re, vector<int> Ecov_use_re){
+  /* 
+     simulate random effects for Ecov time series
+       Ecov_model: which time series model to use (RW, AR1)
+        Ecov_pars: parameters for time series models for each Ecov (columns)
+          Ecov_re: random effects representing latent covariates
+      Ecov_use_re: whether to simulate random effects (and whether to include likelihood contributions)
+  */
   int n_Ecov = Ecov_model.size();
   int n_y = Ecov_re.rows();
   matrix<Type> re_sim = Ecov_re;
@@ -75,12 +97,13 @@ matrix<Type> simulate_Ecov_re(vector<int> Ecov_model, matrix<Type> Ecov_pars, ma
       }
       // Ecov model option 2: AR1
       if(Ecov_model(i) == 2){
-        Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
+        Type Ecov_phi = invlogit(Ecov_process_pars(2,i), -1, 1, 1); // autocorrelation
+        //Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
         Type Ecov_sig = exp(Ecov_process_pars(1,i)); // marginal sd
         vector<Type> re_i = Ecov_re.col(i);
         AR1(Ecov_phi).simulate(re_i);
         re_i *= Ecov_sig;
-        for(int j = 0; j < re_i.size(); j++) re_sim(j,i) = re_r(j);
+        for(int j = 0; j < re_i.size(); j++) re_sim(j,i) = re_i(j);
       }
     }
   }
@@ -89,27 +112,36 @@ matrix<Type> simulate_Ecov_re(vector<int> Ecov_model, matrix<Type> Ecov_pars, ma
 
 template<class Type>
 matrix<Type> get_Ecov_out(matrix<Type> Ecov_x, int n_years_model, int n_years_proj, vector<int> ind_Ecov_out_start, vector<int> ind_Ecov_out_end){
+  /* 
+     get Ecov time series for years pertinent to specific effects on population
+                    Ecov_x: Ecov time series spanning years of environmental data and population model 
+             n_years_model: number of years for population model
+              n_years_proj: number of years population model is projected
+        ind_Ecov_out_start: which Ecov_x year is first year needed for effect on population
+          ind_Ecov_out_end: which Ecov_x years is last year needed for effect on population
+  */
   //int n_effects = Ecov_beta.dim(0); // 2 + n_indices (recruitment, mortality and any catchabilities)
   int n_Ecov = Ecov_x.cols();
   matrix<Type> Ecov_out(n_years_model + n_years_proj, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Ecov_out.setZero(); // set Ecov_out = 0
   for(int i = 0; i < n_Ecov; i++){
-    //for(int t = 0; t < n_effects; t++){
       int ct = 0;
       for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
-      //for(int y = ind_Ecov_out_start(i,t); y < ind_Ecov_out_end(i,t) + 1 + n_years_proj; y++){
-        Ecov_out(ct,t,i) = Ecov_x(y,i);
+        Ecov_out(ct,i) = Ecov_x(y,i);
         ct++;
       }
-    //}
   }
   return(Ecov_out);
 }
 
 template<class Type>
 matrix<Type> get_Ecov_lm(matrix<Type>Ecov_beta, matrix<Type>Ecov_out){
-  // Calculate ecov link model (b1*ecov + b2*ecov^2 + ...) --------------------
-  // ecov_beta here is matrix (a sub-component of ecov_beta_*): n_ecov x n_poly
+  /*
+    Calculate ecov link model (possibly othogonal polynomial: b1*ecov + b2*ecov^2 + ...) --------------------
+    to be added to linear model for particular parameter effects (R, q, M, mu, etc.).
+    Ecov_beta: matrix (a sub-component of ecov_beta_*): n_ecov x n_poly
+    Ecov_out: matrix returned by get_Ecov_out with Ecov time series spanning pertinent years
+  */
   int n_poly = Ecov_beta.dim(1);
   // Ecov_lm stores the linear models for each Ecov each year.
   int ny = Ecov_out.dim(0);
@@ -132,6 +164,6 @@ matrix<Type> get_Ecov_lm(matrix<Type>Ecov_beta, matrix<Type>Ecov_out){
       }
     }
   }
-  return(Ecov_lm);
+  return Ecov_lm;
 }
 

@@ -4,7 +4,10 @@ Type square(Type x){return x*x;}
 
 // general inverse logit fn
 template <class Type>
-Type invlogit(Type x, Type lo, Type hi){return lo + (hi-lo) * invlogit(x);}
+Type invlogit(Type x, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
+
+template <class Type>
+Type logit(Type y, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return (log(y - lo) - log(hi - y))/scale;}
 
 // transformation to ensure correlation parameters are between -1 and 1
 template <class Type>
@@ -19,71 +22,6 @@ matrix<Type> extract_matrix_array3(array<Type> a, int index){ //matrix has to be
   return mat;
 }
 
-template <class Type>
-vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
-{
-  vector<matrix<Type> > selAA(n_selblocks);
-  for(int b = 0; b < n_selblocks; b++)
-  {
-    matrix<Type> tmp(n_years, n_ages);
-    if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
-    else
-    { //logistic or double-logistic
-      if(selblock_models(b) == 2)
-      { //increasing logistic
-        for(int y = 0; y < n_years; y++)
-        {
-          Type a50 = selpars(b)(y,0); // a50 parameter in year y
-          Type k = selpars(b)(y,1); //  1/slope in year y
-          Type age = 0.0;
-          for(int a = 0; a < n_ages; a++)
-          {
-            age += 1.0;
-            tmp(y,a) = 1.0/(1.0 + exp(-(age - a50)/k));
-          }
-          for(int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,n_ages-1);
-        }
-      }
-      else
-      { //double logistic
-        if(selblock_models(b) == 3)
-        {
-          for(int y = 0; y < n_years; y++)
-          {
-            Type a50_1 = selpars(b)(y,0); // a50 parameter in year y
-            Type k_1 = selpars(b)(y,1); //  1/slope in year y
-            Type a50_2 = selpars(b)(y,2);
-            Type k_2 = selpars(b)(y,3);
-            Type age = 0.0;
-            for (int a = 0; a < n_ages; a++)
-            {
-              age += 1.0;
-     	        tmp(y,a) = 1.0/(1.0 + exp(-(age - a50_1)/k_1));
-              tmp(y,a) *= 1.0/(1.0 + exp((age - a50_2)/k_2)); //1-p
-            }
-          }
-        }
-        else //model 4: declining logistic
-        {
-          for(int y = 0; y < n_years; y++)
-          {
-            Type a50 = selpars(b)(y,0); // a50 parameter in year y
-            Type k = selpars(b)(y,1); //  1/slope in year y
-            Type age = 0.0;
-            for (int a = 0; a < n_ages; a++)
-            {
-              age += 1.0;
-              tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
-            }
-            for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
-          }
-        }
-      }
-    }
-    selAA(b) = tmp;
-  }
-  return selAA;
-}
 
 template <class Type>
 Type get_SPR(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)

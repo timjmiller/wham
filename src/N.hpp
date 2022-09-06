@@ -1,29 +1,43 @@
 template <class Type>
-matrix<Type> get_nll_N1(array<Type>log_N1, array<Type> N1_repars, matrix<int> N1_where)
-{
+matrix<Type> get_nll_N1(array<Type>log_N1, array<Type> N1_repars, array<int> NAA_where)
+{ //AR1 RE for N1 if N1_model = 2
   int n_stocks = log_N1.dim(0);
   int n_regions = log_N1.dim(1);
   int n_ages = log_N1.dim(3);
-  matrix<Type> nll(s,r);
+  matrix<Type> nll(n_stocks,n_regions);
   nll.setZero();
-  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
-    Type mu = N1_repars(s,r,0);
-    Type sigma = exp(N1_repars(s,r,1)); //marginal variance
-    Type rho = rho_trans(N1_repars(s,r,2));
-    vector<Type> re_sr(n_ages);
-    for(int a = 0; a < n_ages; a++) re_sr(a) = log_N1(s,r,a) - mu
-    nll(s,r) += SCALE(AR1(rho), sigma)(re_sr);
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) {
+    int n_ages_r = 0;
+    //need to count how many age classes exist in region r on Jan 1.
+    for(int a = 0; a < n_ages; a++) if(NAA_where(s,r,a)) n_ages_r++; 
+    if(n_ages_r>0){
+      vector<Type> re_sr(n_ages_r);
+      Type mu = N1_repars(s,r,0);
+      Type sigma = exp(N1_repars(s,r,1)); //marginal variance
+      Type rho = rho_trans(N1_repars(s,r,2));
+      re_sr.setZero();
+      int a_count = 0;
+      for(int a = 0; a < n_ages; a++) {
+        if(NAA_where(s,r,a)) {
+          re_sr(a_count) = log_N1(s,r,a) - mu;
+          a_count++;
+        } 
+      }
+      nll(s,r) += SCALE(AR1(rho), sigma)(re_sr);
+    }
   }
+  return(nll);
 }
+//Done.
 
-array<Type> simulate_log_N1(array<Type>log_N1, array<Type> N1_repars, matrix<int> N1_where)
-{
+array<Type> simulate_log_N1(array<Type>log_N1, array<Type> N1_repars, array<int> NAA_where)
+{ //only used if N1_model = 2
   int n_stocks = log_N1.dim(0);
   int n_regions = log_N1.dim(1);
   int n_ages = log_N1.dim(3);
-  array<Type> sim_log_N1(s,r,a);
+  array<Type> sim_log_N1(n_stocks,n)regions,n_ages);
   sim_log_N1.setZero();
-  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) if(N1_where(s,r)==1){
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,0)){
     Type mu = N1_repars(s,r,0);
     Type sigma = exp(N1_repars(s,r,1)); //marginal variance
     Type rho = rho_trans(N1_repars(s,r,2));
@@ -36,20 +50,31 @@ array<Type> simulate_log_N1(array<Type>log_N1, array<Type> N1_repars, matrix<int
 }
 
 template <class Type>
-array<Type> get_NAA(int N1_model, array<Type> log_N1, array<Type>log_NAA, array<int> NAA_where){
+array<Type> get_NAA(int N1_model, array<Type> log_N1, array<Type>log_NAA, array<int> NAA_where, array<Type> log_M_base){
   int n_stocks = log_N1.dim(0);
   int n_regions = log_N1.dim(1);
-  int n_ages = log_N1.dim(3);
-  int n_y = log_NAA.dim(2);
+  int n_y = log_M_base.dim(2); 
+  int n_ages = log_M_base.dim(3);
   array<Type> NAA(n_stocks, n_regions, n_y, n_ages);
   NAA.setZero();
-  if(N1_model == 0 || N1_model == 2) {
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)==1){
+  if((N1_model == 0) | (N1_model == 2)) { //log_N1 is either fixed or random effects parameters for initial numbers at age
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
       NAA(s,r,0,a) = exp(log_N1(s,r,a));
     }
   }
+  if(N1_model == 1) { //use F0 to define equilibrium numbers at age.
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
+    {
+      if(a==0) {
+        NAA(s,r,0,a) = exp(log_N1(s,r,0));
+      } else {
+        if(a == n_ages-1) NAA(s,r,0,a) = NAA(s,r,0,a-1)/(1.0 + exp(-exp(log_M_base(s,r,0,a)) - exp(log_N1(s,r,1)) * FAA_tot(r,0,a)/FAA_tot(r,0,which_F_age(0)-1)));
+        else NAA(s,r,0,a) = NAA(s,r,0,a-1) * exp(-exp(log_M_base(s,r,0,a)) -  exp(log_N1_pars(s,r,1)) * FAA_tot(r,0,a)/FAA_tot(r,0,which_F_age(0)-1));
+      }
+    }
+  }
   for(int y = 1; y < n_y; y++){
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)==1){
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
       NAA(s,r,y,a) = exp(log_NAA(s,r,y-1,a));
     }
   }
@@ -57,12 +82,12 @@ array<Type> get_NAA(int N1_model, array<Type> log_N1, array<Type>log_NAA, array<
 }
 
 template <class Type>
-array<Type> get_SSB(array<Type>NAA_ssb, array<Type> waa, vector<int> waa_pointer_ssb, array<Type> mature){
+matrix<Type> get_SSB(array<Type>NAA_ssb, array<Type> waa, vector<int> waa_pointer_ssb, array<Type> mature){
   int n_stocks = NAA_ssb.dim(0);
   int n_ages = NAA_ssb.dim(2);
   int n_y = NAA_ssb.dim(1);
   
-  matrix<Type> SSB(n_y, n_stocks) = get_SSB(NAA_ssb,waa,waa_pointer_ssb,mature);
+  matrix<Type> SSB(n_y, n_stocks);// = get_SSB(NAA_ssb,waa,waa_pointer_ssb,mature);
   SSB.setZero();
   for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_y; y++)
   {
@@ -87,7 +112,7 @@ array<Type> get_pred_N1(int N1_model, array<Type> N1, matrix<int> N1_where){
       pred_N1(s,r,a) = exp(N1_repars(s,r,0)); //exp of mean of AR1 process
     }
   }
-  return(N1);
+  return(pred_N1);
 }
 
 template <class Type>
@@ -184,62 +209,71 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
   return(P);
 }
 
-//get SR_a, SR_b
+//get SR_a
 template <class Type>
-matrix<Type> get_SR_log_a(vector<int> recruit_model, matrix<Type> mean_rec_pars, array<Type> Ecov_lm, array<Type>Ecov_how, array<Type> Ecov_where)
-  
-  matrix<Type> log_SR_a(n_stocks,n_y);
+matrix<Type> get_SR_log_a(vector<int> recruit_model, matrix<Type> mean_rec_pars, array<Type> Ecov_lm_R, matrix<int>Ecov_how_R){
+
+  n_y = Ecov_lm_R.dim(2);  
+  n_s = Ecov_lm_R.dim(0);
+  matrix<Type> log_SR_a(n_y,recruit_model.size());
   // calculate stock-recruit parameters (steepness, R0, a, b)
-  if(recruit_model > 2) //BH or Ricker SR
+  for(int s = 0; s < recruit_model.size(); s++){
+  if(recruit_model(s) > 2) //BH or Ricker SR
   {
-    log_SR_a.fill(mean_rec_pars(0));
-    //log_SR_b.fill(mean_rec_pars(1));
+
+    for(int y = 0; y < n_y; y++) {
+      log_SR_a(y,s) = mean_rec_pars(s,0);
+      if(recruit_model == 3) {//BH stock recruit
+        for(int i=0; i < n_Ecov; i++){
+          // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
+          if((Ecov_how_R(i,s) == 1) | (Ecov_how_R(i,s) == 4))
+          {
+            log_SR_a(s,y) += Ecov_lm(i,0,y,0);
+          }
+        }
+      }
+      if(recruit_model == 4) { //Ricker stock recruit
+        for(int i=0; i < n_Ecov; i++){
+          for(int y = 0; y < n_years_model + n_years_proj; y++)
+          {
+            if(Ecov_how_R(i,s) == 1) // "controlling" = dens-indep mortality
+            {
+              log_SR_a(s,y) += Ecov_lm(i,0,y,0);
+            }
+            if(Ecov_how(i) == 4) // "masking" = metabolic/growth (decreases dR/dS)
+            { //NB: this is not identical to Iles and Beverton (1998), but their definition can give negative values of "b"
+              log_SR_b(y) += 1.0 + Ecov_lm(i,0,y,0);
+            }
+          }
+        }
+      }
+  }
+  return log_SR_a;
+}
+
+//get SR_b
+template <class Type>
+matrix<Type> get_SR_log_b(vector<int> recruit_model, matrix<Type> mean_rec_pars, array<Type> Ecov_lm, matrix<int>Ecov_how_R, array<Type> Ecov_where)
+    log_SR_b.fill(mean_rec_pars(1));
     vector<Type> SR_h_tf(SR_h.size()); //different transformations for BH and Ricker
     if(recruit_model == 3) //BH stock recruit
     {
-      /*if(use_steepness == 1)
-      {
-        SR_h.fill(0.2 + 0.8/(1+exp(-mean_rec_pars(0)))); //SR_a * SPR0/(4.0 + SR_a*SPR0);
-        SR_R0.fill(exp(mean_rec_pars(1))); //(SR_a - 1/SPR0) / SR_b;
-        log_SR_a = log(4 * SR_h/(exp(log_SPR0)*(1 - SR_h)));
-        log_SR_b = log((5*SR_h - 1)/((1-SR_h)*SR_R0*exp(log_SPR0)));
-      }
-      else
-      {*/
-      //}
       for(int i=0; i < n_Ecov; i++){
         if(Ecov_where(i,0) == 1){ // if ecov i affects recruitment
           for(int y = 0; y < n_y; y++)
           {
             // (1) "controlling" = dens-indep mortality or (4) "masking" = metabolic/growth (decreases dR/dS)
-            if((Ecov_how(i) == 1) | (Ecov_how(i) == 4))
-            {
-              log_SR_a(y) += Ecov_lm(i,0,y,0);
-            }
             // (2) "limiting" = carrying capacity or (4) "masking" = metabolic/growth (decreases dR/dS)
-            /*if((Ecov_how(i) == 2) | (Ecov_how(i) == 4))
+            if((Ecov_how(i) == 2) | (Ecov_how(i) == 4))
             {
               log_SR_b(y) += Ecov_lm(i,0,y,0);
-            }*/
+            }
           }
         }
       }
-      /*if(use_steepness != 1)
-      {
-        SR_h = exp(log_SR_a) * exp(log_SPR0)/(4.0 + exp(log_SR_a + log_SPR0));
-        SR_R0 = (exp(log_SR_a) - 1/exp(log_SPR0)) / exp(log_SR_b);
-      }*/
-      //SR_h_tf = log(SR_h - 0.2) - log(1 - SR_h);
     }
     if(recruit_model>3) //Ricker stock recruit
     {
-      /*if(use_steepness == 1)
-      {
-        SR_h.fill(0.2 + exp(mean_rec_pars(0)));
-        SR_R0.fill(exp(mean_rec_pars(1)));
-        log_SR_a = 1.25*log(5*SR_h) - log_SPR0;
-        log_SR_b = log(1.25*log(5*SR_h)/(SR_R0*exp(log_SPR0)));
-      }*/
       for(int i=0; i < n_Ecov; i++){
         if(Ecov_where(i,0) == 1){ // if ecov i affects recruitment
           for(int y = 0; y < n_years_model + n_years_proj; y++)

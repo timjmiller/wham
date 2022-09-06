@@ -1,5 +1,13 @@
 template<class Type>
 matrix<Type> get_nll_M(array<Type> M_repars, vector<int> M_re_model, vector<int> M_model, array<Type>M_re, matrix<int> n_M_re){
+  /* 
+     get nll contribtions for any M random effects
+          M_repars: sd and correlation parameters for M random effects
+        M_re_model: (n_regions) 1: no RE, 2: iid RE by year and age, 3: iid/ar1 RE for age (constant by year), 4: iid/ar1 RE year (constant by age), 5: 2DAR1 (age, year) (not yet 6: 3DAR1 (age,year,region))
+           M_model: 1: age-constant, 2: age-specific,3: f(WAA), 4-6 as 1-3, but by stock-specific
+              M_re: random effects for 
+            n_M_re: (n_stocks x n_regions) number of random effects (e.g., number of age classes or number of M=f(WAA) pars) each year
+  */
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
   int n_ages = M_re.dim(3);
@@ -39,9 +47,18 @@ matrix<Type> get_nll_M(array<Type> M_repars, vector<int> M_re_model, vector<int>
   }
   return(nll_M);
 }
+//done
 
 template<class Type>
 array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<int> M_model, array<Type>M_re, matrix<int> n_M_re){
+  /* 
+     simulate M random effects
+          M_repars: sd and correlation parameters for M random effects
+        M_re_model: (n_regions) 1: no RE, 2: iid RE by year and age, 3: iid/ar1 RE for age (constant by year), 4: iid/ar1 RE year (constant by age), 5: 2DAR1 (age, year) (not yet 6: 3DAR1 (age,year,region))
+           M_model: 1: age-constant, 2: age-specific,3: f(WAA), 4-6 as 1-3, but by stock-specific
+              M_re: random effects for 
+            n_M_re: (n_stocks x n_regions) number of random effects (e.g., number of age classes or number of M=f(WAA) pars) each year
+  */
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
   /int n_ages = M_re.dim(3);
@@ -70,12 +87,14 @@ array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<i
             vector<Type> Mre0 = M_re_r_s.row(0);
             Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_a,2)),0.5);
             AR1(rho_M_a).simulate(Mre0);
-            for(int a = 0; a < n_M_re(s,r); a++) sim_M_re(s,r,0,a) = Mre0(a)*Sigma_M;
+            //all years mapped to the same age-specific RE
+            for(int y = 0; y < n_y; y++) for(int a = 0; a < n_M_re(s,r); a++) sim_M_re(s,r,y,a) = Mre0(a)*Sigma_M;
           } else { // M_re_model = 4, 1D ar1_y
             vector<Type> Mre0 = M_re_r_s.col(0);
             Sigma_M = pow(pow(sigma_M,2) / (1-pow(rho_M_y,2)),0.5);
             AR1(rho_M_a).simulate(Mre0);
-            for(int y = 0; y < n_y; y++) sim_M_re(s,r,y,0) = Mre0(y)*Sigma_M;
+            //all ages mapped to the same annual RE
+            for(int y = 0; y < n_y; y++) for(int a = 0; a < n_M_re(s,r); a++) sim_M_re(s,r,y,a) = Mre0(y)*Sigma_M;
           }
         }
       }
@@ -83,10 +102,17 @@ array<Type> simulate_M_re(array<Type> M_repars, vector<int> M_re_model, vector<i
   }
   return(sim_M_re);
 }
+//done
 
 //nll for prior on M(WAA) (log) exponent
 template<class Type>
 matrix<Type> get_nll_log_b(int log_b_model, matrix<Type>log_b, int bias_correct){
+  /* 
+    get any nll components for prior on log_b of M_model = 3/6 where M = a * W ^b
+       log_b_model: model for posterior log_b. 1: stock and region constant, 2: region-constant, 3: stock constant, 4: differ by stock and regio
+             log_b: random effect parameters for posterior log_b for each stock,region
+      bias_correct: 0/1 whether to bias-correct log(b) prior mean 
+  */
   int n_stocks = log_b.dim(0);
   int n_regions = log_b.dim(1);
   matrix<Type> nll(n_stocks,n_regions);
@@ -117,10 +143,17 @@ matrix<Type> get_nll_log_b(int log_b_model, matrix<Type>log_b, int bias_correct)
   }
   return(nll);
 }
+//done
 
 //simulate log exponent for M(WAA)
 template<class Type>
 matrix<Type> simulate_log_b(int log_b_model, matrix<Type>log_b, int bias_correct){
+  /* 
+    simulate any RE for log_b of M_model = 3/6 where M = a * W ^b
+       log_b_model: model for posterior log_b. 1: stock and region constant, 2: region-constant, 3: stock constant, 4: differ by stock and regio
+             log_b: random effect parameters for posterior log_b for each stock,region
+      bias_correct: 0/1 whether to bias-correct log(b) prior mean 
+  */
   int n_stocks = log_b.dim(0);
   int n_regions = log_b.dim(1);
   matrix<Type> sim_log_b = log_b;
@@ -149,12 +182,27 @@ matrix<Type> simulate_log_b(int log_b_model, matrix<Type>log_b, int bias_correct
   }
   return(sim_log_b);
 }
-  
-//provides log_M components that are density-independent.
+//done
+
 template<class Type>
 array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, array<Type> M_a, matrix<Type> log_b, array<Type> waa, 
   vector<int> waa_pointer, array<Type> Ecov_lm, array<int> use_Ecov, int do_proj, int proj_M_opt, vector<int> avg_years_ind){
-  // Construct base (log) mortality-at-age (MAA)
+  /* 
+    provides log_M (base) components that are density-independent.
+    (log) mortality-at-age (MAA)
+               M_re: model for posterior log_b. 1: stock and region constant, 2: region-constant, 3: stock constant, 4: differ by stock and regio
+            M_model: 1: age-constant, 2: age-specific,3: f(WAA), 4-6 as 1-3, but by stock-specific
+      n_years_model: number of years in the population model
+                M_a: (n_stocks x n_regions x n_ages) mean M-at-age, fixed effects, if M_model = 1 or 2 (age-constant, age-specific) all ages are used. If M_model = 3 (M = a * W ^b) just first two are used 
+              log_b: random effect parameters for posterior log_b (M_model = 3/6 M = a * W ^b) for each stock,region
+                waa: (at least(n_fleets + n_indices + n_stocks + 1(totcatch)) x n_years x n_ages_model) weight at age
+        waa_pointer: which index in first dimension to use if M_model = 3
+            Ecov_lm: (n_stocks, n_regions, n_years_pop, n_Ecov) linear predictor for any Ecov effects on log_M_base
+           use_Ecov: n_Ecov x n_stocks x n_ages x n_regions: 0/1 values indicating to use effects on natural mortality at age.
+            do_proj: 0/1 whether projection years are being included in the model
+         proj_M_opt: 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+      avg_years_ind: model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
+  */
   int n_stocks = M_re.dim(0);
   int n_regions = M_re.dim(1);
   int n_ages = M_re.dim(3);
@@ -206,4 +254,4 @@ array<Type> get_log_M_base(array<Type>M_re, int M_model, int n_years_model, arra
   }
   return(log_M_base); 
 }
-
+//done

@@ -10,3 +10,4 @@
 #include "N.hpp"
 #include "age_comp_osa.hpp"
 #include "age_comp_sim.hpp"
+#include "tagging.hpp"

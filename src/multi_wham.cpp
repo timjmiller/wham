@@ -139,11 +139,11 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(keep_E); // Ecov
   DATA_IARRAY(keep_Cpaa);
   DATA_IARRAY(keep_Ipaa);
-  DATA_IVECTOR(do_post_samp_N); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
-  DATA_IVECTOR(do_post_samp_M); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
-  DATA_IVECTOR(do_post_samp_sel); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
-  DATA_IVECTOR(do_post_samp_Ecov); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
-  DATA_IVECTOR(do_post_samp_q); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
+  DATA_INTEGER(do_post_samp_N); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
+  DATA_INTEGER(do_post_samp_M); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
+  DATA_INTEGER(do_post_samp_sel); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
+  DATA_INTEGER(do_post_samp_Ecov); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
+  DATA_INTEGER(do_post_samp_q); //length = 5, whether to ADREPORT posterior residuals for NAA, M, selectivity, Ecov, q. 
 
   // data for environmental covariate(s), Ecov
   DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
@@ -214,8 +214,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
-  PARAMETER_VECTOR(log_catch_sig_scale) //n_fleets
-  PARAMETER_VECTOR(log_index_sig_scale) //n_indices
+  PARAMETER_VECTOR(log_catch_sig_scale); //n_fleets
+  PARAMETER_VECTOR(log_index_sig_scale); //n_indices
   
   PARAMETER_ARRAY(M_a); // (n_stocks x n_regions x n_ages) mean M-at-age, fixed effects, length = n_ages if M_model = 2 (age-specific), length = 1 if M_model = 1 (constant) or 3 (weight-at-age M)
   PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean M_a, dim = n_stocks x n_regions x n_years x n_ages
@@ -404,125 +404,28 @@ Type objective_function<Type>::operator() ()
   //array<Type> Ecov_lm(n_Ecov, n_effects,n_years_pop, n_ages); 
   /////////////////////////////////////////
   
-  vector<int> any_index_age_comp(n_indices);
-  vector<int> any_fleet_age_comp(n_fleets);
-  for(int i = 0; i < P_dim; i++) I_mat(i,i) = 1.0;
-
-  for(int i = 0; i < n_indices; i++)
-  {
-    any_index_age_comp(i) = 0;
-    for(int y = 0; y < n_years; y++) if(use_index_paa(y,i) == 1) any_index_age_comp(i) = 1;
-  }
-  for(int i = 0; i < n_fleets; i++)
-  {
-    any_fleet_age_comp(i) = 0;
-    for(int y = 0; y < n_years; y++) if(use_catch_paa(y,i) == 1) any_fleet_age_comp(i) = 1;
-  }
-
-
   /////////////////////////////////////////
   // Selectivity --------------------------------------------------------------
-  // need to change to use selectivity.hpp
-  vector<array<Type> > selpars_re_mats(n_selblocks); // gets selectivity deviations (RE vector, selpars_re) as vector of matrices (nyears x npars), one for each block
-  vector<matrix<Type> > selpars(n_selblocks); // selectivity parameter matrices for each block, nyears x npars
-  Type nll_sel = 0.0;
-  int istart = 0;
-  int ct = 0;
-  for(int b = 0; b < n_selblocks; b++){
-    array<Type> tmp2(n_years_model,n_selpars(b));
-    tmp2.setZero();
-    selpars_re_mats(b) = tmp2;
-
-    int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
-    if(selblock_models(b) == 2) jstart = n_ages;
-    if(selblock_models(b) == 3) jstart = n_ages + 2;
-
-    if(selblock_models_re(b) > 1){
-      // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
-      array<Type> tmp(n_years_selblocks(b), n_selpars_est(b));
-      for(int j=0; j<n_selpars_est(b); j++){
-        tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
-        istart += n_years_selblocks(b);
-      }
-
-      //question: is it faster here to just work on the selectivity parameters as re rather than the deviations?
-      // likelihood of RE sel devs (if turned on)
-      Type sigma; // sd selectivity deviations (fixed effect)
-      Type rho; // among-par correlation selectivity deviations (fixed effect)
-      Type rho_y; // among-year correlation selectivity deviations (fixed effect)
-      Type Sigma_sig_sel;
-      sigma = exp(sel_repars(b,0));
-      rho = rho_trans(sel_repars(b,1)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      rho_y = rho_trans(sel_repars(b,2)); // rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      
-      if((selblock_models_re(b) == 2) | (selblock_models_re(b) == 5)){
-        // 2D AR1 process on selectivity parameter deviations
-        Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
-        nll_sel += SCALE(SEPARABLE(AR1(rho),AR1(rho_y)), Sigma_sig_sel)(tmp);
-        SIMULATE if(do_simulate_sel_re == 1) SEPARABLE(AR1(rho),AR1(rho_y)).simulate(tmp);
-      } else {
-        // 1D AR1 process on selectivity parameter deviations
-        if(selblock_models_re(b) == 3){ // ar1 across parameters in selblock, useful for age-specific pars.
-          vector<Type> tmp0 = tmp.matrix().row(0); //random effects are constant across years 
-          Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
-          nll_sel += SCALE(AR1(rho), Sigma_sig_sel)(tmp0);
-          SIMULATE if(do_simulate_sel_re == 1)
-          {
-            AR1(rho).simulate(tmp0);
-            for(int i = 0; i < tmp0.size(); i++) tmp(0,i) = tmp0(i);
-          }
-        } else { // selblock_models_re(b) = 4, ar1_y
-          vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant across years 
-          Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
-          //Sigma_sig_sel = sigma;
-          nll_sel += SCALE(AR1(rho_y), Sigma_sig_sel)(tmp0);
-          SIMULATE if(do_simulate_sel_re == 1)
-          {
-            AR1(rho_y).simulate(tmp0);
-            tmp.col(0) = tmp0;
-          }
-        }
-      }
-      SIMULATE if(do_simulate_sel_re == 1) {
-        tmp = tmp * Sigma_sig_sel;
-        istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
-        for(int j=0; j<n_selpars_est(b); j++){
-          for(int y = 0; y < n_years_selblocks(b); y++){
-            selpars_re(istart) = tmp(y,j);
-            istart++;
-          }
-        }
-      }
-
-      // construct deviations array with full dimensions (n_years_model instead of n_years_selblocks, n_selpars instead of n_selpars_est)
-      for(int j=0; j<n_selpars(b); j++){
-        for(int y=0; y<n_years_model; y++){
-          if((selblock_years(y,b) == 1) & (selpars_est(b,j+jstart) > 0)){
-            selpars_re_mats(b)(y,j) = selpars_re(ct);
-            ct++;
-          }
-        }
-      }
+  if(selblock_models_re.sum()>0) {
+    vector<Type> nll_sel = get_nll_sel(selblock_models_re, n_years_selblocks, n_selpars_est, selpars_re, sel_repars);
+    nll += nll_sel.sum();
+    REPORT(nll_sel);
+    SIMULATE if(do_simulate_sel_re){
+      selpars_re = simulate_selpars_re(selblock_models_re, n_years_selblocks, n_selpars_est, selpars_re, sel_repars);
+      REPORT(selpars_re);
     }
-
-    // get selpars = mean + deviations
-    matrix<Type> tmp1(n_years_model, n_selpars(b));
-    for(int j=jstart; j<(jstart+n_selpars(b)); j++){ // transform from logit-scale
-      for(int i=0; i<n_years_model; i++){
-        tmp1(i,j-jstart) = selpars_lower(b,j) + (selpars_upper(b,j) - selpars_lower(b,j)) / (1.0 + exp(-(logit_selpars(b,j) + selpars_re_mats(b).matrix()(i,j-jstart))));
-      }
-    }
-    selpars(b) = tmp1;
+    if(do_post_samp_sel == 1) ADREPORT(selpars_re);
   }
+  vector<array<Type> > selpars_re_mats = get_selpars_re_mats(n_selpars, selblock_years, selpars_est, 
+    n_years_model, selpars_re, selblock_models, selblock_models_re);
+  REPORT(selpars_re_mats);
+
+  vector<matrix<Type> > selpars = get_selpars(selblock_models, n_selpars, logit_selpars, 
+    selpars_re_mats, selpars_lower, selpars_upper, n_years_model);
   REPORT(selpars);
-  REPORT(sel_repars);
-  REPORT(selpars_re); //even if not simulated
-  if(do_post_samp_sel == 1) ADREPORT(selpars_re);
-  REPORT(logit_selpars);
-  REPORT(nll_sel);
-  vector<matrix<Type>> selAA(n_selblocks); // selAA(b)(y,a) gives selectivity by block, year, age; selAA(b) is matrix with dim = n_years x n_ages;
-  selAA = get_selectivity(n_years_model, n_ages, n_selblocks, selpars, selblock_models); // Get selectivity by block, age, year
-  nll += nll_sel;
+
+  vector<matrix<Type> > selAA = get_selAA(n_years_model, n_ages, n_selblocks, selpars, selblock_models);
+  REPORT(selAA);
   /////////////////////////////////////////
  
   /////////////////////////////////////////
@@ -561,9 +464,11 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(do_post_samp_q == 1) ADREPORT(q_re);
-  matrix<Type> logit_q_mat = get_logit_q_mat(logit_q, q_re, q_prior_re, Ecov_lm_q, use_q_prior, use_q_re);
+  
+  matrix<Type> logit_q_mat = get_logit_q_mat(logit_q, q_re, q_prior_re, use_q_prior, use_q_re, Ecov_lm_q, use_Ecov_qs);
   REPORT(logit_q_mat);
-  if(use_q_re.sum()>0) if(do_post_samp_q==0) ADREPORT(logit_q_mat);
+  
+  if((use_q_re.sum()>0) | (use_Ecov_q.sum()>0)) if(do_post_samp_q==0) ADREPORT(logit_q_mat);
   
   //n_years_pop x n_indices;
   matrix<Type> q = get_q(logit_q_mat, q_lower, q_upper);
@@ -598,7 +503,7 @@ Type objective_function<Type>::operator() ()
   }
   
   //n_stocks x n_regions x n_years x n_ages
-  array<Type> log_M_base = get_log_M_base(M_re, M_model, n_years_model, M_a, log_b, waa, waa_pointer_M, Ecov_lm, use_Ecov, do_proj, proj_M_opt);
+  array<Type> log_M_base = get_log_M_base(M_re, M_model, n_years_model, M_a, log_b, waa, waa_pointer_M, Ecov_lm_M, use_Ecov_M, do_proj, proj_M_opt);
   REPORT(log_M_base);
   /////////////////////////////////////////
   
@@ -606,11 +511,13 @@ Type objective_function<Type>::operator() ()
   //movement
   // mu_model: 
   // 1 = constant across stocks, ages, time (n_seasons x n_regions x (n_regions -1) pars). 
-  // 2 = differ by age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
-  // 3 = differ by year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
-  // 4 = differ by stock (n_seasons x n_stocks x n_regions x (n_regions -1) pars). 
-  // 5 = differ by stock, age (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_ages AR1 random effects for each). 
-  // 6 = differ by stock, year (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_years AR1 random effects for each)
+  // 2 = differ by age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
+  // 3 = differ by year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
+  // 4 = differ by age,year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
+  // 5 = differ by stock (n_seasons x n_stocks x n_regions x (n_regions -1) pars). 
+  // 6 = differ by stock, age (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
+  // 7 = differ by stock, year (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
+  // 8 = differ by stock, age,year (n_seasons x n_stocks x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
   //priors, RE, get full lm link for migration parameters
   if(n_regions>1){//only do this mess if the number of regions is greater than 1.
     if(use_mu_prior.sum()>0) {
@@ -623,7 +530,7 @@ Type objective_function<Type>::operator() ()
       }
     }
     if(use_mu_re.sum()>0) {
-      array<Type> nll_mu_re = get_nll_mu_re(mu_repars, mu_re, mu_model);
+      array<Type> nll_mu_re = get_nll_mu(mu_repars, mu_re, mu_model);
       nll += nll_mu_re.sum();
       REPORT(nll_mu_re);
       SIMULATE if(do_simulate_mu_re ==1){
@@ -741,6 +648,25 @@ Type objective_function<Type>::operator() ()
   array<Type> nll_NAA = get_NAA_nll(NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
   REPORT(nll_NAA);
   nll += nll_NAA.sum();
+  /////////////////////////////////////////
+
+  /////////////////////////////////////////
+  //catch and index observations
+  vector<int> any_index_age_comp(n_indices);
+  vector<int> any_fleet_age_comp(n_fleets);
+  for(int i = 0; i < P_dim; i++) I_mat(i,i) = 1.0;
+
+  for(int i = 0; i < n_indices; i++)
+  {
+    any_index_age_comp(i) = 0;
+    for(int y = 0; y < n_years; y++) if(use_index_paa(y,i) == 1) any_index_age_comp(i) = 1;
+  }
+  for(int i = 0; i < n_fleets; i++)
+  {
+    any_fleet_age_comp(i) = 0;
+    for(int y = 0; y < n_years; y++) if(use_catch_paa(y,i) == 1) any_fleet_age_comp(i) = 1;
+  }
+
 
   vector<Type> nll_agg_catch(n_fleets);
   vector<Type> nll_catch_acomp(n_fleets);
