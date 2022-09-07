@@ -41,15 +41,16 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
     for(int i=0; i<x.size(); ++i){
       if(i!=(x.size()-1)){
         vector<Type> x2(2), p2(2);
+        Type p_here = squeeze(p(i));
         x2(0) = x(i);
         x2(1) = nUnused-x(i);
-        p2(0) = p(i)/(Type(1)-pUsed);
+        p2(0) = p_here/(Type(1)-pUsed);
         p2(1) = 1 - p2(0);
         logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
         //logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
         //cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed));
         nUnused -= x(i);
-        pUsed += p(i);
+        pUsed += p_here;
       }else{ // last index 
         logres += k(i)*Type(0);
         //cdf = Type(1);
@@ -438,29 +439,29 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   data_indicator<vector<Type>, Type> keep, int do_osa, vector<Type> paa_obs)
 {
   Type ll = 0.0;
-  vector<Type> p = paa_pred+1.0e-15;
+  vector<Type> p = paa_pred;
     if(age_comp_model == 1) {
       //multinomial
       //tf_paa_obs = Neff * paa_obs
-      ll = dmultinom(tf_paa_obs, p, keep, 1, do_osa);
+      ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
     }
     if(age_comp_model == 2) {
       //dirichlet-multinomial
       //tf_paa_obs = Neff * paa_obs
       vector<Type> alphas = p * exp(age_comp_pars(0));
-      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, do_osa);
+      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
     }
     if(age_comp_model == 3) { 
       //Dirichlet, miss0
       //0,1: pool 0s, do log 
       //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, do_osa);
+      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 0, 1, 1);
     }
     if(age_comp_model == 4) { 
       //Dirichlet, pool0
       //0,1: pool 0s, do log 
       //keep, pool0, give_log, do_osa
-      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, do_osa);
+      ll = ddirichlet(tf_paa_obs, p, exp(age_comp_pars(0)), ages, keep, 1, 1, 1);
     }
     if(age_comp_model == 5) { 
       //logistic-normal, miss0

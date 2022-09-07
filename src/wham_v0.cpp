@@ -1098,7 +1098,7 @@ Type objective_function<Type>::operator() ()
 		  nll += nll_waa.sum();			
 	  }
   }
-  REPORT(pred_waa); // print replaced (or not) waa matrix	  
+  REPORT(pred_waa); // print predicted waa matrix	  
   REPORT(nll_waa);
 
   // --------------------------------------------------------------------------
