@@ -42,7 +42,7 @@ array<Type> get_sel_proj(int y, array<Type> FAA, vector<int> avg_years_ind,
                    y:  year of projection (>n_years_model)
                  FAA:  FAA array from main code.
        avg_years_ind:  integer vector of years to average F for projection
-      which_F_fleet:   define which fleet has max F
+       which_F_fleet:  define which fleet has max F
       which_F_season:  define which season has max F
          which_F_age:  define which age has max F
     */
@@ -53,21 +53,21 @@ array<Type> get_sel_proj(int y, array<Type> FAA, vector<int> avg_years_ind,
   int n_seasons = FAA.dim(2);
   int n_ages = FAA.dim(3);
 
-  array<Type> FAA_proj(n_fleets, n_seasons, n_ages);
-  FAA_proj.setZero();
+  array<Type> FAA_avg(n_fleets, n_seasons, n_ages);
+  FAA_avg.setZero();
   for(int f = 0; f < n_fleets; f++) for(int t = 0; t < n_seasons; t++)
   {
     for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_toavg; i++){
-      FAA_proj(f,t,a) += FAA(f,avg_years_ind(i),t,a)/Type(n_toavg);
+      FAA_avg(f,t,a) += FAA(f,avg_years_ind(i),t,a)/Type(n_toavg);
     }
   }
   //get selectivity using average over avg.yrs
   array<Type> sel_proj(n_fleets,n_seasons,n_ages);
   //fully selected F across regions, seasons, and ages
-  Type F_full = FAA_proj(which_F_fleet(y)-1,which_F_season(y)-1,which_F_age(y)-1);
+  Type F_full = FAA_avg(which_F_fleet(y)-1,which_F_season(y)-1,which_F_age(y)-1);
   for(int f = 0; f < n_fleets; f++) for(int t = 0; t < n_seasons; t++){
     for(int a = 0; a < n_ages; a++) {
-      sel_proj(f,t,a) = FAA_proj(f,t,a)/F_full;
+      sel_proj(f,t,a) = FAA_avg(f,t,a)/F_full;
     }
   }
   return(sel_proj);
@@ -147,12 +147,6 @@ waa_pointer_totcatch:  (n_regions) pointer for waa to use for tot catch (use fun
     
     array<Type> sel_proj = get_sel_proj(y, FAA, avg_years_ind, which_F_fleet, which_F_season, which_F_age);
     /*
-    array<Type> MAA_y(n_stocks,n_regions,n_ages);
-    array<Type> NAA_y= MAA.row(y);
-    vector<Type> NAA_y = NAA.row(y);
-    vector<Type> mat_y = mature.row(y);
-    vector<Type> fracyr_SSB_y = fracyr_SSB.row(y);
-    Type log_SPR0_y = log_SPR0.row(y).sum();
     if(proj_F_opt_y == 3){ // F at X% SPR
       F_full_proj = get_FXSPR(MAA_y, sel_proj, waassb, mat_y, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init) * 0.01* percentFXSPR;
     }
