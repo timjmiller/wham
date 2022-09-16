@@ -1481,7 +1481,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
         tmp = subset(df, year == j & fleet == paste0("index_",i))
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
-        if(dat$age_comp_model_indices[i] < c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+        if(dat$age_comp_model_indices[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
       }
       scale.resid.bubble.catch <- 2
     } else{

@@ -43,7 +43,7 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
         vector<Type> x2(2), p2(2);
         x2(0) = x(i);
         x2(1) = nUnused-x(i);
-        p2(0) = p(i)/(Type(1)-pUsed);
+        p2(0) = squeeze(p(i)/(Type(1)-pUsed)); //for log of any p = 0
         p2(1) = 1 - p2(0);
         logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
         //logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
@@ -442,7 +442,6 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   if(age_comp_model == 1) {
     //multinomial
     //tf_paa_obs = Neff * paa_obs
-    p += 1.0e-15; //for log of any p = 0
     ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
   }
   if(age_comp_model == 2) {

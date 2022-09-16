@@ -124,8 +124,9 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     # one-step-ahead residuals
     if(do.osa & mod$is_sdrep){
       mod <- make_osa_residuals(mod)
-    } else warning(paste("","** Did not do OSA residual analyses. **",
-      "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",sep='\n'))
+    } else if(do.osa) warning(paste("","** Did not do OSA residual analyses. **",
+        "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",
+        sep='\n'))
 
     # projections, calls prepare_projection + fit_wham(do.proj=F)
     if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)
