@@ -593,7 +593,7 @@ Type objective_function<Type>::operator() ()
     nll += nll_N1.sum();
     REPORT(nll_N1);
     SIMULATE if(do_simulate_N){
-      log_N1 = simulate_N1(N1_model, log_N1, N1_repars);
+      log_N1 = simulate_log_N1(N1_model, log_N1, N1_repars);
       REPORT(log_N1);
     }
   }
@@ -603,6 +603,11 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_N1 = get_pred_N1(N1_model, log_N1, N1_repars);
   REPORT(pred_N1);
 
+
+  array<Type> nll_NAA = get_NAA_nll(log_N1, log_NAA, NAA_repars, NAA_re_model, NAA_where);
+  SIMULATE if(do_simulate_N){
+    log_NAA = simulate_log_NAA(log_NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
+  }
   //fill out NAA (they are all parameters)
   //n_stocks x n_regions x n_years_pop x n_ages
   array<Type> NAA = get_NAA(N1_model, log_N1, log_NAA, NAA_where) //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
@@ -632,7 +637,7 @@ Type objective_function<Type>::operator() ()
     REPORT(log_NAA);
   }
 
-/*
+/* Not needed now
   //array<Type> NAA_index(n_stocks,n_indices,n_years_pop,n_ages);
   //NAA_index.setZero();
   for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_ages; a++) 
