@@ -603,81 +603,43 @@ Type objective_function<Type>::operator() ()
   array<Type> pred_N1 = get_pred_N1(N1_model, log_N1, N1_repars);
   REPORT(pred_N1);
 
-
-  array<Type> nll_NAA = get_NAA_nll(log_N1, log_NAA, NAA_repars, NAA_re_model, NAA_where);
-  SIMULATE if(do_simulate_N){
-    log_NAA = simulate_log_NAA(log_NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
+  array<Type> NAA(n_stocks,n_regions,n_years,n_ages);
+  array<Type> pred_NAA(n_stocks,n_regions,n_years,n_ages);
+  array<Type> NAA_devs(n_stocks,n_regions,n_years-1,n_ages);
+  //This will use get_NAA, get_SSB, and get_pred_NAA to form devs and calculate likelihoods
+  if(NAA_re_model>0){ //not SCAA
+    matrix<Type> nll_NAA = get_NAA_nll(log_N1, log_NAA, NAA_repars, NAA_re_model, NAA_where,  log_SR_a, log_SR_b, 
+      use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, waa, waa_pointer_ssb,mature);
+    SIMULATE if(do_simulate_N){
+      //stopped here
+      NAA_devs = simulate_NAA_devs(NAA_re_model, NAA_repars, NAA_where, spawn_regions, bias_correct_pe);
+      log_NAA = simulate_log_NAA(log_N1, log_NAA, NAA_repars, NAA_re_model, NAA_where,  log_SR_a, log_SR_b, 
+        use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, waa, waa_pointer_ssb,mature);
+      REPORT(log_NAA);
+    }
+    NAA = get_NAA(N1_model, log_N1, log_NAA, NAA_where) //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
+    pred_NAA = get_pred_NAA(N1_model, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
+    log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
+  } else{
+    //NAA = get_NAA_SCAA();
+    //pred_NAA = get_pred_NAA_SCAA();
   }
-  //fill out NAA (they are all parameters)
-  //n_stocks x n_regions x n_years_pop x n_ages
-  array<Type> NAA = get_NAA(N1_model, log_N1, log_NAA, NAA_where) //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
-  REPORT(NAA);
 
-  //also get annual NAA at spawning and NAA for each index along the way.
+  REPORT(NAA);
+  REPORT(pred_NAA);
+
+  //Now get annual NAA at spawning and NAA for each index along the way.
   array<Type> NAA_spawn = get_NAA_spawn(NAA,annual_SAA_spawn);
   matrix<Type> SSB = get_SSB(NAA_spawn,waa,waa_pointer_ssb,mature);
-
+  REPORT(SSB);
+  array<Type> NAA_devs = log(NAA) - log(pred_NAA);
   //fill out predicted numbers at age
-  array<Type> pred_NAA = get_pred_NAA(N1_model, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
-    log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
 
   //need to be careful here about log_NAA random effects in regions where there will be zero predicted due to migration parameterization
   
-  ////////////////////////////FIX ME//////////////////////////////
-  array<Type> nll_NAA = get_NAA_nll(NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
-  REPORT(nll_NAA);
-  nll += nll_NAA.sum();
-  SIMULATE if(do_simulate_N){
-    NAA = simulate_NAA(NAA, pred_NAA, NAA_repars, NAA_re_model, NAA_where);
-    NAA_spawn = get_NAA_spawn(NAA,annual_SAA_spawn);
-    SSB = get_SSB(NAA_spawn,waa,waa_pointer_ssb,mature);
-    pred_NAA = get_pred_NAA(N1_model, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
-      log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
-    log_NAA = get_log_NAA(NAA);
-    REPORT(log_NAA);
-  }
 
-/* Not needed now
-  //array<Type> NAA_index(n_stocks,n_indices,n_years_pop,n_ages);
-  //NAA_index.setZero();
-  for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_ages; a++) 
-  {
-    matrix<Type> P_y = I_mat; //reset for each year, age, stock
-    for(int t = 0; t < n_seasons; t++) 
-    {
-      //get numbers at age a for stock s in each region at time of spawning
-      if(t == spawn_seasons(s)-1)
-      {
-        //P(0,t) x P(t_s-t): PTM over interval from beginning of year to time of spawning within the season
-        matrix<Type> P_SSB = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
-        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) annual_Ps_SSB(s,y,a,i,j) = P_SSB(i,j);
-        //spawners only spawning in stock region...
-        for(int r = 0; r < n_regions; r++) NAA_SSB(s,y,a) += NAA(s,r,y,a) * P_SSB(r,spawn_regions(s)-1);
-      }
-      for(int i = 0; i < n_indices; i++) 
-      {
-        if(t == index_seasons(i)-1)
-        { 
-          //P(0,t) x P(t_i-t): PTM over interval from beginning of year to time of index within the season
-          matrix<Type> P_index = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_indices(y,i), FAA, log_M_base, mu, L);
-          for(int r = 0; r < n_regions; r++) NAA_index(s,i,y,a) += P_index(r,index_regions(i)-1) * NAA(s,y,a,r);
-        }
-      }
-      //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
-      if(y == n_years_model-1)//collect each seasonal matrix for the last model year?
-      {
-        for(int d = 0; d < P_dim; d++) for(int dd = 0; dd < P_dim; dd++) P_season_terminal(t,s,a,d,dd) = P_t(d,dd);
-      }
-      P_y = P_y * P_t;
-    }
-    for(int i = 0; i < P_dim; i++) for(int j = 0; j < P_dim; j++) annual_Ps(s,y,a,i,j) = P_y(i,j);
-  }
-*/
   //n_years_pop x n_stocks
   //make sure mature has projection years if necessary
-
-  /////////////////////////////////////////
 
   /////////////////////////////////////////
   //catch and index observations

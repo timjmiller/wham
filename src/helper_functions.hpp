@@ -5,13 +5,16 @@ Type square(Type x){return x*x;}
 // general inverse logit fn
 template <class Type>
 Type invlogit(Type x, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
+VECTORIZE4_tttt(invlogit);
 
 template <class Type>
 Type logit(Type y, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return (log(y - lo) - log(hi - y))/scale;}
+VECTORIZE4_tttt(logit);
 
 // transformation to ensure correlation parameters are between -1 and 1
 template <class Type>
 Type rho_trans(Type x){return Type(2)/(Type(1) + exp(-Type(2) * x)) - Type(1);}
+VECTORIZE1_t(rho_trans);
 
 template<class Type>
 matrix<Type> extract_matrix_array3(array<Type> a, int index){ //matrix has to be the last two dims of the 3d array
