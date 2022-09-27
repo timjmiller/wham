@@ -11,7 +11,7 @@ matrix<Type> get_L(vector<int> L_model, matrix<Type> L_pars, matrix<Type> re) {
 
   matrix<Type> L(ny,nr);
   L.setZero();
-  for(int r = 0; r < n_regions; r++) if(L_model(r)>0) {
+  for(int r = 0; r < nr; r++) if(L_model(r)>0) {
     for(int y = 0; y < ny; y++) {
       L(y,r) = exp(L_pars(r,0)); //mean
       if(L_model(r)>1){ //use random effects
@@ -31,17 +31,18 @@ vector<Type> get_nll_L(vector<int> L_model, matrix<Type> L_pars, matrix<Type> re
         L_pars: fixed effects parameters for extra mortality rate
             re: matrix of random effects to possibly use
   */
+  using namespace density; // necessary to use AR1, SCALE, SEPARABLE
   int nr = L_model.size();
-  int ny = re.rows();
 
   vector<Type> nll(nr);
   nll.setZero();
-  for(int r = 0; r < n_regions; r++) if(L_model(r)>1) 
+  for(int r = 0; r < nr; r++) if(L_model(r)>1) 
   {
     vector<Type> re_r = re.col(r);
+    Type mu = exp(L_pars(r,0));
     Type sig = exp(L_pars(r,1));
-    Type rho = invlogit(L_pars(r,2),-1,1,1); //rho_trans(L_pars(r,2));
-    nll(r) += SCALE(AR1(rho), sig)(re_r);
+    Type rho = geninvlogit(L_pars(r,2),Type(-1),Type(1),Type(1)); //rho_trans(L_pars(r,2));
+    nll(r) += SCALE(AR1(rho), sig)(re_r-mu);
   }
   return(nll);
 }
@@ -55,19 +56,20 @@ matrix<Type> simulate_L_re(vector<int> L_model, matrix<Type> L_pars, matrix<Type
         L_pars: fixed effects parameters for extra mortality rate
             re: matrix of random effects to possibly use
   */
+  using namespace density; // necessary to use AR1, SCALE, SEPARABLE
   int nr = L_model.size();
-  int ny = re.rows();
 
   matrix<Type> re_sim = re;
   
-  for(int r = 0; r < n_regions; r++) if(L_model(r)>1) 
+  for(int r = 0; r < nr; r++) if(L_model(r)>1) 
   {
     vector<Type> re_r = re.col(r);
+    Type mu = exp(L_pars(r,0));
     Type sig = exp(L_pars(r,1));
-    Type rho = invlogit(L_pars(r,2),-1,1,1); //rho_trans(L_pars(r,2));
+    Type rho = geninvlogit(L_pars(r,2),Type(-1),Type(1),Type(1)); //rho_trans(L_pars(r,2));
     AR1(rho).simulate(re_r);
     re_r *= sig;
-    for(int i = 0; i < re_r.size(); i++) re_sim(i,r) = re_r(i);
+    for(int i = 0; i < re_r.size(); i++) re_sim(i,r) = mu + re_r(i);
   }
   return(re_sim);
 }
