@@ -343,3 +343,57 @@ array<Type> get_mu(array<Type> trans_mu_base, array<int> can_move,  array<int> m
 }
 //done
 
+
+template <class Type>
+matrix<Type> get_avg_mu_matrix(int stock, int age, int season, vector<int> years, vector<int> mig_type, array<int> can_move, array<int> must_move, array<Type> trans_mu_base){
+  /* 
+    Construct n_regions x n_regions movement matrix "averaged" over years
+      stock: which stock
+      age: which age
+      season: which season
+      years: which years to average over
+      mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
+      can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
+      must_move: n_stocks x ages x n_seasons x n_regions: 0/1 determining if it must leave the region
+      trans_mu_base: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions-1. array retruned by get_trans_mu_base
+  */
+
+  int n_regions = trans_mu_base.dim(4);
+  matrix<Type> mu(n_regions,n_regions);
+  mu.setZero();
+  if(mig_type(stock) == 0) { //migration is instantaneous after survival and mortality, so P is easy.
+    // from each region, average the probabilities of movement and then rescale. 
+    for(int r = 0; r < n_regions; r++) {
+      vector<Type> trans_par(n_regions-1);
+      trans_par.setZero();
+      vector<int> can_move_r(n_regions); //can_move_r(r) is ignored because dictated by must_move?
+      can_move_r.setZero();
+      vector<Type> pmove(n_regions);
+      pmove.setZero();
+      for(int j = 0; j < n_regions; j++) can_move_r(j) = can_move(stock,age,season,r,j);
+      for(int y = 0; y < years.size(); y++) {
+        for(int rr = 0; rr < n_regions-1; rr++) trans_par(rr) = trans_mu_base(stock,age,season,years(y),r,rr);
+        pmove += additive_ln_transform(trans_par, r, can_move_r, must_move(stock,age,season,r))/years.size();
+      }
+      pmove = pmove/sum(pmove);
+      for(int j = 0; j < n_regions; j++) mu(r,j) = pmove(j);
+    }
+  }
+  if(mig_type(stock) == 1) { //migration occurs continuously during interval, return infinitesimal generator.
+    //for each region, average the yearly instantaneous movement rates to other regions (analogous to M and F)
+    for(int i = 0; i < n_regions; i++) {
+      int k = 0;
+      for(int j = 0; j < n_regions; j++){ 
+        if(j!=i) {
+          k++; //max k = n_regions -1 (-1)
+          if(can_move(i,j)==1) for(int y = 0; y < years.size(); y++) {
+            mu(i,j) = exp(trans_mu_base(stock,age,season,years(y),i,k))/years.size(); //log of transition intensities
+          }
+        }
+      }
+    }
+    for(int r = 0; r< n_regions; r++) mu(r,r) = -(mu.row(r)).sum(); //hazard
+  }
+  return(mu);
+}
+//done

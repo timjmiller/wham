@@ -204,7 +204,7 @@ array<Type> get_pred_CAA(array<Type> pred_stock_CAA){
 }
 
 template <class Type>
-array<Type> get_pred_stock_catch(array<Type> pred_stock_CAA, array<Type> waa, vector<int> waa_pointer_fleets){
+array<Type> get_pred_stock_catch(array<Type> pred_stock_CAA, array<Type> waa, matrix<int> waa_pointer_fleets){
   int n_fleets = pred_stock_CAA.size();
   int n_stocks = pred_stock_CAA.dim(0);
   int n_years = pred_stock_CAA.dim(2);

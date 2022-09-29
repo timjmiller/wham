@@ -29,7 +29,7 @@ Type objective_function<Type>::operator() ()
   //DATA_IVECTOR(mu_pointer) //n_stocks * n_years * n_ages
   //DATA_INTEGER(n_seasons_recruited); //easiest if this is = n_seasons 
   DATA_ARRAY(mature); //n_stocks x n_years x n_ages
-  DATA_IVECTOR(waa_pointer_fleets);
+  DATA_IMATRIX(waa_pointer_fleets); //n_fleets x n_seasons indicator which waa to use for each fleet,season
   DATA_IVECTOR(waa_pointer_totcatch); //n_regions
   DATA_IVECTOR(waa_pointer_indices);
   DATA_IVECTOR(waa_pointer_ssb); //n_stocks
@@ -60,6 +60,32 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(use_index_paa); //n_years x n_indices
   DATA_MATRIX(index_Neff); //n_years x n_indices
   DATA_IVECTOR(age_comp_model_indices); //length = n_indices
+
+  // data for environmental covariate(s), Ecov
+  DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
+  DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
+  DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
+  DATA_MATRIX(Ecov_obs);
+  DATA_IMATRIX(Ecov_how_R); // n_Ecov x n_stocks: specific to recruitment effects. 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
+  DATA_IMATRIX(use_Ecov_R); // n_Ecov x n_stocks: 0/1 values indicating to use effects on recruitment
+  DATA_IARRAY(use_Ecov_M); // n_Ecov x n_stocks x n_ages x n_regions: 0/1 values indicating to use effects on natural mortality at age.
+  DATA_IMATRIX(use_Ecov_q); // n_Ecov x n_indices: 0/1 values indicating to use effects on catchability for each index.
+  DATA_IARRAY(use_Ecov_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 values indicating to use effects on migration for each stock for each region (less 1).
+  //DATA_IMATRIX(Ecov_where); // n_Ecov x 3+n_indices. 0/1 values with columns corresponding to recruit, mortality, migration, indices in that order
+  DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
+  //DATA_IMATRIX(ind_Ecov_out_start); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
+  DATA_IMATRIX(ind_Ecov_out_start_R); // n_Ecov x n_stocks: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IARRAY(ind_Ecov_out_start_M); // n_Ecov x n_stocks x n_ages x n_regions: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IMATRIX(ind_Ecov_out_start_q); // n_Ecov x n_indices: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IARRAY(ind_Ecov_out_start_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  //DATA_IMATRIX(ind_Ecov_out_end); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
+  DATA_IVECTOR(ind_Ecov_out_end_R); // n_Ecov: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IARRAY(ind_Ecov_out_end_M); // n_Ecov x n_ages: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IMATRIX(ind_Ecov_out_end_q); // n_Ecov x n_indices: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IARRAY(ind_Ecov_out_end_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
+  DATA_IVECTOR(Ecov_obs_sigma_opt); // n_Ecov, 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
+  DATA_IVECTOR(Ecov_use_re); // n_Ecov: 0/1: use Ecov_re? If yes, add to nll.
+
   DATA_VECTOR(q_lower); //length = n_indices
   DATA_VECTOR(q_upper); //length = n_indices
   DATA_IVECTOR(use_q_prior); //length = n_indices
@@ -108,10 +134,10 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(which_F_age); // (n_years_model + n_years_proj); which age of F to use for max F for msy/ypr calculations and projections
   DATA_IVECTOR(which_F_season); // (n_years_model + n_years_proj); which season of F to use for max F for msy/ypr calculations and projections
   DATA_IVECTOR(which_F_fleet); // (n_years_model + n_years_proj); which fleet of F to use for max F for msy/ypr calculations and projections
-  DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
+  //DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
-  DATA_IVECTOR(Fbar_ages);
+  //DATA_IVECTOR(Fbar_ages);
   
   //DATA_IMATRIX(R1_pointer); //n_stocks x n_regions. Tells where log_R1 parameters are used.
   //DATA_IMATRIX(N1_sigma_pointer); //n_stocks x n_regions. Tells which N1_sigma_par to use where.
@@ -129,17 +155,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(do_simulate_mu_prior_re); //(0/1) if 1 then simulate mu prior random effects.
   DATA_INTEGER(do_simulate_L_re); //(0/1) if 1 then simulate L (extra mortality) random effects.
   DATA_INTEGER(do_simulate_N); //(0/1) if 1 then simulate N1 and NAA random effects.
-
   DATA_IVECTOR(do_simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
-  //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
-  DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
-  DATA_SCALAR(percentFXSPR); // percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so percentFXSPR = 75 and percentSPR = 40. Default = 100.
-  DATA_SCALAR(percentFMSY); // percent of FMSY to use for calculating catch in projections.
-  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
-  DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-  DATA_VECTOR(FXSPR_init); // annual initial values to use for newton steps to find FXSPR (n_years_model+n_proj_years)
-  DATA_VECTOR(FMSY_init); // annual initial values to use for newton steps to find FMSY (n_years_model+n_proj_years)
-  
+
   // data for one-step-ahead (OSA) residuals
   DATA_INTEGER(do_osa); //whether to do osa residuals. For efficiency reasons with age comp likelihoods.
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
@@ -157,30 +174,20 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(do_post_samp_Ecov); //whether to ADREPORT posterior residuals for Ecov re. 
   DATA_INTEGER(do_post_samp_q); //whether to ADREPORT posterior residuals for q re. 
 
-  // data for environmental covariate(s), Ecov
-  DATA_INTEGER(n_Ecov); // also = 1 if no Ecov
-  DATA_INTEGER(n_years_Ecov); // num years in Ecov  process model
-  DATA_IMATRIX(Ecov_use_obs); // all 0 if no Ecov
-  DATA_MATRIX(Ecov_obs);
-  DATA_IMATRIX(Ecov_how_R); // n_Ecov x n_stocks: specific to recruitment effects. 0 = no effect, 1 = controlling, 2 = limiting, 3 = lethal, 4 = masking, 5 = directive
-  DATA_IMATRIX(use_Ecov_R); // n_Ecov x n_stocks: 0/1 values indicating to use effects on recruitment
-  DATA_IARRAY(use_Ecov_M); // n_Ecov x n_stocks x n_ages x n_regions: 0/1 values indicating to use effects on natural mortality at age.
-  DATA_IMATRIX(use_Ecov_q); // n_Ecov x n_indices: 0/1 values indicating to use effects on catchability for each index.
-  DATA_IARRAY(use_Ecov_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 values indicating to use effects on migration for each stock for each region (less 1).
-  //DATA_IMATRIX(Ecov_where); // n_Ecov x 3+n_indices. 0/1 values with columns corresponding to recruit, mortality, migration, indices in that order
-  DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
-  //DATA_IMATRIX(ind_Ecov_out_start); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
-  DATA_IMATRIX(ind_Ecov_out_start_R); // n_Ecov x n_stocks: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IARRAY(ind_Ecov_out_start_M); // n_Ecov x n_stocks x n_ages x n_regions: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IMATRIX(ind_Ecov_out_start_q); // n_Ecov x n_indices: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IARRAY(ind_Ecov_out_start_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  //DATA_IMATRIX(ind_Ecov_out_end); // n_Ecov x (2 + n_indices) index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects specific the multiple types of effects each Ecov can have)
-  DATA_IVECTOR(ind_Ecov_out_end_R); // n_Ecov: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IARRAY(ind_Ecov_out_end_M); // n_Ecov x n_ages: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IMATRIX(ind_Ecov_out_end_q); // n_Ecov x n_indices: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IARRAY(ind_Ecov_out_end_mu); // n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: index of Ecov_x to use for Ecov_out (operates on pop model, lagged effects each Ecov can have)
-  DATA_IVECTOR(Ecov_obs_sigma_opt); // n_Ecov, 1 = given, 2 = estimate 1 value, shared among obs, 3 = estimate for each obs, 4 = estimate for each obs as random effects
-  DATA_IVECTOR(Ecov_use_re); // n_Ecov: 0/1: use Ecov_re? If yes, add to nll.
+  //reference points
+  //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
+  DATA_INTEGER(do_BRPs); //whether to calculate and adreport reference points. 
+  DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
+  DATA_SCALAR(percentFXSPR); // percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so percentFXSPR = 75 and percentSPR = 40. Default = 100.
+  DATA_SCALAR(percentFMSY); // percent of FMSY to use for calculating catch in projections.
+  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  DATA_VECTOR(FXSPR_init); // annual initial values to use for newton steps to find FXSPR (n_years_model+n_proj_years)
+  DATA_VECTOR(FMSY_init); // annual initial values to use for newton steps to find FMSY (n_years_model+n_proj_years)
+  DATA_INTEGER(n_regions_is_small) //is the number of regions "small"? determines different matrix inversion methods in TMB
+  //static brp info
+  DATA_INTEGER(which_F_age_static); // which age of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
+  DATA_SCALAR(static_FXSPR_init); // initial value to use for newton steps to find FXSPR_static
 
   // data for projections
   DATA_INTEGER(do_proj); // 1 = yes, 0 = no
@@ -194,10 +201,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(logR_sd); //  (n_stocks) empirical sd recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(F_proj_init); // annual initial values  to use for newton steps to find F for use in projections  (n_years_proj)
   
-  //static brp info
-  DATA_INTEGER(which_F_age_static); // which age of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
-  DATA_SCALAR(static_FXSPR_init); // initial value to use for newton steps to find FXSPR_static
-  DATA_INTEGER(n_regions_is_small) //is the number of regions "small"? determines different matrix inversion methods in TMB
  
   // parameters - general
   PARAMETER_MATRIX(mean_rec_pars); //n_stocks x 2
@@ -218,7 +221,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_ARRAY(log_N1); // (n_stocks x n_regions x n_ages)
   PARAMETER_MATRIX(log_NAA_sigma); // (n_stocks x n_ages) vector sigmas used with NAA_sigma_pointers
   PARAMETER_MATRIX(trans_NAA_rho); // (n_stocks x 2) rho_a, rho_y (length = 2)
-  //Just have annual NAA right now
+  //Just have annual NAA currently
   PARAMETER_ARRAY(log_NAA); //(n_stocks x n_regions x nyears-1 x n_ages) 
   
   PARAMETER_MATRIX(logR_proj); // (n_stocks x n_proj_years) recruitment (random effects) in proj years, only if SCAA
@@ -762,6 +765,9 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_SSB(n_years_pop,n_stocks);
   for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_pop; y++) log_SSB(y,s) = log(SSB(y,s));
   
+  if(do_BRPs){
+
+  }
   //if(reportMode==0){
     REPORT(q);
     REPORT(F);
