@@ -105,9 +105,9 @@ Returning AIC/rho table for WHAM models only.
         ecov.obs <- lapply(wham.mods, function(x) x$env$data$Ecov_use_obs)
         all.identical <- function(l) all(mapply(identical, head(l, 1), tail(l, -1)))
         if(!all.identical(ecov.obs)){
-          stop("Different env covariate data used, cannot compare models' AIC.
-               Set 'calc.aic = FALSE' to compare only Mohn's rho, or only select
-               models fit to the same data.")
+          stop("Different env covariate data used, cannot compare models' AIC. \n\n
+               Set 'calc.aic = FALSE' to make other comparisons, or only select
+               models fit to the same data.\n")
         }
         aic <- sapply(wham.mods, function(x){
           k = length(x$opt$par)
@@ -117,9 +117,10 @@ Returning AIC/rho table for WHAM models only.
         aic <- round(aic, 1)
         daic <- round(aic - min(aic), 1)
       } else {
-        stop("Env covariate in some model(s) but not all. Cannot compare AIC
-             for models with different data (here, some have environmental data
-             and some do not).")
+        stop("Env covariate in some model(s) but not all. Cannot compare AIC \n
+             for models with different data (here, some have environmental data \n
+             and some do not). Set 'calc.aic = FALSE' to make other comparisons, \n
+             or only select models fit to the same data.\n")
       }
       aic.tab <- cbind(daic, aic)
       colnames(aic.tab) <- c("dAIC","AIC")
@@ -127,9 +128,9 @@ Returning AIC/rho table for WHAM models only.
     rho <- NULL
     if(table.opts$calc.rho){
       if(any(mapply(function(x) is.null(x$peels), wham.mods))){
-        stop("Not all models have peels --> Cannot compare Mohn's rho.
-             Set 'calc.rho = FALSE' to compare only AIC, or re-run models
-             with 'fit_wham(do.retro = TRUE)'.")
+        stop("Not all models have peels --> Cannot compare Mohn's rho. \n
+             Set 'calc.rho = FALSE' to make other comparisons, or re-run models \n
+             with 'fit_wham(do.retro = TRUE)'.\n")
       }
       rho <- t(sapply(wham.mods, function(x){
         mohns_rho(x)
@@ -681,17 +682,27 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
   n_ages = length(plot.opts$ages.lab)
   allSame <- function(x) length(unique(x)) == 1
   if(type == 'fleet'){
-    if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) stop("Fleet selectivity blocks not identical, cannot produce comparison plot")
-    selblocks <- as.numeric(unique(x[[1]]$selblock_pointer_fleets))
-    yrs <- lapply(selblocks, function(y){
-                                tmp <- which(x[[1]]$selblock_pointer_fleets == y);
-                                tmp <- tmp %% length(x[[1]]$years);
-                                tmp[tmp == 0] = length(x[[1]]$years);
-                                return(tmp)})
+    if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) {
+      cat("Fleet selectivity blocks not identical, cannot produce comparison plot.")
+      return(NULL)
+    } else {
+      selblocks <- as.numeric(unique(x[[1]]$selblock_pointer_fleets))
+      print(selblocks)
+      selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))
+      print(selblocks)
+      yrs <- lapply(selblocks, function(y){
+                                  tmp <- which(x[[1]]$selblock_pointer_fleets == y);
+                                  tmp <- tmp %% length(x[[1]]$years);
+                                  tmp[tmp == 0] = length(x[[1]]$years);
+                                  return(tmp)})
+    }
   }
   if(type == 'indices'){
     if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_indices)))) stop("Index selectivity blocks not identical, cannot produce comparison plot")
     selblocks <- as.numeric(unique(x[[1]]$selblock_pointer_indices))
+      print(selblocks)
+    selblocks <- unique(as.integer(x[[1]]$selblock_pointer_indices))
+      print(selblocks)
     yrs <- lapply(selblocks, function(y){
                                 tmp <- which(x[[1]]$selblock_pointer_indices == y);
                                 tmp <- tmp %% length(x[[1]]$years);
