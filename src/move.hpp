@@ -345,7 +345,8 @@ array<Type> get_mu(array<Type> trans_mu_base, array<int> can_move,  array<int> m
 
 
 template <class Type>
-matrix<Type> get_avg_mu_matrix(int stock, int age, int season, vector<int> years, vector<int> mig_type, array<int> can_move, array<int> must_move, array<Type> trans_mu_base){
+matrix<Type> get_avg_mu_matrix(int stock, int age, int season, vector<int> years, vector<int> mig_type, array<int> can_move,
+ array<int> must_move, array<Type> trans_mu_base){
   /* 
     Construct n_regions x n_regions movement matrix "averaged" over years
       stock: which stock

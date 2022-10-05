@@ -114,8 +114,8 @@ matrix<Type> get_SSB(array<Type>NAA_spawn, array<Type> waa, vector<int> waa_poin
 
 template <class Type>
 array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M_base, array<Type> FAA, 
-  vector<int> which_F_fleet, vector<int> which_F_season, vector<int> which_F_age, vector<int> spawn_seasons, 
-  vector<int> fleet_regions, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
+  matrix<int> which_F_age, vector<int> spawn_seasons, 
+  vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
   matrix<Type> L,  array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, 
   vector<int> avg_years_ind, int small_dim) {
   /* 
@@ -124,12 +124,11 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
                log_N1: (n_stocks x n_regions x n_ages) holding fixed or random effects paramters
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
            log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
-                  FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
-        which_F_fleet: (n_years_model + n_years_proj); which fleet of F to use for max F for msy/ypr calculations and projections
-       which_F_season: (n_years_model + n_years_proj); which season of F to use for max F for msy/ypr calculations and projections
-          which_F_age: (n_years_model + n_years_proj); which age of F to use for max F for msy/ypr calculations and projections
+                  FAA: fishing mortality: n_fleets x n_years x n_ages
+          which_F_age: (n_years_model + n_years_proj x 2); which age,fleet of F to use for max F for msy/ypr calculations and projections
         spawn_seasons: n_stocks; which season spawning occurs for each stock
         fleet_regions: n_fleets; which region each fleet is operating
+        fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
              can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
              mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
            fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
@@ -143,12 +142,12 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
   */
   int n_stocks = log_N1.dim(0);
   int n_fleets = FAA.dim(0);
-  int n_seasons = FAA.dim(2);
+  int n_seasons = fleet_seasons.cols();
   int n_regions = log_N1.dim(1);
   int n_ages = log_M_base.dim(3);
   array<Type> NAA_1(n_stocks, n_regions, n_ages);
   NAA_1.setZero();
-  array<Type> sel1 = get_sel_proj(0, FAA, avg_years_ind, which_F_fleet, which_F_season, which_F_age);
+  matrix<Type> sel1 = get_sel_proj(0, FAA, avg_years_ind, which_F_age);
 
   //NAA_where(s,r,0) must be consistent with spawn_regions  
   for(int s = 0; s < n_stocks; s++) {
@@ -159,12 +158,12 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
     } else{ //N1_model(s) == 2
       vector<int> no_avg_yrs_ind(1);
       no_avg_yrs_ind(0) = 0;
-      array<Type> FAA1(n_fleets,1,n_seasons,n_ages);
+      array<Type> FAA1(n_fleets,1,n_ages);
       FAA1.setZero();
-      for(int f = 0; f < n_fleets; f++) for(int t = 0; t < n_seasons; t++) for(int a = 0; a < n_ages; a++) {
-        FAA1(f,0,t,a) = exp(log_N1(s,0,1)) * sel1(f,t,a); //only 1 F0 per stock
+      for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+        FAA1(f,0,a) = exp(log_N1(s,0,1)) * sel1(f,a); //only 1 F0 per stock
       }
-      array<Type> SAA1 = get_eq_SAA(0, spawn_seasons, fleet_regions, can_move, mig_type, fracyr_SSB, FAA1, log_M_base, 
+      array<Type> SAA1 = get_eq_SAA(0, spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, FAA1, log_M_base, 
         mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, small_dim);
       for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_regions; i++) if(NAA_where(s,i,a)) {
         NAA_1(s,i,a) += exp(log_N1(s,i,0)) * SAA1(s,i,i,a); //only 1 Rec per stock, this must be consistent with NAA_where
@@ -176,9 +175,9 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
 
 template <class Type>
 array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M_base, 
-  array<Type> FAA, vector<int> which_F_fleet, vector<int> which_F_season, vector<int> which_F_age, vector<int> spawn_seasons, 
+  array<Type> FAA, matrix<int> which_F_age, vector<int> spawn_seasons, 
   vector<int> spawn_regions,
-  vector<int> fleet_regions, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
+  vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
   array<Type> L, array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, 
   vector<int> avg_years_ind, int small_dim){
   /*
@@ -194,12 +193,11 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
            log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                   FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
-        which_F_fleet: (n_years_model + n_years_proj); which fleet of F to use for max F for msy/ypr calculations and projections
-       which_F_season: (n_years_model + n_years_proj); which season of F to use for max F for msy/ypr calculations and projections
-          which_F_age: (n_years_model + n_years_proj); which age of F to use for max F for msy/ypr calculations and projections
+          which_F_age: (n_years_model + n_years_proj x 2); which age,fleet of F to use for max F for msy/ypr calculations and projections
         spawn_seasons: n_stocks; which season spawning occurs for each stock
         spawn_regions: n_stocks; which region spawning occurs for each stock
         fleet_regions: n_fleets; which region each fleet is operating
+        fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
              can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
              mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
            fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
@@ -219,8 +217,8 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
   array<Type> NAA_y(n_stocks, n_regions, n_ages);
   NAA_y.setZero();
   if(y==0) {
-    NAA_y = get_NAA_1(N1_model,log_N1, NAA_where, log_M_base, FAA,  which_F_fleet, which_F_season, which_F_age, 
-      spawn_seasons, fleet_regions, can_move, mig_type, fracyr_SSB, mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, 
+    NAA_y = get_NAA_1(N1_model,log_N1, NAA_where, log_M_base, FAA, which_F_age, 
+      spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, 
       avg_years_ind, small_dim);
   } else{ 
     for(int s = 0; s < n_stocks; s++) {
@@ -527,7 +525,8 @@ array<Type> get_pred_NAA(int N1_model, array<Type> log_N1, array<Type> N1_repars
 }
 
 template <class Type>
-array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> N1, array<Type> log_N1, array<Type> N1_repars, array<Type> log_NAA, array<int> NAA_where, 
+array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> N1, array<Type> log_N1, array<Type> N1_repars, 
+  array<Type> log_NAA, array<int> NAA_where, 
   array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb,
   vector<int> recruit_model, matrix<Type> mean_rec_pars, matrix<Type> log_SR_a, matrix<Type> log_SR_b, 
   matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
@@ -535,27 +534,25 @@ array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> 
   /* 
     fill out numbers at age and "expected" numbers at age
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
-              log_NAA: (n_stocks x n_regions x nyears-1 x n_ages) parameters for ages after year 1
              N1_model: 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
                N1: (n_stocks x n_regions x n_ages) numbers at age in the first year
+               log_N1:
+               N1_repars:
+              log_NAA: (n_stocks x n_regions x nyears-1 x n_ages) parameters for ages after year 1
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
-           log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
-                  FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
-        which_F_fleet: (n_years_model + n_years_proj); which fleet of F to use for max F for msy/ypr calculations and projections
-       which_F_season: (n_years_model + n_years_proj); which season of F to use for max F for msy/ypr calculations and projections
-          which_F_age: (n_years_model + n_years_proj); which age of F to use for max F for msy/ypr calculations and projections
-        spawn_seasons: n_stocks; which season spawning occurs for each stock
-        fleet_regions: n_fleets; which region each fleet is operating
-             can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
-             mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
-           fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
-                   mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
-                    L: n_years_model x n_regions; "extra" mortality rate
                mature: n_stocks x n_years x n_ages; proportion mature
                   waa: (n_?) x n_years x n_ages_model. weight at age
       waa_pointer_ssb: n_stocks; which waa matrix to use for ssb
-       fracyr_seasons: n_seasons: length of intervals for each season
-            small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
+      recruit_model:
+      mean_rec_pars:
+      log_SR_a:
+      log_SR_b:
+      use_Ecov_R:
+      Ecov_how_R:
+      Ecov_lm_R:
+      spawn_regions:
+      annual_Ps:
+      annual_SAA_spawn:
   */
   int n_stocks = log_NAA.dim(0);
   int n_regions = log_NAA.dim(1);
@@ -723,27 +720,28 @@ matrix<Type> get_SR_log_b(vector<int> recruit_model, matrix<Type> mean_rec_pars,
 }
 
 template <class Type>
-array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons,
+array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons,
   matrix<Type> fracyr_indices, vector<int> index_seasons, vector<int> index_regions, array<Type> FAA, array<Type> log_M_base, 
   array<Type> mu, matrix<Type> L){
   /*
     produce the annual survival probabilities up to time of spawning for a given stock, age, season, year
                 NAA: nstocks x nregions x nyears x nages; array of numbers at age 
       fleet_regions: n_fleets; which region each fleet is operating
+      fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
            can_move: n_stocks x ages x n_seasons x n_regions x n_regions; 0/1 determining whether movement can occur from one region to another
            mig_type: n_stocks; 0 = migration after survival, 1 = movement and mortality simultaneous
       fracyr_seasons: n_seasons; length of intervals for each season
       fracyr_indices: n_indices; length of intervals for each index
       index_seasons: n_indices; which season the index occurs in
       index_regions: n_indices: which region the index is observing
-                FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
+                FAA: fishing mortality: n_fleets x n_years x n_ages
          log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
   int n_indices = index_seasons.size();
-  int n_seasons = FAA.dim(2);
+  int n_seasons = fleet_seasons.cols();
   int n_stocks = log_M_base.dim(0);
   int n_regions = log_M_base.dim(1);
   int n_years = log_M_base.dim(2);
@@ -762,13 +760,13 @@ array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, array<int>
       for(int i = 0; i < n_indices; i++) {
         if(t == index_seasons(i)-1){ 
           //P(0,t) x P(t_i-t): PTM over interval from beginning of year to time of index within the season
-          matrix<Type> P_index = P_y * get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_indices(y,i), 
+          matrix<Type> P_index = P_y * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_indices(y,i), 
             FAA, log_M_base, mu, L);
           for(int r = 0; r < n_regions; r++) NAA_index(s,i,y,a) += P_index(r,index_regions(i)-1) * NAA(s,r,y,a);
         }
       }
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
       P_y = P_y * P_t;
     }
   }
@@ -782,19 +780,20 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
     produce the numbers caught by stock, fleet, year, season, age up to time of spawning for a given stock, age, season, year
                 NAA: nstocks x nregions x nyears x nages; array of numbers at age 
       fleet_regions: n_fleets; which region each fleet is operating
+      fleet_seasons: n_fleets x n_seasons: 0/1 indicator whether fleet is operating in a given season
            can_move: n_stocks x ages x n_seasons x n_regions x n_regions; 0/1 determining whether movement can occur from one region to another
            mig_type: n_stocks; 0 = migration after survival, 1 = movement and mortality simultaneous
       fracyr_seasons: n_seasons; length of intervals for each season
       fracyr_indices: n_indices; length of intervals for each index
       index_seasons: n_indices; which season the index occurs in
       index_regions: n_indices: which region the index is observing
-                FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
+                FAA: fishing mortality: n_fleets x n_years x n_ages
          log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
-  int n_seasons = FAA.dim(2);
+  int n_seasons = fleet_seasons.cols();
   int n_stocks = log_M_base.dim(0);
   int n_regions = log_M_base.dim(1);
   int n_years = log_M_base.dim(2);
@@ -812,8 +811,8 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
     matrix<Type> P_y = I_mat; //reset for each year, age, stock
     for(int t = 0; t < n_seasons; t++) {
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
-      if(sum(fleet_seasons.col(t))>0){
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      if(sum(vector<int> (fleet_seasons.col(t)))>0){
         array<Type> NAA_alive(n_stocks,n_regions,n_ages);
         NAA_alive.setZero();
         //number alive a the beginning of this season
