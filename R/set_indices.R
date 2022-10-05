@@ -21,7 +21,7 @@ set_indices = function(input, index_opts=NULL)
 		data$n_indices <- asap3$n_indices
 	} 
 	data$agg_indices = matrix(NA, data$n_years_model, data$n_indices)
-	data$use_indices = matrix(1, data$n_years_model, data$n_indices)
+	data$use_indices = matrix(NA, data$n_years_model, data$n_indices)
 	data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
 	data$index_pal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths))
@@ -75,6 +75,9 @@ set_indices = function(input, index_opts=NULL)
 		
 		if(is.null(index_opts$agg_indices)) data$agg_indices[] = 10
 		else data$agg_indices[] = index_opts$agg_indices
+
+		if(is.null(index_opts$use_indices)) data$use_indices[] = 1
+		else data$use_indices[] = index_opts$use_indices
 
 		if(is.null(index_opts$index_cv)) data$agg_index_sigma[] = 0.3
 		else data$agg_index_sigma[] = index_opts$index_cv
