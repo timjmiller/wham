@@ -9,18 +9,19 @@ Type objective_function<Type>::operator() ()
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
   
   DATA_INTEGER(n_years_model); 
-  DATA_INTEGER(n_seasons);
+  //DATA_INTEGER(n_seasons);
   DATA_VECTOR(fracyr_seasons); //length of intervals for seasons
-  DATA_INTEGER(n_regions);
-  DATA_INTEGER(n_stocks);
-  DATA_INTEGER(n_fleets);
-  DATA_INTEGER(n_indices);
-  DATA_INTEGER(n_ages);
-  DATA_IVECTOR(n_ages_fleet);
-  DATA_IVECTOR(n_ages_indices);
+  int n_seasons = fracyr_seasons.size();
+  //DATA_INTEGER(n_regions);
+  //DATA_INTEGER(n_stocks);
+  //DATA_INTEGER(n_fleets);
+  //DATA_INTEGER(n_indices);
+  //DATA_INTEGER(n_ages);
+  //DATA_IVECTOR(n_ages_fleet);
+  //DATA_IVECTOR(n_ages_indices);
   DATA_IVECTOR(mig_type); //n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
-
   DATA_MATRIX(fracyr_SSB); //n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
+  int n_stocks = fracyr_SSB.cols();
   DATA_IVECTOR(spawn_regions); //n_stocks
   DATA_IVECTOR(spawn_seasons); //n_stocks
   //DATA_IARRAY(n_mu) //n_stocks x n_years x x n_seasons x n_ages
@@ -29,9 +30,12 @@ Type objective_function<Type>::operator() ()
   //DATA_IVECTOR(mu_pointer) //n_stocks * n_years * n_ages
   //DATA_INTEGER(n_seasons_recruited); //easiest if this is = n_seasons 
   DATA_ARRAY(mature); //n_stocks x n_years x n_ages
-  DATA_IMATRIX(waa_pointer_fleets); //n_fleets x n_seasons indicator which waa to use for each fleet,season
-  DATA_IVECTOR(waa_pointer_totcatch); //n_regions
+  int n_ages = mature.dim(2);
+  DATA_IVECTOR(waa_pointer_fleets); //n_fleets indicator which waa to use for each fleet
+  int n_fleets = waa_pointer_fleets.size();
+  //DATA_IVECTOR(waa_pointer_totcatch); //n_regions
   DATA_IVECTOR(waa_pointer_indices);
+  int n_indices = waa_pointer_indices.size();
   DATA_IVECTOR(waa_pointer_ssb); //n_stocks
   DATA_IVECTOR(waa_pointer_M); //n_stocks, possibly used with M_model = 3, M = a W^b
   DATA_ARRAY(waa); //(n_fleets + n_indices + n_stocks + 1(totcatch)) x n_years x n_ages_model
@@ -110,6 +114,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(N1_model); //n_stocks, 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
   DATA_IVECTOR(NAA_re_model); //n_stocks, 0 SCAA, 1 "rec", 2 "rec+1"
   DATA_IARRAY(NAA_where); //n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
+  int n_regions = NAA_where.dim(1);
   DATA_IVECTOR(n_M_a); //length = n_regions
   DATA_IMATRIX(n_M_re); // n_stocks x n_regions how many time-varying RE each year? n_ages? 1? n_est_M?
   DATA_IVECTOR(M_model); //length = n_regions; 1: "all ages all stocks", 2: "by age all stocks", 3: "weight-at-age all stocks", 4: "all ages by stock", 5: "by age by stock", 6: "weight-at-age by stock"
@@ -176,7 +181,8 @@ Type objective_function<Type>::operator() ()
 
   //reference points
   //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
-  DATA_INTEGER(do_BRPs); //whether to calculate and adreport reference points. 
+  DATA_INTEGER(do_annual_SPR_BRPs); //whether to calculate and adreport reference points. 
+  DATA_INTEGER(do_annual_MSY_BRPs); //whether to calculate and adreport reference points. 
   DATA_INTEGER(SPR_weight_type); //0 = use average recruitment for each stock for weighting, 1= use SPR_weights 
   DATA_VECTOR(SPR_weights); //n_stocks; weights to use for stock-specific SPR for weight some. should sum to 1.
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
@@ -766,18 +772,21 @@ Type objective_function<Type>::operator() ()
 
   matrix<Type> log_SSB(n_years_pop,n_stocks);
   for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_pop; y++) log_SSB(y,s) = log(SSB(y,s));
-  /*
-  if(do_BRPs){
+  
+  if(do_annual_SPR_BRPs){
     array<Type> log_FAA_XSPR(n_years_model, n_fleets, n_ages);
     array<Type> log_FAA_tot_XSPR(n_years_model, n_ages);
     array<Type> log_SPR_FXSPR(n_years_model, n_stocks+1);
     array<Type> log_SPR0(n_years_model, n_stocks+1);
     array<Type> log_SSB_FXSPR(n_years_model, n_stocks+1);
     array<Type> log_Y_FXSPR(n_years_model, n_fleets+1);
+    vector<int> yvec(1);
     for(int y = 0; y < n_years_model; y++) {
+      yvec(0) = y;
       vector<vector<Type>> SPR_res_y = get_SPR_res(SPR_weights, log_M_base, FAA, spawn_seasons,  
       spawn_regions,
       fleet_regions, 
+      fleet_seasons,
       fracyr_seasons,
       can_move,
       must_move,
@@ -788,7 +797,7 @@ Type objective_function<Type>::operator() ()
       waa, waa_pointer_ssb, waa_pointer_fleets,
       mature, percentSPR, NAA, fracyr_SSB, FXSPR_init(y), 
       //years_M, years_mu, years_L, years_mat, years_sel, years_waa_ssb, years_waa_catch, years_R,
-      y, y, y, y, y, y, y, y,
+      yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
       n_regions_is_small, SPR_weight_type);
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) log_FAA_XSPR(y,f,a) = SPR_res_y(0)(f*n_ages + a);
       for(int a = 0; a< n_ages; a++) log_FAA_tot_XSPR(y,a) = SPR_res_y(0)(n_fleets*n_ages + a);
@@ -805,9 +814,11 @@ Type objective_function<Type>::operator() ()
     REPORT(log_Y_FXSPR);
     REPORT(log_FAA_XSPR);
     REPORT(log_FAA_tot_XSPR);
+  }
+  if(do_annual_MSY_BRPs){
 
   }
-  */
+  
   //if(reportMode==0){
     REPORT(q);
     REPORT(F);

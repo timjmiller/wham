@@ -1,7 +1,9 @@
+/*
 template <class Type>
 matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, Type time, array<Type> FAA, array<Type>log_M_base, 
   array<Type> mu, matrix<Type> L) {
+    /*
   /*
     produce the probability transition matrix for a given stock,, age, season, year
                 age: which age
@@ -18,6 +20,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
+ /*
   int n_regions = log_M_base.dim(1);
   int n_fleets = fleet_regions.size();
   int dim = n_regions+n_fleets+1;
@@ -118,6 +121,7 @@ template <class Type>
 matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, Type time, matrix<Type> FAA, array<Type>log_M_base, 
   array<Type> mu, vector<Type> L) {
+    */
   /*
     produce the probability transition matrix for a given stock, age, season
                 age: which age
@@ -133,9 +137,10 @@ matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, ma
                  mu: n_stocks x n_ages x n_seasons x n_regions x n_regions; movement rates
                   L: n_regions; "extra" mortality rate
   */
-  array<Type> FAA_d(FAA.dim(0),1, FAA.dim(1));
+ /*
+  array<Type> FAA_d(FAA.rows(),1, FAA.cols());
   FAA_d.setZero();
-  for(int f = 0; f < FAA.dim(0); f++) for(int a = 0; a < FAA.dim(1); a++) FAA_d(f,0,a) = FAA(f,a);
+  for(int f = 0; f < FAA.rows(); f++) for(int a = 0; a < FAA.cols(); a++) FAA_d(f,0,a) = FAA(f,a);
   array<Type> log_M_base_d(log_M_base.dim(0),log_M_base.dim(1),1,log_M_base.dim(2));
   log_M_base_d.setZero();
   for(int s = 0; s < log_M_base.dim(0); s++) for(int a = 0; a < log_M_base.dim(2); a++) for(int r = 0; r < log_M_base.dim(1); r++) {
@@ -157,17 +162,19 @@ matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, ma
 
 template <class Type>
 matrix<Type> get_S(matrix<Type> P, int n_regions){
+  */
   /*
     extract the submatrix from a PTM that contains the proportions surviving in each region
               P: the probablity transition matrix
       n_regions: the number of regions
   */
+ /*
   matrix<Type> S(n_regions,n_regions);
   S.setZero();
   for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) S(i,j) = P(i,j);
   return(S);
 }
-
+*/
 template <class Type>
 matrix<Type> get_D(matrix<Type> P, int n_regions, int n_fleets){
   /*

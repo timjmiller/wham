@@ -3,6 +3,7 @@
 #include "age_comp_osa.hpp"
 #include "age_comp_sim.hpp"
 #include "Ecov.hpp"
+#include "XSPR_T.hpp"
 #include "PTM.hpp"
 #include "move.hpp"
 #include "L.hpp"
