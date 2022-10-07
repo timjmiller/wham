@@ -396,7 +396,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 	waa_opts = NULL
 	waa_names = c("waa", "waa_pointer_indices", "waa_pointer_fleets", "waa_pointer_totcatch", 
-					"waa_pointer_ssb", "waa_pointer_jan1", "waa_type", "waa_cv")
+					"waa_pointer_ssb", "waa_pointer_jan1", "waa_type", "waa_cv", "use_catch_waa", "use_index_waa")
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
 	catch_opts = NULL

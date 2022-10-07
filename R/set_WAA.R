@@ -13,6 +13,8 @@ set_WAA = function(input, waa_opts = NULL)
 	  data$waa_pointer_indices = asap3$index_WAA_pointers
 	  data$waa_type = 1 # 1 = waa info present and used
 	  data$waa_cv = array(0, dim = dim(data$waa))
+	  data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
+	  data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 	} else {
     	if(is.null(waa_opts$waa)){
 	    	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
@@ -21,8 +23,14 @@ set_WAA = function(input, waa_opts = NULL)
 			data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
 			data$waa_type = 2 # 2 = waa info not provided. use LW
 			data$waa_cv = array(0, dim = dim(data$waa))		
+	  		data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
+	  		data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 		} else {
 			data$waa = waa_opts$waa
+			data$waa_type = 1
+			data$waa_cv = array(0, dim = dim(data$waa))
+			data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
+			data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 		}
 		
 		if(is.null(waa_opts$waa_pointer_fleets)) data$waa_pointer_fleets = 1:data$n_fleets
@@ -40,11 +48,13 @@ set_WAA = function(input, waa_opts = NULL)
 		if(is.null(waa_opts$waa_pointer_jan1)) data$waa_pointer_jan1 = data$n_fleets+data$n_indices + 2
 		else data$waa_pointer_jan1 = waa_opts$waa_pointer_jan1
 
-		if(is.null(waa_opts$waa_type)) data$waa_type = 1
-		else data$waa_type = waa_opts$waa_type
+		if(!is.null(waa_opts$waa_type))  data$waa_type = waa_opts$waa_type
 
-		if(is.null(waa_opts$waa_cv)) data$waa_cv = array(0, dim = dim(data$waa))
-		else data$waa_cv = waa_opts$waa_cv
+		if(!is.null(waa_opts$waa_cv)) data$waa_cv = waa_opts$waa_cv
+
+		if(!is.null(waa_opts$use_catch_waa)) data$use_catch_waa = waa_opts$use_catch_waa
+
+		if(!is.null(waa_opts$use_index_waa)) data$use_index_waa = waa_opts$use_index_waa
 	}
 
   input$data = data

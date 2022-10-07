@@ -1754,7 +1754,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
       resids <- acomp.obs - acomp.pred  # NOTE obs-pred
       resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
       fname = paste0("Catch_age_comp_resids_fleet_",i)
-      scale.resid.bubble.catch <- 25
+      scale.resid.bubble.catch <- 15
     }
     if(any(dat$use_catch_paa[,i] > 0)) {
       if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
@@ -1801,21 +1801,21 @@ plot.waa.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 0.25, pos
   nyrs <- length(years)
   tylab <- "Year"
 
-  for (i in unique(dat$waa_pointer_fleets))
+  for (i in seq_along(dat$waa_pointer_fleets))
   {
 
-    yzero = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) == 0)
-    ydata = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) > 0)
+    yzero = which(dat$use_catch_waa[,i] == 0)
+    ydata = which(dat$use_catch_waa[,i] > 0)
 
-    waa.obs = dat$waa[i,,]
-    waa.pred = mod$rep$pred_waa[i,,]
+    waa.obs = dat$waa[dat$waa_pointer_fleets[i],,]
+    waa.pred = mod$rep$pred_waa[dat$waa_pointer_fleets[i],,]
     #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
     #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     my.title <- "Weight-at-age Residuals (Observed-Predicted) for Fleet "
     resids <- waa.obs - waa.pred  # NOTE obs-pred
     resids[yzero,] = NA # don't plot residuals for catch paa not fit in model
     fname = paste0("Catch_weight_age_resids_fleet_",i)
-    scale.resid.bubble.catch <- 25
+    scale.resid.bubble.catch <- 50
 
     if(length(ydata) > 0) {
       if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
@@ -1848,21 +1848,21 @@ plot.waa.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 0.25, pos
     }
   }   #end loop fleet loops
 
-  for (i in unique(dat$waa_pointer_indices))
+  for (i in seq_along(dat$waa_pointer_indices))
   {
 
-    yzero = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) == 0)
-    ydata = which(apply(X = dat$waa_cv[i,,], MARGIN = 1, FUN = sum) > 0)
+    yzero = which(dat$use_index_waa[,i] == 0)
+    ydata = which(dat$use_index_waa[,i] > 0)
 
-    waa.obs = dat$waa[i,,]
-    waa.pred = mod$rep$pred_waa[i,,]
+    waa.obs = dat$waa[dat$waa_pointer_indices[i],,]
+    waa.pred = mod$rep$pred_waa[dat$waa_pointer_indices[i],,]
     #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
     #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     my.title <- "Weight-at-age Residuals (Observed-Predicted) for Indices "
     resids <- waa.obs - waa.pred  # NOTE obs-pred
     resids[yzero,] = NA # don't plot residuals for catch paa not fit in model
     fname = paste0("Catch_weight_age_resids_index_",i)
-    scale.resid.bubble.catch <- 25
+    scale.resid.bubble.catch <- 50
 
     if(length(ydata) > 0) {
       if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
@@ -2121,7 +2121,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
       resids <- acomp.obs - acomp.pred  # NOTE obs-pred
       resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
       fname = paste0("Catch_age_comp_resids_index_",i)
-      scale.resid.bubble.catch <- 25
+      scale.resid.bubble.catch <- 15
     }
     tylab <- "Year"
     

@@ -40,6 +40,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(waa_pointer_ssb);
   DATA_INTEGER(waa_pointer_jan1);
   DATA_INTEGER(waa_type);
+  DATA_IMATRIX(use_catch_waa);
+  DATA_IMATRIX(use_index_waa);
   DATA_ARRAY(waa);
   DATA_ARRAY(waa_cv);
   DATA_MATRIX(agg_catch);
@@ -1072,7 +1074,7 @@ Type objective_function<Type>::operator() ()
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-					if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0)) { // add here for totalcatch if required
+					if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { // add here for totalcatch if required
 						nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
 					}
 				}
@@ -1088,7 +1090,7 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-					if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0)) {
+					if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
 						nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,y,a)); 
 					}
 				}
