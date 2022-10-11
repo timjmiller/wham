@@ -945,7 +945,7 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 					Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
 					mLAA(a) = mLAA_jan1(a) + Grate;
 				} else { // for oldest age
-					mLAA(a) = mLAA_jan1(a) + Grate*0.5; // use half of rate of last age? CHECK THIS
+					mLAA(a) = mLAA_jan1(a); // no growth for oldest age
 				}
 			}
 
@@ -973,3 +973,17 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
   return(out);
 }
 
+template <class Type>
+matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Type fracyr){
+  Type Grate = 0.0;
+  vector<Type> WAA(n_ages);
+
+	if(a < (n_ages - 1)) {
+		Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
+		WAA(a) = WAA_jan1(a) + Grate;
+	} else { // for oldest age
+		WAA(a) = WAA_jan1(a); //  no growth for oldest age
+	}
+	
+	return(WAA);
+}
