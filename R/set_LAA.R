@@ -17,7 +17,7 @@ set_LAA = function(input, LAA)
   data$LAA_est = rep(0, data$n_ages)
   LAA_ini = log( 100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)) )
   if(!is.null(LAA)) {
-    LAA_ini = LAA$LAA_vals
+    LAA_ini = log(LAA$LAA_vals)
     if(!is.null(LAA$LAA_est)) data$LAA_est[LAA$LAA_est] = 1
     if(!is.null(LAA$re))  {
       if(!(LAA$re %in% c("none","iid","iid_a","ar1_a","2dar1"))) stop("LAA$re must be one of the following: 'none','iid','iid_a','ar1_a','2dar1'")
@@ -27,7 +27,7 @@ set_LAA = function(input, LAA)
 
   # growth pars --------------------------
   
-  par$LAA_a = log(LAA_ini)
+  par$LAA_a = LAA_ini
   par$LAA_re = LAA_re_ini
   par$LAA_repars = rep(0, times = n_re_par)
   par$LAA_repars[1] = log(0.1) # start sigma at 0.1, rho at 0

@@ -375,7 +375,7 @@
 #'
 #' @export
 prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, 
-	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, LAA = NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
+	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, LAA = NULL, WAA = NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -400,7 +400,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
 	catch_opts = NULL
-	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
+	catch_names = c("n_fleets", "fracyr_fleets", "agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
 					"catch_pal", "catch_NeffL", "use_catch_pal", "catch_caal", "catch_caal_Neff", "use_catch_caal",
 					"selblock_pointer_fleets")
 	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
@@ -429,7 +429,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
-  	input$years <- asap3$year1 + 1:asap3$n_years - 1
+  	  input$years <- asap3$year1 + 1:asap3$n_years - 1
 	}
 	else
 	{
@@ -450,7 +450,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#print("indices")
 
 	# WAA in case we want to modify how weight-at age is handled
-	input = set_WAA(input, waa_opts)
+	input = set_WAA(input, waa_opts, WAA)
 	#print("WAA")
 
 	# NAA and recruitment options
@@ -535,7 +535,7 @@ initial_input_fn = function(input, basic_info){
 
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,7) #simulate state variables (NAA, M, sel, Ecov, q, growth (or LAA), LW)
+  input$data$simulate_state = rep(1,8) #simulate state variables (NAA, M, sel, Ecov, q, growth (or LAA), LW, WAA)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
   input$data$simulate_period = c(1,0) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points

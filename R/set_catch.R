@@ -14,6 +14,7 @@ set_catch = function(input, catch_opts= NULL)
   # print(data)
 
 	data$agg_catch = matrix(NA, data$n_years_model, data$n_fleets)
+  data$fracyr_fleets = matrix(0.5, data$n_years_model, data$n_fleets)
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
   data$use_agg_catch = matrix(1, data$n_years_model, data$n_fleets)
   data$use_catch_paa = matrix(0, data$n_years_model, data$n_fleets)
@@ -57,9 +58,12 @@ set_catch = function(input, catch_opts= NULL)
   }
   else
   {
-    data$n_fleets = 1
+    #data$n_fleets = 1 # why this?
     if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 1
     else data$agg_catch = catch_opts$agg_catch
+
+    if(is.null(catch_opts$fracyr_fleets)) data$fracyr_fleets[] = 0.5
+    else data$fracyr_fleets = catch_opts$fracyr_fleets
   	
   	if(is.null(catch_opts$catch_paa)) data$catch_paa[] = 1/data$n_ages
     else data$catch_paa[] = catch_opts$catch_paa
@@ -70,7 +74,7 @@ set_catch = function(input, catch_opts= NULL)
     if(is.null(catch_opts$catch_caal)) data$catch_caal[] = 1/data$n_ages
     else data$catch_caal[] = catch_opts$catch_caal
 
-	if(is.null(catch_opts$catch_cv)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
+	  if(is.null(catch_opts$catch_cv)) data$agg_catch_sigma = matrix(sqrt(log(0.1^2 + 1)), data$n_years_model, data$n_fleets)
     else data$agg_catch_sigma = matrix(sqrt((log(catch_opts$catch_cv^2 + 1))), data$n_years_model, data$n_fleets)
 	  
     if(is.null(catch_opts$catch_Neff)) data$catch_Neff = matrix(0, data$n_years_model, data$n_fleets)	  

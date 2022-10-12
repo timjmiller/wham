@@ -976,14 +976,18 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 template <class Type>
 matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Type fracyr){
   Type Grate = 0.0;
+  int n_ages = WAA_jan1.size();
   vector<Type> WAA(n_ages);
 
-	if(a < (n_ages - 1)) {
-		Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
-		WAA(a) = WAA_jan1(a) + Grate;
-	} else { // for oldest age
-		WAA(a) = WAA_jan1(a); //  no growth for oldest age
+  	for(int a = 0; a < n_ages; a++)
+	 {  
+		if(a < (n_ages - 1)) {
+			Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
+			WAA(a) = WAA_jan1(a) + Grate;
+		} else { // for oldest age
+			WAA(a) = WAA_jan1(a); //  no growth for oldest age
+		}
 	}
-	
+	  
 	return(WAA);
 }

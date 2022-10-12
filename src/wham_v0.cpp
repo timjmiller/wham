@@ -45,6 +45,7 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(waa);
   DATA_ARRAY(waa_cv);
   DATA_MATRIX(agg_catch);
+  DATA_MATRIX(fracyr_fleets);
   DATA_IMATRIX(use_agg_catch);
   DATA_MATRIX(agg_catch_sigma);
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages
@@ -97,6 +98,9 @@ Type objective_function<Type>::operator() ()
   
   DATA_IVECTOR(LAA_est); //  NEWG
   DATA_INTEGER(LAA_re_model); // NEWG
+
+  DATA_IVECTOR(WAA_est); //  NEWG
+  DATA_INTEGER(WAA_re_model); // NEWG
 
   DATA_INTEGER(n_growth_par); // NEWG TODO: change this parameter name
   DATA_INTEGER(growth_model); // 1: "vB-classic", 2: "vB-K_age" NEWG
@@ -169,6 +173,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_IVECTOR(proj_GW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_IVECTOR(proj_WAA_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_IVECTOR(proj_LW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
   DATA_SCALAR(logR_sd); // empirical sd recruitment in model years, used for SCAA recruit projections
@@ -219,6 +224,10 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(LAA_a); //  
   PARAMETER_ARRAY(LAA_re); //  
   PARAMETER_VECTOR(LAA_repars); //   
+
+  PARAMETER_VECTOR(WAA_a); //  
+  PARAMETER_ARRAY(WAA_re); //  
+  PARAMETER_VECTOR(WAA_repars); //   
 
   PARAMETER_MATRIX(LW_a); //  could be 3 parameters or input_LAA
   PARAMETER_ARRAY(LW_re); // nyears x nages x npars_growth     
@@ -532,7 +541,7 @@ Type objective_function<Type>::operator() ()
  
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out(t) for processes in year t, instead of Ecov_x
-  int n_effects = Ecov_beta.dim(0); // 2 + n_indices (recruitment, mortality and any catchabilities)
+  int n_effects = Ecov_beta.dim(0); // 5 + n_indices (recruitment, mortality and any catchabilities, growth, LW, WAA)
   array<Type> Ecov_out(n_years_model + n_years_proj, n_effects, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Ecov_out.setZero(); // set Ecov_out = 0
   for(int i = 0; i < n_Ecov; i++){
@@ -712,10 +721,8 @@ Type objective_function<Type>::operator() ()
   // WAA re
   
   Type nll_WAA = Type(0);
-
-	if(waa_type == 4) { // only if WAA deviates active
 	
-	  if(WAA_re_model > 1) // random effects on WAA
+	if(WAA_re_model > 1) // random effects on WAA
 	  {
 	  
 	  Type sigma_WAA = exp(WAA_repars(0)); // first RE parameter
@@ -727,7 +734,7 @@ Type objective_function<Type>::operator() ()
 			// likelihood of WAA deviations
 			  Sigma_WAA = pow(pow(sigma_WAA,2) / ((1-pow(rho_WAA_y,2))*(1-pow(rho_WAA_a,2))),0.5);
 			  nll_WAA += SCALE(SEPARABLE(AR1(rho_WAA_a),AR1(rho_WAA_y)), Sigma_WAA)(WAA_re); // must be array, not matrix!
-			  SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			  SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
 				array<Type> WAAre_tmp = WAA_re;
 				SEPARABLE(AR1(rho_WAA_a),AR1(rho_WAA_y)).simulate(WAAre_tmp);
 				WAAre_tmp = Sigma_WAA * WAAre_tmp;
@@ -741,7 +748,7 @@ Type objective_function<Type>::operator() ()
 			vector<Type> WAAre0 = WAA_re.matrix().row(0);
 			Sigma_WAA = pow(pow(sigma_WAA,2) / (1-pow(rho_WAA_a,2)),0.5);
 			nll_WAA += SCALE(AR1(rho_WAA_a), Sigma_WAA)(WAAre0);
-			SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+			SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_WAA_a).simulate(WAAre0);
 			  for(int i = 0; i < WAAre0.size(); i++) WAAre0(i) = Sigma_WAA * WAAre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
@@ -757,15 +764,13 @@ Type objective_function<Type>::operator() ()
 		}
 			  
 	  }
-	  
-	} // waa_type
-  
+	    
   REPORT(nll_WAA);
   nll += nll_WAA; 
   REPORT(WAA_a);
   REPORT(WAA_re);
   REPORT(WAA_repars);
-  if(do_post_samp(5) == 1) ADREPORT(WAA_re);
+  if(do_post_samp(7) == 1) ADREPORT(WAA_re);
 
   // ---------------------------------------------------------------------
   // Construct growth parameters per year
@@ -835,10 +840,10 @@ Type objective_function<Type>::operator() ()
 	}
   }
   
-  // add ecov effect on growth paramteres
+  // add ecov effect on growth paramteres and LAA
   for(int j = 0; j < n_growth_par; j++) { 
 	for(int i=0; i < n_Ecov; i++){
-		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
+		if((Ecov_where(i,n_effects-3) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
 					if(growth_model == 1) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-2,y,0));
@@ -872,7 +877,7 @@ Type objective_function<Type>::operator() ()
 	  for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
 		WAA_par.row(y) = WAA_proj;
 	  }
-	} else { // proj_GW_opt == 1
+	} else { // proj_WAA_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 		
 				WAA_par(y,a) = exp(WAA_a(a) + WAA_re(y,a)); 
@@ -881,7 +886,16 @@ Type objective_function<Type>::operator() ()
 	}
   }
   
-  // Add Ecov for WAA
+  // add ecov effect on WAA
+	for(int i=0; i < n_Ecov; i++){
+		if(Ecov_where(i,n_effects-1) == 1) {  // CHECK: for WAA?
+			for(int y = 0; y < n_years_model + n_years_proj; y++) {
+				for(int a = 0; a < n_ages; a++) { 
+					WAA_par(y,a) *= exp(Ecov_lm(i,n_effects-2,y,a));
+				}
+			}
+		}
+    }
 
 
 
@@ -1002,7 +1016,7 @@ Type objective_function<Type>::operator() ()
   // add ecov effect on LW paramteres
   for(int j = 0; j < n_LW_par; j++) { 
 	for(int i=0; i < n_Ecov; i++){
-		if((Ecov_where(i,n_effects-1) == 1) & ((Ecov_where_subindex-1) == j)) {  // for LW
+		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex-1) == j)) {  // for LW
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
 					LW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-1,y,0));
@@ -1068,6 +1082,7 @@ Type objective_function<Type>::operator() ()
   // --------------------------------------------------------------------------
   // Weight at age calculations:
   	Type sum_wt = 0;
+	Type sum_wt_ssb = 0;
 	Type sum_wt_fleet = 0;
 	Type sum_wt_index = 0;
 	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
@@ -1120,7 +1135,7 @@ Type objective_function<Type>::operator() ()
 
 			// For fleets
 			for(int f = 0; f < n_fleets; f++) {
-				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracfleet(yuse,f), growth_model);
+				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(yuse,f), growth_model);
 				for(int a = 0; a < n_ages; a++) { 
 					sum_wt_fleet = 0;
 					for(int l = 0; l < n_lengths; l++) {
@@ -1128,7 +1143,7 @@ Type objective_function<Type>::operator() ()
 						else sum_wt_fleet += phi_matrix_input(waa_pointer_fleets(f)-1,l,a)*watl(y,l);
 					}
 					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
-					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
+					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch, it is using the last fracyr_fleets
 				}
 			}
 			
@@ -1178,7 +1193,7 @@ Type objective_function<Type>::operator() ()
 
 				// For fleets
 				for(int f = 0; f < n_fleets; f++) {
-					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracfleet(yuse,f), growth_model);
+					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(yuse,f), growth_model);
 					for(int a = 0; a < n_ages; a++) { 
 						sum_wt_fleet = 0;
 						for(int l = 0; l < n_lengths; l++) {
@@ -1186,8 +1201,8 @@ Type objective_function<Type>::operator() ()
 							else sum_wt_fleet += phi_matrix_input(waa_pointer_fleets(f)-1,l,a)*watl(y,l);
 						}
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
-						pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch
-						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { // add here for totalcatch if required
+						pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch, it is using the last fracyr_fleets
+						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
 							nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
 						}
 					}
@@ -1213,6 +1228,7 @@ Type objective_function<Type>::operator() ()
 			  nll += nll_waa.sum();	
 		} else {
 			// waa_type == 4
+			vector<Type> fracyr_WAA(n_ages);
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				int yuse = y;
 				int y_1 = y + 1;
@@ -1230,11 +1246,11 @@ Type objective_function<Type>::operator() ()
 				}
 				// For fleets
 				for(int f = 0; f < n_fleets; f++) {
-					fracyr_WAA = get_fracyr_WAA(vector<Type>(WAA_par.row(y)), vector<Type>(WAA_par.row(y_1)), fracfleet(yuse,f));
+					fracyr_WAA = get_fracyr_WAA(vector<Type>(WAA_par.row(y)), vector<Type>(WAA_par.row(y_1)), fracyr_fleets(yuse,f));
 					for(int a = 0; a < n_ages; a++) { 
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = fracyr_WAA(a); 
-						pred_waa(waa_pointer_totcatch-1,y,a) = fracyr_WAA(a); // for total catch
-						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { // add here for totalcatch if required
+						pred_waa(waa_pointer_totcatch-1,y,a) = fracyr_WAA(a); // for total catch, it is using the last fracyr_fleets
+						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
 							nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
 						}
 					}
@@ -1813,9 +1829,9 @@ Type objective_function<Type>::operator() ()
     if(y > n_years_model-1) usey = n_years_model-1;
 	if(y == (n_years_model + n_years_proj - 1)) y_1 = y;
     //int acomp_par_count = 0;
-	fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracfleet, growth_model); // only works for growth_model = 1 so far
 	for(int f = 0; f < n_fleets; f++)
     {
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(usey, f), growth_model); // only works for growth_model = 1 so far
 	  lsum.setZero();
       pred_catch(y,f) = 0.0;
       Type tsum = 0.0;
