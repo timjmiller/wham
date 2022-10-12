@@ -475,9 +475,10 @@ set_ecov = function(input, ecov)
   for(n in 1:n_effects) for(j in 1:data$n_Ecov){
     for(i in 1:max.poly){
       for(a in 1:data$n_ages){
-        if(data$Ecov_where[j,n] == 1 & i <= Ecov_poly[j,n] & a %in% ecov$ages[[j]]) tmp[n,i,j,a] = ct # default share ecov_beta across ages -- > not anymore
-        ct = ct+1 # Ecov_beta by age
+        if(data$Ecov_where[j,n] == 1 & i <= Ecov_poly[j,n] & a %in% ecov$ages[[j]]) tmp[n,i,j,a] = ct # default share ecov_beta across ages 
+        # ct = ct+1 # Ecov_beta by age
       }
+      ct = ct+1 # 
     }
   }
   map$Ecov_beta = factor(tmp)
