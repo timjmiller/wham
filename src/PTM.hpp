@@ -1,7 +1,7 @@
 /*
 template <class Type>
 matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
-  array<int> can_move, vector<int> mig_type, Type time, array<Type> FAA, array<Type>log_M_base, 
+  array<int> can_move, vector<int> mig_type, Type time, array<Type> FAA, array<Type>log_M, 
   array<Type> mu, matrix<Type> L) {
     /*
   /*
@@ -16,12 +16,12 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
                time: time interval between beginning and end of the interval (units = years)
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
  /*
-  int n_regions = log_M_base.dim(1);
+  int n_regions = log_M.dim(1);
   int n_fleets = fleet_regions.size();
   int dim = n_regions+n_fleets+1;
   matrix<Type> P(dim,dim);
@@ -31,7 +31,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
   M.setZero();
   Z.setZero();
   for(int r = 0; r < n_regions; r++) {
-    M(r) = exp(log_M_base(stock,r,year,age)) + L(year,r); //add in "extra" mortality
+    M(r) = exp(log_M(stock,r,year,age)) + L(year,r); //add in "extra" mortality
     Z(r) = M(r);
   }
   for(int f = 0; f < n_fleets; f++) {
@@ -119,7 +119,7 @@ matrix<Type> get_P(int age, int year, int stock, int season, vector<int> fleet_r
 
 template <class Type>
 matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
-  array<int> can_move, vector<int> mig_type, Type time, matrix<Type> FAA, array<Type>log_M_base, 
+  array<int> can_move, vector<int> mig_type, Type time, matrix<Type> FAA, array<Type>log_M, 
   array<Type> mu, vector<Type> L) {
     */
   /*
@@ -133,7 +133,7 @@ matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, ma
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
                time: time interval between beginning and end of the interval (units = years)
                 FAA: fishing mortality: n_fleets x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_regions x n_regions; movement rates
                   L: n_regions; "extra" mortality rate
   */
@@ -141,10 +141,10 @@ matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, ma
   array<Type> FAA_d(FAA.rows(),1, FAA.cols());
   FAA_d.setZero();
   for(int f = 0; f < FAA.rows(); f++) for(int a = 0; a < FAA.cols(); a++) FAA_d(f,0,a) = FAA(f,a);
-  array<Type> log_M_base_d(log_M_base.dim(0),log_M_base.dim(1),1,log_M_base.dim(2));
-  log_M_base_d.setZero();
-  for(int s = 0; s < log_M_base.dim(0); s++) for(int a = 0; a < log_M_base.dim(2); a++) for(int r = 0; r < log_M_base.dim(1); r++) {
-    log_M_base_d(s,r,0,a) = log_M_base(s,r,a);
+  array<Type> log_M_d(log_M.dim(0),log_M.dim(1),1,log_M.dim(2));
+  log_M_d.setZero();
+  for(int s = 0; s < log_M.dim(0); s++) for(int a = 0; a < log_M.dim(2); a++) for(int r = 0; r < log_M.dim(1); r++) {
+    log_M_d(s,r,0,a) = log_M(s,r,a);
   }
   array<Type> mu_d(mu.dim(0), mu.dim(1), mu.dim(2), 1, mu.dim(3),mu.dim(4));
   mu_d.setZero();
@@ -156,7 +156,7 @@ matrix<Type> get_P(int age, int stock, int season, vector<int> fleet_regions, ma
   matrix<Type> L_d(1,L.size());
   L_d.setZero();
   for(int r = 0; r < mu.dim(3); r++) L_d(0,r) = L(r);
-  matrix<Type> P = get_P(age, 0, stock, season, fleet_regions, fleet_seasons, can_move, mig_type, time, FAA_d, log_M_base_d, mu_d, L_d);
+  matrix<Type> P = get_P(age, 0, stock, season, fleet_regions, fleet_seasons, can_move, mig_type, time, FAA_d, log_M_d, mu_d, L_d);
   return(P);
 }
 
@@ -191,7 +191,7 @@ matrix<Type> get_D(matrix<Type> P, int n_regions, int n_fleets){
 
 template <class Type>
 array<Type> get_annual_Ps(vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons,
-  array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L){
+  array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L){
   /*
     produce the annual probability transition matrix for a given stock, age, season, year
       fleet_regions: n_fleets; which region each fleet is operating
@@ -200,16 +200,16 @@ array<Type> get_annual_Ps(vector<int> fleet_regions, matrix<int> fleet_seasons, 
            mig_type: n_stocks; 0 = migration after survival, 1 = movement and mortality simultaneous
       fracyr_seasons: n_seasons; length of intervals for each season
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions; movement rates
                   L: n_years x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
   int n_seasons = fleet_seasons.cols();
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_years = log_M_base.dim(2);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_years = log_M.dim(2);
+  int n_ages = log_M.dim(3);
   int P_dim = n_regions + n_fleets + 1; // probablity transition matrix is P_dim x P_dim
   //get probability transition matrices for yearly survival, movement, capture...
   //also get annual NAA at spawning and NAA for each index along the way.
@@ -223,7 +223,7 @@ array<Type> get_annual_Ps(vector<int> fleet_regions, matrix<int> fleet_seasons, 
     for(int t = 0; t < n_seasons; t++) {
       //get numbers at age a for stock s in each region at time of spawning
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       P_y = P_y * P_t;
     }
     for(int i = 0; i < P_dim; i++) for(int j = 0; j < P_dim; j++) annual_Ps(s,y,a,i,j) = P_y(i,j);
@@ -233,7 +233,7 @@ array<Type> get_annual_Ps(vector<int> fleet_regions, matrix<int> fleet_seasons, 
 
 template <class Type>
 array<Type> get_annual_SAA_spawn(vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons,
-  matrix<Type> fracyr_SSB, vector<int> spawn_seasons, array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L){
+  matrix<Type> fracyr_SSB, vector<int> spawn_seasons, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L){
   /*
     produce the annual survival probabilities up to time of spawning for a given stock, age, season, year
       fleet_regions: n_fleets; which region each fleet is operating
@@ -242,15 +242,15 @@ array<Type> get_annual_SAA_spawn(vector<int> fleet_regions, matrix<int> fleet_se
            mig_type: n_stocks; 0 = migration after survival, 1 = movement and mortality simultaneous
       fracyr_sesons: n_seasons; length of intervals for each season
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_years = log_M_base.dim(2);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_years = log_M.dim(2);
+  int n_ages = log_M.dim(3);
   int P_dim = n_regions + n_fleets + 1; // probablity transition matrix is P_dim x P_dim
 
   array<Type> annual_SAA_SSB(n_stocks,n_years,n_ages,n_regions,n_regions); //just survival categories
@@ -263,11 +263,11 @@ array<Type> get_annual_SAA_spawn(vector<int> fleet_regions, matrix<int> fleet_se
     for(int t = 0; t < spawn_seasons(s)-1; t++) { // only need to go up to the season prior to when spawning occurs
       //get numbers at age a for stock s in each region at time of spawning
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       P_y = P_y * P_t;
     }
     //P(0,t) x P(t_s-t): PTM over interval from to time of spawning within the season
-    matrix<Type> P_SSB = P_y * get_P(a, y, s, spawn_seasons(s)-1, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
+    matrix<Type> P_SSB = P_y * get_P(a, y, s, spawn_seasons(s)-1, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M, mu, L);
     for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) annual_SAA_SSB(s,y,a,i,j) = P_SSB(i,j);
   }
   return annual_SAA_SSB;
@@ -275,7 +275,7 @@ array<Type> get_annual_SAA_spawn(vector<int> fleet_regions, matrix<int> fleet_se
 
 template <class Type>
 array<Type> get_seasonal_Ps_y(int y, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, 
-  vector<Type> fracyr_seasons, array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L){
+  vector<Type> fracyr_seasons, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L){
   /*
     produce the probability transition matrices for each stock, season, age for year y
       fleet_regions: n_fleets; which region each fleet is operating
@@ -284,21 +284,21 @@ array<Type> get_seasonal_Ps_y(int y, vector<int> fleet_regions, matrix<int> flee
            mig_type: n_stocks; 0 = migration after survival, 1 = movement and mortality simultaneous
       fracyr_sesons: n_seasons; length of intervals for each season
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions; movement rates
                   L: n_years x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
   int n_seasons = fleet_seasons.cols();
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int P_dim = n_regions + n_fleets + 1; // probablity transition matrix is P_dim x P_dim
   array<Type> P_seasonal_y(n_stocks,n_seasons,n_ages,P_dim,P_dim);
   P_seasonal_y.setZero();
   for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) for(int a = 0; a < n_ages; a++) 
   {
-    matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+    matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     for(int d = 0; d < P_dim; d++) for(int dd = 0; dd < P_dim; dd++) P_seasonal_y(s,t,a,d,dd) = P_t(d,dd);
   }
   return P_seasonal_y;

@@ -1,6 +1,6 @@
 template <class T>
 matrix<T> get_P(int age, int year, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
-  array<int> can_move, vector<int> mig_type, T time, array<T> FAA, array<T>log_M_base, 
+  array<int> can_move, vector<int> mig_type, T time, array<T> FAA, array<T>log_M, 
   array<T> mu, matrix<T> L) {
   /*
     produce the probability transition matrix for a given stock,, age, season, year
@@ -14,11 +14,11 @@ matrix<T> get_P(int age, int year, int stock, int season, vector<int> fleet_regi
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
                time: time interval between beginning and end of the interval (units = years)
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
-  int n_regions = log_M_base.dim(1);
+  int n_regions = log_M.dim(1);
   int n_fleets = fleet_regions.size();
   int dim = n_regions+n_fleets+1;
   matrix<T> P(dim,dim);
@@ -28,7 +28,7 @@ matrix<T> get_P(int age, int year, int stock, int season, vector<int> fleet_regi
   M.setZero();
   Z.setZero();
   for(int r = 0; r < n_regions; r++) {
-    M(r) = exp(log_M_base(stock,r,year,age)) + L(year,r); //add in "extra" mortality
+    M(r) = exp(log_M(stock,r,year,age)) + L(year,r); //add in "extra" mortality
     Z(r) = M(r);
   }
   for(int f = 0; f < n_fleets; f++) {
@@ -116,7 +116,7 @@ matrix<T> get_P(int age, int year, int stock, int season, vector<int> fleet_regi
 
 template <class T>
 matrix<T> get_P(int age, int stock, int season, vector<int> fleet_regions, matrix<int> fleet_seasons,
-  array<int> can_move, vector<int> mig_type, T time, matrix<T> FAA, array<T>log_M_base, 
+  array<int> can_move, vector<int> mig_type, T time, matrix<T> FAA, array<T>log_M, 
   array<T> mu, vector<T> L) {
   /*
     produce the probability transition matrix for a given stock, age, season
@@ -129,17 +129,17 @@ matrix<T> get_P(int age, int stock, int season, vector<int> fleet_regions, matri
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
                time: time interval between beginning and end of the interval (units = years)
                 FAA: fishing mortality: n_fleets x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_regions x n_regions; movement rates
                   L: n_regions; "extra" mortality rate
   */
   array<T> FAA_d(FAA.rows(),1, FAA.cols());
   FAA_d.setZero();
   for(int f = 0; f < FAA.rows(); f++) for(int a = 0; a < FAA.cols(); a++) FAA_d(f,0,a) = FAA(f,a);
-  array<T> log_M_base_d(log_M_base.dim(0),log_M_base.dim(1),1,log_M_base.dim(2));
-  log_M_base_d.setZero();
-  for(int s = 0; s < log_M_base.dim(0); s++) for(int a = 0; a < log_M_base.dim(2); a++) for(int r = 0; r < log_M_base.dim(1); r++) {
-    log_M_base_d(s,r,0,a) = log_M_base(s,r,a);
+  array<T> log_M_d(log_M.dim(0),log_M.dim(1),1,log_M.dim(2));
+  log_M_d.setZero();
+  for(int s = 0; s < log_M.dim(0); s++) for(int a = 0; a < log_M.dim(2); a++) for(int r = 0; r < log_M.dim(1); r++) {
+    log_M_d(s,r,0,a) = log_M(s,r,a);
   }
   array<T> mu_d(mu.dim(0), mu.dim(1), mu.dim(2), 1, mu.dim(3),mu.dim(4));
   mu_d.setZero();
@@ -151,7 +151,7 @@ matrix<T> get_P(int age, int stock, int season, vector<int> fleet_regions, matri
   matrix<T> L_d(1,L.size());
   L_d.setZero();
   for(int r = 0; r < mu.dim(3); r++) L_d(0,r) = L(r);
-  matrix<T> P = get_P(age, 0, stock, season, fleet_regions, fleet_seasons, can_move, mig_type, time, FAA_d, log_M_base_d, mu_d, L_d);
+  matrix<T> P = get_P(age, 0, stock, season, fleet_regions, fleet_seasons, can_move, mig_type, time, FAA_d, log_M_d, mu_d, L_d);
   return(P);
 }
 
@@ -171,7 +171,7 @@ matrix<T> get_S(matrix<T> P, int n_regions){
 
 template <class T>
 array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
-  vector<int> mig_type, vector<T> fracyr_SSB, matrix<T> FAA, array<T> log_M_base, array<T> mu, vector<T> L, 
+  vector<int> mig_type, vector<T> fracyr_SSB, matrix<T> FAA, array<T> log_M, array<T> mu, vector<T> L, 
   matrix<T> mature, matrix<T> waa_ssb, vector<T> fracyr_seasons, int age_specific, int small_dim){
   /* 
     calculate equilibrium spawning biomass per recruit (at age) by stock and region. If movement is set up approriately 
@@ -184,7 +184,7 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
          fracyr_SSB: n_stocks:  size of interval from beginning of season to time of spawning within that season
                 FAA: fishing mortality: n_fleets x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_regions x n_regions array of movement matrices
                   L: n_regions. "extra" unobserved mortality
              mature: n_stocks x n_ages proportion mature at age
@@ -194,9 +194,9 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
           small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
   */
 
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int n_fleets = FAA.rows();
   int n_seasons = can_move.dim(2);
   int P_dim = n_regions + n_fleets + 1;
@@ -214,10 +214,10 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
       for(int t = 0; t < n_seasons; t++) {
         if(t == spawn_seasons(s)-1) {
           //P(0,t_spawn): PTM over entire year up to time of spawning
-          P_spawn = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M_base, mu, L);
+          P_spawn = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M, mu, L);
         }
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       } 
       // SSB/R at year and age = prob alive to up to age a-1 x prob spawn at age a x waa x mature
       //should be n_regions x n_regions
@@ -233,10 +233,10 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
     for(int t = 0; t < n_seasons; t++) {
       if(t == spawn_seasons(s)-1) {
         //P(0,t_spawn): PTM over entire year up to time of spawning
-        P_spawn = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M_base, mu, L);
+        P_spawn = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M, mu, L);
       }
       //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     }
     matrix<T> fundm(n_regions,n_regions);
     fundm.setZero();
@@ -280,7 +280,7 @@ struct spr_F_spatial {
   vector<int> mig_type;
   vector<Type> fracyr_SSB;
   matrix<Type> selectivity;
-  array<Type> log_M_base;
+  array<Type> log_M;
   array<Type> mu; 
   vector<Type> L;
   matrix<Type> mature;
@@ -300,7 +300,7 @@ struct spr_F_spatial {
   vector<int> mig_type_,
   vector<Type> fracyr_SSB_,
   matrix<Type> selectivity_,
-  array<Type> log_M_base_,
+  array<Type> log_M_,
   array<Type> mu_, 
   vector<Type> L_,
   matrix<Type> mature_,
@@ -317,7 +317,7 @@ struct spr_F_spatial {
     mig_type(mig_type_),
     fracyr_SSB(fracyr_SSB_),
     selectivity(selectivity_),
-    log_M_base(log_M_base_),
+    log_M(log_M_),
     mu(mu_),
     L(L_),
     mature(mature_),
@@ -329,9 +329,9 @@ struct spr_F_spatial {
 
   template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
   T operator()(vector<T> log_F) { //find such that it maximizes yield
-    int n_stocks = log_M_base.dim(0);
-    int n_regions = log_M_base.dim(1);
-    int n_ages = log_M_base.dim(3);
+    int n_stocks = log_M.dim(0);
+    int n_regions = log_M.dim(1);
+    int n_ages = log_M.dim(3);
     int n_fleets = fleet_regions.size();
     int n_seasons = can_move.dim(2);
     matrix<T> FAA(n_fleets,n_ages);
@@ -340,9 +340,9 @@ struct spr_F_spatial {
       FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
     }
     vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
-    array<T> logMbaseT(log_M_base.dim(0),log_M_base.dim(1),log_M_base.dim(2));
-    for(int i = 0; i < log_M_base.dim(0); i++) for(int j = 0; j < log_M_base.dim(1); j++) for(int k = 0; k < log_M_base.dim(2); k++){
-      logMbaseT(i,j,k) = T(log_M_base(i,j,k));
+    array<T> logMbaseT(log_M.dim(0),log_M.dim(1),log_M.dim(2));
+    for(int i = 0; i < log_M.dim(0); i++) for(int j = 0; j < log_M.dim(1); j++) for(int k = 0; k < log_M.dim(2); k++){
+      logMbaseT(i,j,k) = T(log_M(i,j,k));
     }
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
     for(int i = 0; i < mu.dim(0); i++) for(int j = 0; j < mu.dim(1); j++) for(int k = 0; k < mu.dim(2); k++){

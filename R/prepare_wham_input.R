@@ -231,6 +231,8 @@
 #'   \describe{
 #'     \item{$ages}{integer vector of ages (years) with the last being a plus group}
 #'     \item{$years}{integer vector of years that the population model spans.}
+#'     \item{$n_seasons}{number of seasons within year.}
+#'     \item{$fracyr_seasons}{proportions of year for each season within year (sums to 1).}
 #'     \item{$n_fleets}{number of fleets.}
 #'     \item{$agg_catch}{matrix (length(years) x n_fleets) of annual aggregate catches (biomass) for each fleet.}
 #'     \item{$catch_paa}{array (n_fleets x length(years) x n_ages) of each fleet's age composition data (numbers).}
@@ -308,7 +310,8 @@
 #' }
 #'
 #' @export
-prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, basic_info = NULL){
+prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, 
+	NAA_re=NULL, catchability=NULL, age_comp=NULL, movement=NULL, L=NULL, F=NULL, catch_info=NULL, index_info=NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -322,54 +325,100 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
 
 
+	input = list()
+	input$data = list()
+	input$par = list()
+	input$map = list()
+
 	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
 	else basic_info$recruit_model = recruit_model
+
+	#things that cannot be known from asap files
+	input$data$n_seasons = 1
+	input$data$fracyr_seasons = 1
+	if(!is.null(basic_info$fracyr_seasons)){
+		input$data$n_seasons = length(basic_info$fracyr_seasons)
+		input$data$fracyr_seasons = basic_info$fracyr_seasons
+	}
+
 
 	waa_opts = NULL
 	waa_names = c("waa")
 	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
-	catch_opts = NULL
-	catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
-	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
+	#catch_info = catch
+	#catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
+	#if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 
-	index_opts = NULL
-	index_names = c("n_indices", "agg_indices", "index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
-		"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
-	if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
+	#index_opts = indices
+	#index_names = c("n_indices", "agg_indices", "index_paa", "fracyr_indices", "index_cv", "index_Neff", "units_indices",
+	#	"units_index_paa", "use_indices", "use_index_paa", "selblock_pointer_indices")
+	#if(any(names(basic_info) %in% index_names)) index_opts = basic_info[index_names]
 
-	F_opts = NULL
-	F_names = c("F")
-	if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
+	F_opts = F
+	#F_names = c("F")
+	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 
-	waa_opts = NULL
-	waa_names = ("waa")
-	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
 
-	q_opts = catchability
-	if(any(names(basic_info) == "q") & !any(names(q_opts) == "initial_q")) q_opts$initial_q = basic_info$q
+	if(!is.null(asap3)) {
+		asap3_test = sapply(asap3, function(x) "dat" %in% names(x))
+		if(!all(asap3_test)) stop("object passed to asap3 argument does not have the correct structure.\n")
 
-	if(!is.null(asap3))
-	{
-	  asap3 = asap3$dat
+		asap3 = lapply(asap3, function(x) return(x$dat))
+
+		cat(paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
+				unless the movement argument is provided.\n")
+
+  	n_ages = sapply(asap3, function(x) x$n_ages)
+  	if(length(unique(n_ages))!= 1) stop("differing numbers of age classes in the asap3 dat files. Make them equal before passing to wham.")
+
+  	n_years = sapply(asap3, function(x) x$n_years)
+  	if(length(unique(n_years))!= 1) stop("differing numbers of years in the asap3 dat files. Make them equal before passing to wham.")
+
   	input$asap3 = asap3
-	  input$data$n_ages = asap3$n_ages
-	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
-	  input$data$mature = asap3$maturity
-	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
-  	input$years <- asap3$year1 + 1:asap3$n_years - 1
+		input$data$n_stocks = length(asap)
+		input$data$n_regions = length(asap)
+		input$data$n_ages = n_ages[1]
+  	input$data$n_years_model = n_years[1]
+  	input$years <- asap3[[1]]$year1 + 1:asap3[[1]]$n_years - 1
+
+		input$data$spawn_seasons <- rep(1, length(asap3))
+		input$data$spawn_regions <- 1:length(asap3)
+		input$data$NAA_where <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
+		for(s in 1:n_stocks){
+			input$data$NAA_where[s,s,] <- 1
+		}
+
+  	input$data$fracyr_SSB <- matrix(NA, input$data$n_years_model, input$data$n_stocks)
+		for(i in 1:length(asap3)){
+			if(input$data$n_seasons == 1){
+				input$data$fracyr_SSB[,i] = asap3[[i]]$fracyr_spawn
+			} else {
+				int_starts = cumsum(c(0,input$data$fracyr_seasons))
+				ind <- max(which(int_starts <= asap3[[i]]$fracyr_spawn))
+				input$data$spawn_seasons[i] <- ind
+				input$data$fracyr_SSB[,i] = asap3[[i]]$fracyr_spawn - int_starts[ind] 
+			}
+		}
+  
+		input$data$mature = array(NA, dim(input$data$n_stocks, input$data$n_years_model, input$data$n_ages))
+	  for(i in 1:length(asap3)) input$data$mature[i,,] = asap3[[i]]$maturity
+	  input$data$Fbar_ages = seq(asap3[[1]]$Frep_ages[1], asap3[[1]]$Frep_ages[2])
 	}
-	else
-	{
+	else {
 		#if no asap3 is provided, make some default values to
-		input = add_basic_info(input, basic_info)
+		input = initial_input_no_asap_fn(input, basic_info)
 	}
+
+  input$years_full = input$years
+  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
 
 	# print("start")
 	#some basic input elements see the function code below
-	input = initial_input_fn(input, basic_info)
+	input = add_basic_info(input, basic_info)
 
 	# Catch
+	#input$data$n_seasons first defined here
 	input = set_catch(input, catch_opts)
 	#print("catch")
 
@@ -384,6 +433,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	# NAA and recruitment options
 	input = set_NAA(input, NAA_re)
 	#print("NAA")
+
+	q_opts = catchability
+	if(any(names(basic_info) == "q") & !any(names(q_opts) == "initial_q")) q_opts$initial_q = basic_info$q
 
 	input = set_q(input, q_opts)
 	#print("q")
@@ -403,6 +455,14 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#set up natural mortality
 	input = set_M(input, M)
 	#print("M")
+
+	#set up "extra" mortality
+	input = set_L(input, L)
+	#print("L")
+
+	#set up movement
+	#input = set_move(input, move)
+	#print("mu")
 
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input = set_ecov(input, ecov)
@@ -429,29 +489,41 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
 
-initial_input_fn = function(input, basic_info){
-	#this function is a helper so that this code can be run in other set up functions like change_wham_input
-  input$years_full = input$years
-  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
+add_basic_info = function(input, basic_info){
+	#this function adds basic_info to input
 	if(!is.null(basic_info$ages)) {
 		if(!is.integer(basic_info$ages) | length(basic_info$ages) != input$data$n_ages) stop("basic_info$ages has been specified, but it is not an integer vector or it is not = n_ages")
 		else {
-  		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+"))
+  		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+")))
 		}
 	}
 
-  input$data$n_years_model = length(input$years)
-  input$data$n_years_catch = length(input$years)
-  input$data$n_years_indices = length(input$years)
-  input$data$recruit_model = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
-  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
-  input$data$which_F_age_static = input$data$n_ages #plus group by default used to define full F (total) for static SPR-based ref points.
+  #input$data$n_years_model = length(input$years)
+  #input$data$n_years_catch = length(input$years)
+  #input$data$n_years_indices = length(input$years)
+	input$data$recruit_model = rep(2,data$n_stocks)
+  input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 
-  input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
-  input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
-  input$data$simulate_state = rep(1,5) #simulate state variables (NAA, M, sel, Ecov, q)
-  input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+  input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
+  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
+  input$data$bias_correct_oe = 0 #bias correct log-normal observation errors?
+  if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = as.integer(basic_info$bias_correct_observation)
+  
+  sim_pe = 1
+  if(!is.null(basic_info$simulate_process_error)) sim_pe = as.integer(basic_info$simulate_process_error)
+  sim_oe = 1
+  if(!is.null(basic_info$simulate_observation_error)) sim_oe = as.integer(basic_info$simulate_observation_error)
+
+  input$data$do_simulate_Ecov_re = sim_pe #simulate state variable
+  input$data$do_simulate_sel_re = sim_pe #simulate state variable
+  input$data$do_simulate_M_re = sim_pe #simulate state variable
+  input$data$do_simulate_q_re = sim_pe #simulate state variable
+  input$data$do_simulate_q_prior_re = sim_pe #simulate state variable
+  input$data$do_simulate_mu_re = sim_pe #simulate state variable
+  input$data$do_simulate_mu_prior_re = sim_pe #simulate state variable
+  input$data$do_simulate_L_re = sim_pe #simulate state variable
+  input$data$do_simulate_data = rep(sim_oe,3) #simulate data types (catch, indices, Ecov)
+  #input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
   input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
@@ -459,12 +531,12 @@ initial_input_fn = function(input, basic_info){
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
-  
-  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
-  if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
-  if(!is.null(basic_info$simulate_process_error)) input$data$simulate_state = basic_info$simulate_process_error
-  if(!is.null(basic_info$simulate_observation_error)) input$data$simulate_data = basic_info$simulate_observation_error
-  if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
+
+  input$data$which_F_age = cbind(rep(input$data$n_ages,input$data$n_years_model), #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
+  	rep(1,input$data$n_years_model))
+  input$data$which_F_age_static = c(input$data$n_ages,1) #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
+
+  #if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
 
   if(!is.null(basic_info$percentSPR)) input$data$percentSPR = basic_info$percentSPR
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR

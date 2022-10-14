@@ -113,8 +113,8 @@ matrix<Type> get_SSB(array<Type>NAA_spawn, array<Type> waa, vector<int> waa_poin
 }
 
 template <class Type>
-array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M_base, array<Type> FAA, 
-  matrix<int> which_F_age, vector<int> spawn_seasons, 
+array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M, array<Type> FAA, 
+  matrix<int> which_F_age, vector<int> spawn_regions, 
   vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
   matrix<Type> L,  array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, 
   vector<int> avg_years_ind, int small_dim) {
@@ -123,10 +123,10 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
              N1_model: (n_stocks) 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
                log_N1: (n_stocks x n_regions x n_ages) holding fixed or random effects paramters
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
-           log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+           log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                   FAA: fishing mortality: n_fleets x n_years x n_ages
           which_F_age: (n_years_model + n_years_proj x 2); which age,fleet of F to use for max F for msy/ypr calculations and projections
-        spawn_seasons: n_stocks; which season spawning occurs for each stock
+        spawn_regions: n_stocks; which region spawning occurs for each stock
         fleet_regions: n_fleets; which region each fleet is operating
         fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
              can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
@@ -144,7 +144,7 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
   int n_fleets = FAA.dim(0);
   int n_seasons = fleet_seasons.cols();
   int n_regions = log_N1.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_ages = log_M.dim(3);
   array<Type> NAA_1(n_stocks, n_regions, n_ages);
   NAA_1.setZero();
   matrix<Type> sel1 = get_sel_proj(0, FAA, avg_years_ind, which_F_age);
@@ -161,12 +161,12 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
       array<Type> FAA1(n_fleets,1,n_ages);
       FAA1.setZero();
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
-        FAA1(f,0,a) = exp(log_N1(s,0,1)) * sel1(f,a); //only 1 F0 per stock
+        FAA1(f,0,a) = exp(log_N1(s,spawn_regions(s),1)) * sel1(f,a); //only 1 F0 per stock
       }
-      array<Type> SAA1 = get_eq_SAA(0, spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, FAA1, log_M_base, 
+      array<Type> SAA1 = get_eq_SAA(0, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, FAA1, log_M, 
         mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, small_dim);
       for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_regions; i++) if(NAA_where(s,i,a)) {
-        NAA_1(s,i,a) += exp(log_N1(s,i,0)) * SAA1(s,i,i,a); //only 1 Rec per stock, this must be consistent with NAA_where
+        NAA_1(s,i,a) += exp(log_N1(s,spawn_regions(s),0)) * SAA1(s,a,spawn_regions(s),i); //only 1 Rec per stock, this must be consistent with NAA_where
       }
     }
   }
@@ -174,8 +174,8 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
 }
 
 template <class Type>
-array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M_base, 
-  array<Type> FAA, matrix<int> which_F_age, vector<int> spawn_seasons, 
+array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M, 
+  array<Type> FAA, matrix<int> which_F_age, 
   vector<int> spawn_regions,
   vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, matrix<Type> fracyr_SSB,  array<Type> mu, 
   array<Type> L, array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, 
@@ -191,10 +191,9 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
              N1_model: 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
                log_N1: (n_stocks x n_regions x n_ages) holding fixed or random effects paramters
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
-           log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+           log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                   FAA: fishing mortality: n_fleets x n_years x n_seasons x n_ages
           which_F_age: (n_years_model + n_years_proj x 2); which age,fleet of F to use for max F for msy/ypr calculations and projections
-        spawn_seasons: n_stocks; which season spawning occurs for each stock
         spawn_regions: n_stocks; which region spawning occurs for each stock
         fleet_regions: n_fleets; which region each fleet is operating
         fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
@@ -212,13 +211,13 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
   */
   int n_stocks = log_N1.dim(0);
   int n_regions = log_N1.dim(1);
-  int n_y = log_M_base.dim(2); 
-  int n_ages = log_M_base.dim(3);
+  int n_y = log_M.dim(2); 
+  int n_ages = log_M.dim(3);
   array<Type> NAA_y(n_stocks, n_regions, n_ages);
   NAA_y.setZero();
   if(y==0) {
-    NAA_y = get_NAA_1(N1_model,log_N1, NAA_where, log_M_base, FAA, which_F_age, 
-      spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, 
+    NAA_y = get_NAA_1(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, 
+      spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB, mu, L, mature, waa, waa_pointer_ssb, fracyr_seasons, 
       avg_years_ind, small_dim);
   } else{ 
     for(int s = 0; s < n_stocks; s++) {
@@ -356,30 +355,30 @@ vector<Type> get_pred_recruit_y(int y, vector<int> recruit_model, matrix<Type> m
 }
 
 template <class Type>
-array<Type> get_pred_N1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> N1_repars){
+array<Type> get_pred_N1(vector<int> N1_model, array<Type> N1, array<int> NAA_where, array<Type> N1_repars){
   /*
     provide the "expected" numbers at age in the first year. different from N1 only if N1 are random effects.
      N1_model: 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
            N1: (n_stocks x n_regions x n_ages) parameters for estimated initial numbers at age
     NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
   */
-  int n_stocks = log_N1.dim(0);
-  int n_regions = log_N1.dim(1);
-  int n_ages = log_N1.dim(3);
+  int n_stocks = N1.dim(0);
+  int n_regions = N1.dim(1);
+  int n_ages = N1.dim(3);
   array<Type> pred_N1(n_stocks, n_regions, n_ages);
   pred_N1.setZero();
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
     if(N1_model(s) < 2) {
-      pred_N1(s,r,a) = exp(log_N1(s,r,a));
-    } else{
-      pred_N1(s,r,a) = exp(N1_repars(s,r,0)); //exp of mean of AR1 process
+      pred_N1(s,r,a) = N1(s,r,a);
+    } else {
+      pred_N1(s,r,a) = exp(N1_repars(s,r,0)); //exp of mean of AR1 process ; bias correct?
     } 
   }
   return(pred_N1);
 }
 
 template <class Type>
-array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
+array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
   matrix<Type> mean_rec_pars, matrix<Type> SSB, array<Type> NAA, 
   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
   vector<int> spawn_regions, array<Type> Ps){
@@ -409,7 +408,7 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, arra
 
   //array<Type> N1(n_stocks,n_regions,n_ages);
   if(y==0) { //initial NAA
-    pred_NAA_y = get_pred_N1(N1_model, log_N1, NAA_where, N1_repars);
+    pred_NAA_y = get_pred_N1(N1_model, N1, NAA_where, N1_repars);
   } else {
   // Expected recruitment
     vector<Type> pred_recruit = get_pred_recruit_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
@@ -432,7 +431,7 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, arra
 }
 
 template <class Type>
-array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
+array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
   matrix<Type> mean_rec_pars, vector<Type> SSB_y_minus_1, array<Type> NAA_y_minus_1, 
   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
   vector<int> spawn_regions, array<Type> Ps){
@@ -462,7 +461,7 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, arra
 
   //array<Type> N1(n_stocks,n_regions,n_ages);
   if(y==0) { //initial NAA
-    pred_NAA_y = get_pred_N1(N1_model, log_N1, NAA_where, N1_repars);
+    pred_NAA_y = get_pred_N1(N1_model, N1, NAA_where, N1_repars);
   } else {
   // Expected recruitment
     vector<Type> pred_recruit = get_pred_recruit_y(y, recruit_model, mean_rec_pars, SSB_y_minus_1, NAA_y_minus_1, log_SR_a, 
@@ -485,7 +484,7 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> log_N1, arra
 }
 
 template <class Type>
-array<Type> get_pred_NAA(int N1_model, array<Type> log_N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
+array<Type> get_pred_NAA(int N1_model, array<Type> N1, array<Type> N1_repars, array<int> NAA_where, vector<int> recruit_model, 
   matrix<Type> mean_rec_pars, matrix<Type> SSB, array<Type> NAA, 
   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
   vector<int> spawn_regions, array<Type> annual_Ps){
@@ -514,7 +513,7 @@ array<Type> get_pred_NAA(int N1_model, array<Type> log_N1, array<Type> N1_repars
   array<Type> pred_NAA(n_stocks,n_regions,n_years,n_ages);
   pred_NAA.setZero();
   for(int y = 0; y < n_years; y++){
-    array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, log_N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
+    array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
       log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
     for(int a = 0; a < n_ages; a++) for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
       //pred_NAA(a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
@@ -525,7 +524,7 @@ array<Type> get_pred_NAA(int N1_model, array<Type> log_N1, array<Type> N1_repars
 }
 
 template <class Type>
-array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> N1, array<Type> log_N1, array<Type> N1_repars, 
+array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> N1, array<Type> N1_repars, 
   array<Type> log_NAA, array<int> NAA_where, 
   array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb,
   vector<int> recruit_model, matrix<Type> mean_rec_pars, matrix<Type> log_SR_a, matrix<Type> log_SR_b, 
@@ -536,7 +535,7 @@ array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> 
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
              N1_model: 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
                N1: (n_stocks x n_regions x n_ages) numbers at age in the first year
-               log_N1:
+               N1:
                N1_repars:
               log_NAA: (n_stocks x n_regions x nyears-1 x n_ages) parameters for ages after year 1
             NAA_where: n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
@@ -567,14 +566,14 @@ array<Type> get_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Type> 
     //NAA(s,r,0,a) = NAA1(s,r,a);
     NAA(0,s,r,0,a) = N1(s,r,a);
   }
-  array<Type> pred_NAA_y = get_pred_NAA_y(0, N1_model, log_N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
+  array<Type> pred_NAA_y = get_pred_NAA_y(0, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
     log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
     NAA(1,s,r,0,a) = pred_NAA_y(s,r,a);
   }
 
   for(int y = 1; y < n_y; y++){
-    pred_NAA_y = get_pred_NAA_y(y, N1_model, log_N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
+    pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
       log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
     for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
       NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);
@@ -721,7 +720,7 @@ matrix<Type> get_SR_log_b(vector<int> recruit_model, matrix<Type> mean_rec_pars,
 
 template <class Type>
 array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons,
-  matrix<Type> fracyr_indices, vector<int> index_seasons, vector<int> index_regions, array<Type> FAA, array<Type> log_M_base, 
+  matrix<Type> fracyr_indices, vector<int> index_seasons, vector<int> index_regions, array<Type> FAA, array<Type> log_M, 
   array<Type> mu, matrix<Type> L){
   /*
     produce the annual survival probabilities up to time of spawning for a given stock, age, season, year
@@ -735,17 +734,17 @@ array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, matrix<int
       index_seasons: n_indices; which season the index occurs in
       index_regions: n_indices: which region the index is observing
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
   int n_indices = index_seasons.size();
   int n_seasons = fleet_seasons.cols();
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_years = log_M_base.dim(2);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_years = log_M.dim(2);
+  int n_ages = log_M.dim(3);
   int P_dim = n_regions + n_fleets + 1; // probablity transition matrix is P_dim x P_dim
 
   array<Type> NAA_index(n_stocks,n_indices,n_years,n_ages);
@@ -761,12 +760,12 @@ array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, matrix<int
         if(t == index_seasons(i)-1){ 
           //P(0,t) x P(t_i-t): PTM over interval from beginning of year to time of index within the season
           matrix<Type> P_index = P_y * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_indices(y,i), 
-            FAA, log_M_base, mu, L);
+            FAA, log_M, mu, L);
           for(int r = 0; r < n_regions; r++) NAA_index(s,i,y,a) += P_index(r,index_regions(i)-1) * NAA(s,r,y,a);
         }
       }
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       P_y = P_y * P_t;
     }
   }
@@ -775,7 +774,7 @@ array<Type> get_NAA_index(array<Type> NAA, vector<int> fleet_regions, matrix<int
 
 template <class Type>
 array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, 
-  vector<Type> fracyr_seasons, array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L){
+  vector<Type> fracyr_seasons, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L){
   /*
     produce the numbers caught by stock, fleet, year, season, age up to time of spawning for a given stock, age, season, year
                 NAA: nstocks x nregions x nyears x nages; array of numbers at age 
@@ -788,16 +787,16 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
       index_seasons: n_indices; which season the index occurs in
       index_regions: n_indices: which region the index is observing
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                   L: n_years_model x n_regions; "extra" mortality rate
   */
   int n_fleets = FAA.dim(0);
   int n_seasons = fleet_seasons.cols();
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_years = log_M_base.dim(2);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_years = log_M.dim(2);
+  int n_ages = log_M.dim(3);
   int P_dim = n_regions + n_fleets + 1; // probablity transition matrix is P_dim x P_dim
 
   array<Type> NAA_catch(n_stocks,n_fleets,n_years,n_seasons,n_ages);
@@ -811,7 +810,7 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
     matrix<Type> P_y = I_mat; //reset for each year, age, stock
     for(int t = 0; t < n_seasons; t++) {
       //P(t,u): PTM over entire season interval
-      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      matrix<Type> P_t = get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       if(sum(vector<int> (fleet_seasons.col(t)))>0){
         array<Type> NAA_alive(n_stocks,n_regions,n_ages);
         NAA_alive.setZero();
@@ -834,7 +833,7 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
 
 
 template <class Type>
-matrix<Type> get_NAA_nll(array<Type> N1, vector<int> N1_model, array<Type> log_N1, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> log_NAA, matrix<Type> log_NAA_sigma, matrix<Type> trans_NAA_rho, 
+matrix<Type> get_NAA_nll(array<Type> N1, vector<int> N1_model, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> log_NAA, matrix<Type> log_NAA_sigma, matrix<Type> trans_NAA_rho, 
   array<int> NAA_where, vector<int> recruit_model, matrix<Type> mean_rec_pars, 
   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
   vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, array<Type> waa, vector<int> waa_pointer_ssb, 
@@ -847,7 +846,7 @@ matrix<Type> get_NAA_nll(array<Type> N1, vector<int> N1_model, array<Type> log_N
   //NAA_trans_rho n_stocks x 4 (rho_a, rho_y, rho_r, rho_s) 
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
 
-  array<Type> all_NAA = get_NAA(NAA_re_model, N1_model, N1, log_N1, N1_repars, log_NAA, NAA_where, 
+  array<Type> all_NAA = get_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
     mature, waa, waa_pointer_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
     use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn); //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
   array<Type> NAA = extract_NAA(all_NAA);
@@ -968,7 +967,7 @@ array<Type> simulate_NAA_devs(array<Type> NAA, vector<int> NAA_re_model, matrix<
 
 // stopped here
 template <class Type>
-matrix<Type> simulate_log_NAA(vector<int> N1_model, array<Type> N1, array<Type> log_N1, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> NAA_devs, array<Type> log_NAA,
+matrix<Type> simulate_log_NAA(vector<int> N1_model, array<Type> N1, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> NAA_devs, array<Type> log_NAA,
   array<int> NAA_where, vector<int> recruit_model, matrix<Type> mean_rec_pars, 
   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> use_Ecov_R, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R,
   vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, array<Type> waa, vector<int> waa_pointer_ssb, 
@@ -992,7 +991,7 @@ matrix<Type> simulate_log_NAA(vector<int> N1_model, array<Type> N1, array<Type> 
   
   for(int y = 1; y < n_years; y++) {
     //for y-1 = 0, it will populate with full initial NAA
-    array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, log_N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_y_minus_1, NAA_y_minus_1, 
+    array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_y_minus_1, NAA_y_minus_1, 
       log_SR_a, log_SR_b, use_Ecov_R, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps);
     NAA_y_minus_1.setZero();
     for(int s = 0; s < n_stocks; s++){

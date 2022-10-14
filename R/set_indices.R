@@ -1,90 +1,116 @@
-set_indices = function(input, index_opts=NULL)
-{
+#' Specify index selectivity blocks and aggregate and age composition observations for indices
+#'
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param index_info (optional) list specifying various aspects about catch by indices (see details)
+#' 
+#' \code{index_info} specifies observations, and various configuration options for index-specific catch observations and will overwrite attributes specified in the ASAP data file.
+#' If \code{NULL}, all settings from the ASAP data file or basic_info are used.
+#' \code{index_info} is a list with any of the following entries:
+#'   \describe{
+#'     \item{$n_indices} {number of indices}
+#'     \item{$index_regions}{vector (n_indices) of regions where each fleet operates.}
+#'     \item{$index_seasons}{vector (n_indices) of 0/1 values flagging which seasons each index occurs.}
+#'     \item{$agg_indices}{matrix (n_years_model x n_indices) of annual aggregate index catches.}
+#'     \item{$agg_index_cv}{matrix (n_years_model x n_indices) of CVs for annual aggregate index catches.}
+#'     \item{$fracyy_indices}{matrix (n_years_model x n_indices) of fractions of year at which index occurs within the season (difference between time of survey and time at start of season).}
+#'     \item{$use_indices}{matrix (n_years_model x n_indices) of 0/1 values flagging whether to use aggregate observations.}
+#'     \item{$units_indices}{matrix (n_years_model x n_indices) of 1/2 values flagging whether aggregate observations are biomass (1) or numbers (2).}
+#'     \item{$index_paa}{array (n_indices x n_years_model x n_ages) of annual catch proportions at age by index.}
+#'     \item{$use_index_paa}{matrix (n_years_model x n_indices) of 0/1 values flagging whether to use proportions at age observations.}
+#'     \item{$units_index_paa}{matrix (n_years_model x n_indices) of 1/2 values flagging whether composition observations are biomass (1) or numbers (2).}
+#'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
+#'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
+#'   }
+
+set_indices = function(input, index_info=NULL) {
 	data = input$data
-	if(is.null(input$asap3)) {
-		asap3 = NULL
-	    if(is.null(index_opts$n_indices)) data$n_indices = 1
-	    else data$n_indices = index_opts$n_indices
-	}
-  	else {
-		asap3 = input$asap3
-		which_indices <- which(asap3$use_index ==1)
-		asap3$n_indices = length(which_indices)
-		asap3$survey_index_units <- asap3$index_units[which_indices]
-		asap3$survey_acomp_units <- asap3$index_acomp_units[which_indices]
-		asap3$survey_WAA_pointers <- asap3$index_WAA_pointers[which_indices]
-		asap3$survey_month <- matrix(asap3$index_month[which_indices], asap3$n_years, asap3$n_indices, byrow = TRUE)
-		asap3$use_survey_acomp <- asap3$use_index_acomp[which_indices]
-		asap3$index_WAA_pointers = asap3$index_WAA_pointers[which_indices]
-		asap3$IAA_mats <- asap3$IAA_mats[which_indices]
-		asap3$use_survey <- asap3$use_index[which_indices]
-		data$n_indices <- asap3$n_indices
+  asap3 = input$asap3
+	if(is.null(asap3)) {
+	  data$n_indices = 1
+	} else {
+    for(i in 1:length(asap3)) {
+			which_indices <- which(asap3[[i]]$use_index ==1)
+			asap3[[i]]$n_indices = length(which_indices)
+			asap3[[i]]$survey_index_units <- asap3[[i]]$index_units[which_indices]
+			asap3[[i]]$survey_acomp_units <- asap3[[i]]$index_acomp_units[which_indices]
+			asap3[[i]]$survey_WAA_pointers <- asap3[[i]]$index_WAA_pointers[which_indices]
+			asap3[[i]]$survey_month <- matrix(asap3[[i]]$index_month[which_indices], asap3[[i]]$n_years, asap3[[i]]$n_indices, byrow = TRUE)
+			asap3[[i]]$use_survey_acomp <- asap3[[i]]$use_index_acomp[which_indices]
+			asap3[[i]]$index_WAA_pointers = asap3[[i]]$index_WAA_pointers[which_indices]
+			asap3[[i]]$IAA_mats <- asap3[[i]]$IAA_mats[which_indices]
+			asap3[[i]]$use_survey <- asap3[[i]]$use_index[which_indices]
+
+    }
+    n_indices_per_region = sapply(asap3, function(x) x$n_indices)
+    data$n_indices = sum(n_indices_per_region)
 	} 
-	data$agg_indices = matrix(NA, data$n_years_model, data$n_indices)
-	data$use_indices = matrix(1, data$n_years_model, data$n_indices)
-	data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
+	if(!is.null(index_info$n_indices)) data$n_indices = index_info$n_indices
+
+  data$index_regions = rep(1, data$n_indices)
+  data$index_seasons = rep(1, data$n_indices)
+	
+	data$agg_indices = data$agg_index_sigma = data$index_Neff = matrix(NA, data$n_years_model, data$n_indices)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
+	data$use_indices = matrix(1, data$n_years_model, data$n_indices)
 	data$use_index_paa = matrix(1, data$n_years_model, data$n_indices)
-	data$index_Neff = matrix(NA, data$n_years_model, data$n_indices)
-	if(!is.null(asap3))
-	{
-	  data$units_indices <- asap3$survey_index_units
-	  data$fracyr_indices = (asap3$survey_month-1)/12 #make sure that this is right
-	  for(i in 1:data$n_indices)
-	  {
-	  	data$agg_indices[,i] = asap3$IAA_mats[[i]][,2]
-	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] < 1e-15) data$use_indices[y,i] = 0
-	  }
-	  for(i in 1:data$n_indices) data$agg_index_sigma[,i] = asap3$IAA_mats[[i]][,3]
-	  for(i in 1:data$n_indices)
-	  {
-	    temp = asap3$IAA_mats[[i]][,3 + 1:data$n_ages]
-	    temp[which(is.na(temp))] = 0
-	    temp[which(temp<0)] = 0
-	    data$index_paa[i,,] = temp/apply(temp,1,sum)
-	  }
-	  data$index_paa[is.na(data$index_paa)] = 0
-	  for(i in 1:data$n_indices)
-	  {
-		if(asap3$use_survey_acomp[i] != 1){
-			data$use_index_paa[,i] = 0
-		} else {
-			for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[i,y,] > 1e-15) < 2) data$use_index_paa[y,i] = 0
+  data$selblock_pointer_indices = matrix(0, data$n_years_model, data$n_indices)
+  data$units_indices = rep(2,data$n_indices)
+  data$units_index_paa = rep(2,data$n_indices)
+  data$fracyr_indices = matrix(data$fracyr_seasons[1]*0.5, data$n_years_model, data$n_indices)
+
+	if(!is.null(asap3)) {
+    k <- 0
+    for(i in 1:length(asap3)) {
+      for(j in 1:asap3[[i]]$n_indices) {
+        data$index_regions[k] = i #each asap file is a separate region
+		  	data$units_indices[k] <- asap3[[i]]$survey_index_units[j]
+		  	tmp = (asap3[[i]]$survey_month[j]-1)/12 #make sure that this is right
+				int_starts <- cumsum(c(0,data$fracyr_seasons))
+		  	ind = max(which(int_starts <= tmp))
+		  	data$index_seasons[k] = ind
+		  	data$fracyr_indices[,k] = tmp - int_starts[ind]
+		  	
+				data$agg_indices[,k] = asap3[[i]]$IAA_mats[[j]][,2]
+	    	for(y in 1:data$n_years_model) if(asap3[[i]]$IAA_mats[[j]][y,2] < 1e-15) data$use_indices[y,k] = 0
+	  		data$agg_index_sigma[,k] = asap3[[i]]$IAA_mats[[j]][,3]
+		    
+		    temp = asap3[[i]]$IAA_mats[[j]][,3 + 1:data$n_ages]
+	    	temp[which(is.na(temp))] = 0
+	    	temp[which(temp<0)] = 0
+	    	data$index_paa[k,,] = temp/apply(temp,1,sum)
+				if(asap3[[i]]$use_survey_acomp[j] != 1){
+					data$use_index_paa[,k] = 0
+				} else {
+					for(y in 1:data$n_years_model) if(asap3[[i]]$IAA_mats[[j]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[k,y,] > 1e-15) < 2) data$use_index_paa[y,k] = 0
+				}
+				data$units_index_paa[k] <- asap3[[i]]$survey_acomp_units[j]
+				data$index_Neff[,k] = asap3[[i]]$IAA_mats[[j]][,4 + data$n_ages]
+        data$selblock_pointer_indices[,k] = max(data$selblock_pointer_fleets) + k #set_catch already called
+        k <- k + 1
+			}
 		}
-	  }
-	  data$units_index_paa <- asap3$survey_acomp_units
-	  for(i in 1:data$n_indices) data$index_Neff[,i] = asap3$IAA_mats[[i]][,4 + data$n_ages]
-	  data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
 	}
-	else
-	{
-		if(is.null(index_opts$units_indices)) data$units_indices = rep(1,data$n_indices) #biomass
-		else data$units_indices = index_opts$units_indices
-		
-		if(is.null(index_opts$fracyr_indices)) data$fracyr_indices =matrix(0.5, data$n_years_model, data$n_indices)
-		else data$fracyr_indices = index_opts$fracyr_indices
-		
-		if(is.null(index_opts$agg_indices)) data$agg_indices[] = 10
-		else data$agg_indices[] = index_opts$agg_indices
-
-		if(is.null(index_opts$index_cv)) data$agg_index_sigma[] = 0.3
-		else data$agg_index_sigma[] = index_opts$index_cv
-
-		if(is.null(index_opts$index_paa)) data$index_paa[] = 1/data$n_ages
-		else data$index_paa[] = index_opts$index_paa
-
-		if(is.null(index_opts$units_index_paa)) data$units_index_paa = rep(2,data$n_indices) #numbers
-		else data$units_index_paa = index_opts$units_index_paa
-
-		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
-		else data$index_Neff[] = index_opts$index_Neff
-
-    if(is.null(index_opts$selblock_pointer_indices)) data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
-    else data$selblock_pointer_indices = index_opts$selblock_pointer_indices
+	else {
+		data$agg_indices[] = 10
+		data$agg_index_sigma[] = 0.3
+		data$index_paa[] = 1/data$n_ages
+		data$index_Neff[] = 100
+		data$selblock_pointer_indices[] = rep(1:data$n_indices, each = data$n_years_model) + max(data$selblock_pointer_fleets)
 	}
 
-  data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100  
-  data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
+
+	if(!is.null(index_info$units_indices)) data$units_indices[] = index_info$units_indices
+	if(!is.null(index_info$fracyr_indices)) data$fracyr_indices[] = index_info$fracyr_indices
+	if(!is.null(index_info$agg_indices)) data$agg_indices[] = index_info$agg_indices
+	if(!is.null(index_info$index_cv)) data$agg_index_sigma[] = index_info$index_cv
+	if(!is.null(index_info$index_paa)) data$index_paa[] = index_info$index_paa
+	if(!is.null(index_info$units_index_paa)) data$units_index_paa[] = index_info$units_index_paa
+	if(!is.null(index_info$index_Neff)) data$index_Neff[] = index_info$index_Neff
+	if(!is.null(index_info$selblock_pointer_indices)) data$selblock_pointer_indices[] = index_info$selblock_pointer_indices
+	if(!is.null(index_info$index_seasons)) data$index_seasons[] = index_info$index_seasons
+	if(!is.null(index_info$index_regions)) data$index_regions[] = index_info$index_regions
+
+  ################################################################################
   # for plotting, in years where index is not used set sigma = avg of used years
   tmp <- data$agg_index_sigma
   tmp[data$use_indices == 0] = NA
@@ -92,12 +118,13 @@ set_indices = function(input, index_opts=NULL)
   for(i in 1:data$n_indices) data$agg_index_sigma[data$use_indices[,i] == 0,i] = mean_agg_ind_sigma[i]
   ################################################################################
 
-  data$index_paa[is.na(data$index_paa)] = 0
+	data$index_paa[is.na(data$index_paa)] = 0
+  data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100  
+  data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))
 
-	
   input$data = data
   return(input)
 }

@@ -1,19 +1,18 @@
 template <class Type>
-array<Type> get_eq_SAA(int y, vector<int> spawn_seasons, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
-  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L, 
+array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
+  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L, 
   array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, int small_dim){
   /* 
-    calculate equilibrium spawning biomass per recruit (at age) by stock and region. If movement is set up approriately 
+    calculate equilibrium survival (at age) by stock and region. If movement is set up approriately 
     all fish can be made to return to a single spawning region for each stock.
                   y: the model year for which to use SPR inputs
-       spawn_season: vector of indicators telling which season spawning occurs for each stock
       fleet_regions: vector of indicators telling which region each fleet is operating
       fleet_seasons: n_fleets x n_seasons; 0/1 indicating whether fleet is operating in the season
            can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
          fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions array of movement matrices
                   L: n_years_model x n_regions. "extra" unobserved mortality
              mature: n_stocks x n_years x n_ages proportion mature at age
@@ -23,9 +22,9 @@ array<Type> get_eq_SAA(int y, vector<int> spawn_seasons, vector<int> fleet_regio
           small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
   */
 
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int n_fleets = FAA.dim(0);
   int n_seasons = can_move.dim(2);
   int P_dim = n_regions + n_fleets + 1;
@@ -42,7 +41,7 @@ array<Type> get_eq_SAA(int y, vector<int> spawn_seasons, vector<int> fleet_regio
       matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
       for(int t = 0; t < n_seasons; t++) {
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-        P_ya = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+        P_ya = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       } 
       S_ya = S_ya * get_S(P_ya, n_regions); //accumulate for next age
       for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
@@ -51,7 +50,7 @@ array<Type> get_eq_SAA(int y, vector<int> spawn_seasons, vector<int> fleet_regio
     matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
     for(int t = 0; t < n_seasons; t++) {
       //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-      P_ya = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_ya = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     }
     matrix<Type> fundm(n_regions,n_regions);
     fundm.setZero();
@@ -69,7 +68,7 @@ array<Type> get_eq_SAA(int y, vector<int> spawn_seasons, vector<int> fleet_regio
 
 template <class Type>
 array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
-  vector<int> mig_type, matrix<Type> FAA, array<Type> log_M_base, array<Type> mu, vector<Type> L, matrix<Type> waacatch, 
+  vector<int> mig_type, matrix<Type> FAA, array<Type> log_M, array<Type> mu, vector<Type> L, matrix<Type> waacatch, 
   vector<Type> fracyr_seasons, int age_specific, int small_dim){
   /* 
     calculate equilibrium yield per recruit (at age) by stock and region.
@@ -78,7 +77,7 @@ array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<
              can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
              mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
                   FAA: fishing mortality: n_fleets x n_ages
-           log_M_base: log M (density-independent components): n_stocks x n_regions x n_ages
+           log_M: log M (density-independent components): n_stocks x n_regions x n_ages
                    mu: n_stocks x n_ages x n_seasons x n_regions x n_regions array of movement matrices
                     L: n_regions. "extra" unobserved mortality
              waacatch: n_fleets x n_ages. weight at age
@@ -87,9 +86,9 @@ array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<
             small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
   */
 
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int n_fleets = FAA.rows();
   int n_seasons = can_move.dim(2);
   int P_dim = n_regions + n_fleets + 1;
@@ -109,7 +108,7 @@ array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<
       matrix<Type> P_ya = I; //PTM for year and age
       for(int t = 0; t < n_seasons; t++) {
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       }
       // YPR at year and age = prob alive to up to age a-1 x prob caught at age a x waa
       matrix<Type> YPR_ya = S_ya * get_D(P_ya, n_regions,n_fleets) * W; //should be n_regions x n_fleets
@@ -121,7 +120,7 @@ array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<
     matrix<Type> P_ya = I; //PTM for year and age
     for(int t = 0; t < n_seasons; t++) {
       //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     }
     matrix<Type> fundm(n_regions,n_regions);
     fundm.setZero();
@@ -150,7 +149,7 @@ array<Type> get_YPR(vector<int> fleet_regions, matrix<int> fleet_seasons, array<
 
 template <class Type>
 array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
-  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> FAA, array<Type> log_M_base, array<Type> mu, matrix<Type> L, 
+  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L, 
   array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, int age_specific, int small_dim){
   /* 
     calculate equilibrium spawning biomass per recruit (at age) by stock and region. If movement is set up approriately 
@@ -163,7 +162,7 @@ array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions,
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
          fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
                 FAA: fishing mortality: n_fleets x n_years x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions array of movement matrices
                   L: n_years_model x n_regions. "extra" unobserved mortality
              mature: n_stocks x n_years x n_ages proportion mature at age
@@ -174,9 +173,9 @@ array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions,
           small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
   */
 
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int n_fleets = FAA.dim(0);
   int n_seasons = can_move.dim(2);
   int P_dim = n_regions + n_fleets + 1;
@@ -194,10 +193,10 @@ array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions,
       for(int t = 0; t < n_seasons; t++) {
         if(t == spawn_seasons(s)-1) {
           //P(0,t_spawn): PTM over entire year up to time of spawning
-          P_spawn = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
+          P_spawn = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M, mu, L);
         }
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-        P_ya = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+        P_ya = P_ya * get_P(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       } 
       // SSB/R at year and age = prob alive to up to age a-1 x prob spawn at age a x waa x mature
       //should be n_regions x n_regions
@@ -213,10 +212,10 @@ array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions,
     for(int t = 0; t < n_seasons; t++) {
       if(t == spawn_seasons(s)-1) {
         //P(0,t_spawn): PTM over entire year up to time of spawning
-        P_spawn = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M_base, mu, L);
+        P_spawn = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(y,s), FAA, log_M, mu, L);
       }
       //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-      P_ya = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_ya = P_ya * get_P(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     }
     matrix<Type> fundm(n_regions,n_regions);
     fundm.setZero();
@@ -249,7 +248,7 @@ array<Type> get_SPR(int y, vector<int> spawn_seasons, vector<int> fleet_regions,
 /*
 template <class Type>
 array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
-  vector<int> mig_type, vector<Type> fracyr_SSB, matrix<Type> FAA, array<Type> log_M_base, array<Type> mu, vector<Type> L, 
+  vector<int> mig_type, vector<Type> fracyr_SSB, matrix<Type> FAA, array<Type> log_M, array<Type> mu, vector<Type> L, 
   matrix<Type> mature, matrix<Type> waa_ssb, vector<Type> fracyr_seasons, int age_specific, int small_dim){
     */
   /* 
@@ -263,7 +262,7 @@ array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
          fracyr_SSB: n_stocks:  size of interval from beginning of season to time of spawning within that season
                 FAA: fishing mortality: n_fleets x n_ages
-         log_M_base: log M (density-independent components): n_stocks x n_regions x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_regions x n_regions array of movement matrices
                   L: n_regions. "extra" unobserved mortality
              mature: n_stocks x n_ages proportion mature at age
@@ -274,9 +273,9 @@ array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix
   */
  /*
 
-  int n_stocks = log_M_base.dim(0);
-  int n_regions = log_M_base.dim(1);
-  int n_ages = log_M_base.dim(3);
+  int n_stocks = log_M.dim(0);
+  int n_regions = log_M.dim(1);
+  int n_ages = log_M.dim(3);
   int n_fleets = FAA.rows();
   int n_seasons = can_move.dim(2);
   int P_dim = n_regions + n_fleets + 1;
@@ -294,10 +293,10 @@ array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix
       for(int t = 0; t < n_seasons; t++) {
         if(t == spawn_seasons(s)-1) {
           //P(0,t_spawn): PTM over entire year up to time of spawning
-          P_spawn = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M_base, mu, L);
+          P_spawn = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M, mu, L);
         }
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+        P_ya = P_ya * get_P(a, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       } 
       // SSB/R at year and age = prob alive to up to age a-1 x prob spawn at age a x waa x mature
       //should be n_regions x n_regions
@@ -313,10 +312,10 @@ array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix
     for(int t = 0; t < n_seasons; t++) {
       if(t == spawn_seasons(s)-1) {
         //P(0,t_spawn): PTM over entire year up to time of spawning
-        P_spawn = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M_base, mu, L);
+        P_spawn = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB(s), FAA, log_M, mu, L);
       }
       //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M_base, mu, L);
+      P_ya = P_ya * get_P(n_ages-1, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
     }
     matrix<Type> fundm(n_regions,n_regions);
     fundm.setZero();
@@ -349,7 +348,7 @@ array<Type> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix
 */
 template <class Type>
 array<Type> get_SPR_0(int y, vector<int> spawn_seasons, array<int> can_move, 
-  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> log_M_base, array<Type> mu, matrix<Type> L, 
+  vector<int> mig_type, matrix<Type> fracyr_SSB, array<Type> log_M, array<Type> mu, matrix<Type> L, 
   array<Type> mature, array<Type> waa, vector<int> waa_pointer_ssb, vector<Type> fracyr_seasons, int age_specific, int small_dim){
   /* 
     calculate unfished equilibrium spawning biomass per recruit (at age) by stock and region. If movement is set up approriately 
@@ -359,7 +358,7 @@ array<Type> get_SPR_0(int y, vector<int> spawn_seasons, array<int> can_move,
            can_move: n_stocks x ages x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
            mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
          fracyr_SSB: n_years x n_stocks:  size of interval from beginning of season to time of spawning within that season
-         log_M_base: log M (density-independent components): n_stocks x n_regions x ny x n_ages
+         log_M: log M (density-independent components): n_stocks x n_regions x ny x n_ages
                  mu: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions array of movement matrices
                   L: n_years_model x n_regions. "extra" unobserved mortality
              mature: n_stocks x n_years x n_ages proportion mature at age
@@ -379,7 +378,7 @@ array<Type> get_SPR_0(int y, vector<int> spawn_seasons, array<int> can_move,
   array<Type> FAA(1,y+1,n_seasons,n_ages);
   FAA.setZero();
 
-  array<Type> SPR_0 = get_SPR(y,spawn_seasons,fleet_regions,fleet_seasons, can_move,mig_type,fracyr_SSB,FAA,log_M_base,mu,L,mature,
+  array<Type> SPR_0 = get_SPR(y,spawn_seasons,fleet_regions,fleet_seasons, can_move,mig_type,fracyr_SSB,FAA,log_M,mu,L,mature,
     waa,waa_pointer_ssb, fracyr_seasons, age_specific, small_dim);
   
   return SPR_0;
@@ -388,7 +387,7 @@ array<Type> get_SPR_0(int y, vector<int> spawn_seasons, array<int> can_move,
 
 
 template <class Type>
-vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M_base, array<Type> FAA, vector<int> spawn_seasons,  
+vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, array<Type> FAA, vector<int> spawn_seasons,  
   vector<int> spawn_regions,
   vector<int> fleet_regions, 
   matrix<int> fleet_seasons,
@@ -406,31 +405,31 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M_
   int small_dim, int SPR_weight_type) {
   
   int n = 10;
-  int n_stocks = log_M_base.dim(0);
+  int n_stocks = log_M.dim(0);
   int n_fleets = FAA.dim(0);
   int n_regions = NAA.dim(1);
   int n_seasons = fleet_seasons.cols();
-  int n_ages = log_M_base.dim(4);
+  int n_ages = log_M.dim(4);
   matrix<Type> waa_ssb(n_stocks,n_ages);
   matrix<Type> waa_catch(n_fleets,n_ages);
   matrix<Type> sel(n_fleets, n_ages);
   array<Type> M(n_stocks,n_regions,n_ages);
-  array<Type> log_M_base_avg(n_stocks,n_regions,n_ages);
+  array<Type> log_M_avg(n_stocks,n_regions,n_ages);
   array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
   vector<Type> L_avg(n_regions);
   matrix<Type> mat(n_stocks, n_ages);
   vector<Type> ssbfrac(n_stocks), R(n_stocks);
 
   waa_ssb.setZero(); waa_catch.setZero(); sel.setZero(); M.setZero(); mu_avg.setZero(); L_avg.setZero(); 
-  mat.setZero(); R.setZero(); ssbfrac.setZero(); log_M_base_avg.setZero();
+  mat.setZero(); R.setZero(); ssbfrac.setZero(); log_M_avg.setZero();
   //get average inputs over specified years
   for(int y = 0; y < years_L.size(); y++) for(int i = 0; i < n_regions; i++) L_avg(i) += L(years_L(y),i)/years_L.size();
   for(int s = 0; s < n_stocks; s++) {
     for(int y = 0; y < years_R.size(); y++) R(s) += NAA(s,spawn_regions(s)-1,years_R(y),0)/years_R.size();
     for(int y = 0; y < years_mat.size(); y++) for(int a = 0; a < n_ages; a++) mat(s,a) += mature(s,years_mat(y),a)/years_mat.size();
     for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++) {
-      for(int y = 0; y < years_M.size(); y++) M(s,r,a) += exp(log_M_base(s,r,years_M(y),a))/years_M.size();
-      log_M_base_avg(s,r,a) = log(M(s,r,a)); //needed for SPR function
+      for(int y = 0; y < years_M.size(); y++) M(s,r,a) += exp(log_M(s,r,years_M(y),a))/years_M.size();
+      log_M_avg(s,r,a) = log(M(s,r,a)); //needed for SPR function
     }
     for(int y = 0; y < years_waa_ssb.size(); y++) {
       ssbfrac(s) += fracyr_SSB(s,years_waa_ssb(y))/years_waa_ssb.size();
@@ -461,7 +460,7 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M_
   sel = sel/sel(which_F_age(1)-1,which_F_age(0)-1);
   matrix<Type> FAA0(n_fleets,n_ages);
   FAA0.setZero();
-  array<Type> SPR0_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA0, log_M_base_avg, mu_avg, L_avg, 
+  array<Type> SPR0_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA0, log_M_avg, mu_avg, L_avg, 
     mat, waa_ssb, fracyr_seasons, 0, small_dim);
   Type SPR0 = 0;
   for(int s = 0; s < n_stocks; s++) SPR0 += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1); 
@@ -469,7 +468,7 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M_
   vector<Type> log_FXSPR_i(1), log_FXSPR_iter(n);
   log_FXSPR_iter(0) = log(F_init);
 
-  spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M_base_avg,
+  spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M_avg,
     mu_avg, L_avg, mat, waa_ssb, fracyr_seasons, SPR_weights, 0, small_dim);
   for(int i=0; i<n-1; i++) {
     log_FXSPR_i(0) = log_FXSPR_iter(i);
@@ -490,9 +489,9 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M_
   }
   for(int a = 0; a < n_ages; a++) log_FAA_XSPR(n_fleets*n_ages + a) = log(log_FAA_XSPR(n_fleets*n_ages + a)); //log it
 
-  array<Type> SPR_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA_XSPR, log_M_base_avg, mu_avg, L_avg, 
+  array<Type> SPR_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA_XSPR, log_M_avg, mu_avg, L_avg, 
     mat, waa_ssb, fracyr_seasons, 0, small_dim);
-  array<Type> YPR_all = get_YPR(fleet_regions, fleet_seasons, can_move, mig_type, FAA_XSPR, log_M_base_avg, mu_avg, L_avg, waa_catch, 
+  array<Type> YPR_all = get_YPR(fleet_regions, fleet_seasons, can_move, mig_type, FAA_XSPR, log_M_avg, mu_avg, L_avg, waa_catch, 
     fracyr_seasons, 0, small_dim); //n_stocks x n_regions x n_fleets (should be 0 for regions not fleet_regions(f)-1)
   //for each stock/fleet and also the weighted average/total
   vector<Type> log_SPR(n_stocks + 1), log_SPR0(n_stocks+1), log_Y_XSPR(n_fleets+1), log_SSB_XSPR(n_stocks+1); 

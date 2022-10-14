@@ -12,10 +12,10 @@ template <class Type>
 array<Type> get_nll_mu_prior(array<Type> mu_prior_re, array<Type> trans_mu, array<Type> trans_mu_prior_sigma, array<int> use_mu_prior, int mu_model){
   /* 
     get any nll components for priors/posteriors on mu parameters.
-               mu_prior_re: n_stocks x n_ages x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
+               mu_prior_re: n_stocks x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
                   trans_mu: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 (mean) movement parameters
-      trans_mu_prior_sigma: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 (mean) movement parameters
-              use_mu_prior: n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
+      trans_mu_prior_sigma: n_stocks x n_seasons x n_regions x n_regions-1 (mean) movement parameters
+              use_mu_prior: n_stocks x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
                   mu_model: see definitions at top of move.hpp.
   */
   int n_stocks = trans_mu.dim(0);
@@ -26,12 +26,12 @@ array<Type> get_nll_mu_prior(array<Type> mu_prior_re, array<Type> trans_mu, arra
   nll.setZero();
   if((mu_model == 1) | (mu_model == 2) | (mu_model == 3) | (mu_model == 4) ){
     for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr< n_regions-1; rr++){
-      if(use_mu_prior(0,0,t,r,rr)) nll(0,0,t,r,rr) -= dnorm(mu_prior_re(0,0,t,r,rr), trans_mu(0,0,t,r,rr), trans_mu_prior_sigma(0,0,t,r,rr),1);
+      if(use_mu_prior(0,t,r,rr)) nll(0,t,r,rr) -= dnorm(mu_prior_re(0,t,r,rr), trans_mu(0,0,t,r,rr), trans_mu_prior_sigma(0,t,r,rr),1);
     }
   }
   if((mu_model == 5) | (mu_model == 6) | (mu_model == 7) | (mu_model == 8)){
     for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr< n_regions-1; rr++){
-      if(use_mu_prior(s,0,t,r,rr)) nll(s,0,t,r,rr) -= dnorm(mu_prior_re(s,0,t,r,rr), trans_mu(s,0,t,r,rr), trans_mu_prior_sigma(s,0,t,r,rr),1);
+      if(use_mu_prior(s,t,r,rr)) nll(s,t,r,rr) -= dnorm(mu_prior_re(s,t,r,rr), trans_mu(s,0,t,r,rr), trans_mu_prior_sigma(s,t,r,rr),1);
     }
   }
   return(nll);
@@ -42,29 +42,30 @@ template <class Type>
 array<Type> simulate_mu_prior_re(array<Type> mu_prior_re, array<Type> trans_mu, array<Type> trans_mu_prior_sigma, array<int> use_mu_prior, int mu_model){
   /* 
     simulate and RE for priors on mu parameters.
-               mu_prior_re: n_stocks x n_ages x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
+               mu_prior_re: n_stocks x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
                   trans_mu: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 (mean) movement parameters
-      trans_mu_prior_sigma: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 (mean) movement parameters
-              use_mu_prior: n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
+      trans_mu_prior_sigma: n_stocks x n_seasons x n_regions x n_regions-1 (mean) movement parameters
+              use_mu_prior: n_stocks x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
                   mu_model: see definitions at top of move.hpp.
   */
   int n_stocks = trans_mu.dim(0);
   int n_ages = trans_mu.dim(1);
   int n_seasons = trans_mu.dim(2);
   int n_regions = trans_mu.dim(3);
-  array<Type> sim_mu_prior_re(n_stocks,n_ages, n_seasons, n_regions, n_regions-1);
+  array<Type> sim_mu_prior_re(n_stocks, n_seasons, n_regions, n_regions-1);
   sim_mu_prior_re.setZero();
   if((mu_model == 1) | (mu_model == 2) | (mu_model == 3) | (mu_model == 4) ){
     for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr< n_regions-1; rr++){
-      if(use_mu_prior(0,0,t,r,rr)==1) {
-        sim_mu_prior_re(0,0,t,r,rr) = rnorm(trans_mu(0,0,t,r,rr), trans_mu_prior_sigma(0,0,t,r,rr));
+      if(use_mu_prior(0,t,r,rr)==1) {
+        sim_mu_prior_re(0,t,r,rr) = rnorm(trans_mu(0,0,t,r,rr), trans_mu_prior_sigma(0,t,r,rr));
+        if(n_stocks>1) for(int s = 1; s < n_stocks; s++) sim_mu_prior_re(s,t,r,rr) = sim_mu_prior_re(0,t,r,rr);
       }
     }
   }
   if((mu_model == 5) | (mu_model == 6) | (mu_model == 7) | (mu_model == 8)){
     for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr< n_regions-1; rr++){
-      if(use_mu_prior(s,0,t,r,rr)){
-        sim_mu_prior_re(s,0,t,r,rr) = rnorm(trans_mu(s,0,t,r,rr), trans_mu_prior_sigma(s,0,t,r,rr));
+      if(use_mu_prior(s,t,r,rr)){
+        sim_mu_prior_re(s,t,r,rr) = rnorm(trans_mu(s,0,t,r,rr), trans_mu_prior_sigma(s,t,r,rr));
       }
     }
   }
@@ -76,7 +77,7 @@ template <class Type>
 array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, int mu_model){
   /* 
     get any nll components for time/age varying RE for movement parameters.
-      mu_repars: n_stocks x n_ages x n_seasons x n_regions x 4. parameters for distributions of random effects (sig, rho_a, rho_y, rho_r)
+      mu_repars: n_stocks x n_seasons x n_regions x 3. parameters for distributions of random effects (sig, rho_a, rho_y)
           mu_re: n_stocks x n_ages x n_seasons x n_y x n_regions x n_regions-1. RE for movement.
        mu_model: see definitions at top of move.hpp.
   */
@@ -93,9 +94,9 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, int mu_model){
     if(mu_model > 5) ns = n_stocks; 
     if((mu_model == 2) | (mu_model == 6)){ // age random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++){
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_a = geninvlogit(mu_repars(s,0,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type Sigma_MU = sigma_mu / pow((1-pow(rho_mu_a,2)),0.5); //marginal sd
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_a = geninvlogit(mu_repars(s,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_a,2)),-0.5); //marginal sd
         for(int rr = 0; rr < n_regions-1; rr++){
           vector<Type> mu_re_a(n_ages);
           for(int a = 0; a < n_ages; a++) mu_re_a(a) = mu_re(s,a,t,0,r,rr);
@@ -105,9 +106,9 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, int mu_model){
     }
     if((mu_model == 3) | (mu_model == 7)){ // year random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_y = geninvlogit(mu_repars(s,0,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type Sigma_MU = sigma_mu / pow((1-pow(rho_mu_y,2)),0.5); //marginal sd
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_y = geninvlogit(mu_repars(s,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2)),-0.5); //marginal sd
         for(int rr = 0; rr < n_regions-1; rr++){
           vector<Type> mu_re_y(n_y);
           for(int y = 0; y< n_y; y++) mu_re_y(y) = mu_re(s,0,t,y,r,rr);
@@ -117,9 +118,9 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, int mu_model){
     }
     if((mu_model == 4) | (mu_model == 8)){ // age and year random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_a = geninvlogit(mu_repars(s,0,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type rho_mu_y = geninvlogit(mu_repars(s,0,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_a = geninvlogit(mu_repars(s,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type rho_mu_y = geninvlogit(mu_repars(s,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
         Type Sigma_MU = sigma_mu * pow(((1-pow(rho_mu_y,2))*(1-pow(rho_mu_a,2))),-0.5); //marginal sd
         for(int rr = 0; rr < n_regions-1; rr++){
           array<Type> mu_re_ya(n_y,n_ages);
@@ -137,7 +138,7 @@ template <class Type>
 array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, int mu_model){
   /* 
     simulate andy time/age varying RE for movement parameters.
-      mu_repars: n_stocks x n_ages x n_seasons x n_regions x 4. parameters for distributions of random effects (sig, rho_a, rho_y, rho_r)
+      mu_repars: n_stocks x n_seasons x n_regions x 3. parameters for distributions of random effects (sig, rho_a, rho_y)
           mu_re: n_stocks x n_ages x n_seasons x n_y x n_regions x n_regions-1. RE for movement.
        mu_model: see definitions at top of move.hpp.
   */
@@ -154,9 +155,9 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, int mu_mode
     if(mu_model > 5) ns = n_stocks; 
     if((mu_model == 2) | (mu_model == 6)){ // age random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++){
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_a = geninvlogit(mu_repars(s,0,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type Sigma_MU = pow(pow(sigma_mu,2) / (1-pow(rho_mu_a,2)),0.5); //marginal sd
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_a = geninvlogit(mu_repars(s,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type Sigma_MU = sigma_mu * pow(1-pow(rho_mu_a,2),-0.5); //marginal sd
         for(int rr = 0; rr < n_regions-1; rr++){
           vector<Type> mu_re_a(n_ages);
           AR1(rho_mu_a).simulate(mu_re_a);
@@ -166,9 +167,9 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, int mu_mode
     }
     if((mu_model == 3) | (mu_model == 7)){ // year random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_y = geninvlogit(mu_repars(s,0,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type Sigma_MU = pow(pow(sigma_mu,2) / (1-pow(rho_mu_y,2)),0.5); //marginal sd
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_y = geninvlogit(mu_repars(s,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type Sigma_MU = sigma_mu * pow(1-pow(rho_mu_y,2),-0.5); //marginal sd
         for(int rr = 0; rr < n_regions-1; rr++){
           vector<Type> mu_re_y(n_y);
           AR1(rho_mu_y).simulate(mu_re_y);
@@ -178,11 +179,11 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, int mu_mode
     }
     if((mu_model == 4) | (mu_model == 8)){ // age and year random effects
       for(int s = 0; s < ns; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
-        Type sigma_mu = exp(mu_repars(s,0,t,r,0));
-        Type rho_mu_a = geninvlogit(mu_repars(s,0,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type rho_mu_y = geninvlogit(mu_repars(s,0,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,0,t,r,2));
-        Type Sigma_MU = pow(pow(sigma_mu,2) / (1-pow(rho_mu_y,2)),0.5); //marginal sd
-        Sigma_MU = pow(pow(sigma_mu,2) / ((1-pow(rho_mu_y,2))*(1-pow(rho_mu_a,2))),0.5);//marginal variance
+        Type sigma_mu = exp(mu_repars(s,t,r,0));
+        Type rho_mu_a = geninvlogit(mu_repars(s,t,r,1),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        Type rho_mu_y = geninvlogit(mu_repars(s,t,r,2),Type(-1),Type(1),Type(1));//rho_trans(mu_repars(s,t,r,2));
+        //Type Sigma_MU = pow(pow(sigma_mu,2) / (1-pow(rho_mu_y,2)),0.5); //marginal sd
+        Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2))*(1-pow(rho_mu_a,2)),-0.5);//marginal variance
         for(int rr = 0; rr < n_regions-1; rr++){
           array<Type> mu_re_ya(n_y,n_ages);
           SEPARABLE(AR1(rho_mu_a),AR1(rho_mu_y)).simulate(mu_re_ya);
@@ -235,8 +236,8 @@ array<Type> get_trans_mu_base(array<Type> trans_mu, array<Type>mu_re, array<Type
     currently continues random processes in any projection years!
           trans_mu: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 (mean) movement parameters
              mu_re: n_stocks x n_ages x n_seasons x n_y x n_regions x n_regions-1. RE for movement.
-       mu_prior_re: n_stocks x n_ages x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
-      use_mu_prior: n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
+       mu_prior_re: n_stocks x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
+      use_mu_prior: n_stocks x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
           mu_model: see definitions at top of move.hpp.
            Ecov_lm: (n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov) linear predictor for any Ecov effects on trans_mu_base
           use_Ecov: n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 values indicating to use effects on migration for each stock for each region (less 1).
@@ -252,8 +253,8 @@ array<Type> get_trans_mu_base(array<Type> trans_mu, array<Type>mu_re, array<Type
   
   if(n_regions>1) for(int s = 0; s< n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int y = 0; y < ny; y++){
     for(int r = 0; r< n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++) {
-      if(use_mu_prior(s,a,t,r,rr)==1) {
-        trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(s,a,t,r,rr);
+      if(use_mu_prior(s,t,r,rr)==1) {
+        trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(s,t,r,rr);
       } else {
         trans_mu_base(s,a,t,y,r,rr) += trans_mu(s,a,t,r,rr);
       }

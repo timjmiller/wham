@@ -3,6 +3,9 @@ set_proj = function(input, proj.opts = NULL)
 	data = input$data
 	if(is.null(proj.opts))
 	{
+  	input$par$logR_proj <- 0 # will be set by prepare_projection if SCAA
+  	input$map$logR_proj <- factor(NA)
+  
 	  data$do_proj <- 0
 	  data$n_years_proj <- 0
 	  data$n_years_proj_Ecov <- 0

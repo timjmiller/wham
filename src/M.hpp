@@ -186,7 +186,7 @@ matrix<Type> simulate_log_b(int log_b_model, matrix<Type>log_b, int bias_correct
 //done
 
 template<class Type>
-array<Type> get_log_M_base(array<Type>M_re, vector<int> M_model, int n_years_model, array<Type> M_a, matrix<Type> log_b, array<Type> waa, 
+array<Type> get_log_M(array<Type>M_re, vector<int> M_model, int n_years_model, array<Type> M_a, matrix<Type> log_b, array<Type> waa, 
   vector<int> waa_pointer, array<Type> Ecov_lm, array<int> use_Ecov, int do_proj, int proj_M_opt, vector<int> avg_years_ind){
   /* 
     provides log_M (base) components that are density-independent.
@@ -198,7 +198,7 @@ array<Type> get_log_M_base(array<Type>M_re, vector<int> M_model, int n_years_mod
               log_b: random effect parameters for posterior log_b (M_model = 3/6 M = a * W ^b) for each stock,region
                 waa: (at least(n_fleets + n_indices + n_stocks + 1(totcatch)) x n_years x n_ages_model) weight at age
         waa_pointer: n_stocks, which index in first dimension to use if M_model = 3
-            Ecov_lm: (n_stocks, n_regions, n_years_pop, n_Ecov) linear predictor for any Ecov effects on log_M_base
+            Ecov_lm: (n_stocks, n_regions, n_years_pop, n_Ecov) linear predictor for any Ecov effects on log_M
            use_Ecov: n_Ecov x n_stocks x n_ages x n_regions: 0/1 values indicating to use effects on natural mortality at age.
             do_proj: 0/1 whether projection years are being included in the model
          proj_M_opt: 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
@@ -208,21 +208,18 @@ array<Type> get_log_M_base(array<Type>M_re, vector<int> M_model, int n_years_mod
   int n_regions = M_re.dim(1);
   int n_ages = M_re.dim(3);
   int n_years = M_re.dim(2);
-  array<Type> log_M_base(n_stocks,n_regions,n_years,n_ages);
-  log_M_base.setZero();
+  array<Type> log_M(n_stocks,n_regions,n_years,n_ages);
+  log_M.setZero();
   for(int r = 0; r< n_regions; r++) for(int s = 0; s< n_stocks; s++){
-    if(M_model(r) == 2){ // age-specific M
-      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a);   
-    } else {
-      if(M_model(r) == 1){ // constant M
-        for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a);
-      } else { // M_model = 3, M is allometric function of weight
-        for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a) - exp(log_b(s,r)) * log(waa(waa_pointer(s)-1,y,a));
-      }
+    if(M_model(r) != 3 & M_model(r) != 6){ // age-specific or constant M (maybe by stock)
+      //for M_model = 1,4 (constant), M_a should be mapped properly
+      for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a);   
+    } else { // M_model = 3 or 6, M is allometric function of weight
+        for(int a = 0; a < n_ages; a++) for(int y = 0; y < n_years_model; y++) log_M(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a) - exp(log_b(s,r)) * log(waa(waa_pointer(s)-1,y,a));
     }
     // add ecov effect on M (by year, shared across ages)
     for(int i=0; i < use_Ecov.dim(0); i++) for(int a = 0; a < n_ages; a++) {
-      if(use_Ecov(i,s,a,r)) for(int y = 0; y < n_years_model; y++) log_M_base(s,r,y,a) += Ecov_lm(s,r,a,y,i);
+      if(use_Ecov(i,s,a,r)) for(int y = 0; y < n_years_model; y++) log_M(s,r,y,a) += Ecov_lm(s,r,a,y,i);
     }
     
     // add to MAA in projection years
@@ -232,27 +229,23 @@ array<Type> get_log_M_base(array<Type>M_re, vector<int> M_model, int n_years_mod
         matrix<Type> MAA_toavg(n_toavg,n_ages);
         for(int a = 0; a < n_ages; a++){
           for(int i = 0; i < n_toavg; i++){
-            MAA_toavg(i,a) = exp(log_M_base(s,r,avg_years_ind(i),a));
+            MAA_toavg(i,a) = exp(log_M(s,r,avg_years_ind(i),a));
           }
         }
         vector<Type> MAA_proj = MAA_toavg.colwise().mean();
         for(int y = n_years_model; y < n_years; y++) for(int a = 0; a < n_ages; a++) {
-          log_M_base(s,r,y,a) = log(MAA_proj(a));
+          log_M(s,r,y,a) = log(MAA_proj(a));
           //MAA.row(y) = MAA_proj;
         }
       } else { // proj_M_opt == 1, use M_re and/or ecov_lm in projection years
-        if(M_model(r) == 2){ // age-specific M
-          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years; y++) log_M_base(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a);   
-        } else {
-          if(M_model(r) == 1){ // constant M
-            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a);
-          } else { // M_model = 3, M is allometric function of weight
-            for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years; y++) log_M_base(s,r,y,a) = M_a(s,r,0) + M_re(s,r,y,a) - exp(log_b(s,r)) * log(waa(waa_pointer(s)-1,y,a));
-          }
+        if(M_model(r) != 3 & M_model(r) != 6){ // age-specific or constant M (maybe by stock)
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years; y++) log_M(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a);   
+        } else { // M_model = 3, M is allometric function of weight
+          for(int a = 0; a < n_ages; a++) for(int y = n_years_model; y < n_years; y++) log_M(s,r,y,a) = M_a(s,r,a) + M_re(s,r,y,a) - exp(log_b(s,r)) * log(waa(waa_pointer(s)-1,y,a));
         }
       }
     }
   }
-  return log_M_base; 
+  return log_M; 
 }
 //done
