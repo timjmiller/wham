@@ -553,7 +553,7 @@ plot.ll.table.fn <- function(mod,plot.colors){
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
     "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie")
   obs.dists[paste0("Fleet ", 1:n_fleets, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
-  obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
+  obs.dists[paste0("Index ", 1:n_indices, " Age Comp")] = paste0("x ~ ", acm[mod$env$data$age_comp_model_indices])
 
   proc.lls = lls[names(lls) %in% c("nll_M", "nll_NAA", "nll_recruit", "lprior_b")]
   names(proc.lls) = c("M", "NAA", "recruit", "W_b_M")[match(names(proc.lls),c("nll_M", "nll_NAA", "nll_recruit", "lprior_b"))]
