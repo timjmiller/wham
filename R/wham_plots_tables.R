@@ -1117,11 +1117,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
   dat = mod$env$data
-  if(dat$n_fleets == 1 & dat$do_proj == 1){ # projected catch isn't by fleet, only add to plot if n.fleets = 1
-    years_full = mod$years_full
-  } else {
-    years_full = years
-  }
+  years_full = mod$years_full
   pred_log_catch = mod$rep$pred_log_catch
   pred_catch = exp(pred_log_catch)
   sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
