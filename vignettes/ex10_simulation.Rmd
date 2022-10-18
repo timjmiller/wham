@@ -142,7 +142,7 @@ lines(mod$years, self_sim_fit$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png){ width=80% }
+![](https://github.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/self_fit_1_ssb.png){ width=80% }
 
 Note that we just have to over-write the data component of the input with the values produced by `om$simulate(complete=TRUE)`. The call of `sim_fn` will fit the same model assumed to simulate the data. `fit_wham` saves the input used to fit the model and `om$simulate(complete=TRUE)` will provide all model output provided by `REPORT` calls in the cpp file. This includes the true SSB for the simulated data which can be compared with the values estimated from the simulated data.
 
@@ -195,7 +195,7 @@ abline(h = 0, lty = 2)
 dev.off()
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/ssb_rel_bias.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/ssb_rel_bias.png){ width=80% }
 
 # 3. Fitting a model different from the operating model
 
@@ -248,7 +248,7 @@ plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3a.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_3a.png){ width=80% }
 
 
 
@@ -294,7 +294,7 @@ plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3b.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_3b.png){ width=80% }
 
 Note that we could make the assumed effective sample size only incorrect for some subset of the fleets and indices. In the `sim_fn` function here we could have also just supplied all of `om_data` to `em_input$data` and then changed the Neff appropriately rather than just change the observations. Also, note that changing the Neff will only affect fits to those indices and fleets where the multinomial age comp assumption is made and where age composition observations are available. 
 
@@ -357,7 +357,7 @@ plot(om_ss$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(om_ss$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3c.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_3c.png){ width=80% }
 
 
 The scale of the population estimates from the recruitment-only model is similar to the true value, but it does not have sufficient flexibility to capture the inter-annual variability in the population size.
@@ -403,7 +403,7 @@ plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_1_3d.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_1_3d.png){ width=80% }
 
 ```{r, eval = FALSE}
 plot(mod$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year")
@@ -415,7 +415,7 @@ plot(mod$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l', ylab
 lines(mod$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR), lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_2_3d.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/blob/vignettes/ex10_plots/sim_fit_2_3d.png){ width=80% }
 
 Lower SSB and stock status are estimated if logistic selectivity is assumed.
 
@@ -717,7 +717,7 @@ png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_4d.png"))
 plot(stock_om$years, sim_q$q[,1], type = 'l', ylab = "Catchability", xlab = "Year")
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4d.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_4d.png){ width=80% }
 
 ## 4e. Setting effects of Environmental covariates.
 
@@ -805,7 +805,7 @@ png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_plot_2_4e.png
 plot(stock_om$years, sim_Ecov$NAA[,1], type = 'l', ylab = "Recruitment", xlab = "Year")
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_2_4e.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_plot_2_4e.png){ width=80% }
 
 
 See the [catchability vignette](https://github.com/timjmiller/wham/blob/devel/vignettes/ex11_catchability.Rmd) for an example of simulating effects of multiple covariates on the population. Also see the [CPI and recruitment vignette](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) for configuring effects on recruitment when a stock-recruit function is assumed. 
@@ -850,7 +850,7 @@ plot(stock_om$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(stock_om$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_1_4f.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_1_4f.png){ width=80% }
 
 ```{r, eval = FALSE}
 plot(stock_om$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year")
@@ -862,7 +862,7 @@ plot(stock_om$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l',
 lines(stock_om$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR), lty = 2, col = 'red')
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_2_4f.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/sim_fit_2_4f.png){ width=80% }
 
 Both SSB and stock status are biased high when M is specified too large.
 
@@ -1041,4 +1041,4 @@ plot(stock_om$years, stock_om$rep$SSB, type = "l", ylim = c(0,400000), ylab = "S
 lines(stock_om$years, looped_rep$SSB, col = "red")
 dev.off()
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/looped_rep_5.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/blob/devel/vignettes/ex10_plots/looped_rep_5.png){ width=80% }
