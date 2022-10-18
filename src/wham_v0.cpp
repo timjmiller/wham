@@ -1267,7 +1267,7 @@ Type objective_function<Type>::operator() ()
 				}				
 
 			}
-			
+			nll += nll_waa.sum();	
 		} 
 	  }
   }
