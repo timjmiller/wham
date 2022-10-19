@@ -865,7 +865,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to WAA parameters in projection years
-  if((do_proj == 1) & (waa_type == 4)){ 
+  if((do_proj == 1) & (waa_type == 3)){ 
 	if(proj_WAA_opt(0) == 2){
 	  matrix<Type> WAA_toavg(n_toavg,n_ages);
 	  for(int a = 0; a < n_ages; a++){
@@ -988,7 +988,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to LW parameters in projection years
-  if((do_proj == 1) & (waa_type > 1)){ 
+  if((do_proj == 1) & (waa_type == 2)){ 
   	for(int j = 0; j < n_LW_par; j++) { 
 	  if(proj_LW_opt(j) == 2){
 		  matrix<Type> LW_toavg(n_toavg,n_ages);
@@ -1104,65 +1104,7 @@ Type objective_function<Type>::operator() ()
 		}
 	}
   } else {
-	  if(waa_type == 2) { // waa not provided, so use LW parameters, waa array will be replaced by pred_waa
-		  for(int y = 0; y < n_years_model + n_years_proj; y++) {
-			int yuse = y;
-			int y_1 = y + 1;
-			if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
-			if(y == (n_years_model + n_years_proj - 1)) y_1 = y;
-			
-			// For Jan-1
-			for(int a = 0; a < n_ages; a++) { 
-				sum_wt = 0;
-				for(int l = 0; l < n_lengths; l++) {
-					watl(y,l) = LW_par(y,a,0)*pow(lengths(l), LW_par(y,a,1));
-					if(phi_matrix_info == 0) sum_wt += phi_mat(y,l,a)*watl(y,l);
-					else sum_wt += phi_matrix_input(waa_pointer_jan1-1,l,a)*watl(y,l); 
-				}
-				pred_waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st
-			}
-			
-			// For SSB
-			fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_SSB(yuse), growth_model);
-			for(int a = 0; a < n_ages; a++) { 
-				sum_wt_ssb = 0;
-				for(int l = 0; l < n_lengths; l++) {
-					if(phi_matrix_info == 0) sum_wt_ssb += fracyr_phi_mat(l,a)*watl(y,l);
-					else sum_wt_ssb += phi_matrix_input(waa_pointer_ssb-1,l,a)*watl(y,l); 
-				}
-				pred_waa(waa_pointer_ssb - 1,y,a) = sum_wt_ssb; // SSB
-			}
-
-			// For fleets
-			for(int f = 0; f < n_fleets; f++) {
-				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(yuse,f), growth_model);
-				for(int a = 0; a < n_ages; a++) { 
-					sum_wt_fleet = 0;
-					for(int l = 0; l < n_lengths; l++) {
-						if(phi_matrix_info == 0) sum_wt_fleet += fracyr_phi_mat(l,a)*watl(y,l);
-						else sum_wt_fleet += phi_matrix_input(waa_pointer_fleets(f)-1,l,a)*watl(y,l);
-					}
-					pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
-					pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch, it is using the last fracyr_fleets
-				}
-			}
-			
-			// For indices
-			for(int i = 0; i < n_indices; i++) {
-				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(yuse,i), growth_model);
-				for(int a = 0; a < n_ages; a++) { 
-					sum_wt_index = 0;
-					for(int l = 0; l < n_lengths; l++) {
-						if(phi_matrix_info == 0) sum_wt_index += fracyr_phi_mat(l,a)*watl(y,l);
-						else sum_wt_index += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*watl(y,l);
-					}
-					pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-				}
-			}
-			
-		  }
-	  } else { // waa provided and LW parameters used, likelihood function added
-		if(waa_type == 3) {
+		if(waa_type == 2) {
 			  for(int y = 0; y < n_years_model + n_years_proj; y++) { // 
 				int yuse = y;
 				int y_1 = y + 1;
@@ -1227,7 +1169,7 @@ Type objective_function<Type>::operator() ()
 			  }  // loop only for year_model
 			  nll += nll_waa.sum();	
 		} else {
-			// waa_type == 4
+			// waa_type == 3
 			vector<Type> fracyr_WAA(n_ages);
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				int yuse = y;
@@ -1269,7 +1211,6 @@ Type objective_function<Type>::operator() ()
 			}
 			nll += nll_waa.sum();	
 		} 
-	  }
   }
   REPORT(pred_waa); // print predicted waa matrix	  
   REPORT(nll_waa);

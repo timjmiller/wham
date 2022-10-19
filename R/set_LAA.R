@@ -18,7 +18,7 @@ set_LAA = function(input, LAA)
   LAA_ini = log( 100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)) )
   if(!is.null(LAA)) {
     LAA_ini = log(LAA$LAA_vals)
-    if(!is.null(LAA$LAA_est)) data$LAA_est[LAA$LAA_est] = 1
+    if(!is.null(LAA$est_pars)) data$LAA_est[LAA$est_pars] = 1
     if(!is.null(LAA$re))  {
       if(!(LAA$re %in% c("none","iid","iid_a","ar1_a","2dar1"))) stop("LAA$re must be one of the following: 'none','iid','iid_a','ar1_a','2dar1'")
       data$LAA_re_model <- match(LAA$re, c("none","iid","iid_a","ar1_a","2dar1")) # Respect this order to create array later

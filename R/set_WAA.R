@@ -76,7 +76,7 @@ set_WAA = function(input, waa_opts = NULL, WAA)
   WAA_ini = log( 2e-06*(100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)))^3 )
   if(!is.null(WAA)) {
     WAA_ini = log(WAA$WAA_vals)
-    if(!is.null(WAA$WAA_est)) data$WAA_est[WAA$WAA_est] = 1
+    if(!is.null(WAA$est_pars)) data$WAA_est[WAA$est_pars] = 1
     if(!is.null(WAA$re))  {
       if(!(WAA$re %in% c("none","iid","iid_a","ar1_a","2dar1"))) stop("WAA$re must be one of the following: 'none','iid','iid_a','ar1_a','2dar1'")
       data$WAA_re_model <- match(WAA$re, c("none","iid","iid_a","ar1_a","2dar1")) # Respect this order to create array later
