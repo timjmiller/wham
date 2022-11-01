@@ -18,7 +18,7 @@ set_osa_obs = function(input)
     x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
     tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
     tmp <- tmp[complete.cases(tmp),]
-    tmp$age <- NA
+    tmp$bin <- NA
     tmp$type <- "Ecov"
     obs <- rbind(obs, tmp[, obs.colnames])
   }

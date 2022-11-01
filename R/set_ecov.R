@@ -259,8 +259,9 @@ set_ecov = function(input, ecov)
         if(!is.list(ecov$indices)) stop("ecov$indices must be a specified as a list (length = n_Ecov) of vectors of any indices each Ecov affects") 
         data$Ecov_where[i,2 + ecov$indices[[i]]] = 1 
       }
-      if(any(ecov$where[[i]] == "growth")) data$Ecov_where[i,n_effects-1] = 1 
-      if(any(ecov$where[[i]] == "LW")) data$Ecov_where[i,n_effects] = 1 
+      if(any(ecov$where[[i]] == "growth")) data$Ecov_where[i,n_effects-2] = 1 
+      if(any(ecov$where[[i]] == "LW")) data$Ecov_where[i,n_effects-1] = 1 
+      if(any(ecov$where[[i]] == "WAA")) data$Ecov_where[i,n_effects] = 1 
     }
     #data$Ecov_where <- sapply(ecov$where, match, c('none','recruit','M','q')) - 1
 

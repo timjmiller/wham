@@ -846,8 +846,8 @@ Type objective_function<Type>::operator() ()
 		if((Ecov_where(i,n_effects-3) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
-					if(growth_model == 1) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-2,y,0));
-					if(growth_model == 2) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-2,y,a));
+					if(growth_model == 1) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-3,y,0));
+					if(growth_model == 2) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-3,y,a));
 				}
 			}
 		}
@@ -891,7 +891,7 @@ Type objective_function<Type>::operator() ()
 		if(Ecov_where(i,n_effects-1) == 1) {  // CHECK: for WAA?
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
-					WAA_par(y,a) *= exp(Ecov_lm(i,n_effects-2,y,a));
+					WAA_par(y,a) *= exp(Ecov_lm(i,n_effects-1,y,a));
 				}
 			}
 		}
@@ -1019,7 +1019,7 @@ Type objective_function<Type>::operator() ()
 		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex-1) == j)) {  // for LW
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
-					LW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-1,y,0));
+					LW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-2,y,0));
 				}
 			}
 		}
