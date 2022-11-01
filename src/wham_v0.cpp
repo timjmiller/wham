@@ -1400,6 +1400,31 @@ Type objective_function<Type>::operator() ()
     }
   }
   
+  // Replace fill selAA out using selAL when selex-at-age is used: TODO
+/*   for(int b = 0; b < n_selblocks; b++) {
+	  if(selblock_models(b) < 6) { // for age models
+		  selAA(b) = selAL(b);  // same as calculated in selAL
+	  } else {
+		  // Transform selex-at-len to selex-at-age, this should be time specific:
+		  for(int i = 0; i < n_indices; i++) {
+			matrix<Type> matemp(n_years_model, n_ages);
+			  for(int y = 0; y < n_years_model; y++){
+				  int y_1 = y + 1;
+				  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(y,i), growth_model);
+				  for(int a = 0; a < n_ages; a++) {
+					Type sumSelex = 0.0;
+					  for(int l = 0; l < n_lengths; l++) {
+						if(phi_matrix_info == 0) sumSelex += fracyr_phi_mat(l,a)*selAL(b)(y,l);
+						else sumSelex += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*selAL(b)(y,l);
+					  }
+					matemp(y,a) = sumSelex;
+				  }
+				}
+			}
+		  selAA(b) = matemp;
+	  }
+  } */
+  
   // Transform selex-at-len to selex-at-age:
   for(int b = 0; b < n_selblocks; b++) {
 	  if(selblock_models(b) < 6) { // for age models

@@ -17,14 +17,14 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 	  data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets) # for NLL 
 	  data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices) # for NLL
 	} else {
-    	if(is.null(waa_opts$waa)){
+    	if(is.null(waa_opts[["waa"]])){
 	    	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
 		    W = rep(exp(-11)*L^3, each = data$n_years_model)
-			dim_WAA = c(data$n_fleets + data$n_indices + 2, data$n_years_model, data$n_ages)
-			data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
-			data$waa_type = 2 # 2 = waa info not provided. use LW
-			warning("Empirical weight-at-age not provided, so using L-W parameters (waa_type = 2)")
-			data$waa_cv = array(0, dim = dim(data$waa))		
+				dim_WAA = c(data$n_fleets + data$n_indices + 2, data$n_years_model, data$n_ages)
+				data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
+				data$waa_type = 2 # 2 = waa info not provided. use LW
+				warning("Empirical weight-at-age not provided, so using L-W parameters (waa_type = 2)")
+				data$waa_cv = array(0, dim = dim(data$waa))		
 	  		data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
 	  		data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 		} else {

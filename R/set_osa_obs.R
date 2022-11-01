@@ -1,6 +1,8 @@
 set_osa_obs = function(input)
 {
   data = input$data
+  par = input$par
+  map = input$map
 
   obs.colnames <- c("year","fleet","bin","type","val") # change age -> bin
   obs <- data.frame(matrix(ncol = length(obs.colnames), nrow = 0))
@@ -16,14 +18,51 @@ set_osa_obs = function(input)
     x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
     tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
     tmp <- tmp[complete.cases(tmp),]
-    tmp$bin <- NA
+    tmp$age <- NA
     tmp$type <- "Ecov"
     obs <- rbind(obs, tmp[, obs.colnames])
   }
 
-
-  #x <- data.frame(NA,nrow = data$n_years_model, ncol = data$n_indices)
-  #x$year <- 1:data$n_years_indices # code assumes you have index and catch in all years - this will not work if we extend catch to 1930s
+  #find out if there are any age-specific selectivity parameters set to 0 and not estimated
+  #if the selblock is used, then we will reduce the observation vector to omit these ages. 
+  #an OSA residual for ages with selectivity assumed to be zero will be useless and causes estimation problems with conditional construction of 
+  #age comp likelihoods.
+  ind <- which(data$selblock_models == 1) #age-specific
+  ages_omit <- lapply(1:data$n_selblocks, function(x) integer(0))
+  if(length(ind)){ #some
+    if(is.null(map$logit_selpars)) {
+      warning("input$map$logit_selapars has not been specified. This will only work for simulation.")
+    } else {
+      lsp_map <- matrix(as.integer(map$logit_selpars),nrow = data$n_selblocks, ncol = data$n_ages+20)
+      for(i in ind){
+        age_pars <- par$logit_selpars[i,1:data$n_ages]  
+        age_map <- lsp_map[i,1:data$n_ages]
+        ages_omit[[i]] <- which(age_pars == -Inf & is.na(age_map)) #if length then observations for these ages will be omitted.
+        if(length(ages_omit[[i]])){
+          if(i %in% data$selblock_pointer_indices) for(j in 1:data$n_indices){ #some indices affected
+            bad_year = which(data$selblock_pointer_indices[,j] == i & data$use_index_paa[,j] == 1)
+            if(length(bad_year)){
+              cat(paste0(
+                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ","), 
+                " fixed at 0 and is used by index", j, "\n",
+                " in years ", paste0(input$years[bad_year], collapse = ","), ".\n", 
+                "Observations at these ages will be omitted and remaining observations will be rescaled.\n\n"))
+            }
+          }
+          if(i %in% data$selblock_pointer_fleets) for(j in 1:data$n_fleets){ #some fleets affected
+            bad_year = which(data$selblock_pointer_fleets[,j] == i & data$use_catch_paa[,j] == 1)
+            if(length(bad_year)){
+              cat(paste0(
+                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ","), 
+                " fixed at 0 and is used by fleet", j, "\n",
+                " in years ", paste0(input$years[bad_year], collapse = ","), ".\n", 
+                "Observations at these ages will be omitted and remaining observations will be rescaled.\n\n"))
+            }
+          }
+        }
+      }
+    }
+  }
 
   #step through time adding data
   for(y in 1:data$n_years_model){
@@ -67,16 +106,17 @@ set_osa_obs = function(input)
       x <- data$index_paa[i,,]
       x[which(data$use_index_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
       indices = paste0("index_", 1:data$n_indices)
-      if(data$use_index_paa[y,i]!=0) 
+      if(data$use_index_paa[y,i]==1) 
       {
         obs_y = x[y,]
+        tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
         #multinom, D-M, mvtweedie
-        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]											  
-        res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
+        res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
         obs_y = res[[1]]
-        if(data$age_comp_model_indices[i] %in% 3:7) {
-          ind = res[[2]]
-        } else ind = 1:data$n_ages
+        ind = res[[2]]
+        #multinom, D-M, mvtweedie
+        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]
+
         if(length(ind)) {
           tmp = data.frame(year = y, fleet = indices[i], bin = (1:data$n_ages)[ind], type = 'indexpaa', val = obs_y[ind])
           #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
@@ -94,18 +134,18 @@ set_osa_obs = function(input)
       x <- data$index_pal[i,,]
       x[which(data$use_index_pal[,i]==0),] <- NA # only include catch data to fit in obsvec
       indices = paste0("index_", 1:data$n_indices)
-      if(data$use_index_pal[y,i]!=0) 
+      if(data$use_index_pal[y,i]==1) 
       {
         obs_y = x[y,]
         #multinom, D-M, mvtweedie
-        if(data$len_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_NeffL[y,i]											  
         res = transform_paa_obs(obs_y, data$len_comp_model_indices[i])
         obs_y = res[[1]]
-        if(data$len_comp_model_indices[i] %in% 3:7) {
-          ind = res[[2]]
-        } else ind = 1:data$n_lengths
+        ind = res[[2]]
+        #multinom, D-M, mvtweedie
+        if(data$len_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_NeffL[y,i]
+
         if(length(ind)) {
-          tmp = data.frame(year = y, fleet = indices[i], bin = (1:data$n_lengths)[ind], type = 'indexpal', val = obs_y[ind])
+          tmp = data.frame(year = y, fleet = indices[i], bin = (data$lengths)[ind], type = 'indexpal', val = obs_y[ind])
           #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
           obs <- rbind(obs, tmp[, obs.colnames])
         } else {
@@ -123,16 +163,15 @@ set_osa_obs = function(input)
       x[which(data$use_catch_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
       #x = as.data.frame(x)
       fleets = paste0("fleet_", 1:data$n_fleets)
-      if(data$use_catch_paa[y,i]!=0) {
+      if(data$use_catch_paa[y,i]==1) {
         obs_y = x[y,]
-        #multinom, D-M, mvtweedie
-        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
-        res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
-        obs_y = res[[1]]
+        tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
         
-        if(data$age_comp_model_fleets[i] %in% 3:7) {
-          ind = res[[2]]
-        } else ind = 1:data$n_ages
+        #multinom, D-M, mvtweedie
+        res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+        obs_y = res[[1]]
+        ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
 
         if(length(ind)) {
           tmp = data.frame(year = y, fleet = fleets[i], bin = (1:data$n_ages)[ind], type = 'catchpaa', val = obs_y[ind])
@@ -150,19 +189,16 @@ set_osa_obs = function(input)
       x[which(data$use_catch_pal[,i]==0),] <- NA # only include catch data to fit in obsvec
       #x = as.data.frame(x)
       fleets = paste0("fleet_", 1:data$n_fleets)
-      if(data$use_catch_pal[y,i]!=0) {
+      if(data$use_catch_pal[y,i]==1) {
         obs_y = x[y,]
         #multinom, D-M, mvtweedie
-        if(data$len_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_NeffL[y,i]
         res = transform_paa_obs(obs_y, data$len_comp_model_fleets[i])
         obs_y = res[[1]]
-        
-        if(data$len_comp_model_fleets[i] %in% 3:7) {
-          ind = res[[2]]
-        } else ind = 1:data$n_lengths
+        ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+        if(data$len_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_NeffL[y,i]
 
         if(length(ind)) {
-          tmp = data.frame(year = y, fleet = fleets[i], bin = (1:data$n_lengths)[ind], type = 'catchpal', val = obs_y[ind])
+          tmp = data.frame(year = y, fleet = fleets[i], bin = (data$lengths)[ind], type = 'catchpal', val = obs_y[ind])
           obs <- rbind(obs, tmp[, obs.colnames])
         } else {
           data$use_catch_pal[y,i] <- 0 #set to not use because there are not enough positive values
@@ -177,17 +213,17 @@ set_osa_obs = function(input)
       x <- data$index_caal[i,,,]
       x[which(data$use_index_caal[,i]==0),,] <- NA # only include catch data to fit in obsvec
       indices = paste0("index_", 1:data$n_indices)
-      if(data$use_index_caal[y,i]!=0) 
+      if(data$use_index_caal[y,i]==1) 
       {
         for(l in 1:data$n_lengths){
           obs_y = x[y,l,]
+          tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
           #multinom, D-M, mvtweedie
-          if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_caal_Neff[y,i,l]                        
-          res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
+          res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
           obs_y = res[[1]]
-          if(data$age_comp_model_indices[i] %in% 3:7) {
-            ind = res[[2]]
-          } else ind = 1:data$n_ages
+          ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+          if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_caal_Neff[y,i,l]
+
           if(length(ind)) {
             tmp = data.frame(year = y, fleet = indices[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
                              type = 'indexcaal', val = obs_y[ind])
@@ -201,37 +237,23 @@ set_osa_obs = function(input)
       }
     }
 
-    # 6.1 CAAL catch 
-    # for(i in 1:data$n_fleets){
-      # #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
-      # x <- data$catch_caal[i,,,]
-      # x[which(data$use_catch_caal[,i]==0),,] <- NA # only include catch data to fit in obsvec
-      # #x = as.data.frame(x)
-      # fleets = paste0("fleet_", 1:data$n_fleets)
-      # if(data$use_catch_caal[y,i]!=0) {
-        # tmp = data.frame(year = y, fleet = fleets[i], bin = apply(expand.grid(1:data$n_ages,data$lengths), 1, paste, collapse="_"), # bin is age_len
-                          # type = 'catchcaal', val = as.vector(t(x[y,,])))
-        # obs <- rbind(obs, tmp[, obs.colnames])
-      # }
-    # }
-
     # CAAL fleets
     for(i in 1:data$n_fleets){
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$catch_caal[i,,,]
       x[which(data$use_catch_caal[,i]==0),,] <- NA # only include catch data to fit in obsvec
       fleet = paste0("fleet_", 1:data$n_fleets)
-      if(data$use_catch_caal[y,i]!=0) 
+      if(data$use_catch_caal[y,i]==1) 
       {
         for(l in 1:data$n_lengths){
           obs_y = x[y,l,]
+          tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
           #multinom, D-M, mvtweedie
-          if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_caal_Neff[y,i,l]                        
-          res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
+          res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
           obs_y = res[[1]]
-          if(data$age_comp_model_fleets[i] %in% 3:7) {
-            ind = res[[2]]
-          } else ind = 1:data$n_ages
+          ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+          if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_caal_Neff[y,i,l]
+
           if(length(ind)) {
             tmp = data.frame(year = y, fleet = fleet[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
                              type = 'catchcaal', val = obs_y[ind])
@@ -246,6 +268,7 @@ set_osa_obs = function(input)
     }
 
   }
+
   obs_levels <- paste0("fleet_", 1:data$n_fleets)
   obs_levels <- c(obs_levels, paste0("index_", 1:data$n_indices))
   obs_levels <- c(obs_levels, paste0("Ecov_", 1:data$n_Ecov))
@@ -419,17 +442,23 @@ set_osa_obs = function(input)
   input$data = data
   return(input)
 }
-transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE){
+
+transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE, ages_omit = integer(0)){
     #transforms paa obs for obsvec and appropriate for OSA residuals once model is fit.
     #remove zeros for dirichlet and logistic-normal
+    #remove ages/classes where predicted probability = 0 for all likelihoods (i.e., surveys that only observe a subset of ages).
     #transform logistic-normal obs to MVN obs (analogous to log-catch and log-indices)
     all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0",
     "logistic-normal-miss0", "logistic-normal-ar1-miss0", "logistic-normal-pool0",
     "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie")
   # if model %in% 1:2 do nothing for multinomial and D-m
-  is_pos = x> zero.criteria
-  pos_ind = which(is_pos)
+  is_pred_pos = !(1:length(x) %in% ages_omit)
+  x[which(!is_pred_pos)] = 0 #if obs in omitted ages are zero this does nothing
+  x =  x/sum(x) #rescale to a reduced set of ages, if obs in omitted ages are zero this does nothing
+  x[which(is.nan(x))] = 0 # only when all NaN
   if(model>2 & model<10){ #not multinom, D-M, mvtweedie
+    is_pos = x> zero.criteria # looking for zeros here will also omit the ages with predicted probability = 0
+    pos_ind = which(is_pos)
     npos = sum(is_pos)
     zero_ind = which(!is_pos)
     if(npos>1){ #need at least 2 categories
@@ -467,6 +496,9 @@ transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE){
     } else { #only 1 positive category
       x[] = NA
     }
+  } else { #multinom, D-M, mvtweedie
+    x[which(!is_pred_pos)] = NA
+    pos_ind = which(is_pred_pos)
   }
   return(list(x, pos_ind))
 }
