@@ -41,7 +41,7 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
     for(int i=0; i<x.size(); ++i){
       if(i!=(x.size()-1)){
 		Type p_i = p(i);
-		if(p_i > 1.0e-15) { // not sure. but this is required
+		if(p_i > 1.0e-13) { // not sure. but this is required
 			vector<Type> x2(2), p2(2);
 			//Type one_minus_pUsed_i = squeeze(1.0-pUsed);
 			x2(0) = x(i);
