@@ -87,7 +87,8 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   logFmult1  <- unlist(a1$asap.std[ which(a1$asap.std$name=="log_Fmult_year1")  ,3] )
   logFmult_devs <- a1$asap.std[which(a1$asap.std$name=="log_Fmult_devs")  ,3]
   log_F <- matrix(NA, nrow=nyears*n.fleet, ncol=2)
-  log_F[1,1] <- logFmult1
+  #year 1 for each fleet
+  log_F[1+nyears*(0:(n.fleet-1)),] <- logFmult1
 
   log.fmult.rows <- which(substr(a1$asap.cor.names, 1, 9)=="log_Fmult")  #this is nyears*n.fleet
   log.fmult.cor <- a1$asap.cor.mat[log.fmult.rows, log.fmult.rows]  #this has dimension nyears*n.fleet x nyears*n.fleet
@@ -96,13 +97,17 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   log.fmult.cov <- log.fmult.cor*(log.fmult.std %o% log.fmult.std) #creates var-cov matrix
   var.logFmult <- rep(NA, nyears*n.fleet)
   sigma.logFmult <- rep(NA, nyears*n.fleet)
-  var.logFmult[1] <- log.fmult.cov[1,1] #need to modify for multifleet
+  #year 1 for each fleet
+  var.logFmult[1+nyears*(0:(n.fleet-1))] <- log.fmult.cov[1+nyears*(0:(n.fleet-1)),1+nyears*(0:(n.fleet-1))] #need to modify for multifleet
+  #var.logFmult[1] <- log.fmult.cov[1,1] #need to modify for multifleet
 
+  for(f in 1:n.fleet) for (y in 2:nyears ) {
 
-  for (y in 2:nyears ) {
-
-    log_F[y,1] <- log_F[y-1] + logFmult_devs[y-1]
-    var.logFmult[y] <- var.logFmult[(y-1)] + a1$asap.std[log.fmult.rows[y],4]*a1$asap.std[log.fmult.rows[y],4]+2*(log.fmult.cov[y,(y-1)])
+    ind <- y + nyears*(0:(f-1))
+    log_F[ind,1] <- log_F[ind-1] + logFmult_devs[ind-1]
+    var.logFmult[ind] <- var.logFmult[ind-1] + a1$asap.std[log.fmult.rows[ind],4]*a1$asap.std[log.fmult.rows[ind],4]+2*(log.fmult.cov[ind,(ind-1)])
+    #log_F[y,1] <- log_F[y-1] + logFmult_devs[y-1]
+    #var.logFmult[y] <- var.logFmult[(y-1)] + a1$asap.std[log.fmult.rows[y],4]*a1$asap.std[log.fmult.rows[y],4]+2*(log.fmult.cov[y,(y-1)])
   }
 
   sigma.logFmult <- sqrt(var.logFmult)

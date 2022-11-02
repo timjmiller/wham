@@ -1395,58 +1395,60 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	for (i in fleets)
 	{
     yind = which(dat$use_catch_paa[,i] ==1)
-    if(osa){
-      df = subset(mod$osa, type == "catchpaa")
-      my.title <- "Age Comp OSA Quantile Residuals for Fleet "
-      fname = paste0("Catch_age_comp_osa_resids_fleet_",i)
-      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
-      vals = resids
-      for(j in yind){
-        tmp = subset(df, year == j & fleet == paste0("fleet_",i))
-        resids[j,tmp$age] = tmp$residual
-        vals[j,tmp$age] = tmp$val
-        if(dat$age_comp_model_fleets[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+    if(length(yind)){
+      if(osa & "catchpaa" %in% mod$osa$type){
+        df = subset(mod$osa, type == "catchpaa")
+        my.title <- "Age Comp OSA Quantile Residuals for Fleet "
+        fname = paste0("Catch_age_comp_osa_resids_fleet_",i)
+        resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
+        vals = resids
+        for(j in yind){
+          tmp = subset(df, year == j & fleet == paste0("fleet_",i))
+          resids[j,tmp$age] = tmp$residual
+          vals[j,tmp$age] = tmp$val
+          if(dat$age_comp_model_fleets[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+        }
+
+        scale.resid.bubble.catch <- 2
+      } else{
+        acomp.obs = dat$catch_paa[i,,]
+        acomp.pred = mod$rep$pred_catch_paa[1:length(years),i,]
+        #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+        #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+        my.title <- "Age Comp Residuals (Observed-Predicted) for Fleet "
+        resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+        resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
+        fname = paste0("Catch_age_comp_resids_fleet_",i)
+        scale.resid.bubble.catch <- 25
       }
+      if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+      z1 <- resids
+      if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+      else range.resids = c(0,0)
 
-      scale.resid.bubble.catch <- 2
-    } else{
-      acomp.obs = dat$catch_paa[i,,]
-      acomp.pred = mod$rep$pred_catch_paa[1:length(years),i,]
-      #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
-      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
-      my.title <- "Age Comp Residuals (Observed-Predicted) for Fleet "
-      resids <- acomp.obs - acomp.pred  # NOTE obs-pred
-      resids[dat$use_catch_paa[,i]==0,] = NA # don't plot residuals for catch paa not fit in model
-      fname = paste0("Catch_age_comp_resids_fleet_",i)
-      scale.resid.bubble.catch <- 25
-    }
-    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
-    z1 <- resids
-    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
-    else range.resids = c(0,0)
+      z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+      resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
+      resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+      plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
+        type = "n", axes=F)
+      axis(1, at= ages, lab=ages.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
 
-    z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
-    resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
-    resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
-    plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
-      type = "n", axes=F)
-    axis(1, at= ages, lab=ages.lab)
-    axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
-    box()
-    abline(h=years, col="lightgray")
-    segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+      for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
 
-    for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
-
-    bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
-    bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
-    legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
-    legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
-    legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
-    title (paste0(my.title,i), outer=T, line=-1)
-    if(do.tex | do.png) dev.off() else par(origpar)
+      bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+      bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+      legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+      legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+      legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+      title (paste0(my.title,i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    } #end if any age comp for fleet
 	}   #end loop n_fleets
   # par(origpar)
 }
@@ -1467,60 +1469,62 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	for (i in indices)
 	{
     yind = which(dat$use_index_paa[,i] ==1)
-    if(osa){
-      df = subset(mod$osa, type == "indexpaa")
-      my.title <- "Age Comp OSA Quantile Residuals for Index "
-      fname = paste0("Catch_age_comp_osa_resids_index_",i)
-      resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
-      vals = resids
-      for(j in yind){
-        tmp = subset(df, year == j & fleet == paste0("index_",i))
-        resids[j,tmp$age] = tmp$residual
-        vals[j,tmp$age] = tmp$val
-        if(dat$age_comp_model_indices[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+    if(length(yind)){
+      if(osa & "indexpaa" %in% mod$osa$type){
+        df = subset(mod$osa, type == "indexpaa")
+        my.title <- "Age Comp OSA Quantile Residuals for Index "
+        fname = paste0("Catch_age_comp_osa_resids_index_",i)
+        resids = matrix(NA, nrow = dat$n_years_model, ncol = dat$n_ages)
+        vals = resids
+        for(j in yind){
+          tmp = subset(df, year == j & fleet == paste0("index_",i))
+          resids[j,tmp$age] = tmp$residual
+          vals[j,tmp$age] = tmp$val
+          if(dat$age_comp_model_indices[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+        }
+        scale.resid.bubble.catch <- 2
+      } else {
+        acomp.obs = dat$index_paa[i,,]
+        acomp.pred = mod$rep$pred_index_paa[1:length(years),i,]
+        #acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
+        #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
+        my.title <- "Age Comp Residuals (Observed-Predicted) for Index "
+        resids <- acomp.obs - acomp.pred  # NOTE obs-pred
+        resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
+        fname = paste0("Catch_age_comp_resids_index_",i)
+        scale.resid.bubble.catch <- 25
       }
-      scale.resid.bubble.catch <- 2
-    } else{
-      acomp.obs = dat$index_paa[i,,]
-      acomp.pred = mod$rep$pred_index_paa[1:length(years),i,]
-      #acomp.pred = aperm(mod$rep$pred_IAA[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
-      #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
-      my.title <- "Age Comp Residuals (Observed-Predicted) for Index "
-      resids <- acomp.obs - acomp.pred  # NOTE obs-pred
-      resids[dat$use_index_paa[,i]==0,] = NA # don't plot residuals for index paa not fit in model
-      fname = paste0("Catch_age_comp_resids_index_",i)
-      scale.resid.bubble.catch <- 25
-    }
-    tylab <- "Year"
-    
-    if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
-    z1 <- resids
-    if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
-    else range.resids <- c(0,0)
+      tylab <- "Year"
+      
+      if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+      z1 <- resids
+      if(any(!is.na(resids))) range.resids<-range(abs((as.vector(z1))), na.rm=T)
+      else range.resids <- c(0,0)
 
-    z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
-    resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
-    resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
-    plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
-      type = "n", axes=F)
-    axis(1, at= ages, lab=ages.lab)
-    axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
-    box()
-    abline(h=years, col="lightgray")
-    segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+      z3 <- z1 * scale.resid.bubble.catch * scale.catch.bubble2
+      resid.col <- matrix(NA, nrow=nyrs, ncol=n_ages)   # set color for residual bubbles
+      resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
+      plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
+        type = "n", axes=F)
+      axis(1, at= ages, lab=ages.lab)
+      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      box()
+      abline(h=years, col="lightgray")
+      segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
 
-    for (j in 1:nyrs) if(dat$use_index_paa[j,i] == 1)
-      points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+      for (j in 1:nyrs) if(dat$use_index_paa[j,i] == 1)
+        points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
 
-    bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
-    bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
-    legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
-    legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
-    legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
-    title (paste0(my.title,i), outer=T, line=-1)
-    if(do.tex | do.png) dev.off() else par(origpar)
+      bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+      bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
+      legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+      legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+      legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+      title (paste0(my.title,i), outer=T, line=-1)
+      if(do.tex | do.png) dev.off() else par(origpar)
+    } #end if any age comp for index
 	}   #end loop n_fleets
   # par(origpar)
 }

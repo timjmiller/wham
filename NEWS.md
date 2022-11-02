@@ -25,7 +25,7 @@ wham 1.0.6 (2022-04-08)
 
 ### Major improvements
 
-* One-step-ahead prediction quantile residuals for age compositon observations for most log-likelihoods (Trijoulet et al. in review) [80e3bba](https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203).
+* One-step-ahead prediction quantile residuals for age compositon observations for most log-likelihoods (Trijoulet et al. 2023) [80e3bba](https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203).
 * Can specify a prior distribution on fully-selected catchability (logit-scale) which is then estimated as a random effect [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).
 * Auto-regressive random effects for fully-selected catchability [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).
 * Environmental covariate effects on fully-selected catchability [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).

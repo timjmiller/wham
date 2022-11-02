@@ -686,10 +686,7 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
       cat("Fleet selectivity blocks not identical, cannot produce comparison plot.")
       return(NULL)
     } else {
-      selblocks <- as.numeric(unique(x[[1]]$selblock_pointer_fleets))
-      print(selblocks)
       selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))
-      print(selblocks)
       yrs <- lapply(selblocks, function(y){
                                   tmp <- which(x[[1]]$selblock_pointer_fleets == y);
                                   tmp <- tmp %% length(x[[1]]$years);
@@ -699,10 +696,7 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
   }
   if(type == 'indices'){
     if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_indices)))) stop("Index selectivity blocks not identical, cannot produce comparison plot")
-    selblocks <- as.numeric(unique(x[[1]]$selblock_pointer_indices))
-      print(selblocks)
     selblocks <- unique(as.integer(x[[1]]$selblock_pointer_indices))
-      print(selblocks)
     yrs <- lapply(selblocks, function(y){
                                 tmp <- which(x[[1]]$selblock_pointer_indices == y);
                                 tmp <- tmp %% length(x[[1]]$years);
