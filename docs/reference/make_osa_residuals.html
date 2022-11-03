@@ -7,7 +7,7 @@ oneStepGaussianOffMode (default), oneStepGaussian, or oneStepGeneric, and parall
 See TMB::oneStepPredict for further details.
 It is not recommended to run this function (or TMB::oneStepPredict) with any random effects and
 mvtweedie age composition likelihoods due to extensive computational demand. An error will be thrown in such cases. 
-See Trijoulet et al. In review for OSA methods for age composition OSA residuals."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+See Trijoulet et al. (2023) for OSA methods for age composition OSA residuals."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -25,7 +25,7 @@ See Trijoulet et al. In review for OSA methods for age composition OSA residuals
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.6.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
       </span>
     </div>
 
@@ -126,14 +126,14 @@ See Trijoulet et al. In review for OSA methods for age composition OSA residuals
 
     <div class="ref-description">
     <p>Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
-can be used for evaluating model goodness-of-fit (<a href="https://link.springer.com/article/10.1007/s10651-017-0372-4" class="external-link">Thygeson et al. (2017)</a>,
+can be used for evaluating model goodness-of-fit (<a href="https://doi.org/10.1007/s10651-017-0372-4" class="external-link">Thygeson et al. (2017)</a>,
 implemented in <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>). OSA residual options
 are passed to <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code> in a list <code>osa.opts</code>. Current options are method: 
 oneStepGaussianOffMode (default), oneStepGaussian, or oneStepGeneric, and parallel: TRUE/FALSE. 
 See <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code> for further details.
 It is not recommended to run this function (or <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>) with any random effects and
 mvtweedie age composition likelihoods due to extensive computational demand. An error will be thrown in such cases. 
-See Trijoulet et al. In review for OSA methods for age composition OSA residuals.</p>
+See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link">Trijoulet et al. (2023)</a> for OSA methods for age composition OSA residuals.</p>
     </div>
 
     <div id="ref-usage">

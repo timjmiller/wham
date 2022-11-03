@@ -3,10 +3,9 @@ set_indices = function(input, index_opts=NULL)
 	data = input$data
 	if(is.null(input$asap3)) {
 		asap3 = NULL
-	    if(is.null(index_opts$n_indices)) data$n_indices = 1
-	    else data$n_indices = index_opts$n_indices
-	}
-  	else {
+		if(is.null(index_opts$n_indices)) data$n_indices = 1
+		else data$n_indices = index_opts$n_indices
+	} else {
 		asap3 = input$asap3
 		which_indices <- which(asap3$use_index ==1)
 		asap3$n_indices = length(which_indices)
@@ -26,38 +25,36 @@ set_indices = function(input, index_opts=NULL)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
 	data$use_index_paa = matrix(1, data$n_years_model, data$n_indices)
 	data$index_Neff = matrix(NA, data$n_years_model, data$n_indices)
-	if(!is.null(asap3))
-	{
+	if(!is.null(asap3)) {
 	  data$units_indices <- asap3$survey_index_units
 	  data$fracyr_indices = (asap3$survey_month-1)/12 #make sure that this is right
-	  for(i in 1:data$n_indices)
-	  {
+	  for(i in 1:data$n_indices) {
 	  	data$agg_indices[,i] = asap3$IAA_mats[[i]][,2]
 	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] < 1e-15) data$use_indices[y,i] = 0
 	  }
 	  for(i in 1:data$n_indices) data$agg_index_sigma[,i] = asap3$IAA_mats[[i]][,3]
-	  for(i in 1:data$n_indices)
-	  {
+	  for(i in 1:data$n_indices) {
 	    temp = asap3$IAA_mats[[i]][,3 + 1:data$n_ages]
 	    temp[which(is.na(temp))] = 0
 	    temp[which(temp<0)] = 0
 	    data$index_paa[i,,] = temp/apply(temp,1,sum)
 	  }
 	  data$index_paa[is.na(data$index_paa)] = 0
-	  for(i in 1:data$n_indices)
-	  {
-		if(asap3$use_survey_acomp[i] != 1){
-			data$use_index_paa[,i] = 0
-		} else {
-			for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[i,y,] > 1e-15) < 2) data$use_index_paa[y,i] = 0
-		}
+	  for(i in 1:data$n_indices) {
+			if(asap3$use_survey_acomp[i] != 1){
+				data$use_index_paa[,i] = 0
+			} else {
+				for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[i,y,] > 1e-15) < 2) data$use_index_paa[y,i] = 0
+			}
 	  }
 	  data$units_index_paa <- asap3$survey_acomp_units
 	  for(i in 1:data$n_indices) data$index_Neff[,i] = asap3$IAA_mats[[i]][,4 + data$n_ages]
 	  data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
-	}
-	else
-	{
+	} else {
+
+		if(!is.null(index_opts$use_indices)) data$use_indices[] = index_opts$use_indices
+		if(!is.null(index_opts$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa
+
 		if(is.null(index_opts$units_indices)) data$units_indices = rep(1,data$n_indices) #biomass
 		else data$units_indices = index_opts$units_indices
 		

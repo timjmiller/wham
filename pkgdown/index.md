@@ -10,8 +10,9 @@ WHAM advances fisheries assessment because it can estimate constrained random de
 
 - recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
 - selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
-- natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), and
-- environmental effects on the above ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
+- natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), 
+- catchability ([Ex 11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)), and
+- environmental covariate effects on recruitment, natural mortality, and catchability.
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
@@ -56,24 +57,29 @@ For the development version with recent bug fixes and features (potentially unte
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
-If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check make sure no packages are loaded (even by e.g. .Rprofile):
+### ON WINDOWS
+
+If you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
+```r
+devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
+```
+or for the devel branch:
+```r
+devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
+```
+
+If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check to make sure no packages are loaded (even by e.g. .Rprofile):
 ```r
 ls() ## no variables
 search() ## no packages other than Base
 ```
 Then:
 ```r
-remove.packages("TMB")
-install.packages("TMB") #from CRAN, not github
 to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
 new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
-
-If on windows you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
-```r
-devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
-```
+Then use one of the calls above to install wham.
 
 If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:```r
 install.packages("tinytex")

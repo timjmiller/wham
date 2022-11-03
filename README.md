@@ -44,6 +44,16 @@ For the development version with recent bug fixes and features (potentially unte
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
+### ON WINDOWS
+
+If you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
+```
+devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
+```
+or for the devel branch:
+```
+devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
+```
 
 If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check make sure no packages are loaded (even by e.g. .Rprofile):
 ```
@@ -52,17 +62,12 @@ search() ## no packages other than Base
 ```
 Then:
 ```
-remove.packages("TMB")
-install.packages("TMB") #from CRAN, not github
 to.install <- c("plotrix","ellipse","Hmisc","gplots","fields","RColorBrewer","colorspace","mnormt","Deriv","tidyr","dplyr","ggplot2","viridis", "abind", "rmarkdown", "pander", "kableExtra")
 new.packages <- to.install[!(to.install %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
+Then use one of the calls above to install wham.
 
-If on windows you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
-```
-devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
-```
 
 If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:
 ```
@@ -73,8 +78,6 @@ and add the path to pandoc in your .Rprofile so Rmarkdown can find your pandoc
 ```
 Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc") 
 ```
-
-
 
 ## Tutorial
 

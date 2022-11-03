@@ -6,7 +6,7 @@
 \usage{
 fit_peel(
   peel,
-  model,
+  input,
   do.sdrep = FALSE,
   n.newton = 3,
   MakeADFun.silent = FALSE,
@@ -17,11 +17,11 @@ fit_peel(
 \arguments{
 \item{peel}{Integer, number of years of data to remove before model fitting.}
 
-\item{model}{Output from \code{\link{fit_tmb}}.}
+\item{input}{input with same structure as that provided by \code{\link{prepare_wham_input}}. May want to use input$par = model$parList to start at MLEs.}
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.}
 
-\item{n.newton}{integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.}
+\item{n.newton}{integer, number of additional Newton steps after optimizafit_tmbtion for each peel. Default = \code{3}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
