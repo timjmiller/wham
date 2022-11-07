@@ -1,4 +1,4 @@
-//from Trijoulet et al. (in review). OSA residuals for composition data
+//from Trijoulet et al. (2023). OSA residuals for composition data
 //osa residual versions of dmultinom, ddirmultinom, dlogisticnormal
 //see repo at 
 

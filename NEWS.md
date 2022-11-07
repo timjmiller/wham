@@ -1,20 +1,26 @@
-wham 1.0.6.9000
+wham 1.0.7.9000
+=========================
+
+
+wham 1.0.7 (2022-11-3)
 =========================
 
 ### Major improvements
 
-* Improved stability and reliability of one-step-ahead residuals for age compositon observations for most log-likelihoods.
+* Improved stability and reliability of one-step-ahead residuals for age compositon observations for most log-likelihoods [037b714](https://github.com/timjmiller/wham/commit/037b7145927824359cdba00ecdffc1e4fbaceee6).
 * Multivariate Tweedie age composition likelihood option added (Thorson et al. in press) [6f77c16](https://github.com/timjmiller/wham/commit/6f77c164289b029725ecc0882ec50865832b696f).
 
 ### Minor improvements
 
-* Added exported make_osa_residuals function that can make OSA residuals from an object returned by fit_wham where it is also used internally with do.osa=TRUE. 
+* Added exported make_osa_residuals function that can make OSA residuals from an object returned by fit_wham where it is also used internally with do.osa=TRUE [1616ade](https://github.com/timjmiller/wham/commit/1616aded076a63c5ac375abf706ea710de6e9d0e). 
 * Added ability to specify different F options for each year of projections to project_wham and prepare_projection [f763059](https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0)
 * Revised vignette on simulation studies [f763059](https://github.com/timjmiller/wham/commit/f763059a61fde0814f2de83ef2d08045a3ed59e0)
 
 ### Bug fixes
 
-* Fix bug in simulation of selectivity random effects with "ar1_y" or "ar1" option [190000c]https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655)
+* Fix some plotting errors when there are multiple fleets and when there is no age comp for some fleets or indices [83f23ff](https://github.com/timjmiller/wham/commit/83f23ff2c2c676577be709135505cb5348a1c632)
+* Fix age comp observations when selectivity is assumed 0 for one or more age classes (needed for osa obs) [7bba974](https://github.com/timjmiller/wham/commit/7bba974c4d9ea8d772902be4d62512f20274a3ad)
+* Fix bug in simulation of selectivity random effects with "ar1_y" or "ar1" option [190000c](https://github.com/timjmiller/wham/commit/190000ccfa3ed2fb7ba30ee8d4af41329fdca655)
 * Fix bug in simulation of M random effects with "ar1_y" option [77bbd94](https://github.com/timjmiller/wham/commit/77bbd946e4881216a439933473d1c58b21c270c3)
 * Fix bug in check_projF which tests whether the F in projections is being specified correctly when FXSPR or F at catch is specified [c643d4b](https://github.com/timjmiller/wham/commit/c643d4ba8339c13dd4b9e3662aaa29f26d309624)
 * Fix index proportions at age data specification in basic_info [issue 64](https://github.com/timjmiller/wham/issues/64) [a3e3afc](https://github.com/timjmiller/wham/commit/a3e3afc9b23e2ca4e3d369581dfcf2b33732686c)
@@ -25,7 +31,7 @@ wham 1.0.6 (2022-04-08)
 
 ### Major improvements
 
-* One-step-ahead prediction quantile residuals for age compositon observations for most log-likelihoods (Trijoulet et al. in review) [80e3bba](https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203).
+* One-step-ahead prediction quantile residuals for age compositon observations for most log-likelihoods (Trijoulet et al. 2023) [80e3bba](https://github.com/timjmiller/wham/commit/80e3bbae0244bd1199f018dca53f09b08f5fd203).
 * Can specify a prior distribution on fully-selected catchability (logit-scale) which is then estimated as a random effect [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).
 * Auto-regressive random effects for fully-selected catchability [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).
 * Environmental covariate effects on fully-selected catchability [fcbc604](https://github.com/timjmiller/wham/commit/fcbc604068005cd7cce6c3f329376c2b4ef7b540).

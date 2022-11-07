@@ -1,14 +1,14 @@
 #' Calculate one-step-ahead residuals
 #' 
 #' Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
-#' can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
+#' can be used for evaluating model goodness-of-fit (\href{https://doi.org/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
 #' implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). OSA residual options
 #' are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. Current options are method: 
 #' oneStepGaussianOffMode (default), oneStepGaussian, or oneStepGeneric, and parallel: TRUE/FALSE. 
 #' See \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for further details.
 #' It is not recommended to run this function (or \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}) with any random effects and
 #' mvtweedie age composition likelihoods due to extensive computational demand. An error will be thrown in such cases. 
-#' See Trijoulet et al. In review for OSA methods for age composition OSA residuals.
+#' See \href{https://doi.org/10.1016/j.fishres.2022.106487}{Trijoulet et al. (2023)} for OSA methods for age composition OSA residuals.
 #'
 #' @param model A fit WHAM model, output from \code{\link{fit_wham}}.
 #'
@@ -47,6 +47,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
   
   cat("Doing OSA residuals...\n");
   input = model$input
+  if(class(input$data$obs) == "list") input$data$obs <- as.data.frame(input$data$obs) #simulated data$obs will be a list
   model$osa = input$data$obs
   model$osa$residual = NA
   #first do continuous obs, condition on obs without osa (probably none)

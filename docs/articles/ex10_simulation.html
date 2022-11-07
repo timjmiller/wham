@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.6.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
       </span>
     </div>
 
@@ -318,8 +318,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <span class="co">#&gt;     }</span>
 <span class="co">#&gt;     ans</span>
 <span class="co">#&gt; }</span>
-<span class="co">#&gt; &lt;bytecode: 0x000000001f48cb68&gt;</span>
-<span class="co">#&gt; &lt;environment: 0x0000000012d6f3e8&gt;</span></code></pre></div>
+<span class="co">#&gt; &lt;bytecode: 0x0000000024e48180&gt;</span>
+<span class="co">#&gt; &lt;environment: 0x0000000017a85118&gt;</span></code></pre></div>
 <p>As we can see it is a function, but less apparent is that it will
 report anything using the <code>REPORT</code> calls, and most
 importantly, those within SIMULATE statements in the compiled cpp code.
@@ -349,7 +349,7 @@ argument <code>self.fit=TRUE</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">years</span>, <span class="va">self_sim_fit</span><span class="op">$</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">years</span>, <span class="va">self_sim_fit</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png" style="width:80.0%"></p>
+<p><img src="https://github.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png" style="width:80.0%"></p>
 <p>Note that we just have to over-write the data component of the input
 with the values produced by <code>om$simulate(complete=TRUE)</code>. The
 call of <code>sim_fn</code> will fit the same model assumed to simulate
@@ -1078,7 +1078,7 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Recruitment"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_2_4e.png" style="width:80.0%"></p>
-<p>See the <a href="https://github.com/timjmiller/wham/blob/devel/vignettes/ex11_catchability.Rmd" class="external-link">catchability
+<p>See the <a href="https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd" class="external-link">catchability
 vignette</a> for an example of simulating effects of multiple covariates
 on the population. Also see the <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">CPI
 and recruitment vignette</a> for configuring effects on recruitment when

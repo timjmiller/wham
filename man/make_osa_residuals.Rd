@@ -25,14 +25,14 @@ the same fit TMB model with additional elements for osa residuals:
 }
 \description{
 Standard residuals are not appropriate for models with random effects. Instead, one-step-ahead (OSA) residuals
-can be used for evaluating model goodness-of-fit (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
+can be used for evaluating model goodness-of-fit (\href{https://doi.org/10.1007/s10651-017-0372-4}{Thygeson et al. (2017)},
 implemented in \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}). OSA residual options
 are passed to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} in a list \code{osa.opts}. Current options are method: 
 oneStepGaussianOffMode (default), oneStepGaussian, or oneStepGeneric, and parallel: TRUE/FALSE. 
 See \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for further details.
 It is not recommended to run this function (or \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}) with any random effects and
 mvtweedie age composition likelihoods due to extensive computational demand. An error will be thrown in such cases. 
-See Trijoulet et al. In review for OSA methods for age composition OSA residuals.
+See \href{https://doi.org/10.1016/j.fishres.2022.106487}{Trijoulet et al. (2023)} for OSA methods for age composition OSA residuals.
 }
 \examples{
 \dontrun{
