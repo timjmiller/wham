@@ -41,17 +41,17 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
     for(int i=0; i<x.size(); ++i){
       if(i!=(x.size()-1)){
 		Type p_i = p(i) + 1.0e-15; // required for CAAL
-			vector<Type> x2(2), p2(2);
-			//Type one_minus_pUsed_i = squeeze(1.0-pUsed);
-			x2(0) = x(i);
-			x2(1) = nUnused-x(i);
-			p2(0) = squeeze(p_i/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
-			p2(1) = 1. - p2(0);
-			logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
-			//logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
-			//cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed));
-			nUnused -= x(i);
-			pUsed += p_i;
+		vector<Type> x2(2), p2(2);
+		//Type one_minus_pUsed_i = squeeze(1.0-pUsed);
+		x2(0) = x(i);
+		x2(1) = nUnused-x(i);
+		p2(0) = squeeze(p_i/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
+		p2(1) = 1. - p2(0);
+		logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
+		//logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
+		//cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed));
+		nUnused -= x(i);
+		pUsed += p_i;
       }else{ // last index 
         logres += k(i)*Type(0);
         //cdf = Type(1);

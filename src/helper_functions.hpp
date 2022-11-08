@@ -992,29 +992,36 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
   Type Grate = 0.0;
   int n_ages = WAA_jan1.size();
   vector<Type> WAA(n_ages);
-  vector<Type> estWinf(n_ages); // for nonparametric LAA
-  vector<Type> estK(n_ages); // for nonparametric LAA
+  vector<Type> estWinf(n_ages); // for nonparametric WAA
+  vector<Type> estK(n_ages); // for nonparametric WAA
   Type b_par = 3.0; // assume b = 3
-
+  Type WAA_t = 0.0;
+  Type WAA_t1 = 0.0; 
+  Type WAA_t2 = 0.0;
+  
   	for(int a = 0; a < n_ages; a++)
 	 {  
-/* 		if((WAA_jan1(a) < WAA_jan1_y1(a+1)) & (WAA_jan1_y1(a+1) < WAA_jan1_y1(a+2))) { // only for increasing function
+		WAA_t = pow(WAA_jan1(a),1/b_par);
+		WAA_t1 = pow(WAA_jan1_y1(a+1),1/b_par);
+		WAA_t2 = pow(WAA_jan1_y1(a+2),1/b_par);
+		
+		if((WAA_jan1(a) < WAA_jan1_y1(a+1)) & (WAA_jan1_y1(a+1) < WAA_jan1_y1(a+2))) { // only for increasing function
 			if(a < (n_ages-2)) { // for age < n_ages - 2
-				estWinf(a) = pow((pow(WAA_jan1_y1(a+2),1/b_par)*pow(WAA_jan1(a),1/b_par) - pow(pow(WAA_jan1_y1(a+1),1/b_par),2))/(pow(WAA_jan1(a),1/b_par)-2*pow(WAA_jan1_y1(a+1),1/b_par)+pow(WAA_jan1_y1(a+2),1/b_par)),b_par);
-				estK(a) = -log((pow(WAA_jan1_y1(a+1),1/b_par)-pow(WAA_jan1_y1(a+2),1/b_par))/(pow(WAA_jan1(a),1/b_par)-pow(WAA_jan1_y1(a+1),1/b_par)));
+				estWinf(a) = pow((WAA_t2*WAA_t - pow(WAA_t1,2))/(WAA_t-2*WAA_t1+WAA_t2),b_par);
+				estK(a) = -log((WAA_t1-WAA_t2)/(WAA_t-WAA_t1));
 			} else {
 				estWinf(a) = estWinf(a-1); // just repeat the last calculated value, not enough info to do this
 				estK(a) = estK(a-1); // just repeat the last calculated value, not enough info to do this
 			}
-			WAA(a) = pow(pow(WAA_jan1(a),1/b_par) + (pow(WAA_jan1(a),1/b_par) - pow(estWinf(a),1/b_par))*(exp(-estK(a)*fracyr) - 1.0),b_par);
-		} else { // for shrinkage  */
+			WAA(a) = pow(WAA_t + (WAA_t - pow(estWinf(a),1/b_par))*(exp(-estK(a)*fracyr) - 1.0),b_par);
+		} else { // for shrinkage 
 			if(a < (n_ages - 1)) {
 				Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
 				WAA(a) = WAA_jan1(a) + Grate;
 			} else { // for oldest age
 				WAA(a) = WAA_jan1(a); //  no growth for oldest age
 			}
-		//}
+		}
 	}
 	  
 	return(WAA);
