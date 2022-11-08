@@ -7,11 +7,25 @@
 #' If \code{NULL}, no movement will occur. If there are multiple regions, each stock will be modeled separately in different regions without movement. 
 #' \code{move} is a list with the following entries:
 #'   \describe{
+#'     \item{$stock_move}{length = n_stocks, T/F whether each stock can move. If not provided then movement will be defined below for all stocks.}
 #'     \item{$separable}{length = n_stocks, T/F whether movement should be modeled separably from mortality or both occuring simultaneously.}
-#'     \item{$model}{length = n_regions. "extra" mortality model options are:
+#'     \item{$mean_model}{"(mean) movement model options are:
 #'                    \describe{
-#'                      \item{"none"}{(default) no extra mortality for this region.}
-#'                      \item{"constant"}{ estimate a single mean mortality for the region shared across all ages}
+#'                      \item{"none"}{(default) no movement between regions.}
+#'                      \item{"constant"}{estimate a single movement rate to each region shared across all stocks, seasons, ages, years}
+#'                      \item{"season"}{estimate movement rates  to each region for each season shared across all stocks, ages, years}
+#'                      \item{"stock_constant"}{estimate a movement rate for each stock to each region shared across all seasons, ages, years}
+#'                      \item{"stock_season"}{estimate a movement rate for each stock each season to each region shared across all ages, years}
+#'                    }
+#'                  }
+#'     \item{$re_model}{"random effects correlation structure options are:
+#'                    \describe{
+#'                      \item{"none"}{(default) no movement rate random effects.}
+#' "age_iid","age_ar1","year_iid","year_ar1", "age_iid_year_iid", "age_ar1_year_iid", "age_iid_year_ar1", "age_ar1_year_ar1"
+#'                      \item{"age_iid"}{movement rates for each age are random effects with means defined by mean_model}
+#'                      \item{"season"}{estimate mortality rates  to each region for each season shared across all stocks, ages, years}
+#'                      \item{"stock_constant"}{estimate a mortality rate for each stock to each region shared across all seasons, ages, years}
+#'                      \item{"stock_season"}{estimate a mortality rate for each stock each season to each region shared across all ages, years}
 #'                      \item{"iid_re"}{estimate independent random effects over years, for the region}
 #'                      \item{"ar1_re"}{estimate random effect correlated over years, for the region}
 #'                    }
@@ -46,10 +60,13 @@ set_move = function(input, move)
   data$must_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions))
   if(!is.null(move$must_move)) data$must_move[] = move$must_move
 
+
+############right here
   data$mu_model <- 1
-  move_mods <- c("none","constant", "stock","season","stock_season")
+  move_mods <- c("none","constant", "season")
   move_re_mods <- c("age_iid","age_ar1","year_iid","year_ar1", "age_iid_year_iid", "age_ar1_year_iid", "age_iid_year_ar1", "age_ar1_year_ar1")
-  move_mods <- c(move_mods, paste0(move_mods, "_stock"))
+  move_mods <- c(move_mods, paste0(move_mods[2:3], "_stock"))
+  
   #L$model length is n_regions
   data$L_model = rep(0, data$n_regions)
   par$L_re = matrix(0, data$n_years_model, data$n_regions)
