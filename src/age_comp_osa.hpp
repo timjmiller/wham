@@ -40,8 +40,7 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
     //Type cdf;
     for(int i=0; i<x.size(); ++i){
       if(i!=(x.size()-1)){
-		Type p_i = p(i);
-		if(p_i > 1.0e-13) { // not sure why, but this is required, especially for CAAL data
+		Type p_i = p(i) + 1.0e-15; // required for CAAL
 			vector<Type> x2(2), p2(2);
 			//Type one_minus_pUsed_i = squeeze(1.0-pUsed);
 			x2(0) = x(i);
@@ -53,7 +52,6 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
 			//cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed));
 			nUnused -= x(i);
 			pUsed += p_i;
-		}
       }else{ // last index 
         logres += k(i)*Type(0);
         //cdf = Type(1);

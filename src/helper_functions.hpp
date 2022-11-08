@@ -936,11 +936,24 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
   matrix<Type> out(n_lengths, n_ages);
   vector<Type> mLAA(n_ages);
   Type Grate = 0.0;
+  vector<Type> estLinf(n_ages); // for nonparametric LAA
+  vector<Type> estK(n_ages); // for nonparametric LAA
   
   	  for(int a = 0; a < n_ages; a++)
 	  {  
-		    if(growth_model == 1) mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
-			if(growth_model == 2) {
+  
+  		if(growth_model == 1) mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
+		if(growth_model == 2){ // nonparametric approach
+			if((mLAA_jan1(a) < mLAA_jan1_y1(a+1)) & (mLAA_jan1_y1(a+1) < mLAA_jan1_y1(a+2))) { // only for increasing function
+				if(a < (n_ages-2)) { // for age < n_ages - 2
+					estLinf(a) = (mLAA_jan1_y1(a+2)*mLAA_jan1(a) - pow(mLAA_jan1_y1(a+1),2))/(mLAA_jan1(a)-2*mLAA_jan1_y1(a+1)+mLAA_jan1_y1(a+2));
+					estK(a) = -log((mLAA_jan1_y1(a+1)-mLAA_jan1_y1(a+2))/(mLAA_jan1(a)-mLAA_jan1_y1(a+1)));
+				} else {
+					estLinf(a) = estLinf(a-1); // just repeat the last calculated value, not enough info to do this
+					estK(a) = estK(a-1); // just repeat the last calculated value, not enough info to do this
+				}
+				mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - estLinf(a))*(exp(-estK(a)*fracyr) - 1.0);
+			} else { // for shrinkage 
 				if(a < (n_ages - 1)) {
 					Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
 					mLAA(a) = mLAA_jan1(a) + Grate;
@@ -948,26 +961,27 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 					mLAA(a) = mLAA_jan1(a); // no growth for oldest age
 				}
 			}
+		}
 
-			for(int l = 0; l < n_lengths; l++) {
-				
-				if(l == 0) { 
-					Fac1 = (Lminp - mLAA(a))/SDAA(a);
-					out(l,a) = pnorm(Fac1);  
-				} else {
-					if(l == (n_lengths-1)) { 
-						Fac1 = (Lmaxp - mLAA(a))/SDAA(a);
-						out(l,a) = 1.0 - pnorm(Fac1);  
-					} else { 
-						Ll1p = lengths(l) + len_bin*0.5;
-						Llp = lengths(l) - len_bin*0.5;
-						Fac1 = (Ll1p - mLAA(a))/SDAA(a);
-						Fac2 = (Llp - mLAA(a))/SDAA(a);
-						out(l,a) = pnorm(Fac1) - pnorm(Fac2);  
-					}
+		for(int l = 0; l < n_lengths; l++) {
+			
+			if(l == 0) { 
+				Fac1 = (Lminp - mLAA(a))/SDAA(a);
+				out(l,a) = pnorm(Fac1);  
+			} else {
+				if(l == (n_lengths-1)) { 
+					Fac1 = (Lmaxp - mLAA(a))/SDAA(a);
+					out(l,a) = 1.0 - pnorm(Fac1);  
+				} else { 
+					Ll1p = lengths(l) + len_bin*0.5;
+					Llp = lengths(l) - len_bin*0.5;
+					Fac1 = (Ll1p - mLAA(a))/SDAA(a);
+					Fac2 = (Llp - mLAA(a))/SDAA(a);
+					out(l,a) = pnorm(Fac1) - pnorm(Fac2);  
 				}
-				
 			}
+			
+		}
 	  }
 
   return(out);
@@ -978,15 +992,29 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
   Type Grate = 0.0;
   int n_ages = WAA_jan1.size();
   vector<Type> WAA(n_ages);
+  vector<Type> estWinf(n_ages); // for nonparametric LAA
+  vector<Type> estK(n_ages); // for nonparametric LAA
+  Type b_par = 3.0; // assume b = 3
 
   	for(int a = 0; a < n_ages; a++)
 	 {  
-		if(a < (n_ages - 1)) {
-			Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
-			WAA(a) = WAA_jan1(a) + Grate;
-		} else { // for oldest age
-			WAA(a) = WAA_jan1(a); //  no growth for oldest age
-		}
+/* 		if((WAA_jan1(a) < WAA_jan1_y1(a+1)) & (WAA_jan1_y1(a+1) < WAA_jan1_y1(a+2))) { // only for increasing function
+			if(a < (n_ages-2)) { // for age < n_ages - 2
+				estWinf(a) = pow((pow(WAA_jan1_y1(a+2),1/b_par)*pow(WAA_jan1(a),1/b_par) - pow(pow(WAA_jan1_y1(a+1),1/b_par),2))/(pow(WAA_jan1(a),1/b_par)-2*pow(WAA_jan1_y1(a+1),1/b_par)+pow(WAA_jan1_y1(a+2),1/b_par)),b_par);
+				estK(a) = -log((pow(WAA_jan1_y1(a+1),1/b_par)-pow(WAA_jan1_y1(a+2),1/b_par))/(pow(WAA_jan1(a),1/b_par)-pow(WAA_jan1_y1(a+1),1/b_par)));
+			} else {
+				estWinf(a) = estWinf(a-1); // just repeat the last calculated value, not enough info to do this
+				estK(a) = estK(a-1); // just repeat the last calculated value, not enough info to do this
+			}
+			WAA(a) = pow(pow(WAA_jan1(a),1/b_par) + (pow(WAA_jan1(a),1/b_par) - pow(estWinf(a),1/b_par))*(exp(-estK(a)*fracyr) - 1.0),b_par);
+		} else { // for shrinkage  */
+			if(a < (n_ages - 1)) {
+				Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
+				WAA(a) = WAA_jan1(a) + Grate;
+			} else { // for oldest age
+				WAA(a) = WAA_jan1(a); //  no growth for oldest age
+			}
+		//}
 	}
 	  
 	return(WAA);
