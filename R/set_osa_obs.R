@@ -111,7 +111,8 @@ set_osa_obs = function(input)
         obs_y = x[y,]
         tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
         #multinom, D-M, mvtweedie
-        res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
+        #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp) # not working 
+        res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
         obs_y = res[[1]]
         ind = res[[2]]
         #multinom, D-M, mvtweedie
@@ -168,7 +169,8 @@ set_osa_obs = function(input)
         tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
         
         #multinom, D-M, mvtweedie
-        res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+        #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+        res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
         obs_y = res[[1]]
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
         if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
@@ -219,7 +221,8 @@ set_osa_obs = function(input)
           obs_y = x[y,l,]
           tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
           #multinom, D-M, mvtweedie
-          res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
+          #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
+          res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
           obs_y = res[[1]]
           ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
           if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_caal_Neff[y,i,l]
@@ -249,7 +252,8 @@ set_osa_obs = function(input)
           obs_y = x[y,l,]
           tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
           #multinom, D-M, mvtweedie
-          res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+          #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+          res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
           obs_y = res[[1]]
           ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
           if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_caal_Neff[y,i,l]
