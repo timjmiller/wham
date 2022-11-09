@@ -122,7 +122,7 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     mod$rep = mod$report()
     mod$parList <- mod$env$parList(x=mle)
     mod <- check_FXSPR(mod)
-    mod <- check_projF(mod) #projections added.
+    if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {
       mod$sdrep <- try(TMB::sdreport(mod))
