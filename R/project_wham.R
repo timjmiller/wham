@@ -7,7 +7,7 @@
 #'   \itemize{
 #'     \item Use last year F (default). Set \code{proj.opts$use.last.F = TRUE}. WHAM will use F in the terminal model year for projections.
 #'     \item Use average F. Set \code{proj.opts$use.avg.F = TRUE}. WHAM will use F averaged over \code{proj.opts$avg.yrs} for projections (as is done for M-, maturity-, and weight-at-age).
-#'     \item Use F at X% SPR. Set \code{proj.opts$use.FXSPR = TRUE}. WHAM will calculate F at X% SPR.
+#'     \item Use F at X\% SPR. Set \code{proj.opts$use.FXSPR = TRUE}. WHAM will calculate F at X\% SPR.
 #'     \item Specify F. Provide \code{proj.opts$proj.F}, an F vector with length = \code{n.yrs}.
 #'     \item Specify catch. Provide \code{proj.opts$proj.catch}, a vector of aggregate catch with length = \code{n.yrs}. WHAM will calculate F to get specified catch.
 #'   }
@@ -43,7 +43,7 @@
 #'     \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
 #'     \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
 #'     \item \code{$use.avg.F} (T/F), use average of F over certain years for projections. Default = \code{FALSE}. Years to average over determined by $avg.yrs defined below.
-#'     \item \code{$use.FXSPR} (T/F), calculate and use F at X% SPR for projections. Default = \code{FALSE}.
+#'     \item \code{$use.FXSPR} (T/F), calculate and use F at X\% SPR for projections. Default = \code{FALSE}.
 #'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections. Default = \code{FALSE}.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
@@ -54,9 +54,9 @@
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
-#'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
+#'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
-#'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
+#'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
 #'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
@@ -122,6 +122,7 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     mod$rep = mod$report()
     mod$parList <- mod$env$parList(x=mle)
     mod <- check_FXSPR(mod)
+    #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
     mod <- check_projF(mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {

@@ -107,6 +107,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     mod <- check_which_F_age(mod)
     mod <- check_FXSPR(mod)
+    print(mod$env$data$n_fleets)
+    #if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
 
@@ -228,7 +230,7 @@ check_projF = function(mod)
     {
       redo_SPR_years = mod$years_full[y[bad]]
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
-      mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
+      mod$env$data$F_proj_init[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
       mod$fn(mle)
       mod$rep = mod$report()
       correct_F = round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
@@ -242,17 +244,14 @@ check_projF = function(mod)
   if(length(ind))
   {
     y = mod$env$data$n_years_model + ind
-    #print(y)
-    #print(dim(mod$rep$pred_catch))
     bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
     if(length(bad))
     {
       for(i in 1:2)
       {
         redo_Catch_years = mod$years_full[y[bad]]
-        #print(redo_Catch_years)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
-        mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
+        mod$env$data$F_proj_init[ind[bad]] = mod$env$data$F_proj_init[ind[bad]]*0.5
         mod$fn(mle)
         mod$rep = mod$report()
         bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
