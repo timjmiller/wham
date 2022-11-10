@@ -90,7 +90,7 @@ vector<Type> get_waa_y(array<Type> waa, int y, int na, int pointer){
 }
 
 template <class Type>
-vector<Type> get_waacatch_y(array<Type> waa, int y, int na, vector<int> pointer){
+matrix<Type> get_waacatch_y(array<Type> waa, int y, int na, vector<int> pointer){
   matrix<Type> waay(pointer.size(), na);
   for(int f = 0; f< pointer.size(); f++) for(int a = 0; a < na; a++) waay(f,a) = waa(pointer(f)-1, y, a);
   return(waay);
@@ -937,7 +937,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     percentFMSY:  percentage (0-100) of FMSY to use in catch.
     */
   int n_toavg = avg_years_ind.size();
-  int n_ages = waacatch.size();
+  int n_ages = waacatch.cols();
   int proj_F_opt_y = proj_F_opt(y-n_years_model);
 
   //proj_F_opt == 1, last year F (default)

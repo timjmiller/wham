@@ -108,7 +108,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod <- check_which_F_age(mod)
     mod <- check_FXSPR(mod)
     print(mod$env$data$n_fleets)
-    if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
+    #if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
+    if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
 
     # retrospective analysis

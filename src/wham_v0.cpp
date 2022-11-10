@@ -1180,9 +1180,9 @@ Type objective_function<Type>::operator() ()
         waacatch = get_waacatch_y(waa, yi, n_ages, waa_pointer_fleets);
         for(int f = 0; f < n_fleets; f++) {
           CAA_proj(f,i,a) =  NAA(yi,a) * FAA(yi,f,a) * (1 - exp(-ZAA(yi,a)))/ZAA(yi,a);
-          catch_proj(i,f) += waacatch(f,a) * CAA_proj(i,a);
-          log_catch_proj(i,f) = log(catch_proj(i,f) + Type(1.0e-15));
+          catch_proj(i,f) += waacatch(f,a) * CAA_proj(f,i,a);
         }
+        for(int f = 0; f < n_fleets; f++) log_catch_proj(i,f) = log(catch_proj(i,f) + Type(1.0e-15));
         //CAA_proj(i,a) =  NAA(yi,a) * FAA_tot(yi,a) * (1 - exp(-ZAA(yi,a)))/ZAA(yi,a);
         //waacatch(a) = waa(waa_pointer_totcatch-1, yi, a);
       }
