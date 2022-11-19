@@ -785,7 +785,7 @@ Type objective_function<Type>::operator() ()
    }
 
   // add to growth parameters in projection years
-  if((do_proj == 1) & (growth_model == 1)){ 
+  if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards 
   	for(int j = 0; j < n_growth_par; j++) { 
 	  if(proj_GW_opt(j) == 2){
 		  matrix<Type> GW_toavg(n_toavg,n_ages);
@@ -820,7 +820,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to LAA parameters in projection years
-  if((do_proj == 1) & (growth_model == 2)){ 
+  if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards
 	if(proj_GW_opt(0) == 2){
 	  matrix<Type> GW_toavg(n_toavg,n_ages);
 	  for(int a = 0; a < n_ages; a++){
@@ -847,8 +847,8 @@ Type objective_function<Type>::operator() ()
 		if((Ecov_where(i,n_effects-3) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
-					if(growth_model == 1) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-3,y,0));
-					if(growth_model == 2) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-3,y,a));
+					if(growth_model < 3) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-3,y,0)); // vB classic or Richards
+					if(growth_model == 3) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-3,y,a));
 				}
 			}
 		}
@@ -1041,9 +1041,9 @@ Type objective_function<Type>::operator() ()
   {
 	  for(int a = 0; a < n_ages; a++)
 	  {
-			if(growth_model == 1) {
+			if(growth_model == 1) { // vB classic growth model
 				if(y == 0) {
-					LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); // for growth_model = 1
+					LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); 
 				} else {
 					if(a == 0) { 
 						LAA(y,a) = GW_par(y,a,2);  
@@ -1052,10 +1052,22 @@ Type objective_function<Type>::operator() ()
 					}
 				}
 			}
-			if(growth_model == 2) LAA(y,a) = LAA_par(y,a); // for growth_model = 2
+			if(growth_model == 2) { // Richards growth model
+				if(y == 0) {
+					LAA(y,a) = pow(pow(GW_par(y,a,1),GW_par(y,a,3)) + (pow(GW_par(y,a,2),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3))) * exp(-GW_par(y,a,0)*a),1/GW_par(y,a,3));
+				} else {
+					if(a == 0) { 
+						LAA(y,a) = GW_par(y,a,2);  
+					} else {
+						LAA(y,a) = pow(pow(LAA(y-1,a-1),GW_par(y,a,3)) + (pow(LAA(y-1,a-1),GW_par(y,a,3)) - pow(GW_par(y-1,a-1,1),GW_par(y,a,3)))*(exp(-GW_par(y-1,a-1,0)) - 1.0),1/GW_par(y,a,3)); // use growth parameters y-1 and a-1 because it is jan1
+					}
+				}
+			}
+			if(growth_model == 3) LAA(y,a) = LAA_par(y,a); // LAA model
 			
 			if(growth_model == 1) SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*LAA(y,a);  //
-			if(growth_model == 2) SDAA(y,a) = ( GW_par(y,a,0) + ((GW_par(y,a,1) - GW_par(y,a,0))/(n_ages - 1.0))*a )*LAA(y,a);  //
+			if(growth_model == 2) SDAA(y,a) = ( GW_par(y,a,4) + ((GW_par(y,a,5) - GW_par(y,a,4))/(n_ages - 1.0))*a )*LAA(y,a);  //
+			if(growth_model == 3) SDAA(y,a) = ( GW_par(y,a,0) + ((GW_par(y,a,1) - GW_par(y,a,0))/(n_ages - 1.0))*a )*LAA(y,a);  //
 			
 			// pred_LAA(0,a) = LAA(0,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {

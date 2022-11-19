@@ -945,7 +945,8 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 	  {  
   
   		if(growth_model == 1) mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
-		if(growth_model == 2){ // nonparametric approach
+  		if(growth_model == 2) mLAA(a) = pow(pow(mLAA_jan1(a),GW_par(y,a,3)) + (pow(mLAA_jan1(a),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*fracyr) - 1.0),1/GW_par(y,a,3));
+		if(growth_model == 3){ // nonparametric approach
 			if(a < (n_ages-2)) { // for a < n_ages - 2
 				diff1 = mLAA_jan1_y1(a+1) - mLAA_jan1(a); // to avoid 0 or negative in log
 				//diff2 = mLAA_jan1_y2(a+2) - mLAA_jan1_y1(a+1); // to avoid 0 or negative in log
