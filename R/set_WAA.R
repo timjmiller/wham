@@ -12,7 +12,7 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 	  data$waa = array(NA, dim = c(length(asap3$WAA_mats), data$n_years_model, data$n_ages))
 	  for(i in 1:length(asap3$WAA_mats)) data$waa[i,,] = asap3$WAA_mats[[i]]
 	  data$waa_pointer_indices = asap3$index_WAA_pointers
-	  data$waa_type = 1 # 1 = waa info present and used
+	  data$weight_model = 1 # 1 = waa info present and used
 	  data$waa_cv = array(0, dim = dim(data$waa))
 	  data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets) # for NLL 
 	  data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices) # for NLL
@@ -22,14 +22,13 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 		    W = rep(exp(-11)*L^3, each = data$n_years_model)
 				dim_WAA = c(data$n_fleets + data$n_indices + 2, data$n_years_model, data$n_ages)
 				data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
-				data$waa_type = 2 # 2 = waa info not provided. use LW
-				#warning("Empirical weight-at-age not provided, so using L-W parameters (waa_type = 2)")
+				data$weight_model = 2 # 2 = waa info not provided. use LW
 				data$waa_cv = array(0, dim = dim(data$waa))		
 	  		data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
 	  		data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 		} else {
 			data$waa = waa_opts$waa
-			data$waa_type = 1
+			data$weight_model = 1
 			data$waa_cv = array(0, dim = dim(data$waa))
 			data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
 			data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
@@ -50,7 +49,7 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 		if(is.null(waa_opts$waa_pointer_jan1)) data$waa_pointer_jan1 = data$n_fleets+data$n_indices + 2
 		else data$waa_pointer_jan1 = waa_opts$waa_pointer_jan1
 
-		if(!is.null(waa_opts$waa_type))  data$waa_type = waa_opts$waa_type
+		if(!is.null(waa_opts$weight_model))  data$weight_model = waa_opts$weight_model
 
 		if(!is.null(waa_opts$waa_cv)) data$waa_cv = waa_opts$waa_cv
 
@@ -76,6 +75,7 @@ set_WAA = function(input, waa_opts = NULL, WAA)
   data$intraGrowth = c(0.28, 1.7) # for WAA, k and Winf
   WAA_ini = log( 2e-06*(100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)))^3 )
   if(!is.null(WAA)) {
+    data$weight_model = 3 # use WAA
     WAA_ini = log(WAA$WAA_vals)
     if(!is.null(WAA$est_pars)) data$WAA_est[WAA$est_pars] = 1
     if(!is.null(WAA$intraGrowth)) data$intraGrowth = WAA$intraGrowth

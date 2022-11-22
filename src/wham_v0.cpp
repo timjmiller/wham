@@ -39,7 +39,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(waa_pointer_indices);
   DATA_INTEGER(waa_pointer_ssb);
   DATA_INTEGER(waa_pointer_jan1);
-  DATA_INTEGER(waa_type);
+  DATA_INTEGER(weight_model);
   DATA_IMATRIX(use_catch_waa);
   DATA_IMATRIX(use_index_waa);
   DATA_ARRAY(waa);
@@ -156,7 +156,7 @@ Type objective_function<Type>::operator() ()
   //Below is not used anymore
   //DATA_IMATRIX(Ecov_poly); // n_Ecov x 2+n_indices. polynomial order for ecov effects (1 = linear, 2 = quadratic, 3 = cubic, ...)
   DATA_IMATRIX(Ecov_where); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
-  DATA_INTEGER(Ecov_where_subindex); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
+  DATA_IVECTOR(Ecov_where_subindex); // n_Ecov x 2+n_indices. 0/1 values with columns corresponding to recruit, mortality, indices in that order
   DATA_IVECTOR(Ecov_model); // 0 = no Ecov, 1 = RW, 2 = AR1
   //DATA_INTEGER(year1_Ecov); // first year Ecov
   //DATA_INTEGER(year1_model); // first year model
@@ -173,7 +173,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
-  DATA_IVECTOR(proj_GW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_IVECTOR(proj_growth_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_IVECTOR(proj_LAA_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_IVECTOR(proj_WAA_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_IVECTOR(proj_LW_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
@@ -280,6 +281,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> LAA(n_years_model + n_years_proj,n_ages);// NEWG
   matrix<Type> fracyr_phi_mat(n_lengths,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
+  matrix<Type> temp_selAA(n_years_model, n_ages);
   array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
@@ -787,7 +789,7 @@ Type objective_function<Type>::operator() ()
   // add to growth parameters in projection years
   if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards 
   	for(int j = 0; j < n_growth_par; j++) { 
-	  if(proj_GW_opt(j) == 2){
+	  if(proj_growth_opt(j) == 2){
 		  matrix<Type> GW_toavg(n_toavg,n_ages);
 		  for(int a = 0; a < n_ages; a++){
 			for(int i = 0; i < n_toavg; i++){
@@ -821,7 +823,7 @@ Type objective_function<Type>::operator() ()
 
   // add to LAA parameters in projection years
   if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards
-	if(proj_GW_opt(0) == 2){
+	if(proj_LAA_opt(0) == 2){
 	  matrix<Type> GW_toavg(n_toavg,n_ages);
 	  for(int a = 0; a < n_ages; a++){
 		for(int i = 0; i < n_toavg; i++){
@@ -832,7 +834,7 @@ Type objective_function<Type>::operator() ()
 	  for(int y = n_years_model; y < n_years_model + n_years_proj; y++){
 		LAA_par.row(y) = GW_proj;
 	  }
-	} else { // proj_GW_opt == 1
+	} else { // proj_LAA_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 		
 				LAA_par(y,a) = exp(LAA_a(a) + LAA_re(y,a)); 
@@ -841,14 +843,30 @@ Type objective_function<Type>::operator() ()
 	}
   }
   
-  // add ecov effect on growth paramteres and LAA
-  for(int j = 0; j < n_growth_par; j++) { 
+  // add ecov effect on growth paramteres
+  int count_wheresub = 0; // used for growth and LW
+  if(growth_model < 3) { // only parametric growth equations
+	  for(int j = 0; j < n_growth_par; j++) { 
+		for(int i=0; i < n_Ecov; i++){
+			if((Ecov_where(i,n_effects-4) == 1) & ((Ecov_where_subindex(count_wheresub)-1) == j)) {  // for growth
+				for(int y = 0; y < n_years_model + n_years_proj; y++) {
+					for(int a = 0; a < n_ages; a++) { 
+						GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-4,y,0)); // vB classic or Richards
+					}
+				}
+				count_wheresub += 1; 
+			}
+		}
+	  }
+  }
+
+  // add ecov effect on LAA
+  if(growth_model == 3) { // non-parametric approach
 	for(int i=0; i < n_Ecov; i++){
-		if((Ecov_where(i,n_effects-3) == 1) & ((Ecov_where_subindex-1) == j)) {  // for growth
+		if((Ecov_where(i,n_effects-3) == 1)) { 
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
-					if(growth_model < 3) GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-3,y,0)); // vB classic or Richards
-					if(growth_model == 3) LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-3,y,a));
+					LAA_par(y,a) *= exp(Ecov_lm(i,n_effects-3,y,a));
 				}
 			}
 		}
@@ -866,7 +884,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to WAA parameters in projection years
-  if((do_proj == 1) & (waa_type == 3)){ 
+  if((do_proj == 1) & (weight_model == 3)){ 
 	if(proj_WAA_opt(0) == 2){
 	  matrix<Type> WAA_toavg(n_toavg,n_ages);
 	  for(int a = 0; a < n_ages; a++){
@@ -889,7 +907,7 @@ Type objective_function<Type>::operator() ()
   
   // add ecov effect on WAA
 	for(int i=0; i < n_Ecov; i++){
-		if(Ecov_where(i,n_effects-1) == 1) {  // CHECK: for WAA?
+		if(Ecov_where(i,n_effects-1) == 1) {  
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
 					WAA_par(y,a) *= exp(Ecov_lm(i,n_effects-1,y,a));
@@ -989,7 +1007,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to LW parameters in projection years
-  if((do_proj == 1) & (waa_type == 2)){ 
+  if((do_proj == 1) & (weight_model == 2)){ 
   	for(int j = 0; j < n_LW_par; j++) { 
 	  if(proj_LW_opt(j) == 2){
 		  matrix<Type> LW_toavg(n_toavg,n_ages);
@@ -1004,7 +1022,7 @@ Type objective_function<Type>::operator() ()
 			  LW_par(y,a,j) = LW_proj(a);
 			}
 		  }
-	  } else { // proj_GW_opt == 1
+	  } else { // proj_LW_opt == 1
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) {
 			for(int a = 0; a < n_ages; a++) { 		
 				LW_par(y,a,j) = exp(LW_a(j,0) + LW_re(y,a,j)); 
@@ -1017,12 +1035,13 @@ Type objective_function<Type>::operator() ()
   // add ecov effect on LW paramteres
   for(int j = 0; j < n_LW_par; j++) { 
 	for(int i=0; i < n_Ecov; i++){
-		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex-1) == j)) {  // for LW
+		if((Ecov_where(i,n_effects-2) == 1) & ((Ecov_where_subindex(count_wheresub)-1) == j)) {  // for LW
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				for(int a = 0; a < n_ages; a++) { 
 					LW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-2,y,0));
 				}
 			}
+			count_wheresub += 1;
 		}
     }
   }  
@@ -1101,7 +1120,7 @@ Type objective_function<Type>::operator() ()
 	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
 	array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
 	nll_waa.setZero();
-  if(waa_type == 1) {
+  if(weight_model == 1) {
   	// Replace pred_waa by waa to be used later:
 	for(int y = 0; y < n_years_model + n_years_proj; y++) {
 		for(int a = 0; a < n_ages; a++) { 
@@ -1117,7 +1136,7 @@ Type objective_function<Type>::operator() ()
 		}
 	}
   } else {
-		if(waa_type == 2) {
+		if(weight_model == 2) {
 			  for(int y = 0; y < n_years_model + n_years_proj; y++) { // 
 				int yuse = y;
 				int y_1 = y + 1;
@@ -1184,7 +1203,7 @@ Type objective_function<Type>::operator() ()
 			  }  // loop only for year_model
 			  nll += nll_waa.sum();	
 		} else {
-			// waa_type == 3
+			// weight_model == 3
 			vector<Type> fracyr_WAA(n_ages);
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
 				int yuse = y;
@@ -1417,63 +1436,36 @@ Type objective_function<Type>::operator() ()
     }
   }
   
-  // Replace fill selAA out using selAL when selex-at-age is used: TODO
-/*   for(int b = 0; b < n_selblocks; b++) {
-	  if(selblock_models(b) < 6) { // for age models
-		  selAA(b) = selAL(b);  // same as calculated in selAL
-	  } else {
-		  // Transform selex-at-len to selex-at-age, this should be time specific:
-		  for(int i = 0; i < n_indices; i++) {
-			matrix<Type> matemp(n_years_model, n_ages);
-			  for(int y = 0; y < n_years_model; y++){
-				  int y_1 = y + 1;
-				  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(y,i), growth_model);
-				  for(int a = 0; a < n_ages; a++) {
-					Type sumSelex = 0.0;
-					  for(int l = 0; l < n_lengths; l++) {
-						if(phi_matrix_info == 0) sumSelex += fracyr_phi_mat(l,a)*selAL(b)(y,l);
-						else sumSelex += phi_matrix_input(waa_pointer_indices(i)-1,l,a)*selAL(b)(y,l);
-					  }
-					matemp(y,a) = sumSelex;
-				  }
-				}
-			}
-		  selAA(b) = matemp;
-	  }
-  } */
-  
-  // Transform selex-at-len to selex-at-age:
-  for(int b = 0; b < n_selblocks; b++) {
-	  if(selblock_models(b) < 6) { // for age models
-		  selAA(b) = selAL(b);  // same as calculated in selAL
-	  } else { // transform for all years
-	      matrix<Type> matemp(n_years_model, n_ages);
-		  for(int y = 0; y < n_years_model; y++){
-			  for(int a = 0; a < n_ages; a++) {
-			  Type sumSelex = 0.0;
-				  for(int l = 0; l < n_lengths; l++) {
-					if(phi_matrix_info == 0) sumSelex += phi_mat(y,l,a)*selAL(b)(y,l);
-					else sumSelex += phi_matrix_input(waa_pointer_jan1-1,l,a)*selAL(b)(y,l);
-				  }
-			  matemp(y,a) = sumSelex;
-			  }
-		  }
-		  selAA(b) = matemp;
-	  }
-  }
-  
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
   // add ecov effect on M (by year, shared across ages)
     for(int y = 0; y < n_years_model; y++)
     {
-      for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
+	  // This is for selAA (mandatory everywhere selAA is used):
+	  int y_1 = y + 1;
+	  int y_2 = y + 2;
+	  if(y == (n_years_model - 1)) y_1 = y;
+	  if(y == (n_years_model - 1)) y_2 = y;
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), vector<Type>(LAA.row(y_2)), intraGrowth, GW_par, lengths, y, fracyr_indices(y,i), growth_model);
+	  matrix<Type> this_selAL = selAL(selblock_pointer_indices(y,i)-1);
+	  int this_sel_model = selblock_models(selblock_pointer_indices(y,i)-1);
+	  temp_selAA.row(y) = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_indices(i)));
+      for(int a = 0; a < n_ages; a++) {
+		  QAA(y,i,a) = q(y,i) * temp_selAA(y,a);
+	  }
+	  selAA(selblock_pointer_indices(y,i)-1) = temp_selAA;
     }
     //just use last years selectivity for now
-    if(do_proj == 1) for(int y = n_years_model; y < n_years_model + n_years_proj; y++) for(int a = 0; a < n_ages; a++) {
-      QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
-    }
+    if(do_proj == 1) {
+		// This is for selAA (mandatory everywhere selAA is used):
+		int y_1 = n_years_model - 1;
+		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) { 
+			for(int a = 0; a < n_ages; a++) {
+				QAA(y,i,a) = q(y,i) * temp_selAA(y_1,a);
+			}
+		}
+	}
   }
   REPORT(logit_q_mat);
   if(use_q_re.sum()>0 || Ecov_effects_on_q>0) if(do_post_samp.sum()< 1) ADREPORT(logit_q_mat);
@@ -1493,22 +1485,40 @@ Type objective_function<Type>::operator() ()
   {
     log_F(0,f) = log_F1(f);
     F(0,f) = exp(log_F(0,f));
+	  // This is for selAA (mandatory everywhere selAA is used):
+	  int y_1 = 1;
+	  int y_2 = 2;
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(0)), vector<Type>(SDAA.row(0)), vector<Type>(LAA.row(y_1)), vector<Type>(LAA.row(y_2)), intraGrowth, GW_par, lengths, 0, fracyr_fleets(0,f), growth_model);
+	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(0,f)-1);
+	  int this_sel_model = selblock_models(selblock_pointer_fleets(0,f)-1);
+	  temp_selAA.row(0) = get_selAA_from_selAL(vector<Type>(this_selAL.row(0)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
     for(int a = 0; a < n_ages; a++)
     {
-      FAA(0,f,a) = F(0,f) * selAA(selblock_pointer_fleets(0,f)-1)(0,a);
+      FAA(0,f,a) = F(0,f) * temp_selAA(0,a);
       log_FAA(0,f,a) = log(FAA(0,f,a));
       FAA_tot(0,a) = FAA_tot(0,a) + FAA(0,f,a);
     }
+	selAA(selblock_pointer_fleets(0,f)-1) = temp_selAA;
     for(int y = 1; y < n_years_model; y++)
     {
       log_F(y,f) = log_F(y-1,f) + F_devs(y-1,f);
       F(y,f) = exp(log_F(y,f));
+	  // This is for selAA (mandatory everywhere selAA is used):
+	  int y_1 = y + 1;
+	  int y_2 = y + 2;
+	  if(y == (n_years_model - 1)) y_1 = y;
+	  if(y == (n_years_model - 1)) y_2 = y;
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), vector<Type>(LAA.row(y_2)), intraGrowth, GW_par, lengths, y, fracyr_fleets(y,f), growth_model);
+	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(y,f)-1);
+	  int this_sel_model = selblock_models(selblock_pointer_fleets(y,f)-1);
+	  temp_selAA.row(y) = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
       for(int a = 0; a < n_ages; a++)
       {
-        FAA(y,f,a) = F(y,f) * selAA(selblock_pointer_fleets(y,f)-1)(y,a);
+        FAA(y,f,a) = F(y,f) * temp_selAA(y,a);
         log_FAA(y,f,a) = log(FAA(y,f,a));
         FAA_tot(y,a) = FAA_tot(y,a) + FAA(y,f,a);
       }
+	  selAA(selblock_pointer_fleets(y,f)-1) = temp_selAA;
     }
   }
   // Total mortality, Z = F + M (non-projection years only)

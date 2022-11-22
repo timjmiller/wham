@@ -92,7 +92,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp.bubbles(mod, i=i)
       plot.index.caal.bubbles(mod, i=i)
     }
-    #if(mod$env$data$waa_type == 1 | mod$env$data$waa_type == 3 | mod$env$data$waa_type == 4) {
+    #if(mod$env$data$weight_model == 1 | mod$env$data$weight_model == 3 | mod$env$data$weight_model == 4) {
       plot.waa(mod,"ssb")
       plot.waa(mod,"jan1")
       plot.waa(mod,"totcatch")
@@ -121,7 +121,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.index.len.comp.resids(mod)
     plot.index.caal.resids(mod)
     plot.NAA.res(mod)
-    if(mod$env$data$waa_type > 1) {
+    if(mod$env$data$weight_model > 1) {
       plot.waa.resids(mod)
     }
     if(!is.null(mod$osa)) {
@@ -158,7 +158,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.SARC.R.SSB(mod)
       plot.cv(mod)
     }
-    if(mod$env$data$waa_type > 1) {
+    if(mod$env$data$weight_model > 1) {
       plot.pred.waa(mod,"ssb")
       plot.pred.waa(mod,"jan1")
       plot.pred.waa(mod,"totcatch")
@@ -238,7 +238,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
       plot.index.caal.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
     }
-    #if(mod$env$data$waa_type == 1 | mod$env$data$waa_type == 3) {
+    #if(mod$env$data$weight_model == 1 | mod$env$data$weight_model == 3) {
       png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"ssb")
       dev.off()
@@ -288,7 +288,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.caal.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
-    if(mod$env$data$waa_type > 1) {
+    if(mod$env$data$weight_model > 1) {
       plot.waa.resids(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
@@ -335,7 +335,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     png(file.path(dir.res,"Numbers_at_age_proportion.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.NAA(mod, prop=TRUE)
     dev.off()
-    if(mod$env$data$waa_type > 1) {
+    if(mod$env$data$weight_model > 1) {
       png(file.path(dir.res,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.pred.waa(mod,"ssb")
       dev.off()

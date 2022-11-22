@@ -1035,3 +1035,29 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, vec
 	  
 	return(WAA);
 }
+
+// Get selectivity at age from selectivity at length
+// Only used when selectivity at length is specified
+template <class Type>
+vector<Type> get_selAA_from_selAL(vector<Type> selAL_y, int this_sel_model, matrix<Type> fracyr_phi_mat, 
+								  int phi_matrix_info, array<Type> phi_matrix_input, int pointer){
+	  
+	  int n_ages = fracyr_phi_mat.cols();
+	  int n_lengths = fracyr_phi_mat.rows();
+	  vector<Type> selAA(n_ages); // n_ages
+	  if(this_sel_model < 6) { // for age models
+		  for(int a = 0; a < n_ages; a++) selAA(a) = selAL_y(a);  // same as calculated in selAL
+	  } else { // transform for all years
+		  for(int a = 0; a < n_ages; a++) {
+		  Type sumSelex = 0.0;
+			  for(int l = 0; l < n_lengths; l++) {
+				if(phi_matrix_info == 0) sumSelex += fracyr_phi_mat(l,a)*selAL_y(l);
+				else sumSelex += phi_matrix_input(pointer-1,l,a)*selAL_y(l);
+			  }
+		  selAA(a) = sumSelex;
+		  }
+	  }
+
+	return(selAA);
+
+}

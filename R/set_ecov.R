@@ -6,9 +6,9 @@ set_ecov = function(input, ecov)
   #random = input$random
 
   #define new dimensions for all effects a given ecov can have on assessment model
-  #currently the order is recruitment, M, index 1, ..., n_indices, growth (or LAA), LW, WAA
-  n_effects = 5 + data$n_indices
-  index_effects = 5 + 1:data$n_indices
+  #currently the order is recruitment, M, index 1, ..., n_indices, growth, LAA, LW, WAA
+  n_effects = 6 + data$n_indices
+  index_effects = 6 + 1:data$n_indices
 
   # --------------------------------------------------------------------------------
   # Environmental covariate data
@@ -96,8 +96,8 @@ set_ecov = function(input, ecov)
     if(length(ecov$process_model) != data$n_Ecov) stop("length of ecov$process_model must be either 1 or the number of Ecovs")
     
     for(i in 1:data$n_Ecov) {
-      if(is.na(ecov$process_model[i]) & any(ecov$where[[i]] %in% c("recruit", "M", "q", "growth", "LW", "WAA"))){ #ecov$how !=0){
-      stop(paste0("ecov$process_model ", i, " is turned off (NA) but ecov$where includes 'M', 'recruit', 'q', 'growth', 'LW', 'WAA'.
+      if(is.na(ecov$process_model[i]) & any(ecov$where[[i]] %in% c("recruit", "M", "q", "growth", "LAA", "LW", "WAA"))){ #ecov$how !=0){
+      stop(paste0("ecov$process_model ", i, " is turned off (NA) but ecov$where includes 'M', 'recruit', 'q', 'growth', 'LAA', 'LW' and 'WAA'.
        Either 1) choose an ecov process model ('rw' or 'ar1'),
               2) turn off ecov (set ecov$where[i] = 'none' and ecov$process_model = NA),
            or 3) fit ecov but with no effect on population (ecov$where[i] = 'none', ecov$process_model[i] = 'rw' or 'ar1')."))
@@ -233,18 +233,18 @@ set_ecov = function(input, ecov)
       Either remove ecov-recruit effect or estimate recruitment
       (or all numbers-at-age) as random effects.")
     }
-    if(is.null(ecov$where)) stop("ecov$where must be specified as 'none', 'recruit', 'M', 'q', 'growth' and/or 'LW' for each ecov.")
-    if(any(sapply(ecov$where, function(x) any(!(x %in% c('recruit','M','q', 'growth', 'LW', 'none')))))){
-      stop("Only ecov effects on recruitment, M, catchability (q), growth, or length-weight relationship currently implemented.
-      Set ecov$where = 'none' or one or more of 'recruit', 'M', 'q', 'growth', and 'LW'.")
+    if(is.null(ecov$where)) stop("ecov$where must be specified as 'none', 'recruit', 'M', 'q', 'growth', 'LAA', 'LW' and/or 'WAA' for each ecov.")
+    if(any(sapply(ecov$where, function(x) any(!(x %in% c('recruit','M','q', 'growth', 'LAA', 'LW', 'WAA', 'none')))))){
+      stop("Only ecov effects on recruitment, M, catchability (q), growth, LAA, L-W or WAA relationship currently implemented.
+      Set ecov$where = 'none' or one or more of 'recruit', 'M', 'q', 'growth', 'LAA', 'LW' and 'WAA'.")
     }
 
     if(!all(ecov$process_model %in% c(NA,"rw", "ar1"))){
       stop("ecov$process_model must be 'rw' (random walk), 'ar1', or NA (do not fit)")
     }
     for(i in 1:data$n_Ecov) {
-      if(is.na(ecov$process_model[i]) & any(ecov$where[[i]] %in% c("recruit", "M", "q", "growth", "LW"))){ #ecov$how !=0){
-      stop(paste0("ecov$process_model ", i, " is turned off (NA) but ecov$where includes 'recruit', 'M', 'q', 'growth' or 'LW'.
+      if(is.na(ecov$process_model[i]) & any(ecov$where[[i]] %in% c("recruit", "M", "q", "growth", "LAA", "LW", "WAA"))){ #ecov$how !=0){
+      stop(paste0("ecov$process_model ", i, " is turned off (NA) but ecov$where includes 'recruit', 'M', 'q', 'growth', 'LAA', 'LW' or 'WAA'.
        Either 1) choose an ecov process model ('rw' or 'ar1'),
               2) turn off ecov (set ecov$where[i] = 'none' and ecov$process_model = NA),
            or 3) fit ecov but with no effect on population (ecov$where[i] = 'none', ecov$process_model[i] = 'rw' or 'ar1')."))
@@ -259,7 +259,8 @@ set_ecov = function(input, ecov)
         if(!is.list(ecov$indices)) stop("ecov$indices must be a specified as a list (length = n_Ecov) of vectors of any indices each Ecov affects") 
         data$Ecov_where[i,2 + ecov$indices[[i]]] = 1 
       }
-      if(any(ecov$where[[i]] == "growth")) data$Ecov_where[i,n_effects-2] = 1 
+      if(any(ecov$where[[i]] == "growth")) data$Ecov_where[i,n_effects-3] = 1 
+      if(any(ecov$where[[i]] == "LAA")) data$Ecov_where[i,n_effects-2] = 1 
       if(any(ecov$where[[i]] == "LW")) data$Ecov_where[i,n_effects-1] = 1 
       if(any(ecov$where[[i]] == "WAA")) data$Ecov_where[i,n_effects] = 1 
     }
@@ -294,31 +295,37 @@ set_ecov = function(input, ecov)
         Either set ecov$how = 0 (no effect), 1 (controlling), or 4 (masking)...
         Or set recruit_model = 3 (Bev-Holt).")
       }
-      if(data$Ecov_where[i,n_effects-2] == 1) {
+      if(data$Ecov_where[i,n_effects-3] == 1) { # parametric growth
         if(!ecov$how[i] %in% c(0,1)){
-          stop("Sorry, only the following ecov effects on growth are currently implemented.
-          Set ecov$how = 0 (no effect) or 1 (effect on growth parameter or mean LAA (shared across ages)).")
+          stop("Sorry, only the following ecov effects on 'growth' are currently implemented.
+          Set ecov$how = 0 (no effect) or 1 (effect on growth parameter).")
         }
-        if(is.null(ecov$where_subindex)) stop("If effects on growth is chosen, Ecov_where_subindex should be provided.")
+        if(is.null(ecov$where_subindex)) stop("If effects on 'growth' is chosen, Ecov_where_subindex should be provided.")
       }
-      if(data$Ecov_where[i,n_effects-1] == 1) {
+      if(data$Ecov_where[i,n_effects-2] == 1) { # LAA
         if(!ecov$how[i] %in% c(0,1)){
-          stop("Sorry, only the following ecov effects on length-weight relationship are currently implemented.
+          stop("Sorry, only the following ecov effects on 'LAA' are currently implemented.
+          Set ecov$how = 0 (no effect) or 1 (effect on mean LAA (shared across ages)).")
+        }
+      }
+      if(data$Ecov_where[i,n_effects-1] == 1) { # LW
+        if(!ecov$how[i] %in% c(0,1)){
+          stop("Sorry, only the following ecov effects on 'LW' are currently implemented.
           Set ecov$how = 0 (no effect) or 1 (effect on LW parameter).")
         }     
-        if(is.null(ecov$where_subindex)) stop("If effects on length-weight relationship is chosen, Ecov_where_subindex should be provided.")
+        if(is.null(ecov$where_subindex)) stop("If effects on 'weight' relationship is chosen, Ecov_where_subindex should be provided.")
       }
-      if(data$Ecov_where[i,n_effects] == 1) {
+      if(data$Ecov_where[i,n_effects] == 1) { # WAA
         if(!ecov$how[i] %in% c(0,1)){
-          stop("Sorry, only the following ecov effects on growth are currently implemented.
-          Set ecov$how = 0 (no effect) or 1 (effect on WAA (shared across ages)).")
-        }
+          stop("Sorry, only the following ecov effects on 'WAA' are currently implemented.
+          Set ecov$how = 0 (no effect) or 1 (effect mean WAA shared across ages).")
+        }     
       }
       #currently only need this if recruitment effects modeled.
       if(data$Ecov_where[i,1] == 1) data$Ecov_how[i] = ecov$how[i]
     }
 
-    #For Growth and LW:
+    #For growth and LW:
     data$Ecov_where_subindex = 1
     if(!is.null(ecov$where_subindex)) data$Ecov_where_subindex = ecov$where_subindex
 
@@ -405,8 +412,8 @@ set_ecov = function(input, ecov)
         \n"))
       }
 
-      if(data$Ecov_where[i,n_effects-2] == 1){ # growth
-        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][2], ") on: growth (parameter ", data$Ecov_where_subindex, ")
+      if(data$Ecov_where[i,n_effects-3] == 1){ # growth
+        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][n_effects-3], ") on: growth (parameter ", data$Ecov_where_subindex[i], ")
 
           Model years:
         "))
@@ -419,8 +426,22 @@ set_ecov = function(input, ecov)
         \n"))
       }
 
+      if(data$Ecov_where[i,n_effects-2] == 1){ # LAA
+        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][n_effects-2], ") on: LAA
+
+          Model years:
+        "))
+        cat(years, fill=TRUE)
+
+        cat(paste0("Lag: ",ecov$lag[i,2],"
+        Ex: ",ecov$label[i]," in ",years[1]," affects LAA in ",years[1+ecov$lag[i,2]],"
+            ",ecov$label[i]," in ",lastyr," affects LAA in ",lastyr+ecov$lag[i,2],"
+
+        \n"))
+      }
+
       if(data$Ecov_where[i,n_effects-1] == 1){ # LW
-        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][2], ") on: LW (parameter ", data$Ecov_where_subindex, ")
+        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][n_effects-1], ") on: LW (parameter ", data$Ecov_where_subindex[i], ")
 
           Model years:
         "))
@@ -434,7 +455,7 @@ set_ecov = function(input, ecov)
       }
 
       if(data$Ecov_where[i,n_effects] == 1){ # WAA
-        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][2], ") on: WAA)
+        cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", ecov$link[[i]][n_effects], ") on: WAA
 
           Model years:
         "))

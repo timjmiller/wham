@@ -1813,7 +1813,7 @@ plot.waa.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 = 0.25, pos
     #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
     #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
     my.title <- "Weight-at-age Residuals (Observed-Predicted) for Fleet "
-    resids <- waa.obs - waa.pred  # NOTE obs-pred
+    resids <- (waa.obs - waa.pred)/(waa.obs*cv.vals)  # NOTE obs-pred
     resids[yzero,] = NA # don't plot residuals for catch paa not fit in model
     resids[which(cv.vals == 0)] = NA # NA when cv = 0
     fname = paste0("Catch_weight_age_resids_fleet_",i)

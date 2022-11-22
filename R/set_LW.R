@@ -9,23 +9,24 @@ set_LW = function(input, LW)
   # LW default options:
   n_par_def = 2 # 2 parameters: a and b: W = a*L^b
   data$LW_re_model = rep(1, times = n_par_def) # default = no RE / 'none'
+  data$n_LW_par = n_par_def # 
   data$LW_est <- rep(0, times = n_par_def) # default = don't estimate M
-  data$n_LW_par = n_par_def # 2 parameters: a and b: W = a*L^b
   LW_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par_def))
   LW_ini = c(log(5e-06), log(3)) 
 
   # prepare LW options:
   if(!is.null(LW)){
 
-    n_par = c(2) # for model 1 
+    data$weight_model = 2 # use LW
 
     if(!is.null(LW$re)){
       
-        if(!(LW$re[1] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("LW$re[1] (k) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-        if(!(LW$re[2] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop("LW$re[2] (Linf) must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'")
-        data$LW_re_model[1] <- match(LW$re[1], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-        data$LW_re_model[2] <- match(LW$re[2], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
-
+      if(length(LW$re) != data$n_LW_par) stop("Number of 're' must be equal to the number of L-W parameters.")
+      for(k in 1:data$n_LW_par) {
+          if(!(LW$re[k] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop(paste0("LW$re[", k, "] must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'"))
+          data$LW_re_model[k] <- match(LW$re[k], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
+      }
+      
     }
 
     if(!is.null(LW$init_vals)){
