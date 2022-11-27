@@ -72,13 +72,11 @@ set_WAA = function(input, waa_opts = NULL, WAA)
   WAA_re_ini = matrix(0, ncol = data$n_ages, nrow = data$n_years_model)
   data$WAA_re_model = 1
   data$WAA_est = rep(0, data$n_ages)
-  data$intraGrowth = c(0.28, 1.7) # for WAA, k and Winf
   WAA_ini = log( 2e-06*(100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)))^3 )
   if(!is.null(WAA)) {
     data$weight_model = 3 # use WAA
     WAA_ini = log(WAA$WAA_vals)
     if(!is.null(WAA$est_pars)) data$WAA_est[WAA$est_pars] = 1
-    if(!is.null(WAA$intraGrowth)) data$intraGrowth = WAA$intraGrowth
     if(!is.null(WAA$re))  {
       if(!(WAA$re %in% c("none","iid","iid_a","ar1_a","2dar1"))) stop("WAA$re must be one of the following: 'none','iid','iid_a','ar1_a','2dar1'")
       data$WAA_re_model <- match(WAA$re, c("none","iid","iid_a","ar1_a","2dar1")) # Respect this order to create array later

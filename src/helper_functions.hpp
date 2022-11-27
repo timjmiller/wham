@@ -921,7 +921,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 }
 
 template <class Type>
-matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mLAA_jan1_y1, vector<Type> mLAA_jan1_y2, vector<Type> intra_G,
+matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mLAA_jan1_y1, 
 						array<Type> GW_par, vector<Type> lengths, int y, Type fracyr, int growth_model){
 
   Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
@@ -936,35 +936,18 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
   matrix<Type> out(n_lengths, n_ages);
   vector<Type> mLAA(n_ages);
   Type Grate = 0.0;
-  Type diff1 = 0.0;
-  //Type diff2 = 0.0;
-  Type estLinf = intra_G(1); // for nonparametric LAA
-  Type estK = intra_G(0); // for nonparametric LAA
-  
+
   	  for(int a = 0; a < n_ages; a++)
 	  {  
   
   		if(growth_model == 1) mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
   		if(growth_model == 2) mLAA(a) = pow(pow(mLAA_jan1(a),GW_par(y,a,3)) + (pow(mLAA_jan1(a),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*fracyr) - 1.0),1/GW_par(y,a,3));
 		if(growth_model == 3){ // nonparametric approach
-			if(a < (n_ages-2)) { // for a < n_ages - 2
-				diff1 = mLAA_jan1_y1(a+1) - mLAA_jan1(a); // to avoid 0 or negative in log
-				//diff2 = mLAA_jan1_y2(a+2) - mLAA_jan1_y1(a+1); // to avoid 0 or negative in log
-				if((diff1 > 0.0)) { // only for increasing function, do vB increase
-					//estLinf = (mLAA_jan1_y2(a+2)*mLAA_jan1(a) - pow(mLAA_jan1_y1(a+1),2.0))/(mLAA_jan1(a)-2.0*mLAA_jan1_y1(a+1)+mLAA_jan1_y2(a+2));
-					//estK = -log((mLAA_jan1_y1(a+1)-mLAA_jan1_y2(a+2))/(mLAA_jan1(a)-mLAA_jan1_y1(a+1)));					
-					mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - estLinf)*(exp(-estK*fracyr) - 1.0);
-				} else { // do linear interpolation instead 
-					Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
-					mLAA(a) = mLAA_jan1(a) + Grate;
-				}
-			} else { // for a >= n_ages - 2, do linear interpolation always 
-				if(a < (n_ages - 1)) {
-					Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
-					mLAA(a) = mLAA_jan1(a) + Grate;
-				} else { // for oldest age
-					mLAA(a) = mLAA_jan1(a); // no growth for oldest age
-				}
+			if(a < (n_ages-1)) { // for a < n_ages - 1, linear interpolation
+				Grate = (mLAA_jan1_y1(a+1) - mLAA_jan1(a))*fracyr;
+				mLAA(a) = mLAA_jan1(a) + Grate;	
+			} else { // last age. Use previous growth rate
+				mLAA(a) = mLAA_jan1(a) + Grate;
 			}
 		}
 
@@ -993,42 +976,18 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 }
 
 template <class Type>
-matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, vector<Type> WAA_jan1_y2, vector<Type> intra_G, Type fracyr){
-  Type Grate = 0.0;
+matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Type fracyr){
   int n_ages = WAA_jan1.size();
   vector<Type> WAA(n_ages);
-  Type estWinf = intra_G(1); // for nonparametric WAA
-  Type estK = intra_G(0); // for nonparametric WAA
-  Type b_par = 3.0; // assume b = 3
-  Type WAA_t = 0.0;
-  Type WAA_t1 = 0.0; 
-  //Type WAA_t2 = 0.0;
-  Type diff1 = 0.0;
-  //Type diff2 = 0.0;
+  Type Grate = 0.0;
   
   	for(int a = 0; a < n_ages; a++)
 	 {  
-		if(a < (n_ages-2)) { // for a < n_ages - 2
-			WAA_t = pow(WAA_jan1(a),1.0/b_par);
-			WAA_t1 = pow(WAA_jan1_y1(a+1),1.0/b_par);
-			//WAA_t2 = pow(WAA_jan1_y2(a+2),1.0/b_par);
-			diff1 = WAA_t1 - WAA_t; // to avoid 0 or negative in log
-			//diff2 = WAA_t2 - WAA_t1; // to avoid 0 or negative in log		
-			if((diff1 > 0.0)) { // only for increasing function, do vB increase
-				//estWinf = pow((WAA_t2*WAA_t - pow(WAA_t1,2.0))/(WAA_t-2.0*WAA_t1+WAA_t2),b_par); // This is not working, dont know why
-				//estK = -log((WAA_t1-WAA_t2)/(WAA_t-WAA_t1)); // This is not working, dont know why
-				WAA(a) = pow(WAA_t + (WAA_t - pow(estWinf,1.0/b_par))*(exp(-estK*fracyr) - 1.0),b_par);
-			} else { // do linear interpolation instead 
-				Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
-				WAA(a) = WAA_jan1(a) + Grate;
-			}
-		} else { // for a >= n_ages - 2, do linear interpolation always 
-			if(a < (n_ages - 1)) {
-				Grate = (WAA_jan1_y1(a+1) - WAA_jan1(a))*fracyr;
-				WAA(a) = WAA_jan1(a) + Grate;
-			} else { // for oldest age
-				WAA(a) = WAA_jan1(a); // no growth for oldest age
-			}
+		if(a < (n_ages-1)) { // for a < n_ages - 1. See Crane et al 2019
+			Grate = pow(WAA_jan1_y1(a+1)/WAA_jan1(a), 1.0/365.0) - 1.0;
+			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0);
+		} else { // for last age
+			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0); // use previous GRate
 		}
 		
 	}
