@@ -280,7 +280,7 @@ Type objective_function<Type>::operator() ()
   matrix<Type> LAA(n_years_model + n_years_proj,n_ages);// NEWG
   matrix<Type> fracyr_phi_mat(n_lengths,n_ages);// NEWG
   matrix<Type> SDAA(n_years_model + n_years_proj,n_ages);// NEWG
-  matrix<Type> temp_selAA(n_years_model, n_ages);
+  vector<Type> temp_selAA(n_ages);
   array<Type> FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   array<Type> log_FAA(n_years_model+n_years_proj,n_fleets,n_ages);
   matrix<Type> FAA_tot(n_years_model + n_years_proj,n_ages);
@@ -1055,10 +1055,10 @@ Type objective_function<Type>::operator() ()
   Type Fac2 = 0.0;
   Type Ll1p = 0.0;
   Type Llp = 0.0;
+  Type Slope = 0.0;
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
-	  for(int a = 0; a < n_ages; a++)
-	  {
+	  for(int a = 0; a < n_ages; a++) {
 			if(growth_model == 1) { // vB classic growth model
 				if(y == 0) {
 					LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); 
@@ -1082,12 +1082,23 @@ Type objective_function<Type>::operator() ()
 				}
 			}
 			if(growth_model == 3) LAA(y,a) = LAA_par(y,a); // LAA model
+	  } // loop age
 			
-			if(growth_model == 1) SDAA(y,a) = ( GW_par(y,a,3) + ((GW_par(y,a,4) - GW_par(y,a,3))/(n_ages - 1.0))*a )*LAA(y,a);  //
-			if(growth_model == 2) SDAA(y,a) = ( GW_par(y,a,4) + ((GW_par(y,a,5) - GW_par(y,a,4))/(n_ages - 1.0))*a )*LAA(y,a);  //
-			if(growth_model == 3) SDAA(y,a) = ( GW_par(y,a,0) + ((GW_par(y,a,1) - GW_par(y,a,0))/(n_ages - 1.0))*a )*LAA(y,a);  //
+	  for(int a = 0; a < n_ages; a++) {
+			// SD calculation:
+			if(growth_model == 1) {
+				Slope = (GW_par(y,a,4) - GW_par(y,a,3))/(LAA(y,n_ages-1)-LAA(y,0));
+				SDAA(y,a) = GW_par(y,a,3) + Slope*(LAA(y,a)-LAA(y,0));  
+			}
+			if(growth_model == 2) {
+				Slope = (GW_par(y,a,5) - GW_par(y,a,4))/(LAA(y,n_ages-1)-LAA(y,0));
+				SDAA(y,a) = GW_par(y,a,4) + Slope*(LAA(y,a)-LAA(y,0));  
+			}
+			if(growth_model == 3) {
+				Slope = (GW_par(y,a,1) - GW_par(y,a,0))/(LAA(y,n_ages-1)-LAA(y,0));
+				SDAA(y,a) = GW_par(y,a,0) + Slope*(LAA(y,a)-LAA(y,0));  
+			}
 			
-			// pred_LAA(0,a) = LAA(0,a); // predicted mean length at age, is it necessary?
 			for(int l = 0; l < n_lengths; l++) {
 				
 				if(l == 0) { 
@@ -1106,8 +1117,8 @@ Type objective_function<Type>::operator() ()
 					}
 				}
 				
-			}
-	  }
+			}// loop length
+	  } // loop age
   }
 
   // --------------------------------------------------------------------------
@@ -1431,6 +1442,27 @@ Type objective_function<Type>::operator() ()
     }
   }
   
+  
+  // Transform selex-at-len to selex-at-age (only to save info in selAA), use JAN-1 phi matrix:
+  for(int b = 0; b < n_selblocks; b++) {
+	  if(selblock_models(b) < 6) { // for age models
+		  selAA(b) = selAL(b);  // same as calculated in selAL
+	  } else { // transform for all years
+	      matrix<Type> matemp(n_years_model, n_ages);
+		  for(int y = 0; y < n_years_model; y++){
+			  for(int a = 0; a < n_ages; a++) {
+			  Type sumSelex = 0.0;
+				  for(int l = 0; l < n_lengths; l++) {
+					if(phi_matrix_info == 0) sumSelex += phi_mat(y,l,a)*selAL(b)(y,l);
+					else sumSelex += phi_matrix_input(waa_pointer_jan1-1,l,a)*selAL(b)(y,l);
+				  }
+			  matemp(y,a) = sumSelex;
+			  }
+		  }
+		  selAA(b) = matemp;
+	  }
+  }
+  
   // Construct survey catchability-at-age (QAA)
   for(int i = 0; i < n_indices; i++)
   {
@@ -1443,19 +1475,17 @@ Type objective_function<Type>::operator() ()
 	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(y,i), growth_model);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_indices(y,i)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_indices(y,i)-1);
-	  temp_selAA.row(y) = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_indices(i)));
+	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_indices(i)));
       for(int a = 0; a < n_ages; a++) {
-		  QAA(y,i,a) = q(y,i) * temp_selAA(y,a);
+		  QAA(y,i,a) = q(y,i) * temp_selAA(a);
 	  }
-	  selAA(selblock_pointer_indices(y,i)-1) = temp_selAA;
     }
     //just use last years selectivity for now
     if(do_proj == 1) {
 		// This is for selAA (mandatory everywhere selAA is used):
-		int y_1 = n_years_model - 1;
 		for(int y = n_years_model; y < n_years_model + n_years_proj; y++) { 
 			for(int a = 0; a < n_ages; a++) {
-				QAA(y,i,a) = q(y,i) * temp_selAA(y_1,a);
+				QAA(y,i,a) = q(y,i) * temp_selAA(a); // using temp_selAA from last year (n_years_model)
 			}
 		}
 	}
@@ -1483,14 +1513,13 @@ Type objective_function<Type>::operator() ()
 	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(0)), vector<Type>(SDAA.row(0)), vector<Type>(LAA.row(y_1)), GW_par, lengths, 0, fracyr_fleets(0,f), growth_model);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(0,f)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_fleets(0,f)-1);
-	  temp_selAA.row(0) = get_selAA_from_selAL(vector<Type>(this_selAL.row(0)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
+	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(0)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
     for(int a = 0; a < n_ages; a++)
     {
-      FAA(0,f,a) = F(0,f) * temp_selAA(0,a);
+      FAA(0,f,a) = F(0,f) * temp_selAA(a);
       log_FAA(0,f,a) = log(FAA(0,f,a));
       FAA_tot(0,a) = FAA_tot(0,a) + FAA(0,f,a);
     }
-	selAA(selblock_pointer_fleets(0,f)-1) = temp_selAA;
     for(int y = 1; y < n_years_model; y++)
     {
       log_F(y,f) = log_F(y-1,f) + F_devs(y-1,f);
@@ -1501,14 +1530,13 @@ Type objective_function<Type>::operator() ()
 	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(y,f), growth_model);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(y,f)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_fleets(y,f)-1);
-	  temp_selAA.row(y) = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
+	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
       for(int a = 0; a < n_ages; a++)
       {
-        FAA(y,f,a) = F(y,f) * temp_selAA(y,a);
+        FAA(y,f,a) = F(y,f) * temp_selAA(a);
         log_FAA(y,f,a) = log(FAA(y,f,a));
         FAA_tot(y,a) = FAA_tot(y,a) + FAA(y,f,a);
       }
-	  selAA(selblock_pointer_fleets(y,f)-1) = temp_selAA;
     }
   }
   // Total mortality, Z = F + M (non-projection years only)
