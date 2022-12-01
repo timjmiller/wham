@@ -104,6 +104,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_INTEGER(n_growth_par); // NEWG TODO: change this parameter name
   DATA_INTEGER(growth_model); // 1: "vB-classic", 2: "vB-K_age" NEWG
+  DATA_SCALAR(age_L1); // age for L1
   DATA_IVECTOR(growth_re_model); // 1 = none, 2 = IID, 3 = ar1_y NEWG
   DATA_ARRAY(phi_matrix_input); // 1 = none, 2 = IID, 3 = ar1_y NEWG
   DATA_INTEGER(phi_matrix_info); // 1 = none, 2 = IID, 3 = ar1_y NEWG
@@ -1056,28 +1057,52 @@ Type objective_function<Type>::operator() ()
   Type Ll1p = 0.0;
   Type Llp = 0.0;
   Type Slope = 0.0;
+  Type b_len = 0.0;
+  Type last_linear = 0.0;
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
+	  int count_age = 0;
 	  for(int a = 0; a < n_ages; a++) {
+		  	b_len = (GW_par(y,a,2) - Lminp)/age_L1; // same slope for any parametric model
 			if(growth_model == 1) { // vB classic growth model
-				if(y == 0) {
-					LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*a); 
-				} else {
-					if(a == 0) { 
-						LAA(y,a) = GW_par(y,a,2);  
-					} else {
-						LAA(y,a) = LAA(y-1,a-1) + (LAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
+				if(y == 0) { //year = 0
+					if((a + 1.0) <= age_L1) { // linear growth
+						LAA(y,a) = Lminp + b_len*(a+1.0);
+					} else { // use growth equation
+						LAA(y,a) = GW_par(y,a,1) + (GW_par(y,a,2) - GW_par(y,a,1)) * exp(-GW_par(y,a,0)*(a+1.0-age_L1)); 
+					}
+				} else { // year > 0
+					if((a + 1.0) <= age_L1) { // linear growth
+						LAA(y,a) = Lminp + b_len*(a+1.0); 
+					} else { // use growth equation
+						if(count_age == 0) { // only do it for first age after passing age_L1
+							last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
+							LAA(y,a) = last_linear + (last_linear - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)*(a+1.0-age_L1)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
+							count_age += 1;
+						} else {
+							LAA(y,a) = LAA(y-1,a-1) + (LAA(y-1,a-1) - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)) - 1.0);
+						}
 					}
 				}
 			}
 			if(growth_model == 2) { // Richards growth model
-				if(y == 0) {
-					LAA(y,a) = pow(pow(GW_par(y,a,1),GW_par(y,a,3)) + (pow(GW_par(y,a,2),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3))) * exp(-GW_par(y,a,0)*a),1/GW_par(y,a,3));
-				} else {
-					if(a == 0) { 
-						LAA(y,a) = GW_par(y,a,2);  
-					} else {
-						LAA(y,a) = pow(pow(LAA(y-1,a-1),GW_par(y,a,3)) + (pow(LAA(y-1,a-1),GW_par(y,a,3)) - pow(GW_par(y-1,a-1,1),GW_par(y,a,3)))*(exp(-GW_par(y-1,a-1,0)) - 1.0),1/GW_par(y,a,3)); // use growth parameters y-1 and a-1 because it is jan1
+				if(y == 0) { //year = 0
+					if((a + 1.0) <= age_L1) { // linear growth
+						LAA(y,a) = Lminp + b_len*(a+1.0);
+					} else { // use growth equation
+						LAA(y,a) = pow(pow(GW_par(y,a,1),GW_par(y,a,3)) + (pow(GW_par(y,a,2),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3))) * exp(-GW_par(y,a,0)*(a+1.0-age_L1)),1/GW_par(y,a,3)); 
+					}
+				} else { // year > 0
+					if((a + 1.0) <= age_L1) { // linear growth
+						LAA(y,a) = Lminp + b_len*(a+1.0);  
+					} else { // use growth equation
+						if(count_age == 0) { // only do it for first age after passing age_L1
+							last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
+							LAA(y,a) = pow(pow(last_linear,GW_par(y,a,3)) + (pow(last_linear,GW_par(y,a,3)) - pow(GW_par(y-1,a-1,1),GW_par(y,a,3)))*(exp(-GW_par(y-1,a-1,0)*(a+1.0-age_L1)) - 1.0),1/GW_par(y,a,3)); // use growth parameters y-1 and a-1 because it is jan1
+							count_age += 1;
+						} else {
+							LAA(y,a) = pow(pow(LAA(y-1,a-1),GW_par(y,a,3)) + (pow(LAA(y-1,a-1),GW_par(y,a,3)) - pow(GW_par(y-1,a-1,1),GW_par(y,a,3)))*(exp(-GW_par(y-1,a-1,0)) - 1.0),1/GW_par(y,a,3));
+						}
 					}
 				}
 			}
@@ -1165,7 +1190,7 @@ Type objective_function<Type>::operator() ()
 				}
 				
 				// For SSB
-				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_SSB(yuse), growth_model);
+				fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_SSB(yuse), growth_model, age_L1);
 				for(int a = 0; a < n_ages; a++) { 
 					sum_wt_ssb = 0;
 					for(int l = 0; l < n_lengths; l++) {
@@ -1177,7 +1202,7 @@ Type objective_function<Type>::operator() ()
 
 				// For fleets
 				for(int f = 0; f < n_fleets; f++) {
-					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(yuse,f), growth_model);
+					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(yuse,f), growth_model, age_L1);
 					for(int a = 0; a < n_ages; a++) { 
 						sum_wt_fleet = 0;
 						for(int l = 0; l < n_lengths; l++) {
@@ -1194,7 +1219,7 @@ Type objective_function<Type>::operator() ()
 				
 				// For indices
 				for(int i = 0; i < n_indices; i++) {
-					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(yuse,i), growth_model);
+					fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(yuse,i), growth_model, age_L1);
 					for(int a = 0; a < n_ages; a++) { 
 						sum_wt_index = 0;
 						for(int l = 0; l < n_lengths; l++) {
@@ -1472,7 +1497,7 @@ Type objective_function<Type>::operator() ()
 	  // This is for selAA (mandatory everywhere selAA is used):
 	  int y_1 = y + 1;
 	  if(y == (n_years_model - 1)) y_1 = y;
-	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(y,i), growth_model);
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(y,i), growth_model, age_L1);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_indices(y,i)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_indices(y,i)-1);
 	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_indices(i)));
@@ -1510,7 +1535,7 @@ Type objective_function<Type>::operator() ()
     F(0,f) = exp(log_F(0,f));
 	  // This is for selAA (mandatory everywhere selAA is used):
 	  int y_1 = 1;
-	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(0)), vector<Type>(SDAA.row(0)), vector<Type>(LAA.row(y_1)), GW_par, lengths, 0, fracyr_fleets(0,f), growth_model);
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(0)), vector<Type>(SDAA.row(0)), vector<Type>(LAA.row(y_1)), GW_par, lengths, 0, fracyr_fleets(0,f), growth_model, age_L1);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(0,f)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_fleets(0,f)-1);
 	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(0)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
@@ -1527,7 +1552,7 @@ Type objective_function<Type>::operator() ()
 	  // This is for selAA (mandatory everywhere selAA is used):
 	  int y_1 = y + 1;
 	  if(y == (n_years_model - 1)) y_1 = y;
-	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(y,f), growth_model);
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(y,f), growth_model, age_L1);
 	  matrix<Type> this_selAL = selAL(selblock_pointer_fleets(y,f)-1);
 	  int this_sel_model = selblock_models(selblock_pointer_fleets(y,f)-1);
 	  temp_selAA = get_selAA_from_selAL(vector<Type>(this_selAL.row(y)), this_sel_model, fracyr_phi_mat, phi_matrix_info, phi_matrix_input, int(waa_pointer_fleets(f)));
@@ -1842,7 +1867,7 @@ Type objective_function<Type>::operator() ()
     //int acomp_par_count = 0;
 	for(int f = 0; f < n_fleets; f++)
     {
-	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(usey, f), growth_model); // only works for growth_model = 1 so far
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_fleets(usey, f), growth_model, age_L1); // only works for growth_model = 1 so far
 	  lsum.setZero();
       pred_catch(y,f) = 0.0;
       Type tsum = 0.0;
@@ -2042,7 +2067,7 @@ Type objective_function<Type>::operator() ()
     {
 	  lsumI.setZero();
       Type tsum = 0.0;
-	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(usey,i), growth_model); // only works for growth_model = 1 so far
+	  fracyr_phi_mat = pred_LAA(vector<Type>(LAA.row(y)), vector<Type>(SDAA.row(y)), vector<Type>(LAA.row(y_1)), GW_par, lengths, y, fracyr_indices(usey,i), growth_model, age_L1); // only works for growth_model = 1 so far
       for(int a = 0; a < n_ages; a++)
       {
         pred_IAA(y,i,a) =  NAA(y,a) * QAA(y,i,a) * exp(-ZAA(y,a) * fracyr_indices(usey,i));

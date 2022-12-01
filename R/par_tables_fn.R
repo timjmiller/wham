@@ -566,7 +566,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
 
   # LW parameters
-  if(data$waa_type == 2 | data$waa_type == 3) {
+  if(data$weight_model == 2 | data$weight_model == 3) {
     LW_vector = as.vector(pars$LW_a)
     LWpar_names = c("a (length-weight)", "b (length-weight)")
     fe.names = c(fe.names, LWpar_names)
