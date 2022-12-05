@@ -483,9 +483,11 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   # }
 
   # Somatic growth
-    if(data$growth_model == 1){
+    if(data$growth_model < 3){
+
       Gpar_vector = as.vector(pars$growth_a)
-      Gpar_names = c('K', 'Linf', 'L1', 'CV1', 'CVA')
+      if(data$growth_model == 1) Gpar_names = c('K', 'Linf', 'L1', 'CV1', 'CVA')
+      if(data$growth_model == 2) Gpar_names = c('K', 'Linf', 'L1', 'Gamma', 'CV1', 'CVA')
       fe.names = c(fe.names, Gpar_names)
       fe.vals = c(fe.vals, exp(Gpar_vector))
 
@@ -514,7 +516,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       }
     }
 
-    if(data$growth_model == 2){
+    if(data$growth_model == 3){
       Gpar_vector = as.vector(pars$growth_a)
       Gpar_names = c('CV1', 'CVA')
       fe.names = c(fe.names, paste0("Mean length for age ", mod$ages.lab))
