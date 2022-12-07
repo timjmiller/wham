@@ -51,6 +51,8 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages
   DATA_IMATRIX(use_catch_paa);
   DATA_MATRIX(catch_Neff);
+  DATA_ARRAY(catch_aging_error); 
+  DATA_VECTOR(use_catch_aging_error); 
   
   DATA_ARRAY(catch_pal); //n_fleets x n_years x n_lengths // NEWG
   DATA_IMATRIX(use_catch_pal); // NEWG
@@ -76,6 +78,8 @@ Type objective_function<Type>::operator() ()
   DATA_ARRAY(index_caal); //n_fleets x n_years x n_lengths // NEWG
   DATA_IMATRIX(use_index_caal); // NEWG
   DATA_ARRAY(index_caal_Neff); // NEWG
+  DATA_ARRAY(index_aging_error);   
+  DATA_VECTOR(use_index_aging_error); 
   
   DATA_VECTOR(q_lower);
   DATA_VECTOR(q_upper);
@@ -1852,6 +1856,8 @@ Type objective_function<Type>::operator() ()
   array<Type> catch_paa_proj(n_fleets, n_years_proj, n_ages);
   array<Type> catch_pal_proj(n_fleets, n_years_proj, n_lengths); // NEWG
   array<Type> catch_caal_proj(n_fleets,n_years_proj,n_lengths, n_ages); // NEWG
+  matrix<Type> tmp_aging(n_ages,n_ages);
+  vector<Type> tmp_agecomps(n_ages);
   nll_agg_catch.setZero();
   nll_catch_acomp.setZero();
   nll_catch_lcomp.setZero(); // NEWG
@@ -1907,10 +1913,22 @@ Type objective_function<Type>::operator() ()
       if(any_fleet_age_comp(f) == 1){					
         vector<Type> paa_obs_y(n_ages);
         paa_obs_y.setZero();
-        for(int a = 0; a < n_ages; a++){
-          pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
-          t_pred_paa(a) = pred_catch_paa(y,f,a);
-        }
+		if(use_catch_aging_error(f) == 1) { // use aging error
+			for(int a = 0; a < n_ages; a++){
+				for(int a2 = 0; a2 < n_ages; a2++) tmp_aging(a2,a) = pred_CAA(y,f,a)*catch_aging_error(f,a2,a);
+			}
+			tmp_agecomps = tmp_aging.rowwise().sum(); 
+			for(int a = 0; a < n_ages; a++) {
+				pred_catch_paa(y,f,a) = tmp_agecomps(a)/tsum; // this object will contain the paa with aging error
+				t_pred_paa(a) = pred_catch_paa(y,f,a);
+			}
+		} else { // not use aging error
+			for(int a = 0; a < n_ages; a++){
+				pred_catch_paa(y,f,a) = pred_CAA(y,f,a)/tsum;
+				t_pred_paa(a) = pred_catch_paa(y,f,a);
+			}
+		}
+			
         if(y < n_years_model) if(use_catch_paa(y,f) == 1) {
           for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_paa(f,y,a);
           //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
@@ -1986,9 +2004,20 @@ Type objective_function<Type>::operator() ()
 		  for(int l = 0; l < n_lengths; l++) {
 			vector<Type> paa_obs_y(n_ages);
 			paa_obs_y.setZero();
-			for(int a = 0; a < n_ages; a++){
-			  pred_catch_paa(y,f,l,a) = pred_CAAL(y,f,l,a)/lsum(l);
-			  t_pred_paa(a) = pred_catch_caal(y,f,l,a);
+			if(use_catch_aging_error(f) == 1) { // use aging error
+				for(int a = 0; a < n_ages; a++){
+					for(int a2 = 0; a2 < n_ages; a2++) tmp_aging(a2,a) = pred_CAAL(y,f,l,a)*catch_aging_error(f,a2,a);
+				}
+				tmp_agecomps = tmp_aging.rowwise().sum(); 
+				for(int a = 0; a < n_ages; a++) {
+					pred_catch_caal(y,f,l,a) = tmp_agecomps(a)/lsum(l); // this object will contain the paa with aging error
+					t_pred_paa(a) = pred_catch_caal(y,f,l,a);
+				}
+			} else { // not use aging error
+				for(int a = 0; a < n_ages; a++){
+				  pred_catch_caal(y,f,l,a) = pred_CAAL(y,f,l,a)/lsum(l);
+				  t_pred_paa(a) = pred_catch_caal(y,f,l,a);
+				}
 			}
 			if(y < n_years_model) if(use_catch_caal(y,f) == 1) {
 			  for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_caal(f,y,l,a);
@@ -2110,11 +2139,21 @@ Type objective_function<Type>::operator() ()
       {
         vector<Type> paa_obs_y(n_ages);
         paa_obs_y.setZero();
-        for(int a = 0; a < n_ages; a++)
-        {
-          pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
-          t_pred_paa(a) = pred_index_paa(y,i,a);
-        }
+		if(use_index_aging_error(i) == 1) { // use aging error
+			for(int a = 0; a < n_ages; a++){
+				for(int a2 = 0; a2 < n_ages; a2++) tmp_aging(a2,a) = pred_IAA(y,i,a)*index_aging_error(i,a2,a);
+			}
+			tmp_agecomps = tmp_aging.rowwise().sum(); 
+			for(int a = 0; a < n_ages; a++) {
+				pred_index_paa(y,i,a) = tmp_agecomps(a)/tsum; // this object will contain the paa with aging error
+				t_pred_paa(a) = pred_index_paa(y,i,a);
+			}
+		} else { // not use aging error
+			for(int a = 0; a < n_ages; a++) {
+			  pred_index_paa(y,i,a) = pred_IAA(y,i,a)/tsum;
+			  t_pred_paa(a) = pred_index_paa(y,i,a);
+			}
+		}
         if(y < n_years_model) if(use_index_paa(y,i) == 1) {
           for(int a = 0; a < n_ages; a++) paa_obs_y(a) = index_paa(i,y,a);
           //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,0) + keep_Ipaa(i,y,1) - 1
@@ -2193,10 +2232,20 @@ Type objective_function<Type>::operator() ()
 		for(int l = 0; l < n_lengths; l++){
 			vector<Type> paa_obs_y(n_ages);
 			paa_obs_y.setZero();
-			for(int a = 0; a < n_ages; a++)
-			{
-				pred_index_caal(y,i,l,a) = pred_IAAL(y,i,l,a)/lsumI(l);
-				t_pred_paa(a) = pred_index_caal(y,i,l,a); 
+			if(use_index_aging_error(i) == 1) { // use aging error
+				for(int a = 0; a < n_ages; a++){
+					for(int a2 = 0; a2 < n_ages; a2++) tmp_aging(a2,a) = pred_IAAL(y,i,l,a)*index_aging_error(i,a2,a);
+				}
+				tmp_agecomps = tmp_aging.rowwise().sum(); 
+				for(int a = 0; a < n_ages; a++) {
+					pred_index_caal(y,i,l,a) = tmp_agecomps(a)/lsumI(l); // this object will contain the paa with aging error
+					t_pred_paa(a) = pred_index_caal(y,i,l,a);
+				}
+			} else { // not use aging error
+				for(int a = 0; a < n_ages; a++){
+					pred_index_caal(y,i,l,a) = pred_IAAL(y,i,l,a)/lsumI(l);
+					t_pred_paa(a) = pred_index_caal(y,i,l,a); 
+				}
 			}
 			if(y < n_years_model) if(use_index_caal(y,i) == 1) {
 			  for(int a = 0; a < n_ages; a++) paa_obs_y(a) = index_caal(i,y,l,a);
