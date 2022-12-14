@@ -50,6 +50,8 @@ set_catch = function(input, catch_opts= NULL)
   else
   {
     data$n_fleets = 1
+    if(!is.null(catch_opts$n_fleets)) data$n_fleets = catch_opts$n_fleets 
+
     if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 1
     else data$agg_catch = catch_opts$agg_catch
   	
