@@ -402,7 +402,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	catch_opts = NULL
 	catch_names = c("n_fleets", "fracyr_fleets", "agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa",
 					"catch_pal", "catch_NeffL", "use_catch_pal", "catch_caal", "catch_caal_Neff", "use_catch_caal",
-					"catch_aging_error", "use_catch_aging_error",
+					"catch_aging_error", "use_catch_aging_error", "use_agg_catch",
 					"selblock_pointer_fleets")
 	if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
 

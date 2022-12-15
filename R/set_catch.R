@@ -64,6 +64,9 @@ set_catch = function(input, catch_opts= NULL)
     if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 1
     else data$agg_catch = catch_opts$agg_catch
 
+    if(is.null(catch_opts$use_agg_catch)) data$use_agg_catch[] = 1
+    else data$use_agg_catch = catch_opts$use_agg_catch
+    
     if(is.null(catch_opts$fracyr_fleets)) data$fracyr_fleets[] = 0.5
     else data$fracyr_fleets = catch_opts$fracyr_fleets
   	
