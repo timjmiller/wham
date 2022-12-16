@@ -1333,6 +1333,8 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
     }
 		log.ob.min <- log(catch[,i])-1.96*sigma[,i]
 		log.ob.max <- log(catch[,i])+1.96*sigma[,i]
+    log.ob.min[which(is.infinite(log.ob.min))] = 1 # needed when catch = 0
+    log.ob.max[which(is.infinite(log.ob.max))] = 1 # needed when catch = 0
 		plot(years_full, log(pred_catch[,i]), col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab="Ln(Total Catch)",
 			ylim=c(min(log.ob.min,log(pred_catch[,i]), na.rm=T), 1.1*max(log.ob.max,log(pred_catch[,i]), na.rm=T)))
 		points(years, log(catch[,i]), pch=1, col=plot.colors[i])
@@ -2035,7 +2037,7 @@ plot.catch.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
           # scale.resid.bubble.catch <- 2
         } else {
           lcomp.obs = dat$catch_caal[i,y,,]
-          lcomp.pred = mod$rep$pred_catch_pal[y,i,,]
+          lcomp.pred = mod$rep$pred_catch_caal[y,i,,]
           #acomp.pred = aperm(mod$rep$pred_catch_paa[1:length(years),,,drop=FALSE], c(2,1,3))[i,,] #biomass is accounted for on the cpp side
           #acomp.pred = acomp.pred/apply(acomp.pred,1,sum)
           my.title <- "CAAL Residuals (Observed-Predicted) for Fleet "
@@ -2064,7 +2066,9 @@ plot.catch.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
 
           for (j in 1:n_lengths) points(ages, rep(lengths[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
           
-          maxRes = max(abs(resids), na.rm = TRUE)
+          maxRes = 0
+          if(any(resids)>0) maxRes = max(abs(resids), na.rm = TRUE)
+          maxRes[which(is.infinite(maxRes))] = 0
           bubble.legend1 <- round(c(maxRes, maxRes*0.5),3)
           bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
           legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 2), pt.cex=bubble.legend2, horiz=T , col='black')
@@ -2326,7 +2330,8 @@ plot.index.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
         for (j in 1:n_lengths) if(dat$index_caal_Neff[y,i,j] > 0)
           points(ages, rep(lengths[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
 
-        maxRes = max(abs(resids), na.rm = TRUE)
+        maxRes = 0
+        if(any(resids)>0) maxRes = max(abs(resids), na.rm = TRUE)
         bubble.legend1 <- round(c(maxRes, maxRes*0.5),3)
         bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
         legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 2), pt.cex=bubble.legend2, horiz=T , col='black')

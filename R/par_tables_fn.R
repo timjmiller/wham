@@ -384,7 +384,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   fe.names = temp[[1]]
   fe.vals = temp[[2]]
   fe.cis = temp[[3]]
-  temp2 = add_len_comp_pars(data$len_comp_model_fleets, data$use_index_pal, pars$index_pal_pars, sd$index_pal_pars, 
+  temp2 = add_len_comp_pars(data$len_comp_model_indices, data$use_index_pal, pars$index_pal_pars, sd$index_pal_pars, 
       is_fleet = FALSE, fe.names, fe.vals, fe.cis)
   fe.names = temp2[[1]]
   fe.vals = temp2[[2]]

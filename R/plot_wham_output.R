@@ -92,13 +92,17 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp.bubbles(mod, i=i)
       plot.index.caal.bubbles(mod, i=i)
     }
-    #if(mod$env$data$weight_model == 1 | mod$env$data$weight_model == 3 | mod$env$data$weight_model == 4) {
+    if(mod$env$data$weight_model == 1) {
       plot.waa(mod,"ssb")
       plot.waa(mod,"jan1")
       plot.waa(mod,"totcatch")
       for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
       for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
-    #}
+    }
+    if(mod$env$data$weight_model > 1) {
+      if(any(input$data$use_catch_waa > 0)) for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
+      if(any(input$data$use_index_waa > 0)) for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
+    }
     plot.maturity(mod)
     dev.off()
 
@@ -172,8 +176,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.tile.age.year(mod, type="LAA")
     plot.tile.age.year(mod, type="phi_mat")
     condQ = as.list(mod$sdrep, "Std. Error")$logit_q
-    if(!is.na(condQ)) plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
-    if(!is.na(condQ)) plot_q(mod)
+    plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
+    plot_q(mod)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod)
     dev.off()
 
@@ -238,7 +242,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.index.len.comp.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
       plot.index.caal.bubbles(mod, do.png = TRUE, fontfam=fontfam, i=i, od=dir.data)
     }
-    #if(mod$env$data$weight_model == 1 | mod$env$data$weight_model == 3) {
+    if(mod$env$data$weight_model == 1) {
       png(file.path(dir.data,"weight_at_age_SSB.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"ssb")
       dev.off()
@@ -258,7 +262,23 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         plot.waa(mod,"indices", ind=i)
         dev.off()
       }
-    #}
+    }
+    if(mod$env$data$weight_model > 1) {
+      if(any(input$data$use_catch_waa > 0)) {
+        for(i in 1:mod$env$data$n_fleets){
+          png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+          plot.waa(mod,"fleets", ind=i)
+          dev.off()
+        }
+      }
+      if(any(input$data$use_index_waa > 0)) {
+        for(i in 1:mod$env$data$n_indices){
+          png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+          plot.waa(mod,"indices", ind=i)
+          dev.off()
+        }
+      }
+    }
     png(file.path(dir.data,"maturity.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.maturity(mod)
     dev.off()
@@ -386,8 +406,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.tile.age.year(mod, type="LAA", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
     plot.tile.age.year(mod, type="phi_mat", do.png=TRUE, fontfam=fontfam, res = res, od=dir.res)
     condQ = as.list(mod$sdrep, "Std. Error")$logit_q
-    if(!is.na(condQ)) plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
-    if(!is.na(condQ)) plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
+    plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
+    plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
 
     # PNG reference points -----------------
