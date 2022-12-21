@@ -2066,9 +2066,9 @@ plot.catch.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
 
           for (j in 1:n_lengths) points(ages, rep(lengths[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
           
-          maxRes = 0
-          if(any(resids)>0) maxRes = max(abs(resids), na.rm = TRUE)
+          maxRes = max(abs(resids), na.rm = TRUE)
           maxRes[which(is.infinite(maxRes))] = 0
+
           bubble.legend1 <- round(c(maxRes, maxRes*0.5),3)
           bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
           legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 2), pt.cex=bubble.legend2, horiz=T , col='black')
@@ -2330,8 +2330,9 @@ plot.index.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
         for (j in 1:n_lengths) if(dat$index_caal_Neff[y,i,j] > 0)
           points(ages, rep(lengths[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
 
-        maxRes = 0
-        if(any(resids)>0) maxRes = max(abs(resids), na.rm = TRUE)
+        maxRes = max(abs(resids), na.rm = TRUE)
+        maxRes[which(is.infinite(maxRes))] = 0
+
         bubble.legend1 <- round(c(maxRes, maxRes*0.5),3)
         bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
         legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 2), pt.cex=bubble.legend2, horiz=T , col='black')
@@ -4985,8 +4986,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
   # transition matrix
   if(type=="phi_mat"){ 
     yearLab = years[1]
-    if(mod$env$data$phi_matrix_info == 0) df.LAA <- t(rep$phi_mat[1,,]) # only for first year
-    if(mod$env$data$phi_matrix_info == 1) df.LAA <- mod$env$data$phi_matrix_input[mod$env$data$waa_pointer_jan1,,] 
+    df.LAA <- t(rep$phi_mat[1,,]) # only for first year
 
     if(do.tex) cairo_pdf(file.path(od, paste0("phi_mat_tile.pdf")), family = fontfam, height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0("phi_mat_tile.png")), width = 8*res, height = 5*res, res = res, pointsize = 12, family = fontfam)
@@ -5056,6 +5056,7 @@ plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
     par(mar=c(4,4,3,2), oma=c(1,1,1,1))
     pal = viridisLite::viridis(n=mod$input$data$n_indices)
     ymax = max(q_hi, na.rm = TRUE)
+    if(is.infinite(ymax)) ymax = max(q, na.rm = TRUE)*1.05
     plot(mod$years_full, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
     for( i in 1:mod$input$data$n_indices){
       lines(mod$years_full, q[,i], lwd = 2, col = pal[i])

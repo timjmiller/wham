@@ -100,8 +100,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
     }
     if(mod$env$data$weight_model > 1) {
-      if(any(input$data$use_catch_waa > 0)) for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
-      if(any(input$data$use_index_waa > 0)) for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
+      if(any(mod$env$data$use_catch_waa > 0)) for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
+      if(any(mod$env$data$use_index_waa > 0)) for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)
     }
     plot.maturity(mod)
     dev.off()
@@ -264,14 +264,14 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       }
     }
     if(mod$env$data$weight_model > 1) {
-      if(any(input$data$use_catch_waa > 0)) {
+      if(any(mod$env$data$use_catch_waa > 0)) {
         for(i in 1:mod$env$data$n_fleets){
           png(file.path(dir.data, paste0("weight_at_age_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
           plot.waa(mod,"fleets", ind=i)
           dev.off()
         }
       }
-      if(any(input$data$use_index_waa > 0)) {
+      if(any(mod$env$data$use_index_waa > 0)) {
         for(i in 1:mod$env$data$n_indices){
           png(file.path(dir.data, paste0("weight_at_age_index",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
           plot.waa(mod,"indices", ind=i)

@@ -24,8 +24,11 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
   {
     matrix<Type> tmp(n_years, n_ages);
 	matrix<Type> tmpL(n_years, n_lengths); // only for len selex
+	vector<Type> newLengths(n_lengths); // to save length bin + 0.5*binsize
+	Type binwidth = lengths(1) - lengths(0);
 	tmp.setZero();
 	tmpL.setZero();
+    for(int l = 0; l < n_lengths; l++) newLengths(l) = lengths(l) + 0.5*binwidth; // saving length+0.5*binsize
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
     { 
@@ -116,7 +119,7 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 						  Type k = selpars(b)(y,1); //  1/slope in year y
 						  for(int l = 0; l < n_lengths; l++)
 						  {
-							tmpL(y,l) = 1.0/(1.0 + exp(-(lengths(l) - l50)/k));
+							tmpL(y,l) = 1.0/(1.0 + exp(-(newLengths(l) - l50)/k)); 
 						  }
 						  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
 						}
@@ -128,7 +131,7 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 							  Type k = selpars(b)(y,1); //  1/slope in year y
 							  for(int l = 0; l < n_lengths; l++)
 							  {
-								tmpL(y,l) = 1.0/(1.0 + exp((lengths(l) - l50)/k));
+								tmpL(y,l) = 1.0/(1.0 + exp((newLengths(l) - l50)/k)); 
 							  }
 							  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
 							}
@@ -141,9 +144,8 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 							Type p_4 = selpars(b)(y,3);
 							Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
 							Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
-							Type binwidth = lengths(1) - lengths(0);
-							Type lmax = max(lengths);
-							Type lmin = min(lengths);
+							Type lmax = max(newLengths);
+							Type lmin = min(newLengths);
 							Type gammax = p_1 + binwidth + (0.99*lmax - p_1 - binwidth)/(1 + exp(-p_2));
 							Type alpha = 0.0;
 							Type beta = 0.0;
@@ -151,10 +153,10 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
 							Type j_2 = 0.0;
 							for (int l = 0; l < n_lengths; l++)
 							{
-							  alpha = p_5 + (1 - p_5)*(exp(-pow(lengths(l) - p_1, 2)/exp(p_3)) - exp(-pow(lmin - p_1,2)/exp(p_3)))/(1-exp(-pow(lmin - p_1,2)/exp(p_3)));
-							  beta = 1 + (p_6 - 1)*(exp(-pow(lengths(l) - gammax,2)/exp(p_4)) - 1)/(exp(-pow(lmax - gammax,2)/exp(p_4)) - 1);
-							  j_1 = 1/(1 + exp(-20*(lengths(l) - p_1)/(1  + fabs(lengths(l) - p_1))));
-							  j_2 = 1/(1 + exp(-20*(lengths(l) - gammax)/(1  + fabs(lengths(l) - gammax))));
+							  alpha = p_5 + (1 - p_5)*(exp(-pow(newLengths(l) - p_1, 2)/exp(p_3)) - exp(-pow(lmin - p_1,2)/exp(p_3)))/(1-exp(-pow(lmin - p_1,2)/exp(p_3)));
+							  beta = 1 + (p_6 - 1)*(exp(-pow(newLengths(l) - gammax,2)/exp(p_4)) - 1)/(exp(-pow(lmax - gammax,2)/exp(p_4)) - 1);
+							  j_1 = 1/(1 + exp(-20*(newLengths(l) - p_1)/(1  + fabs(newLengths(l) - p_1))));
+							  j_2 = 1/(1 + exp(-20*(newLengths(l) - gammax)/(1  + fabs(newLengths(l) - gammax))));
 							  tmpL(y,l) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
 							}
 						  }	
@@ -167,8 +169,8 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, ve
       }
     }
 	
-    if(selblock_models(b) < 5) selAL(b) = tmp;
-	else selAL(b) = tmpL;
+    if(selblock_models(b) < 6) selAL(b) = tmp; // age selex
+	else selAL(b) = tmpL; // len selex
 	
   }
   return selAL;
@@ -924,9 +926,8 @@ template <class Type>
 matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mLAA_jan1_y1, 
 						array<Type> GW_par, vector<Type> lengths, int y, Type fracyr, int growth_model, Type age_L1){
 
-  Type len_bin = lengths(1) - lengths(0); // input should have standardized length bin
-  Type Lminp = min(lengths) + len_bin*0.5;
-  Type Lmaxp = max(lengths) - len_bin*0.5;
+  Type Lminp = min(lengths);
+  Type Lmaxp = max(lengths);
   Type Fac1 = 0.0;
   Type Fac2 = 0.0;
   Type Ll1p = 0.0;
@@ -985,8 +986,8 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 					Fac1 = (Lmaxp - mLAA(a))/SDAA(a);
 					out(l,a) = 1.0 - pnorm(Fac1);  
 				} else { 
-					Ll1p = lengths(l) + len_bin*0.5;
-					Llp = lengths(l) - len_bin*0.5;
+					Ll1p = lengths(l+1);
+					Llp = lengths(l);
 					Fac1 = (Ll1p - mLAA(a))/SDAA(a);
 					Fac2 = (Llp - mLAA(a))/SDAA(a);
 					out(l,a) = pnorm(Fac1) - pnorm(Fac2);  
@@ -1021,9 +1022,9 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
 
 // Get selectivity at age from selectivity at length
 // Only used when selectivity at length is specified
+// Uses phi_matrix at fracyr
 template <class Type>
-vector<Type> get_selAA_from_selAL(vector<Type> selAL_y, int this_sel_model, matrix<Type> fracyr_phi_mat, 
-								  int phi_matrix_info, array<Type> phi_matrix_input, int pointer){
+vector<Type> get_selAA_from_selAL(vector<Type> selAL_y, int this_sel_model, matrix<Type> fracyr_phi_mat){
 	  
 	  int n_ages = fracyr_phi_mat.cols();
 	  int n_lengths = fracyr_phi_mat.rows();
@@ -1034,8 +1035,7 @@ vector<Type> get_selAA_from_selAL(vector<Type> selAL_y, int this_sel_model, matr
 		  for(int a = 0; a < n_ages; a++) {
 		  Type sumSelex = 0.0;
 			  for(int l = 0; l < n_lengths; l++) {
-				if(phi_matrix_info == 0) sumSelex += fracyr_phi_mat(l,a)*selAL_y(l);
-				else sumSelex += phi_matrix_input(pointer-1,l,a)*selAL_y(l);
+				sumSelex += fracyr_phi_mat(l,a)*selAL_y(l);
 			  }
 		  selAA(a) = sumSelex;
 		  }

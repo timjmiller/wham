@@ -8,13 +8,7 @@ set_growth = function(input, growth, LAA)
 
   # Include phi_matrix (age length transition matrix):
   tmp_phi_mat = array(NA, dim = c(dim(data$waa)[1], data$n_lengths, data$n_ages)) # same dim as waa
-  if(is.null(data$phi_matrix_input)) {
-    data$phi_matrix_input = tmp_phi_mat
-    data$phi_matrix_info = 0
-  } else {
-    data$phi_matrix_info = 1
-  }
-
+  
   # growth default options:
   n_par_def = 5 # 5 parameters (default): K, Linf, L1, CV1, CVA
   data$growth_model = 1 # 1: vB-classic, 2: Richards, 3: use LAA as input
