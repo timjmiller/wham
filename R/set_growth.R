@@ -16,7 +16,7 @@ set_growth = function(input, growth, LAA)
   data$growth_est <- rep(0, times = n_par_def) # default = don't estimate M
   data$n_growth_par = n_par_def # 5 parameters to estimate: K, Linf, t0, CV1, CVA, in that order
   growth_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par_def))
-  growth_ini = c(log(0.2), log(100), log(5), log(0.1), log(0.1)) 
+  growth_ini = c(log(0.2), log(100), log(5), log(3), log(7)) 
   
   # prepare growth options:
   if(!is.null(growth)){
