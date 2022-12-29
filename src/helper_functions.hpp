@@ -942,7 +942,7 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 
   	  for(int a = 0; a < n_ages; a++)
 	  {  
-  		b_len = (GW_par(y,a,2) - Lminp)/age_L1;
+    	b_len = (GW_par(y,a,2) - Lminp)/age_L1;
   		if(growth_model == 1) { // classic von Bertalanffy curve
 			if((a + 1.0 + fracyr) <= age_L1) { // use linear growth
 				mLAA(a) = Lminp + b_len*(a+1.0+fracyr);  
@@ -951,7 +951,7 @@ matrix<Type> pred_LAA(vector<Type> mLAA_jan1, vector<Type> SDAA, vector<Type> mL
 					mLAA(a) = mLAA_jan1(a) + (mLAA_jan1(a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
 				} else { // linear + growth curve mixed
 					last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
-					mLAA(a) = last_linear + (last_linear - GW_par(y-1,a-1,1))*(exp(-GW_par(y-1,a-1,0)*(a+1.0+fracyr-age_L1)) - 1.0); // use growth parameters y-1 and a-1 because it is jan1
+					mLAA(a) = last_linear + (last_linear - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*(a+1.0+fracyr-age_L1)) - 1.0); 
 				}
 			}
 		}
