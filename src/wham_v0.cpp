@@ -2100,19 +2100,38 @@ Type objective_function<Type>::operator() ()
       for(int a = 0; a < n_ages; a++)
       {
 		for(int l = 0; l < n_lengths; l++) { 
-			pred_IAAL(y,i,l,a) = selAA(selblock_pointer_indices(usey,i)-1)(usey,a)*selLL(selblock_pointer_indices(usey,i)-1)(usey,l)*fracyr_phi_mat(l,a)*NAA(y,a)*q(y,i)*exp(-ZAA(y,a) * fracyr_indices(usey,i));
+			// no Q effects yet as in SS:
+			// This is not important since Q is just a factor, pred_paa or pal will not vary
+			pred_IAAL(y,i,l,a) = selAA(selblock_pointer_indices(usey,i)-1)(usey,a)*selLL(selblock_pointer_indices(usey,i)-1)(usey,l)*fracyr_phi_mat(l,a)*NAA(y,a)*exp(-ZAA(y,a) * fracyr_indices(usey,i));
 			lsum(l) += pred_IAAL(y,i,l,a);
 			asum(a) += pred_IAAL(y,i,l,a);
 		}
 	  }		
-	  for(int l = 0; l < n_lengths; l++) pred_IAL(y,i,l) = lsum(l); // predicted index-at-length
+	  for(int l = 0; l < n_lengths; l++) pred_IAL(y,i,l) = lsum(l); // predicted index-at-length (numbers)
 	  for(int a = 0; a < n_ages; a++) {
-		  pred_IAA(y,i,a) = asum(a); // predicted index-at-age
-		  if(units_index_paa(i) == 1) pred_IAA(y,i,a) = pred_waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(y,i,a);
-          if(units_indices(i) == 1) pred_indices(y,i) += pred_waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(y,i,a);
-          else pred_indices(y,i) += pred_IAA(y,i,a);
+		  if(units_index_paa(i) == 1) pred_IAA(y,i,a) = pred_waa(waa_pointer_indices(i)-1,y,a) * asum(a); // predicted index-at-age (biomass)
+		  else pred_IAA(y,i,a) = asum(a); // predicted index-at-age (numbers)
 	  }
-
+	
+	  // Calculate agg index (numbers or biomass)
+	  // When using L-W parameters:
+	  if(weight_model == 2) {
+		  for(int l = 0; l < n_lengths; l++){
+			// here include Q effect:
+			if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*watl(y,l)*pred_IAL(y,i,l); // biomass
+			else pred_indices(y,i) += q(y,i)*pred_IAL(y,i,l); // numbers
+		  }
+	  }
+	  // When using emp WAA or non parametric WAA
+	  if(weight_model == 1 | weight_model == 3) {
+		  for(int a = 0; a < n_ages; a++) {
+			  // here include Q effect:
+			  if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*pred_waa(waa_pointer_indices(i)-1,y,a) * asum(a); // biomass, use asum to make sure we are using abundance
+			  else pred_indices(y,i) += q(y,i)*asum(a); // numbers, use asum to make sure we are using abundance
+		  }
+	  }
+	  
+	  // calculate Index NLL:
       pred_log_indices(y,i) = log(pred_indices(y,i));
       Type sig = agg_index_sigma(usey,i)*exp(log_index_sig_scale(i));
       if(bias_correct_oe == 1) pred_log_indices(y,i) -= 0.5*exp(2*log(sig));
