@@ -2123,7 +2123,7 @@ Type objective_function<Type>::operator() ()
 		  }
 	  }
 	  // When using emp WAA or non parametric WAA
-	  if(weight_model == 1 | weight_model == 3) {
+	  if((weight_model == 1) | (weight_model == 3)) {
 		  for(int a = 0; a < n_ages; a++) {
 			  // here include Q effect:
 			  if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*pred_waa(waa_pointer_indices(i)-1,y,a) * asum(a); // biomass, use asum to make sure we are using abundance
