@@ -686,7 +686,7 @@ Type objective_function<Type>::operator() ()
 		// likelihood of LAA deviations
 		  Sigma_LAA = pow(pow(sigma_LAA,2) / ((1-pow(rho_LAA_y,2))*(1-pow(rho_LAA_a,2))),0.5);
 		  nll_LAA += SCALE(SEPARABLE(AR1(rho_LAA_a),AR1(rho_LAA_y)), Sigma_LAA)(LAA_re); // must be array, not matrix!
-		  SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+		  SIMULATE if(simulate_state(6) == 1) if(sum(simulate_period) > 0) {
 			array<Type> LAAre_tmp = LAA_re;
 			SEPARABLE(AR1(rho_LAA_a),AR1(rho_LAA_y)).simulate(LAAre_tmp);
 			LAAre_tmp = Sigma_LAA * LAAre_tmp;
@@ -700,7 +700,7 @@ Type objective_function<Type>::operator() ()
         vector<Type> LAAre0 = LAA_re.matrix().row(0);
         Sigma_LAA = pow(pow(sigma_LAA,2) / (1-pow(rho_LAA_a,2)),0.5);
         nll_LAA += SCALE(AR1(rho_LAA_a), Sigma_LAA)(LAAre0);
-        SIMULATE if(simulate_state(5) == 1) if(sum(simulate_period) > 0) {
+        SIMULATE if(simulate_state(6) == 1) if(sum(simulate_period) > 0) {
           AR1(rho_LAA_a).simulate(LAAre0);
           for(int i = 0; i < LAAre0.size(); i++) LAAre0(i) = Sigma_LAA * LAAre0(i);
           for(int y = 0; y < n_years_model + n_years_proj; y++){
@@ -741,7 +741,7 @@ Type objective_function<Type>::operator() ()
 			// likelihood of WAA deviations
 			  Sigma_WAA = pow(pow(sigma_WAA,2) / ((1-pow(rho_WAA_y,2))*(1-pow(rho_WAA_a,2))),0.5);
 			  nll_WAA += SCALE(SEPARABLE(AR1(rho_WAA_a),AR1(rho_WAA_y)), Sigma_WAA)(WAA_re); // must be array, not matrix!
-			  SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
+			  SIMULATE if(simulate_state(8) == 1) if(sum(simulate_period) > 0) {
 				array<Type> WAAre_tmp = WAA_re;
 				SEPARABLE(AR1(rho_WAA_a),AR1(rho_WAA_y)).simulate(WAAre_tmp);
 				WAAre_tmp = Sigma_WAA * WAAre_tmp;
@@ -755,7 +755,7 @@ Type objective_function<Type>::operator() ()
 			vector<Type> WAAre0 = WAA_re.matrix().row(0);
 			Sigma_WAA = pow(pow(sigma_WAA,2) / (1-pow(rho_WAA_a,2)),0.5);
 			nll_WAA += SCALE(AR1(rho_WAA_a), Sigma_WAA)(WAAre0);
-			SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
+			SIMULATE if(simulate_state(8) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_WAA_a).simulate(WAAre0);
 			  for(int i = 0; i < WAAre0.size(); i++) WAAre0(i) = Sigma_WAA * WAAre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
@@ -943,7 +943,7 @@ Type objective_function<Type>::operator() ()
 			for(int y = 0; y < n_years_model + n_years_proj; y++) LWre0(y) = LW_re(y,0,j); 
 			Sigma_LW = pow(pow(sigma_LW(j),2) / (1-pow(rho_LW_y(j),2)),0.5);
 			nll_LW += SCALE(AR1(rho_LW_y(j)), Sigma_LW)(LWre0);
-			SIMULATE if(simulate_state(6) == 1) if(sum(simulate_period) > 0) {
+			SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_LW_y(j)).simulate(LWre0);
 			  for(int i = 0; i < LWre0.size(); i++) LWre0(i) = Sigma_LW * LWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
@@ -970,7 +970,7 @@ Type objective_function<Type>::operator() ()
 			for(int i = (n_ages - 1); i < (n_years_model + n_years_proj + n_ages - 1); i++) LWre0(i) = LW_re(i-n_ages+1,0,j); // for cohorts y>=0 
 			Sigma_LW = pow(pow(sigma_LW(j),2) / (1-pow(rho_LW_y(j),2)),0.5);
 			nll_LW += SCALE(AR1(rho_LW_y(j)), Sigma_LW)(LWre0);
-			SIMULATE if(simulate_state(6) == 1) if(sum(simulate_period) > 0) {
+			SIMULATE if(simulate_state(7) == 1) if(sum(simulate_period) > 0) {
 			  AR1(rho_LW_y(j)).simulate(LWre0);
 			  for(int i = 0; i < LWre0.size(); i++) LWre0(i) = Sigma_LW * LWre0(i);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++){
@@ -1155,6 +1155,7 @@ Type objective_function<Type>::operator() ()
 	Type sum_wt_ssb = 0;
 	Type sum_wt_fleet = 0;
 	Type sum_wt_index = 0;
+	Type sd_wt = 0;
 	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
 	array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
 	nll_waa.setZero();
@@ -1212,7 +1213,8 @@ Type objective_function<Type>::operator() ()
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 						pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; // for total catch, it is using the last fracyr_fleets
 						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-							nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
+							sd_wt = waa(waa_pointer_fleets(f) - 1,y,a)*waa_cv(waa_pointer_fleets(f) - 1,y,a);
+							nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
 						}
 					}
 				}
@@ -1227,7 +1229,8 @@ Type objective_function<Type>::operator() ()
 						}
 						pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
 						if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-							nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,y,a)); 
+							sd_wt = waa(waa_pointer_indices(i) - 1,y,a)*waa_cv(waa_pointer_indices(i) - 1,y,a);
+							nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
 						}
 					}
 				}
@@ -1259,7 +1262,8 @@ Type objective_function<Type>::operator() ()
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = fracyr_WAA(a); 
 						pred_waa(waa_pointer_totcatch-1,y,a) = fracyr_WAA(a); // for total catch, it is using the last fracyr_fleets
 						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-							nll_waa(waa_pointer_fleets(f) - 1,y,a) += get_waa_ll(waa(waa_pointer_fleets(f) - 1,y,a), pred_waa(waa_pointer_fleets(f) - 1,y,a), waa_cv(waa_pointer_fleets(f) - 1,y,a)); 
+							sd_wt = waa(waa_pointer_fleets(f) - 1,y,a)*waa_cv(waa_pointer_fleets(f) - 1,y,a);
+							nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
 						}
 					}
 				}
@@ -1269,7 +1273,8 @@ Type objective_function<Type>::operator() ()
 					for(int a = 0; a < n_ages; a++) { 
 						pred_waa(waa_pointer_indices(i)-1,y,a) = fracyr_WAA(a); // for indices	
 						if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-							nll_waa(waa_pointer_indices(i) - 1,y,a) += get_waa_ll(waa(waa_pointer_indices(i) - 1,y,a), pred_waa(waa_pointer_indices(i) - 1,y,a), waa_cv(waa_pointer_indices(i) - 1,y,a)); 
+							sd_wt = waa(waa_pointer_indices(i) - 1,y,a)*waa_cv(waa_pointer_indices(i) - 1,y,a);
+							nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
 						}
 					}
 				}				

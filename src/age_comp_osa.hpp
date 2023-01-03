@@ -510,11 +510,3 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   return ll;
 }
 
-template<class Type>
-Type get_waa_ll(Type waa_obs, Type waa_pred, Type cv)
-{
-	Type ll = 0.0;
-	ll = log(cv*waa_pred) + 0.5*pow((waa_obs-waa_pred)/(waa_pred*cv),2); // neg logL
-	//ll = 0.5*pow((waa_obs-waa_pred)/(waa_pred*cv),2); // neg logL
-	return ll;
-}
