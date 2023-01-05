@@ -14,7 +14,7 @@ set_catch = function(input, catch_opts= NULL)
   # print(data)
 
 	data$agg_catch = matrix(NA, data$n_years_model, data$n_fleets)
-  data$fracyr_fleets = matrix(0.5, data$n_years_model, data$n_fleets)
+  data$fracyr_catch = rep(0.5, times = data$n_years_model)
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
   data$use_agg_catch = matrix(1, data$n_years_model, data$n_fleets)
   data$use_catch_paa = matrix(0, data$n_years_model, data$n_fleets)
@@ -66,9 +66,6 @@ set_catch = function(input, catch_opts= NULL)
 
     if(is.null(catch_opts$use_agg_catch)) data$use_agg_catch[] = 1
     else data$use_agg_catch = catch_opts$use_agg_catch
-    
-    if(is.null(catch_opts$fracyr_fleets)) data$fracyr_fleets[] = 0.5
-    else data$fracyr_fleets = catch_opts$fracyr_fleets
   	
   	if(is.null(catch_opts$catch_paa)) data$catch_paa[] = 1/data$n_ages
     else data$catch_paa[] = catch_opts$catch_paa
