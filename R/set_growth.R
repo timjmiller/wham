@@ -6,9 +6,6 @@ set_growth = function(input, growth, LAA)
     
   n_re_par = 2 # number of parameters for RE
 
-  # Include phi_matrix (age length transition matrix):
-  tmp_phi_mat = array(NA, dim = c(dim(data$waa)[1], data$n_lengths, data$n_ages)) # same dim as waa
-  
   # growth default options:
   n_par_def = 5 # 5 parameters (default): K, Linf, L1, CV1, CVA
   data$growth_model = 1 # 1: vB-classic, 2: Richards, 3: use LAA as input
@@ -45,11 +42,11 @@ set_growth = function(input, growth, LAA)
       if(length(growth$init_vals) != data$n_growth_par) stop("Number of 'init_vals' must be equal to the number of parameters of the chosen growth model.")
       growth_ini <- log(growth$init_vals)
     }
-	
-  	if(!is.null(growth$est_pars)){
+  
+    if(!is.null(growth$est_pars)){
         if(length(growth$est_pars) > data$n_growth_par) stop("Number of 'est_pars' should be equal or less than the number of parameters of the chosen growth model.")
         data$growth_est[growth$est_pars] = 1
-  	}
+    }
 
   }
   data$n_growth_est <- sum(data$growth_est)
@@ -105,10 +102,10 @@ set_growth = function(input, growth, LAA)
 
     map$growth_re <- c(map$growth_re, as.vector(tmp1) + max_val_par)
 
-	  # K_repars: sigma_M, rho_M_y
-	  if(data$growth_re_model[i] == 1) tmp.g.repars[i,] <- rep(NA,n_re_par) # no RE pars to estimate
-	  if(data$growth_re_model[i] == 2) tmp.g.repars[i,] <- c(1,NA) # estimate sigma y
-	  if(data$growth_re_model[i] == 3) tmp.g.repars[i,] <- c(1,NA) # estimate sigma c
+    # K_repars: sigma_M, rho_M_y
+    if(data$growth_re_model[i] == 1) tmp.g.repars[i,] <- rep(NA,n_re_par) # no RE pars to estimate
+    if(data$growth_re_model[i] == 2) tmp.g.repars[i,] <- c(1,NA) # estimate sigma y
+    if(data$growth_re_model[i] == 3) tmp.g.repars[i,] <- c(1,NA) # estimate sigma c
     if(data$growth_re_model[i] == 4) tmp.g.repars[i,] <- c(1,2) # ar1_y: estimate sigma y, rho_y
     if(data$growth_re_model[i] == 5) tmp.g.repars[i,] <- c(1,2) # ar1_c: estimate sigma c, rho_c
 
