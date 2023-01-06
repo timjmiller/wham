@@ -23,14 +23,13 @@ add_basic_info <- function(input, basic_info){
 		else input$data$fracyr_SSB[] = basic_info$fracyr_SSB
 	}
 	#age-based maturity:
-	input$data$mature = t(matrix(1/(1 + exp(-1*(1:input$data$n_ages - input$data$n_ages/2))), input$data$n_ages, length(input$years)))
+	input$data$mature = t(matrix(1, input$data$n_ages, length(input$years))) # Imporant for growth WHAM
 	if(!is.null(basic_info[["maturity"]])){
 		if(!(length(basic_info$maturity) %in% c(1,input$data$n_ages*length(input$years)))) stop("basic_info$mature has been specified, but it's length is not 1 or length(ages)*length(years)")
 		else input$data$mature[] = basic_info$maturity
 	}
 	#len-based maturity:
-	len_mid = (input$data$lengths[2] - input$data$lengths[1])*0.5
-	input$data$mature_len = t(matrix(1/(1 + exp(-1*((input$data$lengths+len_mid) - max(input$data$lengths)/2))), input$data$n_lengths, length(input$years)))
+	input$data$mature_len = t(matrix(1, input$data$n_lengths, length(input$years)))
 	if(!is.null(basic_info[["maturity_len"]])){
 		if(!(length(basic_info$maturity_len) %in% c(1,input$data$n_lengths*length(input$years)))) stop("basic_info$mature_len has been specified, but it's length is not 1 or n_lengths*length(years)")
 		else input$data$mature_len[] = basic_info$maturity_len

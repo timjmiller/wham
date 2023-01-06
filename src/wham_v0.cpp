@@ -723,7 +723,7 @@ Type objective_function<Type>::operator() ()
   REPORT(LAA_a);
   REPORT(LAA_re);
   REPORT(LAA_repars);
-  if(do_post_samp(5) == 1) ADREPORT(LAA_re);
+  if(do_post_samp(6) == 1) ADREPORT(LAA_re);
 
   // ---------------------------------------------------------------------
   // WAA re
@@ -752,7 +752,7 @@ Type objective_function<Type>::operator() ()
 				  }
 				}
 			  }
-		  } else { // for 2 and 3 options
+		  } else { // for 3 and 4 options (age)
 			vector<Type> WAAre0 = WAA_re.matrix().row(0);
 			Sigma_WAA = pow(pow(sigma_WAA,2) / (1-pow(rho_WAA_a,2)),0.5);
 			nll_WAA += SCALE(AR1(rho_WAA_a), Sigma_WAA)(WAAre0);
@@ -778,7 +778,7 @@ Type objective_function<Type>::operator() ()
   REPORT(WAA_a);
   REPORT(WAA_re);
   REPORT(WAA_repars);
-  if(do_post_samp(7) == 1) ADREPORT(WAA_re);
+  if(do_post_samp(8) == 1) ADREPORT(WAA_re);
 
   // ---------------------------------------------------------------------
   // Construct growth parameters per year
@@ -998,7 +998,7 @@ Type objective_function<Type>::operator() ()
   REPORT(LW_a);
   REPORT(LW_re);
   REPORT(LW_repars);
-  if(do_post_samp(6) == 1) ADREPORT(LW_re);
+  if(do_post_samp(7) == 1) ADREPORT(LW_re);
 
   // Construct LW parameters per year NEWG
   array<Type> LW_par(n_years_model + n_years_proj,n_ages,n_LW_par); // array for LW parameters
@@ -1150,26 +1150,28 @@ Type objective_function<Type>::operator() ()
 	  } // loop age
   }
 
+  if(do_post_samp.sum()==0) ADREPORT(LAA);
+
   // --------------------------------------------------------------------------
   // Calculate phi matrix at all year fractions (will follow information in waa pointers)
   // Do it here just once (more efficient?)
   array<Type> out_phi_mat(n_years_model + n_years_proj, n_lengths, n_ages); // used later
   array<Type> ssb_phi_mat(n_years_model + n_years_proj, n_lengths, n_ages); // used later for SSB
-  array<Type> catch_phi_mat(n_years_model + n_years_proj, n_lengths, n_ages); // used later for SSB
+  array<Type> catch_phi_mat(n_years_model + n_years_proj, n_lengths, n_ages); // used later for catch
   int n_yrs = n_years_model + n_years_proj;
   // January 1st:
   phi_matrix(waa_pointer_jan1-1) = phi_mat; // calculated in previous section
   // SSB:
-  phi_matrix(waa_pointer_ssb-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_SSB, growth_model, age_L1);
+  phi_matrix(waa_pointer_ssb-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_SSB, growth_model, age_L1, Slope);
   // Total catch:
-  phi_matrix(waa_pointer_totcatch-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_catch, growth_model, age_L1);
+  phi_matrix(waa_pointer_totcatch-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_catch, growth_model, age_L1, Slope);
   // For fleets:
   for(int f = 0; f < n_fleets; f++) {
 	 phi_matrix(waa_pointer_fleets(f)-1) = phi_matrix(waa_pointer_totcatch-1); // use same as total catch, fraction = 0.5
   }
   // For indices:
   for(int i = 0; i < n_indices; i++) {
-	 phi_matrix(waa_pointer_indices(i)-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, vector<Type>(fracyr_indices.col(i)), growth_model, age_L1);
+	 phi_matrix(waa_pointer_indices(i)-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, vector<Type>(fracyr_indices.col(i)), growth_model, age_L1, Slope);
   }
   
   // --------------------------------------------------------------------------
@@ -1239,7 +1241,7 @@ Type objective_function<Type>::operator() ()
 							pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
 							pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; 
 							if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-								sd_wt = waa(waa_pointer_fleets(f) - 1,y,a)*waa_cv(waa_pointer_fleets(f) - 1,y,a);
+								sd_wt = sqrt(log(pow(waa_cv(waa_pointer_fleets(f) - 1,y,a),2) + 1.0));
 								nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
 							}
 						}
@@ -1257,7 +1259,7 @@ Type objective_function<Type>::operator() ()
 							}
 							pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
 							if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-								sd_wt = waa(waa_pointer_indices(i) - 1,y,a)*waa_cv(waa_pointer_indices(i) - 1,y,a);
+								sd_wt = sqrt(log(pow(waa_cv(waa_pointer_indices(i) - 1,y,a),2) + 1.0));
 								nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
 							}
 						}
@@ -1290,7 +1292,7 @@ Type objective_function<Type>::operator() ()
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = fracyr_WAA(a); 
 						pred_waa(waa_pointer_totcatch-1,y,a) = fracyr_WAA(a); // for total catch, it is using the last fracyr_fleets
 						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-							sd_wt = waa(waa_pointer_fleets(f) - 1,y,a)*waa_cv(waa_pointer_fleets(f) - 1,y,a);
+							sd_wt = sqrt(log(pow(waa_cv(waa_pointer_fleets(f) - 1,y,a),2) + 1.0));
 							nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
 						}
 					}
@@ -1301,7 +1303,7 @@ Type objective_function<Type>::operator() ()
 					for(int a = 0; a < n_ages; a++) { 
 						pred_waa(waa_pointer_indices(i)-1,y,a) = fracyr_WAA(a); // for indices	
 						if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-							sd_wt = waa(waa_pointer_indices(i) - 1,y,a)*waa_cv(waa_pointer_indices(i) - 1,y,a);
+							sd_wt = sqrt(log(pow(waa_cv(waa_pointer_indices(i) - 1,y,a),2) + 1.0));
 							nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
 						}
 					}
@@ -1311,7 +1313,12 @@ Type objective_function<Type>::operator() ()
 			nll += nll_waa.sum();	
 		} 
   }
-  REPORT(pred_waa); // print predicted waa matrix	  
+  REPORT(pred_waa);	
+  if(do_post_samp.sum()==0) {  
+    if(weight_model!=1){// If smoothing the WAA matrix get SEs
+	  ADREPORT(pred_waa);
+    }   
+  }
   REPORT(nll_waa);
 
   // --------------------------------------------------------------------------
@@ -1618,11 +1625,11 @@ Type objective_function<Type>::operator() ()
     }
     // Calculate SSB using mature (at age) or mature_len
 	if((weight_model == 1) | (weight_model == 3)) { // use age information
-		SSB(0) += NAA(0,a) * pred_waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0));
+		SSB(0) += NAA(0,a) * pred_waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0)); // not use mature_len because these weight_models ignore length information
 	}
 	if(weight_model == 2) { // use len information
 		fec_age = 0;
-		for(int l = 0; l < n_lengths; l++) fec_age += ssb_phi_mat(0,l,a)*watl(0,l)*mature_len(0,l);
+		for(int l = 0; l < n_lengths; l++) fec_age += ssb_phi_mat(0,l,a)*watl(0,l)*mature_len(0,l)*mature(0,a); // multiply by mat at len and age because both could be specified by the use when weight_model =2 
 		SSB(0) += NAA(0,a) * fec_age * exp(-ZAA(0,a)*fracyr_SSB(0));
 	}
     pred_NAA(0,a) = NAA(0,a);

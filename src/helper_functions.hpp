@@ -771,7 +771,7 @@ Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> m
 	if(weight_model == 2) { // use len information
 		for(int a = 0; a < na; a++) {
 			fec_age = 0;
-			for(int l = 0; l < n_lengths; l++) fec_age += out_phi_mat(y,l,a)*watl(y,l)*mature_len(y,l);
+			for(int l = 0; l < n_lengths; l++) fec_age += out_phi_mat(y,l,a)*watl(y,l)*mature_len(y,l)*mature(y,a);
 			SSB += NAA(y,a) * fec_age * exp(-ZAA(y,a)*fracyr_SSB(y));
 		}
 	}
@@ -941,7 +941,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 
 template <class Type>
 array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n_years_model,
-					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1){
+					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1, Type Slope){
 
   Type Lminp = min(lengths);
   Type Lmaxp = max(lengths);
@@ -956,6 +956,7 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n
   Type Grate = 0.0;
   Type b_len = 0.0;
   Type last_linear = 0.0;
+  Type this_SD = 0.0;
 
 	for(int y = 0; y < n_yrs; y++) {
 		  mLAA.setZero();
@@ -999,21 +1000,32 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n
 					mLAA(a) = mLAA_jan1(y,a) + Grate;
 				}
 			}
+			
+			// Calculate SDAA again (using mLAA):
+			if(growth_model == 1) {
+				this_SD = GW_par(y,a,3) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+			}
+			if(growth_model == 2) {
+				this_SD = GW_par(y,a,4) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+			}
+			if(growth_model == 3) {
+				this_SD = GW_par(y,a,0) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+			}
 
 			for(int l = 0; l < n_lengths; l++) {
 				
 				if(l == 0) { 
-					Fac1 = (Lminp - mLAA(a))/SDAA(y,a);
+					Fac1 = (Lminp - mLAA(a))/this_SD;
 					out(y,l,a) = pnorm(Fac1);  
 				} else {
 					if(l == (n_lengths-1)) { 
-						Fac1 = (Lmaxp - mLAA(a))/SDAA(y,a);
+						Fac1 = (Lmaxp - mLAA(a))/this_SD;
 						out(y,l,a) = 1.0 - pnorm(Fac1);  
 					} else { 
 						Ll1p = lengths(l+1);
 						Llp = lengths(l);
-						Fac1 = (Ll1p - mLAA(a))/SDAA(y,a);
-						Fac2 = (Llp - mLAA(a))/SDAA(y,a);
+						Fac1 = (Ll1p - mLAA(a))/this_SD;
+						Fac2 = (Llp - mLAA(a))/this_SD;
 						out(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
 					}
 				}
