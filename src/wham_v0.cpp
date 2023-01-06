@@ -1314,12 +1314,10 @@ Type objective_function<Type>::operator() ()
 		} 
   }
   REPORT(pred_waa);	
-  if(do_post_samp.sum()==0) {  
-    if(weight_model!=1){// If smoothing the WAA matrix get SEs
-	  ADREPORT(pred_waa);
-    }   
-  }
   REPORT(nll_waa);
+  if(do_post_samp.sum()==0) {  
+    if(weight_model!=1) ADREPORT(pred_waa); // If smoothing the WAA matrix get SEs
+  }
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
