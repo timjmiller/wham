@@ -34,7 +34,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(len_comp_model_indices); // NEWG
   DATA_VECTOR(fracyr_SSB);
   DATA_MATRIX(mature);
-  DATA_MATRIX(mature_len);
+  //DATA_MATRIX(mature_len);
   DATA_IVECTOR(waa_pointer_fleets);
   DATA_INTEGER(waa_pointer_totcatch);
   DATA_IVECTOR(waa_pointer_indices);
@@ -683,7 +683,7 @@ Type objective_function<Type>::operator() ()
   Type rho_LAA_y = rho_trans(LAA_repars(2));  // second RE parameter
   Type Sigma_LAA;
 
-	  if((LAA_re_model == 2) | (LAA_re_model == 5)) { // Only for ii_y and Ar1_y. CHECK THIS LATER, ONLY FOR WORK AR_y so far I think
+	  if((LAA_re_model == 2) | (LAA_re_model == 5)) { // iid and 2DAR1
 		// likelihood of LAA deviations
 		  Sigma_LAA = pow(pow(sigma_LAA,2) / ((1-pow(rho_LAA_y,2))*(1-pow(rho_LAA_a,2))),0.5);
 		  nll_LAA += SCALE(SEPARABLE(AR1(rho_LAA_a),AR1(rho_LAA_y)), Sigma_LAA)(LAA_re); // must be array, not matrix!
@@ -792,7 +792,7 @@ Type objective_function<Type>::operator() ()
    }
 
   // add to growth parameters in projection years
-  if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards 
+  if(do_proj == 1){ 
   	for(int j = 0; j < n_growth_par; j++) { 
 	  if(proj_growth_opt(j) == 2){
 		  matrix<Type> GW_toavg(n_toavg,n_ages);
@@ -827,7 +827,7 @@ Type objective_function<Type>::operator() ()
 
 
   // add to LAA parameters in projection years
-  if((do_proj == 1) & (growth_model < 3)){ // vB classic or Richards
+  if((do_proj == 1) & (growth_model == 3)){ // LAA nonparametric
 	if(proj_LAA_opt(0) == 2){
 	  matrix<Type> GW_toavg(n_toavg,n_ages);
 	  for(int a = 0; a < n_ages; a++){
@@ -850,23 +850,20 @@ Type objective_function<Type>::operator() ()
   
   // add ecov effect on growth paramteres
   int count_wheresub = 0; // used for growth and LW
-  if(growth_model < 3) { // only parametric growth equations
-	  for(int j = 0; j < n_growth_par; j++) { 
-		for(int i=0; i < n_Ecov; i++){
-			if((Ecov_where(i,n_effects-4) == 1) & ((Ecov_where_subindex(count_wheresub)-1) == j)) {  // for growth
-				for(int y = 0; y < n_years_model + n_years_proj; y++) {
-					for(int a = 0; a < n_ages; a++) { 
-						GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-4,y,0)); // vB classic or Richards
-					}
+  for(int j = 0; j < n_growth_par; j++) { 
+	for(int i=0; i < n_Ecov; i++){
+		if((Ecov_where(i,n_effects-4) == 1) & ((Ecov_where_subindex(count_wheresub)-1) == j)) {  // for growth
+			for(int y = 0; y < n_years_model + n_years_proj; y++) {
+				for(int a = 0; a < n_ages; a++) { 
+					GW_par(y,a,j) *= exp(Ecov_lm(i,n_effects-4,y,0)); 
 				}
-				count_wheresub += 1; 
 			}
+			count_wheresub += 1; 
 		}
-	  }
+	}
   }
 
   // add ecov effect on LAA
-  if(growth_model == 3) { // non-parametric approach
 	for(int i=0; i < n_Ecov; i++){
 		if((Ecov_where(i,n_effects-3) == 1)) { 
 			for(int y = 0; y < n_years_model + n_years_proj; y++) {
@@ -875,8 +872,7 @@ Type objective_function<Type>::operator() ()
 				}
 			}
 		}
-    }
-  }
+	}
 
   // ---------------------------------------------------------------------
   // Construct WAA parameters per year
@@ -1060,15 +1056,23 @@ Type objective_function<Type>::operator() ()
   Type Fac2 = 0.0;
   Type Ll1p = 0.0;
   Type Llp = 0.0;
-  Type Slope = 0.0;
+  vector<Type> Slope(n_years_model + n_years_proj);
   Type b_len = 0.0;
   Type last_linear = 0.0;
+  // required for mean length at age plus group:
+  Type current_size = 0.0;
+  Type temp = 0.0;
+  Type temp1 = 0.0;
+  Type temp2 = exp(-0.2);
+  Type temp3 = 0.0;
+  Type temp4 = 0.0;
+  Type div_age = 0.0;
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
 	  for(int a = 0; a < n_ages; a++) {
-			b_len = (GW_par(y,a,2) - Lminp)/age_L1; // same slope for any parametric model
 
 			if(growth_model == 1) { // vB classic growth model
+				b_len = (GW_par(y,0,2) - Lminp)/age_L1; // Slope from Lmin to L1
 				if(y == 0) { //year = 0
 					if((a + 1.0) <= age_L1) { // linear growth
 						LAA(y,a) = Lminp + b_len*(a+1.0);
@@ -1087,9 +1091,25 @@ Type objective_function<Type>::operator() ()
 						}
 					}
 				}
+				// correction for oldest age (as in SS)
+				if(a == (n_ages-1)) {
+					current_size = LAA(y,a);
+					temp = 0;
+					temp1 = 0;
+					temp3 = GW_par(y,0,1) - current_size;
+					temp4 = 1;
+					for(int a = 0; a <= n_ages; a++) {
+						div_age = (a+0.0)/(n_ages+0.0);
+						temp += temp4*(current_size + div_age*temp3);
+						temp1 += temp4;
+						temp4 *= temp2;
+					}
+					LAA(y,a) = temp/temp1; // oldest age
+				}
 			}			
 			
 			if(growth_model == 2) { // Richards growth model
+				b_len = (GW_par(y,0,2) - Lminp)/age_L1; // Slope from Lmin to L1
 				if(y == 0) { //year = 0
 					if((a + 1.0) <= age_L1) { // linear growth
 						LAA(y,a) = Lminp + b_len*(a+1.0);
@@ -1108,24 +1128,49 @@ Type objective_function<Type>::operator() ()
 						}
 					}
 				}
+				// correction for oldest age (as in SS)
+				if(a == (n_ages-1)) {
+					current_size = LAA(y,a);
+					temp = 0;
+					temp1 = 0;
+					temp3 = GW_par(y,0,1) - current_size;
+					temp4 = 1;
+					for(int a = 0; a <= n_ages; a++) {
+						div_age = (a+0.0)/(n_ages+0.0);
+						temp += temp4*(current_size + div_age*temp3);
+						temp1 += temp4;
+						temp4 *= temp2;
+					}
+					LAA(y,a) = temp/temp1; // oldest age
+				}
 			}			
 
 			if(growth_model == 3) LAA(y,a) = LAA_par(y,a); // LAA model
 	  } // loop age
+	  
+		// Slope calculation: (only year effect, cohort effect not implemented)
+		if(growth_model == 1) {
+			Slope(y) = (GW_par(y,0,4) - GW_par(y,0,3))/(GW_par(y,0,1)-LAA(y,0));
+		}
+		if(growth_model == 2) {
+			Slope(y) = (GW_par(y,0,5) - GW_par(y,0,4))/(GW_par(y,0,1)-LAA(y,0));
+		}
+		if(growth_model == 3) {
+			Slope(y) = (GW_par(y,0,1) - GW_par(y,0,0))/(LAA(y,n_ages-1)-LAA(y,0)); // use mean length at max age for this case
+		}
 			
 	  for(int a = 0; a < n_ages; a++) {
-			// SD calculation:
+			// SD calculation: (check this later, it does not do it by cohort - only year effect)
 			if(growth_model == 1) {
-				Slope = (GW_par(y,a,4) - GW_par(y,a,3))/(LAA(y,n_ages-1)-LAA(y,0));
-				SDAA(y,a) = GW_par(y,a,3) + Slope*(LAA(y,a)-LAA(y,0));  
+				SDAA(y,a) = GW_par(y,0,3) + Slope(y)*(LAA(y,a)-LAA(y,0));  
+				if(a == (n_ages-1)) SDAA(y,a) = GW_par(y,0,4);
 			}
 			if(growth_model == 2) {
-				Slope = (GW_par(y,a,5) - GW_par(y,a,4))/(LAA(y,n_ages-1)-LAA(y,0));
-				SDAA(y,a) = GW_par(y,a,4) + Slope*(LAA(y,a)-LAA(y,0));  
+				SDAA(y,a) = GW_par(y,0,4) + Slope(y)*(LAA(y,a)-LAA(y,0));  
+				if(a == (n_ages-1)) SDAA(y,a) = GW_par(y,0,5);
 			}
 			if(growth_model == 3) {
-				Slope = (GW_par(y,a,1) - GW_par(y,a,0))/(LAA(y,n_ages-1)-LAA(y,0));
-				SDAA(y,a) = GW_par(y,a,0) + Slope*(LAA(y,a)-LAA(y,0));  
+				SDAA(y,a) = GW_par(y,0,0) + Slope(y)*(LAA(y,a)-LAA(y,0));  
 			}
 			
 			for(int l = 0; l < n_lengths; l++) {
@@ -1148,7 +1193,7 @@ Type objective_function<Type>::operator() ()
 				
 			}// loop length
 	  } // loop age
-  }
+  } // loop year
 
   if(do_post_samp.sum()==0) ADREPORT(LAA);
 
@@ -1162,16 +1207,16 @@ Type objective_function<Type>::operator() ()
   // January 1st:
   phi_matrix(waa_pointer_jan1-1) = phi_mat; // calculated in previous section
   // SSB:
-  phi_matrix(waa_pointer_ssb-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_SSB, growth_model, age_L1, Slope);
+  phi_matrix(waa_pointer_ssb-1) = pred_LAA(LAA, n_yrs, n_years_model, GW_par, lengths, fracyr_SSB, growth_model, age_L1, Slope);
   // Total catch:
-  phi_matrix(waa_pointer_totcatch-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, fracyr_catch, growth_model, age_L1, Slope);
+  phi_matrix(waa_pointer_totcatch-1) = pred_LAA(LAA, n_yrs, n_years_model, GW_par, lengths, fracyr_catch, growth_model, age_L1,Slope);
   // For fleets:
   for(int f = 0; f < n_fleets; f++) {
 	 phi_matrix(waa_pointer_fleets(f)-1) = phi_matrix(waa_pointer_totcatch-1); // use same as total catch, fraction = 0.5
   }
   // For indices:
   for(int i = 0; i < n_indices; i++) {
-	 phi_matrix(waa_pointer_indices(i)-1) = pred_LAA(LAA, SDAA, n_yrs, n_years_model, GW_par, lengths, vector<Type>(fracyr_indices.col(i)), growth_model, age_L1, Slope);
+	 phi_matrix(waa_pointer_indices(i)-1) = pred_LAA(LAA, n_yrs, n_years_model, GW_par, lengths, vector<Type>(fracyr_indices.col(i)), growth_model, age_L1,Slope);
   }
   
   // --------------------------------------------------------------------------
@@ -1606,7 +1651,7 @@ Type objective_function<Type>::operator() ()
   NAA.setZero();
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
   pred_NAA.setZero();
-  Type fec_age = 0;
+  //Type fec_age = 0;
   ssb_phi_mat = phi_matrix(waa_pointer_ssb-1);
   
   for(int a = 0; a < n_ages; a++)
@@ -1622,14 +1667,14 @@ Type objective_function<Type>::operator() ()
       }
     }
     // Calculate SSB using mature (at age) or mature_len
-	if((weight_model == 1) | (weight_model == 3)) { // use age information
+	//if((weight_model == 1) | (weight_model == 3)) { // use age information
 		SSB(0) += NAA(0,a) * pred_waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0)); // not use mature_len because these weight_models ignore length information
-	}
-	if(weight_model == 2) { // use len information
-		fec_age = 0;
-		for(int l = 0; l < n_lengths; l++) fec_age += ssb_phi_mat(0,l,a)*watl(0,l)*mature_len(0,l)*mature(0,a); // multiply by mat at len and age because both could be specified by the use when weight_model =2 
-		SSB(0) += NAA(0,a) * fec_age * exp(-ZAA(0,a)*fracyr_SSB(0));
-	}
+	//}
+	//if(weight_model == 2) { // use len information
+	//	fec_age = 0;
+	//	for(int l = 0; l < n_lengths; l++) fec_age += ssb_phi_mat(0,l,a)*watl(0,l)*mature_len(0,l)*mature(0,a); // multiply by mat at len and age because both could be specified by the use when weight_model =2 
+	//	SSB(0) += NAA(0,a) * fec_age * exp(-ZAA(0,a)*fracyr_SSB(0));
+	//}
     pred_NAA(0,a) = NAA(0,a);
   }
 
@@ -1786,7 +1831,7 @@ Type objective_function<Type>::operator() ()
       }
     } // end proj F
 	// Calculate SSB:
-	SSB(y) = get_SSB(NAA,ZAA,pred_waa, mature, mature_len, weight_model, ssb_phi_mat, watl, y, waa_pointer_ssb, fracyr_SSB);
+	SSB(y) = get_SSB(NAA,ZAA,pred_waa, mature,y,waa_pointer_ssb,fracyr_SSB);
   } // end pop model loop
 
   // --------------------------------------------------------------------------
@@ -1859,7 +1904,6 @@ Type objective_function<Type>::operator() ()
   if((n_NAA_sigma > 0) | (do_proj == 1)) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
   	out_phi_mat = phi_matrix(waa_pointer_ssb-1);
 	matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB,
-	  mature_len, weight_model, out_phi_mat, watl,
 	  NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, pred_waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
       avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init, percentFMSY);
@@ -1915,8 +1959,7 @@ Type objective_function<Type>::operator() ()
 	  lsum.setZero();
 	  asum.setZero();
       pred_catch(y,f) = 0.0;
-      for(int a = 0; a < n_ages; a++)
-      {
+      for(int a = 0; a < n_ages; a++){
 		for(int l = 0; l < n_lengths; l++) { 
 			pred_CAAL(y,f,l,a) = selAA(selblock_pointer_fleets(usey,f)-1)(usey,a)*selLL(selblock_pointer_fleets(usey,f)-1)(usey,l)*catch_phi_mat(y,l,a)*NAA(y,a)*F(y,f)*(1-exp(-ZAA(y,a)))/ZAA(y,a);
 			lsum(l) += pred_CAAL(y,f,l,a);
@@ -1924,19 +1967,17 @@ Type objective_function<Type>::operator() ()
 		}
 	  }		
 	  for(int l = 0; l < n_lengths; l++) pred_CAL(y,f,l) = lsum(l); // predicted catch-at-length
-	  for(int a = 0; a < n_ages; a++) {
-		  pred_CAA(y,f,a) = asum(a); // predicted catch-at-age (numbers)
-	  }
+	  for(int a = 0; a < n_ages; a++) pred_CAA(y,f,a) = asum(a); // predicted catch-at-age (numbers)
 
 	  // Calculate agg catch (biomass)
 	  // When using L-W parameters: use w-at-len
-	  if(weight_model == 2) {
-		  for(int l = 0; l < n_lengths; l++) pred_catch(y,f) += watl(y,l)*pred_CAL(y,f,l); 
-	  }
+	  //if(weight_model == 2) {
+		//  for(int l = 0; l < n_lengths; l++) pred_catch(y,f) += watl(y,l)*pred_CAL(y,f,l); 
+	  //}
 	  // When using emp WAA or non parametric WAA: use w-at-age
-	  if((weight_model == 1) | (weight_model == 3)) {
-		  for(int a = 0; a < n_ages; a++) pred_catch(y,f) += pred_waa(waa_pointer_fleets(f)-1,y,a) * pred_CAA(y,f,a); // biomass
-	  }
+	  //if((weight_model == 1) | (weight_model == 3)) {
+	  for(int a = 0; a < n_ages; a++) pred_catch(y,f) += pred_waa(waa_pointer_fleets(f)-1,y,a) * pred_CAA(y,f,a); // biomass
+	  //}
 
 	  pred_log_catch(y,f) = log(pred_catch(y,f));
       Type sig = agg_catch_sigma(usey,f)*exp(log_catch_sig_scale(f));
@@ -2102,12 +2143,12 @@ Type objective_function<Type>::operator() ()
   }
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(agg_catch);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_paa);
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_pal); // NEWG
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_caal); // NEWG
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_pal);
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(catch_caal); 
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(agg_catch_proj);
   SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_paa_proj);
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_pal_proj); // NEWG
-  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_caal_proj); // NEWG
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_pal_proj); 
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(catch_caal_proj);
   REPORT(nll_agg_catch);
   nll += nll_agg_catch.sum();
   //see(nll);
@@ -2131,6 +2172,7 @@ Type objective_function<Type>::operator() ()
   nll_index_lcomp.setZero();
   nll_index_caal.setZero();
   pred_indices.setZero();
+  Type temp_indices = 0.0;
   for(int y = 0; y < n_years_model + n_years_proj; y++)
   {
     int usey = y;
@@ -2141,8 +2183,8 @@ Type objective_function<Type>::operator() ()
 	  if(y == 0) out_phi_mat = phi_matrix(waa_pointer_indices(i)-1); // just do it once to save time
 	  lsum.setZero();
 	  asum.setZero();
-      for(int a = 0; a < n_ages; a++)
-      {
+	  temp_indices = 0.0;
+      for(int a = 0; a < n_ages; a++) {
 		for(int l = 0; l < n_lengths; l++) { 
 			// no Q effects yet as in SS:
 			// This is not important since Q is just a factor, pred_paa or pal will not vary
@@ -2159,21 +2201,23 @@ Type objective_function<Type>::operator() ()
 	
 	  // Calculate agg index (numbers or biomass). Here add Q:
 	  // When using L-W parameters:
-	  if(weight_model == 2) {
-		  for(int l = 0; l < n_lengths; l++){
-			// here include Q effect:
-			if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*watl(y,l)*pred_IAL(y,i,l); // biomass
-			else pred_indices(y,i) += q(y,i)*pred_IAL(y,i,l); // numbers
-		  }
-	  }
+	  //if(weight_model == 2) {
+		//  for(int l = 0; l < n_lengths; l++){
+		//	// here include Q effect:
+		//	if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*watl(y,l)*pred_IAL(y,i,l); // biomass
+		//	else pred_indices(y,i) += q(y,i)*pred_IAL(y,i,l); // numbers
+		//  }
+	  //}
 	  // When using emp WAA or non parametric WAA
-	  if((weight_model == 1) | (weight_model == 3)) {
-		  for(int a = 0; a < n_ages; a++) {
-			  // here include Q effect:
-			  if(units_indices(i) == 1) pred_indices(y,i) += q(y,i)*pred_waa(waa_pointer_indices(i)-1,y,a) * asum(a); // biomass, use asum to make sure we are using abundance
-			  else pred_indices(y,i) += q(y,i)*asum(a); // numbers, use asum to make sure we are using abundance
-		  }
+	  //if((weight_model == 1) | (weight_model == 3)) {
+	  for(int a = 0; a < n_ages; a++) {
+		  if(units_indices(i) == 1) temp_indices += pred_waa(waa_pointer_indices(i)-1,y,a) * asum(a); // biomass, use asum to make sure we are using abundance
+		  else temp_indices += asum(a); // numbers, use asum to make sure we are using abundance
 	  }
+	  //}
+	  
+	  // here include Q effect:
+	  pred_indices(y,i) = temp_indices*q(y,i);
 	  
 	  // calculate Index NLL:
       pred_log_indices(y,i) = log(pred_indices(y,i));
@@ -2367,6 +2411,7 @@ Type objective_function<Type>::operator() ()
     matrix<Type> CAA_proj(n_years_proj, n_ages), catch_fleet_proj(n_years_proj, n_fleets);
     array<Type> CAA_fleet_proj(n_fleets, n_years_proj, n_ages);
     catch_proj.setZero();
+	// not by fleet? 
     for(int i = 0; i < n_years_proj; i++){
       int yi = i + n_years_model;
       for(int a = 0; a < n_ages; a++){
@@ -2531,12 +2576,12 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_NAA_rep = log(NAA.array());
 
   REPORT(NAA);
-  REPORT(phi_mat); // NEWG
-  REPORT(LAA); // NEWG
-  REPORT(SDAA); // NEWG
-  REPORT(GW_par); // NEWG
-  REPORT(LAA_par); // NEWG
-  REPORT(LW_par); // NEWG
+  REPORT(phi_mat); 
+  REPORT(LAA); 
+  REPORT(SDAA);
+  REPORT(GW_par); 
+  REPORT(LAA_par);
+  REPORT(LW_par); 
   REPORT(pred_NAA);
   REPORT(SSB);
   REPORT(selAL);

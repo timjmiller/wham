@@ -29,11 +29,11 @@ add_basic_info <- function(input, basic_info){
 		else input$data$mature[] = basic_info$maturity
 	}
 	#len-based maturity:
-	input$data$mature_len = t(matrix(1, input$data$n_lengths, length(input$years)))
-	if(!is.null(basic_info[["maturity_len"]])){
-		if(!(length(basic_info$maturity_len) %in% c(1,input$data$n_lengths*length(input$years)))) stop("basic_info$mature_len has been specified, but it's length is not 1 or n_lengths*length(years)")
-		else input$data$mature_len[] = basic_info$maturity_len
-	}
+	# input$data$mature_len = t(matrix(1, input$data$n_lengths, length(input$years)))
+	# if(!is.null(basic_info[["maturity_len"]])){
+	# 	if(!(length(basic_info$maturity_len) %in% c(1,input$data$n_lengths*length(input$years)))) stop("basic_info$mature_len has been specified, but it's length is not 1 or n_lengths*length(years)")
+	# 	else input$data$mature_len[] = basic_info$maturity_len
+	# }
 	# Continue...
 	input$data$Fbar_ages = 1:input$data$n_ages
 	if(!is.null(basic_info$Fbar_ages)) {

@@ -755,26 +755,27 @@ vector<Type> get_waa_y(array<Type> waa, int y, int na, int pointer){
 }
 
 template <class Type>
-Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> mature, matrix<Type> mature_len, int weight_model, array<Type> out_phi_mat,
-			 matrix<Type> watl, int y, int ssbpointer, vector<Type> fracyr_SSB){
+Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> mature, 
+			 //matrix<Type> mature_len, int weight_model, array<Type> out_phi_mat, matrix<Type> watl, 
+			 int y, int ssbpointer, vector<Type> fracyr_SSB){
 	Type SSB = 0;
-	Type fec_age = 0;
-	int n_lengths = mature_len.cols();
+	//Type fec_age = 0;
+	//int n_lengths = mature_len.cols();
 	int na = mature.cols();
     // Calculate SSB using mature (at age) or mature_len
-	if((weight_model == 1) | (weight_model == 3)) { // use age information
+	//if((weight_model == 1) | (weight_model == 3)) { // use age information
 	  vector<Type> waay = get_waa_y(waa,y,na,ssbpointer);
 	  for(int a = 0; a < na; a++) {
 		  SSB += NAA(y,a) * waay(a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
 	  }
-	}
-	if(weight_model == 2) { // use len information
-		for(int a = 0; a < na; a++) {
-			fec_age = 0;
-			for(int l = 0; l < n_lengths; l++) fec_age += out_phi_mat(y,l,a)*watl(y,l)*mature_len(y,l)*mature(y,a);
-			SSB += NAA(y,a) * fec_age * exp(-ZAA(y,a)*fracyr_SSB(y));
-		}
-	}
+	//}
+	//if(weight_model == 2) { // use len information
+	//	for(int a = 0; a < na; a++) {
+	//		fec_age = 0;
+	//		for(int l = 0; l < n_lengths; l++) fec_age += out_phi_mat(y,l,a)*watl(y,l)*mature_len(y,l)*mature(y,a);
+	//		SSB += NAA(y,a) * fec_age * exp(-ZAA(y,a)*fracyr_SSB(y));
+	//	}
+	//}
   return(SSB);
 }
  
@@ -877,7 +878,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
 
 template <class Type>
 matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSBin, 
-  matrix<Type> mature_len, int weight_model, array<Type> out_phi_mat, matrix<Type> watl, 
+  //matrix<Type> mature_len, int weight_model, array<Type> out_phi_mat, matrix<Type> watl, 
   matrix<Type> NAAin, vector<Type> log_SR_a, 
   vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
@@ -928,7 +929,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
-    SSB(y) = get_SSB(NAA,ZAA,waa,mature,mature_len,weight_model,out_phi_mat,watl,y,waa_pointer_ssb,fracyr_SSB);
+    SSB(y) = get_SSB(NAA,ZAA,waa,mature,y,waa_pointer_ssb,fracyr_SSB);
   } // end pop model loop
   
   matrix<Type> out(ny, 2 * n_ages + n_fleets * n_ages + 1);
@@ -940,8 +941,8 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 }
 
 template <class Type>
-array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n_years_model,
-					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1, Type Slope){
+array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model,
+					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1, vector<Type> Slope){
 
   Type Lminp = min(lengths);
   Type Lmaxp = max(lengths);
@@ -962,30 +963,33 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n
 		  mLAA.setZero();
 		  int y_1 = y + 1;
 		  int yuse = y; // used in fraction information
-		  if(y > n_years_model - 1) yuse = n_years_model -1; //some things only go up to n_years_model-1
+		  if(y > (n_years_model - 1)) yuse = n_years_model -1; //some things only go up to n_years_model-1
 		  if(y == (n_yrs - 1)) y_1 = y;
 		  Type fracyr = fracyr_vec(yuse);
 		  for(int a = 0; a < n_ages; a++)
 		  {  
-			b_len = (GW_par(y,a,2) - Lminp)/age_L1;
 			if(growth_model == 1) { // classic von Bertalanffy curve
+				b_len = (GW_par(y,a,2) - Lminp)/age_L1;
 				if((a + 1.0 + fracyr) <= age_L1) { // use linear growth
 					mLAA(a) = Lminp + b_len*(a+1.0+fracyr);  
 				} else { // other options
 					if((a+1.0) >= age_L1) { // only growth curve
-						mLAA(a) = mLAA_jan1(y,a) + (mLAA_jan1(y,a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
+						if(a == (n_ages-1)) mLAA(a) = mLAA_jan1(y,a); // no growth for age plus group
+						else mLAA(a) = mLAA_jan1(y,a) + (mLAA_jan1(y,a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
 					} else { // linear + growth curve mixed
 						last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
 						mLAA(a) = last_linear + (last_linear - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*(a+1.0+fracyr-age_L1)) - 1.0); 
 					}
 				}
 			}
-			if(growth_model == 2) { // Richards growth curve		
+			if(growth_model == 2) { // Richards growth curve	
+				b_len = (GW_par(y,a,2) - Lminp)/age_L1;			
 				if((a + 1.0 + fracyr) <= age_L1) { // use linear growth
 					mLAA(a) = Lminp + b_len*(a+1.0+fracyr);  
 				} else { // other options
 					if((a+1.0) >= age_L1) { // only growth curve
-						mLAA(a) = pow(pow(mLAA_jan1(y,a),GW_par(y,a,3)) + (pow(mLAA_jan1(y,a),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*fracyr) - 1.0),1/GW_par(y,a,3));
+						if(a == (n_ages-1)) mLAA(a) = mLAA_jan1(y,a); // no growth for age plus group
+						else mLAA(a) = pow(pow(mLAA_jan1(y,a),GW_par(y,a,3)) + (pow(mLAA_jan1(y,a),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*fracyr) - 1.0),1/GW_par(y,a,3));
 					} else { // linear + growth curve mixed
 						last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
 						mLAA(a) = pow(pow(last_linear,GW_par(y,a,3)) + (pow(last_linear,GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*(a+1.0+fracyr-age_L1)) - 1.0),1/GW_par(y,a,3));
@@ -994,22 +998,24 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, matrix<Type> SDAA, int n_yrs, int n
 			}
 			if(growth_model == 3){ // nonparametric approach
 				if(a < (n_ages-1)) { // for a < n_ages - 1, linear interpolation
-					Grate = (mLAA_jan1(y_1,a) - mLAA_jan1(y,a))*fracyr;
+					Grate = (mLAA_jan1(y_1,a+1) - mLAA_jan1(y,a))*fracyr;
 					mLAA(a) = mLAA_jan1(y,a) + Grate;	
-				} else { // last age. Use previous growth rate
-					mLAA(a) = mLAA_jan1(y,a) + Grate;
+				} else { // last age. No growth
+					mLAA(a) = mLAA_jan1(y,a);
 				}
 			}
 			
 			// Calculate SDAA again (using mLAA):
 			if(growth_model == 1) {
-				this_SD = GW_par(y,a,3) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+				if(a == (n_ages-1)) this_SD = GW_par(y,0,4);
+				else this_SD = GW_par(y,0,3) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
 			}
 			if(growth_model == 2) {
-				this_SD = GW_par(y,a,4) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+				if(a == (n_ages-1)) this_SD = GW_par(y,0,5);
+				else this_SD = GW_par(y,0,4) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
 			}
 			if(growth_model == 3) {
-				this_SD = GW_par(y,a,0) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+				this_SD = GW_par(y,0,0) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
 			}
 
 			for(int l = 0; l < n_lengths; l++) {
@@ -1047,8 +1053,8 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
 		if(a < (n_ages-1)) { // for a < n_ages - 1. See Crane et al 2019
 			Grate = pow(WAA_jan1_y1(a+1)/WAA_jan1(a), 1.0/365.0) - 1.0;
 			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0);
-		} else { // for last age
-			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0); // use previous GRate
+		} else { // for last age, No growth
+			WAA(a) = WAA_jan1(a); 
 		}
 		
 	}
