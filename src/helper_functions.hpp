@@ -941,8 +941,8 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
 }
 
 template <class Type>
-array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model,
-					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1, vector<Type> Slope){
+array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model, vector<Type> expSD,
+					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1){
 
   Type Lminp = min(lengths);
   Type Lmaxp = max(lengths);
@@ -958,6 +958,7 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model,
   Type b_len = 0.0;
   Type last_linear = 0.0;
   Type this_SD = 0.0;
+  Type Slope = 0.0;
 
 	for(int y = 0; y < n_yrs; y++) {
 		  mLAA.setZero();
@@ -1005,17 +1006,22 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model,
 				}
 			}
 			
-			// Calculate SDAA again (using mLAA):
-			if(growth_model == 1) {
-				if(a == (n_ages-1)) this_SD = GW_par(y,0,4);
-				else this_SD = GW_par(y,0,3) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
+			// SD calculation (again): 
+			if(growth_model < 3) { // for parametric approach
+				if((a + 1.0 + fracyr) <= age_L1) { // same as SD1
+					this_SD = expSD(0); 
+				} else { 
+					if(a == (n_ages-1)) { // same as SDA
+						this_SD = expSD(1);
+					} else { // linear interpolation
+						Slope = (expSD(1) - expSD(0))/(GW_par(y,a,1)-GW_par(y,a,2));
+						this_SD = expSD(0) + Slope*(mLAA(a)-GW_par(y,a,2));  
+					}
+				}				
 			}
-			if(growth_model == 2) {
-				if(a == (n_ages-1)) this_SD = GW_par(y,0,5);
-				else this_SD = GW_par(y,0,4) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
-			}
-			if(growth_model == 3) {
-				this_SD = GW_par(y,0,0) + Slope(y)*(mLAA(a)-mLAA_jan1(y,0));  
+			if(growth_model == 3) { // only works for year effect
+				Slope = (expSD(1) - expSD(0))/(mLAA_jan1(y,n_ages-1)-mLAA_jan1(y,0));
+				this_SD = expSD(0) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
 			}
 
 			for(int l = 0; l < n_lengths; l++) {

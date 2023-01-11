@@ -1,4 +1,4 @@
-set_growth = function(input, growth, LAA)
+set_growth = function(input, growth)
 {
   data = input$data
   par = input$par
@@ -7,23 +7,23 @@ set_growth = function(input, growth, LAA)
   n_re_par = 2 # number of parameters for RE
 
   # growth default options:
-  n_par_def = 5 # 5 parameters (default): K, Linf, L1, CV1, CVA
-  data$growth_model = 1 # 1: vB-classic, 2: Richards, 3: use LAA as input
+  n_par_def = 3 # 5 parameters (default): K, Linf, L1
+  data$growth_model = 1 # 1: vB-classic, 2: Richards, 3: use LAA as input (see set_LAA)
   data$growth_re_model = rep(1, times = n_par_def) # default = no RE / 'none'
   data$growth_est <- rep(0, times = n_par_def) # default = don't estimate M
   data$n_growth_par = n_par_def # 5 parameters to estimate: K, Linf, t0, CV1, CVA, in that order
   growth_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par_def))
-  growth_ini = c(log(0.2), log(100), log(8), log(3), log(7)) 
-  
+  growth_ini = c(log(0.2), log(100), log(8))
+  SD_ini = c(log(3), log(7)) # CV1 and CVA
+
   # prepare growth options:
   if(!is.null(growth)){
 
-    n_par = c(5, 6, 2) # number of parameters for each method
+    n_par = c(3, 4) # number of parameters for each method
 
     if(!is.null(growth$model)){ # growth model to be used
-      if(!(growth$model %in% c("vB_classic", "Richards", "LAA"))) stop("growth$model must be 'vB_classic', 'Richards', or 'LAA'")
-      data$growth_model <- match(growth$model, c("vB_classic", "Richards", "LAA")) # 1
-      if(data$growth_model == 3 & is.null(LAA)) stop('LAA information must be provided')
+      if(!(growth$model %in% c("vB_classic", "Richards"))) stop("growth$model must be 'vB_classic' or 'Richards'")
+      data$growth_model <- match(growth$model, c("vB_classic", "Richards")) # 1
       data$n_growth_par = n_par[data$growth_model] # number of parameters to estimate
       data$growth_est = rep(0, times = n_par[data$growth_model]) # estimate?
       data$growth_re_model = rep(1, times = n_par[data$growth_model]) # default = no RE / 'none'
@@ -31,7 +31,7 @@ set_growth = function(input, growth, LAA)
     }
 
     if(!is.null(growth$re)){
-      if(length(growth$re) != data$n_growth_par) stop("Number of 're' must be equal to the number of parameters of the chosen growth model (equal to 1 for 'stock_LAA').")
+      if(length(growth$re) != data$n_growth_par) stop("Number of 're' must be equal to the number of parameters of the chosen growth model.")
       for(k in 1:data$n_growth_par) {
           if(!(growth$re[k] %in% c("none","iid_y","iid_c","ar1_y","ar1_c"))) stop(paste0("growth$re[", k, "] must be one of the following: 'none','iid_y','iid_c','ar1_y','ar1_c'"))
           data$growth_re_model[k] <- match(growth$re[k], c("none","iid_y","iid_c","ar1_y","ar1_c")) # Respect this order to create array later
@@ -42,10 +42,20 @@ set_growth = function(input, growth, LAA)
       if(length(growth$init_vals) != data$n_growth_par) stop("Number of 'init_vals' must be equal to the number of parameters of the chosen growth model.")
       growth_ini <- log(growth$init_vals)
     }
+
+    if(!is.null(growth$SD_vals)){
+      if(length(growth$SD_vals) != 2) stop("Number of 'SD_vals' must be equal to 2.")
+      SD_ini <- log(growth$SD_vals)
+    }
   
     if(!is.null(growth$est_pars)){
         if(length(growth$est_pars) > data$n_growth_par) stop("Number of 'est_pars' should be equal or less than the number of parameters of the chosen growth model.")
         data$growth_est[growth$est_pars] = 1
+    }
+
+    if(!is.null(growth$SD_est)){
+        if(length(growth$SD_est) > 2) stop("Number of 'SD_est' should be equal or less than 2.")
+        data$SD_est[growth$SD_est] = 1
     }
 
   }
@@ -57,16 +67,23 @@ set_growth = function(input, growth, LAA)
   par$growth_re = growth_re_ini
   par$growth_repars = matrix(0, ncol = n_re_par, nrow = data$n_growth_par)
   par$growth_repars[,1] = log(0.1) # start sigma at 0.1, rho at 0
-
+  par$SD_par = SD_ini
 
   # --------------------------------
   # Prepare data for growth:
+  # Main pars:
   tmp1 <- par$growth_a
-
   tmp1[data$growth_est==0] = NA
   ind.notNA <- which(!is.na(tmp1))
   tmp1[ind.notNA] <- 1:length(ind.notNA)
   map$growth_a <- factor(tmp1)
+
+  # SD pars:
+  tmp1 <- par$SD_par
+  tmp1[data$SD_est==0] = NA
+  ind.notNA <- which(!is.na(tmp1))
+  tmp1[ind.notNA] <- 1:length(ind.notNA)
+  map$SD_par <- factor(tmp1)
 
   # RE info:
   map$growth_re = NULL
