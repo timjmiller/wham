@@ -15,6 +15,7 @@ set_LAA = function(input, LAA, growth)
   LAA_re_ini = matrix(0, ncol = data$n_ages, nrow = data$n_years_model)
   data$LAA_re_model = 1
   data$LAA_est = rep(0, data$n_ages)
+  data$SDLAA_est = c(0,0)
   LAA_ini = log( 100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)) )
   SD_ini_LAA = c(log(3), log(7)) # CV1 and CVA
 
@@ -35,7 +36,7 @@ set_LAA = function(input, LAA, growth)
 
     if(!is.null(LAA$SD_est)){
         if(length(LAA$SD_est) > 2) stop("Number of 'SD_est' should be equal or less than 2.")
-        data$SD_est[LAA$SD_est] = 1
+        data$SDLAA_est[LAA$SD_est] = 1
     }
 
   }
@@ -58,7 +59,7 @@ set_LAA = function(input, LAA, growth)
 
   # SD pars:
   tmp1 <- par$SDLAA_par
-  tmp1[data$SD_est==0] = NA
+  tmp1[data$SDLAA_est==0] = NA
   ind.notNA <- which(!is.na(tmp1))
   tmp1[ind.notNA] <- 1:length(ind.notNA)
   map$SDLAA_par <- factor(tmp1)

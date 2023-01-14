@@ -1001,8 +1001,8 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model, vecto
 				if(a < (n_ages-1)) { // for a < n_ages - 1, linear interpolation
 					Grate = (mLAA_jan1(y_1,a+1) - mLAA_jan1(y,a))*fracyr;
 					mLAA(a) = mLAA_jan1(y,a) + Grate;	
-				} else { // last age. No growth
-					mLAA(a) = mLAA_jan1(y,a);
+				} else { // last age. use last Grate
+					mLAA(a) = mLAA_jan1(y,a) + Grate;
 				}
 			}
 			
@@ -1059,8 +1059,8 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
 		if(a < (n_ages-1)) { // for a < n_ages - 1. See Crane et al 2019
 			Grate = pow(WAA_jan1_y1(a+1)/WAA_jan1(a), 1.0/365.0) - 1.0;
 			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0);
-		} else { // for last age, No growth
-			WAA(a) = WAA_jan1(a); 
+		} else { // for last age, use last Grate
+			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0); 
 		}
 		
 	}
