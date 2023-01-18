@@ -1013,7 +1013,7 @@ Type objective_function<Type>::operator() ()
     see(log_SPR0);
     vector<Type> log_FXSPR = get_log_FXSPR(percentSPR, FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
       fracyr_seasons, which_F_age, fracyr_SSB_all, log_M, mu, L, log_SPR0, waa_ssb, mature_all, SPR_weights, SPR_weight_type, n_regions_is_small,
-      R_XSPR, FXSPR_init,0);
+      R_XSPR, FXSPR_init,trace);
     see(23);
     REPORT(log_FXSPR);
     see(log_FXSPR);
