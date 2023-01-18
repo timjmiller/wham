@@ -102,6 +102,10 @@ set_osa_obs = function(input)
       if(data$use_index_paa[y,i] == 1)
       {
         obs_y = x[y,]
+        #print(data$selblock_pointer_indices)
+        #print(y)
+        #print(i)
+        #print(data$selblock_pointer_indices[y,i])
         tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
         res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
         obs_y = res[[1]]
@@ -168,7 +172,7 @@ set_osa_obs = function(input)
   # subtract 1 bc TMB indexes from 0
   data$keep_E <- data$keep_E - 1
 
-  data$keep_C <- matrix(NA, nrow=data$n_years_catch, ncol=data$n_fleets)
+  data$keep_C <- matrix(NA, nrow=data$n_years_model, ncol=data$n_fleets)
   for(y in 1:data$n_years_model) for(i in 1:data$n_fleets){
     if(data$use_agg_catch[y,i]==1){ 
       data$keep_C[y,i] <- subset(obs, year == y & type=='logcatch' & fleet == paste0("fleet_",i))$ind
@@ -177,7 +181,7 @@ set_osa_obs = function(input)
   # subtract 1 bc TMB indexes from 0
   data$keep_C <- data$keep_C - 1
 
-  data$keep_I <- matrix(NA, nrow=data$n_years_indices, ncol=data$n_indices)
+  data$keep_I <- matrix(NA, nrow=data$n_years_model, ncol=data$n_indices)
   for(y in 1:data$n_years_model) for(i in 1:data$n_indices){
     if(data$use_indices[y,i]==1){ 
       data$keep_I[y,i] <- subset(obs, year == y & type=='logindex' & fleet == paste0("index_",i))$ind
@@ -226,7 +230,7 @@ set_osa_obs = function(input)
   data$obsvec <- obs$val
   data$agesvec <- obs$age #potentially needed for AR1 sigma correlation of logistic-normal paa obs. 
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
-  data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+  #data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 
   input$data = data
   return(input)

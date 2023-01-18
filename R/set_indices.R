@@ -34,7 +34,7 @@ set_indices = function(input, index_info=NULL) {
 			asap3[[i]]$survey_index_units <- asap3[[i]]$index_units[which_indices]
 			asap3[[i]]$survey_acomp_units <- asap3[[i]]$index_acomp_units[which_indices]
 			asap3[[i]]$survey_WAA_pointers <- asap3[[i]]$index_WAA_pointers[which_indices]
-			asap3[[i]]$survey_month <- matrix(asap3[[i]]$index_month[which_indices], asap3[[i]]$n_years, asap3[[i]]$n_indices, byrow = TRUE)
+			#asap3[[i]]$survey_month <- matrix(asap3[[i]]$index_month[which_indices], asap3[[i]]$n_years, asap3[[i]]$n_indices, byrow = TRUE)
 			asap3[[i]]$use_survey_acomp <- asap3[[i]]$use_index_acomp[which_indices]
 			asap3[[i]]$index_WAA_pointers = asap3[[i]]$index_WAA_pointers[which_indices]
 			asap3[[i]]$IAA_mats <- asap3[[i]]$IAA_mats[which_indices]
@@ -59,12 +59,12 @@ set_indices = function(input, index_info=NULL) {
   data$fracyr_indices = matrix(data$fracyr_seasons[1]*0.5, data$n_years_model, data$n_indices)
 
 	if(!is.null(asap3)) {
-    k <- 0
+    k <- 1
     for(i in 1:length(asap3)) {
       for(j in 1:asap3[[i]]$n_indices) {
         data$index_regions[k] = i #each asap file is a separate region
 		  	data$units_indices[k] <- asap3[[i]]$survey_index_units[j]
-		  	tmp = (asap3[[i]]$survey_month[j]-1)/12 #make sure that this is right
+		  	tmp = (asap3[[i]]$index_month[j]-1)/12 #make sure that this is right
 				int_starts <- cumsum(c(0,data$fracyr_seasons))
 		  	ind = max(which(int_starts <= tmp))
 		  	data$index_seasons[k] = ind

@@ -5,34 +5,43 @@ set_WAA <- function(input, waa_info = NULL) {
 	data$waa <- array(NA,dim = c(data$n_fleets + data$n_regions + data$n_indices + data$n_stocks, data$n_years_model, data$n_ages))
 	if(!is.null(asap3)) {
 		waa_temp = list()
-		n_waa_total = sum(sapply(asap3, function(x) x$n_fleets)) + 2 * length(asap3) + sum(sapply(asap3, function(x) length(x$index_WAA_pointers)))
-		data$waa <- array(NA,dim = c(n_waa_total, data$n_years_model, data$n_ages))
+		n_waa_total = sapply(asap3, function(x){
+			i <- c(seq(1,(x$n_fleets+1)*2-1,2),(x$n_fleets+1)*2 + 1:2)
+	  	WAA_pointers <- x$WAA_pointers[i] #wham has no discard data, so remove those WAA matrices
+			WAA_pointers <- c(WAA_pointers,x$index_WAA_pointers) #need any for indices too
+			length(unique(WAA_pointers))
+		})
+		#print(sum(n_waa_total))
+
 		data$waa_pointer_fleets <- integer()
 		data$waa_pointer_ssb <- integer()
 		data$waa_pointer_indices <- integer()
 		data$waa_pointer_totcatch <- integer()
+		data$waa <- array(NA,dim = c(sum(n_waa_total), data$n_years_model, data$n_ages))
 		j = 1
+		n_waa <- 0
     for(a in 1:length(asap3)) {
-			waa_pointer_fleets <- 2*(1:asap3[[a]]$n_fleets) - 1 #wham has no discard data, so remove those WAA matrices
-			for(k in 1:length(waa_pointer_fleets)) {
-				data$waa[j,,] = asap3[[a]]$WAA_mats[[waa_pointer_fleets[k]]]
-				data$waa_pointer_fleets = c(data$waa_pointer_fleets,j)
+			#fleet 1 catch, fleet 2 catch, ..., fleet n catch, totcatch, ssb
+			x <- asap3[[a]]
+			i <- c(seq(1,(x$n_fleets+1)*2-1,2),(x$n_fleets+1)*2 + 2)
+	  	WAA_pointers <- c(x$WAA_pointers[i],x$index_WAA_pointers) #wham has no discard data, so remove those WAA matrices
+			for(k in unique(WAA_pointers)){ #just retain the needed WAA matrices
+				data$waa[j,,] <- x$WAA_mats[[k]]  #note order is changing
 				j <- j + 1
 			}
-			waa_pointer_totcatch <- asap3[[a]]$n_fleets*2+1
-			data$waa[j,,] = asap3[[a]]$WAA_mats[[waa_pointer_totcatch]]
-			data$waa_pointer_totcatch = c(data$waa_pointer_totcatch,j)
-			j <- j + 1
-			waa_pointer_ssb <- asap3[[a]]$n_fleets*2+3
-			data$waa[j,,] = asap3[[a]]$WAA_mats[[waa_pointer_ssb]]
-			data$waa_pointer_ssb = c(data$waa_pointer_ssb,j)
-			j <- j + 1
-			waa_pointer_indices <- asap3[[a]]$index_WAA_pointers
-			for(k in 1:length(waa_pointer_indices)) {
-				data$waa[j,,] = asap3[[a]]$WAA_mats[[waa_pointer_indices[k]]]
-				data$waa_pointer_indices = c(data$waa_pointer_indices,j)
-				j <- j + 1
-			}
+			#print(WAA_pointers)
+			new_pointer <- n_waa + (1:length(unique(WAA_pointers)))
+			#print(new_pointer)
+			new_pointer <- new_pointer[match(WAA_pointers,unique(WAA_pointers))]
+			#print(new_pointer)
+			data$waa_pointer_fleets <- c(data$waa_pointer_fleets,new_pointer[1:x$n_fleets])
+			#print(data$waa_pointer_fleets)
+			data$waa_pointer_totcatch = c(data$waa_pointer_totcatch,new_pointer[1:x$n_fleets+1])
+			#print(data$waa_pointer_totcatch)
+			data$waa_pointer_ssb = c(data$waa_pointer_ssb,new_pointer[1:x$n_fleets+2])
+			data$waa_pointer_indices = c(data$waa_pointer_indices,new_pointer[x$n_fleets+2 + 1:x$n_indices])
+			#print(data$waa_pointer_indices)
+			n_waa <- n_waa + n_waa_total[a]
 		}
 	} else {
   	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
@@ -44,50 +53,73 @@ set_WAA <- function(input, waa_info = NULL) {
 		data$waa_pointer_indices = rep(1,data$n_indices)
 	}
 
-  if(!is.null(waa_opts$waa)){
-		data$waa = waa_opts$waa
+  if(!is.null(waa_info$waa)){
+		data$waa = waa_info$waa
 		dim_waa = dim(data$waa)
-		if(is.null(waa_opts$waa_pointer_fleets)){
-			cat("waa_opts$waa is provided without waa_opts$waa_pointer_fleets so the first waa matrix will be used for all fleets. \n")
-			data$waa_pointer_fleets = rep(1,data$n_fleets)	
+		if(length(dim_waa) != 3) stop("waa_info$waa must be a 3d array. second index is number of years, third is number of ages.")
+		if(is.null(waa_info$waa_pointer_fleets)){
+			cat("waa_info$waa is provided without waa_info$waa_pointer_fleets so the first waa matrix will be used for all fleets. \n")
+			data$waa_pointer_fleets = rep(1,data$n_fleets)
+		}
+		if(is.null(waa_info$waa_pointer_indices)){
+			cat("waa_info$waa is provided without waa_info$waa_pointer_totcatch so the first waa matrix will be used. \n")
+			data$waa_pointer_indices = rep(1,data$n_indices)
+		}
+		if(is.null(waa_info$waa_pointer_ssb)){
+			cat("waa_info$waa is provided without waa_info$waa_pointer_ssb so the first waa matrix will be used. \n")
+			data$waa_pointer_ssb = rep(1,data$n_stocks)
+		}
+		if(is.null(waa_info$waa_pointer_M)){
+			cat("waa_info$waa is provided without waa_info$waa_pointer_M so the first waa matrix will be used. \n")
+			data$waa_pointer_M = rep(1,data$n_stocks)
 		}
 	}
 		
-	if(!is.null(waa_opts$waa_pointer_fleets)){
-		if(max(waa_opts$waa_pointer_fleets) > dim(data$waa)[1]){
-			stop("some waa_opts$waa_pointer_fleets are outside the number of waa matrices.\n")
+	if(!is.null(waa_info$waa_pointer_fleets)){
+		if(any(!(waa_info$waa_pointer_fleets %in% 1:dim(data$waa)[1]))){
+			stop("some waa_info$waa_pointer_fleets are outside the number of waa matrices.\n")
 		}
-		if(length(waa_opts$waa_pointer_fleets) != data$n_fleets){
-			stop("length of waa_opts$waa_pointer_fleets is not equal to the number of fleets.\n")
+		if(length(waa_info$waa_pointer_fleets) != data$n_fleets){
+			stop("length of waa_info$waa_pointer_fleets is not equal to the number of fleets.\n")
 		}
-		data$waa_pointer_fleets = waa_opts$waa_pointer_fleets
+		data$waa_pointer_fleets = waa_info$waa_pointer_fleets
 	}
-	if(!is.null(waa_opts$waa_pointer_indices)){
-		if(max(waa_opts$waa_pointer_indices) > dim(data$waa)[1]){
-			stop("some waa_opts$waa_pointer_indices are outside the number of waa matrices.\n")
+	if(!is.null(waa_info$waa_pointer_indices)){
+		if(any(!(waa_info$waa_pointer_indices %in% 1:dim(data$waa)[1]))){
+			stop("some waa_info$waa_pointer_indices are outside the number of waa matrices.\n")
 		}
-		if(length(waa_opts$waa_pointer_indices) != data$n_indices){
-			stop("length of waa_opts$waa_pointer_indices is not equal to the number of indices.\n")
+		if(length(waa_info$waa_pointer_indices) != data$n_indices){
+			stop("length of waa_info$waa_pointer_indices is not equal to the number of indices.\n")
 		}
-		data$waa_pointer_indices = waa_opts$waa_pointer_indices
+		data$waa_pointer_indices = waa_info$waa_pointer_indices
 	}
-	if(!is.null(waa_opts$waa_pointer_ssb)){
-		if(max(waa_opts$waa_pointer_ssb) > dim(data$waa)[1]){
-			stop("some waa_opts$waa_pointer_ssb are outside the number of waa matrices.\n")
+	if(!is.null(waa_info$waa_pointer_ssb)){
+		if(any(!(waa_info$waa_pointer_ssb %in% 1:dim(data$waa)[1]))){
+			stop("some waa_info$waa_pointer_ssb are outside the number of waa matrices.\n")
 		}
-		if(length(waa_opts$waa_pointer_ssb) != data$n_stocks){
-			stop("length of waa_opts$waa_pointer_ssb is not equal to the number of stocks.\n")
+		if(length(waa_info$waa_pointer_ssb) != data$n_stocks){
+			stop("length of waa_info$waa_pointer_ssb is not equal to the number of stocks.\n")
 		}
-		data$waa_pointer_ssb = waa_opts$waa_pointer_ssb
+		data$waa_pointer_ssb = waa_info$waa_pointer_ssb
 	}
-	if(!is.null(waa_opts$waa_pointer_totcatch)){
-		if(max(waa_opts$waa_pointer_totcatch) > dim(data$waa)[1]){
-			stop("some waa_opts$waa_pointer_totcatch are outside the number of waa matrices.\n")
+	if(!is.null(waa_info$waa_pointer_totcatch)){
+		if(any(!(waa_info$waa_pointer_totcatch %in% 1:dim(data$waa)[1]))){
+			stop("some waa_info$waa_pointer_totcatch are outside the number of waa matrices.\n")
 		}
-		if(length(waa_opts$waa_pointer_totcatch) != data$n_regions){
-			stop("length of waa_opts$waa_pointer_totcatch is not equal to the number of regions.\n")
+		if(length(waa_info$waa_pointer_totcatch) != data$n_regions){
+			stop("length of waa_info$waa_pointer_totcatch is not equal to the number of regions.\n")
 		}
-		data$waa_pointer_totcatch = waa_opts$waa_pointer_totcatch
+		data$waa_pointer_totcatch = waa_info$waa_pointer_totcatch
+	}
+	data$waa_pointer_M <- data$waa_pointer_ssb
+	if(!is.null(waa_info$waa_pointer_M)){
+		if(any(!(waa_info$waa_pointer_M %in% 1:dim(data$waa)[1]))){
+			stop("some waa_info$waa_pointer_M are outside the number of waa matrices.\n")
+		}
+		if(length(waa_info$waa_pointer_M) != data$n_stocks){
+			stop("length of waa_info$waa_pointer_totcatch is not equal to the number of regions.\n")
+		}
+		data$waa_pointer_M[] = waa_info$waa_pointer_M
 	}
 
   input$data = data

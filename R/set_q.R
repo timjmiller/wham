@@ -135,7 +135,7 @@ set_q = function(input, catchability = NULL){
 
   #set any parameters as random effects
   input$random = NULL
-  input = wham:::set_random(input)
+  input = set_random(input)
 
 	return(input)
 }

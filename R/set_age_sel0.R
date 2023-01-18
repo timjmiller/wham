@@ -36,16 +36,13 @@ set_age_sel0 <- function(input, selblocks){
       y = temp$data$index_paa[i,which(temp$data$selblock_pointer_indices[,i] == x & temp$data$use_index_paa[,i] == 1),]
       paa = rbind(paa,y)
     }
-    #print(dim(paa))
     y = apply(paa,2,sum)
-    #print(y)
     temp$par$logit_selpars[x,temp$data$n_ages + 1:6] = Inf
     temp$par$logit_selpars[x,which(y < 1e-5)] = -Inf
     temp$par$logit_selpars[x,which(y >= 1e-5)] = 0
     if(sum(y >= 1e-5)) temp$map$logit_selpars[x,which(y >= 1e-5)] = n.par + 1:sum(y >= 1e-5)
     n.par = n.par + sum(y >= 1e-5)
   }
-  # temp$map.n = temp$map$logit_selpars
   temp$map$logit_selpars = factor(temp$map$logit_selpars)
   return(temp)
 }

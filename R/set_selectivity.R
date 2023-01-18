@@ -255,33 +255,49 @@ set_selectivity = function(input, selectivity)
     }
   }
   temp <- matrix(NA, data$n_selblocks, data$n_ages + 6)
+  print(phase_selpars)
   # if(!is.null(selectivity$fix_pars)){ # use fix_pars
     temp[which(phase_selpars > 0)] = 1:sum(phase_selpars>0)
   # }
   if(!is.null(selectivity$map_pars)){ # use map_pars directly
     for(b in 1:data$n_selblocks) temp[b, par_index[[data$selblock_models[b]]]] = selectivity$map_pars[[b]]
   }
-  # if re='ar1' (by age) and age-specific sel, only estimate one mean shared across ages
-  # but don't overwrite fixed pars (likely will be fixing one age at 1)
   for(b in 1:data$n_selblocks){ 
-    if(data$selblock_models_re[b] == 3 & data$selblock_models[b] == 1){
+    if(data$selblock_models_re[b] == 3){
       bl <- temp[b, par_index[[data$selblock_models[b]]]]
-      bl[!is.na(bl)] = min(bl, na.rm=TRUE)
-      temp[b, par_index[[data$selblock_models[b]]]] = bl
-      
+      # print(b)
+      # print(data$selblock_models_re[b])
+      # print(data$selblock_models[b])
+      # print(bl)
+      if(sum(!is.na(bl)) < 3) {
+        #data$selblock_models_re[b] <- 1 #no RE for this block
+        stop(paste0("'ar1' (AR1(age)) selectivity random effects specified for block ",b," but no number of free mean parameters is <= 2, 
+        which will not be identifiable. Use age-specific selectivity with more free mean selectivity parameters (par$logit_selpars) or use 
+        a different random effects specification."))
+      } else {
+      # if re='ar1' (by age) with age-specific selectivity, only estimate one mean shared across ages
+      # but don't overwrite fixed pars (likely will be fixing one age at 1)
+        bl[!is.na(bl)] = min(bl, na.rm=TRUE)
+        temp[b, par_index[[data$selblock_models[b]]]] = bl
+      }
       # warning message if no mean sel pars (logit_selpars) are fixed
       # allow so user can fit model without fixing and then fix the age with highest sel at 1
-      if(all(!is.na(bl))) warning(paste0("AR1_ages selectivity for block ",b," but no age fixed at 1. 
-Advised to fit the current model and then fix the age with highest selectivity at 1. 
-Can use selectivity$fix_pars."))
-      
+      if(all(!is.na(bl))  & data$selblock_models[b] == 1) warning(paste0("'ar1' (AR1(age)) with age-specfici selectivity for block ",b,
+        " but no age fixed at 1. Advised to fit the current model and then fix the age with highest selectivity at 1. 
+        Can use selectivity$fix_pars."))
       # could add warning message if most ages are fixed, leaving less than xx ages to estimate with the AR1 re
     }
   }
+  #data$selpars_est <- phase_selpars
+  #data$selpars_est[data$selpars_est == -1] = 0
   data$selpars_est <- matrix(0, data$n_selblocks, data$n_ages + 6)
   data$selpars_est[which(!is.na(temp))] = 1
+  print(data$selpars_est)
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   map$logit_selpars = factor(temp)
+  print(temp)
+  print(data$n_selpars_est)
+
 
   # initial values on logit scale, par$logit_selpars
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 6)
@@ -392,7 +408,7 @@ Can use selectivity$fix_pars."))
   
   #set any parameters as random effects
   input$random = NULL
-  input = wham:::set_random(input)
+  input = set_random(input)
   return(input)
 
 }

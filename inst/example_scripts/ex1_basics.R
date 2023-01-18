@@ -9,13 +9,13 @@ setwd(write.dir)
 
 # copy asap3 data file to working directory
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
+#file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
 
 # confirm you are in the working directory and it has the ASAP_SNEMAYT.dat file
-list.files()
+#list.files()
 
 # read asap3 data file and convert to input list for wham
-asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
+asap3 <- read_asap3_dat(file.path(wham.dir, "extdata","ex1_SNEMAYT.dat")
 
 # ---------------------------------------------------------------
 # model 1

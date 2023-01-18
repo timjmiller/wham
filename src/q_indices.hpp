@@ -46,15 +46,17 @@ vector<Type> simulate_q_prior_re(vector<Type> q_prior_re, vector<Type> logit_q,
 
 //auto-regressive random effects for q
 template<class Type>
-matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> use_q_re){
+matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> use_q_re, vector<int> years_use){
   /* 
     get any nll components for time/age varying RE for logit(catchability).
       q_repars: n_indices x 2. parameters for distributions of random effects (sig, rho_y)
           q_re: n_years x n_indices. RE for logit(catchability).
       use_q_re: 0/1 whether to use time-varying random effects for each index
+     years_use: is possibly a subset of years to use for evaluating likelihood (and simulating values). normally = 0,....,n_years_model-1
   */
   
   int n_indices = q_re.cols();
+  // int n_y = years_use.size(); //years_use can include projection years, but q_re is not currently projected
   int n_y = q_re.rows();
   matrix<Type> nll_q(n_y,n_indices);
   nll_q.setZero();
@@ -67,10 +69,10 @@ matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> u
     {
       sigma_q(i) = exp(q_repars(i,0)); // conditional sd
       rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(2)); // autocorrelation
-      nll_q(0,i) -= dnorm(q_re(0,i), Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))), 1);
+      nll_q(years_use(0),i) -= dnorm(q_re(years_use(0),i), Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))), 1);
       for(int y = 1; y < n_y; y++)
       {
-        nll_q(y,i) -= dnorm(q_re(y,i), rho_q(i) * q_re(y-1,i), sigma_q(i), 1);
+        nll_q(years_use(y),i) -= dnorm(q_re(years_use(y),i), rho_q(i) * q_re(years_use(y)-1,i), sigma_q(i), 1);
       }
     }
   }
@@ -80,18 +82,19 @@ matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> u
 
 //simulate auto-regressive random effects for q
 template<class Type>
-matrix<Type> simulate_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> use_q_re){
+matrix<Type> simulate_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> use_q_re, vector<int> years_use){
   /* 
     simulate andy time/age varying RE for logit(catchability).
       q_repars: n_indices x 2. parameters for distributions of random effects (sig, rho_y)
           q_re: n_years x n_indices. RE for logit(catchability).
       use_q_re: 0/1 whether to use time-varying random effects for each index
+     years_use: is possibly a subset of years to use for evaluating likelihood (and simulating values). normally = 0,....,n_years_model-1
   */
   
   int n_indices = q_re.cols();
-  int n_y = q_re.rows();
-  matrix<Type> sim_q_re(n_y,n_indices);
-  sim_q_re.setZero();
+  int n_y = years_use.size();
+  matrix<Type> sim_q_re = q_re;
+  //sim_q_re.setZero();
   vector<Type> sigma_q(n_indices);
   sigma_q.setZero();
   vector<Type> rho_q(n_indices);
@@ -101,17 +104,17 @@ matrix<Type> simulate_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> 
     {
       sigma_q(i) = exp(q_repars(i,0)); // conditional sd
       rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(2)); // autocorrelation
-      q_re(0,i) = rnorm(Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))));
-      for(int y = 1; y < n_y; y++) q_re(y,i) = rnorm(rho_q(i) * q_re(y-1,i), sigma_q(i));
+      sim_q_re(years_use(0),i) = rnorm(Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))));
+      for(int y = 1; y < n_y; y++) sim_q_re(years_use(y),i) = rnorm(rho_q(i) * sim_q_re(years_use(y)-1,i), sigma_q(i));
     }
   }
-  return(q_re);
+  return(sim_q_re);
 }
 //done
 
 template<class Type>
 matrix<Type> get_logit_q_mat(vector<Type> logit_q, matrix<Type> q_re, vector<Type> q_prior_re,  vector<int> use_q_prior, 
-  vector<int> use_q_re, array<Type> Ecov_lm, matrix<int> use_Ecov) {
+  vector<int> use_q_re, array<Type> Ecov_lm, matrix<int> Ecov_how) {
   /* 
     Construct n_years x n_indices matrices of logit(catchability)
     currently continues random processes in any projection years!
@@ -120,7 +123,7 @@ matrix<Type> get_logit_q_mat(vector<Type> logit_q, matrix<Type> q_re, vector<Typ
        q_prior_re: n_stocks x n_ages x n_seasons x n_regions x n_regions-1. RE for posterior (given prior) (mean) movement parameters
       use_q_prior: n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
            Ecov_lm: (n_indices, n_years_pop, n_Ecov) linear predictor for any Ecov effects on trans_mu_base
-          use_Ecov: n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 values indicating to use effects on migration for each stock for each region (less 1).
+          Ecov_how: n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions-1: 0/1 values indicating to use effects on migration for each stock for each region (less 1).
   */
   
   int n_indices = q_re.cols();
@@ -144,7 +147,7 @@ matrix<Type> get_logit_q_mat(vector<Type> logit_q, matrix<Type> q_re, vector<Typ
     }
     for(int y = 0; y < n_y; y++) {
       for(int j=0; j < n_Ecov; j++){
-        if(use_Ecov(j,i) == 1){ // if ecov i affects q and which index
+        if(Ecov_how(j,i) == 1){ // if ecov i affects q and which index
           logit_q_mat(y,i) += Ecov_lm(i,y,j);
         }
       }
@@ -197,9 +200,9 @@ array<Type> get_QAA(matrix<Type> q, vector<matrix<Type>> selAA, matrix<int> selb
     for(int y = 0; y < n_y; y++)
     {
       if(y < n_years_model) {
-        for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
+        for(int a = 0; a < n_ages; a++) QAA(i,y,a) = q(y,i) * selAA(selblock_pointer_indices(y,i)-1)(y,a);
       } else { //for projections, just use last years selectivity for now
-        for(int a = 0; a < n_ages; a++) QAA(y,i,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
+        for(int a = 0; a < n_ages; a++) QAA(i,y,a) = q(y,i) * selAA(selblock_pointer_indices(n_years_model-1,i)-1)(n_years_model-1,a);
       }
     }
   }
@@ -212,7 +215,7 @@ array<Type> get_pred_IAA(array<Type>QAA, array<Type> NAA_index) {
 
   int n_stocks = NAA_index.dim(0);
   int n_indices = NAA_index.dim(1);
-  int n_y = NAA_index.dim(2);
+  int n_y = NAA_index.dim(2); //n_years_model
   int n_ages = NAA_index.dim(3);
   array<Type> pred_IAA(n_indices, n_y,n_ages);
   pred_IAA.setZero();
@@ -235,8 +238,8 @@ matrix<Type> get_pred_indices(array<Type> pred_IAA, vector<int> units_indices, a
 
   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) for(int a = 0; a < n_ages; a++) {
     if(units_indices(i) == 1) {
-      pred_indices(y,i) += waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(y,i,a);
-    } else pred_indices(y,i) += pred_IAA(y,i,a);    
+      pred_indices(y,i) += waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(i,y,a);
+    } else pred_indices(y,i) += pred_IAA(i,y,a);    
   }
   return pred_indices;
 }
@@ -310,7 +313,7 @@ array<Type> get_pred_index_paa(array<Type> pred_IAA, vector<int> units_index_paa
   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++){
     Type tsum = 0.0;
     for(int a = 0; a < n_ages; a++){
-      if(units_index_paa(i) == 1) pred_IAA(y,i,a) = waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(y,i,a);
+      if(units_index_paa(i) == 1) pred_IAA(i,y,a) = waa(waa_pointer_indices(i)-1,y,a) * pred_IAA(i,y,a);
       tsum += pred_IAA(i,y,a);
     }
     for(int a = 0; a < n_ages; a++){
@@ -325,7 +328,7 @@ matrix<Type> get_nll_index_acomp(array<Type> pred_index_paa, matrix<int> use_ind
   matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars, 
   array<int> keep_Ipaa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
   int n_indices = pred_index_paa.dim(0);
-  int n_y = pred_index_paa.dim(1);
+  int n_y = index_paa.dim(1);
   int n_ages = pred_index_paa.dim(2);
   matrix<Type> nll_index_acomp(n_y,n_indices);
   nll_index_acomp.setZero();
@@ -351,7 +354,7 @@ template <class Type>
 vector<Type> simulate_index_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_index_paa, matrix<int> use_index_paa,
   array<int> keep_Ipaa, matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars){
   int n_indices = pred_index_paa.dim(0);
-  int n_y = pred_index_paa.dim(1);
+  int n_y = keep_Ipaa.dim(1);
   int n_ages = pred_index_paa.dim(2);
   vector<Type> obsvec_out = obsvec;
   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {

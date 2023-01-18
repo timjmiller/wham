@@ -46,7 +46,7 @@
 #'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-#'     \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+#'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n_Ecov}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if proj.opts$use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
@@ -98,6 +98,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
   mod$ages.lab <- input$ages.lab
   mod$model_name <- input$model_name
   mod$input <- input
+  mod$call <- match.call()
   ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
   mod$wham_version <- paste0(ver, collapse=" / ")
   if(do.fit){
@@ -106,15 +107,27 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     mod <- check_which_F_age(mod)
+    mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
+    if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
+    mod$rep = mod$report() #par values don't matter because function has not been evaluated
     mod <- check_FXSPR(mod)
-    print(mod$env$data$n_fleets)
+    
+    #print(mod$env$data$n_fleets)
     #if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
 
     # retrospective analysis
     if(do.retro){
-      tryCatch(mod$peels <- retro(mod, ran = unique(names(mod$env$par[mod$env$random])), n.peels= n.peels,
+      ran_names <- unique(names(mod$env$par[mod$env$random]))
+      print(ran_names)
+      #stop()
+      ran <- NULL
+      if(length(ran_names)) ran <- ran_names
+      #print(n.peels)
+      #mod$peels <- retro(mod, ran = ran, n.peels= n.peels,
+      #  MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent)
+      tryCatch(mod$peels <- retro(mod, ran = ran, n.peels= n.peels,
         MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
       #assigning mod$err_retro accomplishes the below if statement
       #if(exists("err")){
@@ -140,6 +153,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
   else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
+    mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
+    if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
     mod$rep = mod$report() #par values don't matter because function has not been evaluated
     mod$parList = mod$env$parList()
     mod <- check_which_F_age(mod)
@@ -152,7 +167,16 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
 check_which_F_age = function(mod)
 {
-  mod$env$data$which_F_age[] = apply(mod$rep$FAA_tot,1, function(x) which(x == max(x))[1])
+  if(is.null(mod$opt)) mle = mod$par
+  else {
+    mle = mod$opt$par
+  }
+  for(y in 1:dim(mod$rep$FAA)[2]){
+    temp <- apply(rbind(mod$rep$FAA[,y,]),2,sum)
+    mod$env$data$which_F_age[y] <- which(temp == max(temp))[1]
+  }
+  mod$retape()
+  mod$fn(mle)
   mod$rep = mod$report()
   return(mod)
 }
@@ -172,20 +196,42 @@ check_FXSPR = function(mod)
   else {
     mle = mod$opt$par
   }
-  percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
+  #allow calculation of X%SPR BRPs
+  mod$env$data$do_annual_SPR_BRPs <- mod$input$data$do_annual_SPR_BRPs <- 1
+  mod$retape()
+  mod$fn(mle)
+  mod$rep = mod$report()
+
+  percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$env$data$n_stocks+1]
+  # print(percentSPR_out)
+  # print(mod$env$data$percentSPR)
+  # print(round(percentSPR_out,4))
+  # print(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
   ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
+  #if(mod$env$data$n_years_proj) years = mod$years_full
+  #else 
+  years = mod$years
+  # print(ind)
   if(length(ind))
   {
     for(i in 1:2) #two tries to fix initial FXSPR value
     {
-      if(mod$env$data$n_years_proj) years = mod$years_full
-      else years = mod$years
       redo_SPR_years = years[ind]
+      print(years)
+      print(redo_SPR_years)
+      print(ind)
+      print(percentSPR_out)
+      print(percentSPR_out[ind])
+      print(mod$rep$log_SPR0)
+      print(mod$rep$log_SPR0[ind])
+      print(mod$rep$log_SPR_FXSPR)
+      print(mod$rep$log_SPR_FXSPR[ind])
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
-      mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*0.5
+      mod$env$data$FXSPR_init[ind] = mod$env$data$FXSPR_init[ind]*2
+      mod$retape()
       mod$fn(mle)
       mod$rep = mod$report()
-      percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)
+      percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$env$data$n_stocks+1]
       ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
     }
@@ -200,6 +246,7 @@ check_FXSPR = function(mod)
     {
       warning(paste0("Changing initial values for estimating static FXSPR."))
       mod$env$data$static_FXSPR_init = mod$env$data$static_FXSPR_init*0.5
+      mod$retape()
       mod$fn(mle)
       mod$rep = mod$report()
       percentSPR_out_static = exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)
@@ -231,6 +278,7 @@ check_projF = function(mod)
       redo_SPR_years = mod$years_full[y[bad]]
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_proj_init[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
+      mod$retape()
       mod$fn(mle)
       mod$rep = mod$report()
       correct_F = round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
@@ -252,6 +300,7 @@ check_projF = function(mod)
         redo_Catch_years = mod$years_full[y[bad]]
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
         mod$env$data$F_proj_init[ind[bad]] = mod$env$data$F_proj_init[ind[bad]]*0.5
+        mod$retape()
         mod$fn(mle)
         mod$rep = mod$report()
         bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))

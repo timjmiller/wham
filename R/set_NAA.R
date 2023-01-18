@@ -86,10 +86,10 @@ set_NAA = function(input, NAA_re=NULL)
   par$N1_repars = array(0,dim = c(data$n_stocks,data$n_regions,3))
   map$N1_repars = array(NA,dim = c(data$n_stocks,data$n_regions,3))
   if(!is.null(NAA_re$N1_model)) {
-    options = c("age-specific-fixed", "equilibrium","iid_re", "ar1_re")
+    options = c("age-specific-fe", "equilibrium","iid-re", "ar1-re")
     k = 1
     for(s in 1:data$n_stocks) {
-      if(!(NAA_re$N1_model[s] %in% options)) stop("one or more NAA_re$N1_model is not defined properly.")
+      if(!(NAA_re$N1_model[s] %in% options)) stop("NAA_re$N1_model must all be 'age-specific-fe', 'equilibrium', 'iid-fe' or 'ar1-fe'.")
       if(NAA_re$N1_model[s] == options[1]) data$N1_model[s] = 0
       if(NAA_re$N1_model[s] == options[2]) data$N1_model[s] = 1
       if(NAA_re$N1_model[s] %in% options[3:4]) {
@@ -105,10 +105,6 @@ set_NAA = function(input, NAA_re=NULL)
     }
   }
   map$N1_repars = factor(map$N1_repars)
-  if(!(all(unique(data$N1_model) %in% 0:1)) | !(all(unique(data$N1_model %in% 2)))){ 
-    stop("NAA_re$N1_model must all be 'age-specific-fixed' or 'equilibrium' or 
-      they must all be 'iid_re' or 'ar1_re'.")
-  }
   k = 1
   init_NAA = log(exp(10)*exp(-(0:(data$n_ages-1))*0.2))
   for(s in 1:data$n_stocks) {
@@ -152,8 +148,11 @@ set_NAA = function(input, NAA_re=NULL)
   map$log_NAA_sigma = matrix(NA, data$n_stocks, data$n_ages)
   par$trans_NAA_rho = matrix(0,data$n_stocks, 2)
   map$trans_NAA_rho = matrix(NA, data$n_stocks, 2)
-  par$log_NAA = array(0,dim = c(data$n_stocks, data$n_regions, data$nyears_model-1, data$n_ages))
-  map$log_NAA = array(NA,dim = c(data$n_stocks, data$n_regions, data$nyears_model-1, data$n_ages))
+  par$log_NAA = array(10,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
+  map$log_NAA = array(NA,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
+  for(s in 1:data$n_stocks){
+    map$log_NAA[s,data$spawn_regions[s],,1] <- 1 #change to unique values later
+  }
 
   #if(is.null(NAA_re$sigma)){ 
   #  data$n_NAA_sigma <- 0
@@ -161,11 +160,12 @@ set_NAA = function(input, NAA_re=NULL)
   #}
   if(!is.null(NAA_re$sigma)){
     k = 0
-    if(length(NAA_re$sigma != data$n_stocks)) stop("NAA_re$sigma length must be equal to the number of stocks.")
+    if(length(NAA_re$sigma) != data$n_stocks) stop("NAA_re$sigma length must be equal to the number of stocks.")
     for(s in 1:data$n_stocks) if(NAA_re$sigma[[s]][1] == "rec"){
       data$NAA_re_model[s] = 1
       map$log_NAA_sigma[s,1] = k
-      map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
+      #below is already done above for SCAA
+      #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
       k = k + 1
       #data$n_NAA_sigma <- 1
       #data$NAA_sigma_pointers <- rep(1,data$n_ages)
@@ -203,6 +203,7 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
       if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
       par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
     }
+    if(!is.null(NAA_re$cor)) if(length(NAA_re$cor) != data$n_stocks) stop("NAA_re$cor length must be equal to the number of stocks.")
     if(!is.null(NAA_re$cor[[s]])){
       if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
       if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- 1
@@ -256,8 +257,10 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
       }  
       if(data$recruit_model[s]==4) par$mean_rec_pars[s,2] = -10
     }
-    if(data$recruit_model[s]==2) map$mean_rec_pars[s,1] = 1
-    if(data$recruit_model[s]>2) map$mean_rec_pars[s,] = 1
+    if(data$NAA_re_model[s] > 0){
+      if(data$recruit_model[s]==2) map$mean_rec_pars[s,1] = s
+      if(data$recruit_model[s]>2) map$mean_rec_pars[s,] = 1:2 + (s-1) * 2
+    }
   }
   map$mean_rec_pars = factor(map$mean_rec_pars)
 
@@ -270,8 +273,9 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
 	#input = wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
 	#set any parameters as random effects
+  #print(sort(names(input$data)))
 	input$random = NULL
-	input = wham:::set_random(input)
+	input = set_random(input)
 
   return(input)
 }

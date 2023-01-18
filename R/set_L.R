@@ -41,8 +41,8 @@ set_L = function(input, L)
   if(!is.null(L)){
     if(!is.null(L$model)){ # L model options
       L_mods = c("none","constant","iid_re","ar1_re")
-      if(!(L$model %in% L_mods)) stop(paste0("L$model must be one of these: ", paste0(L_mods, collapse=","))
-      data$L_model[] = match([L$model, L_mods]) - 1
+      if(!(L$model %in% L_mods)) stop(paste0("L$model must be one of these: ", paste0(L_mods, collapse=",")))
+      data$L_model[] = match(L$model, L_mods) - 1
     }
   }
   inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s
@@ -71,7 +71,7 @@ set_L = function(input, L)
       }
     }
   }
-  map$L_re[which(map$L_re==1)] <- 1:sum(map$L_re==1)
+  map$L_re[which(map$L_re==1)] <- 1:sum(map$L_re==1, na.rm = TRUE)
   map$L_re = factor(map$L_re)
   map$L_repars = factor(map$L_repars)
 
@@ -81,11 +81,11 @@ set_L = function(input, L)
   
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
-	input = wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
 	#set any parameters as random effects
 	input$random = NULL
-	input = wham:::set_random(input)
+	input = set_random(input)
   return(input)
 
 }

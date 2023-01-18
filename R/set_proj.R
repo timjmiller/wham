@@ -3,22 +3,28 @@ set_proj = function(input, proj.opts = NULL)
 	data = input$data
 	if(is.null(proj.opts))
 	{
-  	input$par$logR_proj <- 0 # will be set by prepare_projection if SCAA
+  	input$par$logR_proj <- matrix(0, data$n_stocks, 1) # will be set by prepare_projection if SCAA
   	input$map$logR_proj <- factor(NA)
   
 	  data$do_proj <- 0
 	  data$n_years_proj <- 0
 	  data$n_years_proj_Ecov <- 0
   	data$avg_years_ind <- data$n_years_model - (5:1) # c++ indices start at 0
-	  #data$avg_years_ind <- 0
-	  data$proj_F_opt <- 0
+  	data$avg_years_Ecov <- data$n_years_model - (5:1) # c++ indices start at 0
+	  data$proj_F_opt <- 1
 	  data$proj_Fcatch <- 0
-	  data$proj_M_opt <- 0
+	  data$proj_M_opt <- 1
+		data$proj_L_opt <- 1
+		data$proj_mu_opt <- 1
+		data$proj_Ecov_opt <- 1
+		data$Ecov_use_proj <- cbind(0)
 	  data$logR_mean <- 0 # only used for SCAA projections
 	  data$logR_sd <- 0 # only used for SCAA projections
 	  data$FXSPR_init = rep(0.1, data$n_years_model + data$n_years_proj)
 	  data$FMSY_init = rep(0.1, data$n_years_model + data$n_years_proj)
-	  data$F_proj_init = 0
+	  data$F_proj_init = 0.1
+		data$percentFMSY = 100
+		data$percentFXSPR = 100
 	}
 	else {
 

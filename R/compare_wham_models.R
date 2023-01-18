@@ -132,10 +132,15 @@ Returning AIC/rho table for WHAM models only.
              Set 'calc.rho = FALSE' to make other comparisons, or re-run models \n
              with 'fit_wham(do.retro = TRUE)'.\n")
       }
-      rho <- t(sapply(wham.mods, function(x){
-        mohns_rho(x)
-      }))[ ,c("R","SSB","Fbar")]
-      rho <- round(rho, 4)
+      rho <- lapply(wham.mods, function(x){
+        x <- mohns_rho(x)
+        x$R <- x$naa[,"R"]
+        x <- c(x$R,x$SSB, x$Fbar)
+      })
+      #RIGHT HERE!!!!!
+
+      rho <- lapply(rho, round, digits = 4)
+      rho <- c(rho$R, rho$SSB, rho$Fbar)
       colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
       # apply(rho, 1, function(y) mean(abs(y)))
     }

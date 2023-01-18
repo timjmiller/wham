@@ -41,7 +41,7 @@ set_catch = function(input, catch_info= NULL) {
 	
   if(!is.null(asap3)) {
     #data$n_fleets = asap3$n_fleets
-    k <- 0
+    k <- 1
     for(i in 1:length(asap3)) {
       asap3[[i]]$use_catch_acomp <- rep(1,asap3[[i]]$n_fleets) #default is to use age comp for catch
       for(j in 1:asap3[[i]]$n_fleets) {

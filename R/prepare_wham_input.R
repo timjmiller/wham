@@ -279,6 +279,11 @@
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)
 #' @param catchability (optional) list specifying options for priors and random effects on catchability (see details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
+#' @param move (optional) list specifying movement/migration options for models with more than 1 region (see details)
+#' @param L (optional) list specifying "extra" mortality options (see details)
+#' @param F (optional) list specifying fishing mortality options (see details)
+#' @param catch_info (optional) list specifying catch information (see details)
+#' @param index_info (optional) list specifying index informaiton (see details)
 #' @param basic_info (optional) list of basic population information for use when asap3 is not provided (see details)
 #'
 #' @return a named list with the following components:
@@ -311,7 +316,7 @@
 #'
 #' @export
 prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, 
-	NAA_re=NULL, catchability=NULL, age_comp=NULL, movement=NULL, L=NULL, F=NULL, catch_info=NULL, index_info=NULL, basic_info = NULL){
+	NAA_re=NULL, catchability=NULL, age_comp=NULL, move=NULL, L=NULL, F=NULL, catch_info=NULL, index_info=NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
@@ -358,6 +363,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	F_opts = F
 	#F_names = c("F")
 	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
+	#print("1")
 
 
 	if(!is.null(asap3)) {
@@ -367,8 +373,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 		asap3 = lapply(asap3, function(x) return(x$dat))
 
 		cat(paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
-				unless the movement argument is provided.\n")
-
+				unless the movement argument is provided.\n"))
+#print(2)
   	n_ages = sapply(asap3, function(x) x$n_ages)
   	if(length(unique(n_ages))!= 1) stop("differing numbers of age classes in the asap3 dat files. Make them equal before passing to wham.")
 
@@ -376,16 +382,18 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   	if(length(unique(n_years))!= 1) stop("differing numbers of years in the asap3 dat files. Make them equal before passing to wham.")
 
   	input$asap3 = asap3
-		input$data$n_stocks = length(asap)
-		input$data$n_regions = length(asap)
+		input$data$n_stocks = length(asap3)
+		input$data$n_regions = length(asap3)
 		input$data$n_ages = n_ages[1]
   	input$data$n_years_model = n_years[1]
+		input$data$years_use <- 1:input$data$n_years_model - 1
   	input$years <- asap3[[1]]$year1 + 1:asap3[[1]]$n_years - 1
+#print(3)
 
 		input$data$spawn_seasons <- rep(1, length(asap3))
 		input$data$spawn_regions <- 1:length(asap3)
 		input$data$NAA_where <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
-		for(s in 1:n_stocks){
+		for(s in 1:input$data$n_stocks){
 			input$data$NAA_where[s,s,] <- 1
 		}
 
@@ -400,8 +408,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 				input$data$fracyr_SSB[,i] = asap3[[i]]$fracyr_spawn - int_starts[ind] 
 			}
 		}
+#print(4)
   
-		input$data$mature = array(NA, dim(input$data$n_stocks, input$data$n_years_model, input$data$n_ages))
+		input$data$mature = array(NA, dim = c(input$data$n_stocks, input$data$n_years_model, input$data$n_ages))
 	  for(i in 1:length(asap3)) input$data$mature[i,,] = asap3[[i]]$maturity
 	  input$data$Fbar_ages = seq(asap3[[1]]$Frep_ages[1], asap3[[1]]$Frep_ages[2])
 	}
@@ -413,64 +422,68 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   input$years_full = input$years
   input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
 
-	# print("start")
+	 print("start")
 	#some basic input elements see the function code below
 	input = add_basic_info(input, basic_info)
+	print("basic_info")
 
 	# Catch
 	#input$data$n_seasons first defined here
-	input = set_catch(input, catch_opts)
-	#print("catch")
+	input = set_catch(input, catch_info)
+	print("catch")
 
 	# Indices/surveys
-	input = set_indices(input, index_opts)
-	#print("indices")
+	input = set_indices(input, index_info)
+	print("indices")
+	#print(input$data$selblock_pointer_indices)
 
 	# WAA in case we want to modify how weight-at age is handled
 	input = set_WAA(input, waa_opts)
-	#print("WAA")
+	print("WAA")
 
 	# NAA and recruitment options
 	input = set_NAA(input, NAA_re)
-	#print("NAA")
+	print("NAA")
 
 	q_opts = catchability
 	if(any(names(basic_info) == "q") & !any(names(q_opts) == "initial_q")) q_opts$initial_q = basic_info$q
 
 	input = set_q(input, q_opts)
-	#print("q")
+	print("q")
 
 	# Selectivity
 	input = set_selectivity(input, selectivity)
-	#print("selectivity")
+	print("selectivity")
+	#print(input$data$selblock_pointer_indices)
 
 	# Age composition model
 	input = set_age_comp(input, age_comp)
-	#print("age_comp")
+	print("age_comp")
 
 	#in case we want to add alternative F options
 	input = set_F(input, F_opts)
-	#print("F")
+	print("F")
 
 	#set up natural mortality
 	input = set_M(input, M)
-	#print("M")
+	print("M")
+
+	#set up movement
+	input = set_move(input, move)
+	print("move")
 
 	#set up "extra" mortality
 	input = set_L(input, L)
-	#print("L")
+	print("L")
 
-	#set up movement
-	#input = set_move(input, move)
-	#print("mu")
 
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input = set_ecov(input, ecov)
-	#print("ecov")
+	print("ecov")
 
 	# add vector of all observations for one step ahead residuals ==========================
 	input = set_osa_obs(input)
-	#print("osa_obs")
+	print("osa_obs")
 
 	# projection data will always be modified by 'prepare_projection'
 	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
@@ -494,19 +507,24 @@ add_basic_info = function(input, basic_info){
 	if(!is.null(basic_info$ages)) {
 		if(!is.integer(basic_info$ages) | length(basic_info$ages) != input$data$n_ages) stop("basic_info$ages has been specified, but it is not an integer vector or it is not = n_ages")
 		else {
-  		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+")))
+  		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+"))
 		}
 	}
 
-  #input$data$n_years_model = length(input$years)
+  input$data$n_years_model = length(input$years)
+	input$data$years_use <- 1:input$data$n_years_model - 1
   #input$data$n_years_catch = length(input$years)
   #input$data$n_years_indices = length(input$years)
-	input$data$recruit_model = rep(2,data$n_stocks)
+	input$data$recruit_model = rep(2,input$data$n_stocks)
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 
+	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
+		warning("WHAM version 2.0.0 forward by default does not bias correct any log-normal process or observation errors. To 
+		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.")
+	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
-  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
   input$data$bias_correct_oe = 0 #bias correct log-normal observation errors?
+  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = as.integer(basic_info$bias_correct_observation)
   
   sim_pe = 1
@@ -522,8 +540,22 @@ add_basic_info = function(input, basic_info){
   input$data$do_simulate_mu_re = sim_pe #simulate state variable
   input$data$do_simulate_mu_prior_re = sim_pe #simulate state variable
   input$data$do_simulate_L_re = sim_pe #simulate state variable
+  input$data$do_simulate_N_re = sim_pe #simulate state variable
   input$data$do_simulate_data = rep(sim_oe,3) #simulate data types (catch, indices, Ecov)
+	input$data$do_post_samp_N = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$do_post_samp_M = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$do_post_samp_mu = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$do_post_samp_q = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$do_post_samp_sel = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$do_post_samp_Ecov = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+
   #input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
+	input$data$do_annual_SPR_BRPs = 0 #this will be changed when after model fit
+	input$data$do_annual_MSY_BRPs = 0 #this will be changed when after model fit
+	input$data$SPR_weight_type = 0
+	input$data$SPR_weights = rep(1/input$data$n_stocks, input$data$n_stocks)
+	input$data$n_regions_is_small = 1
+
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
   input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections
@@ -532,8 +564,8 @@ add_basic_info = function(input, basic_info){
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
 
-  input$data$which_F_age = cbind(rep(input$data$n_ages,input$data$n_years_model), #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
-  	rep(1,input$data$n_years_model))
+  input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
+  	#rep(1,input$data$n_years_model))
   input$data$which_F_age_static = c(input$data$n_ages,1) #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
 
   #if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
