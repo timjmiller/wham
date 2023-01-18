@@ -468,7 +468,12 @@ struct spr_F_spatial {
       logMbaseT(s,r,a) = T(log_M(s,r,a));
     }
     if(trace) see(logMbaseT);
+    if(trace) see(mu.dim);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
+    if(trace) see(muT.dim);
+    if(trace) see(n_stocks);
+    if(trace) see(n_ages);
+    if(trace) see(n_regions);
     for(int s = 0; s < n_stocks; s++) for(int t = 0; t < mu.dim(1); t++) for(int a = 0; a < n_ages; a++){
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
         muT(s,t,a,r,rr) = T(mu(s,t,a,r,rr));
@@ -609,6 +614,7 @@ vector<Type> get_log_FXSPR(Type percentSPR, array<Type> FAA, vector<int> fleet_r
     if(trace) see(log_M_y);
     array<Type> mu_y = get_mu_y(y,mu);
     if(trace) see(mu_y);
+    if(trace) see(mu_y.dim);
 
     Type FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, vector<Type> (fracyr_SSB.row(y)),
       sel_y, log_M_y, mu_y, L_y, mature_y,  waa_ssb_y, fracyr_seasons, vector<Type> (R_XSPR.row(y)), vector<Type> (log_SPR0.row(y)),
