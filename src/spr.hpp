@@ -536,7 +536,7 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
 
   if(trace) see(log_FXSPR_iter(0));
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
-    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, 0);
+    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);
   if(trace) see("after spr_F_spatial sprF defined");
   for(int i=0; i<n-1; i++) {
     if(trace) see(i);
@@ -576,7 +576,7 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
 
   if(trace) see(log_FXSPR_iter(0));
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
-    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, 0);
+    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);
   if(trace) see("after spr_F_spatial sprF defined");
   for(int i=0; i<n-1; i++) {
     if(trace) see(i);
