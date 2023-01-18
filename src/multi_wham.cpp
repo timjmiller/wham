@@ -1007,13 +1007,13 @@ Type objective_function<Type>::operator() ()
     // matrix<Type> log_SPR0(n_years_pop, n_stocks);
     see(21);
     matrix<Type> log_SPR0 = get_log_SPR0(spawn_seasons, spawn_regions, can_move, mig_type, 
-      fracyr_SSB_all, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,1);
+      fracyr_SSB_all, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,0);
     see(22);
     REPORT(log_SPR0);
     see(log_SPR0);
     vector<Type> log_FXSPR = get_log_FXSPR(percentSPR, FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
       fracyr_seasons, which_F_age, fracyr_SSB_all, log_M, mu, L, log_SPR0, waa_ssb, mature_all, SPR_weights, SPR_weight_type, n_regions_is_small,
-      R_XSPR, FXSPR_init,1);
+      R_XSPR, FXSPR_init,0);
     see(23);
     REPORT(log_FXSPR);
     see(log_FXSPR);
