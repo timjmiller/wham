@@ -5,7 +5,7 @@
 #include "ecov.hpp"
 #include "selectivity.hpp"
 #include "q_indices.hpp"
-#include "F_catch.hpp"
+#include "F_Catch.hpp"
 //#include "XSPR_T.hpp"
 #include "PTM.hpp"
 #include "move.hpp"
