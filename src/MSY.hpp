@@ -93,9 +93,9 @@ struct sr_yield_spatial {
     }
     if(trace) see(logMbaseT);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
-    for(int s = 0; s < n_stocks; s++) for(int t = 0; t < mu.dim(1); t++) for(int a = 0; a < n_ages; a++){
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
-        muT(s,t,a,r,rr) = T(mu(s,t,a,r,rr));
+        muT(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
       }
     }
     if(trace) see(muT);

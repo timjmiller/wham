@@ -126,7 +126,7 @@ project_wham = function(model,
     
     mod$rep = mod$report()
     mod$parList <- mod$env$parList(x=mle)
-    mod <- check_FXSPR(mod)
+    #mod <- check_FXSPR(mod)
     #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
     mod <- check_projF(mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.

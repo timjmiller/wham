@@ -110,7 +110,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
     if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
     mod$rep = mod$report() #par values don't matter because function has not been evaluated
-    mod <- check_FXSPR(mod)
+    #mod <- check_FXSPR(mod)
     
     #print(mod$env$data$n_fleets)
     #if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
@@ -158,7 +158,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod$rep = mod$report() #par values don't matter because function has not been evaluated
     mod$parList = mod$env$parList()
     mod <- check_which_F_age(mod)
-    mod <- check_FXSPR(mod)
+    #mod <- check_FXSPR(mod)
   }
 
   return(mod)
@@ -202,7 +202,7 @@ check_FXSPR = function(mod)
   mod$fn(mle)
   mod$rep = mod$report()
 
-  percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$env$data$n_stocks+1]
+  percentSPR_out = apply(exp(cbind(mod$rep$log_SPR_FXSPR) - cbind(mod$rep$log_SPR0)),1,sum)
   # print(percentSPR_out)
   # print(mod$env$data$percentSPR)
   # print(round(percentSPR_out,4))
@@ -231,7 +231,7 @@ check_FXSPR = function(mod)
       mod$retape()
       mod$fn(mle)
       mod$rep = mod$report()
-      percentSPR_out = exp(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$env$data$n_stocks+1]
+      percentSPR_out = apply(exp(cbind(mod$rep$log_SPR_FXSPR) - cbind(mod$rep$log_SPR0)),1,sum)
       ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
     }

@@ -220,7 +220,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(n_years_proj); // number of years to project  
   DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
   DATA_IVECTOR(proj_Ecov_opt); // if any, how to use each ecov in pop projections: 1 = continue Ecov_re, 2 = average Ecov (over avg_years_ind), 3 = terminal year Ecov, 4 = user-specified
-  DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 3
+  DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 4
   DATA_IVECTOR(avg_years_Ecov); // model year indices (TMB, starts @ 0) to use for averaging ecov for projections if proj_Ecov_opt = 2
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
@@ -696,11 +696,9 @@ Type objective_function<Type>::operator() ()
   // Construct fishing mortality-at-age (FAA)
   matrix<Type> log_F = get_log_F(F_pars, F_config, n_years_pop);
   matrix<Type> F(n_years_pop,n_fleets); //n_years_pop x n_fleets (projection years not yet populated)
-  for(int f = 0; f < log_F.cols(); f++) F.col(f) = exp(vector<Type> (log_F.col(f)));
-  REPORT(F);
   // see(F);
   //n_fleets x n_years_pop x n_ages  (projection years not yet populated)
-  array<Type> FAA = get_FAA(F,fleet_seasons, selAA, selblock_pointer_fleets, n_ages, n_seasons, n_years_model);
+  array<Type> FAA = get_FAA(log_F, selAA, selblock_pointer_fleets, n_ages, n_years_model);
   // see(FAA);
   // see(FAA.dim);
   //n_regions x n_years_model x n_ages  (projection years not yet populated)
@@ -826,7 +824,7 @@ Type objective_function<Type>::operator() ()
         fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
     see(16.9);
     }
-        //if(trace) std::exit(EXIT_FAILURE);
+    //if(trace) std::exit(EXIT_FAILURE);
   }
 
   NAA = extract_NAA(all_NAA);
@@ -873,7 +871,9 @@ Type objective_function<Type>::operator() ()
           annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
             fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
         }
+
       }
+
       NAA = extract_NAA(all_NAA);
       pred_NAA = extract_pred_NAA(all_NAA);
       NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
@@ -882,6 +882,11 @@ Type objective_function<Type>::operator() ()
     }
     if(do_post_samp_N) ADREPORT(log_NAA);
   }
+  //need to do this
+  //log_F = update_log_F(log_F, FAA, which_F_age);
+  REPORT(log_F);
+  for(int f = 0; f < log_F.cols(); f++) F.col(f) = exp(vector<Type> (log_F.col(f)));
+  REPORT(F);
   REPORT(NAA);
   REPORT(pred_NAA);
   REPORT(NAA_devs);
@@ -1010,176 +1015,132 @@ Type objective_function<Type>::operator() ()
       fracyr_SSB_all, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,0);
     see(22);
     REPORT(log_SPR0);
+    ADREPORT(log_SPR0);
     see(log_SPR0);
     vector<Type> log_FXSPR = get_log_FXSPR(percentSPR, FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
       fracyr_seasons, which_F_age, fracyr_SSB_all, log_M, mu, L, log_SPR0, waa_ssb, mature_all, SPR_weights, SPR_weight_type, n_regions_is_small,
-      R_XSPR, FXSPR_init,trace);
+      R_XSPR, FXSPR_init,0);
     see(23);
     REPORT(log_FXSPR);
+    ADREPORT(log_FXSPR);
     see(log_FXSPR);
 
-    //array<Type> log_FAA_XSPR(n_years_model+n_years_proj, n_fleets, n_ages);
-    //array<Type> log_FAA_tot_XSPR(n_years_model+n_years_proj, n_ages);
-    matrix<Type> log_SPR_FXSPR(n_years_model+n_years_proj, n_stocks+1);
-    //array<Type> log_SPR0(n_years_model+n_years_proj, n_stocks+1);
+    array<Type> FAA_XSPR = get_FAA_from_log_F(log_FXSPR, which_F_age, FAA);
+    REPORT(FAA_XSPR);
+    see(24);
+    matrix<Type> log_SPR_FXSPR = get_log_SPR(spawn_seasons, spawn_regions, fleet_seasons, fleet_regions, can_move, mig_type, 
+      fracyr_SSB_all, FAA_XSPR, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,0);
+    see(25);
+    REPORT(log_SPR_FXSPR);
     // array<Type> log_SSB_FXSPR(n_years_model+n_years_proj, n_stocks+1);
     // array<Type> log_Y_FXSPR(n_years_model+n_years_proj, n_fleets+1);
-    // vector<Type> log_FXSPR(n_years_model+n_years_proj);
-    // vector<int> yvec(1);
-    //for(int y = 0; y < n_years_model; y++) {
-    //for(int y = 0; y < 1; y++) {
-      //yvec(0) = y;
-      //see(y);
-      // vector<vector<Type>> SPR_res_y = get_SPR_res(
-      //   SPR_weights, 
-      //   log_M, 
-      //   FAA, 
-      //   spawn_seasons,  
-      //   spawn_regions,
-      //   fleet_regions, 
-      //   fleet_seasons,
-      //   fracyr_seasons,
-      //   can_move,
-      //   must_move,
-      //   mig_type,
-      //   trans_mu_base, 
-      //   L,
-      //   which_F_age(y), 
-      //   waa, waa_pointer_ssb, waa_pointer_fleets,
-      //   mature, percentSPR, NAA, fracyr_SSB, FXSPR_init(y), 
-      // //years_M, years_mu, years_L, years_mat, years_sel, years_waa_ssb, years_waa_catch, years_R,
-      //   yvec, yvec, yvec, yvec, yvec, yvec, yvec, vector<Type> (R_XSPR.row(y)),
-      //   n_regions_is_small, SPR_weight_type);
-      // see(21.1);
-      // for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) log_FAA_XSPR(y,f,a) = SPR_res_y(0)(f*n_ages + a);
-      // see(21.2);
-      // for(int a = 0; a< n_ages; a++) log_FAA_tot_XSPR(y,a) = SPR_res_y(0)(n_fleets*n_ages + a);
-      // log_FXSPR(y) = SPR_res_y(5)(SPR_res_y(5).size()-1); //last value of log_FXSPR_iter
-      // see(21.3);
-      // for(int s = 0; s < n_stocks+1; s++) {
-      //   log_SSB_FXSPR(y,s) = SPR_res_y(1)(s);
-      //   log_SPR_FXSPR(y,s) = SPR_res_y(3)(s);
-      //   log_SPR0(y,s) = SPR_res_y(4)(s);
-      // }
-      // see(21.4);
-      // for(int f = 0; f < n_fleets+1; f++) log_Y_FXSPR(y,f) = SPR_res_y(2)(f);
-      // see(21.5);
-    //}
-    REPORT(log_FXSPR);
-    ADREPORT(log_FXSPR);
     //REPORT(log_SSB_FXSPR);
     //ADREPORT(log_SSB_FXSPR);
-    REPORT(log_SPR0);
-    ADREPORT(log_SPR0);
     //REPORT(log_SPR_FXSPR);
     //REPORT(log_Y_FXSPR);
     //ADREPORT(log_Y_FXSPR);
-    //REPORT(log_FAA_XSPR);
-    //REPORT(log_FAA_tot_XSPR);
   }
   see(24);
   int is_SR = 0;
   for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
-  if(is_SR> 0) {
-    if(do_annual_MSY_BRPs){
-    //   array<Type> log_FAA_MSY(n_years_model+n_years_proj, n_fleets, n_ages);
-    //   log_FAA_MSY.setZero();
-    //   array<Type> log_FAA_tot_MSY(n_years_model+n_years_proj, n_ages);
-    //   log_FAA_tot_MSY.setZero();
-    //   array<Type> log_SPR_MSY(n_years_model+n_years_proj, n_stocks);
-    //   log_SPR_MSY.setZero();
-    //   array<Type> log_R_MSY(n_years_model+n_years_proj, n_stocks);
-    //   log_R_MSY.setZero();
-    //   array<Type> log_SSB_MSY(n_years_model+n_years_proj, n_stocks+1);
-    //   log_SSB_MSY.setZero();
-    //   array<Type> log_MSY(n_years_model+n_years_proj, n_fleets+1);
-    //   log_MSY.setZero();
-    //   vector<Type> log_FMSY(n_years_model+n_years_proj);
-    //   log_FMSY.setZero();
+  if((is_SR> 0) & do_annual_MSY_BRPs) {
+  //   array<Type> log_FAA_MSY(n_years_model+n_years_proj, n_fleets, n_ages);
+  //   log_FAA_MSY.setZero();
+  //   array<Type> log_FAA_tot_MSY(n_years_model+n_years_proj, n_ages);
+  //   log_FAA_tot_MSY.setZero();
+  //   array<Type> log_SPR_MSY(n_years_model+n_years_proj, n_stocks);
+  //   log_SPR_MSY.setZero();
+  //   array<Type> log_R_MSY(n_years_model+n_years_proj, n_stocks);
+  //   log_R_MSY.setZero();
+  //   array<Type> log_SSB_MSY(n_years_model+n_years_proj, n_stocks+1);
+  //   log_SSB_MSY.setZero();
+  //   array<Type> log_MSY(n_years_model+n_years_proj, n_fleets+1);
+  //   log_MSY.setZero();
+  //   vector<Type> log_FMSY(n_years_model+n_years_proj);
+  //   log_FMSY.setZero();
 
-    //   vector<int> yvec(1);
-    //   for(int y = 0; y < n_years_model; y++) {
-    //   //for(int y = 0; y < 1; y++) {
-    //     yvec(0) = y;
-    //     vector<vector<Type>> MSY_res_y = get_MSY_res(
-    //       recruit_model,
-    //       log_SR_a,
-    //       log_SR_b, 
-    //       log_M, 
-    //       FAA, 
-    //       spawn_seasons,  
-    //       spawn_regions,
-    //       fleet_regions, 
-    //       fleet_seasons,
-    //       fracyr_seasons,
-    //       can_move,
-    //       must_move,
-    //       mig_type,
-    //       trans_mu_base, 
-    //       L,
-    //       which_F_age(y), 
-    //       waa, waa_pointer_ssb, waa_pointer_fleets,
-    //       mature, NAA, fracyr_SSB, FMSY_init(y), 
-    //     //years_M, years_mu, years_L, years_mat, years_sel, years_waa_ssb, years_waa_catch, years_SR_ab,
-    //       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
-    //       n_regions_is_small,0);
-    //     see(22.1);
-    //     for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) log_FAA_MSY(y,f,a) = MSY_res_y(0)(f*n_ages + a);
-    //     see(22.2);
-    //     for(int a = 0; a< n_ages; a++) log_FAA_tot_MSY(y,a) = MSY_res_y(0)(n_fleets*n_ages + a);
-    //     log_FMSY(y) = MSY_res_y(5)(MSY_res_y(5).size()-1); //last value of log_FMSY_iter
-    //     see(22.3);
-    //     for(int s = 0; s < n_stocks; s++) {
-    //       log_SSB_MSY(y,s) = MSY_res_y(1)(s);
-    //       log_SPR_MSY(y,s) = MSY_res_y(3)(s);
-    //       log_R_MSY(y,s) = MSY_res_y(4)(s);
-    //     }
-    //     log_SSB_MSY(y,n_stocks) = MSY_res_y(1)(n_stocks);
-    //     // log_SSB_MSY.row(y) = MSY_res_y(1);
-    //     // log_R_MSY.row(y) = MSY_res_y(4);
-    //     // log_SPR_MSY.row(y) = MSY_res_y(3);
-    //     see(22.4);
-    //     //log_MSY.row(y) = MSY_res_y(2);
-    //     for(int f = 0; f < n_fleets+1; f++) log_MSY(y,f) = MSY_res_y(2)(f);
-    //     see(22.5);
-    //   }
-    //   //see(log_FMSY);
-    //   REPORT(log_FMSY);
-    //     see(22.51);
-    //   ADREPORT(log_FMSY);
-    //     see(22.52);
-    //   //see(log_SSB_MSY);
-    //   REPORT(log_SSB_MSY);
-    //     see(22.53);
-    //   ADREPORT(log_SSB_MSY);
-    //     see(22.54);
-    //   //see(log_SPR_MSY);
-    //   REPORT(log_SPR_MSY);
-    //     see(22.55);
-    //   //see(log_MSY);
-    //   REPORT(log_MSY);
-    //     see(22.56);
-    //   ADREPORT(log_MSY);
-    //     see(22.57);
-    //   //see(log_FAA_MSY);
-    //   REPORT(log_FAA_MSY);
-    //     see(22.58);
-    //   //see(log_FAA_tot_MSY);
-    //   REPORT(log_FAA_tot_MSY);
-    //   see(22.6);
-    //   REPORT(log_R_MSY);
-    //   ADREPORT(log_R_MSY);
-    //   see(22.7);
-    }
-    // REPORT(log_SR_a);
-    // ADREPORT(log_SR_a);
-    // REPORT(log_SR_b);
-    // ADREPORT(log_SR_b);
-    // see(22.7);
+  //   vector<int> yvec(1);
+  //   for(int y = 0; y < n_years_model; y++) {
+  //   //for(int y = 0; y < 1; y++) {
+  //     yvec(0) = y;
+  //     vector<vector<Type>> MSY_res_y = get_MSY_res(
+  //       recruit_model,
+  //       log_SR_a,
+  //       log_SR_b, 
+  //       log_M, 
+  //       FAA, 
+  //       spawn_seasons,  
+  //       spawn_regions,
+  //       fleet_regions, 
+  //       fleet_seasons,
+  //       fracyr_seasons,
+  //       can_move,
+  //       must_move,
+  //       mig_type,
+  //       trans_mu_base, 
+  //       L,
+  //       which_F_age(y), 
+  //       waa, waa_pointer_ssb, waa_pointer_fleets,
+  //       mature, NAA, fracyr_SSB, FMSY_init(y), 
+  //     //years_M, years_mu, years_L, years_mat, years_sel, years_waa_ssb, years_waa_catch, years_SR_ab,
+  //       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
+  //       n_regions_is_small,0);
+  //     see(22.1);
+  //     for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) log_FAA_MSY(y,f,a) = MSY_res_y(0)(f*n_ages + a);
+  //     see(22.2);
+  //     for(int a = 0; a< n_ages; a++) log_FAA_tot_MSY(y,a) = MSY_res_y(0)(n_fleets*n_ages + a);
+  //     log_FMSY(y) = MSY_res_y(5)(MSY_res_y(5).size()-1); //last value of log_FMSY_iter
+  //     see(22.3);
+  //     for(int s = 0; s < n_stocks; s++) {
+  //       log_SSB_MSY(y,s) = MSY_res_y(1)(s);
+  //       log_SPR_MSY(y,s) = MSY_res_y(3)(s);
+  //       log_R_MSY(y,s) = MSY_res_y(4)(s);
+  //     }
+  //     log_SSB_MSY(y,n_stocks) = MSY_res_y(1)(n_stocks);
+  //     // log_SSB_MSY.row(y) = MSY_res_y(1);
+  //     // log_R_MSY.row(y) = MSY_res_y(4);
+  //     // log_SPR_MSY.row(y) = MSY_res_y(3);
+  //     see(22.4);
+  //     //log_MSY.row(y) = MSY_res_y(2);
+  //     for(int f = 0; f < n_fleets+1; f++) log_MSY(y,f) = MSY_res_y(2)(f);
+  //     see(22.5);
+  //   }
+  //   //see(log_FMSY);
+  //   REPORT(log_FMSY);
+  //     see(22.51);
+  //   ADREPORT(log_FMSY);
+  //     see(22.52);
+  //   //see(log_SSB_MSY);
+  //   REPORT(log_SSB_MSY);
+  //     see(22.53);
+  //   ADREPORT(log_SSB_MSY);
+  //     see(22.54);
+  //   //see(log_SPR_MSY);
+  //   REPORT(log_SPR_MSY);
+  //     see(22.55);
+  //   //see(log_MSY);
+  //   REPORT(log_MSY);
+  //     see(22.56);
+  //   ADREPORT(log_MSY);
+  //     see(22.57);
+  //   //see(log_FAA_MSY);
+  //   REPORT(log_FAA_MSY);
+  //     see(22.58);
+  //   //see(log_FAA_tot_MSY);
+  //   REPORT(log_FAA_tot_MSY);
+  //   see(22.6);
+  //   REPORT(log_R_MSY);
+  //   ADREPORT(log_R_MSY);
+  //   see(22.7);
+  // REPORT(log_SR_a);
+  // ADREPORT(log_SR_a);
+  // REPORT(log_SR_b);
+  // ADREPORT(log_SR_b);
+  // see(22.7);
   }
   
   //if(reportMode==0){
-    array<Type> FAA_tot = get_FAA_tot(FAA, fleet_regions, fleet_seasons,n_regions);
+    array<Type> FAA_tot = get_FAA_tot(FAA, fleet_regions, n_regions);
     REPORT(FAA_tot);
     // see(FAA_tot);
     matrix<Type> Fbar(FAA_tot.dim(1),FAA_tot.dim(0));

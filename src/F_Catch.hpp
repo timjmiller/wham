@@ -42,6 +42,7 @@ matrix<Type> get_avg_fleet_sel(array<Type> FAA, vector<int> avg_years_ind,
   int n_fleets = FAA.dim(0);
   int n_ages = FAA.dim(2);
   matrix<Type> FAA_avg(n_fleets, n_ages);
+  FAA_avg.setZero();
   for(int f = 0; f < n_fleets; f++) {
     for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_toavg; i++){
       FAA_avg(f,a) += FAA(f,avg_years_ind(i),a)/Type(n_toavg);
@@ -51,14 +52,14 @@ matrix<Type> get_avg_fleet_sel(array<Type> FAA, vector<int> avg_years_ind,
   Type F_full = FAA_avg_tot(which_F_age-1);
 
   //get selectivity using average over avg.yrs
-  matrix<Type> sel_proj(n_fleets,n_ages);
+  matrix<Type> sel(n_fleets,n_ages);
   //fully selected F across regions, seasons, and ages
   for(int f = 0; f < n_fleets; f++){
     for(int a = 0; a < n_ages; a++) {
-      sel_proj(f,a) = FAA_avg(f,a)/F_full;
+      sel(f,a) = FAA_avg(f,a)/F_full;
     }
   }
-  return(sel_proj);
+  return sel;
 }
 
 template<class Type>
@@ -78,21 +79,20 @@ matrix<Type> get_log_F(matrix<Type>Fpars, int Fconfig, int n_years_pop){
 }
 
 template<class Type>
-array<Type> get_FAA(matrix<Type>F, matrix<int> fleet_seasons, vector<matrix<Type>> selAA, matrix<int> selblock_pointer, int n_ages, int n_seasons,
-  int n_years_model){
-  int n_fleets = F.cols();
-  int n_y = F.rows();
+array<Type> get_FAA(matrix<Type> log_F, vector<matrix<Type>> selAA, matrix<int> selblock_pointer, int n_ages, int n_years_model){
+  int n_fleets = log_F.cols();
+  int n_y = log_F.rows();
   array<Type> FAA(n_fleets,n_y,n_ages);
   FAA.setZero();
   for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_years_model; y++) for(int a = 0; a < n_ages; a++) {
-    FAA(f,y,a) = F(y,f) * selAA(selblock_pointer(y,f)-1)(y,a);
+    FAA(f,y,a) = exp(log_F(y,f)) * selAA(selblock_pointer(y,f)-1)(y,a);
   }
   return(FAA);
 }
 //done
 
 template<class Type>
-array<Type> get_FAA_tot(array<Type> FAA, vector<int> fleet_regions, matrix<int> fleet_seasons, int n_regions){
+array<Type> get_FAA_tot(array<Type> FAA, vector<int> fleet_regions, int n_regions){
   int n_fleets = FAA.dim(0);
   int n_ages = FAA.dim(2);
   int n_y = FAA.dim(1);

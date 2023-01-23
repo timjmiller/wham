@@ -55,10 +55,7 @@ prepare_projection = function(model, proj.opts) {
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
-  if(all(is.null(proj.opts$cont.ecov), is.null(proj.opts$use.last.ecov), is.null(proj.opts$avg.ecov.yrs), is.null(proj.opts$proj.ecov))){
-    proj.opts$cont.ecov=TRUE; proj.opts$use.last.ecov=FALSE; proj.opts$avg.ecov.yrs=NULL; proj.opts$proj.ecov=NULL
-  }
-  if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE
+
   if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
   if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY = 100
 
@@ -129,9 +126,9 @@ prepare_projection = function(model, proj.opts) {
   data$F_proj_init[which(data$proj_F_opt == 3)] = data$FXSPR_init[proj_yrs_ind][which(data$proj_F_opt == 3)]
   data$F_proj_init[which(data$proj_F_opt == 6)] = data$FMSY_init[proj_yrs_ind][which(data$proj_F_opt == 6)]
   #define age for full F in projections
-  FAA_proj <- apply(model$rep$FAA_tot[,avg.yrs.ind,,drop = FALSE],2:3, sum)
+  FAA_proj <- colMeans(apply(model$rep$FAA[,avg.yrs.ind,,drop = FALSE],2:3, sum))
   #FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
-  data$which_F_age = c(data$which_F_age, rep(which(FAA_proj == max(FAA_proj))[1], data$n_years_proj))
+  data$which_F_age = c(data$which_F_age, rep(which.max(FAA_proj), data$n_years_proj))
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
@@ -207,10 +204,21 @@ prepare_projection = function(model, proj.opts) {
   # }
   # map$q_re <- factor(map$q_re)
 
+
   # check ecov options are valid, all Ecov will be projected if there observations do not occur in projection years
   # projection options are for how they are used in effects on population and are now done on c++ side
   # default is to continue Ecov in projection years, but will not matter if effects on M/mu and M/mu is averaged.
   # Ecov_out_R/M/mu/q will have projection years as determined. Ecov_x will still project any Ecov
+
+  #Ecov, if everything is null, continue ecov processes
+  if(all(is.null(proj.opts$cont.ecov), is.null(proj.opts$use.last.ecov), is.null(proj.opts$avg.ecov.yrs), is.null(proj.opts$proj.ecov))){
+    data$proj_Ecov_opt = rep(1, data$n_Ecov)
+    proj.opts$cont.ecov=TRUE 
+    proj.opts$use.last.ecov=FALSE
+  }
+  if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE #one of the other ecov options is not null
+
+
   if(any(input$data$Ecov_model > 0)){
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
     end_Ecov <- tail(input$data$Ecov_year, 1)
@@ -223,21 +231,31 @@ prepare_projection = function(model, proj.opts) {
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       
       n_years_proj_Ecov <- end_model - end_Ecov
+      data$Ecov_use_proj <- matrix(0, nrow = n_years_proj_Ecov, ncol=data$n_Ecov)
+      #data$years_use_Ecov <- 1:(data$n_years_Ecov + n_years_proj_Ecov) - 1
+
       # pad Ecov_re for projections
-      Ecov.proj <- matrix(0, nrow = n_years_proj_Ecov, ncol=data$n_Ecov)
-      par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,,drop=F], Ecov.proj) # pad Ecov_re if necessary
       #print(data$Ecov_use_re)
       #data$Ecov_use_re <- rbind(data$Ecov_use_re, matrix(0, nrow=n_years_proj_Ecov, ncol=data$n_Ecov))
       #print(dim(data$Ecov_use_re))
       map$Ecov_re = matrix(as.integer(map$Ecov_re), data$n_years_Ecov, data$n_Ecov)
+      par$Ecov_re = rbind(par$Ecov_re, matrix(0,n_years_proj_Ecov, data$n_Ecov))
+
       tmp.re <- matrix(NA, n_years_proj_Ecov, data$n_Ecov)
+      if(!is.null(proj.opts$proj.ecov)){ #projection ecov values are supplied, so use fixed values instead of RE
+        if(NCOL(proj.opts$proj.ecov) != data$n_Ecov) stop("number of columns of proj.opts$proj.ecov is not equal to n_Ecov")
+        if(NROW(proj.opts$proj.ecov) != n_years_proj_Ecov) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj_Ecov))
+        for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
+          if(data$Ecov_model[i] == 1) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]  # random walk
+          if(data$Ecov_model[i] == 2) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i] - par$Ecov_process_pars[1,i] # AR(1)
+        }
+      }
+      print(dim(tmp.re))
+      print(data$n_years_Ecov)
       for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
         tmp.re[,i] = 1
-        print(dim(tmp.re))
-        print(data$n_years_Ecov)
-        #data$Ecov_use_re[,i] = c(data$Ecov_use_re[1:data$n_years_Ecov,i], tmp.re[,i])
       }
-      if(sum(!is.na(tmp.re))) tmp.re[which(!is.na(tmp.re))] <- max(map$Ecov_re, na.rm = TRUE) + 1:sum(!is.na(tmp.re)) 
+      if(sum(!is.na(tmp.re))) tmp.re[which(!is.na(tmp.re))] <- max(map$Ecov_re, na.rm = TRUE) + 1:sum(!is.na(tmp.re))
       map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
       
       data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
@@ -256,6 +274,14 @@ prepare_projection = function(model, proj.opts) {
         capture.output(cat("  $proj.ecov = ",proj.opts$proj.ecov)),"",sep='\n'))
       if(!is.null(proj.opts$avg.ecov.yrs) & any(proj.opts$avg.ecov.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
         "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
+
+      if(!is.null(proj.opts$avg.ecov.yrs)) {
+        data$avg_years_Ecov <- match(proj.opts$avg.ecov.yrs, model$years) - 1
+        data$proj_Ecov_opt <- rep(2, data$n_Ecov)
+      }
+      if(!is.null(proj.opts$proj.ecov)) data$proj_Ecov_opt <- rep(4, data$n_Ecov)
+      if(proj.opts$use.last.ecov) data$proj_Ecov_opt <- rep(3, data$n_Ecov)
+      if(proj.opts$cont.ecov) data$proj_Ecov_opt <- rep(1, data$n_Ecov)
 
     } else{
       print(paste0("Ecovs are already fit through projection years."))

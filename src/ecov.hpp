@@ -131,7 +131,7 @@ matrix<Type> get_Ecov_out(matrix<Type> Ecov_x, int n_years_model, int n_years_pr
           ind_Ecov_out_end: which Ecov_x years is last year needed for effect on population
              proj_Ecov_opt: how to project each Ecov
                  avg_years: if proj_Ecov_opt = 2, which model years to average over
-             Ecov_use_proj: if proj_Ecov_opt = 3, (n_years_proj x n_Ecov) user-supplied fixed values to project Ecov at.
+             Ecov_use_proj: if proj_Ecov_opt = 4, (n_years_proj x n_Ecov) user-supplied fixed values to project Ecov at.
   */
   //int n_effects = Ecov_beta.dim(0); // 2 + n_indices (recruitment, mortality and any catchabilities)
   int n_Ecov = Ecov_x.cols();
@@ -147,7 +147,8 @@ matrix<Type> get_Ecov_out(matrix<Type> Ecov_x, int n_years_model, int n_years_pr
           if(proj_Ecov_opt(i) == 2) { //average over avg_years
             for(int ind = 0; ind < avg_years.size(); ind++) Ecov_out(ct,i) += Ecov_out(avg_years(ind),i)/Type(avg_years.size());
           }
-          if(proj_Ecov_opt(i) == 3) Ecov_out(ct,i) = Ecov_use_proj(ct-n_years_model,i);
+          if(proj_Ecov_opt(i) == 3) Ecov_out(ct,i) = Ecov_out(n_years_model-1,i); //use terminal year
+          if(proj_Ecov_opt(i) == 4) Ecov_out(ct,i) = Ecov_use_proj(ct-n_years_model,i); //user-defined ecov
         }
         ct++;
       }
