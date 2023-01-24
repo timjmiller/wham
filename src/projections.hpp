@@ -51,9 +51,9 @@ struct log_catch_fleets_F_multi {
     }
     if(trace) see(logM_T);
     array<T> mu_T(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
-    for(int s = 0; s < n_stocks; s++) for(int t = 0; t < mu.dim(1); t++) for(int a = 0; a < n_ages; a++){
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(1); t++) {
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
-        mu_T(s,t,a,r,rr) = T(mu(s,t,a,r,rr));
+        mu_T(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
       }
     }
     if(trace) see(mu_T);
@@ -107,16 +107,19 @@ Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type
   vector<Type> log_F_i(1);
   vector<Type> log_F_iter(n);
   log_F_iter.fill(log(F_init)); //starting value
-  see(log_F_iter);
+  if(trace) see(log_F_iter);
+  if(trace) see(Catch);
   log_catch_fleets_F_multi<Type> logcatch_at_F(NAA, log_M, mu, L, sel, fracyr_season, fleet_regions, fleet_seasons, can_move, mig_type, 
     waacatch, trace);
-  see("past log_catch_fleets_F_multi");
+  if(trace) see("past log_catch_fleets_F_multi");
   for (int i=0; i<n-1; i++) {
     log_F_i(0) = log_F_iter(i);
-    see(i);
+    if(trace) see(i);
     vector<Type> grad_log_catch_at_F = autodiff::gradient(logcatch_at_F,log_F_i);
-    see("after autodiff::gradient");
+    if(trace) see(grad_log_catch_at_F);
+    if(trace) see("after autodiff::gradient");
     log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
+    if(trace) see(log_F_iter);
   }
   Type res = exp(log_F_iter(n-1));
   return res;
