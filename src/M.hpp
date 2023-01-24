@@ -266,7 +266,7 @@ array<Type> get_log_avg_M(array<Type> log_M, vector<int> years_M) {
 
 //extract array of log_M parameters for a given year
 template <class Type>
-array<Type> get_log_M_y(int y, array<Type> log_M){
+array<Type> get_log_M_y(int y, array<Type> log_M, int do_log = 1){
   int n_stocks = log_M.dim(0);
   int n_ages = log_M.dim(3);
   int n_regions = log_M.dim(1);
@@ -274,7 +274,11 @@ array<Type> get_log_M_y(int y, array<Type> log_M){
   log_M_y.setZero();
 
   for(int s = 0; s< n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
-    log_M_y(s,r,a) = log_M(s,r,y,a);
+    if(do_log) {
+      log_M_y(s,r,a) = log_M(s,r,y,a);
+    } else {
+      log_M_y(s,r,a) = exp(log_M(s,r,y,a));
+    }
   }
   return log_M_y;
 }

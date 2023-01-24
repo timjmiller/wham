@@ -186,7 +186,7 @@ matrix<T> get_P_t(int age, int stock, int season, vector<int> fleet_regions, mat
   */
   int n_regions = log_M.dim(1);
   //int n_fleets = fleet_regions.size();
-  if(trace) see("inside get_P_t");
+  if(trace) see("inside get_P_t from year-specific parameters");
   vector<T> M(n_regions);
   vector<T> F = get_F_t(vector<int> (fleet_seasons.col(season)), age, FAA);
   if(trace) see(F);

@@ -156,7 +156,7 @@ template <class Type>
 Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions,
   vector<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, matrix<Type> waacatch,
-  vector<Type> fracyr_seasons, vector<int> recruit_model, int small_dim, Type F_init, int n_iter) {
+  vector<Type> fracyr_seasons, vector<int> recruit_model, int small_dim, Type F_init, int n_iter, int trace = 0) {
   int n = n_iter;
   vector<Type> log_FMSY_i(1);
   vector<Type> log_FMSY_iter(n);
@@ -164,7 +164,7 @@ Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<
   //vector<Type> a = exp(log_a);
   //vector<Type> b = exp(log_b);
   sr_yield_spatial<Type> srY(a, b, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
-    ssbfrac, sel, log_M, mu, L, mat, waassb, waacatch, fracyr_seasons, 0, recruit_model, small_dim, 0);
+    ssbfrac, sel, log_M, mu, L, mat, waassb, waacatch, fracyr_seasons, 0, recruit_model, small_dim, trace);
   for (int i=0; i<n-1; i++) {
     log_FMSY_i(0) = log_FMSY_iter(i);
     vector<Type> grad_sr_yield = autodiff::gradient(srY,log_FMSY_i);

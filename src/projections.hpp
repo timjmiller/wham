@@ -42,7 +42,9 @@ struct log_catch_fleets_F_multi {
     int n_fleets = waacatch.rows();
     int Pdim = n_regions + n_fleets + 1;
   
+    if(trace) see(sel);
     matrix<T> FAA_T = exp(log_F(0)) * sel.template cast<T>();
+    if(trace) see(FAA_T);
     array<T> logM_T(log_M.dim(0),log_M.dim(1),log_M.dim(2));
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
       logM_T(s,r,a) = T(log_M(s,r,a));
@@ -77,6 +79,14 @@ struct log_catch_fleets_F_multi {
           if(trace) see(P_ya);
         }
         for(int f = 0; f < n_fleets; f++) for(int r = 0; r < n_regions; r++) {
+          if(trace) {
+            see(f);
+            see(r);
+            see(a);
+            see(NAA.dim);
+            see(waacatch.rows());
+            see(waacatch.cols());
+          }
           catch_stock_fleet(s,f) +=  T(NAA(s,r,a)) * P_ya(r,n_regions + f) * T(waacatch(f,a));
         }
       }
@@ -97,11 +107,15 @@ Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type
   vector<Type> log_F_i(1);
   vector<Type> log_F_iter(n);
   log_F_iter.fill(log(F_init)); //starting value
+  see(log_F_iter);
   log_catch_fleets_F_multi<Type> logcatch_at_F(NAA, log_M, mu, L, sel, fracyr_season, fleet_regions, fleet_seasons, can_move, mig_type, 
     waacatch, trace);
+  see("past log_catch_fleets_F_multi");
   for (int i=0; i<n-1; i++) {
     log_F_i(0) = log_F_iter(i);
+    see(i);
     vector<Type> grad_log_catch_at_F = autodiff::gradient(logcatch_at_F,log_F_i);
+    see("after autodiff::gradient");
     log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
   }
   Type res = exp(log_F_iter(n-1));
@@ -190,9 +204,11 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
     if((proj_F_opt_y == 3) | (proj_F_opt_y == 5) | (proj_F_opt_y == 6) ){
 
       //These all have been calculated in projection years already so just need to extract for this year
-      vector<Type> L_proj = get_avg_L(L, y, 0);
+      if(trace) see(L.rows());
+      if(trace) see(L.cols());
+      vector<Type> L_proj = L.row(y);
       if(trace) see(L_proj);
-      array<Type> log_M_proj = get_avg_M(log_M, y, 1);
+      array<Type> log_M_proj = get_log_M_y(y, log_M);
       if(trace) see(log_M_proj);
       array<Type> mu_proj = get_mu_y(y, mu);
       if(trace) see(mu_proj);
@@ -200,18 +216,20 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
       if(proj_F_opt_y == 3) {//option 3: use F X%SPR
         FAA_proj = sel_proj * get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
           log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, fracyr_seasons, vector<Type> (R_XSPR.row(y)), percentSPR, SPR_weights, 
-          SPR_weight_type, small_dim, FXSPR_init(y), 10, 0);
+          SPR_weight_type, small_dim, FXSPR_init(y), 10, trace);
         if(trace) see(FAA_proj);
       }
       
       if(proj_F_opt_y == 5){ // calculate F from user-specified catch
         Type thecatch = proj_Fcatch(y-n_years_model);
+        if(trace) see(thecatch);
         if(thecatch < 1e-10){ // if catch = 0, F = 0 and sel_proj is NaN
           FAA_proj.setZero();
         } else {
           array<Type> NAA_y = get_NAA_y(y, NAA);
+          see(NAA_y);
           FAA_proj = sel_proj * get_F_from_Catch(thecatch, NAA_y, log_M_proj, mu_proj, L_proj, sel_proj, fracyr_seasons, fleet_regions, 
-          fleet_seasons, can_move, mig_type, waa_catch_proj, 0, F_proj_init(y- n_years_model));
+          fleet_seasons, can_move, mig_type, waa_catch_proj, trace, F_proj_init(y- n_years_model));
         }
         if(trace) see(FAA_proj);
       }
@@ -222,7 +240,7 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
         vector<Type> b_proj = exp(vector<Type> (log_b.row(y)));
         FAA_proj = sel_proj * get_FMSY(a_proj, b_proj, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
           fracyr_SSB_proj, sel_proj, log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, waa_catch_proj, fracyr_seasons, recruit_model, small_dim, 
-          FMSY_init(y), 10);
+          FMSY_init(y), 10, trace);
         if(trace) see(FAA_proj);
       //F_full is the same as that used to generate selectivity to project
       }
