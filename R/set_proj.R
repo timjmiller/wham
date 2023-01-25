@@ -4,7 +4,7 @@ set_proj = function(input, proj.opts = NULL)
 	if(is.null(proj.opts))
 	{
   	input$par$logR_proj <- matrix(0, data$n_stocks, 1) # will be set by prepare_projection if SCAA
-  	input$map$logR_proj <- factor(NA)
+  	input$map$logR_proj <- factor(rep(NA, data$n_stocks))
   
 	  data$do_proj <- 0
 	  data$n_years_proj <- 0

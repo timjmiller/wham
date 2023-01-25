@@ -500,8 +500,8 @@ matrix<Type> get_mu_matrix(int stock, int age, int season, int year, vector<int>
       int k = 0;
       for(int j = 0; j < n_regions; j++){ 
         if(j!=i) {
+          if(can_move(stock,season,i,j)) mu(i,j) = exp(trans_mu_base(stock,age,season,year,i,k)); //log of transition intensities
           k++; //max k = n_regions -1 (-1)
-          if(can_move(i,j)) mu(i,j) = exp(trans_mu_base(stock,age,season,year,i,k)); //log of transition intensities
         }
       }
     }
