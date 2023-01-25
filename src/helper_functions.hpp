@@ -1,8 +1,6 @@
 template <class Type>
 Type square(Type x){return x*x;}
 
-#define see(object) std::cout << #object ":\n" << object << "\n";
-
 // general inverse logit fn
 template <class Type>
 Type geninvlogit(Type x, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
@@ -238,3 +236,6 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
   
   return finalX;
 }
+
+#define see(object) std::cout << #object ":\n" << object << "\n";
+

@@ -13,7 +13,7 @@
 #'                    }
 #'                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the
 #'                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 \code{sigma_a}, with recruitment (age-1) deviations having their
-#'                   own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}.
+#'                   own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}. If length = 1, assumptions will be applied to all stocks.
 #'                  }
 #'     \item{$sigma_vals}{Initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and NAA_re$sigma is
 #'                  not specifed. Otherwise when \code{NAA_re$sigma} =
@@ -160,7 +160,11 @@ set_NAA = function(input, NAA_re=NULL)
   #}
   if(!is.null(NAA_re$sigma)){
     k = 0
-    if(length(NAA_re$sigma) != data$n_stocks) stop("NAA_re$sigma length must be equal to the number of stocks.")
+    if(!length(NAA_re$sigma) %in% c(1,data$n_stocks)) stop("NAA_re$sigma length must be 1 or equal to the number of stocks.")
+    if(length(NAA_re$sigma == 1) & data$n_stocks>1) {
+      cat("\n Same NAA_re$sigma being used for all stocks.\n")
+      NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
+    }
     for(s in 1:data$n_stocks) if(NAA_re$sigma[[s]][1] == "rec"){
       data$NAA_re_model[s] = 1
       map$log_NAA_sigma[s,1] = k
@@ -203,7 +207,11 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
       if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
       par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
     }
-    if(!is.null(NAA_re$cor)) if(length(NAA_re$cor) != data$n_stocks) stop("NAA_re$cor length must be equal to the number of stocks.")
+    
+    if(length(NAA_re$cor == 1) & data$n_stocks>1) {
+      cat("\n Same NAA_re$cor being used for all stocks.\n")
+      NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
+    }
     if(!is.null(NAA_re$cor[[s]])){
       if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
       if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- 1

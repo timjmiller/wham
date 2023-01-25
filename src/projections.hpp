@@ -51,7 +51,7 @@ struct log_catch_fleets_F_multi {
     }
     if(trace) see(logM_T);
     array<T> mu_T(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(1); t++) {
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
         mu_T(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
       }

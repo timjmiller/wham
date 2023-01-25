@@ -117,7 +117,7 @@ struct sr_yield_spatial {
       0, small_dim, trace);
     if(trace) see("end get_SPR sr_yield_spatial");
     if(trace) see(SPR_sr);
-    array<T> YPR_srf = get_YPR(
+    array<T> YPR_srf = get_YPR_srf(
       fleet_regions, 
       fleet_seasons, 
       can_move, 
@@ -129,7 +129,7 @@ struct sr_yield_spatial {
       waacatchT,
       fracyrseasonT,
       0, small_dim);
-    if(trace) see("end get_YPR sr_yield_spatial");
+    if(trace) see("end get_YPR_srf sr_yield_spatial");
     if(trace) see(YPR_srf);
 
     //weighted-average of SSB/R returned
@@ -327,9 +327,9 @@ vector< vector <Type> > get_MSY_res(
     mat, waa_ssb, fracyr_seasons, 0, small_dim);
   if(trace) see(SPR_all);
 
-  array<Type> YPR_all = get_YPR(fleet_regions, fleet_seasons, can_move, mig_type, FAA_MSY, log_avg_M, mu_avg, L_avg, waa_catch, 
+  array<Type> YPR_srf = get_YPR_srf(fleet_regions, fleet_seasons, can_move, mig_type, FAA_MSY, log_avg_M, mu_avg, L_avg, waa_catch, 
     fracyr_seasons, 0, small_dim); //n_stocks x n_regions x n_fleets (should be 0 for regions not fleet_regions(f)-1)
-  if(trace) see(YPR_all);
+  if(trace) see(YPR_srf);
   
   vector<Type> log_SPR(n_stocks), log_R_MSY(n_stocks), log_MSY(n_fleets+1), log_SSB_MSY(n_stocks+1); 
   log_SPR.setZero(); log_MSY.setZero(); log_R_MSY.setZero(); log_SSB_MSY.setZero();
@@ -342,7 +342,7 @@ vector< vector <Type> > get_MSY_res(
     log_SSB_MSY(n_stocks) += exp(log_SSB_MSY(s)); //not logged
     for(int f = 0; f < n_fleets; f++) {
       //NOTE: If stock s cannot ever be in fleet_region(f)-1 then this will give log(0);
-      log_MSY(f) += exp(log_R_MSY(s)) * YPR_all(s,fleet_regions(f)-1,f); //not logged yet, can be 0
+      log_MSY(f) += exp(log_R_MSY(s)) * YPR_srf(s,fleet_regions(f)-1,f); //not logged yet, can be 0
       log_MSY(n_fleets) += log_MSY(f); //not logged yet
     }
   }

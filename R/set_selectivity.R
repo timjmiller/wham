@@ -136,10 +136,14 @@ set_selectivity = function(input, selectivity)
         selpars_ini[j,] = asap3[[k]]$sel_ini[[i]][,1]
         j = j + 1
       }
-      for(k in 1:length(asap3)) for(i in 1:data$n_indices) {
+      for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)){
+        print(k)
+        print(i)
+        print(asap3[[k]]$index_sel_ini[[i]])
         selpars_ini[j,] = asap3[[k]]$index_sel_ini[[i]][,1]
         j = j + 1
       }
+      print('done')
     }
     default_selpars <- list()
     dpars = c(0.5,data$n_ages/2)
@@ -202,10 +206,14 @@ set_selectivity = function(input, selectivity)
         phase_selpars[j,par_index[[asap3[[k]]$sel_block_option[i]]]] = asap3[[k]]$sel_ini[[i]][par_index[[asap3[[k]]$sel_block_option[i]]],2]
         j <- j + 1
       }
-      for(k in 1:length(asap3)) for(i in (1:sum(asap3[[i]]$use_index ==1))) {
+      for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)) {
+        print(k)
+        print(i)
+        print(asap3[[k]]$index_sel_ini[[i]])
         phase_selpars[j,par_index[[asap3[[k]]$index_sel_option[i]]]] = asap3[[k]]$index_sel_ini[[i]][par_index[[asap3[[k]]$index_sel_option[i]]],2]
         j <- j + 1
       }
+      print("done")
     } 
   } else {
     if(!is.null(selectivity$fix_pars) & !is.null(selectivity$map_pars)) stop("Cannot specify $fix_pars and $map_pars (both set which pars to estimate). Choose one or the other.")

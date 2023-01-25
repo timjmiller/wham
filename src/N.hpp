@@ -96,7 +96,7 @@ vector<Type> get_SSB_y(int y, matrix<Type>NAA_spawn_y, array<Type> waa_ssb, arra
     // see(mature(s,y,a));
     // see(a);
     SSB_y(s) += NAA_spawn_y(a,s) * waa_ssb(s,y,a) * mature(s,y,a);
-    see(SSB_y);
+    // see(SSB_y);
   }
   // see(SSB_y);
   return SSB_y;
@@ -1053,14 +1053,14 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, matrix<T
               k++;
             }
           }
-          see(NAA_devs_s_r);
-          see(NAA_devs_s_r.rows());
-          see(NAA_devs_s_r.cols());
-          see(marginal_sigma_s_r);
-          see(NAA_rho_a);
-          see(NAA_rho_y);
+          // see(NAA_devs_s_r);
+          // see(NAA_devs_s_r.rows());
+          // see(NAA_devs_s_r.cols());
+          // see(marginal_sigma_s_r);
+          // see(NAA_rho_a);
+          // see(NAA_rho_y);
           nll_NAA(s,r) += SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y))(NAA_devs_s_r);
-          see(nll_NAA(s,r));
+          // see(nll_NAA(s,r));
           //std::exit(EXIT_FAILURE);
         }
       }
