@@ -1041,6 +1041,7 @@ Type objective_function<Type>::operator() ()
     REPORT(log_SPR_FXSPR);
     matrix<Type> log_YPR_FXSPR = get_log_YPR(fleet_seasons, fleet_regions, can_move, mig_type, FAA_XSPR, log_M, mu, L, waa_catch, 
     fracyr_seasons, n_regions_is_small, 0);
+    REPORT(log_YPR_FXSPR);
     see(25.1);
     // array<Type> log_SSB_FXSPR(n_years_model+n_years_proj, n_stocks+1);
     // array<Type> log_Y_FXSPR(n_years_model+n_years_proj, n_fleets+1);
@@ -1166,7 +1167,7 @@ Type objective_function<Type>::operator() ()
     //ADREPORT(log_SSB);
   //}
   see(nll);
-  see(23);
+  see(26);
   return nll;
 }
 

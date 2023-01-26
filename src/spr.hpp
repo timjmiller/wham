@@ -412,7 +412,7 @@ matrix<Type> get_log_YPR(matrix<int> fleet_seasons, vector<int> fleet_regions,
       FAA_y, log_M_y, mu_y, L_y, waa_catch_y, fracyr_seasons, 0, small_dim);
     if(trace) see(YPR_srf);
     for(int f = 0; f < n_fleets; f++) {
-      for(int s = 0; f < n_stocks; s++) for(int r = 0; r < n_regions; r++) log_YPR(y,f) += YPR_srf(s,r,f);
+      for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) log_YPR(y,f) += YPR_srf(s,r,f);
       log_YPR(y,f) = log(log_YPR(y,f));
     } 
     if(trace) see(log_YPR.row(y));

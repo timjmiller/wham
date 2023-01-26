@@ -137,13 +137,9 @@ set_selectivity = function(input, selectivity)
         j = j + 1
       }
       for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)){
-        print(k)
-        print(i)
-        print(asap3[[k]]$index_sel_ini[[i]])
         selpars_ini[j,] = asap3[[k]]$index_sel_ini[[i]][,1]
         j = j + 1
       }
-      print('done')
     }
     default_selpars <- list()
     dpars = c(0.5,data$n_ages/2)
@@ -207,13 +203,9 @@ set_selectivity = function(input, selectivity)
         j <- j + 1
       }
       for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)) {
-        print(k)
-        print(i)
-        print(asap3[[k]]$index_sel_ini[[i]])
         phase_selpars[j,par_index[[asap3[[k]]$index_sel_option[i]]]] = asap3[[k]]$index_sel_ini[[i]][par_index[[asap3[[k]]$index_sel_option[i]]],2]
         j <- j + 1
       }
-      print("done")
     } 
   } else {
     if(!is.null(selectivity$fix_pars) & !is.null(selectivity$map_pars)) stop("Cannot specify $fix_pars and $map_pars (both set which pars to estimate). Choose one or the other.")
@@ -263,7 +255,6 @@ set_selectivity = function(input, selectivity)
     }
   }
   temp <- matrix(NA, data$n_selblocks, data$n_ages + 6)
-  print(phase_selpars)
   # if(!is.null(selectivity$fix_pars)){ # use fix_pars
     temp[which(phase_selpars > 0)] = 1:sum(phase_selpars>0)
   # }
@@ -300,11 +291,11 @@ set_selectivity = function(input, selectivity)
   #data$selpars_est[data$selpars_est == -1] = 0
   data$selpars_est <- matrix(0, data$n_selblocks, data$n_ages + 6)
   data$selpars_est[which(!is.na(temp))] = 1
-  print(data$selpars_est)
+  # print(data$selpars_est)
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   map$logit_selpars = factor(temp)
-  print(temp)
-  print(data$n_selpars_est)
+  # print(temp)
+  # print(data$n_selpars_est)
 
 
   # initial values on logit scale, par$logit_selpars

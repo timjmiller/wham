@@ -140,7 +140,6 @@ set_ecov = function(input, ecov) {
   data$n_poly_Ecov_R <- matrix(1,data$n_Ecov, data$n_stocks)
   data$n_poly_Ecov_M <- array(1,dim = c(data$n_Ecov, data$n_stocks, data$n_regions, data$n_ages))
   data$n_poly_Ecov_mu <- array(1,dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
-  print("here 1")
   #print(data$n_Ecov)
   #print(dim(data$n_poly_Ecov_mu))
   #print(max(data$n_poly_Ecov_mu))
@@ -155,9 +154,7 @@ set_ecov = function(input, ecov) {
   par$Ecov_beta_R <- array(0, dim = c(data$n_stocks, data$n_Ecov, max(data$n_poly_Ecov_R)))
   par$Ecov_beta_q <- array(0, dim = c(data$n_indices, data$n_Ecov, max(data$n_poly_Ecov_q)))
   par$Ecov_beta_M <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov, max(data$n_poly_Ecov_M)))
-  print("here 2")
   par$Ecov_beta_mu <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1, data$n_Ecov, max(data$n_poly_Ecov_mu,0)))
-  print("here 3")
   map$Ecov_obs_logsigma <- rep(NA, length(par$Ecov_obs_logsigma))
   map$Ecov_obs_logsigma_re <- rep(NA, length(par$Ecov_obs_logsigma_re))
   map$Ecov_obs_sigma_par <- rep(NA, length(par$Ecov_obs_sigma_par))
@@ -339,12 +336,9 @@ set_ecov = function(input, ecov) {
     }
     
     #make M
-    print("here 4")
     ecov$lag_M <- array(0, dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_regions))
-    print("here 5")
     data$n_poly_Ecov_M <- array(1, dim = c(data$n_Ecov,data$n_stocks, data$n_ages, data$n_regions))
     data$Ecov_how_M <- array(0, dim = c(data$n_Ecov,data$n_stocks, data$n_ages, data$n_regions))
-    print("here 6")
     if(!is.null(ecov$M_how)) {
       for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(a in 1:data$n_ages) for(i in 1:data$n_Ecov) {
         tmp <- strsplit(ecov$M_how[i,s,a,r], split = "-")[[1]]
@@ -367,7 +361,6 @@ set_ecov = function(input, ecov) {
     #print(c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov, max(data$n_poly_Ecov_M)))
      # stop()
     par$Ecov_beta_M <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov, max(data$n_poly_Ecov_M)))
-        print("here 7")
 
     map$Ecov_beta_M <- array(NA, dim = dim(par$Ecov_beta_M))
     for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) for(i in 1:data$n_Ecov) {
@@ -413,10 +406,8 @@ set_ecov = function(input, ecov) {
     
     #make mu
     ecov$lag_mu <- array(0, dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
-      print("here 4")
 
     data$n_poly_Ecov_mu <- array(1, dim = c(data$n_Ecov,data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
-  print("here 5")
     data$Ecov_how_mu <- array(0, dim = c(data$n_Ecov,data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
     if(data$n_regions > 1 & !is.null(ecov$move_how)) {
       for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) for(i in 1:data$n_Ecov) {
@@ -426,9 +417,7 @@ set_ecov = function(input, ecov) {
         if(tmp[1] != "none"){
           data$Ecov_how_mu[i,s,a,t,r,rr] <- 1
           ecov$lag_mu[i,s,a,t,r,rr] <- as.integer(tmp[2])
-  print("here 6")
           if(length(tmp) == 4) data$n_poly_Ecov_mu[i,s,a,t,r,rr] <- as.integer(tmp[4])
-  print("here 7")
         }
         #it is already set to 1
         #if(length(tmp)== 3 & tmp[4] == "linear") ecov_poly_R[i,s] <- 1 
@@ -460,9 +449,9 @@ set_ecov = function(input, ecov) {
     max.lag = max(c(ecov$lag_R,ecov$lag_M,ecov$lag_mu,ecov$lag_q))
     #if(is.null(ecov$lag)) stop("ecov$lag needs to be provided for each ecov")
     #if(!is.list(ecov$lag)) ecov$lag = lapply(ecov$lag, function(x) rep(x,n_effects))
-    print(data$year1_Ecov)
-    print(data$year1_model)
-    print(max.lag)
+    # print(data$year1_Ecov)
+    # print(data$year1_model)
+    # print(max.lag)
     if(data$year1_Ecov > data$year1_model - max.lag){
       print("one or more ecov does not start by model year 1 - max(lag). Padding ecov...")
       data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), data$Ecov_obs)
@@ -520,11 +509,11 @@ set_ecov = function(input, ecov) {
 
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
-    print(end_model)
-    print(data$Ecov_year)
-    print(data$year1_model)
-    print(which(data$Ecov_year==end_model))
-    print(ecov$lag_R)
+    # print(end_model)
+    # print(data$Ecov_year)
+    # print(data$year1_model)
+    # print(which(data$Ecov_year==end_model))
+    # print(ecov$lag_R)
     #stop()
     data$ind_Ecov_out_start_R[] <- which(data$Ecov_year == data$year1_model) - ecov$lag_R - 1
     data$ind_Ecov_out_end_R[] <- which(data$Ecov_year==end_model)- ecov$lag_R - 1 # -1 is for cpp indexing
@@ -611,14 +600,12 @@ set_ecov = function(input, ecov) {
       #movement
       if(data$n_regions>1) for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) if(data$n_regions>1) {
         for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) if(data$Ecov_how_mu[i,s,a,t,r,rr] == 1){
-  print("here 12")
           cat(paste0("Ecov ",i,": ",ecov$label[i]," effect (", 
             ifelse(data$n_poly_Ecov_mu[i,s,a,t,r,rr] == 1, "linear", paste0("polynomial order = ", data$n_poly_Ecov_mu[i,s,a,t,r,rr])), 
             ") on: movement for stock ", s, " at age ", a, "in season ", t, "from region ", r, "to ", rr, "of the other regions
             
             Model years:
           "))
-  print("here 13")
           cat(years, fill=TRUE)
 
           cat(paste0("Lag: ",ecov$lag_mu[i,s,a,t,r,rr],"

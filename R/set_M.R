@@ -126,8 +126,8 @@ set_M = function(input, M)
       M$initial_means <- array(NA, dim = c(data$n_stocks, data$n_regions, data$n_ages))
       for(i in 1:length(asap3)) for(r in 1:data$n_regions) {
         M$initial_means[i,r,] <- asap3[[i]]$M[1,]
-        print(M$initial_means[i,r,])
-        print(log(asap3[[i]]$M))
+        # print(M$initial_means[i,r,])
+        # print(log(asap3[[i]]$M))
         for(y in 1:data$n_years_model) {
           par$M_re[i,r,y,] <- log(asap3[[i]]$M[y,]) - log(M$initial_means[i,r,])
         }

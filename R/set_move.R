@@ -62,7 +62,6 @@ set_move = function(input, move)
   data$mu_model <- 1
   data$trans_mu_prior_sigma = array(0.1, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
   data$must_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions))
-  data$use_mu_prior = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
   par$mu_prior_re = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
   par$trans_mu = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
   par$mu_re = array(0, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_years_model, data$n_regions, data$n_regions-1))
@@ -87,16 +86,36 @@ set_move = function(input, move)
   }
 
   if(!is.null(move$use_prior)) data$use_mu_prior[] = move$use_prior
-
   mean_mods <- c("none","constant", "season")
   mean_mods <- c(mean_mods, paste0("stock_", mean_mods[2:3]))
-
-  if(!is.null(move$mean_model)) {
-    if(!is.character(move$mean_model) & length(move$mean_model) == 1) stop(paste0("move$mean_model must be a single one of", paste0(mean_mods, collapse = ","), " when provided."))
-    if(!(move$mean_model %in% mean_mods)) stop(paste0("move$mean_model must be one of", paste0(mean_mods, collapse = ","), " when provided."))
-    if(move$mean_model == "none") {
-      if(data$n_regions>1) cat("move$mean_model = 'none', so model assumes no movement for any stocks.\n")
-      data$can_move[] <- 0
+  if(is.null(move$mean_model)){
+    if(is.null(move$can_move) | data$n_regions == 1) {
+      move$mean_model <- "none"
+    } else{
+      if(sum(move$can_move)>0) move$mean_model <- "constant"
+      else {
+        if(data$n_regions==1) move$mean_model <- "none"
+        else move$mean_model <- "constant"
+      }
+    }
+    cat(paste0("\n move$mean_model was not specified and set to ", move$mean_model, " based on data$n_regions and move$can_move if provided. \n"))
+  }
+  if(!is.character(move$mean_model) & length(move$mean_model) == 1) stop(paste0("move$mean_model must be a single one of", paste0(mean_mods, collapse = ","), " when provided."))
+  if(!(move$mean_model %in% mean_mods)) stop(paste0("move$mean_model must be one of", paste0(mean_mods, collapse = ","), " when provided."))
+  if(move$mean_model == "none") {
+    if(data$n_regions>1) cat("move$mean_model = 'none', so model assumes no movement for any stocks.\n")
+    data$can_move[] <- 0
+    map$trans_mu = factor(map$trans_mu)
+    map$mu_repars = factor(map$mu_repars)
+    map$mu_prior_re = factor(map$mu_prior_re)
+    map$mu_re = factor(map$mu_re)
+    input$data = data
+    input$par = par
+    input$map = map
+    return(input)
+  } else {
+    if(sum(data$can_move)==0){ 
+      cat("move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
       map$trans_mu = factor(map$trans_mu)
       map$mu_repars = factor(map$mu_repars)
       map$mu_prior_re = factor(map$mu_prior_re)
@@ -105,46 +124,37 @@ set_move = function(input, move)
       input$par = par
       input$map = map
       return(input)
-    } else {
-      if(sum(data$can_move)==0){ 
-        cat("move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
-        map$trans_mu = factor(map$trans_mu)
-        map$mu_repars = factor(map$mu_repars)
-        map$mu_prior_re = factor(map$mu_prior_re)
-        map$mu_re = factor(map$mu_re)
-        input$data = data
-        input$par = par
-        input$map = map
-        return(input)
-      }
     }
-    
-    #if we've gotten this far then some parameters will be estimated
-    #define data$mu_model and map for mu_re and mu_repars
-    data$mu_model = 0 #this value needs to be between 1-8 after below
-    if(move$mean_model == "constant") data$mu_model = 1 #already defined
-    if(move$mean_model == "stock") data$mu_model = 5
-    if(move$mean_model == "season") data$mu_model = 9
-    if(move$mean_model == "stock_season") data$mu_model = 13
-    if(is.null(move$age_re)) move$age_re = "none"
-    if(is.null(move$year_re)) move$year_re = "none"
-    if(move$age_re != "none" & move$year_re == "none") data$mu_model = data$mu_model + 1
-    if(move$age_re == "none" & move$year_re != "none") data$mu_model = data$mu_model + 2
-    if(move$age_re != "none" & move$year_re != "none") data$mu_model = data$mu_model + 3
+  }
+  
+  #if we've gotten this far then some parameters will be estimated
+  #define data$mu_model and map for mu_re and mu_repars
+  data$mu_model = 0 #this value needs to be between 1-8 after below
+  if(move$mean_model == "constant") data$mu_model = 1 #already defined
+  if(move$mean_model == "stock") data$mu_model = 5
+  if(move$mean_model == "season") data$mu_model = 9
+  if(move$mean_model == "stock_season") data$mu_model = 13
+  if(is.null(move$age_re)) move$age_re = "none"
+  if(is.null(move$year_re)) move$year_re = "none"
+  if(move$age_re != "none" & move$year_re == "none") data$mu_model = data$mu_model + 1
+  if(move$age_re == "none" & move$year_re != "none") data$mu_model = data$mu_model + 2
+  if(move$age_re != "none" & move$year_re != "none") data$mu_model = data$mu_model + 3
 
-    #working on mu prior stuff RIGHT HERE!
-    if(is.null(move$can_move)) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(r!=rr) data$can_move[,,r,rr] <- 1
-    use_mu_prior <- data$use_mu_prior
-    map$trans_mu = array(NA, dim = dim(par$trans_mu)) 
-    if(any(data$use_mu_prior>0)) {
-      map$mu_prior_re <- array(NA, dim = dim(par$mu_prior_re))
-      use_mu_prior[] = 0 #need to set use_mu_prior based on mean_model
-    }
-    
-    #define map for mu_re and mu_repars
-    if(data$mu_model %in% 2:4){ #constant
-      i <- re_i <- k <- 1
-      for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  #working on mu prior stuff RIGHT HERE!
+  if(is.null(move$can_move) & move$mean_model != "none") for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(r!=rr) data$can_move[,,r,rr] <- 1
+  use_mu_prior <- data$use_mu_prior
+  map$trans_mu = array(NA, dim = dim(par$trans_mu)) 
+  if(any(data$use_mu_prior>0)) {
+    map$mu_prior_re <- array(NA, dim = dim(par$mu_prior_re))
+    use_mu_prior[] = 0 #need to set use_mu_prior based on mean_model
+  }
+  
+  #define map for mu_re and mu_repars
+  if(data$mu_model %in% 2:4){ #constant
+    i <- re_i <- 1
+    for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,,r,rr])>0) {
           map$mu_repars[,,r,k,1] <- i
           i <- i + 1
@@ -166,9 +176,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 6:8){ #stock
-      i <- re_i <- k <- 1
-      for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 6:8){ #stock
+    i <- re_i <- 1
+    for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[s,,r,rr])>0) {
           map$mu_repars[s,,r,k,1] <- i
           i <- i + 1
@@ -190,9 +203,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 10:12){ #season
-      i <- re_i <- k <- 1
-      for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 10:12){ #season
+    i <- re_i <- 1
+    for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,t,r,rr])>0) {
           map$mu_repars[,t,r,k,1] <- i
           i <- i + 1
@@ -214,9 +230,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 14:16){ #stock,season
-      i <- re_i <- k <- 1
-      for(s in 1:data$n_stocks) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 14:16){ #stock,season
+    i <- re_i <- 1
+    for(s in 1:data$n_stocks) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(data$can_move[s,t,r,rr]) {
           map$mu_repars[s,t,r,k,1] <- i
           i <- i + 1
@@ -236,11 +255,14 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
+  }
 
-    #define map and "use" elements for mean mu (trans_mu) parameters and prior-based RE (mu_prior_re) parameters 
-    if(data$mu_model %in% 1:4) { #constant
-      i <- k <- 1
-      for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  #define map and "use" elements for mean mu (trans_mu) parameters and prior-based RE (mu_prior_re) parameters 
+  if(data$mu_model %in% 1:4) { #constant
+    i <- 1
+    for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,,r,rr])>0) {
           if(sum(data$use_mu_prior)>0) { #mean mu is a random effect with defined prior
             use_mu_prior[0,0,r,k] <- 1 #only evaluate the likelihood once
@@ -253,9 +275,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 5:8) { #stock
-      i <- k <- 1
-      for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 5:8) { #stock
+    i <- 1
+    for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[s,,r,rr])>0) {
           #mean mu is a random effect with defined prior
           if(sum(data$use_mu_prior[s,,r,k])>0) {
@@ -269,9 +294,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 9:12) { #season
-      i <- k <- 1
-      for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 9:12) { #season
+    i <- 1
+    for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,t,r,rr])>0) {
           if(sum(data$use_mu_prior[,t,r,k])>0) { #mean mu is a random effect with defined prior
             use_mu_prior[0,t,r,k] <- 1 #only evaluate the likelihood once
@@ -284,9 +312,12 @@ set_move = function(input, move)
         k <- k + 1
       }
     }
-    if(data$mu_model %in% 13:16) { #stock_season
-      i <- k <- 1
-      for(s in 1:data$n_stocks) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:data$n_regions) if(rr!= r) {
+  }
+  if(data$mu_model %in% 13:16) { #stock_season
+    i <- 1
+    for(s in 1:data$n_stocks) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
+      k <- 1
+      for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[s,t,r,rr])>0) {
           if(sum(data$use_mu_prior[s,t,r,k])>0) { #mean mu is a random effect with defined prior
             use_mu_prior[s,t,r,k] <- 1 #only evaluate the likelihood once
@@ -310,8 +341,8 @@ set_move = function(input, move)
     }
     else{
       for(s in 1:data$n_stocks){
-        if(move$separable[s] == 0) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur simultaneously within each season.\n"))
-        if(move$separable[s] == 1) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur sequentially within each season.\n"))
+        if(data$mig_type[s] == 1) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur simultaneously within each season.\n"))
+        if(data$mig_type[s] == 0) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur sequentially within each season.\n"))
       }
     }
   }
