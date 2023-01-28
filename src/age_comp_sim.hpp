@@ -153,6 +153,7 @@ template <class Type>
 vector<Type> mvn_to_LN(vector<Type> x, int do_mult)
 {
   int d = x.size();
+  see(d);
   vector<Type> y(d+1);
 
   if(do_mult){
@@ -163,8 +164,10 @@ vector<Type> mvn_to_LN(vector<Type> x, int do_mult)
     }
     y(d) = 1/denom;
   } else {
+    see(y);
     for(int i = 0; i < d; i++) y(i) = exp(x(i))/(1 + sum(exp(x)));
     y(d) = 1/(1 + sum(exp(x)));
+    see(y);
   }
   return(y);
 }
@@ -336,15 +339,18 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
   }
   if(age_comp_model == 5) { //logistic-normal, miss0
     age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-    obs = rmvnorm(p, age_comp_pars, ages, 1, 0, 0); //1,0,0: Sigma diagonal, additive transformation, missing 0s 
+    obs.segment(0,n_ages-1) = rmvnorm(p, age_comp_pars, ages, 1, 0, 0); //1,0,0: Sigma diagonal, additive transformation, missing 0s 
+    obs(n_ages-1) = NAN;
   }
   if(age_comp_model == 6) { //logistic-normal, ar1 cor, miss0
     age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-    obs = rmvnorm(p, age_comp_pars, ages, 2, 0, 0); //2,0,0: Sigma AR1 cor, additive transformation, missing 0s 
+    obs.segment(0,n_ages-1) = rmvnorm(p, age_comp_pars, ages, 2, 0, 0); //2,0,0: Sigma AR1 cor, additive transformation, missing 0s 
+    obs(n_ages-1) = NAN;
   }
   if(age_comp_model == 7) { //logistic-normal, pool0
     age_comp_pars(0) -= 0.5*log(Neff); //an adjustment for interannual variation in sampling effort
-    obs = rmvnorm(p, age_comp_pars, ages, 1, 0, 1); //1,0,1: Sigma diagonal, additive transformation, pooling 0s 
+    obs.segment(0,n_ages-1) = rmvnorm(p, age_comp_pars, ages, 1, 0, 1); //1,0,1: Sigma diagonal, additive transformation, pooling 0s
+    obs(n_ages-1) = NAN;
   }
   if(age_comp_model == 8) 
   {
@@ -368,18 +374,23 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
 
 //make proporportions at age observations from transformed versions
 template<class Type>
-vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> ages, vector<Type> paa_obs)
+vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> ages, int n_ages_full)
 {
-  int n_ages = paa_obs.size();
-  vector<Type> paa_out(n_ages);
+  see("inside make_paa");
+  see(n_ages_full);
+  vector<Type> paa_out(n_ages_full);
   paa_out.setZero();
   if((age_comp_model <5) | (age_comp_model > 7)) {
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = tf_paa_obs(i); //identity transform, zeros allowed
     if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers
   }
   if((age_comp_model > 4) & (age_comp_model < 8)) {
-    vector<Type> p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
+    see("before mvn_to_LN");
+    vector<Type> p_pos = mvn_to_LN(vector<Type>(tf_paa_obs.segment(0,ages.size()-1)), 0);// no multiplicative options right now
+    see(p_pos);
+    see(ages);
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = p_pos(i); 
+    see(paa_out);
   }
   return paa_out;
 }

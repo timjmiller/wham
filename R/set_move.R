@@ -33,8 +33,8 @@
 #'     }
 #'     \item{$prior_sigma}{array (n_stocks x n_seasons x n_regions x n_regions - 1) of sd parameters for normal priors on mean movement parameters on transformed scale (-Inf,Inf)}
 #'     \item{$use_prior}{array (n_stocks x n_seasons x n_regions x n_regions - 1) 0/1 indicator whether to use prior for mean movement parameters.}
-#'     \item{$can_move}{array (n_stocks x n_ages x n_seasons x n_regions x n_regions - 1) 0/1 indicator whether movement can occur from one region to another.}
-#'     \item{$must_move}{array (n_stocks x n_ages x n_seasons x n_regions) 0/1 indicator whether movement from region must occur.}
+#'     \item{$can_move}{array (n_stocks x n_seasons x n_regions x n_regions) 0/1 indicator whether movement can occur from one region to another.}
+#'     \item{$must_move}{array (n_stocks x n_seasons x n_regions) 0/1 indicator whether movement from region must occur.}
 #'     \item{$mean_vals}{array (n_stocks x n_seasons x n_regions x n_regions-1) of initial movement rate parameters *from* each region. Usage depends on \code{move$mean_model}.}
 #'     \item{$sigma_vals}{array (n_stocks x n_seasons x n_regions x n_regions -1) of initial standard deviations to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.
 #'     \item{$cor_vals}{array (n_stocks x n_seasons x n_regions x n_regions - 1x 2) of initial correlation values to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.

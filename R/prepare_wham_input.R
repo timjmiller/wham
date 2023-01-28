@@ -392,9 +392,12 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 		input$data$spawn_seasons <- rep(1, length(asap3))
 		input$data$spawn_regions <- 1:length(asap3)
-		input$data$NAA_where <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
+		input$data$NAA_where <- array(1, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
 		for(s in 1:input$data$n_stocks){
-			input$data$NAA_where[s,s,] <- 1
+			input$data$NAA_where[s,-input$data$spawn_regions[s],1] <- 0 #recruit only to spawn region on Jan 1
+		}
+		if(!is.null(basic_info$NAA_where)){
+			input$data$NAA_where[] = basic_info$NAA_where
 		}
 
   	input$data$fracyr_SSB <- matrix(NA, input$data$n_years_model, input$data$n_stocks)

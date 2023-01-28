@@ -954,9 +954,11 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
     obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
-      age_comp_model_fleets, catch_paa_pars);
-    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets);
+      age_comp_model_fleets, catch_paa_pars, 1);
+    see(18.1);
+    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, 1);
     REPORT(catch_paa);
+    see(18.2);
   }
   /////////////////////////////////////////
   see(19);

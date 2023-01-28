@@ -38,10 +38,12 @@
 #'                    \item{"2dar1"}{2 values must be specified. First is for "age", second is for "year".}
 #'                  }
 #'                }
-#'     \item{$N1_model}{Integer determining which way to model the initial numbers at age:
+#'     \item{$N1_model}{Integer vector (n_stocks) determining which way to model the initial numbers at age:
 #'       \describe{
-#'          \item{0}{(default) age-specific fixed effects parameters}
-#'          \item{1}{2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
+#'          \item{"age-specific-fe"}{(default) age- and region-specific fixed effects parameters}
+#'          \item{"equilibrium"}{2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
+#'          \item{"iid-re"}{(default) age- and region-specific iid random effects parameters. 2 parameters: mean and sd for log NAA}
+#'          \item{"ar1-re"}{(default) age- and region-specific random effects parameters. 3 parameters: mean and sd, and cor for log NAA}
 #'       }
 #'     }
 #'     \item{$N1_pars}{if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
@@ -110,7 +112,7 @@ set_NAA = function(input, NAA_re=NULL)
   for(s in 1:data$n_stocks) {
     if(data$N1_model[s] == 0){
       for(r in 1:data$n_regions) for(a in 1:data$n_ages) {
-        if(data$NAA_where[s,r,a] ==1) {
+        if(data$NAA_where[s,r,a] == 1) {
           if(!is.null(asap3)) {
             par$log_N1[s,r,a] = log(asap3[[s]]$N1_ini[a]) # use N1_ini values from asap3 file
           } else{
@@ -122,8 +124,8 @@ set_NAA = function(input, NAA_re=NULL)
       }
     }
     if(data$N1_model[s] == 1) { #equilibrium assumption, 2 pars per stock
-      par$log_N1[s,spawn_regions[s],1:2] = c(10,log(0.1)) # allowed in wham.cpp but no option to set here (must be hard-coded after calling prepare_wham_input)
-      map$log_N1[s,spawn_regions[s],1:2] = k + 0:1
+      par$log_N1[s,data$spawn_regions[s],1:2] = c(10,log(0.1)) # allowed in wham.cpp but no option to set here (must be hard-coded after calling prepare_wham_input)
+      map$log_N1[s,data$spawn_regions[s],1:2] = k + 0:1
       k = k + 2
     }
     if(data$N1_model[s] == 2) { #RE
@@ -136,7 +138,7 @@ set_NAA = function(input, NAA_re=NULL)
       }
     }
   }
-  if(!is.null(NAA_re$N1)){
+  if(!is.null(NAA_re[["N1"]])){
     par$log_N1[] = log(NAA_re$N1)
   }
   map$log_N1 = factor(map$log_N1)

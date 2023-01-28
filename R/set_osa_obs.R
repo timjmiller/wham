@@ -137,13 +137,19 @@ set_osa_obs = function(input)
       fleets = paste0("fleet_", 1:data$n_fleets)
       if(data$use_catch_paa[y,i] == 1) {
         obs_y = x[y,]
+        #  print(obs_y)
         tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
+        #  print(tmp)
 
         #multinom, D-M, mvtweedie
         res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+        #  print(res)
         obs_y = res[[1]]
+        #  print(obs_y)
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+        #print(ind)
         if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
+        #if(y == 1) stop()
         #if(data$age_comp_model_fleets[i] %in% 3:7) {
         #  ind = res[[2]]
         #} else ind = 1:data$n_ages

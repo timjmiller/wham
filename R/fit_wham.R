@@ -108,7 +108,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     mod <- check_which_F_age(mod)
     #mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
-    if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
+    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
     mod$rep = mod$report() #par values don't matter because function has not been evaluated
     #mod <- check_FXSPR(mod)
     
@@ -153,8 +153,8 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
   else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
-    mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
-    if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
+    #mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
+    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
     mod$rep = mod$report() #par values don't matter because function has not been evaluated
     mod$parList = mod$env$parList()
     mod <- check_which_F_age(mod)
