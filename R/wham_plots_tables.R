@@ -2011,7 +2011,7 @@ plot.catch.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
   {
     for(y in seq_along(years)) {
 
-      if(dat$use_catch_caal[y,i] == 1) {
+      if(any(dat$use_catch_caal[y,i,] == 1)) {
         #yind = which(dat$use_catch_pal[y,i] ==1)
         if(osa){ # TODO: check how this works
           # my.title <- "CAAL Comp OSA Quantile Residuals for Fleet "
@@ -2273,7 +2273,7 @@ plot.index.caal.resids <- function(mod, scale.catch.bubble2 = 2, pos.resid.col =
   {
     for(y in seq_along(years)) {
 
-      if(dat$use_index_caal[y,i] == 1) {
+      if(any(dat$use_index_caal[y,i,] == 1)) {
       #yind = which(dat$use_index_pal[,i] ==1)
         if(osa){ # TODO: check this later
       # my.title <- "Length Comp OSA Quantile Residuals for Index "
@@ -3091,7 +3091,7 @@ plot.catch.caal.bubbles <- function(mod, bubble.col = "#8c8c8caa", i=1, do.png =
     for(y in seq_along(years)) {
       lcomp.obs <- dat$catch_caal[i,y,,]
       my.title <- "CAAL for Catch for Fleet "
-      if (dat$use_catch_caal[y,i] > 0)
+      if (any(dat$use_catch_caal[y,i,] == 1))
       {
         scale.catch.obs <- 2
         z3 <- as.matrix(lcomp.obs) * scale.catch.obs
@@ -3277,7 +3277,7 @@ plot.index.caal.bubbles <- function(mod, bubble.col = "#8c8c8caa", i=1, do.png =
     for(y in seq_along(years)) {
       lcomp.obs <- dat$index_caal[i,y,,]
       my.title <- "CAAL for Index "
-      if (dat$use_index_caal[y,i] > 0)
+      if (any(dat$use_index_caal[y,i,] == 1))
       {
         scale.catch.obs <- 2
         z3 <- as.matrix(lcomp.obs) * scale.catch.obs

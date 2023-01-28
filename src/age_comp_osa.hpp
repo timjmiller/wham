@@ -511,3 +511,39 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   return ll;
 }
 
+// LL for length comps
+template<class Type>
+Type get_lcomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, int len_comp_model, vector<Type> len_comp_pars, 
+  data_indicator<vector<Type>, Type> keep, int do_osa, vector<Type> paa_obs)
+{
+  Type ll = 0.0;
+  vector<Type> p = paa_pred;
+    if(len_comp_model == 1) {
+      //multinomial
+      //tf_paa_obs = Neff * paa_obs
+      ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
+    }
+    if(len_comp_model == 2) {
+      //dirichlet-multinomial
+      //tf_paa_obs = Neff * paa_obs
+      vector<Type> alphas = p * exp(len_comp_pars(0));
+      ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
+    }
+
+  return ll;
+}
+
+
+// WAA ll
+template<class Type>
+Type get_waa_ll(vector<Type> obs_waa, vector<Type> pred_waa, vector<Type> cv_waa){
+	Type ll = 0.0;
+	Type sd_wt = 0.0;
+	int n_ages = obs_waa.size();
+	
+	for(int a = 0; a < n_ages; a++){
+		sd_wt = sqrt(log(pow(cv_waa(a),2) + 1.0));
+		if(sd_wt > 0.0) ll += dnorm(log(obs_waa(a)), log(pred_waa(a))-pow(sd_wt,2.0)*0.5, sd_wt, true); // only when CV is greater than 0
+	} // add  bias_correct_oe
+	return ll;
+}

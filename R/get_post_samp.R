@@ -1,4 +1,5 @@
 #adapted from stockassessment::procres
+# This function is not used anymore (right?)
 get_post_samp <- function(fit){
   
   input = fit$input

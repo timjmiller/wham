@@ -109,7 +109,7 @@ set_osa_obs = function(input)
       if(data$use_index_paa[y,i]==1) 
       {
         obs_y = x[y,]
-        tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
+        #tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
         #multinom, D-M, mvtweedie
         #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp) # not working 
         res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
@@ -166,7 +166,7 @@ set_osa_obs = function(input)
       fleets = paste0("fleet_", 1:data$n_fleets)
       if(data$use_catch_paa[y,i]==1) {
         obs_y = x[y,]
-        tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
+        #tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
         
         #multinom, D-M, mvtweedie
         #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
@@ -213,13 +213,13 @@ set_osa_obs = function(input)
     for(i in 1:data$n_indices){
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$index_caal[i,,,]
-      x[which(data$use_index_caal[,i]==0),,] <- NA # only include catch data to fit in obsvec
       indices = paste0("index_", 1:data$n_indices)
-      if(data$use_index_caal[y,i]==1) 
-      {
-        for(l in 1:data$n_lengths){
+      for(l in 1:data$n_lengths){
+        if(data$use_index_caal[y,i,l]==1) 
+        {
+          x[which(data$use_index_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
           obs_y = x[y,l,]
-          tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
+          #tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
           #multinom, D-M, mvtweedie
           #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
           res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
@@ -233,7 +233,7 @@ set_osa_obs = function(input)
             #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
             obs <- rbind(obs, tmp[, obs.colnames])
           } else {
-            data$use_index_caal[y,i] <- 0 #set to not use because there are not enough positive values 
+            data$use_index_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
             cat(paste0("Setting data$use_index_caal to 0 for index ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
           }
         }
@@ -244,13 +244,13 @@ set_osa_obs = function(input)
     for(i in 1:data$n_fleets){
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$catch_caal[i,,,]
-      x[which(data$use_catch_caal[,i]==0),,] <- NA # only include catch data to fit in obsvec
       fleet = paste0("fleet_", 1:data$n_fleets)
-      if(data$use_catch_caal[y,i]==1) 
-      {
-        for(l in 1:data$n_lengths){
+      for(l in 1:data$n_lengths){
+        if(data$use_catch_caal[y,i,l]==1) 
+        {
+          x[which(data$use_catch_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
           obs_y = x[y,l,]
-          tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
+          #tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
           #multinom, D-M, mvtweedie
           #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
           res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
@@ -264,14 +264,40 @@ set_osa_obs = function(input)
             #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
             obs <- rbind(obs, tmp[, obs.colnames])
           } else {
-            data$use_catch_caal[y,i] <- 0 #set to not use because there are not enough positive values 
+            data$use_catch_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
             cat(paste0("Setting data$use_catch_caal to 0 for fleet ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
           }
         }
       }
     }
 
-  }
+    # WAA fleets:
+    for(i in 1:data$n_fleets){
+      x = data$waa[data$waa_pointer_fleets[i],,]
+      x[which(data$use_catch_waa[,i]==0),] <- NA # only include catch data to fit in obsvec
+      fleets = paste0("fleet_", 1:data$n_fleets)
+      if(data$use_catch_waa[y,i]==1) {
+        obs_y = x[y,]
+        tmp = data.frame(year = y, fleet = fleets[i], bin = 1:data$n_ages, type = 'catchwaa', val = obs_y)
+        obs <- rbind(obs, tmp[, obs.colnames])
+      }
+    }
+
+    # WAA indices:
+    for(i in 1:data$n_indices){
+      x = data$waa[data$waa_pointer_indices[i],,]
+      x[which(data$use_index_waa[,i]==0),] <- NA # only include catch data to fit in obsvec
+      indices = paste0("index_", 1:data$n_indices)
+      if(data$use_index_waa[y,i]==1) {
+        obs_y = x[y,]
+        tmp = data.frame(year = y, fleet = indices[i], bin = 1:data$n_ages, type = 'indexwaa', val = obs_y)
+        obs <- rbind(obs, tmp[, obs.colnames])
+      }
+    }
+
+  } # end loop years
+
+  # ----------------------------------------------------------------------
 
   obs_levels <- paste0("fleet_", 1:data$n_fleets)
   obs_levels <- c(obs_levels, paste0("index_", 1:data$n_indices))
@@ -348,19 +374,49 @@ set_osa_obs = function(input)
   # subtract 1 bc TMB indexes from 0
   data$keep_Cpal[,,1] <- data$keep_Cpal[,,1] - 1
   
+  # keep_Cwaa:
+  data$keep_Cwaa <- array(NA, dim=c(data$n_fleets, data$n_years_model, 2))
+  for(i in 1:data$n_fleets) {
+    for(y in 1:data$n_years_model) if(data$use_catch_waa[y,i]==1){
+      tmp = subset(obs, year == y & type=='catchwaa' & fleet==paste0("fleet_",i))
+      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
+      {
+        data$keep_Cwaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
+      }
+    }
+  }
+  # subtract 1 bc TMB indexes from 0
+  data$keep_Cwaa[,,1] <- data$keep_Cwaa[,,1] - 1
+
+  # keep_Iwaa:
+  data$keep_Iwaa <- array(NA, dim=c(data$n_indices, data$n_years_model, 2))
+  for(i in 1:data$n_indices) {
+    for(y in 1:data$n_years_model) if(data$use_index_waa[y,i]==1){
+      tmp = subset(obs, year == y & type=='indexwaa' & fleet==paste0("index_",i))
+      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
+      {
+        data$keep_Iwaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
+      }
+    }
+  }
+  # subtract 1 bc TMB indexes from 0
+  data$keep_Iwaa[,,1] <- data$keep_Iwaa[,,1] - 1
+
+  
   # keep_Ccaal:
   data$keep_Ccaal <- array(NA, dim=c(data$n_fleets, data$n_years_model, data$n_lengths, 2))
   for(i in 1:data$n_fleets) {
-    for(y in 1:data$n_years_model) if(data$use_catch_caal[y,i]==1){
+    for(y in 1:data$n_years_model) {
       tmp = subset(obs, year == y & type=='catchcaal' & fleet==paste0("fleet_",i))
-      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
-      {
-        for(l in 1:data$n_lengths){
-          tmp2 = tmp[as.numeric(sapply(strsplit(tmp$bin,"_"), `[`, 2)) == data$lengths[l], ]
-          data$keep_Ccaal[i,y,l,1:2] <- c(tmp2$ind[1], length(tmp2$ind))
-          #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
-          #subset for oneStepPredict can't include these
-          if(data$age_comp_model_fleets[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp2$ind)
+      if(length(tmp$ind)) {
+        for(l in 1:data$n_lengths) {
+          if(data$use_catch_caal[y,i,l]==1) {
+            tmp2 = tmp[as.numeric(sapply(strsplit(tmp$bin,"_"), `[`, 2)) == data$lengths[l], ]
+            data$keep_Ccaal[i,y,l,1:2] <- c(tmp2$ind[1], length(tmp2$ind))
+            #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
+            #subset for oneStepPredict can't include these
+            if(data$age_comp_model_fleets[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp2$ind)
+          }
         }
       }
     }
@@ -405,16 +461,17 @@ set_osa_obs = function(input)
   # keep_Icaal:
   data$keep_Icaal <- array(NA, dim=c(data$n_indices, data$n_years_model, data$n_lengths, 2))
   for(i in 1:data$n_indices) {
-    for(y in 1:data$n_years_model) if(data$use_index_caal[y,i]==1){
+    for(y in 1:data$n_years_model) {
       tmp = subset(obs, year == y & type=='indexcaal' & fleet==paste0("index_",i))
-      if(length(tmp$ind)) #should always be TRUE because use_paa changed above
-      {
+      if(length(tmp$ind)) {
         for(l in 1:data$n_lengths){
-          tmp2 = tmp[as.numeric(sapply(strsplit(tmp$bin,"_"), `[`, 2)) == data$lengths[l], ]
-          data$keep_Icaal[i,y,l,1:2] <- c(tmp2$ind[1], length(tmp2$ind))
-          #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
-          #subset for oneStepPredict can't include these
-          if(data$age_comp_model_indices[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp2$ind)
+          if(data$use_index_caal[y,i,l]==1){
+            tmp2 = tmp[as.numeric(sapply(strsplit(tmp$bin,"_"), `[`, 2)) == data$lengths[l], ]
+            data$keep_Icaal[i,y,l,1:2] <- c(tmp2$ind[1], length(tmp2$ind))
+            #if(data$age_comp_model_fleets[i] %in% 1:2) data$subset_discrete_osa = c(data$subset_discrete_osa, tmp$ind)
+            #subset for oneStepPredict can't include these
+            if(data$age_comp_model_indices[i] %in% 8:10) data$condition_no_osa = c(data$condition_no_osa, tmp2$ind)
+          }
         }
       }
     }
@@ -431,12 +488,15 @@ set_osa_obs = function(input)
   data$agesvec = NA
   data$lensvec = NA
   find_paa = grep(pattern = 'paa', x = obs$type) # only for paa
+  find_waa = grep(pattern = 'waa', x = obs$type) # only for waa
   find_pal = grep(pattern = 'pal', x = obs$type) # only for pal
   find_caal = grep(pattern = 'caal', x = obs$type) # only for caal
   obs$cohort[find_paa] = as.numeric(obs$year[find_paa]) - as.numeric(obs$bin[find_paa])   #make cohort column. could be useful for analyzing age comp OSA residuals
+  obs$cohort[find_waa] = as.numeric(obs$year[find_waa]) - as.numeric(obs$bin[find_waa])   #make cohort column. could be useful for analyzing age comp OSA residuals
   data$obs <- obs
   data$obsvec <- obs$val
   if(length(find_paa) > 0) data$agesvec[find_paa] <- as.numeric(obs$bin[find_paa])
+  if(length(find_waa) > 0) data$agesvec[find_waa] <- as.numeric(obs$bin[find_waa])
   if(length(find_pal) > 0) data$lensvec[find_pal] <- as.numeric(obs$bin[find_pal])	
   if(length(find_caal) > 0) data$agesvec[find_caal] <- as.numeric(sapply(strsplit(obs$bin[find_caal],"_"), `[`, 1))																				  
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham

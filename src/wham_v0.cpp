@@ -59,7 +59,7 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(use_catch_pal); 
   DATA_MATRIX(catch_NeffL); 
   DATA_ARRAY(catch_caal); //n_fleets x n_years x n_lengths 
-  DATA_IMATRIX(use_catch_caal); 
+  DATA_IARRAY(use_catch_caal); 
   DATA_ARRAY(catch_caal_Neff);
   
   DATA_IVECTOR(units_indices);
@@ -77,7 +77,7 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(use_index_pal); 
   DATA_MATRIX(index_NeffL);
   DATA_ARRAY(index_caal); //n_fleets x n_years x n_lengths 
-  DATA_IMATRIX(use_index_caal); 
+  DATA_IARRAY(use_index_caal); 
   DATA_ARRAY(index_caal_Neff); 
   DATA_ARRAY(index_aging_error);   
   DATA_VECTOR(use_index_aging_error); 
@@ -138,6 +138,8 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(keep_E); // Ecov
   DATA_IARRAY(keep_Cpaa);
   DATA_IARRAY(keep_Ipaa);
+  DATA_IARRAY(keep_Cwaa);
+  DATA_IARRAY(keep_Iwaa);
   DATA_IARRAY(keep_Cpal); 
   DATA_IARRAY(keep_Ipal); 
   DATA_IARRAY(keep_Ccaal); 
@@ -291,7 +293,6 @@ Type objective_function<Type>::operator() ()
   matrix<Type> q(n_years_model+n_years_proj,n_indices);
   vector<Type> t_paa(n_ages); 
   vector<Type> t_pred_paa(n_ages); 
-  vector<Type> t_pal(n_lengths); 
   vector<Type> t_pred_pal(n_lengths); 
   int n_toavg = avg_years_ind.size();
 
@@ -321,12 +322,16 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < n_indices; i++)
   {
     any_index_caal(i) = 0;
-    for(int y = 0; y < n_years_indices; y++) if(use_index_caal(y,i) == 1) any_index_caal(i) = 1;
+    for(int y = 0; y < n_years_indices; y++) {
+		for(int l = 0; l < n_lengths; l++) if(use_index_caal(y,i,l) == 1) any_index_caal(i) = 1;
+	}
   }
-  for(int i = 0; i < n_fleets; i++)
+  for(int f = 0; f < n_fleets; f++)
   {
-    any_fleet_caal(i) = 0;
-    for(int y = 0; y < n_years_catch; y++) if(use_catch_caal(y,i) == 1) any_fleet_caal(i) = 1;
+    any_fleet_caal(f) = 0;
+    for(int y = 0; y < n_years_catch; y++) {
+		for(int l = 0; l < n_lengths; l++) if(use_catch_caal(y,f,l) == 1) any_fleet_caal(f) = 1;
+	}
   }
 
   // Selectivity --------------------------------------------------------------
@@ -1189,7 +1194,7 @@ Type objective_function<Type>::operator() ()
 	  } // loop age
   } // loop year
 
-  if(do_post_samp.sum()==0) ADREPORT(LAA);
+  if(do_post_samp.sum()==0) if(weight_model == 2) ADREPORT(LAA);// only when LAA is relevant
 
   // --------------------------------------------------------------------------
   // Calculate phi matrix at all year fractions (will follow information in waa pointers)
@@ -1219,10 +1224,13 @@ Type objective_function<Type>::operator() ()
 	Type sum_wt_ssb = 0;
 	Type sum_wt_fleet = 0;
 	Type sum_wt_index = 0;
-	Type sd_wt = 0;
+	vector<Type> t_pred_waa(n_ages);
+	vector<Type> t_obs_waa(n_ages);
+	vector<Type> t_cv_waa(n_ages);
+	array<Type> waa_proj(waa.dim(0), n_years_proj, n_ages);
 	matrix<Type> watl(n_years_model + n_years_proj, n_lengths);
 	watl.setZero(); // full of zeros when weight_model = 1 or 3
-	array<Type> nll_waa(waa.dim(0), n_years_model, n_ages);
+	array<Type> nll_waa(waa.dim(0), n_years_model);
 	Type lenmid = (lengths(1) - lengths(0))*0.5;
 	nll_waa.setZero();
   if(weight_model == 1) {
@@ -1242,7 +1250,6 @@ Type objective_function<Type>::operator() ()
 	}
   } else {
 		if(weight_model == 2) {
-			
 			  // For Jan-1
 			  out_phi_mat = phi_matrix(waa_pointer_jan1-1);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++) { // 
@@ -1255,7 +1262,6 @@ Type objective_function<Type>::operator() ()
 					pred_waa(waa_pointer_jan1 - 1,y,a) = sum_wt; // jan-1st
 				}
 			  }
-				
 				// For SSB
 			  out_phi_mat = phi_matrix(waa_pointer_ssb-1);
 			  for(int y = 0; y < n_years_model + n_years_proj; y++) { // 
@@ -1267,7 +1273,7 @@ Type objective_function<Type>::operator() ()
 					pred_waa(waa_pointer_ssb - 1,y,a) = sum_wt_ssb; // SSB
 				}
 			  }
-
+			  
 				// For fleets
 				for(int f = 0; f < n_fleets; f++) {
 					out_phi_mat = phi_matrix(waa_pointer_fleets(f)-1);
@@ -1278,10 +1284,26 @@ Type objective_function<Type>::operator() ()
 								sum_wt_fleet += out_phi_mat(y,l,a)*watl(y,l);
 							}
 							pred_waa(waa_pointer_fleets(f)-1,y,a) = sum_wt_fleet; 
-							pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet; 
-							if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-								sd_wt = sqrt(log(pow(waa_cv(waa_pointer_fleets(f) - 1,y,a),2) + 1.0));
-								nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
+							pred_waa(waa_pointer_totcatch-1,y,a) = sum_wt_fleet;
+							t_pred_waa(a) = sum_wt_fleet; // save it as vector predictions
+						}
+						if(y < n_years_model) if(use_catch_waa(y,f) == 1) { 
+							t_obs_waa = obsvec.segment(keep_Cwaa(f,y,0), keep_Cwaa(f,y,1));	
+							for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_fleets(f) - 1,y,a);
+							nll_waa(waa_pointer_fleets(f) - 1,y) -= get_waa_ll(t_obs_waa, t_pred_waa, t_cv_waa);
+						}
+						SIMULATE if(simulate_data(0) == 1) if(use_catch_waa(y,f) == 1){
+							if((simulate_period(0) == 1) & (y < n_years_model)) //model years
+							{
+								vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+								obsvec.segment(keep_Cwaa(f,y,0),keep_Cwaa(f,y,1)) = tf_waa_obs;
+								for(int a = 0; a < n_ages; a++) waa(waa_pointer_fleets(f) - 1,y,a) = tf_waa_obs(a);
+							}
+							if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
+							{
+								for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_fleets(f) - 1,n_years_model-1,a);// use last year CV
+								vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+								for(int a = 0; a < n_ages; a++) waa_proj(waa_pointer_fleets(f) - 1,y,a) = tf_waa_obs(a);
 							}
 						}
 					}
@@ -1296,12 +1318,28 @@ Type objective_function<Type>::operator() ()
 							for(int l = 0; l < n_lengths; l++) {
 								sum_wt_index += out_phi_mat(y,l,a)*watl(y,l);
 							}
-							pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices	
-							if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-								sd_wt = sqrt(log(pow(waa_cv(waa_pointer_indices(i) - 1,y,a),2) + 1.0));
-								nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
-							}
+							pred_waa(waa_pointer_indices(i)-1,y,a) = sum_wt_index; // for indices
+							t_pred_waa(a) = sum_wt_index; // save it as vector predictions							
 						}
+						if(y < n_years_model) if(use_index_waa(y,i) == 1) { 
+							t_obs_waa = obsvec.segment(keep_Iwaa(i,y,0), keep_Iwaa(i,y,1));	
+							for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_indices(i) - 1,y,a);
+							nll_waa(waa_pointer_indices(i) - 1,y) -= get_waa_ll(t_obs_waa, t_pred_waa, t_cv_waa);
+						}
+						SIMULATE if(simulate_data(1) == 1) if(use_index_waa(y,i) == 1){
+							if((simulate_period(0) == 1) & (y < n_years_model)) //model years
+							{
+								vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+								obsvec.segment(keep_Iwaa(i,y,0),keep_Iwaa(i,y,1)) = tf_waa_obs;
+								for(int a = 0; a < n_ages; a++) waa(waa_pointer_indices(i) - 1,y,a) = tf_waa_obs(a);
+							}
+							if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
+							{
+								for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_indices(i) - 1,n_years_model-1,a);// use last year CV
+								vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+								for(int a = 0; a < n_ages; a++) waa_proj(waa_pointer_indices(i) - 1,y,a) = tf_waa_obs(a);
+							}
+						}							
 					}
 				}
 				
@@ -1330,22 +1368,55 @@ Type objective_function<Type>::operator() ()
 					for(int a = 0; a < n_ages; a++) { 
 						pred_waa(waa_pointer_fleets(f)-1,y,a) = fracyr_WAA(a); 
 						pred_waa(waa_pointer_totcatch-1,y,a) = fracyr_WAA(a); // for total catch, it is using the last fracyr_fleets
-						if((y < n_years_model) & (waa_cv(waa_pointer_fleets(f) - 1,y,a) > 0) & (use_catch_waa(y,f) == 1)) { 
-							sd_wt = sqrt(log(pow(waa_cv(waa_pointer_fleets(f) - 1,y,a),2) + 1.0));
-							nll_waa(waa_pointer_fleets(f) - 1,y,a) -= dnorm(log(waa(waa_pointer_fleets(f) - 1,y,a)), log(pred_waa(waa_pointer_fleets(f) - 1,y,a)), sd_wt, true);
-						}
+						t_pred_waa(a) = fracyr_WAA(a); // save it as vector predictions
+					}						
+					if(y < n_years_model) if(use_catch_waa(y,f) == 1) { 
+						t_obs_waa = obsvec.segment(keep_Cwaa(f,y,0), keep_Cwaa(f,y,1));	
+						for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_fleets(f) - 1,y,a);
+						nll_waa(waa_pointer_fleets(f) - 1,y) -= get_waa_ll(t_obs_waa, t_pred_waa, t_cv_waa);
 					}
+					SIMULATE if(simulate_data(0) == 1) if(use_catch_waa(y,f) == 1){
+						if((simulate_period(0) == 1) & (y < n_years_model)) //model years
+						{
+							vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+							obsvec.segment(keep_Cwaa(f,y,0),keep_Cwaa(f,y,1)) = tf_waa_obs;
+							for(int a = 0; a < n_ages; a++) waa(waa_pointer_fleets(f) - 1,y,a) = tf_waa_obs(a);
+						}
+						if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
+						{
+							for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_fleets(f) - 1,n_years_model-1,a);// use last year CV
+							vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+							for(int a = 0; a < n_ages; a++) waa_proj(waa_pointer_fleets(f) - 1,y,a) = tf_waa_obs(a);
+						}
+					}	
 				}
+				
 				// For indices
 				for(int i = 0; i < n_indices; i++) {
 					fracyr_WAA = get_fracyr_WAA(vector<Type>(WAA_par.row(y)), vector<Type>(WAA_par.row(y_1)), fracyr_indices(yuse,i));
 					for(int a = 0; a < n_ages; a++) { 
 						pred_waa(waa_pointer_indices(i)-1,y,a) = fracyr_WAA(a); // for indices	
-						if((y < n_years_model) & (waa_cv(waa_pointer_indices(i) - 1,y,a) > 0) & (use_index_waa(y,i) == 1)) {
-							sd_wt = sqrt(log(pow(waa_cv(waa_pointer_indices(i) - 1,y,a),2) + 1.0));
-							nll_waa(waa_pointer_indices(i) - 1,y,a) -= dnorm(log(waa(waa_pointer_indices(i) - 1,y,a)), log(pred_waa(waa_pointer_indices(i) - 1,y,a)), sd_wt, true);
-						}
+						t_pred_waa(a) = fracyr_WAA(a); // save it as vector predictions							
 					}
+					if(y < n_years_model) if(use_index_waa(y,i) == 1) { 
+						t_obs_waa = obsvec.segment(keep_Iwaa(i,y,0), keep_Iwaa(i,y,1));	
+						for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_indices(i) - 1,y,a);
+						nll_waa(waa_pointer_indices(i) - 1,y) -= get_waa_ll(t_obs_waa, t_pred_waa, t_cv_waa);
+					}
+					SIMULATE if(simulate_data(1) == 1) if(use_index_waa(y,i) == 1){
+						if((simulate_period(0) == 1) & (y < n_years_model)) //model years
+						{
+							vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+							obsvec.segment(keep_Iwaa(i,y,0),keep_Iwaa(i,y,1)) = tf_waa_obs;
+							for(int a = 0; a < n_ages; a++) waa(waa_pointer_indices(i) - 1,y,a) = tf_waa_obs(a);
+						}
+						if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
+						{
+							for(int a = 0; a < n_ages; a++) t_cv_waa(a) = waa_cv(waa_pointer_indices(i) - 1,n_years_model-1,a);// use last year CV
+							vector<Type> tf_waa_obs = sim_waa(t_pred_waa, t_cv_waa);
+							for(int a = 0; a < n_ages; a++) waa_proj(waa_pointer_indices(i) - 1,y,a) = tf_waa_obs(a);
+						}
+					}							
 				}				
 
 			}
@@ -1354,9 +1425,12 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(pred_waa);	
   REPORT(nll_waa);
-  if(do_post_samp.sum()==0) {  
-    if(weight_model!=1) ADREPORT(pred_waa); // If smoothing the WAA matrix get SEs
-  }
+  if(do_post_samp.sum()==0) if(weight_model > 1) ADREPORT(pred_waa); // If smoothing the WAA matrix get SEs
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(0) == 1) REPORT(waa); // fisheries
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(0) == 1) REPORT(waa); // indices
+  SIMULATE if(simulate_data(0) == 1) if(simulate_period(1) == 1) REPORT(waa_proj); // fisheries
+  SIMULATE if(simulate_data(1) == 1) if(simulate_period(1) == 1) REPORT(waa_proj); // indices
+
 
   // --------------------------------------------------------------------------
   // Calculate mortality (M, F, then Z)
@@ -2056,27 +2130,23 @@ Type objective_function<Type>::operator() ()
           //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
           //keep_Cpaa(i,y,0) is first val, keep_Cpaa(i,y,1) is the length of the vector
           vector<Type> tf_pal_obs = obsvec.segment(keep_Cpal(f,y,0), keep_Cpal(f,y,1));
-          vector<int> lens_obs_y = lensvec.segment(keep_Cpal(f,y,0), keep_Cpal(f,y,1));
-          nll_catch_lcomp(y,f) -= get_acomp_ll(tf_pal_obs, t_pred_pal, catch_NeffL(y,f), lens_obs_y, len_comp_model_fleets(f), 
+          nll_catch_lcomp(y,f) -= get_lcomp_ll(tf_pal_obs, t_pred_pal, catch_NeffL(y,f), len_comp_model_fleets(f), 
             vector<Type>(catch_pal_pars.row(f)), keep.segment(keep_Cpal(f,y,0),keep_Cpal(f,y,1)), do_osa, pal_obs_y);
         }
         SIMULATE if(simulate_data(0) == 1) if(use_catch_pal(usey,f) == 1){
           if((simulate_period(0) == 1) & (y < n_years_model)) //model years
           {
             for(int l = 0; l < n_lengths; l++) pal_obs_y(l) = catch_pal(f,y,l);
-            vector<int> lens_obs_y = lensvec.segment(keep_Cpal(f,y,0), keep_Cpal(f,y,1));
-            vector<Type> tf_pal_obs = sim_acomp(t_pred_pal, catch_NeffL(y,f), lens_obs_y, len_comp_model_fleets(f), vector<Type>(catch_pal_pars.row(f)));
+            vector<Type> tf_pal_obs = sim_lcomp(t_pred_pal, catch_NeffL(y,f), len_comp_model_fleets(f), vector<Type>(catch_pal_pars.row(f)));
             obsvec.segment(keep_Cpal(f,y,0),keep_Cpal(f,y,1)) = tf_pal_obs;
-            pal_obs_y = make_paa(tf_pal_obs, len_comp_model_fleets(f), lens_obs_y, pal_obs_y);
+            pal_obs_y = make_pal(tf_pal_obs, len_comp_model_fleets(f));
             for(int l = 0; l < n_lengths; l++) catch_pal(f,y,l) = pal_obs_y(l);
           }
           if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
           {
             for(int l = 0; l < n_lengths; l++) pal_obs_y(l) = 1/n_lengths; //only needed for LN obs to tell where the last non-zero age class is. No zeros in projections.
-            vector<int> lens_obs_y(n_lengths);
-            for(int l = 0; l < n_lengths; l++) lens_obs_y(l) = l;
-            vector<Type> tf_pal_obs = sim_acomp(t_pred_pal, catch_NeffL(usey,f), lens_obs_y, len_comp_model_fleets(f), vector<Type>(catch_pal_pars.row(f)));
-            pal_obs_y = make_paa(tf_pal_obs, len_comp_model_fleets(f), lens_obs_y, pal_obs_y);
+            vector<Type> tf_pal_obs = sim_lcomp(t_pred_pal, catch_NeffL(usey,f), len_comp_model_fleets(f), vector<Type>(catch_pal_pars.row(f)));
+            pal_obs_y = make_pal(tf_pal_obs, len_comp_model_fleets(f));
             for(int l = 0; l < n_lengths; l++) catch_pal_proj(f,y-n_years_model,l) = pal_obs_y(l);
           }
         }
@@ -2102,7 +2172,7 @@ Type objective_function<Type>::operator() ()
 				  t_pred_paa(a) = pred_catch_caal(y,f,l,a);
 				}
 			}
-			if(y < n_years_model) if(use_catch_caal(y,f) == 1) {
+			if(y < n_years_model) if(use_catch_caal(y,f,l) == 1) {
 			  for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_caal(f,y,l,a);
 			  //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
 			  //keep_Cpaa(i,y,0) is first val, keep_Cpaa(i,y,1) is the length of the vector
@@ -2111,7 +2181,7 @@ Type objective_function<Type>::operator() ()
 			  nll_catch_caal(y,f,l) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_caal_Neff(y,f,l), ages_obs_y, age_comp_model_fleets(f), 
 				vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Ccaal(f,y,l,0),keep_Ccaal(f,y,l,1)), do_osa, paa_obs_y);
 			}
-			SIMULATE if(simulate_data(0) == 1) if(use_catch_caal(usey,f) == 1){
+			SIMULATE if(simulate_data(0) == 1) if(use_catch_caal(usey,f,l) == 1){
 			  if((simulate_period(0) == 1) & (y < n_years_model)) //model years
 			  {
 				for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_caal(f,y,l,a);
@@ -2297,27 +2367,23 @@ Type objective_function<Type>::operator() ()
           //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
           //keep_Cpaa(i,y,0) is first val, keep_Cpaa(i,y,1) is the length of the vector
           vector<Type> tf_pal_obs = obsvec.segment(keep_Ipal(i,y,0), keep_Ipal(i,y,1));
-          vector<int> lens_obs_y = lensvec.segment(keep_Ipal(i,y,0), keep_Ipal(i,y,1));
-          nll_index_lcomp(y,i) -= get_acomp_ll(tf_pal_obs, t_pred_pal, index_NeffL(y,i), lens_obs_y, len_comp_model_indices(i), 
-            vector<Type>(index_pal_pars.row(i)), keep.segment(keep_Ipal(i,y,0),keep_Ipal(i,y,1)), do_osa, pal_obs_y);
+          nll_index_lcomp(y,i) -= get_lcomp_ll(tf_pal_obs, t_pred_pal, index_NeffL(y,i), len_comp_model_indices(i), 
+					vector<Type>(index_pal_pars.row(i)), keep.segment(keep_Ipal(i,y,0),keep_Ipal(i,y,1)), do_osa, pal_obs_y);
         }
         SIMULATE if(simulate_data(1) == 1) if(use_index_pal(usey,i) == 1){
           if((simulate_period(0) == 1) & (y < n_years_model)) //model years
           {
             for(int l = 0; l < n_lengths; l++) pal_obs_y(l) = index_pal(i,y,l);
-            vector<int> lens_obs_y = lensvec.segment(keep_Ipal(i,y,0), keep_Ipal(i,y,1));
-            vector<Type> tf_pal_obs = sim_acomp(t_pred_pal, index_NeffL(usey,i), lens_obs_y, len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)));
+            vector<Type> tf_pal_obs = sim_lcomp(t_pred_pal, index_NeffL(usey,i), len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)));
             obsvec.segment(keep_Ipal(i,y,0),keep_Ipal(i,y,1)) = tf_pal_obs;
-            pal_obs_y = make_paa(tf_pal_obs, len_comp_model_indices(i), lens_obs_y, pal_obs_y);
+            pal_obs_y = make_pal(tf_pal_obs, len_comp_model_indices(i));
             for(int l = 0; l < n_lengths; l++) index_pal(i,y,l) = pal_obs_y(l);
           }
           if((simulate_period(1) == 1) & (y > n_years_model - 1)) //projection years
           {
             for(int l = 0; l < n_lengths; l++) pal_obs_y(l) = 1/n_lengths; //only needed for LN obs to tell where the last non-zero age class is. No zeros in projections.
-            vector<int> lens_obs_y(n_lengths);
-		  for(int l = 0; l < n_lengths; l++) lens_obs_y(l) = l;
-            vector<Type> tf_pal_obs = sim_acomp(t_pred_pal, index_NeffL(usey,i), lens_obs_y, len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)));
-            pal_obs_y = make_paa(tf_pal_obs, len_comp_model_indices(i), lens_obs_y, pal_obs_y);
+            vector<Type> tf_pal_obs = sim_lcomp(t_pred_pal, index_NeffL(usey,i), len_comp_model_indices(i), vector<Type>(index_pal_pars.row(i)));
+            pal_obs_y = make_pal(tf_pal_obs, len_comp_model_indices(i));
             for(int l = 0; l < n_lengths; l++) index_pal_proj(i,y-n_years_model,l) = pal_obs_y(l);
           }
         }
@@ -2344,7 +2410,7 @@ Type objective_function<Type>::operator() ()
 					t_pred_paa(a) = pred_index_caal(y,i,l,a); 
 				}
 			}
-			if(y < n_years_model) if(use_index_caal(y,i) == 1) {
+			if(y < n_years_model) if(use_index_caal(y,i,l) == 1) {
 			  for(int a = 0; a < n_ages; a++) paa_obs_y(a) = index_caal(i,y,l,a);
 			  //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,0) + keep_Ipaa(i,y,1) - 1
 			  //keep_Ipaa(i,y,0) is first val, keep_Ipaa(i,y,1) is the length of the vector
@@ -2353,7 +2419,7 @@ Type objective_function<Type>::operator() ()
 			  nll_index_caal(y,i,l) -= get_acomp_ll(tf_paa_obs, t_pred_paa, index_caal_Neff(y,i,l), ages_obs_y, age_comp_model_indices(i), 
 				vector<Type>(index_paa_pars.row(i)), keep.segment(keep_Icaal(i,y,l,0),keep_Icaal(i,y,l,1)), do_osa, paa_obs_y);
 			}
-			SIMULATE if(simulate_data(1) == 1) if(use_index_caal(usey,i) == 1){
+			SIMULATE if(simulate_data(1) == 1) if(use_index_caal(usey,i,l) == 1){
 			  if((simulate_period(0) == 1) & (y < n_years_model)) //model years
 			  {
 				for(int a = 0; a < n_ages; a++) paa_obs_y(a) = index_caal(i,y,l,a);

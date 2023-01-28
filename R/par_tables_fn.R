@@ -400,7 +400,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
     }
     age.list = M_a_point = list()
-    M_map = as.integer(as.character(input$map$M_a))
+    M_map = as.integer(as.character(mod$input$map$M_a))
     ind = unique(M_map[which(!is.na(M_map))])
     if(data$M_model == 1) {
       M_a_point[[1]] = 1
@@ -486,12 +486,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     if(data$growth_model < 3){
 
       Gpar_vector = as.vector(pars$growth_a)
-      if(data$growth_model == 1) Gpar_names = c('K', 'Linf', 'L1', 'CV1', 'CVA')
-      if(data$growth_model == 2) Gpar_names = c('K', 'Linf', 'L1', 'Gamma', 'CV1', 'CVA')
+      if(data$growth_model == 1) Gpar_names = c('K', 'Linf', 'L1')
+      if(data$growth_model == 2) Gpar_names = c('K', 'Linf', 'L1', 'Gamma')
       fe.names = c(fe.names, Gpar_names)
       fe.vals = c(fe.vals, exp(Gpar_vector))
 
-      for(j in 1:5) {
+      for(j in 1:mod$input$data$n_growth_par) {
         fe.cis = rbind(fe.cis, ci(Gpar_vector[j], as.vector(sd$growth_a)[j], type = "exp"))
         if(data$growth_re_model[j]%in%c(2,4)){
           fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (year)"))
@@ -514,11 +514,17 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
           }
         }
       }
+
+      # SD information:
+      SD_vector = as.vector(pars$SD_par)
+      fe.names = c(fe.names, c('SD1', 'SDA'))
+      fe.vals = c(fe.vals, exp(SD_vector))
+      for(j in 1:2) fe.cis = rbind(fe.cis, ci(SD_vector[j], as.vector(sd$SD_par)[j], type = "exp"))
+
     }
 
     if(data$growth_model == 3){
       Gpar_vector = as.vector(pars$growth_a)
-      Gpar_names = c('CV1', 'CVA')
       fe.names = c(fe.names, paste0("Mean length for age ", mod$ages.lab))
       fe.vals = c(fe.vals, exp(pars$LAA_a))
       for(a in 1:data$n_ages) fe.cis = rbind(fe.cis, ci(pars$LAA_a[a], sd$LAA_a[a], type = "exp"))
@@ -539,32 +545,11 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
         }
       }
 
-      for(j in 1:2) {
-        fe.names = c(fe.names, Gpar_names[j])
-        fe.vals = c(fe.vals, exp(Gpar_vector[j]))
-        fe.cis = rbind(fe.cis, ci(Gpar_vector[j], as.vector(sd$growth_a)[j], type = "exp"))
-
-        if(data$growth_re_model[j]%in%c(2,4)){
-          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (year)"))
-          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
-          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
-          if(data$growth_re_model[j] == c(4)){
-            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (year)"))
-            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
-            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
-          }
-        }
-        if(data$growth_re_model[j]%in%c(3,5)){
-          fe.names = c(fe.names, paste0(Gpar_names[j], " RE $\\sigma$ (cohort)"))
-          fe.vals = c(fe.vals, exp(pars$growth_repars[j,1]))
-          fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,1], sd$growth_repars[j,1], type = "exp"))
-          if(data$growth_re_model[j] == c(5)){
-            fe.names = c(fe.names, paste0(Gpar_names[j], " RE AR1 $\\rho$ (cohort)"))
-            fe.vals = c(fe.vals, exp(pars$growth_repars[j,2]))
-            fe.cis = rbind(fe.cis, ci(pars$growth_repars[j,2], pars$growth_repars[j,2], lo = -1, hi = 1, type = "expit", k = 2))
-          }
-        }
-      }
+      # SD information:
+      SD_vector = as.vector(pars$SDLAA_par)
+      fe.names = c(fe.names, c('SD1', 'SDA'))
+      fe.vals = c(fe.vals, exp(SD_vector))
+      for(j in 1:2) fe.cis = rbind(fe.cis, ci(SD_vector[j], as.vector(sd$SDLAA_par)[j], type = "exp"))
     }
 
   # LW parameters
@@ -737,7 +722,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
       fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. sd."))
-      ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
+      ind = which(!is.na(matrix(mod$input$map$Ecov_obs_logsigma, NROW(mod$input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }

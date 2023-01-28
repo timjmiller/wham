@@ -22,7 +22,7 @@ set_catch = function(input, catch_opts= NULL)
   data$use_catch_pal = matrix(0, data$n_years_model, data$n_fleets)  
   data$catch_NeffL = matrix(0, data$n_years_model, data$n_fleets)
   data$catch_caal = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_lengths, data$n_ages))
-  data$use_catch_caal = array(0, dim = c(data$n_years_model, data$n_fleets))
+  data$use_catch_caal = array(0, dim = c(data$n_years_model, data$n_fleets, data$n_lengths))
   data$catch_caal_Neff = array(0, dim = c(data$n_years_model, data$n_fleets, data$n_lengths))
   data$catch_aging_error = array(0, dim = c(data$n_fleets, data$n_ages, data$n_ages))
   data$use_catch_aging_error = rep(x = 0, times = data$n_fleets)
@@ -97,16 +97,12 @@ set_catch = function(input, catch_opts= NULL)
     if(!is.null(catch_opts$use_catch_aging_error)) data$use_catch_aging_error[] = catch_opts$use_catch_aging_error
 
     for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
-      if(data$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2 | any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0
+      if(data$catch_Neff[y,i] < 1e-15 |  any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0
     }
     for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
-      if(data$catch_NeffL[y,i] < 1e-15 | sum(data$catch_pal[i,y,] > 1e-15)<2 | any(is.na(data$catch_pal[i,y,]))) data$use_catch_pal[y,i] = 0
+      if(data$catch_NeffL[y,i] < 1e-15 | any(is.na(data$catch_pal[i,y,]))) data$use_catch_pal[y,i] = 0
     }
-    for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
-		for(l in 1:data$n_lengths) {
-			if(data$catch_caal_Neff[y,i,l] < 1e-15 | sum(data$catch_caal[i,y,l,] > 1e-15)<2 | any(is.na(data$catch_caal[i,y,l,]))) data$catch_caal_Neff[y,i,l] = 0
-		}
-    }
+
     if(is.null(catch_opts$selblock_pointer_fleets)) data$selblock_pointer_fleets = matrix(rep(1:data$n_fleets, each = data$n_years_model), data$n_years_model, data$n_fleets)
     else data$selblock_pointer_fleets = catch_opts$selblock_pointer_fleets
   }
