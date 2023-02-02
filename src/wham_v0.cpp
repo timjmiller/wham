@@ -2245,7 +2245,7 @@ Type objective_function<Type>::operator() ()
     //int acomp_par_count = 0;
     for(int i = 0; i < n_indices; i++)
     {
-	  if(y == 0) out_phi_mat = phi_matrix(waa_pointer_indices(i)-1); // just do it once to save time
+	  out_phi_mat = phi_matrix(waa_pointer_indices(i)-1); // just do it once to save time
 	  lsum.setZero();
 	  asum.setZero();
 	  temp_indices = 0.0;

@@ -20,9 +20,8 @@ set_WAA = function(input, waa_opts = NULL, WAA)
     	if(is.null(waa_opts[["waa"]])){
 	    	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
 		    W = rep(exp(-11)*L^3, each = data$n_years_model)
-        max_waa_index = max(c(waa_opts$waa_pointer_fleets, waa_opts$waa_pointer_indices, waa_opts$waa_pointer_jan1,
-                              waa_opts$waa_pointer_ssb,waa_opts$waa_pointer_totcatch))
-				dim_WAA = c(max_waa_index, data$n_years_model, data$n_ages)
+        n_pointers = data$n_fleets + data$n_indices + 3
+				dim_WAA = c(n_pointers, data$n_years_model, data$n_ages)
 				data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
 				data$weight_model = 2 # 2 = waa info not provided. use LW
 				data$waa_cv = array(0, dim = dim(data$waa))		
@@ -48,7 +47,7 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 		if(is.null(waa_opts$waa_pointer_ssb)) data$waa_pointer_ssb = data$n_fleets+data$n_indices + 2
 		else data$waa_pointer_ssb = waa_opts$waa_pointer_ssb
 
-		if(is.null(waa_opts$waa_pointer_jan1)) data$waa_pointer_jan1 = data$n_fleets+data$n_indices + 2
+		if(is.null(waa_opts$waa_pointer_jan1)) data$waa_pointer_jan1 = data$n_fleets+data$n_indices + 3
 		else data$waa_pointer_jan1 = waa_opts$waa_pointer_jan1
 
 		if(!is.null(waa_opts$weight_model))  data$weight_model = waa_opts$weight_model
