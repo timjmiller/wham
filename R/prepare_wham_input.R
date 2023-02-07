@@ -46,8 +46,12 @@
 #'     I.e. if SST in year \emph{t} affects recruitment in year \emph{t + 1}, set \code{lag = 1}. May also be a list (length=n_Ecov) of vectors (length = 2+n_indices) if multiple effects of one or more Ecovs are modeled.}
 #'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
 #'     \item{$where}{Character vector for where each ecov affects the population. \code{"recruit"} = recruitment,
-#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"none"} = fit ecov process model(s) but without an effect on the
-#'     population. May also be a list (element for each ecov) of character vectors ("none", "recruit", "M", and/or "q") so each ecov can multiple effects.}
+#'     \code{"M"} = natural mortality, \code{"q"} = catchability for indices, \code{"growth"} = parametric growth
+#'      equation, \code{"LAA"} = non-parametric mean length-at-age, \code{"LW"} = length-weight relationship,
+#'      \code{"WAA"} = non-parametric mean weight-at-age, \code{"none"} = fit ecov process model(s) but without 
+#'      an effect on the population. May also be a list (element for each ecov) of character vectors ("none",
+#'      "recruit", "M", "growth", "LAA", "LW", "WAA" and/or "q") so each ecov can multiple effects.}
+#'     \item{$where_subindex}{Parameter to link Ecov. E.g. 2 will affect asymptotic length of parametric \code{"growth"} equation.}
 #'     \item{$indices}{indices that each ecov affects. Must be a list (length = n_Ecov), where each element is a vector of indices (1:n_indices). Must be provided when any of \code{where} = "q"}
 #'     \item{$link_model}{vector of (orthogonal polynomial order) models for effects of each ecov on the \code{$where} process. Options: "none", "linear" (default) or "poly-x"
 #'     where x = 2, ... (e.g. "poly-2" specifies a quadratic model, \eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}). Or a list (length = n_Ecov) of character vectors (same options) for modeling
@@ -82,7 +86,7 @@
 #' \code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
 #' If \code{NULL}, selectivity options from the ASAP data file are used. \code{selectivity} is a list with the following entries:
 #'   \describe{
-#'     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
+#'     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", "decreasing-logistic", "double-normal", "len-logistic", "len-decreasing-logistic" or "len-double-normal".}
 #'     \item{$re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
 #'                  If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
 #'                  Each entry of \code{selectivity$re} must be one of the following options, where the selectivity parameters are:
@@ -132,18 +136,17 @@
 #'     \item{$logb_prior}{(Only if \code{$model = "weight-at-age"}) TRUE or FALSE (default), should a N(0.305, 0.08) prior be
 #'                        used on log_b? Based on Fig. 1 and Table 1 (marine fish) in \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}.}
 #'   }
-#' 
-#' \code{growth} specifies estimation options for somatic growth.
+#'   
+#' \code{growth} specifies estimation options for somatic growth (parametric approach).
 #' If \code{NULL}, the growth parameters are set by default. \code{growth} is a list with the following entries:
 #'   \describe{
 #'     \item{$model}{Growth model options are:
 #'                    \describe{
-#'                      \item{"vB_classic"}{(default) estimate five parameters: growth rate (K), asymptotic length (Linf), length-at-age 1 (L1), 
-#' 											coefficient of variation of length-at-age 1 (CV1), and coefficient of variation of length-at- the maximum age (CVA).}
-#'                      \item{"stock_LAA"}{input mean length-at-age per year for the stock (not available yet, in development).}
+#'                      \item{"vB_classic"}{(default) estimate parameters: growth rate, asymptotic length, mean length at reference age.}
+#'                      \item{"Richards"}{estimate parameters: growth rate, asymptotic length, mean length at reference age, and shape parameter.}
 #'                    }
 #'                  }
-#'     \item{$re}{Year- and cohort-varying (random effects) on growth parameters.
+#'     \item{$re}{Year- or cohort-varying (random effects) on growth parameters.
 #'                 \describe{
 #'                   \item{"none"}{(default) Growth parameter constant over years and cohorts.}
 #'                   \item{"iid_y"}{Growth parameter varies by year, but uncorrelated.}
@@ -152,16 +155,36 @@
 #'                   \item{"ar1_c"}{Growth parameter correlated by cohort (AR1).}
 #'                 }
 #'               }
-#'     \item{$init_vals}{Initial growth parameter values, with length = number of parameters. If \code{NULL}, initial values are assumed
-#'                       to be K = 0.2, Linf = 100, L1 = 5, CV1 = 0.1, CVA = 0.1.}
-#'     \item{$est_pars}{Vector of parameters to be estimated (others will be fixed at initial values). E.g. \code{growth$est_ages = 1:2} will 
-#' 						estimate K and Linf, and fix L1, CV1, and CVA. If \code{NULL}, growth parameters are fixed at \code{growth$init_vals}.}
+#'     \item{$init_vals}{Initial growth parameter values, with length = number of parameters. If \code{NULL}, they take default values.}
+#'     \item{$est_pars}{Parameters to be estimated (others will be fixed at initial values). E.g. \code{growth$est_ages = 1:2} will 
+#' 						estimate growth rate and asymptotic length. If \code{NULL}, growth parameters are fixed at \code{growth$init_vals}.}
+#' 		 \item{$SD_vals}{Initial values of two parameters: standard deviation of lengths at reference age and plus group.}
+#' 		 \item{$SD_est}{Vector of SD parameters to be estimated. E.g. \code{growth$SD_vals = 1} will estimate the standard
+#' 		  deviation of lengths at reference age.}
 #'   }
-#' 
-#' \code{LW} specifies estimation options for potential length-weight relationship.
-#' If \code{NULL}, the LW parameters are set by default but not used if \code{waa} is provided. \code{LW} is a list with the following entries:
+#'   
+#' \code{LAA} non-parametric approach to model mean length-at-age.
+#' If \code{NULL}, \code{growth} will be the primary option. \code{LAA} is a list with the following entries:
 #'   \describe{
-#'     \item{$re}{Year- and cohort-varying (random effects) on LW parameters.
+#'     \item{$re}{Year- and age-varying (random effects) on parameters.
+#'                 \describe{
+#'                   \item{"none"}{(default) Mean length-at-age constant over years.}
+#'                   \item{"iid"}{Mean length independent by year and age.}
+#'                   \item{"2dar1"}{Mean length correlated by year and age (2D AR1).}
+#'                 }
+#'               }
+#'     \item{$LAA_vals}{Initial parameter values, with length = number of ages. If \code{NULL}, they take default values.}
+#'     \item{$est_pars}{Parameters to be estimated (others will be fixed at initial values). E.g. \code{LAA$est_ages = 1:2} will 
+#' 						estimate mean length at age 1 and 2. If \code{NULL}, parameters are fixed at \code{LAA$LAA_vals}.}
+#' 		 \item{$SD_vals}{Initial values of two parameters: standard deviation of lengths at reference age and plus group.}
+#' 		 \item{$SD_est}{Vector of SD parameters to be estimated. E.g. \code{LAA$SD_vals = 1} will estimate the standard deviation of 
+#' 		        lengths at reference age.}
+#'   }
+#'   
+#' \code{LW} specifies estimation options for length-weight relationship.
+#' If \code{NULL}, the LW parameters take default values. \code{LW} is a list with the following entries:
+#'   \describe{
+#'     \item{$re}{Year- or cohort-varying (random effects) on LW parameters.
 #'                 \describe{
 #'                   \item{"none"}{(default) LW parameter constant over years and cohorts.}
 #'                   \item{"iid_y"}{LW parameter varies by year, but uncorrelated.}
@@ -173,9 +196,24 @@
 #'     \item{$init_vals}{Initial LW parameter values, with length = number of parameters (2). If \code{NULL}, initial values are assumed
 #'                       to be a = 5e-06, b = 3.}
 #'     \item{$est_pars}{Vector of parameters to be estimated (others will be fixed at initial values). E.g. \code{$est_ages = 1} will 
-#' 						estimate a. If \code{NULL}, LW parameters are fixed at \code{LW$init_vals}.}
+#' 						estimate omega1. If \code{NULL}, LW parameters are fixed at \code{LW$init_vals}.}
 #'   }
-#'
+#'   
+#' \code{WAA} non-parametric approach to model mean weight-at-age.
+#' If \code{NULL}, \code{LW} will be the primary option. \code{WAA} is a list with the following entries:
+#'   \describe{
+#'     \item{$re}{Year- and age-varying (random effects) on parameters.
+#'                 \describe{
+#'                   \item{"none"}{(default) Mean weight-at-age constant over years.}
+#'                   \item{"iid"}{Mean weight independent by year and age.}
+#'                   \item{"2dar1"}{Mean weight correlated by year and age (2D AR1).}
+#'                 }
+#'               }
+#'     \item{$WAA_vals}{Initial parameter values, with length = number of ages. If \code{NULL}, they take default values.}
+#'     \item{$est_pars}{Parameters to be estimated (others will be fixed at initial values). E.g. \code{WAA$est_ages = 1:2} will 
+#' 						estimate mean weight at age 1 and 2. If \code{NULL}, parameters are fixed at \code{WAA$WAA_vals}.}
+#'   }
+#'   
 #' \code{NAA_re} specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not)
 #' If \code{NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic).
 #' To fit a state-space model, specify \code{NAA_re}, a list with the following entries:
@@ -198,6 +236,7 @@
 #'                  }
 #'                }
 #'   }
+#'   
 #' \code{NAA_re} also can be used to configure initial numbers at age and recruitment models. The optional associated components of \code{NAA_re} are:
 #'   \describe{
 #'		 \item{$N1_model}{Integer determining which way to model the initial numbers at age:
@@ -244,7 +283,7 @@
 #'       sigma as standard error.}
 #'   }
 #'
-#' \code{age_comp} specifies the age composition models for fleet(s) and indices.
+#' \code{age_comp} specifies the age composition and CAAL models for fleet(s) and indices.
 #' If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 #' The age composition models available are:
 #'   \describe{
@@ -272,6 +311,7 @@
 #' The length composition models available are:
 #'   \describe{
 #'     \item{\code{"multinomial"}}{Multinomial. This is the default. 0 parameters.}
+#'     \item{\code{"dir-mult"}}{Dirichlet-multinomial. 1 parameter. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008})}
 #'   }
 #' 
 #' \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
@@ -288,11 +328,11 @@
 #'     \item{$catch_Neff}{matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's age composition observation.}
 #'     \item{$use_catch_paa}{0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's age composition observation.}
 #'     \item{$catch_pal}{array (n_fleets x length(years) x n_lengths) of each fleet's length composition data (numbers).}
-#'     \item{$catch_NeffL}{matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's length composition observation.}
+#'     \item{$catch_NeffL}{matrix (length(years) x n_fleets) of annual input sample sizes for each fleet's length composition observation.}
 #'     \item{$use_catch_pal}{0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's length composition observation.}
-#'     \item{$use_catch_alk}{0/1 array (n_fleets x length(years) x n_lengths) indicated whether to use each fleet's conditional age at length composition.}
-#'     \item{$catch_alk_Neff}{array (length(years) x n_fleets x n_lengths) of annual effective sample sizes for each fleet's conditional age at length composition.}
-#'     \item{$catch_alk}{array (n_fleets x length(years) x n_lengths x n_ages) for each fleet's conditional age at length composition.}
+#'     \item{$use_catch_caal}{0/1 array (length(years) x n_fleets x n_lengths) indicated whether to use each fleet's conditional age at length composition.}
+#'     \item{$catch_caal_Neff}{array (length(years) x n_fleets x n_lengths) of annual input sample sizes for each fleet's conditional age at length composition.}
+#'     \item{$catch_caal}{array (n_fleets x length(years) x n_lengths x n_ages) for each fleet's conditional age at length composition.}
 #'     \item{$selblock_pointer_fleets}{integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to \code{selectivity} option.}
 #'     \item{$F}{matrix (length(years) x n_fleets) of annual fishing mortality rates for each fleet to initialize the model.}
 #'     \item{$n_indices}{number of indices.}
@@ -304,15 +344,24 @@
 #'     \item{$units_index_paa}{1/2 matrix (length = n_indices) indicated whether to use each index's age composition observation are in numbers or biomass.}
 #'     \item{$use_index_paa}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's age composition observation.}
 #'     \item{$index_pal}{array (n_indices x length(years) x n_lengths) of each index's length composition data (number).}
-#'     \item{$index_NeffL}{matrix (length(years) x n_indices) of annual effective sample sizes for each index's length composition observation.}
+#'     \item{$index_NeffL}{matrix (length(years) x n_indices) of annual input sample sizes for each index's length composition observation.}
 #'     \item{$units_index_pal}{1/2 matrix (length = n_indices) indicated whether to use each index's length composition observation are in numbers or biomass. Should always be 2.}
 #'     \item{$use_index_pal}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's length composition observation.}
-#'     \item{$use_index_caal}{0/1 array (n_indices x length(years) x n_lengths) indicated whether to use each index's conditional age at length composition.}
-#'     \item{$index_alk_Neff}{array (length(years) x n_indices x n_lengths) of annual effective sample sizes for each index's conditional age at length composition.}
-#'     \item{$index_alk}{array (n_indices x length(years) x n_lengths x n_ages) for each index's conditional age at length composition.}
+#'     \item{$use_index_caal}{0/1 array (length(years) x n_indices x n_lengths) indicated whether to use each index's conditional age at length composition.}
+#'     \item{$index_caal_Neff}{array (length(years) x n_indices x n_lengths) of annual input sample sizes for each index's conditional age at length composition.}
+#'     \item{$index_caal}{array (n_indices x length(years) x n_lengths x n_ages) for each index's conditional age at length composition.}
+#'     \item{$catch_aging_error}{Aging error matrix for fisheries. Array (n_fleets x n_ages x n_ages).}
+#'     \item{$use_catch_aging_error}{0/1 vector (length = n_fleets).}
+#'     \item{$index_aging_error}{Aging error matrix for indices. Array (n_indices x n_ages x n_ages).}
+#'     \item{$use_index_aging_error}{0/1 vector (length = n_indices).}
+#'     \item{$age_L1}{Reference age (default = 1).}
 #'     \item{$selblock_pointer_indices}{integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to \code{selectivity} option.}
 #'     \item{$fracyr_indices}{matrix (length(years) x n_indices) of annual proportions of the year elapsed when each index is observing the population.}
-#'     \item{$waa}{array ((n_fleets + n_indices + 2) x length(years) x length(ages)) of annual weight at at age for each fleet, each index, total catch, and spawning biomass. If not provided, the model will use the \code{LW} parameters.}
+#'     \item{$waa}{array ((n_fleets + n_indices + 2) x length(years) x length(ages)) of annual (empirical or observed) weight at at age for each fleet, each index, total catch, and spawning biomass. If not provided, the model will use the \code{LW} or \code{WAA} parameters.}
+#'     \item{$waa_cv}{array with dimensions = dim(waa). Coefficient of variation of observed mean weight-at-age.}
+#'     \item{$use_catch_waa}{matrix length(years) x n_fleets. 0/1 use or not use observed weight-at-age for fleets.}
+#'     \item{$use_index_waa}{matrix length(years) x n_indices. 0/1 use or not use observed weight-at-age for indices.}
+#'     \item{$weight_model}{Whether use empirical weight-at-age ($weight_model = 1), length-weight relationship ($weight_model = 2), or non-parametric approach ($weight_model = 3).}
 #'     \item{$maturity}{matrix (length(years) x length(ages)) of annual maturity at age for estimating spawning biomass.}
 #'     \item{$fracyr_SSB}{vector (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.}
 #'     \item{$Fbar_ages}{integer vector of ages to use to average total F at age defining fully selected F for reference points. May not be clearly known until a model is fitted.}
@@ -337,8 +386,10 @@
 #' @param ecov (optional) named list of environmental covariate data and parameters (see details)
 #' @param selectivity (optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
-#' @param growth (optional) list specifying growth options: model, random effects, initial values, and parameters to fix (see details)
+#' @param growth (optional) list specifying parametric growth options: model, random effects, initial values, and parameters to fix (see details)
+#' @param LAA (optional) list specifying nonparametric mean length-at-age options: model, random effects, initial values, and parameters to fix (see details)
 #' @param LW (optional) list specifying length-weight relationship options: random effects, initial values, and parameters to fix (see details)
+#' @param WAA (optional) list specifying nonparametric mean weight-at-age options: model, random effects, initial values, and parameters to fix (see details)
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)
 #' @param catchability (optional) list specifying options for priors and random effects on catchability (see details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see details)
@@ -375,7 +426,7 @@
 #'
 #' @export
 prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, 
-	growth=NULL, LW = NULL, M=NULL, NAA_re=NULL, LAA = NULL, WAA = NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
+	growth=NULL, LAA = NULL, LW = NULL, WAA = NULL, M=NULL, NAA_re=NULL, catchability=NULL, age_comp=NULL, len_comp = NULL, basic_info = NULL){
 
 	data = list()
 	par = list()
