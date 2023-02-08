@@ -28,6 +28,7 @@ set_indices = function(input, index_info=NULL) {
 	if(is.null(asap3)) {
 	  data$n_indices = 1
 	} else {
+		input$index_names <- character()
     for(i in 1:length(asap3)) {
 			which_indices <- which(asap3[[i]]$use_index ==1)
 			asap3[[i]]$n_indices = length(which_indices)
@@ -39,7 +40,7 @@ set_indices = function(input, index_info=NULL) {
 			asap3[[i]]$index_WAA_pointers = asap3[[i]]$index_WAA_pointers[which_indices]
 			asap3[[i]]$IAA_mats <- asap3[[i]]$IAA_mats[which_indices]
 			asap3[[i]]$use_survey <- asap3[[i]]$use_index[which_indices]
-
+			if("index.names" %in% names(asap3[[i]])) input$index_names <- c(input$index_names, asap3[[i]]$index.names[which_indices])
     }
     n_indices_per_region = sapply(asap3, function(x) x$n_indices)
     data$n_indices = sum(n_indices_per_region)
@@ -96,6 +97,7 @@ set_indices = function(input, index_info=NULL) {
 		data$index_paa[] = 1/data$n_ages
 		data$index_Neff[] = 100
 		data$selblock_pointer_indices[] = rep(1:data$n_indices, each = data$n_years_model) + max(data$selblock_pointer_fleets)
+    input$index_names <- paste0("Index ", 1:data$n_indices)
 	}
 
 	if(!is.null(index_info$use_indices)) data$use_indices[] = index_opts$use_indices

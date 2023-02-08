@@ -24,9 +24,11 @@ set_catch = function(input, catch_info= NULL) {
   if(is.null(asap3)){
     data$n_fleets = 1
   } else {
+    input$fleet_names <- character()
     for(i in 1:length(asap3)) asap3[[i]]$use_catch_acomp <- rep(1,asap3[[i]]$n_fleets) #default is to use age comp for catch
     n_fleets_per_region = sapply(asap3, function(x) x$n_fleets)
     data$n_fleets = sum(n_fleets_per_region)
+		if("fleet.names" %in% names(asap3[[i]])) input$fleet_names <- c(input$fleet_names, asap3[[i]]$fleet.names)
   }
   if(!is.null(catch_info$n_fleets)) data$n_fleets = catch_info$n_fleets 
 
@@ -85,6 +87,7 @@ set_catch = function(input, catch_info= NULL) {
       if(data$catch_Neff[y,i] < 1e-15 | sum(data$catch_paa[i,y,] > 1e-15)<2 | any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0
     }
     data$selblock_pointer_fleets[] = rep(1:data$n_fleets, each = data$n_years_model)
+    input$fleet_names <- paste0("Fleet ", 1:data$n_fleets)
   }
 
   if(!is.null(catch_info$fleet_regions)) data$fleet_regions[] = catch_info$fleet_regions

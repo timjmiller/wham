@@ -176,7 +176,16 @@ read_asap3_dat <- function(filename){
     dat$testval <- scan(filename, quiet=T, what = integer(), skip = dat.start[ind <- ind + 1], n = 1)
     # print(dat$testval)
     # print(ind)
-    return(list(dat = dat, comments = comments))
+    fleet.names <- index.names <- NULL
+    data.labels <- grep("#$",char.lines, fixed = T, value =T)
+    if(length(data.labels) == dat$n_fleets+ dat$n_indices){
+      data.labels <- sapply(strsplit(data.labels, "#$", fixed = T), paste, collapse = '')
+      fleet.names <- data.labels[1:dat$n_fleets]
+      index.names <- data.labels[dat$n_fleets + 1:dat$n_indices]
+    }
+    
+
+    return(list(dat = dat, comments = comments, fleet.names = fleet.names, index.names = index.names))
   }
   return(lapply(filename, single_stock_fun))
 }

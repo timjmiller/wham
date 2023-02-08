@@ -265,7 +265,7 @@ set_move = function(input, move)
       for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,,r,rr])>0) {
           if(sum(data$use_mu_prior)>0) { #mean mu is a random effect with defined prior
-            use_mu_prior[0,0,r,k] <- 1 #only evaluate the likelihood once
+            use_mu_prior[1,1,r,k] <- 1 #only evaluate the likelihood once
             map$mu_prior_re[,,r,k] <- i #all values the same
           } else {
             map$trans_mu[,,r,k] <- i #all values the same
@@ -284,7 +284,7 @@ set_move = function(input, move)
         if(sum(data$can_move[s,,r,rr])>0) {
           #mean mu is a random effect with defined prior
           if(sum(data$use_mu_prior[s,,r,k])>0) {
-            use_mu_prior[s,0,r,k] <- 1 #only evaluate the likelihood once
+            use_mu_prior[s,1,r,k] <- 1 #only evaluate the likelihood once
             map$mu_prior_re[s,,r,k] <- i #all values the same
           } else {
             map$trans_mu[s,,r,k] <- i #all values the same
@@ -302,7 +302,7 @@ set_move = function(input, move)
       for(rr in 1:data$n_regions) if(rr!= r) {
         if(sum(data$can_move[,t,r,rr])>0) {
           if(sum(data$use_mu_prior[,t,r,k])>0) { #mean mu is a random effect with defined prior
-            use_mu_prior[0,t,r,k] <- 1 #only evaluate the likelihood once
+            use_mu_prior[1,t,r,k] <- 1 #only evaluate the likelihood once
             map$mu_prior_re[,t,r,k] <- i #all values the same
           } else {
             map$trans_mu[,t,r,k] <- i #all values the same
@@ -354,14 +354,15 @@ set_move = function(input, move)
     for(s in 1:data$n_stocks) {
       if(data$mig_type[s]) { #simultaneous
         for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
-          ind <- which(data$can_move[s,t,r,-r])
-          par$trans_mu[s,,t,r,ind]<- log(move$mean_vals[s,t,r,ind])
+          #ind <- which(data$can_move[s,t,r,-r]==1) #not necessary because trans_mu only used if can_move == 1
+          par$trans_mu[s,,t,r,]<- log(move$mean_vals[s,t,r,])
         }
       } else { #separable
         for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
-          ind <- which(can_move[stock,t,r,-r])
-          p <- parray[s,t,r,ind] #n_r - 1 long!
-          par$trans_mu[s,t,r,ind] <- log(p) - log(1-sum(p)) #additive
+          #print(data$can_move[s,t,r,-r])
+          #ind <- which(data$can_move[s,t,r,-r]==1) #not necessary because trans_mu only used if can_move == 1
+          p <- move$mean_vals[s,t,r,] #n_r - 1 long!
+          par$trans_mu[s,t,r,] <- log(p) - log(1-sum(p)) #additive
         }
       }
     }

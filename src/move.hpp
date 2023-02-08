@@ -28,8 +28,8 @@ array<Type> get_nll_mu_prior(array<Type> mu_prior_re, array<Type> trans_mu, arra
   */
   int n_stocks = trans_mu.dim(0);
   //int n_ages = trans_mu.dim(1);
-  int n_seasons = trans_mu.dim(2);
-  int n_regions = trans_mu.dim(3);
+  int n_seasons = trans_mu.dim(1);
+  int n_regions = trans_mu.dim(2);
   array<Type> nll(n_stocks,n_seasons, n_regions, n_regions-1);
   nll.setZero();
   if((mu_model > 0) & (mu_model <= 4)){ //constant
@@ -68,8 +68,8 @@ array<Type> simulate_mu_prior_re(array<Type> mu_prior_re, array<Type> trans_mu, 
   */
   int n_stocks = trans_mu.dim(0);
   //int n_ages = trans_mu.dim(1);
-  int n_seasons = trans_mu.dim(2);
-  int n_regions = trans_mu.dim(3);
+  int n_seasons = trans_mu.dim(1);
+  int n_regions = trans_mu.dim(2);
   array<Type> sim_mu_prior_re(n_stocks, n_seasons, n_regions, n_regions-1);
   sim_mu_prior_re.setZero();
   if((mu_model > 0) & (mu_model <= 4)) {//constant

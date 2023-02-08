@@ -372,8 +372,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 		asap3 = lapply(asap3, function(x) return(x$dat))
 
-		cat(paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
+		if(length(asap3)> 1) cat(paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
 				unless the movement argument is provided.\n"))
+		if(length(asap3) == 1) cat(paste0(length(asap3), " asap3 dat file was processed. A single stock and region will be assumed. \n"))
 #print(2)
   	n_ages = sapply(asap3, function(x) x$n_ages)
   	if(length(unique(n_ages))!= 1) stop("differing numbers of age classes in the asap3 dat files. Make them equal before passing to wham.")
@@ -522,7 +523,7 @@ add_basic_info = function(input, basic_info){
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 
 	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
-		warning("WHAM version 2.0.0 forward by default does not bias correct any log-normal process or observation errors. To 
+		warning("WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
 		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.")
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
@@ -569,7 +570,7 @@ add_basic_info = function(input, basic_info){
 
   input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
   	#rep(1,input$data$n_years_model))
-  input$data$which_F_age_static = c(input$data$n_ages,1) #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
+  input$data$which_F_age_static = input$data$n_ages #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
 
   #if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
 

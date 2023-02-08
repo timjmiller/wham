@@ -47,9 +47,9 @@ set_osa_obs = function(input)
             bad_year = which(data$selblock_pointer_indices[,j] == i & data$use_index_paa[,j] == 1)
             if(length(bad_year)){
               cat(paste0(
-                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ","), 
-                " fixed at 0 and is used by index", j, "\n",
-                " in years ", paste0(input$years[bad_year], collapse = ","), ".\n", 
+                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ", "), 
+                " fixed at 0 and is used by index ", j, "\n",
+                " in years ", paste0(input$years[bad_year], collapse = ", "), ".\n", 
                 "Observations at these ages will be omitted and remaining observations will be rescaled.\n\n"))
             }
           }
@@ -57,9 +57,9 @@ set_osa_obs = function(input)
             bad_year = which(data$selblock_pointer_fleets[,j] == i & data$use_catch_paa[,j] == 1)
             if(length(bad_year)){
               cat(paste0(
-                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ","), 
-                " fixed at 0 and is used by fleet", j, "\n",
-                " in years ", paste0(input$years[bad_year], collapse = ","), ".\n", 
+                "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ", "), 
+                " fixed at 0 and is used by fleet ", j, "\n",
+                " in years ", paste0(input$years[bad_year], collapse = ", "), ".\n", 
                 "Observations at these ages will be omitted and remaining observations will be rescaled.\n\n"))
             }
           }
