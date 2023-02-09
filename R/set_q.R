@@ -31,7 +31,8 @@
 #'                Use the same integer for multiple indices to share the same correlation parameter. Not used if \code{re = 'none'} or \code{re = 'iid'} for all indices.}
 #'   }
 #'
-
+#'
+#' @export
 set_q = function(input, catchability = NULL){
 	
   q_opts = catchability
@@ -41,7 +42,7 @@ set_q = function(input, catchability = NULL){
 
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("q_prior_re", "q_re", "q_repars"))]
- 
+	input$log$q <- list()
 	asap3 = input$asap3
 	#if(is.null(input$asap3)) asap3 = NULL
   #else asap3 = input$asap3
@@ -90,7 +91,7 @@ set_q = function(input, catchability = NULL){
 		if(!is.null(q_opts$cor_val)){
 			if(length(q_opts$cor_val) != data$n_indices) stop("the length of catchability$cor_val provided is not equal to the number of indices")
 			if(abs(q_opts$cor_val[ind])>1) stop("it must be that -1 < catchability$cor_val < 1 ")
-			if(any(iids & abs(q_opts$cor_val)>1e-10)) cat("certain indices have re='iid' and cor_val not = 0. Those will values will be ignored. \n")
+			if(any(iids & abs(q_opts$cor_val)>1e-10)) input$log$q <- c(input$log$q, "certain indices have re='iid' and cor_val not = 0. Those will values will be ignored. \n")
 			par$q_repars[ind,2] = wham:::gen.logit(q_opts$cor_val[ind], -1, 1, 2) #need 2 for unusual logit transform on the c++ side.
 			par$q_repars[which(iids),2] = 0 #iids must be set to 0.
 
@@ -132,6 +133,7 @@ set_q = function(input, catchability = NULL){
   input$data = data
   input$par = par
   input$map = map
+	if(length(input$log$q))	input$log$q <- c("Catchability: \n", input$log$q)
 
   #set any parameters as random effects
   input$random = NULL

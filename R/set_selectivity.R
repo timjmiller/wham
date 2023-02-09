@@ -57,6 +57,8 @@
 #'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
 #'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
 #'   }
+#'
+#' @export
 set_selectivity = function(input, selectivity)
 {
   data = input$data
@@ -70,11 +72,11 @@ set_selectivity = function(input, selectivity)
     data$n_ages + 1:2
   )
   asap3 = input$asap3
-
+  input$log$selectivity <- list()
   if(is.null(asap3)) {
     if(is.null(selectivity$n_selblocks)) {
       data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
-      print(paste0("number of selblocks, ", data$n_selblocks, 
+      input$log$selectivity <- c(input$log$selectivity, paste0("number of selblocks, ", data$n_selblocks, 
         ", is being determined by input$data$selblock_pointer_fleets and input$data$selblock_pointer_indices. Those should be 1,...,max(pointers)."))
       data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
       #data$n_selblocks = data$n_fleets + data$n_indices  #1 for fleet, 1 for index
@@ -182,7 +184,7 @@ set_selectivity = function(input, selectivity)
       }
       if(!is.null(sel_mod_diff_warn)){
         sel_mod_diff_warn <- paste("Selectivity models differ from ASAP .dat file but initial","parameter values not specified. Please check initial values","and specify with selectivity$initial_pars if desired.",sel_mod_diff_warn,sep="\n")
-        cat(sel_mod_diff_warn, sep="\n")
+        input$log$selectivity <- c(input$log$selectivity, sel_mod_diff_warn, sep="\n")
       }
     }
   } else {
@@ -281,7 +283,7 @@ set_selectivity = function(input, selectivity)
       }
       # warning message if no mean sel pars (logit_selpars) are fixed
       # allow so user can fit model without fixing and then fix the age with highest sel at 1
-      if(all(!is.na(bl))  & data$selblock_models[b] == 1) warning(paste0("'ar1' (AR1(age)) with age-specfici selectivity for block ",b,
+      if(all(!is.na(bl))  & data$selblock_models[b] == 1) input$log$selectivity <- c(input$log$selectivity, paste0("NOTE: 'ar1' (AR1(age)) with age-specfici selectivity for block ",b,
         " but no age fixed at 1. Advised to fit the current model and then fix the age with highest selectivity at 1. 
         Can use selectivity$fix_pars."))
       # could add warning message if most ages are fixed, leaving less than xx ages to estimate with the AR1 re
@@ -404,6 +406,7 @@ set_selectivity = function(input, selectivity)
   input$data = data
   input$par = par
   input$map = map
+	if(length(input$log$selectivity))	input$log$selectivity <- c("Selectivity: \n", input$log$selectivity)
   
   #set any parameters as random effects
   input$random = NULL

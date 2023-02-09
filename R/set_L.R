@@ -19,7 +19,8 @@
 #'     \item{$sigma_vals}{Initial standard deviation by region value to use for the L random effects. Values are not used if \code{L$model} = "none".
 #'     \item{$cor_vals}{Initial correlation values to use for the L random effects. If unspecified all initial values are 0}
 #'   }
-
+#'
+#' @export
 set_L = function(input, L)
 {
   data = input$data

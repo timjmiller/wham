@@ -322,18 +322,19 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	par = list()
 	map = list()
 	random = character()
+	log <- list()
 	input = list(
 	  	data = data,
 	  	par = par,
 	  	map = map,
 	  	random = random,
-	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3)
+	  	years = NULL, years_full = NULL, ages.lab = NULL, model_name = model_name, asap3 = asap3, log = log)
 
 
-	input = list()
-	input$data = list()
-	input$par = list()
-	input$map = list()
+	# input = list()
+	# input$data = list()
+	# input$par = list()
+	# input$map = list()
 
 	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
 	else basic_info$recruit_model = recruit_model
@@ -364,17 +365,19 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#F_names = c("F")
 	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 	#print("1")
-
+	input$log$misc <- list() 
 
 	if(!is.null(asap3)) {
+		input$log$asap3 <- list()
 		asap3_test = sapply(asap3, function(x) "dat" %in% names(x))
 		if(!all(asap3_test)) stop("object passed to asap3 argument does not have the correct structure.\n")
 
 		asap3 = lapply(asap3, function(x) return(x$dat))
 
-		if(length(asap3)> 1) cat(paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
+		if(length(asap3)> 1) input$log$asap3 <- c(input$log$asap3, paste0(length(asap3), " asap3 dat files were processed. One stock per region without mixing will be assumed \n
 				unless the movement argument is provided.\n"))
-		if(length(asap3) == 1) cat(paste0(length(asap3), " asap3 dat file was processed. A single stock and region will be assumed. \n"))
+
+		if(length(asap3) == 1) input$log$asap3 <- c(input$log$asap3, paste0(length(asap3), " asap3 dat file was processed. A single stock and region will be assumed. \n"))
 #print(2)
   	n_ages = sapply(asap3, function(x) x$n_ages)
   	if(length(unique(n_ages))!= 1) stop("differing numbers of age classes in the asap3 dat files. Make them equal before passing to wham.")
@@ -393,14 +396,17 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 		input$data$spawn_seasons <- rep(1, length(asap3))
 		input$data$spawn_regions <- 1:length(asap3)
-		input$data$NAA_where <- array(1, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
+		input$data$NAA_where <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_ages))
 		for(s in 1:input$data$n_stocks){
-			input$data$NAA_where[s,-input$data$spawn_regions[s],1] <- 0 #recruit only to spawn region on Jan 1
+			input$data$NAA_where[s,input$data$spawn_regions[s],] <- 1 #recruit only to spawn region on Jan 1
+		}
+		if(input$data$n_regions > 1 & is.null(basic_info$NAA_where)){
+			input$log$misc <- c(input$log$misc, "\n There is more than 1 region and basic_info$NAA_where is not specified so assuming each stock only exists in spawning region in first year.\n")
+			#input$data$NAA_where[s,-input$data$spawn_regions[s],] <- 1 #recruit only to spawn region on Jan 1
 		}
 		if(!is.null(basic_info$NAA_where)){
 			input$data$NAA_where[] = basic_info$NAA_where
 		}
-
   	input$data$fracyr_SSB <- matrix(NA, input$data$n_years_model, input$data$n_stocks)
 		for(i in 1:length(asap3)){
 			if(input$data$n_seasons == 1){
@@ -496,6 +502,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#set any parameters as random effects
 	input = set_random(input)
 	#print("random")
+	cat(unlist(input$log, recursive=T))
 
 	return(input)
 }
@@ -521,9 +528,8 @@ add_basic_info = function(input, basic_info){
   #input$data$n_years_indices = length(input$years)
 	input$data$recruit_model = rep(2,input$data$n_stocks)
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
-
 	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
-		warning("WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
+		input$log$misc <- c(input$log$misc, "NOTE: WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
 		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.")
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?

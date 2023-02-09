@@ -21,7 +21,8 @@
 #'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
 #'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
 #'   }
-
+#'
+#' @export
 set_indices = function(input, index_info=NULL) {
 	data = input$data
   asap3 = input$asap3

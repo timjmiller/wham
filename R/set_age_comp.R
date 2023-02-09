@@ -13,6 +13,7 @@ set_age_comp = function(input, age_comp)
                    "logistic-normal-01-infl",
                    "logistic-normal-01-infl-2par",
                    "mvtweedie" )
+  input$log$age_comp <- list()
   n_pars <- c(0,1,1,1,1,2,1,3,2,2)
   if(is.null(age_comp)){
     data$age_comp_model_fleets = rep(1, data$n_fleets) # multinomial by default
@@ -21,7 +22,7 @@ set_age_comp = function(input, age_comp)
     if(is.character(age_comp) & length(age_comp)==1){ # all use the same model
       name_change = age_comp == "dirichlet"
       if(any(name_change)){
-        cat("'dirichlet' is no longer an option and the old option is equivalent to 'dirichlet-pool0' so using that.\n")
+        input$log$age_comp <- c(input$log$age_comp, "'dirichlet' is no longer an option and the old option is equivalent to 'dirichlet-pool0' so using that.\n")
         age_comp[which(name_change)] = "dirichlet-pool0"
       }
       themod <- match(age_comp, all_models)
@@ -32,7 +33,7 @@ set_age_comp = function(input, age_comp)
       if(all(names(age_comp) %in% c("fleets","indices"))){
         name_change = list(fleets = age_comp$fleets == "dirichlet", indices = age_comp$indices == "dirichlet")
         if(any(unlist(name_change))){
-          cat("'dirichlet' is no longer an option and the old option is equivalent to 'dirichlet-pool0' so using that.\n")
+          input$log$age_comp <- c(input$log$age_comp, "'dirichlet' is no longer an option and the old option is equivalent to 'dirichlet-pool0' so using that.\n")
           age_comp$fleets[which(name_change$fleets)] = "dirichlet-pool0"
           age_comp$indices[which(name_change$indices)] = "dirichlet-pool0"
         }
@@ -87,5 +88,6 @@ set_age_comp = function(input, age_comp)
 	input$data = data
 	input$par = par
   input$map = map
+	if(length(input$log$age_comp))	input$log$age_comp <- c("Age composition: \n", input$log$age_comp)
 	return(input)
 }

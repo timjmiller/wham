@@ -11,7 +11,8 @@
 #'     \item{$F_config}{integer 1: (default) configure F parameters (on log scale) as an F in the initial year and then deviations from one year to the next,
 #'        or 2: configure F parameters as (log) annual values.}
 #'  }
-
+#'
+#' @export
 set_F = function(input, F_opts = NULL)
 {
   asap3 = input$asap3

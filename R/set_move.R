@@ -40,13 +40,14 @@
 #'     \item{$cor_vals}{array (n_stocks x n_seasons x n_regions x n_regions - 1x 2) of initial correlation values to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.
 #'        cor_vals[,,,,1] is for correlation with age, and cor_vals[,,,,2] is for correlation with year.}
 #'   }
-
+#'
+#' @export
 set_move = function(input, move)
 {
   data = input$data
   par = input$par
   map = input$map
-
+  input$log$move <- list()
 
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mu_repars", "mu_re"))]
@@ -54,7 +55,7 @@ set_move = function(input, move)
   data$can_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions))
   if(!is.null(move$can_move)) {
     data$can_move[] = move$can_move
-    if(sum(data$can_move) == 0) cat("All of move$can_move = 0, so model assumes no movement for any stocks.\n")
+    if(sum(data$can_move) == 0) input$log$move <- c(input$log$move, "All of move$can_move = 0, so model assumes no movement for any stocks.\n")
   }
 
   data$use_mu_prior = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
@@ -72,7 +73,7 @@ set_move = function(input, move)
   map$mu_repars = array(NA, dim = dim(par$mu_repars))
 
   if(!is.null(move$must_move)) data$must_move[] = move$must_move
-  if(data$n_stocks>1) for(s in 1:data$n_stocks) if(sum(data$can_move[s,,,]) == 0) cat(paste0("Model assumes no movement for stock, ", s, ".\n"))
+  if(data$n_stocks>1) for(s in 1:data$n_stocks) if(sum(data$can_move[s,,,]) == 0) input$log$move <- c(input$log$move, paste0("Model assumes no movement for stock ", s, ".\n"))
 
   if(data$n_regions ==1 | sum(data$can_move)==0){
     map$trans_mu = factor(map$trans_mu)
@@ -98,12 +99,12 @@ set_move = function(input, move)
         else move$mean_model <- "constant"
       }
     }
-    cat(paste0("\n move$mean_model was not specified and set to ", move$mean_model, " based on data$n_regions and move$can_move if provided. \n"))
+    input$log$move <- c(input$log$move, paste0("\n move$mean_model was not specified and set to ", move$mean_model, " based on data$n_regions and move$can_move if provided. \n"))
   }
   if(!is.character(move$mean_model) & length(move$mean_model) == 1) stop(paste0("move$mean_model must be a single one of", paste0(mean_mods, collapse = ","), " when provided."))
   if(!(move$mean_model %in% mean_mods)) stop(paste0("move$mean_model must be one of", paste0(mean_mods, collapse = ","), " when provided."))
   if(move$mean_model == "none") {
-    if(data$n_regions>1) cat("move$mean_model = 'none', so model assumes no movement for any stocks.\n")
+    if(data$n_regions>1) input$log$move <- c(input$log$move, "move$mean_model = 'none', so model assumes no movement for any stocks.\n")
     data$can_move[] <- 0
     map$trans_mu = factor(map$trans_mu)
     map$mu_repars = factor(map$mu_repars)
@@ -115,7 +116,7 @@ set_move = function(input, move)
     return(input)
   } else {
     if(sum(data$can_move)==0){ 
-      cat("move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
+      input$log$move <- c(input$log$move, "move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
       map$trans_mu = factor(map$trans_mu)
       map$mu_repars = factor(map$mu_repars)
       map$mu_prior_re = factor(map$mu_prior_re)
@@ -336,13 +337,13 @@ set_move = function(input, move)
   if(!is.null(move$separable)) data$mig_type[] = as.integer(!move$separable)
   if(data$n_regions>1) {
     if(length(unique(move$separable))==1) {
-      if(move$separable[1] == 0) cat("movement and mortality will be assumed to occur simultaneously within each season.\n")
-      if(move$separable[1] == 1) cat("movement and mortality will be assumed to occur sequentially within each season.\n")
+      if(move$separable[1] == 0) input$log$move <- c(input$log$move, "movement and mortality will be assumed to occur simultaneously within each season.\n")
+      if(move$separable[1] == 1) input$log$move <- c(input$log$move, "movement and mortality will be assumed to occur sequentially within each season.\n")
     }
     else{
       for(s in 1:data$n_stocks){
-        if(data$mig_type[s] == 1) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur simultaneously within each season.\n"))
-        if(data$mig_type[s] == 0) cat(paste0("for stock ", s, ", movement and mortality will be assumed to occur sequentially within each season.\n"))
+        if(data$mig_type[s] == 1) input$log$move <- c(input$log$move, paste0("for stock ", s, ", movement and mortality will be assumed to occur simultaneously within each season.\n"))
+        if(data$mig_type[s] == 0) input$log$move <- c(input$log$move, paste0("for stock ", s, ", movement and mortality will be assumed to occur sequentially within each season.\n"))
       }
     }
   }
@@ -382,7 +383,7 @@ set_move = function(input, move)
   input$data = data
   input$par = par
   input$map = map
-  
+  if(length(input$log$move)) input$log$move <- c("Movement: \n", input$log$move)
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
 	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?

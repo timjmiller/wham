@@ -23,6 +23,8 @@
 #'
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{TMBhelper::check_estimability}
 #'
+#'
+#' @export
 fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
 {
   model$opt <- tryCatch(stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000)), 

@@ -3,7 +3,7 @@ set_osa_obs = function(input)
   data = input$data
   par = input$par
   map = input$map
-
+  input$log$osa_obs <- list()
   obs.colnames <- c("year","fleet","age","type","val")
   obs <- data.frame(matrix(ncol = length(obs.colnames), nrow = 0))
   colnames(obs) <- obs.colnames
@@ -35,7 +35,7 @@ set_osa_obs = function(input)
   ages_omit <- lapply(1:data$n_selblocks, function(x) integer(0))
   if(length(ind)){ #some
     if(is.null(map$logit_selpars)) {
-      warning("input$map$logit_selapars has not been specified. This will only work for simulation.")
+      input$log$osa_obs <- c(input$log$osa_obs, "NOTE: input$map$logit_selapars has not been specified. This will only work for simulation.")
     } else {
       lsp_map <- matrix(as.integer(map$logit_selpars),nrow = data$n_selblocks, ncol = data$n_ages+6)
       for(i in ind){
@@ -46,7 +46,7 @@ set_osa_obs = function(input)
           if(i %in% data$selblock_pointer_indices) for(j in 1:data$n_indices){ #some indices affected
             bad_year = which(data$selblock_pointer_indices[,j] == i & data$use_index_paa[,j] == 1)
             if(length(bad_year)){
-              cat(paste0(
+              input$log$osa_obs <- c(input$log$osa_obs, paste0(
                 "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ", "), 
                 " fixed at 0 and is used by index ", j, "\n",
                 " in years ", paste0(input$years[bad_year], collapse = ", "), ".\n", 
@@ -56,7 +56,7 @@ set_osa_obs = function(input)
           if(i %in% data$selblock_pointer_fleets) for(j in 1:data$n_fleets){ #some fleets affected
             bad_year = which(data$selblock_pointer_fleets[,j] == i & data$use_catch_paa[,j] == 1)
             if(length(bad_year)){
-              cat(paste0(
+              input$log$osa_obs <- c(input$log$osa_obs, paste0(
                 "Selectivity block ", i, " has parameters for ages ", paste0(input$ages.lab[ages_omit[[i]]], collapse = ", "), 
                 " fixed at 0 and is used by fleet ", j, "\n",
                 " in years ", paste0(input$years[bad_year], collapse = ", "), ".\n", 
@@ -122,7 +122,7 @@ set_osa_obs = function(input)
           obs <- rbind(obs, tmp[, obs.colnames])
         } else {
           data$use_index_paa[y,i] <- 0 #set to not use because there are not enough positive values 
-          cat(paste0("Setting data$use_index_paa to 0 for index ", i, " and year ", y, "because not enough positive values. \n"))
+          input$log$osa_obs <- c(input$log$osa_obs, paste0("Setting data$use_index_paa to 0 for index ", i, " and year ", y, "because not enough positive values. \n"))
         }
       }
     }
@@ -133,33 +133,23 @@ set_osa_obs = function(input)
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$catch_paa[i,,]
       x[which(data$use_catch_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
-      #x = as.data.frame(x)
       fleets = paste0("fleet_", 1:data$n_fleets)
       if(data$use_catch_paa[y,i] == 1) {
         obs_y = x[y,]
-        #  print(obs_y)
-        tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
-        #  print(tmp)
+        tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
 
         #multinom, D-M, mvtweedie
         res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
-        #  print(res)
         obs_y = res[[1]]
-        #  print(obs_y)
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
-        #print(ind)
         if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
-        #if(y == 1) stop()
-        #if(data$age_comp_model_fleets[i] %in% 3:7) {
-        #  ind = res[[2]]
-        #} else ind = 1:data$n_ages
 
         if(length(ind)) {
           tmp = data.frame(year = y, fleet = fleets[i], age = (1:data$n_ages)[ind], type = 'catchpaa', val = obs_y[ind])
           obs <- rbind(obs, tmp[, obs.colnames])
         } else {
           data$use_catch_paa[y,i] <- 0 #set to not use because there are not enough positive values
-          cat(paste0("Setting data$use_catch_paa to 0 for fleet ", i, " and year ", y, "because not enough positive values. \n"))
+          input$log$osa_obs <- c(input$log$osa_obs, paste0("Setting data$use_catch_paa to 0 for fleet ", i, " and year ", y, "because not enough positive values. \n"))
         }
       }
     }
@@ -237,7 +227,7 @@ set_osa_obs = function(input)
   data$agesvec <- obs$age #potentially needed for AR1 sigma correlation of logistic-normal paa obs. 
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
   #data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
-
+  if(length(input$log$osa_obs)) input$log$osa_obs <- c("OSA obs: \n", input$log$osa_obs)
   input$data = data
   return(input)
 }

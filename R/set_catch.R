@@ -17,7 +17,8 @@
 #'     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
 #'     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
 #'   }
-
+#'
+#' @export
 set_catch = function(input, catch_info= NULL) {
   data = input$data
   asap3 = input$asap3

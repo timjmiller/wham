@@ -63,7 +63,8 @@
 #'        otherwise they are steepness and R0.
 #'     }
 #'   }
-
+#'
+#' @export
 set_NAA = function(input, NAA_re=NULL)
 {
 
@@ -72,7 +73,7 @@ set_NAA = function(input, NAA_re=NULL)
   map = input$map
   asap3 = input$asap3
   inv_trans_rho <- function(rho, s = 2) (log(rho+1) - log(1-rho))/s # 0.5 because needed transformation on cpp side is unusual.
-  
+  input$log$NAA <- list()
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mean_rec_pars", "log_N1", "log_NAA_sigma", "trans_NAA_rho","logR_proj", "log_NAA"))]
   
@@ -164,7 +165,7 @@ set_NAA = function(input, NAA_re=NULL)
     k = 0
     if(!length(NAA_re$sigma) %in% c(1,data$n_stocks)) stop("NAA_re$sigma length must be 1 or equal to the number of stocks.")
     if(length(NAA_re$sigma == 1) & data$n_stocks>1) {
-      cat("\n Same NAA_re$sigma being used for all stocks.\n")
+      input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$sigma being used for all stocks.\n")
       NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
     }
     for(s in 1:data$n_stocks) if(NAA_re$sigma[[s]][1] == "rec"){
@@ -211,7 +212,7 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
     }
     
     if(length(NAA_re$cor == 1) & data$n_stocks>1) {
-      cat("\n Same NAA_re$cor being used for all stocks.\n")
+      input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$cor being used for all stocks.\n")
       NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
     }
     if(!is.null(NAA_re$cor[[s]])){
@@ -241,7 +242,7 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
   map$log_NAA <- factor(map$log_NAA)
   map$log_NAA_sigma <- factor(map$log_NAA_sigma)
 
-  if(any(data$recruit_model > 2 && data$NAA_re_model == 0)) warning("SCAA model specified, yearly recruitment deviations estimated as fixed effects. Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
+  if(any(data$recruit_model > 2 && data$NAA_re_model == 0)) input$log$NAA <- c(input$log$NAA, "NOTE: SCAA model specified, yearly recruitment deviations estimated as fixed effects. Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
     This message will not appear if you set recruit_model = 2 (random about mean).")
 
   #set up recruitment
@@ -277,6 +278,7 @@ or a vector with length == n.ages specifying which sigma_a to use for each age."
   input$data = data
   input$par = par
   input$map = map
+	if(length(input$log$NAA))	input$log$NAA <- c("NAA: \n", input$log$NAA)
 
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'

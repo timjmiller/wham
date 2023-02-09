@@ -77,13 +77,15 @@
 #'       and whether to set any to be identical. If not supplied a single value for age and/or year will be estimated for any stock and region where 
 #'       $re_model is other than "none", "iid_a", "iid_y".}
 #'   }
-
+#'
+#' @export
 set_M = function(input, M)
 {
   data = input$data
   par = input$par
   map = input$map
   asap3 = input$asap3
+  input$log$M <- list()
 
   # elements of M: model, initial_means, means_map, logb_prior, intial_b, re_model, re_map, sigma_vals, cor_vals
   # data elements are: n_M_re, M_re_index, M_model, M_re_model, use_b_prior, log_b_model
@@ -234,7 +236,7 @@ set_M = function(input, M)
       #only use first value of M from asap files if estimating M for constant or f(WAA)
       for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
         if(length(unique(par$Mpars[s,r,])) > 1) {
-          print("M is estimated and no M$means_map is specified so only 1 mean M parameter),\n
+          input$log$M <- c(input$log$M, "M is estimated and no M$means_map is specified so only 1 mean M parameter),\n
           but for some stock/region, MAA has > 1 unique value.\n
           Initializing M at M$initial_means[1,1,1]. To avoid this warning\n
           without changing ASAP file, specify M$initial_means appropriately.")
@@ -260,7 +262,7 @@ set_M = function(input, M)
   if(M$mean_model == "weight-at-age"){
     if(is.null(M$b_model)){
       M$b_model <- "constant"
-      print("M$b_model was not specified, so M as a function of weight at age will be used for all stocks and regions.")
+      input$log$M <- c(input$log$M, "M$b_model was not specified, so M as a function of weight at age will be used for all stocks and regions.")
     }
     if(length(M$b_model) != 1 | (!M$b_model %in% c("constant", "stock", "regions", "stock_region"))){
       stop("M$b_model must be a single value: 'constant', 'stock', 'region', or 'stock_region'.")
@@ -294,7 +296,7 @@ set_M = function(input, M)
     }
     if(is.null(M$b_prior)){
       M$b_prior = FALSE
-      print("M$b_prior was not specified, so prior for the b parameter of M_a = aW_a^b will not be used.")
+      input$log$M <- c(input$log$M, "M$b_prior was not specified, so prior for the b parameter of M_a = aW_a^b will not be used.")
     }
     if(length(M$b_prior) != 1 | !is.logical(M$b_prior)) stop("M$b_prior must be single value: TRUE or FALSE")
     if(M$b_prior) data$use_b_prior = 1
@@ -393,7 +395,7 @@ set_M = function(input, M)
   input$data = data
   input$par = par
   input$map = map
-  
+  if(length(input$log$M)) input$log$M <- c("Natural Mortality: \n", input$log$M)
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
 	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?

@@ -36,9 +36,9 @@ set_WAA <- function(input, waa_info = NULL) {
 			#print(new_pointer)
 			data$waa_pointer_fleets <- c(data$waa_pointer_fleets,new_pointer[1:x$n_fleets])
 			#print(data$waa_pointer_fleets)
-			data$waa_pointer_totcatch = c(data$waa_pointer_totcatch,new_pointer[1:x$n_fleets+1])
+			data$waa_pointer_totcatch = c(data$waa_pointer_totcatch,new_pointer[x$n_fleets+1])
 			#print(data$waa_pointer_totcatch)
-			data$waa_pointer_ssb = c(data$waa_pointer_ssb,new_pointer[1:x$n_fleets+2])
+			data$waa_pointer_ssb = c(data$waa_pointer_ssb,new_pointer[x$n_fleets+2])
 			data$waa_pointer_indices = c(data$waa_pointer_indices,new_pointer[x$n_fleets+2 + 1:x$n_indices])
 			#print(data$waa_pointer_indices)
 			n_waa <- n_waa + n_waa_total[a]
@@ -52,25 +52,25 @@ set_WAA <- function(input, waa_info = NULL) {
 		data$waa_pointer_ssb = 1
 		data$waa_pointer_indices = rep(1,data$n_indices)
 	}
-
+	input$log$waa <- list()
   if(!is.null(waa_info$waa)){
 		data$waa = waa_info$waa
 		dim_waa = dim(data$waa)
 		if(length(dim_waa) != 3) stop("waa_info$waa must be a 3d array. second index is number of years, third is number of ages.")
 		if(is.null(waa_info$waa_pointer_fleets)){
-			cat("waa_info$waa is provided without waa_info$waa_pointer_fleets so the first waa matrix will be used for all fleets. \n")
+			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_fleets so the first waa matrix will be used for all fleets. \n")
 			data$waa_pointer_fleets = rep(1,data$n_fleets)
 		}
 		if(is.null(waa_info$waa_pointer_indices)){
-			cat("waa_info$waa is provided without waa_info$waa_pointer_totcatch so the first waa matrix will be used. \n")
+			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_totcatch so the first waa matrix will be used. \n")
 			data$waa_pointer_indices = rep(1,data$n_indices)
 		}
 		if(is.null(waa_info$waa_pointer_ssb)){
-			cat("waa_info$waa is provided without waa_info$waa_pointer_ssb so the first waa matrix will be used. \n")
+			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_ssb so the first waa matrix will be used. \n")
 			data$waa_pointer_ssb = rep(1,data$n_stocks)
 		}
 		if(is.null(waa_info$waa_pointer_M)){
-			cat("waa_info$waa is provided without waa_info$waa_pointer_M so the first waa matrix will be used. \n")
+			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_M so the first waa matrix will be used. \n")
 			data$waa_pointer_M = rep(1,data$n_stocks)
 		}
 	}
@@ -121,6 +121,7 @@ set_WAA <- function(input, waa_info = NULL) {
 		}
 		data$waa_pointer_M[] = waa_info$waa_pointer_M
 	}
+	if(length(input$log$waa))	input$log$waa <- c("WAA: \n", input$log$waa)
 
   input$data = data
   return(input)

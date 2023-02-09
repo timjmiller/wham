@@ -31,7 +31,7 @@ initial_input_no_asap_fn <- function(input, basic_info){
 		if(!is.numeric(basic_info$fracyr_seasons)) stop("basic_info$fracyr_seasons has been specified, but it is not numeric.")
 		if(length(basic_info$fracyr_seasons) != input$data$n_seasons) stop("length of basic_info$fracyr_seasons not equal to n_seasons.")
 		input$data$fracyr_seasons = basic_info$fracyr_seasons
-		if(length(basic_info$fracyr_seasons) != 1) cat("basic_info$fracyr_seasons implies more than one season. Ensure that 
+		if(length(basic_info$fracyr_seasons) != 1) input$log$misc <- c(input$log$misc, "basic_info$fracyr_seasons implies more than one season. Ensure that 
 			input$data$fracyr_SSB, input$data$spawn_seasons, input$data$fracyr_indices, input$data$index_seasons, are specified apropriately. \n ")
 	}
 
@@ -77,7 +77,7 @@ initial_input_no_asap_fn <- function(input, basic_info){
 	} 
 	data$spawn_regions = rep(1:n_stocks, data$n_stocks)
   if(is.null(basic_info$spawn_regions)) {
-		cat("input$data$spawn_regions will be defined from input$data$NAA_where for age 1.\n")
+		input$log$misc <- c(input$log$misc, "input$data$spawn_regions will be defined from input$data$NAA_where for age 1.\n")
 		for(s in 1:n_stocks) {
 			sr = which(data$NAA_where[s,,1] == 1)
 			data$spawn_regions[s] = sr
