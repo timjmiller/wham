@@ -1971,6 +1971,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   if((n_NAA_sigma > 0) | (do_proj == 1)) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
+  	out_phi_mat = phi_matrix(waa_pointer_ssb-1);
 	matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB,
 	  NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, pred_waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
@@ -2030,7 +2031,10 @@ Type objective_function<Type>::operator() ()
       pred_catch(y,f) = 0.0;
       for(int a = 0; a < n_ages; a++){
 		for(int l = 0; l < n_lengths; l++) { 
-			pred_CAAL(y,f,l,a) = selAA(selblock_pointer_fleets(usey,f)-1)(usey,a)*selLL(selblock_pointer_fleets(usey,f)-1)(usey,l)*catch_phi_mat(y,l,a)*NAA(y,a)*F(y,f)*(1-exp(-ZAA(y,a)))/ZAA(y,a);
+			// for model years, we can use either age or len selex: F vector goes until n_model_years
+			if(y < n_years_model) pred_CAAL(y,f,l,a) = selAA(selblock_pointer_fleets(usey,f)-1)(usey,a)*selLL(selblock_pointer_fleets(usey,f)-1)(usey,l)*catch_phi_mat(y,l,a)*NAA(y,a)*F(y,f)*(1-exp(-ZAA(y,a)))/ZAA(y,a);
+			// for projection years, we can only use selectivity at age as calculated above. TODO: implement len-selex for projection years.
+			if(y > n_years_model-1) pred_CAAL(y,f,l,a) = catch_phi_mat(y,l,a)*NAA(y,a)*FAA(y,f,a)*(1-exp(-ZAA(y,a)))/ZAA(y,a);
 			lsum(l) += pred_CAAL(y,f,l,a);
 			asum(a) += pred_CAAL(y,f,l,a);
 		}
