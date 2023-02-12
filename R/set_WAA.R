@@ -12,6 +12,10 @@ set_WAA = function(input, waa_opts = NULL, WAA)
 	  data$waa = array(NA, dim = c(length(asap3$WAA_mats), data$n_years_model, data$n_ages))
 	  for(i in 1:length(asap3$WAA_mats)) data$waa[i,,] = asap3$WAA_mats[[i]]
 	  data$waa_pointer_indices = asap3$index_WAA_pointers
+    data$waa_pointer_fleets = WAA_pointers[1:data$n_fleets]
+    data$waa_pointer_totcatch = WAA_pointers[data$n_fleets + 1]
+    data$waa_pointer_ssb = WAA_pointers[data$n_fleets + 2]
+    data$waa_pointer_jan1 = WAA_pointers[data$n_fleets + 3]
 	  data$weight_model = 1 # 1 = waa info present and used
 	  data$waa_cv = array(0, dim = dim(data$waa))
 	  data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets) # for NLL 
@@ -20,11 +24,14 @@ set_WAA = function(input, waa_opts = NULL, WAA)
     	if(is.null(waa_opts[["waa"]])){
 	    	L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
 		    W = rep(exp(-11)*L^3, each = data$n_years_model)
-        n_pointers = data$n_fleets + data$n_indices + 3
-				dim_WAA = c(n_pointers, data$n_years_model, data$n_ages)
+        if(is.null(waa_opts$waa_pointer_totcatch) | is.null(waa_opts$waa_pointer_ssb) | is.null(waa_opts$waa_pointer_jan1) | is.null(waa_opts$waa_pointer_fleets) | is.null(waa_opts$waa_pointer_indices)) {
+          stop("If 'waa' is not available, waa pointers must be provided: 'waa_pointer_totcatch', 'waa_pointer_ssb', 'waa_pointer_jan1', 'waa_pointer_fleets', 'waa_pointer_indices'.")
+        }
+        n_pointers = max(c(waa_opts$waa_pointer_totcatch, waa_opts$waa_pointer_ssb, waa_opts$waa_pointer_jan1, waa_opts$waa_pointer_fleets, waa_opts$waa_pointer_indices)) 
+        dim_WAA = c(n_pointers, data$n_years_model, data$n_ages)
 				data$waa = array(2, dim = dim_WAA) # 2 kg for all ages, this will be replaced in WHAM	
 				data$weight_model = 2 # 2 = waa info not provided. use LW
-				data$waa_cv = array(0, dim = dim(data$waa))		
+				data$waa_cv = array(0, dim = dim_WAA)		
 	  		data$use_catch_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_fleets)
 	  		data$use_index_waa = matrix(0, nrow = data$n_years_model, ncol = data$n_indices)
 		} else {

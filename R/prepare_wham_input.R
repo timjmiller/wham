@@ -477,12 +477,14 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	  asap3 = asap3$dat
   	  input$asap3 = asap3
 	  input$data$n_ages = asap3$n_ages
-	  input$data$lengths = seq(from = 2, to = 30, by = 2)
+	  input$data$lengths = seq(from = 2, to = 82, by = 4)
 	  input$data$n_lengths = length(input$data$lengths)
 	  input$data$fracyr_SSB = rep(asap3$fracyr_spawn, asap3$n_years)
 	  input$data$mature = asap3$maturity
-	  len_mid = (input$data$lengths[2] - input$data$lengths[1])*0.5
-	  input$data$mature_len = t(matrix(1/(1 + exp(-1*((input$data$lengths+len_mid) - max(input$data$lengths)/2))), input$data$n_lengths, length(input$years)))
+	  input$data$age_L1 = 1
+	  input$data$age_L1_ceil = 1L
+	  #len_mid = (input$data$lengths[2] - input$data$lengths[1])*0.5
+	  #input$data$mature_len = t(matrix(1/(1 + exp(-1*((input$data$lengths+len_mid) - max(input$data$lengths)/2))), input$data$n_lengths, length(input$years)))
 	  input$data$Fbar_ages = seq(asap3$Frep_ages[1], asap3$Frep_ages[2])
   	  input$years <- asap3$year1 + 1:asap3$n_years - 1
 	}
@@ -593,7 +595,7 @@ initial_input_fn = function(input, basic_info){
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
   input$data$simulate_state = rep(1,9) #simulate state variables (NAA, M, sel, Ecov, q, growth, LAA, LW, WAA)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
-  input$data$simulate_period = c(1,0) #simulate above items for (model years, projection years)
+  input$data$simulate_period = c(1,1) #simulate above items for (model years, projection years)
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
   input$data$percentFMSY = 100 # percent of F_XSPR to use for calculating catch in projections

@@ -14,7 +14,7 @@ set_growth = function(input, growth)
   data$n_growth_par = n_par_def # 5 parameters to estimate: K, Linf, t0, CV1, CVA, in that order
   data$SD_est = c(0,0)
   growth_re_ini = array(0, dim = c(data$n_years_model, data$n_ages, n_par_def))
-  growth_ini = c(log(0.2), log(100), log(8))
+  growth_ini = c(log(0.2), log(60), log(8))
   SD_ini = c(log(3), log(7)) # CV1 and CVA
 
   # prepare growth options:

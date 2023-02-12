@@ -6,7 +6,7 @@ set_proj = function(input, proj.opts = NULL)
 	  data$do_proj <- 0
 	  data$n_years_proj <- 0
 	  data$n_years_proj_Ecov <- 0
-	  data$avg_years_ind <- 0
+	  data$avg_years_ind <- data$n_years_model - (5:1)
 	  data$proj_F_opt <- 0
 	  data$proj_Fcatch <- 0
 	  data$proj_M_opt <- 0

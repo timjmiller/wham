@@ -4,7 +4,7 @@
 #' Fits the model peeling off \emph{i} years of data (calls \code{\link{fit_tmb}}).
 #'
 #' @param peel Integer, number of years of data to remove before model fitting.
-#' @param model Output from \code{\link{fit_tmb}}.
+#' @param input input with same structure as that provided by \code{\link{prepare_wham_input}}. May want to use input$par = model$parList to start at MLEs.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.
 #' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
@@ -17,11 +17,11 @@
 #' 
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}
 #'
-fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
+fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 {
   out = list()
   if(!retro.silent) print(peel)
-  temp = model
+  temp = input
   n_years = temp$data$n_years_catch = temp$data$n_years_indices = temp$data$n_years_model = temp$data$n_years_model - peel
   temp$data$which_F_age = temp$data$which_F_age[1:n_years]
 
@@ -39,7 +39,7 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
     Ecov_re_na_ind = rbind(Ecov_re_na_ind, matrix(NA, peel.ecov, temp$data$n_Ecov))
     if(sum(!is.na(Ecov_re_na_ind))) Ecov_re_na_ind[!is.na(Ecov_re_na_ind)] = 1:sum(!is.na(Ecov_re_na_ind))
     temp$map$Ecov_re = factor(Ecov_re_na_ind)
-    temp$data$ind_Ecov_out_end = model$dat$ind_Ecov_out_end - peel # reduce by model dim, not ecov dim
+    temp$data$ind_Ecov_out_end = temp$data$ind_Ecov_out_end - peel # reduce by model dim, not ecov dim
     temp$data$Ecov_use_obs[(temp$data$n_years_Ecov+1):(temp$data$n_years_Ecov+peel.ecov), ] <- 0
   }
 
@@ -71,13 +71,13 @@ fit_peel = function(peel, model, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   out = fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
   if(save.input){
     out$input <- temp
-    out$years <- head(model$years, length(model$years) - peel)
-    out$years_full <- head(model$years_full, length(model$years_full) - peel)
+    out$years <- head(input$years, length(input$years) - peel)
+    out$years_full <- head(input$years_full, length(input$years_full) - peel)
     out$input$years <- out$years
     out$input$years_full <- out$years_full
-    out$input$model_name <- paste0(model$model_name, " peel ",peel)
-    out$ages.lab <- model$ages.lab
-    out$model_name <- paste0(model$model_name, " peel ",peel)
+    out$input$model_name <- paste0(input$model_name, " peel ",peel)
+    out$ages.lab <- input$ages.lab
+    out$model_name <- paste0(input$model_name, " peel ",peel)
   }
   return(out)
 }

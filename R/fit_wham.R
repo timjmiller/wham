@@ -124,9 +124,10 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
     # one-step-ahead residuals
     if(do.osa & mod$is_sdrep){
       mod <- make_osa_residuals(mod)
-    } else warning(paste("","** Did not do OSA residual analyses. **",
-      "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",sep='\n'))
-
+    } else if(do.osa) warning(paste("","** Did not do OSA residual analyses. **",
+        "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",
+        sep='\n'))
+    
     # projections, calls prepare_projection + fit_wham(do.proj=F)
     if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)
 
@@ -227,7 +228,7 @@ check_projF = function(mod)
     {
       redo_SPR_years = mod$years_full[y[bad]]
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
-      mod$env$data$F_init_proj[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
+      mod$env$data$F_proj_init[ind[bad]] = mod$env$data$FXSPR_init_proj[y[bad]]
       mod$fn(mle)
       mod$rep = mod$report()
       correct_F = round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
@@ -251,7 +252,7 @@ check_projF = function(mod)
         redo_Catch_years = mod$years_full[y[bad]]
         #print(redo_Catch_years)
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
-        mod$env$data$F_init_proj[ind[bad]] = mod$env$data$F_init_proj[ind[bad]]*0.5
+        mod$env$data$F_proj_init[ind[bad]] = mod$env$data$F_proj_init[ind[bad]]*0.5
         mod$fn(mle)
         mod$rep = mod$report()
         bad = which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))

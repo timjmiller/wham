@@ -16,7 +16,7 @@ set_LAA = function(input, LAA, growth)
   data$LAA_re_model = 1
   data$LAA_est = rep(0, data$n_ages)
   data$SDLAA_est = c(0,0)
-  LAA_ini = log( 100 + (3 - 100)*exp(-0.2*(1:data$n_ages - 1)) )
+  LAA_ini = log( 60 + (8 - 60)*exp(-0.2*(1:data$n_ages - 1)) )
   SD_ini_LAA = c(log(3), log(7)) # CV1 and CVA
 
   if(!is.null(LAA)) {

@@ -1747,7 +1747,8 @@ Type objective_function<Type>::operator() ()
   }
 
   // get SPR0
-  vector<Type> M(n_ages), sel(n_ages), mat(n_ages), waacatch(n_ages), waassb(n_ages), log_SPR0(n_years_model + n_years_proj);
+  vector<Type> M(n_ages), sel(n_ages), mat(n_ages), waassb(n_ages), log_SPR0(n_years_model + n_years_proj);
+  matrix<Type> waacatch(n_fleets,n_ages);
   int na = n_years_model + n_years_proj;
   vector<Type> log_SR_a(na), log_SR_b(na), SR_h(na), SR_R0(na);
   for(int y = 0; y < n_years_model + n_years_proj; y++)
@@ -1885,7 +1886,7 @@ Type objective_function<Type>::operator() ()
     if(do_proj == 1){ // now need FAA by fleet for projections, use total of average FAA by fleet over avg.yrs
       // get selectivity using average over avg.yrs
       if(y > n_years_model-1){
-		waacatch = get_waa_y(pred_waa, y, n_ages, waa_pointer_totcatch);
+		waacatch = get_waacatch_y(pred_waa, y, n_ages, waa_pointer_fleets);
 		waassb = get_waa_y(pred_waa, y, n_ages, waa_pointer_ssb);
         //n_fleets x n_ages: projected full F is sum of (means across years at age) across fleets 
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, 
@@ -1899,7 +1900,7 @@ Type objective_function<Type>::operator() ()
       }
     } // end proj F
 	// Calculate SSB:
-	SSB(y) = get_SSB(NAA,ZAA,pred_waa, mature,y,waa_pointer_ssb,fracyr_SSB);
+	SSB(y) = get_SSB(NAA,ZAA,pred_waa,mature,y,waa_pointer_ssb,fracyr_SSB);
   } // end pop model loop
 
   // --------------------------------------------------------------------------
@@ -1970,7 +1971,6 @@ Type objective_function<Type>::operator() ()
     }
   }
   if((n_NAA_sigma > 0) | (do_proj == 1)) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
-  	out_phi_mat = phi_matrix(waa_pointer_ssb-1);
 	matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB,
 	  NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, pred_waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
@@ -2468,19 +2468,20 @@ Type objective_function<Type>::operator() ()
   // -------------------------------------------------------------------
   // Calculate catch in projection years
   if(do_proj == 1){
-    vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
-    matrix<Type> CAA_proj(n_years_proj, n_ages), catch_fleet_proj(n_years_proj, n_fleets);
-    array<Type> CAA_fleet_proj(n_fleets, n_years_proj, n_ages);
+    //vector<Type> catch_proj(n_years_proj), log_catch_proj(n_years_proj);
+    matrix<Type> catch_proj(n_years_proj, n_fleets), log_catch_proj(n_years_proj, n_fleets);
+    array<Type> CAA_proj(n_fleets, n_years_proj, n_ages);
     catch_proj.setZero();
-	// not by fleet? 
     for(int i = 0; i < n_years_proj; i++){
       int yi = i + n_years_model;
       for(int a = 0; a < n_ages; a++){
-        CAA_proj(i,a) =  NAA(yi,a) * FAA_tot(yi,a) * (1 - exp(-ZAA(yi,a)))/ZAA(yi,a);
-        waacatch(a) = pred_waa(waa_pointer_totcatch-1, yi, a);
-        catch_proj(i) += waacatch(a) * CAA_proj(i,a);
+        waacatch = get_waacatch_y(pred_waa, yi, n_ages, waa_pointer_fleets);
+        for(int f = 0; f < n_fleets; f++) {
+          CAA_proj(f,i,a) =  NAA(yi,a) * FAA(yi,f,a) * (1 - exp(-ZAA(yi,a)))/ZAA(yi,a);
+          catch_proj(i,f) += waacatch(f,a) * CAA_proj(f,i,a);
+        }
+        for(int f = 0; f < n_fleets; f++) log_catch_proj(i,f) = log(catch_proj(i,f) + Type(1.0e-15));
       }
-      log_catch_proj(i) = log(catch_proj(i) + Type(1.0e-15));
     }
     REPORT(catch_proj);
     if(do_post_samp.sum()==0) ADREPORT(log_catch_proj);
@@ -2505,7 +2506,7 @@ Type objective_function<Type>::operator() ()
     vector<Type> predR_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
     predR.fill(predR_toavg.mean());
   }
-  matrix<Type> SPR_res = get_SPR_res(MAA, FAA_tot, which_F_age, pred_waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, predR, fracyr_SSB, log_SPR0, FXSPR_init);
+  matrix<Type> SPR_res = get_SPR_res(MAA, FAA, which_F_age, pred_waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, predR, fracyr_SSB, log_SPR0, FXSPR_init);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);
   vector<Type> log_Y_FXSPR = SPR_res.col(2);
@@ -2526,7 +2527,7 @@ Type objective_function<Type>::operator() ()
   }
 
   //static/avg year results
-  vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA_tot, which_F_age_static, pred_waa, waa_pointer_ssb, waa_pointer_totcatch, mature, percentSPR, NAA, 
+  vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA, which_F_age_static, pred_waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, 
     fracyr_SSB, static_FXSPR_init, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, XSPR_R_avg_yrs);
   Type log_FXSPR_static = SPR_res_static(0);
   Type log_SSB_FXSPR_static = SPR_res_static(1);
@@ -2556,6 +2557,7 @@ Type objective_function<Type>::operator() ()
     vector<Type> log_FMSY(n_years_model + n_years_proj), log_FMSY_i(1);
     matrix<Type> log_FMSY_iter(n_years_model + n_years_proj,n);
     vector<Type> log_YPR_MSY(n_years_model + n_years_proj), log_SPR_MSY(n_years_model + n_years_proj), log_R_MSY(n_years_model + n_years_proj);
+    vector<Type> waacatch_MSY(n_ages);
     Type SR_a, SR_b;
     for(int y = 0; y < n_years_model + n_years_proj; y++)
     {
@@ -2565,14 +2567,14 @@ Type objective_function<Type>::operator() ()
         M(a) = MAA(y,a);
         sel(a) = FAA_tot(y,a)/FAA_tot(y,which_F_age(y)-1); //have to look at FAA_tot to see where max F is.
         waassb(a) = pred_waa(waa_pointer_ssb-1,y,a);
-        waacatch(a) = pred_waa(waa_pointer_totcatch-1, y, a);
+        waacatch_MSY(a) = pred_waa(waa_pointer_totcatch-1, y, a);
         mat(a) = mature(y,a);
       }
       SR_a = exp(log_SR_a(y));
       SR_b = exp(log_SR_b(y));
       if(recruit_model == 3) //Beverton-Holt selected
       {
-        sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),0);
+        sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch_MSY,fracyr_SSB(y),0);
         for (int i=0; i<n-1; i++)
         {
           log_FMSY_i(0) = log_FMSY_iter(y,i);
@@ -2583,7 +2585,7 @@ Type objective_function<Type>::operator() ()
       }
       else //Ricker selected
       {
-        sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch,fracyr_SSB(y),1);
+        sr_yield<Type> sryield(SR_a, SR_b, M, sel, mat, waassb, waacatch_MSY,fracyr_SSB(y),1);
         for (int i=0; i<n-1; i++)
         {
           log_FMSY_i(0) = log_FMSY_iter(y,i);
@@ -2594,7 +2596,7 @@ Type objective_function<Type>::operator() ()
       }
       log_FMSY(y) = log_FMSY_iter(y,n-1);
       log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, sel, mat, waassb, fracyr_SSB(y)));
-      log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, sel, waacatch));
+      log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, sel, waacatch_MSY));
       if(recruit_model == 3) log_R_MSY(y) = log((SR_a - 1/exp(log_SPR_MSY(y))) / SR_b); //bh
       else log_R_MSY(y) = log(log(SR_a) + log_SPR_MSY(y)) - log(SR_b) - log_SPR_MSY(y); //ricker
     }

@@ -97,7 +97,9 @@
 #' }
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, 
+                                              cont.growth.re=NULL, cont.LAA.re=NULL, cont.LW.re=NULL, cont.WAA.re=NULL, 
+                                              avg.rec.yrs=NULL, percentFXSPR=100,
                                               percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL),
                         n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {

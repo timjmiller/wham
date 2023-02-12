@@ -21,7 +21,7 @@ set_indices = function(input, index_opts=NULL)
 		data$n_indices <- asap3$n_indices
 	} 
 	data$agg_indices = matrix(NA, data$n_years_model, data$n_indices)
-	data$use_indices = matrix(NA, data$n_years_model, data$n_indices)
+	data$use_indices = matrix(0, data$n_years_model, data$n_indices)
 	data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
 	data$index_pal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths))
@@ -42,7 +42,7 @@ set_indices = function(input, index_opts=NULL)
 	  for(i in 1:data$n_indices)
 	  {
 	  	data$agg_indices[,i] = asap3$IAA_mats[[i]][,2]
-	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] < 1e-15) data$use_indices[y,i] = 0
+	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] >= 1e-15) data$use_indices[y,i] = 1
 	  }
 	  for(i in 1:data$n_indices) data$agg_index_sigma[,i] = asap3$IAA_mats[[i]][,3]
 	  for(i in 1:data$n_indices)
@@ -66,9 +66,8 @@ set_indices = function(input, index_opts=NULL)
 	  data$units_index_pal = rep(2,data$n_indices)
 	  for(i in 1:data$n_indices) data$index_Neff[,i] = asap3$IAA_mats[[i]][,4 + data$n_ages]
 	  data$selblock_pointer_indices = matrix(rep(asap3$n_fleet_sel_blocks + 1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices)
-	}
-	else
-	{
+	} else {
+
 		if(is.null(index_opts$units_indices)) data$units_indices = rep(1,data$n_indices) #biomass
 		else data$units_indices = index_opts$units_indices
 		
@@ -77,9 +76,6 @@ set_indices = function(input, index_opts=NULL)
 		
 		if(is.null(index_opts$agg_indices)) data$agg_indices[] = 10
 		else data$agg_indices[] = index_opts$agg_indices
-
-		if(is.null(index_opts$use_indices)) data$use_indices[] = 1
-		else data$use_indices[] = index_opts$use_indices
 
 		if(is.null(index_opts$index_cv)) data$agg_index_sigma[] = 0.3
 		else data$agg_index_sigma[] = index_opts$index_cv
@@ -112,14 +108,15 @@ set_indices = function(input, index_opts=NULL)
 
 		if(is.null(index_opts$index_aging_error)) data$index_aging_error[] = 0
 		else data$index_aging_error[] = index_opts$index_aging_error
-
+		
+		if(!is.null(index_opts$use_indices)) data$use_indices[] = index_opts$use_indices
 		if(!is.null(index_opts$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa
 		if(!is.null(index_opts$use_index_pal)) data$use_index_pal[] = index_opts$use_index_pal
 		if(!is.null(index_opts$use_index_caal)) data$use_index_caal[] = index_opts$use_index_caal
 		if(!is.null(index_opts$use_index_aging_error)) data$use_index_aging_error[] = index_opts$use_index_aging_error
 
-    if(is.null(index_opts$selblock_pointer_indices)) data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
-    else data$selblock_pointer_indices = index_opts$selblock_pointer_indices
+	    if(is.null(index_opts$selblock_pointer_indices)) data$selblock_pointer_indices = matrix(rep(1:data$n_indices, each = data$n_years_model), data$n_years_model, data$n_indices) + data$n_fleets
+	    else data$selblock_pointer_indices = index_opts$selblock_pointer_indices
 	}
 
   data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] = 100  

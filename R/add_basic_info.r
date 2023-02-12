@@ -11,7 +11,7 @@ add_basic_info <- function(input, basic_info){
 			input$data$n_ages = length(basic_info$ages)
 		}
 	}
-	input$data$lengths = seq(from = 2, to = 30, by = 2)
+	input$data$lengths = seq(from = 2, to = 82, by = 4)
 	input$data$n_lengths = length(input$data$lengths)
 	if(!is.null(basic_info$lengths)) {
 		input$data$lengths = basic_info$lengths

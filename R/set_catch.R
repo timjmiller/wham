@@ -16,7 +16,7 @@ set_catch = function(input, catch_opts= NULL)
 	data$agg_catch = matrix(NA, data$n_years_model, data$n_fleets)
   data$fracyr_catch = rep(0.5, times = data$n_years_model)
   data$catch_paa = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_ages))
-  data$use_agg_catch = matrix(1, data$n_years_model, data$n_fleets)
+  data$use_agg_catch = matrix(0, data$n_years_model, data$n_fleets)
   data$use_catch_paa = matrix(0, data$n_years_model, data$n_fleets)
   data$catch_pal = array(NA, dim = c(data$n_fleets, data$n_years_model, data$n_lengths))
   data$use_catch_pal = matrix(0, data$n_years_model, data$n_fleets)  
@@ -41,7 +41,7 @@ set_catch = function(input, catch_opts= NULL)
 	    temp[which(is.na(temp))] = 0
 	    temp[which(temp<0)] = 0
 	    data$catch_paa[i,,] = temp/apply(temp,1,sum)
-	    for(y in 1:data$n_years_model) if(asap3$CAA_mats[[i]][y,data$n_ages+1] < 1e-15) data$use_agg_catch[y,i] = 0
+	    for(y in 1:data$n_years_model) if(asap3$CAA_mats[[i]][y,data$n_ages+1] >= 1e-15) data$use_agg_catch[y,i] = 1
 	    if(asap3$use_catch_acomp[i] != 1){
         data$use_catch_paa[,i] = 0
       } else { # use catch paa in at least some years - not necessarily all, have to go through year by year
@@ -63,9 +63,6 @@ set_catch = function(input, catch_opts= NULL)
     #data$n_fleets = 1 # why this?
     if(is.null(catch_opts$agg_catch)) data$agg_catch[] = 1
     else data$agg_catch = catch_opts$agg_catch
-
-    if(is.null(catch_opts$use_agg_catch)) data$use_agg_catch[] = 1
-    else data$use_agg_catch = catch_opts$use_agg_catch
   	
   	if(is.null(catch_opts$catch_paa)) data$catch_paa[] = 1/data$n_ages
     else data$catch_paa[] = catch_opts$catch_paa
@@ -91,10 +88,12 @@ set_catch = function(input, catch_opts= NULL)
     if(is.null(catch_opts$catch_aging_error)) data$catch_aging_error[] = 0
     else data$catch_aging_error = catch_opts$catch_aging_error
 
+    if(!is.null(catch_opts$n_fleets)) data$n_fleets = catch_opts$n_fleets 
     if(!is.null(catch_opts$use_catch_paa)) data$use_catch_paa[] = catch_opts$use_catch_paa
     if(!is.null(catch_opts$use_catch_pal)) data$use_catch_pal[] = catch_opts$use_catch_pal
     if(!is.null(catch_opts$use_catch_caal)) data$use_catch_caal[] = catch_opts$use_catch_caal
     if(!is.null(catch_opts$use_catch_aging_error)) data$use_catch_aging_error[] = catch_opts$use_catch_aging_error
+    if(!is.null(catch_opts$use_agg_catch)) data$use_agg_catch = catch_opts$use_agg_catch
 
     for(i in 1:data$n_fleets) for(y in 1:data$n_years_model){ 
       if(data$catch_Neff[y,i] < 1e-15 |  any(is.na(data$catch_paa[i,y,]))) data$use_catch_paa[y,i] = 0

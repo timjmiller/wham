@@ -216,7 +216,7 @@ prepare_projection = function(model, proj.opts)
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
   data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
   data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
-  if(input1$data$waa_type == 1){ # only when waa present and used
+  if(input1$data$weight_model == 1){ # only when waa present and used
     toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
     if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
     tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
