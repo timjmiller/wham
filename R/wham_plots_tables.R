@@ -142,6 +142,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     }
   }
   if("catchpaa" %in% mod$osa$type) {
+    dat <- subset(mod$osa, type == "catchpaa")											  
     n.fleets <- mod$input$data$n_fleets
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
@@ -381,7 +382,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat <- subset(mod$osa, type=="indexpaa")
     dat$fleet <- factor(as.character(dat$fleet))
     dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
-    dat$residual[which(as.integer(dat$bin) == mod$input$data$n_ages)] = NA #remove last age class
+    #dat$residual[which(as.integer(dat$bin) == mod$input$data$n_ages)] = NA #remove last age class
     
     n.indices <- mod$input$data$n_indices
     plot.colors = mypalette(n.indices)
@@ -409,7 +410,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       } else {
         resids[,NCOL(resids)] = NA #remove last age class, use zeros for multinom, dir-mult
       }
-
+	  
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {

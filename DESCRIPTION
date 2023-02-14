@@ -1,6 +1,6 @@
 Package: wham
 Title: Woods Hole Assessment Model (WHAM)
-Version: 1.0.6.9000
+Version: 1.0.7.9000
 Authors@R: c(
     person("Tim", "Miller", role = c("aut", "cre"),
            email = "timothy.j.miller@noaa.gov",
@@ -10,7 +10,9 @@ Authors@R: c(
     person("Liz", "Brooks", role = c("ctb"),
            email = "liz.brooks@noaa.gov"),
     person("Chris", "Legault", role = c("ctb"),
-           email = "chris.legault@noaa.gov"))
+           email = "chris.legault@noaa.gov"),
+    person("Jim", "Thorson", role = c("ctb"),
+           email = "james.thorson@noaa.gov"))
 Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
   stock assessment model that can include environmental effects on population processes.
   WHAM can be configured to estimate a range of assessment models: a traditional 
@@ -44,6 +46,8 @@ Imports:
     knitr (>= 1.37),
     pander (>= 0.6.4),
     kableExtra (>= 1.3.4)
+Remotes:
+    kaskr/adcomp/TMB
 LinkingTo:
     TMB, 
     RcppEigen
@@ -52,7 +56,7 @@ BugReports: https://github.com/timjmiller/wham/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.2.2
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 Suggests: 
     testthat

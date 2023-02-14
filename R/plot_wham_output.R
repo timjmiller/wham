@@ -450,10 +450,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
 
   # uses png output, automatically opens in browser
   if(out.type == 'html'){
-    origdir = getwd()
-    new_od = file.path(origdir, dir.main)
-    wham_html(dir.main = new_od)
-    setwd(origdir)
+    #origdir = getwd()
+    #new_od = file.path(origdir, dir.main)
+    wham_html(dir.main = dir.main)
+    #setwd(origdir)
   }
   if(rmarkdown::pandoc_available()){
     if(table.type == "pdf"){

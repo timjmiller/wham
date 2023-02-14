@@ -21,11 +21,11 @@ set_indices = function(input, index_opts=NULL)
 		data$n_indices <- asap3$n_indices
 	} 
 	data$agg_indices = matrix(NA, data$n_years_model, data$n_indices)
-	data$use_indices = matrix(0, data$n_years_model, data$n_indices)
+	data$use_indices = matrix(1, data$n_years_model, data$n_indices)  # 1 is important for testthat
 	data$agg_index_sigma = matrix(NA, data$n_years_model, data$n_indices)
 	data$index_paa = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_ages))
 	data$index_pal = array(NA, dim = c(data$n_indices, data$n_years_model, data$n_lengths))
-	data$use_index_paa = matrix(0, data$n_years_model, data$n_indices)
+	data$use_index_paa = matrix(1, data$n_years_model, data$n_indices) # 1 is important for testthat
 	data$use_index_pal = matrix(0, data$n_years_model, data$n_indices)
 	data$index_Neff = matrix(0, data$n_years_model, data$n_indices)
 	data$index_NeffL = matrix(0, data$n_years_model, data$n_indices)
@@ -42,7 +42,7 @@ set_indices = function(input, index_opts=NULL)
 	  for(i in 1:data$n_indices)
 	  {
 	  	data$agg_indices[,i] = asap3$IAA_mats[[i]][,2]
-	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] >= 1e-15) data$use_indices[y,i] = 1
+	    for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,2] < 1e-15) data$use_indices[y,i] = 0
 	  }
 	  for(i in 1:data$n_indices) data$agg_index_sigma[,i] = asap3$IAA_mats[[i]][,3]
 	  for(i in 1:data$n_indices)
@@ -58,7 +58,6 @@ set_indices = function(input, index_opts=NULL)
 		if(asap3$use_survey_acomp[i] != 1){
 			data$use_index_paa[,i] = 0
 		} else {
-			data$use_index_paa[,i] = 1
 			for(y in 1:data$n_years_model) if(asap3$IAA_mats[[i]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[i,y,] > 1e-15) < 2) data$use_index_paa[y,i] = 0
 		}
 	  }
@@ -97,7 +96,7 @@ set_indices = function(input, index_opts=NULL)
 
 		if(any(data$units_index_pal != 2)) stop('units_index_pal must be 2 (numbers). Other units (weight) will be added when L-W relationship be incorporated.')
 
-		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 0
+		if(is.null(index_opts$index_Neff)) data$index_Neff[] = 100
 		else data$index_Neff[] = index_opts$index_Neff
 
 		if(is.null(index_opts$index_NeffL)) data$index_NeffL[] = 0

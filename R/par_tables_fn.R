@@ -13,8 +13,8 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
     if(type == "expit") { #Delta-method: V(lo + (hi-lo)/(1 + exp(-x))) ~ ((hi-lo) * p * (1-p))^2 * V(x)
       p = 1/(1 + exp(- k * par))
-      dm.se = k * abs(hi-lo)*p*(1-p)*se
-      return(c(dm.se, lo + (hi-lo)/(1+ exp(-ci))))
+      dm.se = abs(k) * abs(hi-lo)*p*(1-p)*se
+      return(c(dm.se, lo + (hi-lo)/(1+ exp(-k * ci))))
     }
   }
   data = mod$env$data
@@ -161,7 +161,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[1]))
       fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[1], sd$log_NAA_sigma[1], type = "exp"))
       fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", "year"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$trans_NAA_rho[2])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$trans_NAA_rho[2])))
       fe.cis = rbind(fe.cis, 
         ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit", k = 2))
     }
@@ -235,12 +235,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$selblock_models[i] %in% c(6,7)) modify = " $\\rho$ for $l_{50}$ and 1/slope" 
       if(data$selblock_models[i] == 8) modify = " AR1 $\\rho$ for length double-normal pars"
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,2])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE AR1 $\\rho$ (year)"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$sel_repars[i,3])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$sel_repars[i,3])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
@@ -437,12 +437,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     fe.cis = rbind(fe.cis, ci(pars$M_repars[1], sd$M_repars[1], type = "exp"))
     if(data$M_re_model %in% c(3,5)){
       fe.names = c(fe.names, "M RE AR1 $\\rho$ (age)")
-      fe.vals = c(fe.vals, exp(pars$M_repars[2]))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$M_repars[2])))
       fe.cis = rbind(fe.cis, ci(pars$M_repars[2], sd$M_repars[2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$M_re_model %in% c(4,5)) {
       fe.names = c(fe.names, "M RE AR1 $\\rho$ (year)")
-      fe.vals = c(fe.vals, exp(pars$M_repars[3]))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$M_repars[3])))
       fe.cis = rbind(fe.cis, ci(pars$M_repars[3], sd$M_repars[3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
@@ -786,10 +786,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   #print(dir(od))
   
   if(do.html) {
-    origdir = getwd()
-    new_od = file.path(origdir, od)
-    rmarkdown::render(file.path(new_od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(new_od, "wham_par_tables.html"), quiet = T)
-    setwd(origdir)
+    #origdir = getwd()
+    #new_od = file.path(origdir, od)
+    rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(od, "wham_par_tables.html"), quiet = T)
+    #setwd(origdir)
   }
   #if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
   if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.

@@ -296,6 +296,7 @@
 #'     \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See \href{https://doi.org/10.1093/icesjms/fsl024}{Schnute and Haigh (2007)} and \href{https://doi.org/10.1016/j.fishres.2013.12.015}{Francis (2014)}}.
 #'     \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters. . No OSA residuals.}
 #'     \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.}
+#'     \item{\code{"mvtweedie"}}{Multivariate-tweedie, where the product of composition proportions and input sample sizes follows a distribution with mean equal to the product of predicted proportions and input sample size, and other parameters define the ratio of effective to input sample size (with is bounded 0 to Inf) and the probability of zeros. 2 parameters. No OSA residuals.}																																																																																																  
 #'   }
 #' One-step-ahead residuals will be calculated for all but the last two options when \code{do.osa=TRUE} (Nielsen et al. in prep.). An age composition model needs
 #' to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 
@@ -371,7 +372,7 @@
 #'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
 #'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
-#'     \item{$simulate_process_error}{T/F vector (length = 7). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, q, growth, and LW. Only used if applicable.}
+#'     \item{$simulate_process_error}{T/F vector (length = 9). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, q, growth, LAA, LW and WAA. Only used if applicable.}
 #'     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
 #'     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
 #'     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}

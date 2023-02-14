@@ -251,7 +251,7 @@ check_projF = function(mod)
       {
         redo_Catch_years = mod$years_full[y[bad]]
         #print(redo_Catch_years)
-        warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
+        warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), "."))
         mod$env$data$F_proj_init[ind[bad]] = mod$env$data$F_proj_init[ind[bad]]*0.5
         mod$fn(mle)
         mod$rep = mod$report()
@@ -260,7 +260,7 @@ check_projF = function(mod)
       }
     }
     y_bad_Fcatch = mod$years_full[y[bad]]
-    if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), , "."))
+    if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), "."))
   }
   return(mod)
 }

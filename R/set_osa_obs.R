@@ -215,26 +215,27 @@ set_osa_obs = function(input)
       x <- data$index_caal[i,,,]
       indices = paste0("index_", 1:data$n_indices)
       for(l in 1:data$n_lengths){
-        if(data$use_index_caal[y,i,l]==1) 
-        {
-          x[which(data$use_index_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
-          obs_y = x[y,l,]
-          #tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
-          #multinom, D-M, mvtweedie
-          #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
-          res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
-          obs_y = res[[1]]
-          ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
-          if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_caal_Neff[y,i,l]
+        if(any(data$use_index_caal[y,i,] > 0)) {
+          if(data$use_index_caal[y,i,l]==1) {
+            x[which(data$use_index_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
+            obs_y = x[y,l,]
+            #tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
+            #multinom, D-M, mvtweedie
+            #res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
+            res = transform_paa_obs(obs_y, data$age_comp_model_indices[i])
+            obs_y = res[[1]]
+            ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+            if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_caal_Neff[y,i,l]
 
-          if(length(ind)) {
-            tmp = data.frame(year = y, fleet = indices[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
-                             type = 'indexcaal', val = obs_y[ind])
-            #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
-            obs <- rbind(obs, tmp[, obs.colnames])
-          } else {
-            data$use_index_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
-            cat(paste0("Setting data$use_index_caal to 0 for index ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
+            if(length(ind)) {
+              tmp = data.frame(year = y, fleet = indices[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
+                               type = 'indexcaal', val = obs_y[ind])
+              #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
+              obs <- rbind(obs, tmp[, obs.colnames])
+            } else {
+              data$use_index_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
+              cat(paste0("Setting data$use_index_caal to 0 for index ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
+            }
           }
         }
       }
@@ -246,26 +247,27 @@ set_osa_obs = function(input)
       x <- data$catch_caal[i,,,]
       fleet = paste0("fleet_", 1:data$n_fleets)
       for(l in 1:data$n_lengths){
-        if(data$use_catch_caal[y,i,l]==1) 
-        {
-          x[which(data$use_catch_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
-          obs_y = x[y,l,]
-          #tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
-          #multinom, D-M, mvtweedie
-          #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
-          res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
-          obs_y = res[[1]]
-          ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
-          if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_caal_Neff[y,i,l]
+        if(any(data$use_catch_caal[y,i,] > 0)) {
+          if(data$use_catch_caal[y,i,l]==1) {
+            x[which(data$use_catch_caal[,i,l]==0),,] <- NA # only include catch data to fit in obsvec
+            obs_y = x[y,l,]
+            #tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
+            #multinom, D-M, mvtweedie
+            #res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
+            res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i])
+            obs_y = res[[1]]
+            ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
+            if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_caal_Neff[y,i,l]
 
-          if(length(ind)) {
-            tmp = data.frame(year = y, fleet = fleet[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
-                             type = 'catchcaal', val = obs_y[ind])
-            #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
-            obs <- rbind(obs, tmp[, obs.colnames])
-          } else {
-            data$use_catch_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
-            cat(paste0("Setting data$use_catch_caal to 0 for fleet ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
+            if(length(ind)) {
+              tmp = data.frame(year = y, fleet = fleet[i], bin = paste0((1:data$n_ages)[ind], '_', data$lengths[l]), 
+                               type = 'catchcaal', val = obs_y[ind])
+              #tmp = data.frame(year = y, fleet = indices[i], age = (1:data$n_ages), type = 'indexpaa', val = obs_y)
+              obs <- rbind(obs, tmp[, obs.colnames])
+            } else {
+              data$use_catch_caal[y,i,l] <- 0 #set to not use because there are not enough positive values 
+              cat(paste0("Setting data$use_catch_caal to 0 for fleet ", i, " year ", y, ", and length ", data$lengths[l], "because not enough positive values. \n"))
+            }
           }
         }
       }
@@ -519,7 +521,7 @@ transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE, a
   is_pred_pos = !(1:length(x) %in% ages_omit)
   x[which(!is_pred_pos)] = 0 #if obs in omitted ages are zero this does nothing
   x =  x/sum(x) #rescale to a reduced set of ages, if obs in omitted ages are zero this does nothing
-  x[which(is.nan(x))] = 0 # only when all NaN
+  # x[which(is.nan(x))] = 0 # only when all NaN. this should not happen
   if(model>2 & model<10){ #not multinom, D-M, mvtweedie
     is_pos = x> zero.criteria # looking for zeros here will also omit the ages with predicted probability = 0
     pos_ind = which(is_pos)
