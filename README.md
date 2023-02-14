@@ -11,7 +11,6 @@ WHAM advances fisheries assessment because it can estimate constrained random de
 - recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
 - selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
 - natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), and
-- growth
 - environmental effects on the above ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
