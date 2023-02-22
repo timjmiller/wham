@@ -82,8 +82,8 @@ set_selectivity = function(input, selectivity)
   }
   if(is.null(selectivity$initial_pars)) {
     if(!no_asap) {
-      for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,1:length(asap3$sel_ini[[i]][,1])] = asap3$sel_ini[[i]][,1]
-      for(i in 1:data$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,1:length(asap3$index_sel_ini[[i]][,1])] = asap3$index_sel_ini[[i]][,1]
+      for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
+      for(i in 1:data$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
     }
     default_selpars <- list()
     dpars = c(0.5,data$n_ages/2)
@@ -188,15 +188,15 @@ set_selectivity = function(input, selectivity)
   data$selpars_est[data$selpars_est == -1] = 0
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 20)
-  selpars_lo[,data$n_ages + 7] = 1 # min age
-  selpars_lo[,data$n_ages + 8:12] = -50 
+  selpars_lo[,data$n_ages + 7] = 1 # par1 age double-normal
+  selpars_lo[,data$n_ages + 8:12] = -20 
   selpars_lo[,data$n_ages + 13:15] = min(data$lengths) 
-  selpars_lo[,data$n_ages + 16:20] = -50 
+  selpars_lo[,data$n_ages + 16:20] = -20 
   selpars_hi[,1:data$n_ages] = 1
   selpars_hi[,data$n_ages + 1:7] = data$n_ages
-  selpars_hi[,data$n_ages + 8:12] = 50 
+  selpars_hi[,data$n_ages + 8:12] = 11 
   selpars_hi[,data$n_ages + 13:15] = max(data$lengths) 
-  selpars_hi[,data$n_ages + 16:20] = 50 
+  selpars_hi[,data$n_ages + 16:20] = 11 
 
   temp = matrix(NA, data$n_selblocks, data$n_ages + 20)
   temp[which(phase_selpars>0)] = 1:sum(phase_selpars>0)
