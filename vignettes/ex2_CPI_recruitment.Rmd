@@ -154,9 +154,9 @@ for(m in 1:n.mods){
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
     lag = 1, # CPI in year t affects recruitment in year t+1
-    process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
-    where = c("none","recruit")[as.logical(df.mods$Ecov_how[m])+1], # CPI affects recruitment
-    how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC)
+    process_model = df.mods$ecov_process[m], # "rw" or "ar1"
+    where = c("none","recruit")[as.logical(df.mods$ecov_how[m])+1], # CPI affects recruitment
+    how = df.mods$ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC)
 
   # (not used in this vignette) can set ecov = NULL to fit model without ecov data
   if(is.na(df.mods$ecov_process[m])) ecov = NULL 
@@ -212,7 +212,7 @@ for(m in 1:7) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 Let's first make the results table prettier.
 ```{r eval=FALSE}
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
-df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
+df.mods$ecov_how <- dplyr::recode(df.mods$ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
 ```
 
 Now get the convergence information.

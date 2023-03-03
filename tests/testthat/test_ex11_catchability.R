@@ -115,7 +115,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE))#, retro.silent = TRUE)
+fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
 plot_wham_output(fit, dir.main=tmp.dir)
 
@@ -171,7 +171,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE))#, retro.silent = TRUE)
+fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
 expect_equal(fit$opt$obj, ex11_tests$fit3$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit3$par, tolerance=1e-6, scale=1)
@@ -245,7 +245,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE))#, retro.silent = TRUE)
+fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
 expect_equal(fit$opt$obj, ex11_tests$fit4$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit4$par, tolerance=1e-6, scale=1)
@@ -327,7 +327,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE))#, retro.silent = TRUE)
+fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 fit$mohns_rho = mohns_rho(fit) 
 expect_equal(fit$opt$obj, ex11_tests$fit5$nll, tolerance=1e-6, scale=1)
 expect_equal(fit$opt$par, ex11_tests$fit5$par, tolerance=1e-6, scale=1)

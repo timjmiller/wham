@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.6.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
       </span>
     </div>
 
@@ -215,11 +215,13 @@ vignette, an example ASAP3 input file is provided.</p>
 <code>ex1_SNEMAYT.dat</code> file:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt;  [1] "BASE_3"                 "CPI.csv"                "ex1_SNEMAYT.dat"       </span>
-<span class="co">#&gt;  [4] "ex1_test_results.rds"   "ex11_tests.rds"         "ex2_SNEMAYT.dat"       </span>
-<span class="co">#&gt;  [7] "ex2_test_results.rds"   "ex4_test_results.rds"   "ex5_summerflounder.dat"</span>
-<span class="co">#&gt; [10] "ex5_test_results.rds"   "ex6_test_results.rds"   "ex7_SNEMAYT.dat"       </span>
-<span class="co">#&gt; [13] "GSI.csv"</span></code></pre></div>
+<span class="co">#&gt;  [1] "age_comp_likelihood_test_values.rds" "BASE_3"                             </span>
+<span class="co">#&gt;  [3] "CPI.csv"                             "ex1_SNEMAYT.dat"                    </span>
+<span class="co">#&gt;  [5] "ex1_test_results.rds"                "ex11_tests.rds"                     </span>
+<span class="co">#&gt;  [7] "ex2_SNEMAYT.dat"                     "ex2_test_results.rds"               </span>
+<span class="co">#&gt;  [9] "ex4_test_results.rds"                "ex5_summerflounder.dat"             </span>
+<span class="co">#&gt; [11] "ex5_test_results.rds"                "ex6_test_results.rds"               </span>
+<span class="co">#&gt; [13] "ex7_SNEMAYT.dat"                     "GSI.csv"</span></code></pre></div>
 <p>Read the ASAP3 .dat file into R:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>

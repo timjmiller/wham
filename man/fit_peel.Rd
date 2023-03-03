@@ -21,7 +21,7 @@ fit_peel(
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.}
 
-\item{n.newton}{integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.}
+\item{n.newton}{integer, number of additional Newton steps after optimizafit_tmbtion for each peel. Default = \code{3}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 

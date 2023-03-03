@@ -105,7 +105,7 @@ Returning AIC/rho table for WHAM models only.
         ecov.obs <- lapply(wham.mods, function(x) x$env$data$Ecov_use_obs)
         all.identical <- function(l) all(mapply(identical, head(l, 1), tail(l, -1)))
         if(!all.identical(ecov.obs)){
-          stop("Different env covariate data used, cannot compare models' AIC.
+          stop("Different env covariate data used, cannot compare models' AIC. \n\n
                Set 'calc.aic = FALSE' to make other comparisons, or only select
                models fit to the same data.\n")
         }

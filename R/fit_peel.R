@@ -6,7 +6,7 @@
 #' @param peel Integer, number of years of data to remove before model fitting.
 #' @param input input with same structure as that provided by \code{\link{prepare_wham_input}}. May want to use input$par = model$parList to start at MLEs.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? Default = \code{FALSE}.
-#' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{3}.
+#' @param n.newton integer, number of additional Newton steps after optimizafit_tmbtion for each peel. Default = \code{3}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
 #' @param retro.silent T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.
 #' @param save.input T/F, should modified input list be saved? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.

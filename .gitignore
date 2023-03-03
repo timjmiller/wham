@@ -11,4 +11,5 @@ Meta
 sandbox
 *.Rproj
 noaa_docs
-/src/age_comp_osa_rev.hpp
+.vscode
+src-i386

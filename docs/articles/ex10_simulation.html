@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.6.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
       </span>
     </div>
 
@@ -318,8 +318,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <span class="co">#&gt;     }</span>
 <span class="co">#&gt;     ans</span>
 <span class="co">#&gt; }</span>
-<span class="co">#&gt; &lt;bytecode: 0x00000000264510d0&gt;</span>
-<span class="co">#&gt; &lt;environment: 0x000000001edcad08&gt;</span></code></pre></div>
+<span class="co">#&gt; &lt;bytecode: 0x0000000024e48180&gt;</span>
+<span class="co">#&gt; &lt;environment: 0x0000000017a85118&gt;</span></code></pre></div>
 <p>As we can see it is a function, but less apparent is that it will
 report anything using the <code>REPORT</code> calls, and most
 importantly, those within SIMULATE statements in the compiled cpp code.
@@ -349,7 +349,7 @@ argument <code>self.fit=TRUE</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">years</span>, <span class="va">self_sim_fit</span><span class="op">$</span><span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">years</span>, <span class="va">self_sim_fit</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png" style="width:80.0%"></p>
+<p><img src="https://github.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png" style="width:80.0%"></p>
 <p>Note that we just have to over-write the data component of the input
 with the values produced by <code>om$simulate(complete=TRUE)</code>. The
 call of <code>sim_fn</code> will fit the same model assumed to simulate
@@ -970,59 +970,89 @@ and autocorrelation = 0.5.</p>
 <span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">q_repars</span>
 <span class="co">#&gt;           [,1]      [,2]</span>
 <span class="co">#&gt; [1,] -2.302585 0.5493061</span></code></pre></div>
-<p>``{r, eval = FALSE} stock_om = fit_wham(stock_om_input, do.fit =
-FALSE, MakeADFun.silent = TRUE)</p>
-<p>set.seed(123) sim_q = stock_om$simulate(complete=TRUE)</p>
-<p>plot(stock_om<span class="math inline">\(years, sim_q\)</span>q[,1],
-type = ‘l’, ylab = “Catchability”, xlab = “Year”)</p>
-<pre><code>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stock_om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4d.png){ width=80% }
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
+<span class="va">sim_q</span> <span class="op">=</span> <span class="va">stock_om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 
-## 4e. Setting effects of Environmental covariates.
-
-When environmental effects are considered, there are assumptions to be made about the variance and any autocorrelation parameters for the random effects for the latent environmental process and the variance of the observation errors. The latter are specified in the the `ecov$log_sigma` argument to `prepare_wham_input`, but those for the random effects (`Ecov_process_pars`) must be specified after the call to `prepare_wham_input` like the other random effects described above. The value for the effect of the covariate on the population (`Ecov_beta`) must also be specified this way. The columns of `Ecov_process_pars` correspond to each environmental covariate being modeled and the number of rows is 3. If `ecov$process_model = "rw"` only the first two elements are used and represent the value in the first year and the conditional standard deviation parameter of the random walk. When `ecov$process_model = "ar1"` the three elements correspond to mean, variance, and correlation parameters.
-
-The `Ecov_beta` parameter is a 4-dimensional array to be able to use it across all possible types of effects in a wham model. The first dimension indicates where the effect will be applied: recruitment, natural mortality, index 1,... index n. The second dimension is the order of the polynomial effect of the covariate. The third dimension indicates which environmental covariate the effect is having on the population. The fourth dimension indicates which age class the effect is on (for natural mortality only). 
-
-As long as there is only a single environmental effect, we can change the appropriate element of the `Ecov_beta` array by using the `map$Ecov_beta` specification returned by `prepare_wham_input`. The `map$Ecov_beta` will be all `NA` except for the configured effects on the population and when there is just one there is no ambiguity. Otherwise, the 4 correct indices of the `Ecov_beta` array must be referenced appropriately for each effect.
-
-We will assume that our errors on the observations of the environmental covariate have a standard deviation = 0.2, the latent process is AR1 with mean 0, standard deviation = 0.3 and correlation parameter 0.5. We will also assume the effect is on (log) recruitment (no stock-recruit function) and the size of the effect is `Ecov_beta = 0.3`.
-
-
-```r
-stock_om_info = make_basic_info()
-
-#constand M fixed at 0.2
-M_om = list(
-  model = "constant", # a single mean M for all ages
-  initial_means = 0.2)
-
-#logistic selectivity for fleet and index
-selectivity_om = list(
-  model = c(rep("logistic", stock_om_info$n_fleets),rep("logistic", stock_om_info$n_indices)),
-  initial_pars = rep(list(c(5,1)), stock_om_info$n_fleets + stock_om_info$n_indices)) 
-
-NAA_re_om = list(
-  N1_pars = exp(10)*exp(-(0:(length(stock_om_info$ages)-1))*M_om$initial_means[1]),
-  sigma = "rec", #random about mean
-  recruit_model = 2, #random effects with a constant mean
-  recruit_pars = exp(10)
-)
-
-ecov_om = list(
-    label = "Climate variable 1",
-    process_model = "ar1",
-    mean = matrix(0, length(stock_om_info$years), 1), #observations which will be simulated later
-    logsigma = log(0.2), 
-    lag = 0,
-    years = stock_om_info$years, 
-    use_obs = matrix(1,length(stock_om_info$years),1),  
-    where = "recruit",
-    how = 1)
-
-stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om, ecov = ecov_om)</code></pre>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_q</span><span class="op">$</span><span class="va">q</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Catchability"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></code></pre></div>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4d.png" style="width:80.0%"></p>
+</div>
+<div class="section level3">
+<h3 id="e--setting-effects-of-environmental-covariates-">4e. Setting effects of Environmental covariates.<a class="anchor" aria-label="anchor" href="#e--setting-effects-of-environmental-covariates-"></a>
+</h3>
+<p>When environmental effects are considered, there are assumptions to
+be made about the variance and any autocorrelation parameters for the
+random effects for the latent environmental process and the variance of
+the observation errors. The latter are specified in the the
+<code>ecov$log_sigma</code> argument to <code>prepare_wham_input</code>,
+but those for the random effects (<code>Ecov_process_pars</code>) must
+be specified after the call to <code>prepare_wham_input</code> like the
+other random effects described above. The value for the effect of the
+covariate on the population (<code>Ecov_beta</code>) must also be
+specified this way. The columns of <code>Ecov_process_pars</code>
+correspond to each environmental covariate being modeled and the number
+of rows is 3. If <code>ecov$process_model = "rw"</code> only the first
+two elements are used and represent the value in the first year and the
+conditional standard deviation parameter of the random walk. When
+<code>ecov$process_model = "ar1"</code> the three elements correspond to
+mean, variance, and correlation parameters.</p>
+<p>The <code>Ecov_beta</code> parameter is a 4-dimensional array to be
+able to use it across all possible types of effects in a wham model. The
+first dimension indicates where the effect will be applied: recruitment,
+natural mortality, index 1,… index n. The second dimension is the order
+of the polynomial effect of the covariate. The third dimension indicates
+which environmental covariate the effect is having on the population.
+The fourth dimension indicates which age class the effect is on (for
+natural mortality only).</p>
+<p>As long as there is only a single environmental effect, we can change
+the appropriate element of the <code>Ecov_beta</code> array by using the
+<code>map$Ecov_beta</code> specification returned by
+<code>prepare_wham_input</code>. The <code>map$Ecov_beta</code> will be
+all <code>NA</code> except for the configured effects on the population
+and when there is just one there is no ambiguity. Otherwise, the 4
+correct indices of the <code>Ecov_beta</code> array must be referenced
+appropriately for each effect.</p>
+<p>We will assume that our errors on the observations of the
+environmental covariate have a standard deviation = 0.2, the latent
+process is AR1 with mean 0, standard deviation = 0.3 and correlation
+parameter 0.5. We will also assume the effect is on (log) recruitment
+(no stock-recruit function) and the size of the effect is
+<code>Ecov_beta = 0.3</code>.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">stock_om_info</span> <span class="op">=</span> <span class="fu">make_basic_info</span><span class="op">(</span><span class="op">)</span>
+
+<span class="co">#constand M fixed at 0.2</span>
+<span class="va">M_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  model <span class="op">=</span> <span class="st">"constant"</span>, <span class="co"># a single mean M for all ages</span>
+  initial_means <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
+
+<span class="co">#logistic selectivity for fleet and index</span>
+<span class="va">selectivity_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">stock_om_info</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">stock_om_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,
+  initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="va">stock_om_info</span><span class="op">$</span><span class="va">n_fleets</span> <span class="op">+</span> <span class="va">stock_om_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span> 
+
+<span class="va">NAA_re_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  N1_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">stock_om_info</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="va">M_om</span><span class="op">$</span><span class="va">initial_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,
+  sigma <span class="op">=</span> <span class="st">"rec"</span>, <span class="co">#random about mean</span>
+  recruit_model <span class="op">=</span> <span class="fl">2</span>, <span class="co">#random effects with a constant mean</span>
+  recruit_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="va">ecov_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+    label <span class="op">=</span> <span class="st">"Climate variable 1"</span>,
+    process_model <span class="op">=</span> <span class="st">"ar1"</span>,
+    mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">stock_om_info</span><span class="op">$</span><span class="va">years</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co">#observations which will be simulated later</span>
+    logsigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.2</span><span class="op">)</span>, 
+    lag <span class="op">=</span> <span class="fl">0</span>,
+    years <span class="op">=</span> <span class="va">stock_om_info</span><span class="op">$</span><span class="va">years</span>, 
+    use_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">stock_om_info</span><span class="op">$</span><span class="va">years</span><span class="op">)</span>,<span class="fl">1</span><span class="op">)</span>,  
+    where <span class="op">=</span> <span class="st">"recruit"</span>,
+    how <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+
+<span class="va">stock_om_input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">stock_om_info</span>, selectivity <span class="op">=</span> <span class="va">selectivity_om</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re_om</span>, M <span class="op">=</span> <span class="va">M_om</span>, ecov <span class="op">=</span> <span class="va">ecov_om</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="co">#same assumption as above about standard deviation of recruitment.</span>
 <span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">log_NAA_sigma</span>
@@ -1037,7 +1067,7 @@ stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = se
 <span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">map</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">)</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0.3</span>
 <span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="op">]</span> <span class="co">#all = 0.3, but only the first one is used and all values mapped to be equal.</span>
 <span class="co">#&gt;  [1] 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3</span></code></pre></div>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stock_om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
@@ -1045,10 +1075,10 @@ stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = se
 
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">Ecov_x</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Covariate"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_1_4e.png" style="width:80.0%"></p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Recruitment"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_2_4e.png" style="width:80.0%"></p>
-<p>See the <a href="https://github.com/timjmiller/wham/blob/devel/vignettes/ex11_catchability.Rmd" class="external-link">catchability
+<p>See the <a href="https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd" class="external-link">catchability
 vignette</a> for an example of simulating effects of multiple covariates
 on the population. Also see the <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">CPI
 and recruitment vignette</a> for configuring effects on recruitment when
@@ -1062,7 +1092,7 @@ natural mortality rate (M = 0.3), but other aspects of the estimation
 model are consistent with the operating model. The <code>sim_fn</code>
 function will return the simulated population and data and either the
 input for the estimating model or the fitted estimation model.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stock_om_input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">stock_om_info</span>, selectivity <span class="op">=</span> <span class="va">selectivity_om</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re_om</span>, M <span class="op">=</span> <span class="va">M_om</span><span class="op">)</span>
 
 <span class="co">#same assumption as above about standard deviation of recruitment.</span>
@@ -1091,7 +1121,7 @@ input for the estimating model or the fitted estimation model.</p>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_1_4f.png" style="width:80.0%"></p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB/SSB(F40)"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_2_4f.png" style="width:80.0%"></p>
@@ -1121,7 +1151,7 @@ a catch that would be provided as management advice using the estimation
 model, but note that when the catch advice is not possible to actually
 take from the population or implies F greater than 10, F is set at
 10.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">get_F_from_catch</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">year</span>, <span class="va">catch</span>, <span class="va">Finit</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">maxF</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">{</span>
     <span class="va">rep</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">report</span><span class="op">(</span><span class="op">)</span>
     <span class="co">#print(year)</span>
@@ -1146,7 +1176,7 @@ take from the population or implies F greater than 10, F is set at
 <p>The second function uses <code>get_F_from_catch</code> to get the F
 and replace the F parameters in the operating model and update the
 population and observations</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">update_om_F</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">year</span>, <span class="va">catch</span><span class="op">)</span><span class="op">{</span>
     <span class="va">rep</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">report</span><span class="op">(</span><span class="op">)</span> <span class="co">#generate the reported values given the parameters</span>
     <span class="va">year_ind</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">om</span><span class="op">$</span><span class="va">years</span> <span class="op">==</span> <span class="va">year</span><span class="op">)</span> <span class="co">#index corresponding to year</span>
@@ -1162,11 +1192,11 @@ population and observations</p>
 
 <span class="op">}</span></code></pre></div>
 <p>First source the functions.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">vignette_10_helper</span><span class="op">)</span></code></pre></div>
 <p>Create the stock operating model. We will specify a feedback period
 of 40 years beyond the 40 year base period.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stock_om_info</span> <span class="op">=</span> <span class="fu">make_basic_info</span><span class="op">(</span>base_years <span class="op">=</span> <span class="fl">1982</span><span class="op">:</span><span class="fl">2021</span>, n_feedback_years <span class="op">=</span> <span class="fl">40</span><span class="op">)</span>
 <span class="va">stock_om_input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span>basic_info <span class="op">=</span> <span class="va">stock_om_info</span>, selectivity <span class="op">=</span> <span class="va">selectivity_om</span>, NAA_re <span class="op">=</span> <span class="va">NAA_re_om</span>, M <span class="op">=</span> <span class="va">M_om</span><span class="op">)</span>
 <span class="va">stock_om</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -1174,7 +1204,7 @@ of 40 years beyond the 40 year base period.</p>
 stock with biological inputs defined in the <code>make_basic_info</code>
 function. We need to define a function for updating the simulations from
 the operating model during the feedback period.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">update_om_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">123</span>, <span class="va">interval.info</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">{</span>
   <span class="va">obs_names</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agg_indices"</span>,<span class="st">"agg_catch"</span>,<span class="st">"catch_paa"</span>,<span class="st">"index_paa"</span>, <span class="st">"Ecov_obs"</span>, <span class="st">"obsvec"</span><span class="op">)</span>
 
@@ -1201,7 +1231,7 @@ the operating model during the feedback period.</p>
 <p>We now turn to defining the estimation model in a way such that the
 terminal year can be updated appropriately through the feedback
 period.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">make_em_input</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">M_em</span>, <span class="va">sel_em</span>, <span class="va">NAA_em</span>, <span class="va">om_data</span>, <span class="va">em_years</span><span class="op">)</span><span class="op">{</span>
   <span class="va">info</span> <span class="op">=</span> <span class="fu">make_basic_info</span><span class="op">(</span>base_years <span class="op">=</span> <span class="va">em_years</span><span class="op">)</span> <span class="co">#update the terminal year for the estimation model</span>
   <span class="va">ind_em</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">em_years</span><span class="op">)</span> <span class="co">#year indices</span>
@@ -1214,7 +1244,7 @@ period.</p>
 <span class="op">}</span></code></pre></div>
 <p>We also need a function that will take the estimated model and
 generate catch advice from it.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">advice_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">em</span><span class="op">)</span><span class="op">{</span>
   <span class="co">#make 5 year projections using F40. Use average SSB/R and YPR inputs over most recent 5 years</span>
   <span class="va">proj_opts</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.FXSPR<span class="op">=</span><span class="cn">TRUE</span>, avg.yrs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">em</span><span class="op">$</span><span class="va">years</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> 
@@ -1226,7 +1256,7 @@ generate catch advice from it.</p>
 <p>Finally, we make a function that uses all the other functions and
 steps through the feedback period and updating the operating model,
 refitting the estimation model and generating the catch advice.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">loop_through_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">M_em</span>, <span class="va">selectivity_em</span>, <span class="va">NAA_re_em</span>, <span class="va">assess_years</span>, <span class="va">assess_interval</span> <span class="op">=</span> <span class="va">assess.interval</span>, <span class="va">base_years</span><span class="op">)</span><span class="op">{</span>
   <span class="va">catches</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#save the catch advice</span>
   <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="va">assess_years</span><span class="op">)</span><span class="op">{</span>
@@ -1245,7 +1275,7 @@ refitting the estimation model and generating the catch advice.</p>
   <span class="op">}</span>
   <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>om <span class="op">=</span> <span class="va">om</span>, em  <span class="op">=</span> <span class="va">em</span>, catches <span class="op">=</span> <span class="va">catches</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">stock_om</span> <span class="op">=</span> <span class="fu">update_om_fn</span><span class="op">(</span><span class="va">stock_om</span><span class="op">)</span>
 
 <span class="va">assess.interval</span> <span class="op">=</span> <span class="fl">4</span>
@@ -1255,7 +1285,7 @@ refitting the estimation model and generating the catch advice.</p>
 <span class="va">assess.years</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">terminal.year</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>,<span class="fl">1</span><span class="op">)</span><span class="op">-</span><span class="va">assess.interval</span>,by <span class="op">=</span> <span class="va">assess.interval</span><span class="op">)</span></code></pre></div>
 <p>Running the loop function will take a little while, so we have saved
 some results for plotting.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">looped_res</span> <span class="op">=</span> <span class="fu">loop_through_fn</span><span class="op">(</span><span class="va">stock_om</span>, M_em <span class="op">=</span> <span class="va">M_em</span>, selectivity_em <span class="op">=</span> <span class="va">selectivity_om</span>, NAA_re_em <span class="op">=</span> <span class="va">NAA_re</span>, assess_years <span class="op">=</span> <span class="va">assess.years</span>, base_years <span class="op">=</span> <span class="va">base.years</span><span class="op">)</span>
 <span class="va">looped_rep</span> <span class="op">=</span> <span class="va">looped_res</span><span class="op">$</span><span class="va">om</span><span class="op">$</span><span class="va">rep</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">stock_om</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">"l"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">400000</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>

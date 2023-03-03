@@ -87,6 +87,7 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   logFmult1  <- unlist(a1$asap.std[ which(a1$asap.std$name=="log_Fmult_year1")  ,3] )
   logFmult_devs <- a1$asap.std[which(a1$asap.std$name=="log_Fmult_devs")  ,3]
   log_F <- matrix(NA, nrow=nyears*n.fleet, ncol=2)
+  #year 1 for each fleet
   log_F[1+nyears*(0:(n.fleet-1)),] <- logFmult1
 
   log.fmult.rows <- which(substr(a1$asap.cor.names, 1, 9)=="log_Fmult")  #this is nyears*n.fleet
@@ -99,7 +100,6 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   #year 1 for each fleet
   var.logFmult[1+nyears*(0:(n.fleet-1))] <- log.fmult.cov[1+nyears*(0:(n.fleet-1)),1+nyears*(0:(n.fleet-1))] #need to modify for multifleet
   #var.logFmult[1] <- log.fmult.cov[1,1] #need to modify for multifleet
-
 
   for(f in 1:n.fleet) for (y in 2:nyears ) {
 
