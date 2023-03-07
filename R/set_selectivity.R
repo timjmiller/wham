@@ -82,8 +82,8 @@ set_selectivity = function(input, selectivity)
   }
   if(is.null(selectivity$initial_pars)) {
     if(!no_asap) {
-      for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,] = asap3$sel_ini[[i]][,1]
-      for(i in 1:data$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,] = asap3$index_sel_ini[[i]][,1]
+      for(i in 1:asap3$n_fleet_sel_blocks) selpars_ini[i,1:length(asap3$sel_ini[[i]][,1])] = asap3$sel_ini[[i]][,1] # this change is important for growth branch, do not remove
+      for(i in 1:data$n_indices) selpars_ini[i+asap3$n_fleet_sel_blocks,1:length(asap3$index_sel_ini[[i]][,1])] = asap3$index_sel_ini[[i]][,1] # this change is important for growth branch, do not remove
     }
     default_selpars <- list()
     dpars = c(0.5,data$n_ages/2)
