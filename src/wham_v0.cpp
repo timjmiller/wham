@@ -1037,7 +1037,7 @@ Type objective_function<Type>::operator() ()
           nll_catch_acomp(y,f) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
             vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)), do_osa, paa_obs_y);
         }
-        SIMULATE if(simulate_data(1) == 1) if(use_catch_paa(usey,f) == 1){
+        SIMULATE if(simulate_data(0) == 1) if(use_catch_paa(usey,f) == 1){
           if((simulate_period(0) == 1) & (y < n_years_model)) //model years
           {
             for(int a = 0; a < n_ages; a++) paa_obs_y(a) = catch_paa(f,y,a);
