@@ -4,6 +4,7 @@ wham 1.0.7.9000
 
 ### Bug fixes
 
+* Fix incorrect flag for simulating catch age composition data and incorrect indexing for years to average over for SPR inputs [4f06dc7](https://github.com/timjmiller/wham/commit/4f06dc7baff3b6bef3e7c8eb262dcdedefbb33dc)
 * Fixed bug in reporting correlation parameter estimates in pdf/html tables [31ea94b](https://github.com/timjmiller/wham/commit/31ea94b611844a557947b11ac758531abb83005b)
 * Fixed bug in setting up catch age comp observations when ages are omitted due to selectivity=0 [6667efa](https://github.com/timjmiller/wham/commit/6667efac36df17215b5733e13866a3a78ed4f3b8)
 * Fixed reference point estimation and use in projections when there are multiple fleets [65c0130](https://github.com/timjmiller/wham/commit/65c0130f56e9346a98c1a1a957efe6dd1441c4c1) [b4c1ca3](https://github.com/timjmiller/wham/commit/b4c1ca379476042ef3ae376179df369c13e1fc0e). 
