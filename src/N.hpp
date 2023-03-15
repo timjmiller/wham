@@ -749,6 +749,7 @@ array<Type> extract_pred_NAA(array<Type> all_NAA){
   return pred_NAA;
 }
 
+
 template <class Type>
 array<Type> get_NAA_devs(array<Type> all_NAA, array<int> NAA_where, vector<int> NAA_re_model){
   int n_stocks = all_NAA.dim(1);
@@ -789,6 +790,19 @@ array<Type> get_NAA_y(int y, array<Type> NAA){
     NAA_y(s,r,a) = NAA(s,r,y,a);
   }
   return NAA_y;
+}
+
+template <class Type>
+array<Type> get_log_NAA_rep(array<Type> NAA, array<int> NAA_where){
+  array<Type> log_NAA = NAA;
+  log_NAA.setZero();
+  for(int s = 0; s < NAA.dim(0); s++) for(int r = 0; r < NAA.dim(2); r++) for(int y = 0; y < NAA.dim(2); y++) for(int a = 0; a < NAA.dim(3); a++){
+    if(NAA_where(s,r,a)) {
+      log_NAA(s,r,y,a) = log(NAA(s,r,y,a));
+    }
+    else log_NAA(s,r,y,a) = -100.0; 
+  }
+  return log_NAA;
 }
 
 template <class Type>
@@ -987,7 +1001,7 @@ array<Type> get_NAA_catch(array<Type> NAA, vector<int> fleet_regions, matrix<int
 template <class Type>
 matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, matrix<Type> log_NAA_sigma, matrix<Type> trans_NAA_rho, 
   array<int> NAA_where,
-  vector<int> spawn_regions, vector<int> years_use, int bias_correct_pe){
+  vector<int> spawn_regions, vector<int> years_use, int bias_correct_pe, int use_alt_AR1 = 0){
 // matrix<Type> get_NAA_nll(array<Type> N1, vector<int> N1_model, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> log_NAA, matrix<Type> log_NAA_sigma, matrix<Type> trans_NAA_rho, 
 //   array<int> NAA_where, vector<int> recruit_model, matrix<Type> mean_rec_pars, 
 //   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
@@ -1022,15 +1036,19 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, matrix<T
   //NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0){
     // for NAA_re_model = 1, must make sure that rho_a = 0 and rho_y is set appropriately (cor = "iid" or "ar1_y") on R side
-    Type NAA_rho_a = geninvlogit(trans_NAA_rho(s,0), Type(-1), Type(1), Type(2)); //2 is legacy
-    Type NAA_rho_y = geninvlogit(trans_NAA_rho(s,1), Type(-1), Type(1), Type(2)); //2 is legacy
+    Type NAA_rho_a = geninvlogit(trans_NAA_rho(s,0), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
+    Type NAA_rho_y = geninvlogit(trans_NAA_rho(s,1), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
     marginal_sigma.col(s) = exp(vector<Type>(log_NAA_sigma.row(s))) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
     if(NAA_re_model(s) == 1){ //"rec"
       vector<Type> NAA_devs_r_s(n_years-1);
       //for(int y = 1; y < n_years; y++) NAA_devs_r_s(y-1) = NAA_devs(s,spawn_regions(s)-1,y-1,0);
       for(int y = 1; y < n_years; y++) NAA_devs_r_s(y-1) = log(NAA(s,spawn_regions(s)-1,years_use(y),0)) - log(pred_NAA(s,spawn_regions(s)-1,years_use(y),0));
       if(bias_correct_pe) NAA_devs_r_s += 0.5*pow(marginal_sigma(0,s),2); //make sure this is ok when just recruitment is random.
-      nll_NAA(s,spawn_regions(s)-1) += SCALE(AR1(NAA_rho_y), marginal_sigma(0,s))(NAA_devs_r_s);
+      if(use_alt_AR1==0){
+        nll_NAA(s,spawn_regions(s)-1) += SCALE(AR1(NAA_rho_y), marginal_sigma(0,s))(NAA_devs_r_s);
+      } else {
+        nll_NAA(s,spawn_regions(s)-1) +=  alt1dar1(NAA_devs_r_s, trans_NAA_rho(s,1), log_NAA_sigma(s,0), 1);
+      }
     }
     if(NAA_re_model(s) == 2){ //"rec+1"
       for(int r = 0; r < n_regions; r++){
@@ -1059,7 +1077,12 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, matrix<T
           // see(marginal_sigma_s_r);
           // see(NAA_rho_a);
           // see(NAA_rho_y);
-          nll_NAA(s,r) += SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y))(NAA_devs_s_r);
+          if(use_alt_AR1==0){
+            nll_NAA(s,r) += SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y))(NAA_devs_s_r);
+          } else {
+            see("using alt2dar1");
+            nll_NAA(s,r) += alt2dar1(NAA_devs_s_r, trans_NAA_rho(s,0), trans_NAA_rho(s,1), vector<Type>(log_NAA_sigma.row(s)), 0);
+          }
           // see(nll_NAA(s,r));
           //std::exit(EXIT_FAILURE);
         }

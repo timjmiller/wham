@@ -282,3 +282,17 @@ array<Type> get_log_M_y(int y, array<Type> log_M, int do_log = 1){
   }
   return log_M_y;
 }
+
+//exponentiate log_M
+template <class Type>
+array<Type> get_MAA(array<Type> log_M){
+  array<Type> MAA(log_M.dim(0),log_M.dim(1),log_M.dim(2),log_M.dim(3));
+  MAA.setZero();
+
+  for(int s = 0; s< log_M.dim(0); s++) for(int r = 0; r < log_M.dim(1); r++) {
+    for(int y = 0; y < log_M.dim(2); y++) for(int a = 0; a < log_M.dim(3); a++){
+      MAA(s,r,y,a) = exp(log_M(s,r,y,a));
+    }
+  }
+  return MAA;
+}

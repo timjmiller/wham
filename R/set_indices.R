@@ -29,7 +29,7 @@ set_indices = function(input, index_info=NULL) {
 	if(is.null(asap3)) {
 	  data$n_indices = 1
 	} else {
-		input$index_names <- character()
+		input$index_names <- NULL
     for(i in 1:length(asap3)) {
 			which_indices <- which(asap3[[i]]$use_index ==1)
 			asap3[[i]]$n_indices = length(which_indices)
@@ -41,12 +41,13 @@ set_indices = function(input, index_info=NULL) {
 			asap3[[i]]$index_WAA_pointers = asap3[[i]]$index_WAA_pointers[which_indices]
 			asap3[[i]]$IAA_mats <- asap3[[i]]$IAA_mats[which_indices]
 			asap3[[i]]$use_survey <- asap3[[i]]$use_index[which_indices]
-			if("index.names" %in% names(asap3[[i]])) input$index_names <- c(input$index_names, asap3[[i]]$index.names[which_indices])
+			if(!is.null(asap3[[i]]$index.names)) input$index_names <- c(input$index_names, asap3[[i]]$index.names[which_indices])
     }
     n_indices_per_region = sapply(asap3, function(x) x$n_indices)
     data$n_indices = sum(n_indices_per_region)
 	} 
 	if(!is.null(index_info$n_indices)) data$n_indices = index_info$n_indices
+	if(is.null(input$index_names)) input$index_names <- paste0("index_", 1:data$n_indices)
 
   data$index_regions = rep(1, data$n_indices)
   data$index_seasons = rep(1, data$n_indices)

@@ -12,6 +12,7 @@ initial_input_no_asap_fn <- function(input, basic_info){
 	if(!is.null(basic_info$n_stocks)) {
 		if(!is.integer(basic_info$n_stocks)) stop("basic_info$n_stocks has been specified, but it is not an integer")
 		input$data$n_stocks = basic_info$n_stocks
+
 	}
 	
 	input$data$n_regions = 1

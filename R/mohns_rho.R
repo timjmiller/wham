@@ -26,7 +26,7 @@ mohns_rho = function(model)
     rho$SSB <- rho$Fbar <- numeric()
     for(i in 1:data$n_stocks) rho$SSB[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$SSB[ny-x, i]/model$rep$SSB[ny-x, i] - 1))
     for(i in 1:data$n_regions) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) {
-      mean(model$peels[[x]]$rep$FAA_tot[i,ny-x,data$Fbar_ages])/mean(model$rep$FAA_tot[i,ny-x,data$Fbar_ages]) - 1
+      mean(model$peels[[x]]$rep$Fbar[ny-x,i])/mean(model$rep$Fbar[ny-x,i]) - 1
     }))
     #for(i in 1:data$n_regions) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$Fbar[ny-x,i]/model$rep$Fbar[ny-x,i] - 1))
     #names(rho) = c("SSB","Fbar")#,"R")

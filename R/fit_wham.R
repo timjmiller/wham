@@ -54,6 +54,7 @@
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
+#' @param do.brps T/F, calculate and report biological reference points
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -80,18 +81,21 @@
 #' m1$rep$F[,1] # get F estimates for fleet 1
 #' }
 fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
-                    do.osa = TRUE, osa.opts = list(method="cdf", parallel=TRUE), do.post.samp = TRUE,
+                    do.osa = TRUE, osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), do.post.samp = TRUE,
                     model=NULL, do.check = FALSE, MakeADFun.silent=FALSE, retro.silent = FALSE, do.proj = FALSE,
                     proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, 
                       proj.catch=NULL, avg.yrs=NULL, cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, 
                       proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
-                    do.fit = TRUE, save.sdrep=TRUE)
+                    do.fit = TRUE, save.sdrep=TRUE, do.brps = FALSE)
 {
 
   # fit model
   if(missing(model)){
     mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent)
-  } else {mod <- model}
+  } else {
+    verify_version(model)
+    mod <- model
+  }
 
   mod$years <- input$years
   mod$years_full <- input$years_full
@@ -109,13 +113,16 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     mod <- check_which_F_age(mod)
-    #mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
-    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
-    mod$rep = mod$report() #par values don't matter because function has not been evaluated
-    #mod <- check_FXSPR(mod)
+    if(do.brps){
+      if(any(mod$input$data$mig_type == 1)){
+        warning("Cannot currently calculate standard errors of biological reference points internally when migration and movement are simultaneous for any stock.")
+      } 
+      mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+      if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+      mod$rep = mod$report() #par values don't matter because function has not been evaluated
+      mod <- check_FXSPR(mod)
+    }
     
-    #print(mod$env$data$n_fleets)
-    #if(mod$env$data$n_fleets == 1 & mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
     if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
 
@@ -140,7 +147,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     
     # one-step-ahead residuals
     if(do.osa & mod$is_sdrep){
-      mod <- make_osa_residuals(mod)
+      mod <- make_osa_residuals(mod, osa.opts = osa.opts)
     } else if(do.osa) warning(paste("","** Did not do OSA residual analyses. **",
         "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",
         sep='\n'))
@@ -155,8 +162,8 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
   else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
-    #mod$input$data$do_annual_SPR_BRPs <- mod$env$data$do_annual_SPR_BRPs <- 1
-    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_annual_MSY_BRPs <- mod$env$data$do_annual_MSY_BRPs <- 1
+    #mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
     mod$rep <- mod$report() #par values don't matter because function has not been evaluated
     mod$parList <- mod$env$parList()
     mod <- check_which_F_age(mod)
@@ -199,7 +206,8 @@ check_FXSPR <- function(mod)
     mle <- mod$opt$par
   }
   #allow calculation of X%SPR BRPs
-  mod$env$data$do_annual_SPR_BRPs <- mod$input$data$do_annual_SPR_BRPs <- 1
+  if(mod$env$data$do_SPR_BRPs != 1) stop("in check_FXSPR: model$env$data$do_SPR_BRPs is not equal to 1")
+  #mod$env$data$do_SPR_BRPs <- mod$input$data$do_SPR_BRPs <- 1
   mod$retape()
   mod$fn(mle)
   mod$rep <- mod$report()
@@ -247,7 +255,7 @@ check_FXSPR <- function(mod)
     for(i in 1:2) #two tries to fix initial FXSPR value
     {
       warning(paste0("Changing initial values for estimating static FXSPR."))
-      mod$env$data$static_FXSPR_init <- mod$env$data$static_FXSPR_init*0.5
+      mod$env$data$FXSPR_static_init <- mod$env$data$FXSPR_static_init*0.5
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()

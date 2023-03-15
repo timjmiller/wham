@@ -333,8 +333,14 @@ set_move = function(input, move)
     }
   }
   data$use_mu_prior <- use_mu_prior 
-  
-  if(!is.null(move$separable)) data$mig_type[] = as.integer(!move$separable)
+
+  if(!is.null(move$separable)) {
+    if(any(!move$separable)) {
+      input$log$move <- c(input$log$move, "NOTE: movement and mortality must be assumed to occur seequentially for now.")
+      move$separable[] <- TRUE
+    }
+    data$mig_type[] = as.integer(!move$separable)
+  }
   if(data$n_regions>1) {
     if(length(unique(move$separable))==1) {
       if(move$separable[1] == 0) input$log$move <- c(input$log$move, "movement and mortality will be assumed to occur simultaneously within each season.\n")

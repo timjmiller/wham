@@ -15,7 +15,7 @@ set_osa_obs = function(input)
     x <- as.data.frame(data$Ecov_obs)
     x[data$Ecov_use_obs==0] <- NA # only include index data to fit in obsvec
     colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
-    x$year <- seq(from=data$year1_Ecov-data$year1_model+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
+    x$year <- seq(from=input$years_Ecov[1]-input$years[1]+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
     tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
     tmp <- tmp[complete.cases(tmp),]
     tmp$age <- NA

@@ -34,7 +34,8 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   data$use_index_paa[n_years + 1:peel,] <- 0
   #new year indicator for which random effects to include in likelihoods used primarily for peels (not selectivity though?)
   data$years_use <- 1:n_years - 1
-  data$do_annual_SPR_BRPs <- 0 #don't do these calculations
+  data$do_SPR_BRPs <- 0 #don't do these calculations
+  data$do_MSY_BRPs <- 0 #don't do these calculations
 
 #print("in fit peel")
   # peeling ecov is tricky bc ecov_years can be different than model_years - make sure to peel to same year

@@ -35,6 +35,7 @@
 #' }
 #' 
 make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)){
+  verify_version(model)
   # one-step-ahead residuals
   if(is.null(osa.opts$method)) osa.opts$method <- "oneStepGaussianOffMode"
   if(!osa.opts$method %in% c("oneStepGaussianOffMode","oneStepGaussian", "oneStepGeneric")){

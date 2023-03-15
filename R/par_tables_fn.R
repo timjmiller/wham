@@ -381,10 +381,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.vals = c(fe.vals, pars$Ecov_process_pars[1,i])
       fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[1,i], sd$Ecov_process_pars[1,i]))
       if(data$Ecov_model[i] == 1){
-        fe.names = c(fe.names, paste0("Ecov ", data$Ecov_label[[1]][i], ": ", c("Ecov$_1$", "RW $\\sigma$")))
+        fe.names = c(fe.names, paste0("Ecov ", mod$input$Ecov_names[[1]][i], ": ", c("Ecov$_1$", "RW $\\sigma$")))
       }
       if(data$Ecov_model[i] == 2){
-        fe.names = c(fe.names, paste0("Ecov ", data$Ecov_label[[1]][i], ": ", c("AR1 $\\mu$", "AR1 $\\rho$", "AR1 $\\sigma$")))
+        fe.names = c(fe.names, paste0("Ecov ", mod$input$Ecov_names[[1]][i], ": ", c("AR1 $\\mu$", "AR1 $\\rho$", "AR1 $\\sigma$")))
         fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$Ecov_process_pars[3,i])))
         fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit")) #doesn't use rho_trans
       }
@@ -400,7 +400,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     if(data$Ecov_where[i,1] == 1){ #Recruitment
       if(any(!is.na(ecov_beta_map[1,,i,1]))){
         npoly = sum(!is.na(ecov_beta_map[1,,i,1]))
-        fe.names = c(fe.names, paste0("Recruitment Ecov: ", data$Ecov_label[[1]][i], " $\\beta_", 1:npoly, "$"))  
+        fe.names = c(fe.names, paste0("Recruitment Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", 1:npoly, "$"))  
         for(p in 1:npoly) {
           fe.vals = c(fe.vals, pars$Ecov_beta[1,p,i,1])
           fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[1,p,i,1], sd$Ecov_beta[1,p,i,1]))
@@ -422,7 +422,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
           poly.ind = which(apply(ecov_beta_map_i,1, function(x) any(x == k)))[1]
           if(length(ages.list[[k]])){
             modify = ifelse(length(ages.list[[k]])>1, "M at ages (", "M at age (")
-            fe.names = c(fe.names, paste0(modify, paste0(ages.list[[k]], collapse = ", "), " Ecov: ", data$Ecov_label[[1]][i], " $\\beta_", poly.ind, "$"))
+            fe.names = c(fe.names, paste0(modify, paste0(ages.list[[k]], collapse = ", "), " Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", poly.ind, "$"))
             fe.vals = c(fe.vals, pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]])
             fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]], sd$Ecov_beta[1,poly.ind,i,ages.list[[k]][1]]))
           }
@@ -433,7 +433,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$Ecov_where[i,2+j] == 1){ #catchability. No reason Ecov_beta parameters would be shared across indices 
         if(any(!is.na(ecov_beta_map[2+j,,i,1]))){
           npoly = sum(!is.na(ecov_beta_map[2+j,,i,1]))
-          fe.names = c(fe.names, paste0("Catchability Ecov: ", data$Ecov_label[[1]][i], " $\\beta_", 1:npoly, "$"))  
+          fe.names = c(fe.names, paste0("Catchability Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", 1:npoly, "$"))  
           for(p in 1:npoly) {
             fe.vals = c(fe.vals, pars$Ecov_beta[2+j,p,i,1])
             fe.cis = rbind(fe.cis, ci(pars$Ecov_beta[2+j,p,i,1], sd$Ecov_beta[2+j,p,i,1]))
@@ -445,13 +445,13 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
 
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
-      fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. sd."))
+      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[[1]][i], " obs. sd."))
       ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
     if(data$Ecov_obs_sigma_opt[i] == 4){
-      fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
+      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[[1]][i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
       fe.vals = c(fe.vals, pars$Ecov_obs_sigma_pars[1,i])
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_sigma_pars[1,i], sd$Ecov_obs_sigma_pars[1,i]))
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_sigma_par[2,i]))

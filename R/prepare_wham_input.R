@@ -339,6 +339,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	if(is.null(basic_info)) basic_info = list(recruit_model = recruit_model)
 	else basic_info$recruit_model = recruit_model
 
+
 	#things that cannot be known from asap files
 	input$data$n_seasons = 1
 	input$data$fracyr_seasons = 1
@@ -365,7 +366,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#F_names = c("F")
 	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 	#print("1")
-	input$log$misc <- list() 
+	input$log$misc <- list("NOTE: WHAM version 1.5.0 makes major changes to the structure of some data, parameters, and reported objects. \n") 
 
 	if(!is.null(asap3)) {
 		input$log$asap3 <- list()
@@ -392,7 +393,6 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   	input$data$n_years_model = n_years[1]
 		input$data$years_use <- 1:input$data$n_years_model - 1
   	input$years <- asap3[[1]]$year1 + 1:asap3[[1]]$n_years - 1
-#print(3)
 
 		input$data$spawn_seasons <- rep(1, length(asap3))
 		input$data$spawn_regions <- 1:length(asap3)
@@ -430,7 +430,6 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	}
 
   input$years_full = input$years
-  input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
 
 	 print("start")
 	#some basic input elements see the function code below
@@ -515,11 +514,20 @@ gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
 add_basic_info = function(input, basic_info){
 	#this function adds basic_info to input
+	input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
 	if(!is.null(basic_info$ages)) {
 		if(!is.integer(basic_info$ages) | length(basic_info$ages) != input$data$n_ages) stop("basic_info$ages has been specified, but it is not an integer vector or it is not = n_ages")
 		else {
   		input$ages.lab = paste0(basic_info$ages, c(rep("",input$data$n_ages-1),"+"))
 		}
+	}
+	input$stock_names <- paste0("stock_", 1:input$data$n_stocks)
+	if(!is.null(basic_info$stock_names)) {
+		if(length(basic_info$stock_names) == input$data$n_stocks) input$stock_names <- as.character(basic_info$stock_names)
+	}
+	input$region_names <- paste0("region_", 1:input$data$n_regions)
+	if(!is.null(basic_info$region_names)) {
+		if(length(basic_info$region_names) == input$data$n_regions) input$region_names <- as.character(basic_info$region_names)
 	}
 
   input$data$n_years_model = length(input$years)
@@ -530,7 +538,7 @@ add_basic_info = function(input, basic_info){
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
 		input$log$misc <- c(input$log$misc, "NOTE: WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
-		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.")
+		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. \n")
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 0 #bias correct log-normal observation errors?
@@ -560,11 +568,12 @@ add_basic_info = function(input, basic_info){
 	input$data$do_post_samp_Ecov = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 
   #input$data$simulate_period = rep(1,2) #simulate above items for (model years, projection years)
-	input$data$do_annual_SPR_BRPs = 0 #this will be changed when after model fit
-	input$data$do_annual_MSY_BRPs = 0 #this will be changed when after model fit
+	input$data$do_SPR_BRPs = 0 #this will be changed when after model fit
+	input$data$do_MSY_BRPs = 0 #this will be changed when after model fit
 	input$data$SPR_weight_type = 0
 	input$data$SPR_weights = rep(1/input$data$n_stocks, input$data$n_stocks)
 	input$data$n_regions_is_small = 1
+	input$data$use_alt_AR1 = 0
 
   input$data$percentSPR = 40 #percentage of unfished SSB/R to use for SPR-based reference points
   input$data$percentFXSPR = 100 # percent of F_XSPR to use for calculating catch in projections
@@ -572,7 +581,8 @@ add_basic_info = function(input, basic_info){
   # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
-	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
+	input$data$FXSPR_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
+	input$data$FMSY_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
 
   input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
   	#rep(1,input$data$n_years_model))
@@ -585,6 +595,15 @@ add_basic_info = function(input, basic_info){
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
   if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
+	if(input$data$XSPR_R_opt %in% c(1,3)){
+		annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
+		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, coresponding annual ", annual_R_type, " recruitments are used. \n"))
+	}
+	if(input$data$XSPR_R_opt %in% c(2,4)){
+		annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
+		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, average of annual ", annual_R_type, " recruitments over years, ", 
+		paste0(input$years[input$data$XSPR_R_avg_yrs+1], collapse = ","), " are used. \n"))
+	}
 
   return(input)
 

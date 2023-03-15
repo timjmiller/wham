@@ -118,12 +118,10 @@ set_ecov = function(input, ecov) {
   data$Ecov_obs_sigma_opt <- 1
   data$n_Ecov <- 1
   data$Ecov_model <- rep(0, data$n_Ecov)
-  data$year1_Ecov <- 0
+  input$years_Ecov <- input$years[1]
   data$n_years_Ecov <- 1
   data$years_use_Ecov <- 0
   data$Ecov_use_obs <- matrix(0, nrow=1, ncol=1)
-  data$Ecov_year <- matrix(0, nrow=1, ncol=1)
-  data$year1_model <- input$years[1]
   
   data$Ecov_how_R <- matrix(0, data$n_Ecov, data$n_stocks)
   data$Ecov_how_q <- matrix(0, data$n_Ecov, data$n_indices)
@@ -135,7 +133,7 @@ set_ecov = function(input, ecov) {
   data$ind_Ecov_out_start_mu <- data$ind_Ecov_out_end_mu <- array(0, dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, 
     data$n_regions, data$n_regions-1))
   
-  data$Ecov_label <- "none"
+  input$Ecov_names <- "none"
   data$Ecov_use_re <- rep(0, data$n_Ecov)
 
   data$n_poly_Ecov_R <- matrix(1,data$n_Ecov, data$n_stocks)
@@ -187,19 +185,18 @@ set_ecov = function(input, ecov) {
     data$Ecov_obs_sigma_opt = rep(1, data$n_Ecov) # Ecov sigma given, initialized at given values, not estimated by default
 
     if(length(ecov$year) != n_Ecov_obs) stop("ecov$year is not the same length as # rows in ecov$mean")
-    data$Ecov_year <- as.numeric(ecov$year)
-    data$year1_Ecov <- ecov$year[1]
-    data$year1_model <- input$years[1]
+    #data$Ecov_year <- as.numeric(ecov$year)
+    input$years_Ecov <- as.numeric(ecov$year)
     end_model <- tail(input$years,1)
     end_Ecov <- tail(ecov$year,1)
     
     #define labels and report info about effects of each
     if(length(ecov$label) == data$n_Ecov){
-      data$Ecov_label <- ecov$label
+      input$Ecov_names <- ecov$label
     } else {
       input$log$ecov <- c(input$log$ecov, "NOTE: Number of Ecov labels not equal to number of Ecovs
               Setting Ecov labels = 'Ecov 1', 'Ecov 2', ...")
-      data$Ecov_label = paste0("Ecov ",1:data$n_Ecov)
+      input$Ecov_names = paste0("Ecov ",1:data$n_Ecov)
     }    
     
     
@@ -450,17 +447,14 @@ set_ecov = function(input, ecov) {
     max.lag = max(c(ecov$lag_R,ecov$lag_M,ecov$lag_mu,ecov$lag_q))
     #if(is.null(ecov$lag)) stop("ecov$lag needs to be provided for each ecov")
     #if(!is.list(ecov$lag)) ecov$lag = lapply(ecov$lag, function(x) rep(x,n_effects))
-    # print(data$year1_Ecov)
-    # print(data$year1_model)
     # print(max.lag)
-    if(data$year1_Ecov > data$year1_model - max.lag){
+    if(input$years_Ecov[1] > input$years[1] - max.lag){
       input$log$ecov <- c(input$log$ecov, "one or more ecov does not start by model year 1 - max(lag). Padding ecov... \n")
-      data$Ecov_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), data$Ecov_obs)
-      par$Ecov_obs_logsigma <- rbind(matrix(par$Ecov_obs_logsigma[1,], nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov, byrow=T), par$Ecov_obs_logsigma)
-      map$Ecov_obs_logsigma <- rbind(matrix(NA, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), map$Ecov_obs_logsigma)
-      data$Ecov_use_obs <- rbind(matrix(0, nrow = data$year1_Ecov-(data$year1_model-max.lag), ncol = data$n_Ecov), data$Ecov_use_obs)
-      data$Ecov_year <- c(seq(data$year1_model - max.lag, data$year1_Ecov-1), data$Ecov_year)
-      data$year1_Ecov <- data$year1_model - max.lag
+      data$Ecov_obs <- rbind(matrix(0, nrow = input$years_Ecov[1]-(input$years[1]-max.lag), ncol = data$n_Ecov), data$Ecov_obs)
+      par$Ecov_obs_logsigma <- rbind(matrix(par$Ecov_obs_logsigma[1,], nrow = input$years_Ecov[1]-(input$years[1]-max.lag), ncol = data$n_Ecov, byrow=T), par$Ecov_obs_logsigma)
+      map$Ecov_obs_logsigma <- rbind(matrix(NA, nrow = input$years_Ecov[1]-(input$years[1]-max.lag), ncol = data$n_Ecov), map$Ecov_obs_logsigma)
+      data$Ecov_use_obs <- rbind(matrix(0, nrow = input$years_Ecov[1]-(input$years[1]-max.lag), ncol = data$n_Ecov), data$Ecov_use_obs)
+      input$years_Ecov <- c(seq(input$years[1] - max.lag, input$years_Ecov[1]-1), input$years_Ecov)
     }
 
     # pad Ecov if it ends before last model year
@@ -470,7 +464,7 @@ set_ecov = function(input, ecov) {
       par$Ecov_obs_logsigma <- rbind(par$Ecov_obs_logsigma, matrix(par$Ecov_obs_logsigma[NROW(par$Ecov_obs_logsigma),], nrow = end_model-end_Ecov, ncol = data$n_Ecov, byrow=T))
       map$Ecov_obs_logsigma <- rbind(map$Ecov_obs_logsigma, matrix(NA, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
-      data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
+      input$years_Ecov <- c(input$years_Ecov, seq(end_Ecov+1, end_model))
       end_Ecov <- end_model
     }
     data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
@@ -511,36 +505,27 @@ set_ecov = function(input, ecov) {
 
     # get index of Ecov_x to use for Ecov_out (Ecovs can have diff lag)
     # print(end_model)
-    # print(data$Ecov_year)
-    # print(data$year1_model)
-    # print(which(data$Ecov_year==end_model))
     # print(ecov$lag_R)
     #stop()
-    data$ind_Ecov_out_start_R[] <- which(data$Ecov_year == data$year1_model) - ecov$lag_R - 1
-    data$ind_Ecov_out_end_R[] <- which(data$Ecov_year==end_model)- ecov$lag_R - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_M[] <- which(data$Ecov_year == data$year1_model) - ecov$lag_M - 1
-    data$ind_Ecov_out_end_M[] <- which(data$Ecov_year==end_model)- ecov$lag_M - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_q[] <- which(data$Ecov_year == data$year1_model) - ecov$lag_q - 1
-    data$ind_Ecov_out_end_q[] <- which(data$Ecov_year==end_model)- ecov$lag_q - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_mu[] <- which(data$Ecov_year == data$year1_model) - ecov$lag_mu - 1
-    data$ind_Ecov_out_end_mu[] <- which(data$Ecov_year==end_model)- ecov$lag_mu - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_R[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_R - 1
+    data$ind_Ecov_out_end_R[] <- which(input$years_Ecov==end_model)- ecov$lag_R - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_M[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_M - 1
+    data$ind_Ecov_out_end_M[] <- which(input$years_Ecov==end_model)- ecov$lag_M - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_q[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_q - 1
+    data$ind_Ecov_out_end_q[] <- which(input$years_Ecov==end_model)- ecov$lag_q - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_mu[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_mu - 1
+    data$ind_Ecov_out_end_mu[] <- which(input$years_Ecov==end_model)- ecov$lag_mu - 1 # -1 is for cpp indexing
     
-    # data$ind_Ecov_out_start <- data$ind_Ecov_out_end <- matrix(NA, data$n_Ecov, n_effects)
-    # for(i in 1:data$n_Ecov) for(j in 1:n_effects) {
-    #   data$ind_Ecov_out_start[i,j] <- which(data$Ecov_year==data$year1_model)-ecov$lag[[i]][j]-1 # -1 is for cpp indexing
-    #   data$ind_Ecov_out_end[i,j] <- which(data$Ecov_year==end_model)-ecov$lag[[i]][j]-1 # -1 is for cpp indexing
-    # }
-
     input$log$ecov <- c(input$log$ecov, paste0("Please check that the environmental covariates have been loaded and interpreted correctly.
 
-      Model years: ", data$year1_model, " to ", end_model,"
-      Ecov years: ", data$year1_Ecov, " to ", end_Ecov,"
+      Model years: ", input$years[1], " to ", end_model,"
+      Ecov years: ", input$years_Ecov[1], " to ", end_Ecov,"
 
     "))
 
     #if(!identical(length(ecov$lag), length(ecov$label), data$n_Ecov)) stop("Length of ecov$lag and ecov$label not equal to # Ecov")
     for(i in 1:data$n_Ecov){
-      years <- data$Ecov_year[as.logical(data$Ecov_use_obs[,i])]
+      years <- input$years_Ecov[as.logical(data$Ecov_use_obs[,i])]
       lastyr <- tail(years,1)
 
       # recruitment
@@ -617,7 +602,7 @@ set_ecov = function(input, ecov) {
         }
       }
     }
-    data$Ecov_label <- list(data$Ecov_label)
+    input$Ecov_names <- list(input$Ecov_names)
 
     # Ecov process pars
     par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov

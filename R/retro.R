@@ -22,6 +22,7 @@
 #retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 retro = function(model, n.peels = 7, ran = NULL, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 {
+  verify_version(model)
   temp = list(data = model$env$data, par = model$parList, map = model$env$map, random = ran, years=model$years, years_full=model$years_full, ages.lab=model$ages.lab, model_name=model$model_name)
   peels <- list()
   # if(n.peels>0) for(i in 1:n.peels) peels[[i]] = tryCatch(

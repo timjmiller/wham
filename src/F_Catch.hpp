@@ -89,6 +89,16 @@ array<Type> get_FAA(matrix<Type> log_F, vector<matrix<Type>> selAA, matrix<int> 
   }
   return(FAA);
 }
+
+template<class Type>
+array<Type> get_log_FAA(array<Type> FAA){
+  array<Type> log_FAA(FAA.dim(0),FAA.dim(1),FAA.dim(2));
+  log_FAA.setZero();
+  for(int f = 0; f < FAA.dim(0); f++) for(int y = 0; y < FAA.dim(1); y++) for(int a = 0; a < FAA.dim(2); a++) {
+    log_FAA(f,y,a) = log(FAA(f,y,a));
+  }
+  return(log_FAA);
+}
 //done
 
 template<class Type>

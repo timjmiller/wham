@@ -107,6 +107,7 @@ project_wham = function(model,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100),
   n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {
+  verify_version(model)
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts)
     , error = function(e) {model$err_proj <<- conditionMessage(e)})

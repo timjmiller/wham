@@ -50,6 +50,7 @@ prepare_projection = function(model, proj.opts) {
 #                                       percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL)
   if(is.null(proj.opts)) proj.opts <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100)
+  verify_version(model)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
