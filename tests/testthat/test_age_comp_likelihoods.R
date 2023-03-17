@@ -24,7 +24,8 @@ test_that("Age comp likelihoods evaluate correctly",{
     "logistic-normal-pool0",
     "dirichlet-miss0",
     "dirichlet-pool0",
-    "mvtweedie")
+    "mvtweedie",
+    "dir-mult-linear")
 
   inputs <- unfit <- list()
   for(i in 1:length(models)){
@@ -32,9 +33,11 @@ test_that("Age comp likelihoods evaluate correctly",{
     selectivity=list(model=rep("age-specific",3), re=rep("none",3), 
           initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
         fix_pars=list(4:5,4,2:4)),
+        #age_comp = models[i]))
         age_comp = models[i]))
-    unfit[[i]] <- suppressWarnings(fit_wham(inputs[[i]], do.osa = F, do.retro=F, do.fit = F, MakeADFun.silent = TRUE))
+    unfit[[i]] <- suppressWarnings(fit_wham(inputs[[i]], do.osa = F, do.retro=F, do.fit = TRUE, MakeADFun.silent = TRUE))
   }
+  # all.equal( inputs[[2]], inputs[[9]] )
 
   for(i in 1:length(models)){
     expect_equal(unfit[[i]]$rep$nll, acomp_tests[[i]]$nll, tolerance=1e-6, scale=1)
