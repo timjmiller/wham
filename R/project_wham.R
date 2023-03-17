@@ -53,6 +53,10 @@
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.growth.re} (T/F), continue growth random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, growth will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LAA.re} (T/F), continue LAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, LAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LW.re} (T/F), continue LW random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, LW will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.WAA.re} (T/F), continue WAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, WAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.

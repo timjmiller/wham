@@ -68,7 +68,7 @@ set_growth = function(input, growth)
   par$growth_re = growth_re_ini
   par$growth_repars = matrix(0, ncol = n_re_par, nrow = data$n_growth_par)
   par$growth_repars[,1] = log(0.1) # start sigma at 0.1, rho at 0
-  par$SD_par = SD_ini
+  par$SDgrowth_par = SD_ini
 
   # --------------------------------
   # Prepare data for growth:
@@ -80,11 +80,11 @@ set_growth = function(input, growth)
   map$growth_a <- factor(tmp1)
 
   # SD pars:
-  tmp1 <- par$SD_par
+  tmp1 <- par$SDgrowth_par
   tmp1[data$SD_est==0] = NA
   ind.notNA <- which(!is.na(tmp1))
   tmp1[ind.notNA] <- 1:length(ind.notNA)
-  map$SD_par <- factor(tmp1)
+  map$SDgrowth_par <- factor(tmp1)
 
   # RE info:
   map$growth_re = NULL

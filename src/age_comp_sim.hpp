@@ -309,12 +309,17 @@ vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
 }
 
 template<class Type>
-vector<Type> sim_waa(vector<Type> waa_pred, vector<Type> waa_cv)
+vector<Type> sim_waa(vector<Type> waa_pred, vector<Type> waa_cv, int bias_correct_pe)
 {
 	int n_ages = waa_pred.size();
 	vector<Type> obs(n_ages);
+	Type corr_mean = 0.0;
+	Type sd_wt = 0.0;
 	for(int a = 0; a < n_ages; a++){
-		obs(a) = exp(rnorm(log(waa_pred(a)), sqrt(log(pow(waa_cv(a),2)+1.0))));
+		sd_wt = sqrt(log(pow(waa_cv(a),2)+1.0));
+		corr_mean = log(waa_pred(a));
+		if(bias_correct_pe == 1) corr_mean -= pow(sd_wt,2.0)*0.5;
+		obs(a) = exp(rnorm(corr_mean, sd_wt));
 	}
 	return(obs);
 }
@@ -420,13 +425,12 @@ vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> a
 
 //make proporportions at length observations from transformed versions
 template<class Type>
-vector<Type> make_pal(vector<Type> tf_paa_obs, int len_comp_model)
+vector<Type> make_pal(vector<Type> tf_pal_obs, int len_comp_model)
 {
-  int n_lengths = tf_paa_obs.size();
-  vector<Type> paa_out(n_lengths);
-  paa_out.setZero();
-  for(int i = 0; i < n_lengths; i++) paa_out(i) = tf_paa_obs(i); //identity transform, zeros allowed
-  paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers								  
+  int n_lengths = tf_pal_obs.size();
+  vector<Type> pal_out(n_lengths);
+  pal_out = tf_pal_obs; //identity transform, zeros allowed
+  pal_out /= sum(pal_out); //multinomial, D-M, mvtweedie are in numbers								  
 
-  return paa_out;
+  return pal_out;
 }

@@ -76,11 +76,6 @@ set_osa_obs = function(input)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
-    #tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
-      #tmp <- tmp[complete.cases(tmp),]
-      #tmp$val <- log(tmp$val) # all obs of 0 catch should have use_indices==0, turned to NA, and already removed
-      #tmp$age <- NA
-      #tmp$type <- "logindex"
 
     # 3. log fleet catch
     x <- as.data.frame(data$agg_catch)
@@ -92,13 +87,6 @@ set_osa_obs = function(input)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
-    #x$year <- 1:data$n_years_catch
-    #tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
-    #tmp <- tmp[complete.cases(tmp),]  
-    #tmp$val <- log(tmp$val) # all obs of 0 catch should have use_agg_catch==0, turned to NA, and removed
-    #tmp$age <- NA
-    #tmp$type <- "logcatch"
-    #obs <- rbind(obs, tmp[, obs.colnames])
   
     # 4. paa index
     for(i in 1:data$n_indices){

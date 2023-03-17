@@ -22,7 +22,6 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   out = list()
   if(!retro.silent) print(peel)
   temp = input
-  true_n_years = temp$data$n_years_model
   n_years = temp$data$n_years_catch = temp$data$n_years_indices = temp$data$n_years_model = temp$data$n_years_model - peel
   temp$data$which_F_age = temp$data$which_F_age[1:n_years]
   temp$data$avg_years_ind = temp$data$avg_years_ind - peel

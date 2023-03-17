@@ -1191,6 +1191,7 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model, vecto
 
   Type Lminp = min(lengths);
   Type Lmaxp = max(lengths);
+  Type len_bin = lengths(1) - lengths(0); 
   Type Fac1 = 0.0;
   Type Fac2 = 0.0;
   Type Ll1p = 0.0;
@@ -1272,7 +1273,7 @@ array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model, vecto
 			for(int l = 0; l < n_lengths; l++) {
 				
 				if(l == 0) { 
-					Fac1 = (Lminp - mLAA(a))/this_SD;
+					Fac1 = (Lminp + len_bin - mLAA(a))/this_SD; // upper limit smallest len bin, important colsums = 0
 					out(y,l,a) = pnorm(Fac1);  
 				} else {
 					if(l == (n_lengths-1)) { 
@@ -1302,10 +1303,10 @@ matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Typ
   	for(int a = 0; a < n_ages; a++)
 	 {  
 		if(a < (n_ages-1)) { // for a < n_ages - 1. See Crane et al 2019
-			Grate = pow(WAA_jan1_y1(a+1)/WAA_jan1(a), 1.0/365.0) - 1.0;
-			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0);
+			Grate = WAA_jan1_y1(a+1)/WAA_jan1(a);
+			WAA(a) = WAA_jan1(a)*pow(Grate, fracyr);
 		} else { // for last age, use last Grate
-			WAA(a) = WAA_jan1(a)*pow(1.0 + Grate, fracyr*365.0); 
+			WAA(a) = WAA_jan1(a)*pow(Grate, fracyr); 
 		}
 		
 	}
