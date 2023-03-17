@@ -1277,16 +1277,17 @@ Type objective_function<Type>::operator() ()
   //if(reportMode==0){
   array<Type> log_FAA = get_log_FAA(FAA);
   array<Type> FAA_tot = get_FAA_tot(FAA, fleet_regions, n_regions);
+  REPORT(FAA_tot);
   array<Type> log_FAA_tot = get_log_FAA(FAA_tot); //FAA_tot is also a 3-d array (region,year,age)
   array<Type> log_NAA_rep = get_log_NAA_rep(NAA, NAA_where);
-  REPORT(FAA_tot);
   matrix<Type> Fbar(FAA_tot.dim(1),FAA_tot.dim(0));
+  Fbar.setZero();
+  int n_Fbar_ages = Fbar_ages.size();
   matrix<Type> log_FAA_all(FAA_tot.dim(1),FAA_tot.dim(2));
   vector<Type> log_full_F_all(FAA_tot.dim(1));
   vector<Type> log_SSB_all(SSB.rows());
   log_SSB_all.setZero();
-  Fbar.setZero(); log_FAA_all.setZero(); log_full_F_all.setZero();
-  int n_Fbar_ages = Fbar_ages.size();
+  log_FAA_all.setZero(); log_full_F_all.setZero();
   for(int y = 0; y < log_SSB_all.size(); y++) log_SSB_all(y) = log(SSB.row(y).sum());
   for(int y = 0; y < FAA_tot.dim(1); y++) {
     for(int r = 0; r < FAA_tot.dim(0); r++) for(int a = 0; a < n_Fbar_ages; a++) {

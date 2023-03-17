@@ -29,7 +29,7 @@ set_catch = function(input, catch_info= NULL) {
     for(i in 1:length(asap3)) asap3[[i]]$use_catch_acomp <- rep(1,asap3[[i]]$n_fleets) #default is to use age comp for catch
     n_fleets_per_region = sapply(asap3, function(x) x$n_fleets)
     data$n_fleets = sum(n_fleets_per_region)
-		if(!is.null(asap3[[i]]$fleet.names)) input$fleet_names <- c(input$fleet_names, asap3[[i]]$fleet.names)
+		for(i in 1:length(asap3)) if(!is.null(asap3[[i]]$fleet.names)) input$fleet_names <- c(input$fleet_names, asap3[[i]]$fleet.names)
   }
   if(!is.null(catch_info$n_fleets)) data$n_fleets = catch_info$n_fleets 
   if(is.null(input$fleet_names)) input$fleet_names <- paste0("fleet_", 1:data$n_fleets)

@@ -22,8 +22,8 @@ set_proj = function(input, proj.opts = NULL)
 		}
 	  data$logR_mean <- 0 # only used for SCAA projections
 	  data$logR_sd <- 0 # only used for SCAA projections
-	  data$FXSPR_init = rep(0.1, data$n_years_model + data$n_years_proj)
-	  data$FMSY_init = rep(0.1, data$n_years_model + data$n_years_proj)
+	  data$FXSPR_init = rep(0.5, data$n_years_model + data$n_years_proj)
+	  data$FMSY_init = rep(0.5, data$n_years_model + data$n_years_proj)
 	  data$F_proj_init = 0.1
 		data$percentFMSY = 100
 		data$percentFXSPR = 100

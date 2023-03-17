@@ -96,14 +96,18 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     grDevices::cairo_pdf(filename=file.path(dir.main,"diagnostics.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
     fit.summary.text.plot.fn(mod)
     plot.ll.table.fn(mod)
-    plot.catch.4.panel(mod)
-    plot.index.4.panel(mod)
+    for(i in 1:mod$env$data$n_fleets){
+      plot.catch.4.panel(mod, use.i = i)
+      plot.catch.age.comp(mod, use.i = i)
+      plot.catch.age.comp.resids(mod, use.i = i)
+    }
+    for(i in 1:mod$env$data$n_indices){
+      plot.index.4.panel(mod, use.i = i)
+      plot.index.age.comp(mod, use.i = i)
+      plot.index.age.comp.resids(mod, use.i = i)
+    }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod)
     plot.NAA.4.panel(mod)
-    plot.catch.age.comp(mod)
-    plot.catch.age.comp.resids(mod)
-    plot.index.age.comp(mod)
-    plot.index.age.comp.resids(mod)
     plot.NAA.res(mod)
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE)
@@ -127,11 +131,11 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         plot.NAA(mod, prop=TRUE, stock = i, region = r)
       }
     }
-    if(mod$is_sdrep)for(i in 1:mod$env$data$n_stocks) { # these only work if Bev-Holt S-R was fit
-      plot.SR.pred.line(mod, stock = i)
-    }
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
+        if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
+          plot.SR.pred.line(mod, stock = i)
+        }
         plot.recr.ssb.yr(mod, loglog=FALSE, stock = i)
         plot.recr.ssb.yr(mod, loglog=TRUE, stock = i)
         plot.SARC.R.SSB(mod, stock = i)
@@ -139,7 +143,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.cv(mod)
     }
     plot.fleet.F(mod)
-    plot.M(mod)
+    for(i in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions) {
+      plot.M(mod, stock = i, region = r)
+    }
     plot.tile.age.year(mod, type="selAA")
     plot.tile.age.year(mod, type="MAA")
     plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
@@ -153,9 +159,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     # plot.SPR.table(mod, plot=TRUE)
     # plot.SPR.table(mod, plot=FALSE)
     # plot.annual.SPR.targets(mod)
-    if(mod$is_sdrep) plot.FXSPR.annual(mod)
-    if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
-      plot.MSY.annual(mod)
+    if(mod$env$data$do_SPR_BRPs){
+      if(mod$is_sdrep) plot.FXSPR.annual(mod)
+    }
+    if(mod$env$data$do_MSY_BRPs){
+      if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
+        plot.MSY.annual(mod)
+      }
     }
     # below not revised yet
     # plot.yield.curves(mod, plot=TRUE)
@@ -197,7 +207,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.catch.by.fleet(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("catch_age_comp_fleet",i,".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0("catch_age_comp_", mod$input$fleet_names[i],"_", mod$input$region_names[mod$input$data$fleet_regions[i]], ".png")),
+        width=10,height=10,units="in",res=res,family=fontfam)
       plot.catch.age.comp.bubbles(mod, i=i)
       dev.off()
     }
@@ -205,7 +216,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.index.input(mod)
     dev.off()
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("index",i,"_age_comp.png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0(mod$input$index_names[i], "_", mod$input$region_names[mod$input$data$index_regions[i]], "_age_comp.png")),
+        width=10,height=10,units="in",res=res,family=fontfam)
       plot.index.age.comp.bubbles(mod, i=i)
       dev.off()
     }
@@ -214,9 +226,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.waa(mod,"ssb", ind = i)
       dev.off()
     }
-    png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.waa(mod,"jan1")
-    dev.off()
+    # png(file.path(dir.data,"weight_at_age_Jan1.png"),width=10,height=10,units="in",res=res,family=fontfam)
+    # plot.waa(mod,"jan1")
+    # dev.off()
     # png(file.path(dir.data,"weight_at_age_catch.png"),width=10,height=10,units="in",res=res,family=fontfam)
     # plot.waa(mod,"totcatch")
     # dev.off()
@@ -250,20 +262,27 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.catch.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
+    print("here -3")
     for(i in 1:mod$env$data$n_indices){
       plot.index.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
+    print("here -2")
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
+    print("here -1")
     plot.NAA.res(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
+    print("here 0")
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
+    print("here 1")
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+    print("here 2")
+
     #plot.recruitment.devs(mod)
 
     # PNG results -----------------
@@ -273,22 +292,27 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.sel.blocks(mod, ages.lab = mod$ages.lab, indices = FALSE, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
       #plot.fleet.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
+    print("here 3")
     for(i in 1:mod$env$data$n_indices){
       plot.sel.blocks(mod, ages.lab = mod$ages.lab, indices = TRUE, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
       #plot.index.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
+    print("here 4")
     if(mod$is_sdrep){
       png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.F.trend(mod)
       dev.off()
     }
-    for(i in 1:mod$env$data$n_stocks) {
+    print("here 5")
       png(file.path(dir.res,paste0("SSB_at_age_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+    for(i in 1:mod$env$data$n_stocks) {
       plot.SSB.AA(mod, prop=FALSE, stock = i)
       dev.off()
+    print("here 6")
       png(file.path(dir.res,paste0("SSB_at_age_proportion_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.AA(mod, prop=TRUE, stock = i)
       dev.off()
+    print("here 7")
       for(r in 1:mod$env$data$n_regions) {
         png(file.path(dir.res,paste0("Numbers_at_age_", mod$input$stock_names[i],"_", mod$input$region_names[r],".png")),
           width=10,height=10,units="in",res=res,family=fontfam)
@@ -300,11 +324,14 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         dev.off()
       }
     }
+    print("here 8")
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
-        png(file.path(dir.res,"SSB_Rec_", mod$input$stock_names[i],"_fit.png"),width=10,height=10,units="in",res=res,family=fontfam)
-        plot.SR.pred.line(mod, stock = i)
-        dev.off()
+        if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
+          png(file.path(dir.res,paste0("SSB_Rec_", mod$input$stock_names[i],"_fit.png")),width=10,height=10,units="in",res=res,family=fontfam)
+          plot.SR.pred.line(mod, stock = i)
+          dev.off()
+        }
         png(file.path(dir.res,paste0("SSB_Rec_", mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
         plot.recr.ssb.yr(mod, loglog=FALSE, stock = i)
         dev.off()
@@ -315,21 +342,32 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         plot.SARC.R.SSB(mod, stock = i)
         dev.off()
       }
+    print("here 9")
       png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.cv(mod)
       dev.off()
     }
+    print("here 10")
     png(file.path(dir.res,"F_byfleet.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.fleet.F(mod)
     dev.off()
-    png(file.path(dir.res,"M_at_age.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    for(i in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions) plot.M(mod, stock = i, region = r)
-    dev.off()
+    print("here 11")
+    for(i in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions) {
+      png(file.path(dir.res,paste0("M_at_age_", mod$input$stock_names[i], "_", mod$input$region_names[mod$input$data$stock_regions[i]],".png")),
+        width=10,height=10,units="in",res=res,family=fontfam)
+      plot.M(mod, stock = i, region = r)
+      dev.off()
+    }
+    print("here 12")
     plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
+    print("here 13")
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
+    print("here 14")
     plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
+    print("here 15")
     plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
+    print("here 16")
 
     # PNG reference points -----------------
     dir.refpts <- file.path(dir.plots, "ref_points")
@@ -345,8 +383,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     # plot.annual.SPR.targets(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
     # plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=TRUE)
     # plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=FALSE)
-    if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
-    if(mod$env$data$recruit_model == 3 & mod$is_sdrep) plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
+    if(mod$env$data$do_SPR_BRPs){
+      if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
+    }
+    if(mod$env$data$do_MSY_BRPs){
+      if(mod$env$data$recruit_model == 3 & mod$is_sdrep) plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
+    }
 
     # PNG retrospective -----------------
     if(!is.null(mod$peels)){

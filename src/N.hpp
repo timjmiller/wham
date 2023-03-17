@@ -796,11 +796,11 @@ template <class Type>
 array<Type> get_log_NAA_rep(array<Type> NAA, array<int> NAA_where){
   array<Type> log_NAA = NAA;
   log_NAA.setZero();
-  for(int s = 0; s < NAA.dim(0); s++) for(int r = 0; r < NAA.dim(2); r++) for(int y = 0; y < NAA.dim(2); y++) for(int a = 0; a < NAA.dim(3); a++){
+  for(int s = 0; s < NAA.dim(0); s++) for(int r = 0; r < NAA.dim(1); r++) for(int y = 0; y < NAA.dim(2); y++) for(int a = 0; a < NAA.dim(3); a++){
     if(NAA_where(s,r,a)) {
       log_NAA(s,r,y,a) = log(NAA(s,r,y,a));
     }
-    else log_NAA(s,r,y,a) = -100.0; 
+    else log_NAA(s,r,y,a) = -100.0; //no NAA there
   }
   return log_NAA;
 }
