@@ -944,7 +944,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> SD_len(2); // always 2 parameters
   for(int i=0; i < 2; i++) {
 	  if(growth_model < 3) SD_len(i) = exp(SDgrowth_par(i)); 
-	  else SD_len(i) = exp(SDLAA_par(i)); // nonparametric approach
+	  if(growth_model == 3) SD_len(i) = exp(SDLAA_par(i)); // nonparametric approach
   }
   REPORT(SD_len);
 
