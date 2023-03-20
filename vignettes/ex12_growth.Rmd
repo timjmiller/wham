@@ -71,11 +71,11 @@ envindex = read.csv("PDO_annual_1970_2019.csv")
 
 We simulated the following data:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/data_plot2.png){ width=50% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/data_plot2.png){ width=80% }
 
 and the environmental covariate produced time variability in the growth coefficient (K) parameter of the von Bertalanffy growth equation:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/bio24_time-varying_VonBert_K_Fem_GP_1.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/bio24_time-varying_VonBert_K_Fem_GP_1.png){ width=80% }
 
 ## 2. Create input data object
 
@@ -297,20 +297,20 @@ myMods = compare_wham_models(mods = list(my_model_1, my_model_3),
 
 SSB and fishing mortality time series:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_SSB_F_R.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_SSB_F_R.png){ width=80% }
 
 Stock status:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_rel_status_kobe.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_rel_status_kobe.png){ width=80% }
 
 Natural mortality:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_M_age10.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_M_age10.png){ width=80% }
 
 We could also compare the mean length at age among models and operating model (SS):
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_LAA_Ex1.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_LAA_Ex1.png){ width=80% }
 
 And SSB time series:
 
-![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_SSB_Ex1.png){ width=60% }
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex12_plots/compare_SSB_Ex1.png){ width=80% }
