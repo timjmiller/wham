@@ -273,7 +273,7 @@ prepare_projection = function(model, proj.opts)
     par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
     map$q_re <- rbind(matrix(as.integer(map$q_re), data$n_years_model, data$n_indices), matrix(NA, data$n_years_proj, data$n_indices))
     if(any(data$use_q_re == 1)){
-      ind = which(data$use_q_re)
+      ind = which(data$use_q_re == 1)
       map$q_re[,ind] <- 1:(length(ind) * (data$n_years_model + data$n_years_proj)) #turn on appropriate columns of q_re
     }
     map$q_re <- factor(map$q_re)
@@ -440,7 +440,7 @@ prepare_projection = function(model, proj.opts)
 
   }
 
-  # projection: LW
+  # projection: WAA
   if(any(data$proj_WAA_opt == 1)){ 
 
       par$WAA_re <- rbind(par$WAA_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))

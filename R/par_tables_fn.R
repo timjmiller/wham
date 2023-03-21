@@ -516,10 +516,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       }
 
       # SD information:
-      SD_vector = as.vector(pars$SD_len)
+      SD_vector = as.vector(pars$SDgrowth_par)
       fe.names = c(fe.names, c('SD1', 'SDA'))
       fe.vals = c(fe.vals, exp(SD_vector))
-      for(j in 1:2) fe.cis = rbind(fe.cis, ci(SD_vector[j], as.vector(sd$SD_len)[j], type = "exp"))
+      for(j in 1:2) fe.cis = rbind(fe.cis, ci(SD_vector[j], as.vector(sd$SDgrowth_par)[j], type = "exp"))
 
     }
 

@@ -122,7 +122,7 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     if(!is.fit) mle = model$par
     else {
       mle = model$opt$par
-      mod$fn(mle)
+      # mod$fn(mle) # what is this used for? error in GOA pollock
     }
     
     mod$rep = mod$report()
