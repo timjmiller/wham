@@ -24,7 +24,8 @@ test_that("Age comp likelihoods evaluate correctly",{
     "logistic-normal-pool0",
     "dirichlet-miss0",
     "dirichlet-pool0",
-    "mvtweedie")
+    "mvtweedie",
+    "dir-mult-linear")
 
   inputs <- unfit <- list()
   for(i in 1:length(models)){

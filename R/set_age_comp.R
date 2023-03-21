@@ -12,8 +12,9 @@ set_age_comp = function(input, age_comp)
                    "logistic-normal-pool0",
                    "logistic-normal-01-infl",
                    "logistic-normal-01-infl-2par",
-                   "mvtweedie" )
-  n_pars <- c(0,1,1,1,1,2,1,3,2,2)
+                   "mvtweedie",
+                   "dir-mult-linear" )
+  n_pars <- c(0,1,1,1,1,2,1,3,2,2,1)
   if(is.null(age_comp)){
     data$age_comp_model_fleets = rep(1, data$n_fleets) # multinomial by default
     data$age_comp_model_indices = rep(1, data$n_indices) # multinomial by default
@@ -67,13 +68,13 @@ set_age_comp = function(input, age_comp)
 
   map$index_paa_pars = matrix(NA,data$n_indices, 3)
   for(i in 1:data$n_indices) if(sum(data$use_index_paa[,i])){
-    if(data$age_comp_model_indices[i] %in% c(2:5,7))  map$index_paa_pars[i,1] = 1
+    if(data$age_comp_model_indices[i] %in% c(2:5,7,11))  map$index_paa_pars[i,1] = 1
     if(data$age_comp_model_indices[i] %in% c(6,9,10))  map$index_paa_pars[i,1:2] = 1
     if(data$age_comp_model_indices[i] %in% 8)  map$index_paa_pars[i,1:3] = 1
   }
   map$catch_paa_pars = matrix(NA,data$n_fleets, 3)
   for(i in 1:data$n_fleets) if(sum(data$use_catch_paa[,i])){
-    if(data$age_comp_model_fleets[i] %in% c(2:5,7))  map$catch_paa_pars[i,1] = 1
+    if(data$age_comp_model_fleets[i] %in% c(2:5,7,11))  map$catch_paa_pars[i,1] = 1
     if(data$age_comp_model_fleets[i] %in% c(6,9,10))  map$catch_paa_pars[i,1:2] = 1
     if(data$age_comp_model_fleets[i] %in% 8)  map$catch_paa_pars[i,1:3] = 1
   }

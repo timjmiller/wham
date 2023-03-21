@@ -107,7 +107,7 @@ set_osa_obs = function(input)
         obs_y = res[[1]]
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
         #multinom, D-M, mvtweedie
-        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]
+        if(data$age_comp_model_indices[i] %in% c(1:2,10,11)) obs_y = obs_y * data$index_Neff[y,i]
 
         #if(data$age_comp_model_indices[i] %in% 3:7) {
         #  ind = res[[2]]
@@ -138,7 +138,7 @@ set_osa_obs = function(input)
         res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
         obs_y = res[[1]]
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
-        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
+        if(data$age_comp_model_fleets[i] %in% c(1:2,10,11)) obs_y = obs_y * data$catch_Neff[y,i]
         #if(data$age_comp_model_fleets[i] %in% 3:7) {
         #  ind = res[[2]]
         #} else ind = 1:data$n_ages
@@ -238,12 +238,12 @@ transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE, a
     #transform logistic-normal obs to MVN obs (analogous to log-catch and log-indices)
     all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0",
     "logistic-normal-miss0", "logistic-normal-ar1-miss0", "logistic-normal-pool0",
-    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie")
+    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie", "dir-mult-linear")
   # if model %in% 1:2 do nothing for multinomial and D-m
   is_pred_pos = !(1:length(x) %in% ages_omit)
   x[which(!is_pred_pos)] = 0 #if obs in omitted ages are zero this does nothing
   x =  x/sum(x) #rescale to a reduced set of ages, if obs in omitted ages are zero this does nothing
-  if(model>2 & model<10){ #not multinom, D-M, mvtweedie
+  if(model>2 & model<10){ #not multinom, D-M, mvtweedie or DM-linear
     is_pos = x> zero.criteria # looking for zeros here will also omit the ages with predicted probability = 0
     pos_ind = which(is_pos)
     npos = sum(is_pos)
