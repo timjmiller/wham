@@ -241,7 +241,7 @@ ecov <- list(
 Create data input:
 
 ```{r eval=FALSE}
-my_input3 = prepare_wham_input(model_name="whamGrowth1",
+my_input3 = prepare_wham_input(model_name="whamGrowth3",
                                selectivity=list(model=rep("len-logistic",2), 
                                                 re=rep("none",2), 
                                                 initial_pars=list(selpars1,selpars2),
