@@ -1,0 +1,21 @@
+## CXX_STD = CXX11
+## CXX_STD = CXX11
+## multi_wham.o: multi_wham.cpp
+## 	"C:/rtools40/mingw64/bin/"g++ -std=gnu++11  -I"C:/PROGRA~1/R/R-41~1.3/include" -DNDEBUG  -I'C:/Users/timothy.j.miller/Documents/R/win-library/4.1/TMB/include' -I'C:/Users/timothy.j.miller/Documents/R/win-library/4.1/RcppEigen/include' -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -O3 -Wall  -mfpmath=sse -msse2 -mstackrealign -g -c multi_wham.cpp -o multi_wham.o	
+
+## 	C:/rtools40/mingw64/bin/g++ -std=gnu++11 -shared -s -static-libgcc -o wham.dll tmp.def multi_wham.o -LC:/PROGRA~1/R/R-41~1.3/bin/x64 -lR
+
+PKG_CXXFLAGS = -DTMB_MODEL -DTMB_EIGEN_DISABLE_WARNINGS
+## CXX17STD = -std=c++11
+## CPP11FLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -Wa, -mbig-obj -O3
+## CXX11FLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -Wa, -mbig-obj -O3
+## CXX14FLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -Wa, -mbig-obj -O3
+## CXX17FLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -Wa, -mbig-obj -O3
+## Strip debug symbols from build object; reduces shared library size by an
+## order of magnitude or more. Taken from Dirk Eddelbuettel:
+## http://dirk.eddelbuettel.com/blog/2017/08/14/#009_compact_shared_libraries
+
+## strippedLib: $(SHLIB)
+## 	if test -e "/usr/bin/strip"; then /usr/bin/strip --strip-debug $(SHLIB); fi
+## 
+## .phony: strippedLib

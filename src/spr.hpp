@@ -916,7 +916,7 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M,
     log_SPR0(s) = log(SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1));
     log_SPR0(n_stocks) += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
     log_SSB_XSPR(s) = log(R_XSPR(s)) + log_SPR(s);
-    log_SSB_XSPR(n_stocks) += SPR_weights(s) * R_XSPR(s) * SPR_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
+    log_SSB_XSPR(n_stocks) += R_XSPR(s) * SPR_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
     //log_SSB_XSPR(n_stocks) += R_XSPR(s) * SPR_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
     for(int f = 0; f < n_fleets; f++) {
       //NOTE: If stock s cannot ever be in fleet_region(f)-1 then this will give log(0);
@@ -933,9 +933,9 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M,
   log_Y_XSPR = log(log_Y_XSPR);
   log_SPR(n_stocks) = log(log_SPR(n_stocks));
   log_SPR0(n_stocks) = log(log_SPR0(n_stocks));
+  log_SSB_XSPR(n_stocks) = log(log_SSB_XSPR(n_stocks));
   //see(log_SPR);
   //see(log_SPR0);
-  //log_SSB_XSPR(n_stocks) = log(exp(log_SSB_XSPR.head(n_stocks)).sum());
   //log_Y_XSPR(n_fleets) = log(exp(log_Y_XSPR.head(n_fleets)).sum());
   vector< vector<Type> > res(7); 
   res(0) = log_FAA_XSPR; // log_FAA at FXSPR by fleet and across fleets

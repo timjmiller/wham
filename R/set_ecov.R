@@ -25,13 +25,14 @@
 #'     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
 #'     \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
 #'     Use the observation? Can be used to ignore subsets of the ecov without changing data files.}
-#'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, \code{NA} = do not fit}
+#'     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, 
+#'        \code{NA} = do not fit}
 #'     \item{$process_mean_vals}{vector of (initial) mean values for the ecov time-series.}
 #'     \item{$process_sig_vals}{vector of (initial) standard deviation values for the ecov time-series.}
 #'     \item{$process_cor_vals}{vector of (initial) correlation values for the ecov time-series.}
-#'     \item{$recruitment_how}{character matrix (n_Ecov x n_stocks) indicating how each ecov affects recruitment for each stock. Options are based on 
-#'        (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}) combined with the order of orthogonal 
-#'        polynomial of the covariate and has the form "type-lag-order"}{"type" can be:
+#'     \item{$recruitment_how}{character matrix (n_Ecov x n_stocks) indicating how each ecov affects recruitment for each stock. 
+#'        Options are based on (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}) 
+#'        combined with the order of orthogonal polynomial of the covariate and has the form "type-lag-order". "type" can be:
 #'         \describe{
 #'           \item{= "none"}{no effect.}
 #'           \item{= "controlling"}{pre-recruit density-independent mortality.}
@@ -39,7 +40,7 @@
 #'           \item{= "lethal"}{threshold, i.e. R --> 0 at some ecov value.}
 #'           \item{= "masking"}{metabolic/growth, decreases dR/dS}
 #'           \item{= "directive"}{e.g. behavioral}
-#          }
+#'          }
 #'         for type other than "none", "lag" can be:
 #'         \describe{
 #'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
@@ -49,46 +50,50 @@
 #'           \item{= "linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
 #'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
 #'         }
-#'         so "limiting-lag-1-poly-2" would model the covariate affecting recruitment the next year (lag = 1) as a second order orthogonal polynomial (\eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}) limiting effect.
-#'     }
-#'     \item{$M_how}{character array (n_Ecov x n_stocks x n_ages x n_regions) indicating how each ecov affects M by age,stock,region and has 
-#'      the form "lag-order"}{"lag" can be:
+#'         so "limiting-lag-1-poly-2" would model the covariate affecting recruitment the next year (lag = 1) as a second order orthogonal 
+#'          polynomial (\eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}) limiting effect.
+#'      }
+#'     \item{$M_how}{character array (n_Ecov x n_stocks x n_ages x n_regions) indicating how each ecov affects M by age,stock,region and 
+#'        has the form "lag-order". "lag" can be:
 #'         \describe{
 #'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
+#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects M in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
+#'           \item{= "linear"}{the covariate effect is linear on the transformed M parameter (e.g., log).}
 #'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
-#          }}
+#'          }
+#'       }
 #'     \item{$M_effect_map}{integer array (n_stocks x n_ages x n_regions x n_Ecov) indicating which estimated effects are common by age,stock,region.
 #'       If not specified there will be one effect estimated for all M where $M_how is other than "none".}
 #'     \item{$q_how}{character matrix (n_Ecov x n_indices) indicating whether each ecov affects catchability for each index. and has 
-#'      the form "lag-order"}{"lag" can be:
+#'      the form "lag-order". "lag" can be:
 #'         \describe{
 #'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
+#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects catchability in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
+#'           \item{= "linear"}{the covariate effect is linear on the transformed catchability parameter (e.g., log).}
 #'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
-#          }}
+#'          }
+#'       }
 #'     \item{$move_how}{character array (n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions - 1) indicating whether each ecov 
-#'        affects movement from one region to the others by stock,age,season. and has the form "lag-order"}{"lag" can be:
+#'        affects movement from one region to the others by stock,age,season. and has the form "lag-order". "lag" can be:
 #'         \describe{
 #'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
+#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects a movement parameter in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
+#'           \item{= "linear"}{the covariate effect is linear on the transformed movement parameter (e.g., log).}
 #'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
-#          }}
+#'          }
+#'        }
 #'     \item{$move_effect_map}{integer array (n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_Ecov) indicating which estimated 
 #'        effects are common by age,stock,region, season etc. If not specified there will be one effect estimated for all movement parameters
-#'        where $move_how is other than "none".}}
+#'        where $move_how is other than "none".}
 #'     \item{$R_beta_vals}{array of initial values for effects on recruitment.}
 #'     \item{$M_beta_vals}{array of initial values for effects on natural mortality.}
 #'     \item{$q_beta_vals}{array of initial values for effects on cathability.}

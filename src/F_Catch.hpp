@@ -302,7 +302,7 @@ vector<Type> simulate_catch_paa_in_obsvec(vector<Type> obsvec, vector<int> agesv
     vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
       vector<Type>(catch_paa_pars.row(f)));
     obsvec_out.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)) = tf_paa_obs;
-    if(f == 0 & y == 0){
+    if((f == 0) & (y == 0)){
       if(trace) see(f);
       if(trace) see(y);
       if(trace) see(t_pred_paa);

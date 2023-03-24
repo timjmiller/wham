@@ -262,26 +262,20 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.catch.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
-    print("here -3")
     for(i in 1:mod$env$data$n_indices){
       plot.index.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
       plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
-    print("here -2")
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
-    print("here -1")
     plot.NAA.res(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
-    print("here 0")
     if(!is.null(mod$osa)) {
       plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
-    print("here 1")
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
-    print("here 2")
 
     #plot.recruitment.devs(mod)
 
@@ -292,27 +286,22 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.sel.blocks(mod, ages.lab = mod$ages.lab, indices = FALSE, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
       #plot.fleet.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
-    print("here 3")
     for(i in 1:mod$env$data$n_indices){
       plot.sel.blocks(mod, ages.lab = mod$ages.lab, indices = TRUE, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
       #plot.index.sel.blocks(mod, ages.lab = mod$ages.lab, do.png=TRUE, fontfam=fontfam, use.i=i, od=dir.res)
     }
-    print("here 4")
     if(mod$is_sdrep){
       png(file.path(dir.res,"SSB_F_trend.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.F.trend(mod)
       dev.off()
     }
-    print("here 5")
       png(file.path(dir.res,paste0("SSB_at_age_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
     for(i in 1:mod$env$data$n_stocks) {
       plot.SSB.AA(mod, prop=FALSE, stock = i)
       dev.off()
-    print("here 6")
       png(file.path(dir.res,paste0("SSB_at_age_proportion_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.AA(mod, prop=TRUE, stock = i)
       dev.off()
-    print("here 7")
       for(r in 1:mod$env$data$n_regions) {
         png(file.path(dir.res,paste0("Numbers_at_age_", mod$input$stock_names[i],"_", mod$input$region_names[r],".png")),
           width=10,height=10,units="in",res=res,family=fontfam)
@@ -324,7 +313,6 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         dev.off()
       }
     }
-    print("here 8")
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
         if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
@@ -342,32 +330,24 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
         plot.SARC.R.SSB(mod, stock = i)
         dev.off()
       }
-    print("here 9")
       png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.cv(mod)
       dev.off()
     }
-    print("here 10")
     png(file.path(dir.res,"F_byfleet.png"),width=10,height=10,units="in",res=res,family=fontfam)
     plot.fleet.F(mod)
     dev.off()
-    print("here 11")
     for(i in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions) {
       png(file.path(dir.res,paste0("M_at_age_", mod$input$stock_names[i], "_", mod$input$region_names[mod$input$data$stock_regions[i]],".png")),
         width=10,height=10,units="in",res=res,family=fontfam)
       plot.M(mod, stock = i, region = r)
       dev.off()
     }
-    print("here 12")
     plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    print("here 13")
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
-    print("here 14")
     plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
-    print("here 15")
     plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)
-    print("here 16")
 
     # PNG reference points -----------------
     dir.refpts <- file.path(dir.plots, "ref_points")

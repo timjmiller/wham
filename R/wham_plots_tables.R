@@ -2672,10 +2672,14 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   } else {
     status.lwd <- rep(1, length(status.years))
   }
+  all_stocks <- mod$input$data$n_stocks +1
+  all_catch <- mod$input$data$n_fleets +1
+
   std <- summary(mod$sdrep, "report")
-	inds <- list(Y.t = which(rownames(std) == "log_Y_FXSPR"))
+  inds <- list()
+	inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
 	inds$F.t <- which(rownames(std) == "log_FXSPR")
-	inds$SSB.t <- which(rownames(std) == "log_SSB_FXSPR")
+	inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
 	inds$ssb <- which(rownames(std) == "log_SSB_all")
 	inds$full.f <- which(rownames(std) == "log_full_F_all")
   # log.faa <- array(std[inds$faa,1], dim = dim(mod$rep$FAA_tot))
@@ -2690,7 +2694,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   log.rel.ssb.rel.F.cov <- lapply(1:n_years_full, function(x)
   {
     K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
-    ind <- c(inds$ssb[x],inds$SSB.t[x],inds$full.f[x],inds$F.t[x])
+    ind <- c(inds$ssb[x],inds$SSB.t[x,all_stocks],inds$full.f[x],inds$F.t[x])
     tcov <- cov[ind,ind]
     return(t(K) %*% tcov %*% K)
   })
@@ -2702,21 +2706,18 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   for(i in 1:3)
   {
     t.ylab <- ylabs[i]
-    np <- mod$env$data$n_fleets
-    if(i %in% 2:3) np <- 1
-    
+    np <- mod$env$data$n_fleets + 1
+    if(i == 2) np <- 1
+    if(i == 3) np <- mod$input$data$n_stocks + 1
     vals <- matrix(std[inds[[i]],1], ncol = np)[1:n_years_full,,drop = F]
     cv <- matrix(std[inds[[i]],2], ncol = np)[1:n_years_full,,drop = F]
     ci <-  lapply(1:np, function(x) vals[,x] + cbind(qnorm(1-alpha/2)*cv[,x], -qnorm(1-alpha/2)*cv[,x]))
-    # t.ind <- inds[[i]]
-    # vals <- std[t.ind,1][1:n_years_full]
-    # cv <- std[t.ind,2][1:n_years_full]
-    max.y <- max(sapply(ci, max, na.rm = T), na.rm = T)
+    max_y1 <- exp(max(sapply(ci, max, na.rm = T), na.rm = T))
     plot.colors <- "black"
     if(np>1) plot.colors <- viridisLite::viridis(n = np)
     tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
     if(all(!is.nan(unique(vals)))){
-  	  if(!na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max.y), type = 'n', cex.lab = 2)
+  	  if(!na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max_y1), type = 'n', cex.lab = 2)
       if(na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'n', cex.lab = 2)
   	  grid(col = gray(0.7))
       for(p in 1:np){
@@ -2728,6 +2729,8 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
         polygon(polyx, polyy, col = tcol[p], border = tcol[p], lwd = 1)
       }
       if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
+      if(i == 1) legend("topright", legend = c(mod$input$fleet_names, "Total"), lty = 1, col = plot.colors, bty = "n")
+      if(i == 3) legend("topright", legend = c(mod$input$stock_names, "Total"), lty = 1, col = plot.colors, bty = "n")
       mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
     } else { # all nan, print error message
       plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
@@ -2736,14 +2739,13 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     }
 	}
   if(do.tex | do.png) dev.off() else par(origpar)
-
   plot.colors <- "black"
   tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
   # FSPR relative --------------------------------------------------
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   par(mfrow=c(2,1))
-  rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
+  rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t[,all_stocks],1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
   ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
   if(all(!is.nan(unique(rel.ssb.vals)))){
@@ -2809,6 +2811,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
     if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),1.5)
     if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.5)
+    
 
     if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3778,7 +3781,6 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.selAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
     colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Block")
     block.names <- paste0("Block ",1:n_selblocks,": ", sel_mod,"\n(",sel_re," random effects)")
-    print(block.names)
     for(i in 1:n_selblocks){
       tmp = as.data.frame(rep$selAA[[i]])
       tmp$Year <- years

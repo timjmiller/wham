@@ -38,9 +38,9 @@
 #'       stock- and region-specific. Only used if \code{M$mean_model} = "weight-at-age".}
 #'     \item{$b_prior}{T/F, should a N(mu, 0.08) prior (where mu = log(0.305) by default) be used on log_b? Based on Fig. 1 and Table 1 
 #'       (marine fish) in  \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}. (Only used if 
-#'       \code{$mean_model} is "weight-at-age".}
+#'       \code{$mean_model} is "weight-at-age").}
 #'     \item{$intial_b}{if any elements of \code{$mean_model} is "weight-at-age", initial value for mean b for weight-at-age
-#'       model.
+#'       model.}
 #'     \item{$re_model}{Character matrix (n_stocks x n_regions) of options for time- and age-varying (random effects) on M by stock and region.
 #'       Possible values are:
 #'       \describe{

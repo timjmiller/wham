@@ -560,7 +560,7 @@ array<Type> get_avg_mu(array<Type> trans_mu_base, vector<int> years, vector<int>
         int k = 0;
         for(int j = 0; j < n_regions; j++){ 
           if(j!=r) {
-            if(can_move(r,j)) for(int y = 0; y < n_y; y++) {
+            if(can_move(s,t,r,j)) for(int y = 0; y < n_y; y++) {
               avg_mu(s,a,t,r,j) = exp(trans_mu_base(s,a,t,years(y),r,k))/Type(n_y); //log of transition intensities
               
             }

@@ -13,11 +13,11 @@
 #'     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
 #'     \item{\code{$selblock_pointer_fleets}}{matrix, years x fleets, indices of selAA used by each fleet in each year}
 #'     \item{\code{$selblock_pointer_indices}}{matrix, years x indices, indices of selAA used by each index in each year}
-#'     \item{\code{$MAA}}{matrix, years x ages, natural mortality}
+#'     \item{\code{$MAA}}{array, stocks x regions x years x ages, natural mortality}
 #'     \item{\code{$log_SSB}}{matrix, years x 2, log-scale spawning stock biomass. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_F}}{matrix, years x 2, log-scale fully-selected F. 1st col = MLE, 2nd col = SE.}
-#'     \item{\code{$log_NAA}}{matrix, years x ages, numbers at age}
-#'     \item{\code{$NAA_CV}}{matrix, years x ages, CV of numbers at age}
+#'     \item{\code{$log_NAA}}{array, stocks x regions x years x ages, numbers at age}
+#'     \item{\code{$NAA_CV}}{array, stocks x regions x years x ages, CV of numbers at age}
 #'     \item{\code{$percentSPR}}{scalar, X\% SPR used to calculate reference points, default = 40}
 #'     \item{\code{$log_Y_FXSPR}}{matrix, years x 2, log-scale yield at FXSPR. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_FXSPR}}{matrix, years x 2, log-scale FXSPR. 1st col = MLE, 2nd col = SE.}
@@ -46,29 +46,38 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x$MAA <- mod$rep$MAA
 
   # std = summary(mod$sdrep)
+  all_catch = mod$input$data$n_fleets+1
+  all_stocks = mod$input$data$n_stocks+1 
   std <- summary(mod$sdrep, "report")
-  inds <- list(Y.t = which(rownames(std) == "log_Y_FXSPR"))
-  inds$F.t <- which(rownames(std) == "log_FXSPR")
-  inds$SSB.t <- which(rownames(std) == "log_SSB_FXSPR")
-  inds$ssb <- which(rownames(std) == "log_SSB")
-  inds$faa <- which(rownames(std) == "log_FAA_tot")
-  log.faa <- matrix(std[inds$faa,1], n_years, n_ages)
-  age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
-  inds$full.f <- (age.full.f-1)*n_years + 1:n_years  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
-  inds$naa <- which(rownames(std) == "log_NAA_rep")
+  inds <- list()
+	inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
+	inds$F.t <- which(rownames(std) == "log_FXSPR")
+	inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
+	inds$ssb <- which(rownames(std) == "log_SSB_all")
+	inds$full.f <- which(rownames(std) == "log_full_F_all")
+  
+  # inds <- list(Y.t = which(rownames(std) == "log_Y_FXSPR"))
+  # inds$F.t <- which(rownames(std) == "log_FXSPR")
+  # inds$SSB.t <- which(rownames(std) == "log_SSB_FXSPR")
+  # inds$ssb <- which(rownames(std) == "log_SSB")
+  # inds$faa <- which(rownames(std) == "log_FAA_tot")
+  # log.faa <- matrix(std[inds$faa,1], n_years, n_ages)
+  # age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
+  # inds$full.f <- (age.full.f-1)*n_years + 1:n_years  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
+  inds$naa <- array(which(rownames(std) == "log_NAA_rep"), dim = dim(mod$rep$NAA))
   if("log_FMSY" %in% rownames(std)){
     inds$Fmsy <- which(rownames(std) == "log_FMSY")
     x$log_FMSY <- cbind(std[inds$Fmsy,1:2], get.ci(std[inds$Fmsy,1:2], alpha=alphaCI))
     colnames(x$log_FMSY) <- c("log_est","log_se","est","lo","hi")
   }
   if("log_SSB_MSY" %in% rownames(std)){
-    inds$SSBmsy <- which(rownames(std) == "log_SSB_MSY")
-    x$log_SSB_MSY <- cbind(std[inds$SSBmsy,1:2], get.ci(std[inds$SSBmsy,1:2], alpha=alphaCI))
+    inds$SSBmsy <- matrix(which(rownames(std) == "log_SSB_MSY"), ncol = all_stocks)
+    x$log_SSB_MSY <- cbind(std[inds$SSBmsy[,all_stocks],1:2], get.ci(std[inds$SSBmsy[,all_stocks],1:2], alpha=alphaCI))
     colnames(x$log_SSB_MSY) <- c("log_est","log_se","est","lo","hi")
   }
   if("log_MSY" %in% rownames(std)){
-    inds$msy <- which(rownames(std) == "log_MSY")    
-    x$log_MSY <- cbind(std[inds$msy,1:2], get.ci(std[inds$msy,1:2], alpha=alphaCI))
+    inds$msy <- array(which(rownames(std) == "log_MSY"), dim = dim(mod$rep$log_MSY))
+    x$log_MSY <- cbind(std[inds$msy[all_catch,all_stocks,],1:2], get.ci(std[inds$msy[all_catch,all_stocks,],1:2], alpha=alphaCI))
     colnames(x$log_MSY) <- c("log_est","log_se","est","lo","hi")
   }
   # inds$catch <- which(rownames(std) == "log_pred_catch")
@@ -81,17 +90,17 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x$log_F <- cbind(std[inds$full.f,1:2], get.ci(std[inds$full.f,1:2], alpha=alphaCI))
   colnames(x$log_F) <- c("log_est","log_se","est","lo","hi")
   # x$F_CV <- std[inds$full.f,2]
-  x$log_NAA <- matrix(std[inds$naa,1], n_years, n_ages)
-  x$NAA_CV <- matrix(std[inds$naa,2], n_years, n_ages)
+  x$log_NAA <- array(std[inds$naa,1], dim = dim(mod$rep$NAA))
+  x$NAA_CV <- array(std[inds$naa,2], dim = dim(mod$rep$NAA))
   x$log_NAA_lo <- exp(x$log_NAA - qnorm(1-alphaCI/2)*x$NAA_CV)
   x$log_NAA_hi <- exp(x$log_NAA + qnorm(1-alphaCI/2)*x$NAA_CV)
 
   x$percentSPR <- mod$env$data$percentSPR
-  x$log_Y_FXSPR <- cbind(std[inds$Y.t,1:2], get.ci(std[inds$Y.t,1:2], alpha=alphaCI))
+  x$log_Y_FXSPR <- cbind(std[inds$Y.t[,all_catch],1:2], get.ci(std[inds$Y.t[,all_catch],1:2], alpha=alphaCI))
   colnames(x$log_Y_FXSPR) <- c("log_est","log_se","est","lo","hi")
   x$log_FXSPR <- cbind(std[inds$F.t,1:2], get.ci(std[inds$F.t,1:2], alpha=alphaCI))
   colnames(x$log_FXSPR) <- c("log_est","log_se","est","lo","hi")
-  x$log_SSB_FXSPR <- cbind(std[inds$SSB.t,1:2], get.ci(std[inds$SSB.t,1:2], alpha=alphaCI))
+  x$log_SSB_FXSPR <- cbind(std[inds$SSB.t[,all_stocks],1:2], get.ci(std[inds$SSB.t[,all_stocks],1:2], alpha=alphaCI))
   colnames(x$log_SSB_FXSPR) <- c("log_est","log_se","est","lo","hi")
   # x$Y_FXSPR_CV <- std[inds$Y.t,2]
   # x$FXSPR_CV <- std[inds$F.t,2]
@@ -100,14 +109,14 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   cov <- mod$sdrep$cov
   x$log_rel_ssb_F_cov <- lapply(1:n_years, function(x){
     K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
-    ind <- c(inds$ssb[x],inds$SSB.t[x],inds$full.f[x],inds$F.t[x])
+    ind <- c(inds$ssb[x],inds$SSB.t[x,all_stocks],inds$full.f[x],inds$F.t[x])
     tcov <- cov[ind,ind]
     return(t(K) %*% tcov %*% K)
   })
   if("log_FMSY" %in% rownames(std) & "log_SSB_MSY" %in% rownames(std)){
     x$log_rel_ssb_F_cov_msy <- lapply(1:n_years, function(x){
       K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
-      ind <- c(inds$ssb[x],inds$SSBmsy[x],inds$full.f[x],inds$Fmsy[x])
+      ind <- c(inds$ssb[x],inds$SSBmsy[x,all_stocks],inds$full.f[x],inds$Fmsy[x])
       tcov <- cov[ind,ind]
       return(t(K) %*% tcov %*% K)
     })    

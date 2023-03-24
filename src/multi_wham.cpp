@@ -283,11 +283,11 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_obs_logsigma_re); // N_Ecov_years x n_Ecov. columns of random effects used if Ecov_obs_sigma_opt = 4 
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
   Type nll = 0.0; //negative log-likelihood
-  int trace = 1;
+  //int trace = 1;
   int no_trace = 0;
   int n_years_pop = n_years_model + n_years_proj;
 
-  //make expanded fracyr_SSB
+  //make expanded (or not) fracyr_SSB, waa, maturity
   matrix<Type> fracyr_SSB_all(n_years_pop, n_stocks);
   fracyr_SSB_all.setZero();
   for(int y = 0; y < n_years_model; y ++) fracyr_SSB_all.row(y) = vector<Type> (fracyr_SSB.row(y));
@@ -299,14 +299,12 @@ Type objective_function<Type>::operator() ()
     mature_all(s,y,a) = mature(s,y,a); 
     waa_ssb(s,y,a) = waa(waa_pointer_ssb(s)-1,y,a);
   }
-  //see(waa_ssb);
   array<Type> waa_catch(n_fleets,n_years_pop,n_ages);
   waa_catch.setZero();
   for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_years_model; y ++) for(int a = 0; a < n_ages; a++) {
     waa_catch(f,y,a) = waa(waa_pointer_fleets(f)-1,y,a);
   }
 
-  see(1);
   /////////////////////////////////////////
   // Environmental covariate process model --------------------------------------
 
@@ -327,7 +325,6 @@ Type objective_function<Type>::operator() ()
   if(do_post_samp_Ecov == 1) ADREPORT(Ecov_re);
   /////////////////////////////////////////
   //see(Ecov_x);
-  see(2);
 
   /////////////////////////////////////////
   // Environmental covariate observation model -------------------------------------
@@ -379,7 +376,6 @@ Type objective_function<Type>::operator() ()
   }
 
   /////////////////////////////////////////
-  see(3);
   
     
   /////////////////////////////////////////////////////////
@@ -429,7 +425,6 @@ Type objective_function<Type>::operator() ()
   //see(Ecov_lm_R)
   REPORT(Ecov_lm_R);
   ///////////////////////
-  see(4);
 
   //M
   array<Type> Ecov_out_M(n_stocks, n_ages, n_regions, n_years_pop, n_Ecov);
@@ -459,7 +454,6 @@ Type objective_function<Type>::operator() ()
     for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_M(s,r,a,y,i) = Ecov_lm_M_s_r_a(y,i);
   }
   REPORT(Ecov_lm_M);
-  see(5);
   
   //q
   array<Type> Ecov_out_q(n_indices, n_years_pop, n_Ecov);
@@ -499,7 +493,6 @@ Type objective_function<Type>::operator() ()
   }
 
   REPORT(Ecov_lm_q);
-  see(6);
   
   //mu
   array<Type> Ecov_out_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov);
@@ -529,7 +522,6 @@ Type objective_function<Type>::operator() ()
   }
   REPORT(Ecov_lm_mu);
   /////////////////////////////////////////
-  see(7);
   
   /////////////////////////////////////////
   // Selectivity --------------------------------------------------------------
@@ -554,7 +546,6 @@ Type objective_function<Type>::operator() ()
   vector<matrix<Type> > selAA = get_selAA(n_years_model, n_ages, n_selblocks, selpars, selblock_models);
   REPORT(selAA);
   /////////////////////////////////////////
-  see(8);
  
   /////////////////////////////////////////
   //extra mortality parameter: missing catch?
@@ -571,7 +562,6 @@ Type objective_function<Type>::operator() ()
   matrix<Type> L = get_L(L_model, L_repars, L_re, n_years_model, n_years_proj, proj_L_opt, avg_years_ind);
   REPORT(L);
   /////////////////////////////////////////
-  see(9);
 
   /////////////////////////////////////////
   //catchability
@@ -606,7 +596,6 @@ Type objective_function<Type>::operator() ()
   array<Type> QAA = get_QAA(q,selAA, selblock_pointer_indices, n_years_model, n_ages);
   REPORT(QAA);
   /////////////////////////////////////////
-  see(10);
   
   /////////////////////////////////////////
   //natural mortality 
@@ -639,7 +628,6 @@ Type objective_function<Type>::operator() ()
   REPORT(log_M);
   REPORT(MAA);
   /////////////////////////////////////////
-  see(11);
   
   /////////////////////////////////////////
   //movement
@@ -665,7 +653,6 @@ Type objective_function<Type>::operator() ()
   //continues random processes in projection years!
   if(n_regions>1){//only do this mess if the number of regions is greater than 1.
     if(use_mu_prior.sum()>0) {
-      see(11.1);
       array<Type> nll_mu_prior = get_nll_mu_prior(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior, mu_model);
       nll += nll_mu_prior.sum();
       REPORT(nll_mu_prior);
@@ -673,7 +660,6 @@ Type objective_function<Type>::operator() ()
         mu_prior_re = simulate_mu_prior_re(mu_prior_re, trans_mu, trans_mu_prior_sigma, use_mu_prior, mu_model);
         REPORT(mu_prior_re);
       }
-      see(11.11);
     }
     if((mu_model != 1) & (mu_model != 5) & (mu_model != 9) & (mu_model != 13)){ //some type of random effects
       see(11.2);
@@ -683,23 +669,17 @@ Type objective_function<Type>::operator() ()
       SIMULATE if(do_simulate_mu_re){
         mu_re = simulate_mu_re(mu_repars, mu_re, mu_model, can_move, years_use);
       }
-      see(11.21);
     }
     if(do_post_samp_mu) ADREPORT(mu_re);
   }
     
-      see(11.3);
   array<Type> trans_mu_base = get_trans_mu_base(trans_mu, mu_re, mu_prior_re, use_mu_prior, mu_model, Ecov_lm_mu, Ecov_how_mu);
-      see(11.4);
   REPORT(trans_mu_base);
   //n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions - 1
   //rows sum to 1 for mig_type = 0 (prob move), rows sum to 0 for mig_type 1 (instantaneous)
   array<Type> mu = get_mu(trans_mu_base, can_move, must_move, mig_type, n_years_proj, n_years_model, proj_mu_opt, avg_years_ind);
-      see(11.5);
   REPORT(mu);
   /////////////////////////////////////////
-
-  see(12);
 
   /////////////////////////////////////////
   // Construct fishing mortality-at-age (FAA)
@@ -707,7 +687,6 @@ Type objective_function<Type>::operator() ()
   //n_fleets x n_years_pop x n_ages  (projection years not yet populated)
   array<Type> FAA = get_FAA(log_F, selAA, selblock_pointer_fleets, n_ages, n_years_model);
   /////////////////////////////////////////
-  see(13);
 
   /////////////////////////////////////////
   //Population model and likelihoods
@@ -717,7 +696,6 @@ Type objective_function<Type>::operator() ()
   
   //get probability transition matrices for yearly survival, movement, capture...
   array<Type> annual_Ps = get_annual_Ps(n_years_model, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, FAA, log_M, mu, L);
-  REPORT(annual_Ps);
   //seasonal PTMs for last year, just for inspection
   array<Type> seasonal_Ps_terminal_year = get_seasonal_Ps_y(n_years_model-1,fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
     FAA, log_M, mu, L);
@@ -725,13 +703,10 @@ Type objective_function<Type>::operator() ()
   //just survival categories for spawning
   array<Type> annual_SAA_spawn = get_annual_SAA_spawn(n_years_model, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, fracyr_SSB, 
     spawn_seasons, FAA, log_M, mu, L); 
-  REPORT(annual_SAA_spawn);
-  see(14);
 
   //get annual stock-recruit pars if needed
   matrix<Type> log_SR_a = get_SR_log_a(recruit_model, mean_rec_pars, Ecov_lm_R, Ecov_how_R);
   matrix<Type> log_SR_b = get_SR_log_b(recruit_model, mean_rec_pars, Ecov_lm_R, Ecov_how_R);
-  see(14.25);
 
   bool any_N1_re = false;
   for(int s = 0; s < n_stocks; s++) if(N1_model(s) ==2) any_N1_re = true;
@@ -749,30 +724,23 @@ Type objective_function<Type>::operator() ()
 
   //initial realized numbers at age
   //n_stocks x n_regions x n_ages
-  see(14.5);
   array<Type> N1 = get_NAA_1(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, 
    spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, mu, L, fracyr_seasons, 
    avg_years_ind, n_regions_is_small);
   REPORT(N1);
-  see(15);
 
   //initial predicted numbers at age
   //n_stocks x n_regions x n_ages
   array<Type> pred_N1 = get_pred_N1(N1_model, N1, NAA_where, N1_repars);
   REPORT(pred_N1);
-  see(16);
 
   //should work for SCAA and RE models
   array<Type> all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
    mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
    Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,0); //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
-    see(16.1);
-  REPORT(all_NAA);
   array<Type> NAA = extract_NAA(all_NAA);
-    see(16.2);
   //This will use get_all_NAA, get_SSB, and get_pred_NAA to form devs and calculate likelihoods
   matrix<Type> R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
-  see(16.21);
   
 
   //need to do projections before evaluating nll component for NAA
@@ -792,16 +760,12 @@ Type objective_function<Type>::operator() ()
 
       // see("yproj");
       // see(y);
-      see(16.3);
       // see(annual_Ps.dim);
       all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
-        Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, no_trace);
-    see(16.4);
+        Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, no_trace);
       NAA = extract_NAA(all_NAA);
-    see(16.5);
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
-    see(16.6);
       //There are many options for defining F in projection years so a lot of inputs
       FAA = update_FAA_proj(y, proj_F_opt, FAA, NAA, log_M, mu, L, mat_y, waa_ssb_y, waa_catch_y, fleet_regions, fleet_seasons, 
         fracyr_ssb_y, spawn_regions, can_move, must_move, mig_type, avg_years_ind, n_years_model, which_F_age, fracyr_seasons, 
@@ -809,22 +773,16 @@ Type objective_function<Type>::operator() ()
         FXSPR_init, FMSY_init, F_proj_init, log_SR_a, log_SR_b, spawn_seasons, recruit_model, SPR_weights, SPR_weight_type, no_trace);
         // if(trace) see(y);
         // if(trace) for(int a = 0; a < n_ages; a++) see(FAA(0,y,a));
-    see(16.7);
       annual_Ps = update_annual_Ps(y, annual_Ps, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, FAA, log_M, mu, L);
-    see(16.8);
       annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
         fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
-    see(16.9);
     }
     //if(trace) std::exit(EXIT_FAILURE);
   }
 
   NAA = extract_NAA(all_NAA);
-    see("16b");
   array<Type> pred_NAA = extract_pred_NAA(all_NAA);
-    see("16c");
   array<Type> NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
-    see("16d");
 
   if(NAA_re_model.sum() > 0){ //at least one stock is not SCAA
     matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe,
@@ -839,7 +797,7 @@ Type objective_function<Type>::operator() ()
         bias_correct_pe);
       //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
       log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
-        log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all);
+        log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
       all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
         Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,no_trace);
@@ -848,10 +806,10 @@ Type objective_function<Type>::operator() ()
 
         for(int y = n_years_model; y < n_years_pop; y++){
           log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
-            log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all);
+            log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
           all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
             mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
-            Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,no_trace);
+            Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, no_trace);
             
           R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
           NAA = extract_NAA(all_NAA);
@@ -874,20 +832,38 @@ Type objective_function<Type>::operator() ()
       REPORT(NAA_devs_sim);
     }
     if(do_post_samp_N) ADREPORT(log_NAA);
+  } else { // SCAA models
+    // likelihood of NAA deviations
+    if(n_years_proj > 0){ // SCAA treats recruitment in proj years as random effects with fixed mean, SD
+      matrix<Type> nll_Rproj(n_years_proj, n_stocks);
+      nll_Rproj.setZero();
+      for(int y = 0; y < n_years_proj; y++) for(int s = 0; s < n_stocks; s++){
+        nll_Rproj(y,s) -= dnorm(logR_proj(s,y), logR_mean(s), logR_sd(s), 1);
+        SIMULATE if(do_simulate_N_re) logR_proj(s,y) = rnorm(logR_mean(s), logR_sd(s));
+      }
+      REPORT(nll_Rproj);
+      SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
+    }
   }
   //need to do this
   //log_F = update_log_F(log_F, FAA, which_F_age);
   matrix<Type> F(n_years_pop,n_fleets); //n_years_pop x n_fleets (projection years not yet populated)
   for(int f = 0; f < log_F.cols(); f++) F.col(f) = exp(vector<Type> (log_F.col(f)));
   // see(F);
+  REPORT(annual_Ps);
+  REPORT(annual_SAA_spawn);
   REPORT(F);
+  REPORT(all_NAA);
   REPORT(log_F);
   REPORT(NAA);
   REPORT(pred_NAA);
   REPORT(NAA_devs);
   REPORT(FAA);
   REPORT(R_XSPR);
-  see(17);
+  REPORT(mature_all);
+  REPORT(waa_ssb);
+  REPORT(waa_catch);
+  REPORT(fracyr_SSB_all);
 
   //Now get annual NAA at spawning and SSB.
   array<Type> NAA_spawn = get_NAA_spawn(NAA, annual_SAA_spawn, spawn_regions);
@@ -896,33 +872,25 @@ Type objective_function<Type>::operator() ()
   REPORT(SSB);
   matrix<Type> log_SSB(n_years_pop,n_stocks);
   for(int s = 0; s < n_stocks; s++) for(int y = 0; y < n_years_pop; y++) log_SSB(y,s) = log(SSB(y,s));
-  see(18);
   //need to be careful here about log_NAA random effects in regions where there will be zero predicted due to migration parameterization
   
   /////////////////////////////////////////
   //catch observations
   array<Type> pred_stock_CAA = get_pred_stock_CAA(NAA, annual_Ps);
-  see("18a");
   REPORT(pred_stock_CAA);
   array<Type> pred_CAA = get_pred_CAA(pred_stock_CAA);
-  see("18b");
   REPORT(pred_CAA);
   array<Type> pred_catch_paa = get_pred_catch_paa(pred_CAA, n_years_model);
-  see("18c");
   REPORT(pred_catch_paa);
   array<Type> pred_stock_catch = get_pred_stock_catch(pred_stock_CAA,waa_catch);
-  see("18d");
   REPORT(pred_stock_catch);
   matrix<Type> pred_catch = get_pred_catch(pred_stock_catch);
-  see("18e");
   REPORT(pred_catch);
   matrix<Type> pred_log_catch = get_pred_log_catch(pred_catch, agg_catch_sigma, log_catch_sig_scale, bias_correct_oe);
-  see("18f");
   REPORT(pred_log_catch);
   
   matrix<Type> nll_agg_catch = get_nll_agg_catch(pred_log_catch, agg_catch_sigma, log_catch_sig_scale, obsvec,
     use_agg_catch, keep_C, keep);
-  see("18g");
   nll += nll_agg_catch.sum();
   //see(nll);
   REPORT(nll_agg_catch);
@@ -934,20 +902,16 @@ Type objective_function<Type>::operator() ()
 
   matrix<Type> nll_catch_acomp = get_nll_catch_acomp(pred_catch_paa, use_catch_paa, catch_paa,
     catch_Neff, age_comp_model_fleets, catch_paa_pars, keep_Cpaa, keep, obsvec, agesvec, do_osa);
-  see("18h");
   nll += nll_catch_acomp.sum();
   REPORT(nll_catch_acomp);
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
     obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
       age_comp_model_fleets, catch_paa_pars, 1);
-    see(18.1);
     catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, 1);
     REPORT(catch_paa);
-    see(18.2);
   }
   /////////////////////////////////////////
-  see(19);
 
   
   /////////////////////////////////////////
@@ -955,39 +919,31 @@ Type objective_function<Type>::operator() ()
   array<Type> NAA_index = get_NAA_index(NAA, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, fracyr_indices, index_seasons,
     index_regions, FAA, log_M, mu, L, n_years_model);
   REPORT(NAA_index);
-  see(19.1);
   array<Type> pred_IAA = get_pred_IAA(QAA, NAA_index);
   REPORT(pred_IAA);
-  see(19.2);
   array<Type> pred_index_paa = get_pred_index_paa(pred_IAA, units_index_paa, waa, waa_pointer_indices);
   REPORT(pred_index_paa);
-    see(19.3);
 
   matrix<Type> pred_indices = get_pred_indices(pred_IAA, units_indices, waa, waa_pointer_indices);
   REPORT(pred_indices);
-  see(19.4);
   matrix<Type> pred_log_indices = get_pred_log_indices(pred_indices, agg_index_sigma, log_index_sig_scale, bias_correct_oe);
   REPORT(pred_log_indices);
-  see(19.5);
 
   matrix<Type> nll_agg_indices = get_nll_agg_indices(pred_log_indices, agg_index_sigma, log_index_sig_scale, obsvec,
     use_indices, keep_I, keep);
   nll += nll_agg_indices.sum();
   //see(nll);
   REPORT(nll_agg_indices);
-  see(19.6);
   SIMULATE if(do_simulate_data(1)){
     agg_indices = simulate_agg_indices(pred_log_indices, agg_indices, agg_index_sigma, log_index_sig_scale, use_indices);
     REPORT(agg_indices);
     obsvec = sim_agg_indices_in_obsvec(obsvec,keep_I,agg_indices, use_indices);
   }
-  see(19.7);
 
   matrix<Type> nll_index_acomp = get_nll_index_acomp(pred_index_paa, use_index_paa, index_paa,
     index_Neff, age_comp_model_indices, index_paa_pars, keep_Ipaa, keep, obsvec, agesvec, do_osa);
   nll += nll_index_acomp.sum();
   REPORT(nll_index_acomp);
-  see(19.8);
   //see(nll);
   SIMULATE if(do_simulate_data(1)){
     obsvec = simulate_index_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
@@ -995,17 +951,14 @@ Type objective_function<Type>::operator() ()
     index_paa = sim_obsvec_in_index_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
     REPORT(index_paa);
   }
-  see(19.9);
   /////////////////////////////////////////
   SIMULATE if(sum(do_simulate_data) > 0) REPORT(obsvec);
-  see(20);
       //see(log_M);
   REPORT(nll);
 
 
   if(do_SPR_BRPs){
     // matrix<Type> log_SPR0(n_years_pop, n_stocks);
-    see(21);
     vector< array<Type>> annual_SPR_res = get_annual_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, fracyr_SSB, FXSPR_init, 
@@ -1028,34 +981,6 @@ Type objective_function<Type>::operator() ()
     vector<Type> log_FXSPR = log_FXSPR_iter.matrix().col(9);
     REPORT(log_FXSPR);
 
-    // matrix<Type> log_SPR0_alt = get_log_SPR0(spawn_seasons, spawn_regions, can_move, mig_type, 
-    //   fracyr_SSB_all, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,0);
-    // see(22);
-    // REPORT(log_SPR0_alt);
-    // //see(log_SPR0);
-    // vector<Type> log_FXSPR_alt = get_log_FXSPR(percentSPR, FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
-    //   fracyr_seasons, which_F_age, fracyr_SSB_all, log_M, mu, L, log_SPR0, waa_ssb, mature_all, SPR_weights, SPR_weight_type, n_regions_is_small,
-    //   R_XSPR, FXSPR_init,0);
-    // see(23);
-    // REPORT(log_FXSPR_alt);
-    // //see(log_FXSPR);
-
-    // array<Type> FAA_XSPR_alt = get_FAA_from_log_F(log_FXSPR, which_F_age, FAA);
-    // REPORT(log_FAA_XSPR_alt);
-    // see(24);
-    // matrix<Type> log_SPR_FXSPR_alt = get_log_SPR(spawn_seasons, spawn_regions, fleet_seasons, fleet_regions, can_move, mig_type, 
-    //   fracyr_SSB_all, FAA_XSPR, log_M, mu, L, mature_all, waa_ssb, fracyr_seasons, n_regions_is_small,0);
-    // REPORT(log_SPR_FXSPR_alt);
-    // see(25);
-    // matrix<Type> log_YPR_FXSPR_alt = get_log_YPR(fleet_seasons, fleet_regions, can_move, mig_type, FAA_XSPR, log_M, mu, L, waa_catch, 
-    // fracyr_seasons, n_regions_is_small, 0);
-    // REPORT(log_YPR_FXSPR_alt);
-    see(25.1);
-    // array<Type> log_SSB_FXSPR(n_years_model+n_years_proj, n_stocks+1);
-    // array<Type> log_Y_FXSPR(n_years_model+n_years_proj, n_fleets+1);
-    //REPORT(log_SSB_FXSPR);
-    //REPORT(log_SPR_FXSPR);
-    //REPORT(log_Y_FXSPR);
   vector< vector<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
     spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
     L, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, fracyr_SSB, FXSPR_static_init, 
@@ -1082,12 +1007,6 @@ Type objective_function<Type>::operator() ()
     REPORT(log_FXSPR_static);
     REPORT(log_FXSPR_iter_static);
 
-    // vector<Type> log_SPR0_static_alt = get_log_SPR0_static(avg_years_ind, spawn_seasons, spawn_regions, can_move, must_move, mig_type, 
-    //   fracyr_SSB_all, log_M, trans_mu_base, L, mature_all, waa, waa_pointer_ssb, fracyr_seasons, n_regions_is_small, 0);
-    // Type log_FXSPR_static = get_log_FXSPR_static(percentSPR, avg_years_ind, FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, 
-    //   can_move, must_move, mig_type, fracyr_seasons, which_F_age_static, fracyr_SSB_all, log_M, trans_mu_base, L, log_SPR0_static, waa, waa_pointer_ssb,
-    //   mature_all, SPR_weights, SPR_weight_type, n_regions_is_small, NAA, XSPR_R_avg_yrs, FXSPR_static_init, 0);
-
     if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
       ADREPORT(log_FXSPR);
       ADREPORT(log_SSB_FXSPR);
@@ -1099,7 +1018,6 @@ Type objective_function<Type>::operator() ()
       ADREPORT(log_Y_FXSPR_static);
     }
   }
-  see(25.2);
   int is_SR = 0;
   for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
   if((is_SR> 0) & do_MSY_BRPs) {
@@ -1165,102 +1083,12 @@ Type objective_function<Type>::operator() ()
       ADREPORT(log_MSY_static);
     }
 
-  //   array<Type> log_FAA_MSY(n_years_model+n_years_proj, n_fleets, n_ages);
-  //   log_FAA_MSY.setZero();
-  //   array<Type> log_FAA_tot_MSY(n_years_model+n_years_proj, n_ages);
-  //   log_FAA_tot_MSY.setZero();
-  //   array<Type> log_SPR_MSY(n_years_model+n_years_proj, n_stocks);
-  //   log_SPR_MSY.setZero();
-  //   array<Type> log_R_MSY(n_years_model+n_years_proj, n_stocks);
-  //   log_R_MSY.setZero();
-  //   array<Type> log_SSB_MSY(n_years_model+n_years_proj, n_stocks+1);
-  //   log_SSB_MSY.setZero();
-  //   array<Type> log_MSY(n_years_model+n_years_proj, n_fleets+1);
-  //   log_MSY.setZero();
-  //   vector<Type> log_FMSY(n_years_model+n_years_proj);
-  //   log_FMSY.setZero();
-
-  //   vector<int> yvec(1);
-  //   for(int y = 0; y < n_years_model; y++) {
-  //   //for(int y = 0; y < 1; y++) {
-  //     yvec(0) = y;
-  //     vector<vector<Type>> MSY_res_y = get_MSY_res(
-  //       recruit_model,
-  //       log_SR_a,
-  //       log_SR_b, 
-  //       log_M, 
-  //       FAA, 
-  //       spawn_seasons,  
-  //       spawn_regions,
-  //       fleet_regions, 
-  //       fleet_seasons,
-  //       fracyr_seasons,
-  //       can_move,
-  //       must_move,
-  //       mig_type,
-  //       trans_mu_base, 
-  //       L,
-  //       which_F_age(y), 
-  //       waa, waa_pointer_ssb, waa_pointer_fleets,
-  //       mature, NAA, fracyr_SSB, FMSY_init(y), 
-  //     //years_M, years_mu, years_L, years_mat, years_sel, years_waa_ssb, years_waa_catch, years_SR_ab,
-  //       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
-  //       n_regions_is_small,0);
-  //     see(22.1);
-  //     for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) log_FAA_MSY(y,f,a) = MSY_res_y(0)(f*n_ages + a);
-  //     see(22.2);
-  //     for(int a = 0; a< n_ages; a++) log_FAA_tot_MSY(y,a) = MSY_res_y(0)(n_fleets*n_ages + a);
-  //     log_FMSY(y) = MSY_res_y(5)(MSY_res_y(5).size()-1); //last value of log_FMSY_iter
-  //     see(22.3);
-  //     for(int s = 0; s < n_stocks; s++) {
-  //       log_SSB_MSY(y,s) = MSY_res_y(1)(s);
-  //       log_SPR_MSY(y,s) = MSY_res_y(3)(s);
-  //       log_R_MSY(y,s) = MSY_res_y(4)(s);
-  //     }
-  //     log_SSB_MSY(y,n_stocks) = MSY_res_y(1)(n_stocks);
-  //     // log_SSB_MSY.row(y) = MSY_res_y(1);
-  //     // log_R_MSY.row(y) = MSY_res_y(4);
-  //     // log_SPR_MSY.row(y) = MSY_res_y(3);
-  //     see(22.4);
-  //     //log_MSY.row(y) = MSY_res_y(2);
-  //     for(int f = 0; f < n_fleets+1; f++) log_MSY(y,f) = MSY_res_y(2)(f);
-  //     see(22.5);
-  //   }
-  //   //see(log_FMSY);
-  //   REPORT(log_FMSY);
-  //     see(22.51);
-  //   ADREPORT(log_FMSY);
-  //     see(22.52);
-  //   //see(log_SSB_MSY);
-  //   REPORT(log_SSB_MSY);
-  //     see(22.53);
-  //   ADREPORT(log_SSB_MSY);
-  //     see(22.54);
-  //   //see(log_SPR_MSY);
-  //   REPORT(log_SPR_MSY);
-  //     see(22.55);
-  //   //see(log_MSY);
-  //   REPORT(log_MSY);
-  //     see(22.56);
-  //   ADREPORT(log_MSY);
-  //     see(22.57);
-  //   //see(log_FAA_MSY);
-  //   REPORT(log_FAA_MSY);
-  //     see(22.58);
-  //   //see(log_FAA_tot_MSY);
-  //   REPORT(log_FAA_tot_MSY);
-  //   see(22.6);
-  //   REPORT(log_R_MSY);
-  //   ADREPORT(log_R_MSY);
-  //   see(22.7);
-
     REPORT(log_SR_a);
     REPORT(log_SR_b);
     if(sum_do_post_samp == 0){
       ADREPORT(log_SR_a);
       ADREPORT(log_SR_b);
     }  
-  // see(22.7);
   }
   matrix<Type> log_index_resid(n_years_model, n_indices), log_catch_resid(n_years_model, n_fleets);
   log_index_resid.setZero();
@@ -1319,7 +1147,6 @@ Type objective_function<Type>::operator() ()
     ADREPORT(log_index_resid);
   }
   see(nll);
-  see(26);
   return nll;
 }
 

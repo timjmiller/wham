@@ -194,7 +194,7 @@ prepare_projection = function(model, proj.opts) {
   par$log_NAA <- tmp
   map$log_NAA <- factor(tmp.map)
 
-  if(data$NAA_re_model>0 & !is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
+  if(all(data$NAA_re_model>0) & !is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
     This model already treats recruitment deviations as random effects.","",sep='\n'))
 
@@ -221,6 +221,7 @@ prepare_projection = function(model, proj.opts) {
   }
   if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE #one of the other ecov options is not null
 
+      print("here4")
 
   if(any(input$data$Ecov_model > 0)){
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
@@ -338,6 +339,7 @@ prepare_projection = function(model, proj.opts) {
   #     map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
   #   }
   # }
+      print("here5")
   
   #M
   # options for M in projections, data$proj_M_opt:
@@ -366,6 +368,7 @@ prepare_projection = function(model, proj.opts) {
   tmp[,,1:data$n_years_model,] <- par$M_re
   #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[4]) tmp[a,b,,c] <- c(par$M_re[a,b,,c], rep(0,data$n_years_proj))
   par$M_re <- tmp
+      print("here6")
 
   # options for L in projections, data$proj_L_opt:
   #   1 = continue random effects (if they exist) - need to pad L_re
@@ -392,6 +395,7 @@ prepare_projection = function(model, proj.opts) {
   tmp[1:data$n_years_model,] <- par$L_re
   #for(b in 1:dims[2]) tmp[,b] <- c(par$L_re[,b], rep(0,data$n_years_proj))
   par$L_re <- tmp
+      print("here7")
 
   # options for mu in projections, data$proj_mu_opt:
   #   1 = continue random effects (if they exist) - need to pad mu_re
@@ -417,10 +421,12 @@ prepare_projection = function(model, proj.opts) {
     dims <- dim(par$mu_re)
     dims[4] <- data$n_years_model + data$n_years_proj
     tmp <- array(0, dim = dims)
-    tmp[,,,1:data$n_years_model,] <- par$mu_re
+    tmp[,,,1:data$n_years_model,,] <- par$mu_re
     #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[3]) for(d in 1:dims[5]) tmp[a,b,c,,d] <- c(par$mu_re[a,b,c,,d], rep(0,data$n_years_proj))
     par$mu_re <- tmp
   }
+        print("here8")
+
   data$years_use <- 1:(data$n_years_model + data$n_years_proj) -1
   data$years_use_Ecov <-  1:data$n_years_Ecov - 1
   input$data <- data

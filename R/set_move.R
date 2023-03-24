@@ -24,6 +24,7 @@
 #'                      \item{"iid"}{independent movement rate random effects by age.}
 #'                      \item{"ar1"}{allow first order autoregressive correlation of movement rate random effects by age.}
 #'                    }
+#'     }
 #'     \item{$year_re}{"options for yearly random effects (for each mean parameter defined in \code{move$mean_model}):
 #'                    \describe{
 #'                      \item{"none"}{(default) no movement rate random effects by year.}
@@ -36,7 +37,7 @@
 #'     \item{$can_move}{array (n_stocks x n_seasons x n_regions x n_regions) 0/1 indicator whether movement can occur from one region to another.}
 #'     \item{$must_move}{array (n_stocks x n_seasons x n_regions) 0/1 indicator whether movement from region must occur.}
 #'     \item{$mean_vals}{array (n_stocks x n_seasons x n_regions x n_regions-1) of initial movement rate parameters *from* each region. Usage depends on \code{move$mean_model}.}
-#'     \item{$sigma_vals}{array (n_stocks x n_seasons x n_regions x n_regions -1) of initial standard deviations to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.
+#'     \item{$sigma_vals}{array (n_stocks x n_seasons x n_regions x n_regions -1) of initial standard deviations to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.}
 #'     \item{$cor_vals}{array (n_stocks x n_seasons x n_regions x n_regions - 1x 2) of initial correlation values to use for random effects. Usage depends on \code{move$age_re} and \code{move$year_re}.
 #'        cor_vals[,,,,1] is for correlation with age, and cor_vals[,,,,2] is for correlation with year.}
 #'   }
@@ -59,7 +60,7 @@ set_move = function(input, move)
   }
 
   data$use_mu_prior = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
-  data$mig_type = rep(1,data$n_stocks)
+  data$mig_type = rep(0,data$n_stocks)
   data$mu_model <- 1
   data$trans_mu_prior_sigma = array(0.1, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
   data$must_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions))

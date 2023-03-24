@@ -10,13 +10,13 @@
 #'     \item{$model}{length = n_regions. "extra" mortality model options are:
 #'                    \describe{
 #'                      \item{"none"}{(default) no extra mortality for this region.}
-#'                      \item{"constant"}{ estimate a single mean mortality for the region shared across all ages}
+#'                      \item{"constant"}{estimate a single mean mortality for the region shared across all ages}
 #'                      \item{"iid_re"}{estimate independent random effects over years, for the region}
 #'                      \item{"ar1_re"}{estimate random effect correlated over years, for the region}
 #'                    }
 #'                  }
 #'     \item{$initial_means}{Initial/mean L-at-region}
-#'     \item{$sigma_vals}{Initial standard deviation by region value to use for the L random effects. Values are not used if \code{L$model} = "none".
+#'     \item{$sigma_vals}{Initial standard deviation by region value to use for the L random effects. Values are not used if \code{L$model} = "none".}
 #'     \item{$cor_vals}{Initial correlation values to use for the L random effects. If unspecified all initial values are 0}
 #'   }
 #'

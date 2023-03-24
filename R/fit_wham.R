@@ -114,13 +114,14 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     mod <- check_which_F_age(mod)
     if(do.brps){
-      if(any(mod$input$data$mig_type == 1)){
+      if(any(mod$inpt$data$can_move==1) & any(mod$input$data$mig_type == 1)){
         warning("Cannot currently calculate standard errors of biological reference points internally when migration and movement are simultaneous for any stock.")
-      } 
-      mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-      if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
-      mod$rep = mod$report() #par values don't matter because function has not been evaluated
-      mod <- check_FXSPR(mod)
+      } else {
+        mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+        if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+        mod$rep = mod$report() #par values don't matter because function has not been evaluated
+        mod <- check_FXSPR(mod)
+      }
     }
     
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
@@ -129,7 +130,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     # retrospective analysis
     if(do.retro){
       ran_names <- unique(names(mod$env$par[mod$env$random]))
-      print(ran_names)
+      #print(ran_names)
       #stop()
       ran <- NULL
       if(length(ran_names)) ran <- ran_names
@@ -212,7 +213,8 @@ check_FXSPR <- function(mod)
   mod$fn(mle)
   mod$rep <- mod$report()
 
-  percentSPR_out <- apply(exp(cbind(mod$rep$log_SPR_FXSPR) - cbind(mod$rep$log_SPR0)),1,sum)
+
+  percentSPR_out <- exp(cbind(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$input$data$n_stocks+1])
   # print(percentSPR_out)
   # print(mod$env$data$percentSPR)
   # print(round(percentSPR_out,4))
@@ -227,28 +229,28 @@ check_FXSPR <- function(mod)
     for(i in 1:2) #two tries to fix initial FXSPR value
     {
       redo_SPR_years <- years[ind]
-      print(years)
-      print(redo_SPR_years)
-      print(ind)
-      print(percentSPR_out)
-      print(percentSPR_out[ind])
-      print(mod$rep$log_SPR0)
-      print(mod$rep$log_SPR0[ind])
-      print(mod$rep$log_SPR_FXSPR)
-      print(mod$rep$log_SPR_FXSPR[ind])
+      # print(years)
+      # print(redo_SPR_years)
+      # print(ind)
+      # print(percentSPR_out)
+      # print(percentSPR_out[ind])
+      # print(mod$rep$log_SPR0)
+      # print(mod$rep$log_SPR0[ind])
+      # print(mod$rep$log_SPR_FXSPR)
+      # print(mod$rep$log_SPR_FXSPR[ind])
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] <- mod$env$data$FXSPR_init[ind]*2
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
-      percentSPR_out <- apply(exp(cbind(mod$rep$log_SPR_FXSPR) - cbind(mod$rep$log_SPR0)),1,sum)
+      percentSPR_out <- exp(cbind(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$input$data$n_stocks+1])
       ind <- which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
     }
   }
   if(length(ind)) warning(paste0("Still bad initial values and estimates of FXSPR for years ", paste(years[ind], collapse = ","), "."))
 
-  percentSPR_out_static <- exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)
+  percentSPR_out_static <- exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)[mod$input$data$n_stocks+1]
   ind <- which(round(percentSPR_out_static,4) != round(mod$env$data$percentSPR/100,4))
   if(length(ind))
   {
@@ -259,7 +261,7 @@ check_FXSPR <- function(mod)
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
-      percentSPR_out_static <- exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)
+      percentSPR_out_static <- exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)[mod$input$data$n_stocks+1]
       ind = which(round(percentSPR_out_static,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
     }
