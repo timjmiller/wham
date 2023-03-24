@@ -553,7 +553,7 @@ array<Type> get_pred_NAA(int N1_model, array<Type> N1, array<Type> N1_repars, ar
     vector<Type> logR_proj_y(n_stocks);
     int is_projyr = 0;
     if(y > n_years_model - 1) {
-      logR_proj_y = logR_proj.col(y-n_years_model-1);
+      logR_proj_y = logR_proj.row(y-n_years_model);
       is_projyr = 1;
     }
     array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
@@ -746,7 +746,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   if(trace) see(NAA_spawn_last);
   vector<Type> SSB_last = get_SSB_y(y-1, NAA_spawn_last, waa_ssb, mature);
   if(trace) see(SSB_last);
-  vector<Type> logR_proj_y = logR_proj.col(y - n_years_model - 1);
+  vector<Type> logR_proj_y = logR_proj.row(y - n_years_model);
   // int is_projyr = 1;
 
   array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
@@ -1253,7 +1253,7 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
     // vector<Type> logR_proj_y(n_stocks);
     // //int is_projyr = 0;
     // if(y > n_years_model - 1) {
-    //   logR_proj_y = logR_proj.col(y-n_years_model-1);
+    //   logR_proj_y = logR_proj.row(y-n_years_model);
     //   //is_projyr = 1;
     // }
 
@@ -1264,7 +1264,7 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
       // NOT NEEDED for SCAA models 
       // if(NAA_re_models(s) == 0){
       //   if(y > n_years_model - 1) {
-      //     logR_proj_y = logR_proj.col(y-n_years_model-1);
+      //     logR_proj_y = logR_proj.row(y-n_years_model);
       //     NAA_y_minus_1(s,spawn_regions(s)-1,a)
       //   }
       // }

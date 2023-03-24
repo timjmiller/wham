@@ -255,7 +255,7 @@ Type objective_function<Type>::operator() ()
   //Just have annual NAA currently
   PARAMETER_ARRAY(log_NAA); //(n_stocks x n_regions x nyears-1 x n_ages) 
   
-  PARAMETER_MATRIX(logR_proj); // (n_stocks x n_proj_years) recruitment (random effects) in proj years, only if SCAA
+  PARAMETER_MATRIX(logR_proj); // (n_proj_years x n_stocks) recruitment (random effects) in proj years, only if SCAA
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
   PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
@@ -837,9 +837,9 @@ Type objective_function<Type>::operator() ()
     if(n_years_proj > 0){ // SCAA treats recruitment in proj years as random effects with fixed mean, SD
       matrix<Type> nll_Rproj(n_years_proj, n_stocks);
       nll_Rproj.setZero();
-      for(int y = 0; y < n_years_proj; y++) for(int s = 0; s < n_stocks; s++){
-        nll_Rproj(y,s) -= dnorm(logR_proj(s,y), logR_mean(s), logR_sd(s), 1);
-        SIMULATE if(do_simulate_N_re) logR_proj(s,y) = rnorm(logR_mean(s), logR_sd(s));
+      for(int y = 0; y < n_years_proj; y++) for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s) == 0){
+        nll_Rproj(y,s) -= dnorm(logR_proj(y,s), logR_mean(s), logR_sd(s), 1);
+        SIMULATE if(do_simulate_N_re) logR_proj(y,s) = rnorm(logR_mean(s), logR_sd(s));
       }
       REPORT(nll_Rproj);
       SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
