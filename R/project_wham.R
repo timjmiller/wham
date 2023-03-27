@@ -53,6 +53,10 @@
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.growth.re} (T/F), continue growth random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, growth will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LAA.re} (T/F), continue LAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, LAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LW.re} (T/F), continue LW random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, LW will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.WAA.re} (T/F), continue WAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, WAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
@@ -97,7 +101,9 @@
 #' }
 project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, 
+                                              cont.growth.re=NULL, cont.LAA.re=NULL, cont.LW.re=NULL, cont.WAA.re=NULL, 
+                                              avg.rec.yrs=NULL, percentFXSPR=100,
                                               percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL),
                         n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 {
@@ -116,13 +122,13 @@ project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.
     if(!is.fit) mle = model$par
     else {
       mle = model$opt$par
-      mod$fn(mle)
+      # mod$fn(mle) # what is this used for? error in GOA pollock
     }
     
     mod$rep = mod$report()
     mod$parList <- mod$env$parList(x=mle)
     mod <- check_FXSPR(mod)
-    #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
+    #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.																			   
     mod <- check_projF(mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {

@@ -282,6 +282,7 @@ vector<Type> rzinf_logisticnormal_2(vector<Type> p, vector<Type> pars, vector<in
   return(obs);
 }
 
+
 // Simulate from tweedie
 // Adapted from tweedie::rtweedie function in R
 template<class Type>
@@ -308,16 +309,30 @@ vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
 }
 
 template<class Type>
+vector<Type> sim_waa(vector<Type> waa_pred, vector<Type> waa_cv, int bias_correct_pe)
+{
+	int n_ages = waa_pred.size();
+	vector<Type> obs(n_ages);
+	Type corr_mean = 0.0;
+	Type sd_wt = 0.0;
+	for(int a = 0; a < n_ages; a++){
+		sd_wt = sqrt(log(pow(waa_cv(a),2)+1.0));
+		corr_mean = log(waa_pred(a));
+		if(bias_correct_pe == 1) corr_mean -= pow(sd_wt,2.0)*0.5;
+		obs(a) = exp(rnorm(corr_mean, sd_wt));
+	}
+	return(obs);
+}
+
+template<class Type>
 vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int age_comp_model, vector<Type> age_comp_pars)
 {
   int n_ages = ages.size();
   vector<Type> obs(n_ages);
-  vector<Type> p = paa_pred;
+  vector<Type> p = paa_pred + 1.0e-15;
   obs.setZero();
   if(age_comp_model == 1)
   {
-    //multinomial
-    p += 1.0e-15; //for log of any p = 0
     obs = rmultinom(Neff, p);
     //obs = obs/obs.sum();// proportions
   }
@@ -366,6 +381,30 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
   return obs;
 }
 
+// simulate lcomps
+template<class Type>
+vector<Type> sim_lcomp(vector<Type> paa_pred, Type Neff, int len_comp_model, vector<Type> len_comp_pars)
+{
+  int n_lengths = paa_pred.size();
+  vector<Type> obs(n_lengths);
+  vector<Type> p = paa_pred + 1.0e-15;
+  obs.setZero();
+  if(len_comp_model == 1)
+  {
+    obs = rmultinom(Neff, p);
+    //obs = obs/obs.sum();// proportions
+  }
+  if(len_comp_model == 2) //dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
+  {
+    //int N = CppAD::Integer(Neff);
+    vector<Type> alpha = p * exp(len_comp_pars(0));
+    obs = rdirmultinom(Neff,alpha);
+    //obs = obs/obs.sum();// proportions
+  }
+  return obs;
+}
+
+
 //make proporportions at age observations from transformed versions
 template<class Type>
 vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> ages, vector<Type> paa_obs)
@@ -375,11 +414,23 @@ vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> a
   paa_out.setZero();
   if((age_comp_model <5) | (age_comp_model > 7)) {
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = tf_paa_obs(i); //identity transform, zeros allowed
-    if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers
+    if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers								  
   }
   if((age_comp_model > 4) & (age_comp_model < 8)) {
     vector<Type> p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
-    for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = p_pos(i); 
+    for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = p_pos(i); 								  
   }
   return paa_out;
+}
+
+//make proporportions at length observations from transformed versions
+template<class Type>
+vector<Type> make_pal(vector<Type> tf_pal_obs, int len_comp_model)
+{
+  int n_lengths = tf_pal_obs.size();
+  vector<Type> pal_out(n_lengths);
+  pal_out = tf_pal_obs; //identity transform, zeros allowed
+  pal_out /= sum(pal_out); //multinomial, D-M, mvtweedie are in numbers								  
+
+  return pal_out;
 }

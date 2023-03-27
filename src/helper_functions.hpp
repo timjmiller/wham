@@ -17,17 +17,23 @@ matrix<Type> extract_matrix_array3(array<Type> a, int index) //matrix has to be 
 }
 
 template <class Type>
-vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
+vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_lengths, vector<Type> lengths, int n_selblocks, vector<matrix<Type> > selpars, vector<int> selblock_models)
 {
-  vector<matrix<Type> > selAA(n_selblocks);
+  vector<matrix<Type> > selAL(n_selblocks);
   for(int b = 0; b < n_selblocks; b++)
   {
     matrix<Type> tmp(n_years, n_ages);
+	matrix<Type> tmpL(n_years, n_lengths); // only for len selex
+	vector<Type> newLengths(n_lengths); // to save length bin + 0.5*binsize
+	Type binwidth = lengths(1) - lengths(0);
+	tmp.setZero();
+	tmpL.setZero();
+    for(int l = 0; l < n_lengths; l++) newLengths(l) = lengths(l) + 0.5*binwidth; // saving length+0.5*binsize
     if(selblock_models(b) == 1) tmp = selpars(b); //proportions at age
     else
-    { //logistic or double-logistic
+    { 
       if(selblock_models(b) == 2)
-      { //increasing logistic
+      { //increasing age-logistic
         for(int y = 0; y < n_years; y++)
         {
           Type a50 = selpars(b)(y,0); // a50 parameter in year y
@@ -42,9 +48,10 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
         }
       }
       else
-      { //double logistic
+      { 
         if(selblock_models(b) == 3)
         {
+		  // double logistic
           for(int y = 0; y < n_years; y++)
           {
             Type a50_1 = selpars(b)(y,0); // a50 parameter in year y
@@ -62,24 +69,111 @@ vector<matrix<Type> > get_selectivity(int n_years, int n_ages, int n_selblocks, 
         }
         else //model 4: declining logistic
         {
-          for(int y = 0; y < n_years; y++)
-          {
-            Type a50 = selpars(b)(y,0); // a50 parameter in year y
-            Type k = selpars(b)(y,1); //  1/slope in year y
-            Type age = 0.0;
-            for (int a = 0; a < n_ages; a++)
-            {
-              age += 1.0;
-              tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
-            }
-            for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
-          }
+          if(selblock_models(b) == 4)
+		  {
+			  for(int y = 0; y < n_years; y++)
+			  {
+				Type a50 = selpars(b)(y,0); // a50 parameter in year y
+				Type k = selpars(b)(y,1); //  1/slope in year y
+				Type age = 0.0;
+				for (int a = 0; a < n_ages; a++)
+				{
+				  age += 1.0;
+				  tmp(y,a) = 1.0/(1.0 + exp((age - a50)/k));
+				}
+				for (int a = 0; a < n_ages; a++) tmp(y,a) = tmp(y,a)/tmp(y,0);
+			  }
+		  } else { 
+				if(selblock_models(b) == 5) { // age double normal
+					  for(int y = 0; y < n_years; y++)
+					  {
+						Type p_1 = selpars(b)(y,0); // 
+						Type p_2 = selpars(b)(y,1); // 
+						Type p_3 = selpars(b)(y,2);
+						Type p_4 = selpars(b)(y,3);
+						Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
+						Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
+						Type age = 0.0;
+						Type binwidth = 1;
+						Type gammax = p_1 + binwidth + (0.99*n_ages - p_1 - binwidth)/(1 + exp(-p_2));
+						Type alpha = 0.0;
+						Type beta = 0.0;
+						Type j_1 = 0.0;
+						Type j_2 = 0.0;
+						Type amin = 1;
+						for (int a = 0; a < n_ages; a++)
+						{
+						  age += 1.0;
+						  alpha = p_5 + (1 - p_5)*(exp(-pow(age - p_1, 2)/exp(p_3)) - exp(-pow(amin - p_1,2)/exp(p_3)))/(1-exp(-pow(amin - p_1,2)/exp(p_3)));
+						  beta = 1 + (p_6 - 1)*(exp(-pow(age - gammax,2)/exp(p_4)) - 1)/(exp(-pow(n_ages - gammax,2)/exp(p_4)) - 1);
+						  j_1 = 1/(1 + exp(-20*(age - p_1)/(1  + fabs(age - p_1))));
+						  j_2 = 1/(1 + exp(-20*(age - gammax)/(1  + fabs(age - gammax))));
+						  tmp(y,a) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+						}
+					  }
+				} else {
+					if(selblock_models(b) == 6) { // len-increasing logistic
+						for(int y = 0; y < n_years; y++)
+						{
+						  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+						  Type k = selpars(b)(y,1); //  1/slope in year y
+						  for(int l = 0; l < n_lengths; l++)
+						  {
+							tmpL(y,l) = 1.0/(1.0 + exp(-(newLengths(l) - l50)/k)); 
+						  }
+						  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+						}
+					} else { // len-decreasing logistic
+						if(selblock_models(b) == 7) {
+							for(int y = 0; y < n_years; y++)
+							{
+							  Type l50 = selpars(b)(y,0); // l50 parameter in year y
+							  Type k = selpars(b)(y,1); //  1/slope in year y
+							  for(int l = 0; l < n_lengths; l++)
+							  {
+								tmpL(y,l) = 1.0/(1.0 + exp((newLengths(l) - l50)/k)); 
+							  }
+							  for(int l = 0; l < n_lengths; l++) tmpL(y,l) = tmpL(y,l)/tmpL(y,n_lengths-1); // standardize from 0 to 1?
+							}
+						} else { // length double normal
+						  for(int y = 0; y < n_years; y++)
+						  {				
+							Type p_1 = selpars(b)(y,0); // 
+							Type p_2 = selpars(b)(y,1); // 
+							Type p_3 = selpars(b)(y,2);
+							Type p_4 = selpars(b)(y,3);
+							Type p_5 = 1/(1+exp(-selpars(b)(y,4)));
+							Type p_6 = 1/(1+exp(-selpars(b)(y,5)));
+							Type lmax = max(newLengths);
+							Type lmin = min(newLengths);
+							Type gammax = p_1 + binwidth + (0.99*lmax - p_1 - binwidth)/(1 + exp(-p_2));
+							Type alpha = 0.0;
+							Type beta = 0.0;
+							Type j_1 = 0.0;
+							Type j_2 = 0.0;
+							for (int l = 0; l < n_lengths; l++)
+							{
+							  alpha = p_5 + (1 - p_5)*(exp(-pow(newLengths(l) - p_1, 2)/exp(p_3)) - exp(-pow(lmin - p_1,2)/exp(p_3)))/(1-exp(-pow(lmin - p_1,2)/exp(p_3)));
+							  beta = 1 + (p_6 - 1)*(exp(-pow(newLengths(l) - gammax,2)/exp(p_4)) - 1)/(exp(-pow(lmax - gammax,2)/exp(p_4)) - 1);
+							  j_1 = 1/(1 + exp(-20*(newLengths(l) - p_1)/(1  + fabs(newLengths(l) - p_1))));
+							  j_2 = 1/(1 + exp(-20*(newLengths(l) - gammax)/(1  + fabs(newLengths(l) - gammax))));
+							  tmpL(y,l) = alpha * (1 - j_1) + j_1*((1 - j_2) + j_2*beta);
+							}
+						  }	
+						}
+					}
+					
+				}
+		  }
         }
       }
     }
-    selAA(b) = tmp;
+	
+    if(selblock_models(b) < 6) selAL(b) = tmp; // age selex
+	else selAL(b) = tmpL; // len selex
+	
   }
-  return selAA;
+  return selAL;
 }
 
 template <class Type>
@@ -139,7 +233,6 @@ Type get_SPR(Type log_F, vector<Type> M, matrix<Type> sel, vector<Type> mat, vec
   return SPR;
 }
 
-
 template <class Type>
 vector<Type> get_SPRAA(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
 {
@@ -198,6 +291,7 @@ Type get_YPR(Type log_F, vector<Type> M, matrix<Type> sel, matrix<Type> waacatch
   for(int f = 0; f < n_fleets; f ++) YPR += ntemp * F(f,n_ages-1) * waacatch(f,n_ages-1) * (1.0 - exp(-Z(n_ages-1)))/Z(n_ages-1);
   return YPR;
 }
+
 
 template <class Type>
 Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
@@ -899,11 +993,27 @@ vector<Type> get_pred_NAA_y(int y, int recruit_model, vector<Type> mean_rec_pars
 }
 
 template <class Type>
-Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> mature, int y, int ssbpointer, vector<Type> fracyr_SSB){
-  int na = mature.cols();
-  Type SSB = 0;
-  vector<Type> waay = get_waa_y(waa,y,na,ssbpointer);
-  for(int a = 0; a < na; a++) SSB += NAA(y,a) * waay(a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
+Type get_SSB(matrix<Type> NAA, matrix<Type> ZAA, array<Type> waa, matrix<Type> mature, 
+			 //matrix<Type> mature_len, int weight_model, array<Type> out_phi_mat, matrix<Type> watl, 
+			 int y, int ssbpointer, vector<Type> fracyr_SSB){
+	Type SSB = 0;
+	//Type fec_age = 0;
+	//int n_lengths = mature_len.cols();
+	int na = mature.cols();
+    // Calculate SSB using mature (at age) or mature_len
+	//if((weight_model == 1) | (weight_model == 3)) { // use age information
+	  vector<Type> waay = get_waa_y(waa,y,na,ssbpointer);
+	  for(int a = 0; a < na; a++) {
+		  SSB += NAA(y,a) * waay(a) * mature(y,a) * exp(-ZAA(y,a)*fracyr_SSB(y));
+	  }
+	//}
+	//if(weight_model == 2) { // use len information
+	//	for(int a = 0; a < na; a++) {
+	//		fec_age = 0;
+	//		for(int l = 0; l < n_lengths; l++) fec_age += out_phi_mat(y,l,a)*watl(y,l)*mature_len(y,l)*mature(y,a);
+	//		SSB += NAA(y,a) * fec_age * exp(-ZAA(y,a)*fracyr_SSB(y));
+	//	}
+	//}
   return(SSB);
 }
  
@@ -1006,6 +1116,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       FAA_tot_proj = FAA_proj.colwise().sum();
       //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
     }
+                             
   }
   return(FAA_proj);
 }
@@ -1063,7 +1174,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
       }
     } // end proj F
-    SSB(y) = get_SSB(NAA,ZAA,waa, mature,y, waa_pointer_ssb, fracyr_SSB);
+    SSB(y) = get_SSB(NAA,ZAA,waa,mature,y,waa_pointer_ssb,fracyr_SSB);
   } // end pop model loop
   
   matrix<Type> out(ny, 2 * n_ages + n_fleets * n_ages + 1);
@@ -1072,4 +1183,157 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   for(int y = 0; y < ny; y++) for(int i = 2 ; i < (2 + n_fleets); i++) for(int a = 0; a < n_ages; a++) out(y,i*n_ages + a) = FAA(y,i-2,a);
   out.col(out.cols()-1) = SSB;
   return(out);
+}
+
+template <class Type>
+array<Type> pred_LAA(matrix<Type> mLAA_jan1, int n_yrs, int n_years_model, vector<Type> expSD,
+					  array<Type> GW_par, vector<Type> lengths, vector<Type> fracyr_vec, int growth_model, Type age_L1){
+
+  Type Lminp = min(lengths);
+  Type Lmaxp = max(lengths);
+  Type len_bin = lengths(1) - lengths(0); 
+  Type Fac1 = 0.0;
+  Type Fac2 = 0.0;
+  Type Ll1p = 0.0;
+  Type Llp = 0.0;
+  int n_ages = mLAA_jan1.cols();
+  int n_lengths = lengths.size();
+  array<Type> out(n_yrs, n_lengths, n_ages);
+  vector<Type> mLAA(n_ages);
+  Type Grate = 0.0;
+  Type b_len = 0.0;
+  Type last_linear = 0.0;
+  Type this_SD = 0.0;
+  Type Slope = 0.0;
+
+	for(int y = 0; y < n_yrs; y++) {
+		  mLAA.setZero();
+		  int y_1 = y + 1;
+		  int yuse = y; // used in fraction information
+		  if(y > (n_years_model - 1)) yuse = n_years_model -1; //some things only go up to n_years_model-1
+		  if(y == (n_yrs - 1)) y_1 = y;
+		  Type fracyr = fracyr_vec(yuse);
+		  for(int a = 0; a < n_ages; a++)
+		  {  
+			if(growth_model == 1) { // classic von Bertalanffy curve
+				b_len = (GW_par(y,a,2) - Lminp)/age_L1;
+				if((a + 1.0 + fracyr) <= age_L1) { // use linear growth
+					mLAA(a) = Lminp + b_len*(a+1.0+fracyr);  
+				} else { // other options
+					if((a+1.0) >= age_L1) { // only growth curve
+						if(a == (n_ages-1)) mLAA(a) = mLAA_jan1(y,a); // no growth for age plus group
+						else mLAA(a) = mLAA_jan1(y,a) + (mLAA_jan1(y,a) - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*fracyr) - 1.0);
+					} else { // linear + growth curve mixed
+						last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
+						mLAA(a) = last_linear + (last_linear - GW_par(y,a,1))*(exp(-GW_par(y,a,0)*(a+1.0+fracyr-age_L1)) - 1.0); 
+					}
+				}
+			}
+			if(growth_model == 2) { // Richards growth curve	
+				b_len = (GW_par(y,a,2) - Lminp)/age_L1;			
+				if((a + 1.0 + fracyr) <= age_L1) { // use linear growth
+					mLAA(a) = Lminp + b_len*(a+1.0+fracyr);  
+				} else { // other options
+					if((a+1.0) >= age_L1) { // only growth curve
+						if(a == (n_ages-1)) mLAA(a) = mLAA_jan1(y,a); // no growth for age plus group
+						else mLAA(a) = pow(pow(mLAA_jan1(y,a),GW_par(y,a,3)) + (pow(mLAA_jan1(y,a),GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*fracyr) - 1.0),1/GW_par(y,a,3));
+					} else { // linear + growth curve mixed
+						last_linear = Lminp + b_len*age_L1; // last age (cont) with linear growth 
+						mLAA(a) = pow(pow(last_linear,GW_par(y,a,3)) + (pow(last_linear,GW_par(y,a,3)) - pow(GW_par(y,a,1),GW_par(y,a,3)))*(exp(-GW_par(y,a,0)*(a+1.0+fracyr-age_L1)) - 1.0),1/GW_par(y,a,3));
+					}
+				}
+			}
+			if(growth_model == 3){ // nonparametric approach
+				if(a < (n_ages-1)) { // for a < n_ages - 1, linear interpolation
+					Grate = (mLAA_jan1(y_1,a+1) - mLAA_jan1(y,a))*fracyr;
+					mLAA(a) = mLAA_jan1(y,a) + Grate;	
+				} else { // last age. use last Grate
+					mLAA(a) = mLAA_jan1(y,a) + Grate;
+				}
+			}
+			
+			// SD calculation (again): 
+			if(growth_model < 3) { // for parametric approach
+				if((a + 1.0 + fracyr) <= age_L1) { // same as SD1
+					this_SD = expSD(0); 
+				} else { 
+					if(a == (n_ages-1)) { // same as SDA
+						this_SD = expSD(1);
+					} else { // linear interpolation
+						Slope = (expSD(1) - expSD(0))/(GW_par(y,a,1)-GW_par(y,a,2));
+						this_SD = expSD(0) + Slope*(mLAA(a)-GW_par(y,a,2));  
+					}
+				}				
+			}
+			if(growth_model == 3) { // only works for year effect
+				Slope = (expSD(1) - expSD(0))/(mLAA_jan1(y,n_ages-1)-mLAA_jan1(y,0));
+				this_SD = expSD(0) + Slope*(mLAA(a)-mLAA_jan1(y,0));  
+			}
+
+			for(int l = 0; l < n_lengths; l++) {
+				
+				if(l == 0) { 
+					Fac1 = (Lminp + len_bin - mLAA(a))/this_SD; // upper limit smallest len bin, important colsums = 0
+					out(y,l,a) = pnorm(Fac1);  
+				} else {
+					if(l == (n_lengths-1)) { 
+						Fac1 = (Lmaxp - mLAA(a))/this_SD;
+						out(y,l,a) = 1.0 - pnorm(Fac1);  
+					} else { 
+						Ll1p = lengths(l+1);
+						Llp = lengths(l);
+						Fac1 = (Ll1p - mLAA(a))/this_SD;
+						Fac2 = (Llp - mLAA(a))/this_SD;
+						out(y,l,a) = pnorm(Fac1) - pnorm(Fac2);  
+					}
+				}
+			}
+		  }
+	}
+	
+  return(out);
+}
+
+template <class Type>
+matrix<Type> get_fracyr_WAA(vector<Type> WAA_jan1, vector<Type> WAA_jan1_y1, Type fracyr){
+  int n_ages = WAA_jan1.size();
+  vector<Type> WAA(n_ages);
+  Type Grate = 0.0;
+  
+  	for(int a = 0; a < n_ages; a++)
+	 {  
+		if(a < (n_ages-1)) { // for a < n_ages - 1. See Crane et al 2019
+			Grate = WAA_jan1_y1(a+1)/WAA_jan1(a);
+			WAA(a) = WAA_jan1(a)*pow(Grate, fracyr);
+		} else { // for last age, use last Grate
+			WAA(a) = WAA_jan1(a)*pow(Grate, fracyr); 
+		}
+		
+	}
+	  
+	return(WAA);
+}
+
+// Get selectivity at age from selectivity at length
+// Only used when selectivity at length is specified
+// Uses phi_matrix at fracyr
+template <class Type>
+vector<Type> get_selAA_from_selAL(matrix<Type> selAL, int y, int this_sel_model, array<Type> fracyr_phi_mat){
+	  
+	  vector<int> dims = fracyr_phi_mat.dim;
+	  int n_ages = dims(2);
+	  int n_lengths = dims(1);
+	  vector<Type> selAA(n_ages); // n_ages
+	  if(this_sel_model < 6) { // for age models
+		  selAA = selAL.row(y);  // same as calculated in selAL
+	  } else { // transform for all years
+		  for(int a = 0; a < n_ages; a++) {
+		  Type sumSelex = 0.0;
+			  for(int l = 0; l < n_lengths; l++) {
+				sumSelex += fracyr_phi_mat(y,l,a)*selAL(y,l);
+			  }
+		  selAA(a) = sumSelex;
+		  }
+	  }
+	return(selAA);
 }

@@ -19,6 +19,10 @@
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
 #'     \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.growth.re} (T/F), continue growth random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, growth will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LAA.re} (T/F), continue LAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, LAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.LW.re} (T/F), continue LW random effects (i.e. AR1_y or AR1_c) for projections. Default = \code{TRUE}. If \code{FALSE}, LW will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.WAA.re} (T/F), continue WAA random effects (i.e. 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, WAA will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
@@ -43,7 +47,9 @@
 prepare_projection = function(model, proj.opts)
 {
   if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
+                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, 
+                                       cont.growth.re=NULL, cont.LAA.re=NULL, cont.LW.re=NULL, cont.WAA.re=NULL, 
+                                       avg.rec.yrs=NULL, percentFXSPR=100,
                                        percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
@@ -74,6 +80,42 @@ prepare_projection = function(model, proj.opts)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
 
+  # add options for growth:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.growth.re)){
+      #data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+      for(i in 1:length(data$proj_growth_opt)) data$proj_growth_opt[i] <- ifelse(proj.opts$cont.growth.re[i], 1, 2) 
+  } else {
+      for(i in 1:length(data$proj_growth_opt)) data$proj_growth_opt[i] <- ifelse(model$env$data$growth_re_model[i] %in% c(2,3,4,5), 1, 2) 
+  }
+  # add options for LAA:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.LAA.re)){
+      #data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+      data$proj_LAA_opt <- ifelse(proj.opts$cont.LAA.re, 1, 2) 
+  } else {
+    data$proj_LAA_opt <- ifelse(model$env$data$LAA_re_model %in% c(2,5), 1, 2)
+  }
+  # add options for LW:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.LW.re)){
+      #data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+      for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(proj.opts$cont.LW.re[i], 1, 2) 
+  } else {
+      for(i in 1:length(data$proj_LW_opt)) data$proj_LW_opt[i] <- ifelse(model$env$data$LW_re_model[i] %in% c(2,3,4,5), 1, 2) 
+  }
+  # add options for WAA:
+  #   1 = continue random effects (if they exist) - need to pad M_re
+  #   2 = use average
+  if(!is.null(proj.opts$cont.WAA.re)){
+      #data$proj_GW_opt = numeric(length(model$env$data$growth_re_model))
+      data$proj_WAA_opt <- ifelse(proj.opts$cont.WAA.re, 1, 2) 
+  } else {
+    data$proj_WAA_opt <- ifelse(model$env$data$WAA_re_model %in% c(2,5), 1, 2)
+  }
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
@@ -178,13 +220,14 @@ prepare_projection = function(model, proj.opts)
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
   data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
   data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
-  toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
-  if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
-  tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
-  tmp[,1:data$n_years_model,] <- data$waa
-  for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
-  data$waa <- tmp
-
+  if(input1$data$weight_model == 1){ # only when waa present and used
+    toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+    if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
+    tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
+    tmp[,1:data$n_years_model,] <- data$waa
+    for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
+    data$waa <- tmp
+  }
   # initialize pars at previously estimated values
   par <- model$parList
   # fill_vals <- function(x){as.factor(rep(NA, length(x)))}
@@ -230,7 +273,7 @@ prepare_projection = function(model, proj.opts)
     par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
     map$q_re <- rbind(matrix(as.integer(map$q_re), data$n_years_model, data$n_indices), matrix(NA, data$n_years_proj, data$n_indices))
     if(any(data$use_q_re == 1)){
-      ind = which(data$use_q_re)
+      ind = which(data$use_q_re == 1)
       map$q_re[,ind] <- 1:(length(ind) * (data$n_years_model + data$n_years_proj)) #turn on appropriate columns of q_re
     }
     map$q_re <- factor(map$q_re)
@@ -305,6 +348,108 @@ prepare_projection = function(model, proj.opts)
     # }
     # map$M_re <- factor(tmp)
   }
+
+  # projection: growth
+  if(any(data$proj_growth_opt == 1)){ 
+
+      par$growth_re <- abind::abind(par$growth_re, array(0, dim = c(proj.opts$n.yrs, dim(par$growth_re)[2], dim(par$growth_re)[3])), along = 1)
+      tmp <- par$growth_re
+
+      map$growth_re = NULL
+      max_val_par = 0
+      active_sum = -1
+      this_max = 0
+      for(i in 1:data$n_growth_par) {
+
+        # growth_re: "none","iid","ar1_y"
+        tmp1 <- matrix(NA, nrow = dim(tmp)[1], ncol = dim(tmp)[2])
+        if(data$growth_re_model[i] %in% c(2,4)){ # iid ar1- only y
+          tmp1[] = rep(1:nrow(tmp1), times = ncol(tmp1))  # all y estimated
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+        if(data$growth_re_model[i] %in% c(3,5)){ # iid ar1 - only c
+          loop_row = rep(0, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_row[1:ncol(tmp1)] = (ncol(tmp1) - 1):0
+          loop_col = rep(ncol(tmp1) - 1, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_col[(length(loop_col) - ncol(tmp1) + 1):length(loop_col)] = (ncol(tmp1) - 1):0
+
+          for(j in seq_along(loop_col)) {
+            tmp1[(loop_row[j]:loop_col[j])*(nrow(tmp1) + 1) + (j - ncol(tmp1) + 1)] <- j
+          }
+
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+
+        map$growth_re <- c(map$growth_re, as.vector(tmp1) + max_val_par)
+      }
+      map$growth_re = as.factor(map$growth_re)
+
+  }
+
+  # projection: LAA
+  if(any(data$proj_LAA_opt == 1)){ 
+
+      par$LAA_re <- rbind(par$LAA_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+      tmp <- par$LAA_re
+      tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
+      map$LAA_re <- factor(tmp)
+
+  }
+
+  # projection: LW
+  if(any(data$proj_LW_opt == 1)){ 
+
+      par$LW_re <- abind::abind(par$LW_re, array(0, dim = c(proj.opts$n.yrs, dim(par$LW_re)[2], dim(par$LW_re)[3])), along = 1)
+      tmp <- par$LW_re
+      map$LW_re = NULL
+      max_val_par = 0
+      active_sum = -1
+      this_max = 0
+      for(i in 1:data$n_LW_par) {
+
+        # growth_re: "none","iid","ar1_y"
+        tmp1 <- matrix(NA, nrow = dim(tmp)[1], ncol = dim(tmp)[2])
+        if(data$LW_re_model[i] %in% c(2,4)){ # iid ar1- only y
+          tmp1[] = rep(1:nrow(tmp1), times = ncol(tmp1))  # all y estimated
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+        if(data$LW_re_model[i] %in% c(3,5)){ # iid ar1 - only c
+          loop_row = rep(0, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_row[1:ncol(tmp1)] = (ncol(tmp1) - 1):0
+          loop_col = rep(ncol(tmp1) - 1, times = ncol(tmp1) + nrow(tmp1) - 1)
+          loop_col[(length(loop_col) - ncol(tmp1) + 1):length(loop_col)] = (ncol(tmp1) - 1):0
+
+          for(j in seq_along(loop_col)) {
+            tmp1[(loop_row[j]:loop_col[j])*(nrow(tmp1) + 1) + (j - ncol(tmp1) + 1)] <- j
+          }
+
+          active_sum = active_sum + 1
+          max_val_par = max_val_par + this_max * min(1, active_sum)
+          this_max = max(tmp1, na.rm = TRUE)
+        }
+
+        map$LW_re <- c(map$LW_re, as.vector(tmp1) + max_val_par)
+      }
+      map$LW_re = as.factor(map$LW_re)
+
+  }
+
+  # projection: WAA
+  if(any(data$proj_WAA_opt == 1)){ 
+
+      par$WAA_re <- rbind(par$WAA_re, matrix(0, nrow=proj.opts$n.yrs, ncol=data$n_ages))
+      tmp <- par$WAA_re
+      tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) # all y,a estimated
+      map$WAA_re <- factor(tmp)
+      
+  }
+
 
   input2 <- list(data=data, par = par, map = map, random = random,
     years = input1$years, years_full = c(input1$years, tail(input1$years,proj.opts$n.yrs) + proj.opts$n.yrs),

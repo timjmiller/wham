@@ -26,7 +26,7 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   temp$data$which_F_age = temp$data$which_F_age[1:n_years]
   temp$data$avg_years_ind = temp$data$avg_years_ind - peel
   temp$data$XSPR_R_avg_yrs = temp$data$XSPR_R_avg_yrs[1:n_years]
-  
+
   # peeling ecov is tricky bc ecov_years can be different than model_years - make sure to peel to same year
   if(any(temp$data$Ecov_model != 0)){
     # temp$data$n_years_Ecov = model$dat$n_years_Ecov - peel
