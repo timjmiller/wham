@@ -71,8 +71,9 @@ matrix<Type> get_matrix_y(array<Type> mat, int year){
 template<class Type>
 vector<Type> get_avg_ssbfrac(matrix<Type> ssbfrac, vector<int> years) {
   vector<Type> avg_ssbfrac(ssbfrac.cols());
-  for(int s = 0; s < ssbfrac.cols(); s++) for(int y = 0; y < years.size(); y++) ssbfrac(s) += ssbfrac(years(y),s)/Type(years.size());
-  return ssbfrac;
+  avg_ssbfrac.setZero();
+  for(int s = 0; s < ssbfrac.cols(); s++) for(int y = 0; y < years.size(); y++) avg_ssbfrac(s) += ssbfrac(years(y),s)/Type(years.size());
+  return avg_ssbfrac;
 }
 
 template<class Type>

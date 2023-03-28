@@ -842,6 +842,7 @@ Type objective_function<Type>::operator() ()
         SIMULATE if(do_simulate_N_re) logR_proj(y,s) = rnorm(logR_mean(s), logR_sd(s));
       }
       REPORT(nll_Rproj);
+      nll += nll_Rproj.sum();
       SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
     }
   }
@@ -961,7 +962,7 @@ Type objective_function<Type>::operator() ()
     // matrix<Type> log_SPR0(n_years_pop, n_stocks);
     vector< array<Type>> annual_SPR_res = get_annual_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, fracyr_SSB, FXSPR_init, 
+      L, which_F_age, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_init, 
       R_XSPR, n_regions_is_small, SPR_weight_type, 0, 10);
     
     array<Type> log_FAA_XSPR = annual_SPR_res(0);
@@ -983,7 +984,7 @@ Type objective_function<Type>::operator() ()
 
   vector< vector<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
     spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-    L, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, fracyr_SSB, FXSPR_static_init, 
+    L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
     avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, 
     vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
     n_regions_is_small, SPR_weight_type, 0, 10);
@@ -1006,6 +1007,10 @@ Type objective_function<Type>::operator() ()
     REPORT(log_YPR_FXSPR_static);
     REPORT(log_FXSPR_static);
     REPORT(log_FXSPR_iter_static);
+
+    array <Type> annual_SPR0AA = get_annual_SPR0_at_age(log_M, spawn_seasons, fracyr_seasons, can_move, must_move,
+      mig_type, trans_mu_base, L, waa_ssb,  mature_all, fracyr_SSB_all, n_regions_is_small);
+    REPORT(annual_SPR0AA);
 
     if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
       ADREPORT(log_FXSPR);
