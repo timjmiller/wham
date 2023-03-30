@@ -24,7 +24,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     sd = TMB:::as.list.sdreport(sdrep, "Std")
   } else {
     pars = mod$parList
-    sd = lapply(pars, function(x) x[] = NA)
+    sd = lapply(pars, function(x) {
+      x[] <- NA
+      return(x)})
   }
   stock.names.tab <- gsub("_", " ", mod$input$stock_names, fixed = TRUE)
   region.names.tab <- gsub("_", " ", mod$input$region_names, fixed = TRUE)
@@ -437,45 +439,58 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     sdrep = mod$sdrep
     pars = TMB:::as.list.sdreport(sdrep, "Est", report = TRUE)
     sd = TMB:::as.list.sdreport(sdrep, "Std", report = TRUE)
-    #Jan 1 numbers at age, by stock and region
-    for(s in 1:data$n_stocks) for(r in 1:data$n_regions){
-      NAA = NAA.cv = mod$rep$NAA[s,r,,]
-      if(!mod$na_sdrep) NAA.cv[] = sd[["log_NAA_rep"]][s,r,,]
+  }
+  #Jan 1 numbers at age, by stock and region
+  for(s in 1:data$n_stocks) for(r in 1:data$n_regions){
+    NAA = NAA.cv = mod$rep$NAA[s,r,,]
+    rownames(NAA) =mod$years_full
+    colnames(NAA) = mod$ages.lab
+    saveRDS(NAA, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_table.RDS")))
+    NAA.cv[] <- NA
+    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+      NAA.cv[] = sd[["log_NAA_rep"]][s,r,,]
       NAA.sd = NAA * NAA.cv
       NAA.lo = exp(log(NAA) - qnorm(0.975) * NAA.cv)
       NAA.hi = exp(log(NAA) + qnorm(0.975) * NAA.cv)
-      rownames(NAA) = rownames(NAA.cv) = rownames(NAA.lo) = rownames(NAA.hi) = mod$years_full
-      colnames(NAA) = colnames(NAA.cv) = colnames(NAA.lo) = colnames(NAA.hi) = mod$ages.lab
-      saveRDS(NAA, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_table.RDS")))
+      rownames(NAA.sd) = rownames(NAA.cv) = rownames(NAA.lo) = rownames(NAA.hi) = mod$years_full
+      colnames(NAA.sd) = colnames(NAA.cv) = colnames(NAA.lo) = colnames(NAA.hi) = mod$ages.lab
       saveRDS(NAA.sd, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_sd_table.RDS")))
       saveRDS(NAA.lo, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_lo_table.RDS")))
       saveRDS(NAA.hi, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_hi_table.RDS")))
     }
+  }
       
-    #Total F at age by region
-    for(r in 1:data$n_regions){
-      FAA_tot = mod$rep$FAA_tot[r,,]
-      FAA_tot.cv = sd[["log_FAA_tot"]][r,,]
-      FAA_tot.sd = FAA_tot * FAA_tot.cv
-      FAA_tot.lo = FAA_tot * exp(- qnorm(0.975) * FAA_tot.cv)
-      FAA_tot.hi = FAA_tot*exp( qnorm(0.975) * FAA_tot.cv)
-      rownames(FAA_tot) = rownames(FAA_tot.cv) = rownames(FAA_tot.lo) = rownames(FAA_tot.hi) = mod$years_full
-      colnames(FAA_tot) = colnames(FAA_tot.cv) = colnames(FAA_tot.lo) = colnames(FAA_tot.hi) = mod$ages.lab
-      saveRDS(FAA_tot, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_table.RDS")))
-      saveRDS(FAA_tot.sd, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_sd_table.RDS")))
-      saveRDS(FAA_tot.lo, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_lo_table.RDS")))
-      saveRDS(FAA_tot.hi, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_hi_table.RDS")))
+  #Total F at age by region
+  for(r in 1:data$n_regions){
+    FAA_r = FAA_r.cv <- mod$rep$FAA[r,,]
+    rownames(FAA_r) = mod$years_full
+    colnames(FAA_r) = mod$ages.lab
+    saveRDS(FAA_r, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_table.RDS")))
+    FAA_r.cv[] <- NA
+    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+      FAA_r.cv = sd[["log_FAA_by_region"]][r,,]
+      FAA_r.sd = FAA_r * FAA_r.cv
+      FAA_r.lo = FAA_r * exp(- qnorm(0.975) * FAA_r.cv)
+      FAA_r.hi = FAA_r * exp( qnorm(0.975) * FAA_r.cv)
+      rownames(FAA_r.sd) = rownames(FAA_r.cv) = rownames(FAA_r.lo) = rownames(FAA_r.hi) = mod$years_full
+      colnames(FAA_r.sd) = colnames(FAA_r.cv) = colnames(FAA_r.lo) = colnames(FAA_r.hi) = mod$ages.lab
+      saveRDS(FAA_r.sd, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_sd_table.RDS")))
+      saveRDS(FAA_r.lo, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_lo_table.RDS")))
+      saveRDS(FAA_r.hi, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_hi_table.RDS")))
     }
+  }
 
-    #F at age
-    FAA = mod$rep$FAA
-    FAA.cv = array(NA, dim = dim(FAA))
-    if(!mod$na_sdrep) FAA.cv[] = mod$sdrep$sd["log_FAA"]
+  #F at age
+  FAA = FAA.cv = mod$rep$FAA
+  dimnames(FAA) = list(fleet.names.tab, mod$years_full, mod$ages.lab)
+  saveRDS(FAA, file = file.path(od,"FAA_table.RDS"))
+  FAA.cv[] <- NA
+  if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+    FAA.cv[] = sd["log_FAA"]
     FAA.sd = FAA * FAA.cv
     FAA.lo = exp(mod$rep$FAA - qnorm(0.975) * FAA.cv)
     FAA.hi = exp(mod$rep$FAA + qnorm(0.975) * FAA.cv)
-    dimnames(FAA) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(fleet.names.tab, mod$years_full, mod$ages.lab)
-    saveRDS(FAA, file = file.path(od,"FAA_table.RDS"))
+    dimnames(FAA.sd) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(fleet.names.tab, mod$years_full, mod$ages.lab)
     saveRDS(FAA.sd, file = file.path(od,"FAA_sd_table.RDS"))
     saveRDS(FAA.lo, file = file.path(od,"FAA_lo_table.RDS"))
     saveRDS(FAA.hi, file = file.path(od,"FAA_hi_table.RDS"))

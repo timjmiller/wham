@@ -78,9 +78,11 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
   model$date = Sys.time()
   model$dir = getwd()
   model$rep <- model$report()
-  # model$TMB_version = packageVersion("TMB")
-  ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="TMB") %>% dplyr::select(loadedversion, source) %>% unname
-  model$TMB_version <- paste0(ver, collapse=" / ")
+  TMB_commit <- packageDescription("TMB")$GithubSHA1
+  model$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
+  TMB_version <- packageDescription("TMB")$Version
+  model$TMB_version <- paste0(TMB_version, " / ", model$TMB_commit, ")")
+
   model$parList = model$env$parList(x = fe)
   model$final_gradient = Gr
 

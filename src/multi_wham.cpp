@@ -855,7 +855,7 @@ Type objective_function<Type>::operator() ()
   REPORT(annual_SAA_spawn);
   REPORT(F);
   REPORT(all_NAA);
-  REPORT(log_F);
+  // REPORT(log_F);
   REPORT(NAA);
   REPORT(pred_NAA);
   REPORT(NAA_devs);
@@ -959,7 +959,6 @@ Type objective_function<Type>::operator() ()
 
 
   if(do_SPR_BRPs){
-    // matrix<Type> log_SPR0(n_years_pop, n_stocks);
     vector< array<Type>> annual_SPR_res = get_annual_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_init, 
@@ -982,12 +981,12 @@ Type objective_function<Type>::operator() ()
     vector<Type> log_FXSPR = log_FXSPR_iter.matrix().col(9);
     REPORT(log_FXSPR);
 
-  vector< vector<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
-    spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-    L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
-    avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, 
-    vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
-    n_regions_is_small, SPR_weight_type, 0, 10);
+    vector< vector<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
+      spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
+      L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
+      avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, 
+      vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
+      n_regions_is_small, SPR_weight_type, 0, 10);
     
     matrix<Type> log_FAA_XSPR_static(n_fleets+1,n_ages);
     for(int f = 0; f <= n_fleets; f++) for(int a = 0; a < n_ages; a++) log_FAA_XSPR_static(f,a) = static_SPR_res(0)(n_ages*f + a);
@@ -1008,20 +1007,20 @@ Type objective_function<Type>::operator() ()
     REPORT(log_FXSPR_static);
     REPORT(log_FXSPR_iter_static);
 
-    array <Type> annual_SPR0AA = get_annual_SPR0_at_age(log_M, spawn_seasons, fracyr_seasons, can_move, must_move,
+    array<Type> annual_SPR0AA = get_annual_SPR0_at_age(log_M, spawn_seasons, fracyr_seasons, can_move, must_move,
       mig_type, trans_mu_base, L, waa_ssb,  mature_all, fracyr_SSB_all, n_regions_is_small);
     REPORT(annual_SPR0AA);
 
-    if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
-      ADREPORT(log_FXSPR);
-      ADREPORT(log_SSB_FXSPR);
-      ADREPORT(log_Y_FXSPR);
-      ADREPORT(log_SPR0);
-      ADREPORT(log_FXSPR_static);
-      ADREPORT(log_SSB_FXSPR_static);
-      ADREPORT(log_SPR0_static);
-      ADREPORT(log_Y_FXSPR_static);
-    }
+    // if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
+    //   ADREPORT(log_FXSPR);
+    //   ADREPORT(log_SSB_FXSPR);
+    //   ADREPORT(log_Y_FXSPR);
+    //   ADREPORT(log_SPR0);
+    //   ADREPORT(log_FXSPR_static);
+    //   ADREPORT(log_SSB_FXSPR_static);
+    //   ADREPORT(log_SPR0_static);
+    //   ADREPORT(log_Y_FXSPR_static);
+    // }
   }
   int is_SR = 0;
   for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
@@ -1109,28 +1108,28 @@ Type objective_function<Type>::operator() ()
   
   //if(reportMode==0){
   array<Type> log_FAA = get_log_FAA(FAA);
-  array<Type> FAA_tot = get_FAA_tot(FAA, fleet_regions, n_regions);
-  REPORT(FAA_tot);
-  array<Type> log_FAA_tot = get_log_FAA(FAA_tot); //FAA_tot is also a 3-d array (region,year,age)
+  array<Type> FAA_by_region = get_FAA_by_region(FAA, fleet_regions, n_regions);
+  REPORT(FAA_by_region);
+  array<Type> log_FAA_by_region = get_log_FAA(FAA_by_region); //FAA_by_region is also a 3-d array (region,year,age)
   array<Type> log_NAA_rep = get_log_NAA_rep(NAA, NAA_where);
-  matrix<Type> Fbar(FAA_tot.dim(1),FAA_tot.dim(0));
+  matrix<Type> Fbar(FAA_by_region.dim(1),FAA_by_region.dim(0));
   Fbar.setZero();
   int n_Fbar_ages = Fbar_ages.size();
-  matrix<Type> log_FAA_all(FAA_tot.dim(1),FAA_tot.dim(2));
-  vector<Type> log_full_F_all(FAA_tot.dim(1));
+  matrix<Type> log_FAA_tot(FAA_by_region.dim(1),FAA_by_region.dim(2));
+  vector<Type> log_F_tot(FAA_by_region.dim(1));
   vector<Type> log_SSB_all(SSB.rows());
   log_SSB_all.setZero();
-  log_FAA_all.setZero(); log_full_F_all.setZero();
+  log_FAA_tot.setZero(); log_F_tot.setZero();
   for(int y = 0; y < log_SSB_all.size(); y++) log_SSB_all(y) = log(SSB.row(y).sum());
-  for(int y = 0; y < FAA_tot.dim(1); y++) {
-    for(int r = 0; r < FAA_tot.dim(0); r++) for(int a = 0; a < n_Fbar_ages; a++) {
-      Fbar(y,r) += FAA_tot(r,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
+  for(int y = 0; y < FAA_by_region.dim(1); y++) {
+    for(int r = 0; r < FAA_by_region.dim(0); r++) for(int a = 0; a < n_Fbar_ages; a++) {
+      Fbar(y,r) += FAA_by_region(r,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
     }
-    for(int a = 0; a < FAA_tot.dim(2); a++){
-      for(int r = 0; r < FAA_tot.dim(0); r++) log_FAA_all(y,a) += FAA_tot(r,y,a);
-      log_FAA_all(y,a) = log(log_FAA_all(y,a));
+    for(int a = 0; a < FAA_by_region.dim(2); a++){
+      for(int r = 0; r < FAA_by_region.dim(0); r++) log_FAA_tot(y,a) += FAA_by_region(r,y,a);
+      log_FAA_tot(y,a) = log(log_FAA_tot(y,a));
     }
-    log_full_F_all(y) = log_FAA_all(y,which_F_age(y)-1);
+    log_F_tot(y) = log_FAA_tot(y,which_F_age(y)-1);
   }
   matrix<Type> log_Fbar = log(Fbar.array());
   REPORT(Fbar);
@@ -1138,6 +1137,8 @@ Type objective_function<Type>::operator() ()
   REPORT(q);
   REPORT(F);
   REPORT(QAA);
+  REPORT(log_F_tot);
+  REPORT(log_FAA_tot);
   //}
   if(sum_do_post_samp == 0){
     ADREPORT(log_NAA_rep);
@@ -1145,8 +1146,8 @@ Type objective_function<Type>::operator() ()
     ADREPORT(log_SSB_all);
     ADREPORT(log_F);
     ADREPORT(log_FAA);
-    ADREPORT(log_FAA_tot);
-    ADREPORT(log_full_F_all);
+    ADREPORT(log_FAA_by_region);
+    ADREPORT(log_F_tot);
     ADREPORT(log_Fbar);
     ADREPORT(log_catch_resid);
     ADREPORT(log_index_resid);

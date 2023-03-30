@@ -154,7 +154,7 @@ struct sr_yield_spatial {
 //returns just the "solved" log_Fmsy value
 template <class Type>
 Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions,
-  vector<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
+  matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, matrix<Type> waacatch,
   vector<Type> fracyr_seasons, vector<int> recruit_model, int small_dim, Type F_init, int n_iter, int trace = 0) {
   int n = n_iter;
@@ -177,7 +177,7 @@ Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<
 
 //returns annual values of 
 template <class Type>
-vector<Type> get_log_FMSY(array<Type> FAA, vector<int> fleet_regions, vector<int> fleet_seasons, 
+vector<Type> get_log_FMSY(array<Type> FAA, vector<int> fleet_regions, matrix<int> fleet_seasons, 
   vector<int> spawn_seasons, vector<int> spawn_regions, array<int> can_move, vector<int> mig_type, vector<Type> fracyr_seasons, 
   vector<int> which_F_age, vector<int> recruit_model, matrix<Type> log_a, matrix<Type> log_b, 
   matrix<Type> fracyr_SSB, array<Type> log_M, array<Type> mu, matrix<Type> L, array<Type> waa_ssb, array<Type> waa_catch, 

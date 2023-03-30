@@ -9,7 +9,7 @@ struct log_catch_fleets_F_multi {
   matrix<Type> sel; //n_fleets x n_ages
   vector<Type> fracyr_season;
   vector<int> fleet_regions;
-  vector<int> fleet_seasons;
+  matrix<int> fleet_seasons;
   array<int> can_move;
   vector<int> mig_type;
   matrix<Type> waacatch; //n_fleets x n_ages
@@ -24,7 +24,7 @@ struct log_catch_fleets_F_multi {
   matrix<Type> sel_,
   vector<Type> fracyr_season_,
   vector<int> fleet_regions_,
-  vector<int> fleet_seasons_,
+  matrix<int> fleet_seasons_,
   array<int> can_move_,
   vector<int> mig_type_,
   matrix<Type> waacatch_,
@@ -100,7 +100,7 @@ struct log_catch_fleets_F_multi {
 //multiple fleets, regions,stocks
 template <class Type>
 Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type> mu, vector<Type> L, matrix<Type> sel,
-  vector<Type> fracyr_season, vector<int> fleet_regions, vector<int> fleet_seasons, array<int> can_move, vector<int> mig_type,
+  vector<Type> fracyr_season, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type,
   matrix<Type> waacatch, int trace, Type F_init)
 {
   int n = 10;
@@ -128,7 +128,7 @@ Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type
 
 template <class Type>
 array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, array<Type> NAA, array<Type> log_M, array<Type> mu,
-  matrix<Type> L, matrix<Type> mature_proj, matrix<Type> waa_ssb_proj, matrix<Type> waa_catch_proj, vector<int> fleet_regions, vector<int> fleet_seasons, 
+  matrix<Type> L, matrix<Type> mature_proj, matrix<Type> waa_ssb_proj, matrix<Type> waa_catch_proj, vector<int> fleet_regions, matrix<int> fleet_seasons, 
   vector<Type> fracyr_SSB_proj, vector<int> spawn_regions, array<int> can_move, array<int> must_move, vector<int> mig_type, 
   vector<int> avg_years_ind, int n_years_model, vector<int> which_F_age, vector<Type> fracyr_seasons, int small_dim,
   Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, Type percentFMSY, matrix<Type> R_XSPR, vector<Type> FXSPR_init, 
@@ -212,14 +212,21 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
       vector<Type> L_proj = L.row(y);
       if(trace) see(L_proj);
       array<Type> log_M_proj = get_log_M_y(y, log_M);
-      if(trace) see(log_M_proj);
+      if(trace) see(log_M_proj.dim);
       array<Type> mu_proj = get_mu_y(y, mu);
-      if(trace) see(mu_proj);
+      if(trace) see(mu_proj.dim);
+      if(trace) see(waa_ssb_proj);
+      if(trace) see(waa_catch_proj);
+      if(trace) see(mature_proj);
+      if(trace) see(fracyr_SSB_proj);
+      if(trace) see(R_XSPR.row(y));
 
       if(proj_F_opt_y == 3) {//option 3: use F X%SPR
-        FAA_proj = sel_proj * get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
+        Type FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
           log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, fracyr_seasons, vector<Type> (R_XSPR.row(y)), percentSPR, SPR_weights, 
           SPR_weight_type, small_dim, FXSPR_init(y), 10, trace);
+        if(trace) see(FXSPR);
+        FAA_proj = sel_proj * FXSPR;
         if(trace) see(FAA_proj);
       }
       

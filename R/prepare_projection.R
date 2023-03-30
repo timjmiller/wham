@@ -177,18 +177,18 @@ prepare_projection = function(model, proj.opts) {
     for(r in 1:dims[2]){
     # pad log_NAA (even if projection years not used)
       if(data$NAA_re_model[s] == 0) {} #tmp.map already set to NA
-      print("here")
-      print(dim(tmp.map))
-      print(proj_yrs_ind)
-      print(data$n_years_proj)
-      print(data$n_years_model)
-      print(dim(par$log_NAA))
+      # print("here")
+      # print(dim(tmp.map))
+      # print(proj_yrs_ind)
+      # print(data$n_years_proj)
+      # print(data$n_years_model)
+      # print(dim(par$log_NAA))
       if(data$NAA_re_model[s] > 0 & data$spawn_regions[s] == r) tmp.map[s,r,proj_yrs_ind-1,1] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-      print("here2")
+      # print("here2")
       if(data$NAA_re_model[s] == 2) for(a in 2:dims[4]) {
         if(data$NAA_where[s,r,a]) tmp.map[s,r,proj_yrs_ind-1,a] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
       }
-      print("here3")
+      # print("here3")
     }
   }
   par$log_NAA <- tmp
@@ -221,7 +221,7 @@ prepare_projection = function(model, proj.opts) {
   }
   if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE #one of the other ecov options is not null
 
-      print("here4")
+      # print("here4")
 
   if(any(input$data$Ecov_model > 0)){
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
@@ -254,8 +254,8 @@ prepare_projection = function(model, proj.opts) {
           if(data$Ecov_model[i] == 2) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i] - par$Ecov_process_pars[1,i] # AR(1)
         }
       }
-      print(dim(tmp.re))
-      print(data$n_years_Ecov)
+      # print(dim(tmp.re))
+      # print(data$n_years_Ecov)
       for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
         tmp.re[,i] = 1
       }
@@ -339,7 +339,7 @@ prepare_projection = function(model, proj.opts) {
   #     map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
   #   }
   # }
-      print("here5")
+      # print("here5")
   
   #M
   # options for M in projections, data$proj_M_opt:
@@ -368,7 +368,7 @@ prepare_projection = function(model, proj.opts) {
   tmp[,,1:data$n_years_model,] <- par$M_re
   #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[4]) tmp[a,b,,c] <- c(par$M_re[a,b,,c], rep(0,data$n_years_proj))
   par$M_re <- tmp
-      print("here6")
+      # print("here6")
 
   # options for L in projections, data$proj_L_opt:
   #   1 = continue random effects (if they exist) - need to pad L_re
@@ -395,7 +395,7 @@ prepare_projection = function(model, proj.opts) {
   tmp[1:data$n_years_model,] <- par$L_re
   #for(b in 1:dims[2]) tmp[,b] <- c(par$L_re[,b], rep(0,data$n_years_proj))
   par$L_re <- tmp
-      print("here7")
+      # print("here7")
 
   # options for mu in projections, data$proj_mu_opt:
   #   1 = continue random effects (if they exist) - need to pad mu_re
@@ -425,7 +425,7 @@ prepare_projection = function(model, proj.opts) {
     #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[3]) for(d in 1:dims[5]) tmp[a,b,c,,d] <- c(par$mu_re[a,b,c,,d], rep(0,data$n_years_proj))
     par$mu_re <- tmp
   }
-        print("here8")
+        # print("here8")
 
   data$years_use <- 1:(data$n_years_model + data$n_years_proj) -1
   data$years_use_Ecov <-  1:data$n_years_Ecov - 1

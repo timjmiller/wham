@@ -105,18 +105,23 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
   mod$call <- match.call()
   mod$rep <- mod$report()
   mod <- check_which_F_age(mod) #can be an issue if estimated full F is at age with 0 selectivity
-  ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
-  mod$wham_version <- paste0(ver, collapse=" / ")
+  #ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
+  #mod$wham_version <- paste0(ver, collapse=" / ")
+  wham_commit <- packageDescription("wham")$GithubSHA1
+  mod$wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 
+  wham_version <- packageDescription("wham")$Version
+  mod$wham_version <- paste0(wham_version, " / ", mod$wham_commit)
+
   if(do.fit){
     btime <- Sys.time()
     #mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
-    mod <- check_which_F_age(mod)
     if(do.brps){
-      if(any(mod$inpt$data$can_move==1) & any(mod$input$data$mig_type == 1)){
+      if(any(mod$input$data$can_move==1) & any(mod$input$data$mig_type == 1)){
         warning("Cannot currently calculate standard errors of biological reference points internally when migration and movement are simultaneous for any stock.")
       } else {
+        mod <- check_which_F_age(mod)
         mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
         if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
         mod$rep = mod$report() #par values don't matter because function has not been evaluated
@@ -129,21 +134,8 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
 
     # retrospective analysis
     if(do.retro){
-      ran_names <- unique(names(mod$env$par[mod$env$random]))
-      #print(ran_names)
-      #stop()
-      ran <- NULL
-      if(length(ran_names)) ran <- ran_names
-      #print(n.peels)
-      #mod$peels <- retro(mod, ran = ran, n.peels= n.peels,
-      #  MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent)
-      tryCatch(mod$peels <- retro(mod, ran = ran, n.peels= n.peels,
+      tryCatch(mod$peels <- retro(mod, ran = mod$input$random, n.peels= n.peels,
         MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
-      #assigning mod$err_retro accomplishes the below if statement
-      #if(exists("err")){
-      #  mod$err_retro <- err # store error message to print out in fit_wham
-      #  rm("err")
-      #}
     }
     
     # one-step-ahead residuals
@@ -283,25 +275,25 @@ check_projF <- function(mod)
   {
     y <- mod$env$data$n_years_model + ind
     correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
-    print(correct_F)
-    print(length(correct_F))
+    # print(correct_F)
+    # print(length(correct_F))
     FAA_tot <- apply(mod$rep$FAA,2:3, sum)
-    print(dim(FAA_tot))
+    # print(dim(FAA_tot))
 
     used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4)
-    print(used_F)
+    # print(used_F)
     bad <- which(correct_F != used_F)
     if(length(bad))
     {
-      print(y)
-      print(bad)
-      print(y[bad])
-      print(mod$years_full)
-      print(length(mod$years_full))
+      # print(y)
+      # print(bad)
+      # print(y[bad])
+      # print(mod$years_full)
+      # print(length(mod$years_full))
       redo_SPR_years <- mod$years_full[y[bad]]
-      print(length(mod$env$data$F_proj_init))
-      print(ind)
-      print(length(mod$env$data$FXSPR_init))
+      # print(length(mod$env$data$F_proj_init))
+      # print(ind)
+      # print(length(mod$env$data$FXSPR_init))
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_proj_init[ind[bad]] <- mod$env$data$FXSPR_init[y[bad]]
       mod$retape()

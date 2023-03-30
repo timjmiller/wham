@@ -985,7 +985,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   dat = mod$env$data
   years_full = mod$years_full
   pred_log_catch = mod$rep$pred_log_catch
-  pred_catch = exp(pred_log_catch)
+  pred_catch = mod$rep$pred_catch
   sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
   catch = dat$agg_catch
   log_stdres = (log(catch) - pred_log_catch[1:length(years),])/sigma # cpp already bias-corrects if bias_correct_oe = 1
@@ -1702,7 +1702,7 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE, stock = 1)
   years_full <-  mod$years_full
 	n.yrs <- length(years_full)
   ssbfrac = dat$fracyr_SSB
-  ssb.aa <- mod$rep$NAA_spawn[stock,,] * dat$waa[dat$waa_pointer_ssb[stock],,] * dat$mature[stock,,]/1000
+  ssb.aa <- mod$rep$NAA_spawn[stock,,] * mod$rep$waa_ssb[stock,,] * mod$rep$mature_all[stock,,]/1000
 	#ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * dat$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
 	ssb.max <- max(apply(ssb.aa,1,sum))
 
@@ -1953,32 +1953,36 @@ plot.fleet.F <- function(mod, plot.colors)
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1))
   years = mod$years
-	n_fleets <- mod$env$data$n_fleets
-  F <- mod$rep$F
   years_full = mod$years_full
   nyrs <- length(years_full)
+	n_fleets <- mod$input$data$n_fleets
+  FAA <- mod$rep$FAA
+  F <- matrix(NA, length(years_full), n_fleets)
+  for(y in 1:length(years_full)) for(f in 1:n_fleets) F[y,f] <- FAA[f,y,which(FAA[f,y,] == max(FAA[f,y,]))[1]]
+  std <- NULL
+  # if(class(mod$sdrep)[1] == "sdreport"){
+  #   std = summary(mod$sdrep)
+  # } else {
+  #   std = mod$sdrep
+  # }
+  # faa.ind <- which(rownames(std) == "log_FAA_tot")
+  # log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
+
   if(missing(plot.colors)) plot.colors = viridisLite::viridis(n=n_fleets) # mypalette(n_fleets)
-	if(n_fleets == 1){ # can calculate full F from FAA_tot in projection years if only one fleet
-    # if(class(mod$sdrep)[1] == "sdreport"){
-    #   std = summary(mod$sdrep)
-    # } else {
-    #   std = mod$sdrep
-    # }
-    # faa.ind <- which(rownames(std) == "log_FAA_tot")
-    # log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
-    lines(years_full, full.f, lty=1, lwd=2, col = "black")
-  } else { # multiple fleets, can't partition F in projection years to fleets
+  plot(years_full, F[,1], xlab="Year", ylab="Full F", ylim=c(0,max(F)),	type='n', lty=1, lwd=2)
+	if(n_fleets == 1){ 
+    lines(years_full, F, lty=1, lwd=2, col = "black")
+  } else { 
     for(i in 1:n_fleets){
   		if(i==1){
-  		  plot(years_full, mod$rep$F[,i], xlab="Year", ylab="Full F", ylim=c(0,max(mod$rep$F)),	type='n', lty=1, lwd=2)
-  		  grid(col = gray(0.7))
         if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
       }
-      lines(years, mod$rep$F[,i],lty=1, lwd=2, col=plot.colors[i])
+      lines(years_full, F[,i],lty=1, lwd=2, col=plot.colors[i])
     }
   }
+  grid(col = gray(0.7))
 	leg.names <- paste0(mod$input$fleet_names, " in ", mod$input$region_names[mod$input$data$fleet_regions])
-	legend('topright', legend= leg.names, col=plot.colors,lwd=2, lty=1, horiz=F, bty='n')
+	legend('topright', legend= leg.names, col=plot.colors,lwd=2, lty=1, bty='n')
 	par(origpar)
 }   # end function
 #plot.fleet.F(ssm,ssm.aux)
@@ -2220,7 +2224,8 @@ plot.index.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 {
   origpar <- par(no.readonly = TRUE)
-  years = mod$years_full
+  if(type %in% c("ssb", "fleets")) years = mod$years_full
+  else years = mod$years
   nyrs = length(years)
   dat = mod$env$data
   if(missing(plot.colors)) plot.colors = viridisLite::viridis(n=dat$n_ages) #mypalette(dat$n_ages)
@@ -2228,7 +2233,14 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
     ssb = dat$waa_pointer_ssb[ind],
     #jan1 = dat$waa_pointer_jan1,
     fleets = dat$waa_pointer_fleets[ind],
-    indices = dat$waa_pointer_indices[ind],
+    indices = dat$waa_pointer_indices[ind]
+    #totcatch = dat$waa_pointer_totcatch
+  )
+  waa = switch(type,
+    ssb = mod$rep$waa_ssb[ind,,],
+    #jan1 = dat$waa_pointer_jan1,
+    fleets = mod$rep$waa_catch[ind,,],
+    indices = dat$waa[dat$waa_pointer_indices[ind],,]
     #totcatch = dat$waa_pointer_totcatch
   )
   labs = switch(type,
@@ -2240,11 +2252,11 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
     # indices = paste0("Index ", 1:dat$n_indices),
     #totcatch = "Total Catch"
   )
-  waa = dat$waa[point,,]
+  #waa = dat$waa[point,,]
   n = ifelse(length(dim(waa)) == 2, 1, dim(waa)[1])
 	for(i in 1:n)
 	{
-		if(n>1) WAA.plot <- dat$waa[i,,]
+		if(n>1) WAA.plot <- waa[i,,]
     else WAA.plot = waa
 		plot(years,years,xlab="Year",ylab="Weight",ylim=c(0,max(WAA.plot)),type='n')
 		for (a in 1:dat$n_ages)

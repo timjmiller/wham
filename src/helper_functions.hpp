@@ -1,3 +1,5 @@
+#define see(object) std::cout << #object ":\n" << object << "\n";
+
 template <class Type>
 Type square(Type x){return x*x;}
 
@@ -287,5 +289,4 @@ Type alt1dar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns){
   return res;
 }
 
-#define see(object) std::cout << #object ":\n" << object << "\n";
 

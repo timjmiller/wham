@@ -102,7 +102,7 @@ array<Type> get_log_FAA(array<Type> FAA){
 //done
 
 template<class Type>
-array<Type> get_FAA_tot(array<Type> FAA, vector<int> fleet_regions, int n_regions){
+array<Type> get_FAA_by_region(array<Type> FAA, vector<int> fleet_regions, int n_regions){
   int n_fleets = FAA.dim(0);
   int n_ages = FAA.dim(2);
   int n_y = FAA.dim(1);

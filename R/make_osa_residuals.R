@@ -36,6 +36,9 @@
 #' 
 make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)){
   verify_version(model)
+  orig_vals <- c(model$env$data$do_SPR_BRPs,model$env$data$do_MSY_BRPs)
+  model$env$data$do_SPR_BRPs <- model$env$data$do_MSY_BRPs <- 0
+
   # one-step-ahead residuals
   if(is.null(osa.opts$method)) osa.opts$method <- "oneStepGaussianOffMode"
   if(!osa.opts$method %in% c("oneStepGaussianOffMode","oneStepGaussian", "oneStepGeneric")){
@@ -116,5 +119,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
       }
     }
   }
+  model$env$data$do_SPR_BRPs <- orig_vals[1]
+  model$env$data$do_MSY_BRPs <- orig_vals[2]
   return(model)
 }

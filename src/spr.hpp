@@ -568,6 +568,7 @@ struct spr_F_spatial {
     //int n_seasons = can_move.dim(2);
     matrix<T> FAA(n_fleets,n_ages);
     FAA.setZero();
+    if(trace) see(selectivity);
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
       FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
     }
@@ -577,10 +578,9 @@ struct spr_F_spatial {
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
       logMbaseT(s,r,a) = T(log_M(s,r,a));
     }
-    if(trace) see(logMbaseT);
+    if(trace) see(logMbaseT.dim);
     if(trace) see(mu.dim);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
-    if(trace) see(muT.dim);
     if(trace) see(n_stocks);
     if(trace) see(n_ages);
     if(trace) see(n_regions);
@@ -589,11 +589,15 @@ struct spr_F_spatial {
         muT(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
       }
     }
-    if(trace) see(muT);
+    if(trace) see(muT.dim);
     vector<T> LT = L.template cast<T>();
+    if(trace) see(LT);
     matrix<T> matT = mature.template cast<T>();
+    if(trace) see(matT);
     matrix<T> waassbT = waa_ssb.template cast<T>();
+    if(trace) see(waassbT);
     vector<T> fracyrseasonT = fracyr_seasons.template cast<T>();
+    if(trace) see(fracyrseasonT);
     //stock-specific SSB/R
     array<T> SPR_sr = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, 
       fracyrssbT, 
@@ -604,13 +608,37 @@ struct spr_F_spatial {
       matT, 
       waassbT, 
       fracyrseasonT, 
-      0, small_dim, trace);
+      0, small_dim, 0);
     if(trace) see("end get_SPR spr_F_spatial");
 
     //weighted-average of SSB/R returned
     T SPR = 0;
     for(int s = 0; s < n_stocks; s++) SPR += T(SPR_weights(s)) * SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+    if(trace) see(SPR_weights);
     if(trace) see(SPR);
+    
+    if(trace) {
+      vector<T> SPR_s(n_stocks);      
+      for(int s = 0; s < n_stocks; s++) SPR_s(s) = SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1);
+      see(SPR_s);
+
+      matrix<T> FAA0(n_fleets,n_ages);
+      FAA0.setZero();
+      array<T> SPR0_sr = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, 
+        fracyrssbT, 
+        FAA0, 
+        logMbaseT, 
+        muT, 
+        LT, 
+        matT, 
+        waassbT, 
+        fracyrseasonT, 
+        0, small_dim, 0);
+      T SPR0 = 0;
+      for(int s = 0; s < n_stocks; s++) SPR0 += T(SPR_weights(s)) * SPR0_sr(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+      if(trace) see(SPR0);
+    }
+
     return SPR;
   }
 };
@@ -618,7 +646,7 @@ struct spr_F_spatial {
 //takes a single year of values for inputs (reduce dimensions appropriately)
 //returns just the "solved" log_FXSPR value
 template <class Type>
-Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, vector<int> fleet_seasons,
+Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, vector<Type> fracyr_seasons, vector<Type> R_XSPR, 
   Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace) {
@@ -648,12 +676,42 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
     mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);
   if(trace) see("after spr_F_spatial sprF defined");
+  //trace = 0;
   for(int i=0; i<n-1; i++) {
-    if(trace) see(i);
+    // if(trace) see(i);
     log_FXSPR_i(0) = log_FXSPR_iter(i);
     vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
     log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * SPR0)/grad_spr_F(0);
   }
+  if(trace) see(log_FXSPR_iter);
+
+  if(trace) {
+    see(sel);
+    see(spawn_seasons);
+    see(fleet_regions);
+    see( fleet_seasons);
+    see( can_move);
+    see( mig_type); 
+    see(ssbfrac); 
+    see(log_M)
+    see(L);
+    see(mat);
+    see(waassb);
+    see( fracyr_seasons);
+    see(small_dim);
+    
+    // would need to define this before the code can be uncommented.
+    // see(log_FXSPR_static(0));
+    // for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){
+    //   FAA0(f,a) = exp(log_FXSPR_static(0)) * sel(f,a);
+    // }
+    // array<Type> SPR_FXSPR_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA0, log_M, mu, L, 
+    //   mat, waassb, fracyr_seasons, 0, small_dim);
+    // Type SPR_FXSPR_alt = 0;
+    // for(int s = 0; s < n_stocks; s++) SPR_FXSPR_alt += SPR_weights(s) * SPR_FXSPR_all(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+    // if(trace) see(SPR_FXSPR_alt);
+  }
+
   Type FXSPR = exp(log_FXSPR_iter(n-1));
   return FXSPR;
 }
@@ -661,7 +719,7 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
 //takes a single year of values for inputs including log_SPR0 (reduce dimensions appropriately)
 //returns just the "solved" log_FXSPR value
 template <class Type>
-Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, vector<int> fleet_seasons,
+Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, vector<Type> fracyr_seasons, vector<Type> R_XSPR, vector<Type> log_SPR0,
   Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace) {
@@ -686,10 +744,10 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
 
   if(trace) see(log_FXSPR_iter(0));
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
-    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);
+    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, 0);
   if(trace) see("after spr_F_spatial sprF defined");
   for(int i=0; i<n-1; i++) {
-    if(trace) see(i);
+    // if(trace) see(i);
     log_FXSPR_i(0) = log_FXSPR_iter(i);
     vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
     log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * SPR0)/grad_spr_F(0);
@@ -1034,23 +1092,37 @@ array <Type> get_annual_SPR0_at_age(array<Type> log_M, vector<int> spawn_seasons
   fleet_seasons.setZero();
   matrix<Type> FAA0(1,n_ages);
   FAA0.setZero();
-
+  // see(ny);
+  // see(n_stocks);
+  // see(n_regions);
+  // see(n_ages);
   for(int y = 0; y < ny; y++){
     yvec(0) = y;
     //get average inputs over specified years
-
+    // see(yvec(0));
     vector<Type> ssbfrac = get_avg_ssbfrac(fracyr_SSB,yvec);
+    // see(ssbfrac);
     matrix<Type> waa_ssb_avg = get_avg_mat(waa_ssb, yvec);
+    // see(waa_ssb_avg);
     vector<Type> L_avg = get_avg_L(L, yvec, 0);
+    // see(L_avg);
     matrix<Type> mat = get_avg_mat(mature,yvec);
+    // see(mat);
     array<Type> log_M_avg = get_avg_M(log_M, yvec, 1);
+    // see(log_M_avg.dim);
     array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
     mu_avg.setZero(); 
     if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,yvec,mig_type, can_move, must_move);
+    // see(mu_avg.dim);
 
     array<Type> SPR0AA_y = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA0, log_M_avg, mu_avg, L_avg, 
       mat, waa_ssb_avg, fracyr_seasons, 1, small_dim);
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++)for(int r = 0; r <= n_regions; r++) for(int rr = 0; rr <= n_regions; rr++){
+    // see(SPR0AA_y.dim);
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++)for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++){
+      // see(s);
+      // see(a);
+      // see(r);
+      // see(rr);
       SPR0AA(y,s,a,r,rr) = SPR0AA_y(s,a,r,rr);
     }
   }
