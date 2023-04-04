@@ -4,6 +4,7 @@ wham 1.0.7.9000
 
 ### Bug fixes
 
+* Fixed NaN issue in multinomial for extremely small (e.g. 1e-17) predicted proportions [issue 76](https://github.com/timjmiller/wham/issues/76) [99ec44f](https://github.com/timjmiller/wham/commit/99ec44f7f3c4647d1e882d3102d3da5d31afbb8b)
 * Fix incorrect flag for simulating catch age composition data and incorrect indexing for years to average over for SPR inputs [4f06dc7](https://github.com/timjmiller/wham/commit/4f06dc7baff3b6bef3e7c8eb262dcdedefbb33dc)
 * Fixed bug in reporting correlation parameter estimates in pdf/html tables [31ea94b](https://github.com/timjmiller/wham/commit/31ea94b611844a557947b11ac758531abb83005b)
 * Fixed bug in setting up catch age comp observations when ages are omitted due to selectivity=0 [6667efa](https://github.com/timjmiller/wham/commit/6667efac36df17215b5733e13866a3a78ed4f3b8)
