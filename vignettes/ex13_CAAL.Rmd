@@ -1,0 +1,257 @@
+---
+title: "Ex 13: Conditional age-at-length (CAAL) data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 13: CAAL data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+header-includes:
+   - \usepackage{amsmath}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+wham.dir <- find.package("wham")
+knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+```
+In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to simulated data from Stock Synthesis SS [Methot and Wetzel (2013)](https://doi.org/10.1016/j.fishres.2012.10.012). 
+
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/) (growth branch). This is the 13th `wham` example.
+
+## 1. Load data
+
+Open R and load the `wham` package:
+
+```{r message=FALSE}
+library(wham)
+```
+
+For a clean, runnable `.R` script, look at `ex13_growth.R` in the `example_scripts` folder of the `wham` package install:
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+file.path(wham.dir, "example_scripts")
+```
+
+You can run this entire example script with:
+```{r, eval=FALSE}
+write.dir <- "choose/where/to/save/output" # otherwise will be saved in working directory
+source(file.path(wham.dir, "example_scripts", "ex13_growth.R"))
+```
+
+Let's create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output, otherwise will be saved in working directory
+write.dir <- "choose/where/to/save/output" # need to change
+dir.create(write.dir)
+setwd(write.dir)
+```
+
+We need to read the simulated data and SS report to our analysis directory:
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+file.copy(from=file.path(wham.dir,"extdata","ex13_data_file.rds"), to=write.dir, overwrite=FALSE)
+file.copy(from=file.path(wham.dir,"extdata","ex13_SS_report.rds"), to=write.dir, overwrite=FALSE)
+```
+
+Confirm you are in the correct directory and it has the required data files:
+```{r eval=FALSE}
+list.files()
+```
+
+Read the SS data and report file into R and convert to input list for wham:
+```{r eval=FALSE}
+data_file <- readRDS("ex13_data_file.rds")
+SS_report <- readRDS("ex13_SS_report.rds")
+```
+
+We simulated the following data:
+
+![](https://raw.githubusercontent.com/GiancarloMCorrea/wham/growth/vignettes/ex13_plots/data_plot2.png){ width=80% }
+
+## 2. Create input data object
+
+We are going to create a list to save the input data (simulated from SS) for the WHAM model.
+
+Define some important information:
+
+```{r eval=FALSE}
+min_year = SS_report$startyr # first year
+max_year = SS_report$endyr # last year
+n_ages = length(1:max(SS_report$agebins)) # number of ages
+fish_len = SS_report$lbins # length bins
+n_years = length(min_year:max_year) # number of years
+NAA_SS = SS_report$natage[SS_report$natage$`Beg/Mid` == 'B' & SS_report$natage$Yr >= min_year & SS_report$natage$Yr <= max_year, 14:ncol(SS_report$natage)] # abundance at age from SS
+LWpars = c(SS_report$Growth_Parameters$WtLen1, SS_report$Growth_Parameters$WtLen2) # LW parameters
+GWpars = c(SS_report$Growth_Parameters$K, SS_report$Growth_Parameters$Linf, 
+           SS_report$endgrowth$Len_Beg[SS_report$endgrowth$Real_Age == 1], # This is L1
+           SS_report$endgrowth$SD_Beg[2], SS_report$endgrowth$SD_Beg[11]) # growth parameters (vB function)
+Q_pars = c(exp(SS_report$parameters$Value[SS_report$parameters$Label == "LnQ_base_Fleet2(2)"])) # Q parameter
+# Selectivity parameters:
+int_selPos = grep(pattern =  "Size_DblN_peak", x = SS_report$parameters$Label)[1]
+SelecParams = SS_report$parameters[int_selPos:nrow(SS_report$parameters), ]
+selpars1 = SelecParams$Value[1:6] # double normal
+selpars2 = SelecParams$Value[7:8] # logistic
+```
+
+Create list and fill it out with input data:
+
+```{r eval=FALSE}
+wham_data = list() # input data list
+# Basic information:
+wham_data$ages = 1:n_ages
+wham_data$lengths = fish_len
+wham_data$years = min_year:max_year
+wham_data$n_fleets = 1L
+wham_data$n_indices = 1L
+wham_data$Fbar_ages = 1L:10L
+wham_data$percentSPR = 40
+wham_data$percentFXSPR = 100
+wham_data$percentFMSY = 100
+wham_data$XSPR_R_avg_yrs = 1:n_years
+wham_data$XSPR_R_opt = 2
+wham_data$simulate_period = c(1,0)
+wham_data$bias_correct_process = 1
+wham_data$bias_correct_observation = 1
+wham_data$maturity = matrix(rep(SS_report$endgrowth[2:(n_ages+1),18], times = n_years),
+                            ncol = n_ages, nrow = n_years, byrow = TRUE) 
+wham_data$fracyr_SSB = rep(0, times = n_years)
+# Agg catch information:
+wham_data$agg_catch = as.matrix(data_file$catch[2:(n_years+1), 4])
+wham_data$catch_cv = as.matrix(data_file$catch[2:(n_years+1), 5])
+# Length comps fishery:
+catch_pal_num = data_file$lencomp[data_file$lencomp$FltSvy == 1, 7:(7+length(wham_data$lengths)-1)]
+catch_pal_prop = t(apply(as.matrix(catch_pal_num),1, function(x) x/sum(x)))
+wham_data$catch_pal = catch_pal_prop
+wham_data$catch_NeffL = as.matrix(as.double(data_file$lencomp[data_file$lencomp$FltSvy == 1, 6]))
+wham_data$use_catch_pal = matrix(1, nrow = n_years, ncol = wham_data$n_fleets)
+# Age comps fishery:
+wham_data$use_catch_paa = matrix(0, ncol = 1, nrow = n_years)
+# Agg indices information:
+wham_data$agg_indices = as.matrix(data_file$CPUE[,4])
+wham_data$index_cv = as.matrix(data_file$CPUE[,5])
+wham_data$units_indices = rep(0L, times = 1) # numbers
+wham_data$fracyr_indices = matrix(0.01, ncol = 1, nrow = n_years)
+# index CAAL information (Neff):
+index_alk_Neff = array(0, dim = c(length(wham_data$years), wham_data$n_fleets, length(wham_data$lengths)))
+all_years_lengths = expand.grid(Lbin_lo = wham_data$lengths, Yr = wham_data$years)
+alk_info = data_file$agecomp[data_file$agecomp$FltSvy == 2, ] # for survey
+temp1 = dplyr::left_join(all_years_lengths, alk_info, c("Lbin_lo", 'Yr'))
+temp2 = reshape2::dcast(temp1, Yr ~ Lbin_lo, value.var = 'Nsamp')
+temp2[is.na(temp2)] = 0
+index_alk_Neff[,1,] = as.matrix(temp2[,-1])
+wham_data$index_caal_Neff = index_alk_Neff
+# index CAAL data:
+index_alk = array(0, dim = c(wham_data$n_indices, length(wham_data$years), length(wham_data$lengths), length(wham_data$ages)))
+all_years_lengths = expand.grid(Lbin_lo = wham_data$lengths, Yr = wham_data$years)
+alk_info = data_file$agecomp[data_file$agecomp$FltSvy == 2, ]
+temp1 = dplyr::left_join(all_years_lengths, alk_info, c("Lbin_lo", 'Yr'))
+for(i in seq_along(wham_data$years)) {  
+  tmpData = temp1[temp1$Yr == wham_data$years[i], 11:(10+n_ages)]
+  tmpData = t(apply(as.matrix(tmpData),1, function(x) x/sum(x))) # prop
+  tmpData[is.na(tmpData)] = 0
+  index_alk[1,i,,] = as.matrix(tmpData)
+}
+wham_data$index_caal = index_alk
+# index CAAL information (use/not use):
+wham_data$use_index_caal = array(0, dim = dim(wham_data$index_caal_Neff))
+wham_data$use_index_caal[which(wham_data$index_caal_Neff > 0)] = 1
+# Age comps indices:
+wham_data$use_index_paa = matrix(0, nrow = n_years, ncol = wham_data$n_indices)
+# Fishing mortality and selectivity:
+wham_data$selblock_pointer_indices = matrix(2L, ncol = 1, nrow = n_years)
+wham_data$selblock_pointer_fleets = matrix(1L, ncol = 1, nrow = n_years)
+wham_data$F = matrix(apply(X = SS_report$fatage[SS_report$fatage$Yr >= min_year & 
+                                                  SS_report$fatage$Yr <= max_year,
+                                                9:ncol(SS_report$fatage)], MARGIN = 1, FUN = max),
+                     ncol = 1)
+# WAA pointers:
+wham_data$waa_pointer_indices = 1
+wham_data$waa_pointer_fleets = 2
+wham_data$waa_pointer_totcatch = 2
+wham_data$waa_pointer_ssb = 1
+wham_data$waa_pointer_jan1 = 1
+```
+
+## 3. Setup and run model
+
+Create input data object for WHAM model:
+
+```{r eval=FALSE}
+my_input1 = prepare_wham_input(model_name="whamCAAL",
+                              selectivity=list(model=c("len-double-normal","len-logistic"), 
+                                               re=rep("none",2), 
+                                               initial_pars=list(selpars1,
+                                                                 selpars2),
+                                               fix_pars = list(5:6, 2),
+                                               n_selblocks = 2),
+                              M = list(model = 'constant', re = 'none', 
+                                       initial_means = 0.36, 
+                                       est_ages = 1),
+                              NAA_re = list(sigma="rec", cor = 'iid', N1_model = 1,
+                                            recruit_model = 2,
+                                            N1_pars = c(NAA_SS[1,1], 0), 
+                                            recruit_pars = mean(NAA_SS[,1])),
+                              growth = list(model = 'vB_classic',
+                                            re = c('none', 'none', 'none'),
+                                            init_vals = GWpars[1:3],
+                                            est_pars = 1:3,
+                                            SD_vals = GWpars[4:5], SD_est = 1:2),
+                              LW = list(init_vals = LWpars,
+                                        re = c('none', 'none')),
+                              catchability = list(re = 'none', initial_q = 1, q_lower = 0,
+                                                  q_upper = 10, prior_sd = NA),
+                              basic_info = wham_data)
+```
+
+Some extra changes:
+
+```{r eval=FALSE}
+my_input1$par$log_NAA = as.matrix(log(NAA_SS[-1,])) # set initial rec devs as OM
+my_input1$par$log_NAA_sigma = log(SS_report$sigma_R_in) # sigma as in SS
+my_input1$map$log_NAA_sigma = factor(NA) # fix sigma
+my_input1$map$log_N1_pars = factor(c(1,NA))
+my_input1$random = NULL
+```
+
+Run model and check convergence:
+
+```{r eval=FALSE}
+my_model_1 = fit_wham(my_input1, do.osa = FALSE, do.fit = FALSE, do.retro = FALSE)
+#check_convergence(my_model_1)
+```
+
+Check NLL by component (see the nll for CAAL data, it is NaN):
+
+```{r eval=FALSE}
+my_model_1$rep[grep('nll',names(my_model_1$rep))] %>% lapply(sum) %>% unlist
+```
+
+Now see the NLL for year = 1 and index = 1, you will see the NLL for each length bin:
+
+```{r eval=FALSE}
+my_model_1$rep$nll_index_caal[1,1,]
+```
+
+As you can see, there are NaN for length bin 8, 9, 10, 11, and 12. Let's explore the predicted age compositions for those length bins and also for length bin 13, 14 and 15:
+
+```{r eval=FALSE}
+# Length bins with NaN:
+my_model_1$rep$pred_index_caal[1,1,8,]
+my_model_1$rep$pred_index_caal[1,1,9,]
+my_model_1$rep$pred_index_caal[1,1,10,]
+my_model_1$rep$pred_index_caal[1,1,11,]
+my_model_1$rep$pred_index_caal[1,1,12,]
+# Length bins (work ok):
+my_model_1$rep$pred_index_caal[1,1,13,]
+my_model_1$rep$pred_index_caal[1,1,14,]
+my_model_1$rep$pred_index_caal[1,1,15,]
+```
+
+I remember I spent a lot of time exploring the issue and found out that the problem arises when we have a predicted paa < 1e-16 for an age younger than the plus group. 
+
+## 4. Model comparison
+
+SSB time series:
