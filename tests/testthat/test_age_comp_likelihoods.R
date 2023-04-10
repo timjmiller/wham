@@ -53,6 +53,7 @@ test_that("Age comp likelihoods evaluate correctly",{
     if(i %in% c(3:5,8)) {
       inputs[[i]]$par$index_paa_pars[,1] = -10
     } else inputs[[i]]$par$index_paa_pars[,1] = 10
+    if(i %in% c(1:2,8:9)) inputs[[i]]$data$index_Neff[] <- 1e4
     set.seed(1234)
     temp = fit_wham(inputs[[i]], do.osa = F, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
     temp$fn()

@@ -1391,6 +1391,50 @@ Type objective_function<Type>::operator() ()
       ADREPORT(Ecov_resid);
     }
   }
+  vector<int> any_DM_fleets(n_fleets);
+  any_DM_fleets.setZero();
+  for(int f = 0; f < n_fleets; f++){
+    if(age_comp_model_fleets(f) == 2) any_DM_fleets(f) = 1;
+    if(age_comp_model_fleets(f) == 11) any_DM_fleets(f) = 2;
+  }
+  if(sum(any_DM_fleets)>0){
+    matrix<Type> Neff_est_fleets(n_years_model, n_fleets);
+    Neff_est_fleets.setZero();
+    for(int f = 0; f < n_fleets; f++){
+      if(any_DM_fleets(f) == 1) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) - log(N_eff) for normal D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years_model; y++) Neff_est_fleets(y,f) = 1 + (catch_Neff(y,f) -1)/(1 + catch_Neff(y,f) * exp(-catch_paa_pars(f,0)));
+      }
+      if(any_DM_fleets(f) == 2) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for linear D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years_model; y++) Neff_est_fleets(y,f) = 1 + (catch_Neff(y,f) -1)/(1 + exp(-catch_paa_pars(f,0)));
+      }
+    }
+    REPORT(Neff_est_fleets);
+  }
+  vector<int> any_DM_indices(n_indices);
+  any_DM_indices.setZero();
+  for(int i = 0; i < n_indices; i++){
+    if(age_comp_model_indices(i) == 2) any_DM_indices(i) = 1;
+    if(age_comp_model_indices(i) == 11) any_DM_indices(i) = 2;
+  }
+  if(sum(any_DM_indices)>0){
+    matrix<Type> Neff_est_indices(n_years_model, n_indices);
+    Neff_est_indices.setZero();
+    for(int i = 0; i < n_indices; i++){
+      if(any_DM_fleets(i) == 1) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) - log(N_eff) for normal D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years_model; y++) Neff_est_indices(y,i) = 1 + (index_Neff(y,i) -1)/(1 + index_Neff(y,i)*exp(-index_paa_pars(i,0)));
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for either D-M option, so CI's could be created from that SE estimate.
+      }
+      if(any_DM_fleets(i) == 2) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for linear D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years_model; y++) Neff_est_indices(y,i) = 1 + (index_Neff(y,i) -1)/(1 + exp(-index_paa_pars(i,0)));
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for either D-M option, so CI's could be created from that SE estimate.
+      }
+    }
+    REPORT(Neff_est_indices);
+  }
 
   SIMULATE {
     REPORT(logit_q);

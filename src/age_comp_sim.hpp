@@ -363,6 +363,13 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
     //multivariate Tweedie. 2 parameters
     obs = rmvtweedie(Neff, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)));
   }
+  if(age_comp_model == 11) //"linearized" dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
+  {
+    //int N = CppAD::Integer(Neff);
+    vector<Type> alpha = Neff * p * exp(age_comp_pars(0));
+    obs = rdirmultinom(Neff,alpha);
+    //obs = obs/obs.sum();// proportions
+  }
   return obs;
 }
 
@@ -375,7 +382,7 @@ vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> a
   paa_out.setZero();
   if((age_comp_model <5) | (age_comp_model > 7)) {
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = tf_paa_obs(i); //identity transform, zeros allowed
-    if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers
+    if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers, linear D-M
   }
   if((age_comp_model > 4) & (age_comp_model < 8)) {
     vector<Type> p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
