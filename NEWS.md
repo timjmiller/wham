@@ -1,6 +1,12 @@
 wham 1.0.7.9000
 =========================
 
+### Major improvements
+
+
+### Minor improvements
+
+* Linear parameterization of Dirichlet-multinomial dispersion parameter option for age composition likelihood added [Thorson et al. 2017](https://doi.org/10.1016/j.fishres.2016.06.005) [e3ab77b](https://github.com/timjmiller/wham/commit/e3ab77b8e42c0e68e364f58a0a7855e04a262604). Effective sample size is reported for both Dirichlet-multinomial likelihood options.
 
 ### Bug fixes
 
