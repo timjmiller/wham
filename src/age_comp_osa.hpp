@@ -45,7 +45,10 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
         //Type one_minus_pUsed_i = squeeze(1.0-pUsed);
         x2(0) = x(i);
         x2(1) = nUnused-x(i);
-        p2(0) = squeeze(p(i)/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
+        p2(0) = squeeze(p(i));
+        p2(0) /= squeeze((Type(1)-pUsed));
+        p2(0) = squeeze(p2(0));
+        // p2(0) = squeeze(p(i)/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
         p2(1) = 1. - p2(0);
         logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
         //logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
