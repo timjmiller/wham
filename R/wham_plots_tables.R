@@ -1687,11 +1687,13 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
 	log.ssb <- std[ssb.ind,1]
   ssb = exp(log.ssb)/1000
 	ssb.cv <- std[ssb.ind,2]
-  log.ssb.ci <- log.ssb + cbind(qnorm(1-alpha/2)*ssb.cv, -qnorm(1-alpha/2)*ssb.cv)
+  log.ssb.ci <- log.ssb + cbind(qnorm(alpha/2)*ssb.cv, qnorm(1-alpha/2)*ssb.cv)
   ssb.ci = exp(log.ssb.ci)/1000
   no.ssb.ci <- all(is.na(ssb.ci))
   if(!no.ssb.ci){ # have CI
-  	plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb.ci)), axes = FALSE)
+    ymax <- max(ssb.ci[,2][which(!is.na(ssb.ci[,2]) & !is.infinite(ssb.ci[,2]))])
+    ssb.ci[which(is.infinite(ssb.ci))] <-1e10
+  	plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,ymax), axes = FALSE)
   	axis(1, labels = FALSE)
   	axis(2)
   	box()
@@ -1699,7 +1701,8 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   	grid(col = gray(0.7))
   	polygon(c(years_full,rev(years_full)), c(ssb.ci[,1],rev(ssb.ci[,2])), col = tcol, border = tcol, lwd = 1)
 	} else { # no CI but plot SSB trend
-    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,max(ssb)), axes = FALSE)
+    ymax <- max(ssb[which(!is.na(ssb) & !is.infinite(ssb))])
+    plot(years_full, ssb, type='l', lwd=2, xlab="", ylab="", ylim=c(0,ymax), axes = FALSE)
     axis(1, labels = FALSE)
     axis(2)
     box()
@@ -1718,20 +1721,24 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
 	#full.f.ind <- c(age.full.f[1], n_ages + cumsum(age.full.f[-1]))
   log.full.f <- log.faa[full.f.ind]
   full.f.cv <- faa.cv[full.f.ind]
-  log.f.ci <- log.full.f + cbind(qnorm(1-alpha/2)*full.f.cv, -qnorm(1-alpha/2)*full.f.cv)
+  log.f.ci <- log.full.f + cbind(qnorm(alpha/2)*full.f.cv, qnorm(1-alpha/2)*full.f.cv)
   full.f = exp(log.full.f)
   no.f.ci <- all(is.na(log.f.ci))
   if(!no.f.ci){ # have CI
-  	plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(exp(log.f.ci))), axes = FALSE)
+    f.ci <- exp(log.f.ci)
+    ymax <- max(f.ci[,2][which(!is.na(f.ci[,2]) & !is.infinite(f.ci[,2]))])
+    f.ci[which(is.infinite(f.ci))] <-1e10
+  	plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,ymax), axes = FALSE)
   	axis(1)
   	axis(2)
   	box()
   	mtext(side = 1, "Year", outer = FALSE, line = 3)
   	mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
   	grid(col = gray(0.7))
-  	polygon(c(years_full,rev(years_full)), exp(c(log.f.ci[,1],rev(log.f.ci[,2]))), col = tcol, border = tcol, lwd = 1)
+  	polygon(c(years_full,rev(years_full)), c(f.ci[,1],rev(f.ci[,2])), col = tcol, border = tcol, lwd = 1)
   } else { # CI all NA
-    plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,max(full.f)), axes = FALSE)
+    ymax <- max(full.f[,1][which(!is.na(full.f[,1]) & !is.infinite(full.f[,1]))])
+    plot(years_full, full.f, type='l', lwd=2, col='black', xlab="", ylab="", ylim=c(0,ymax), axes = FALSE)
     axis(1)
     axis(2)
     box()
@@ -2689,13 +2696,14 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   par(mfrow=c(2,1))
-  rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
+  log.rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
-  ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(all(!is.nan(unique(rel.ssb.vals)))){
-    plot(years_full, exp(rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
+  ci <-  log.rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+  if(all(!is.nan(unique(log.rel.ssb.vals)))){
+    plot(years_full, exp(log.rel.ssb.vals), xlab = '', ylab = bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), ylim = c(0,5), type = 'l')
     grid(col = gray(0.7))
     polyy = exp(c(ci[,1],rev(ci[,2])))
+    polyy[which(is.infinite(polyy))] <-1e10
     polyx = c(years_full,rev(years_full))
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
@@ -2709,16 +2717,17 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     text(x = 0.5, y = 0.42, bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), cex = 1.6, col = "black")    
   }
 
-  rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
+  log.rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
   cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
-  ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
-  if(all(!is.nan(unique(rel.f.vals)))){
-    if(!na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
-      ylim = c(0,max(exp(ci),1, na.rm = TRUE)), type = 'l')
-    if(na.sd["full.f"]) plot(years_full, exp(rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
-      ylim = c(0,max(exp(rel.f.vals),1, na.rm = TRUE)), type = 'l')
-    grid(col = gray(0.7))
+  ci <-  log.rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+  if(all(!is.nan(unique(log.rel.f.vals)))){
     polyy = exp(c(ci[,1],rev(ci[,2])))
+    polyy[which(is.infinite(polyy))] <-1e10
+    if(!na.sd["full.f"]) plot(years_full, exp(log.rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+      ylim = c(0,max(polyy,1, na.rm = TRUE)), type = 'l')
+    if(na.sd["full.f"]) plot(years_full, exp(log.rel.f.vals), xlab = '', ylab = bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])),
+      ylim = c(0,max(exp(log.rel.f.vals),1, na.rm = TRUE)), type = 'l')
+    grid(col = gray(0.7))
     polyx = c(years_full,rev(years_full))
     polyx = polyx[!is.na(polyy)]
     polyy = polyy[!is.na(polyy)]
@@ -2737,25 +2746,26 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   do.kobe <- sapply(log.rel.ssb.rel.F.cov[status.years], function(x) !all(!is.finite(x))) # only if some non-infinite values for at least some status years
   # if(!mod$na_sdrep){
   if(any(do.kobe)){  
-    log.rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
-      if(is.na(rel.f.vals[x]) | any(diag(log.rel.ssb.rel.F.cov[[x]])<0)) return(matrix(NA,100,2))
-      else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-alpha)))
+    rel.ssb.rel.F.ci.regs <- lapply(status.years, function(x){
+      if(is.na(log.rel.f.vals[x]) | any(diag(log.rel.ssb.rel.F.cov[[x]])<0)) return(matrix(NA,100,2))
+      else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(log.rel.ssb.vals[x],log.rel.f.vals[x]), level = 1-alpha)))
       })
     p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.years))
     for(i in 1:length(status.years)){
       check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[status.years[i]]])==0 | diag(log.rel.ssb.rel.F.cov[[status.years[i]]]) < 0
       if(!any(is.na(check.zero.sd))) if(!any(check.zero.sd)){
-        p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
-        p.ssb.lo.f.hi[i] <- mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
-        p.ssb.hi.f.lo[i] <- mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
-        p.ssb.hi.f.hi[i] <- mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[status.years[i]],rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(log.rel.ssb.vals[status.years[i]],log.rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.lo.f.hi[i] <- mnormt::sadmvn(lower = c(-Inf,0), upper = c(-log(2), Inf), mean = c(log.rel.ssb.vals[status.years[i]],log.rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.hi.f.lo[i] <- mnormt::sadmvn(lower = c(-log(2),-Inf), upper = c(Inf, 0), mean = c(log.rel.ssb.vals[status.years[i]],log.rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
+        p.ssb.hi.f.hi[i] <- mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(log.rel.ssb.vals[status.years[i]],log.rel.f.vals[status.years[i]]), varcov = log.rel.ssb.rel.F.cov[[status.years[i]]])
       }
     }
 
-    vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
-    if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),1.5)
-    if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.5)
-
+    vals <- exp(cbind(log.rel.ssb.vals, log.rel.f.vals))
+    if(missing(max.x)) max.x <- max(sapply(rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),1.5)
+    if(missing(max.y)) max.y <- max(sapply(rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.5)
+    if(is.infinite(max.y)) max.y <- 10
+    if(is.infinite(max.x)) max.x <- 10
     if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mfrow = c(1,1))
@@ -2777,7 +2787,9 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", text.font=status.lwd)
     legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", text.font=status.lwd)
     text(vals[status.years,1],vals[status.years,2], substr(years_full[status.years],3,4), font=status.lwd)
-    for(i in 1:length(status.years)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lwd=status.lwd[i])#, border = gray(0.7))
+    for(i in 1:length(status.years)) if(all(!is.infinite(rel.ssb.rel.F.ci.regs[[i]]))) { 
+      polygon(rel.ssb.rel.F.ci.regs[[i]][,1], rel.ssb.rel.F.ci.regs[[i]][,2], lwd=status.lwd[i])#, border = gray(0.7))
+    }
     if(do.tex | do.png) dev.off() else par(origpar)
     return(list(p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
   } else { return(NULL) }
@@ -2849,42 +2861,42 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
     if(do.tex) cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mfrow=c(2,1))
-    rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSBMSY,1][1:n_years_full]
+    rel.ssb.vals <- exp(std[inds$ssb,1][1:n_years_full] - std[inds$SSBMSY,1][1:n_years_full])
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
-    ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+    ci <-  rel.ssb.vals * exp(cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv))
     na.ci <- all(is.na(ci))
       # remove NaN and Inf
       # rm.rows <- which(rel.ssb.vals < 0)
       rel.ssb.vals[!is.finite(rel.ssb.vals)] = NA
       # rel.ssb.vals[rm.rows] = NA
       # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
-      ci[!is.finite(exp(ci))] = NA
+      ci[!is.finite(ci)] = NA
       # ci[rm.rows,] = NA    
-		if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
+		if(!na.ci) plot(years_full, rel.ssb.vals, xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(ci,na.rm=TRUE)), type = 'l')
+    if(na.ci) plot(years_full, rel.ssb.vals, xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(rel.ssb.vals,na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
 	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
 	  abline(h=1, lty = 2)
 	  abline(h=0.5, lty = 2, col = 'red')
     if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
 
-    rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$FMSY,1][1:n_years_full]
+    rel.f.vals <- exp(std[inds$full.f,1][1:n_years_full] - std[inds$FMSY,1][1:n_years_full])
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
-    ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+    ci <-  rel.f.vals * exp(cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv))
     na.ci <- all(is.na(ci))
       # remove NaN and Inf
       # rm.rows <- which(rel.f.vals < 0)
       rel.f.vals[!is.finite(rel.f.vals)] = NA
       # rel.f.vals[rm.rows] = NA
       # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
-      ci[!is.finite(exp(ci))] = NA
+      ci[!is.finite(ci)] = NA
       # ci[rm.rows,] = NA    
-		if(!na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(rel.f.vals),na.rm=TRUE)), type = 'l')
+		if(!na.ci) plot(years_full, rel.f.vals, xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+      ylim = c(0,max(ci,na.rm=TRUE)), type = 'l')
+    if(na.ci) plot(years_full, rel.f.vals, xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
+      ylim = c(0,max(rel.f.vals,na.rm=TRUE)), type = 'l')
 	  grid(col = gray(0.7))
-	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+	  polygon(c(years_full,rev(years_full)), c(ci[,1],rev(ci[,2])), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')
     if(mod$env$data$do_proj==1) abline(v=tail(years,1), lty=2, lwd=1)
     if(do.tex | do.png) dev.off() else par(origpar)
