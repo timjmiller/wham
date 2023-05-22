@@ -1,15 +1,18 @@
 template<class Type>
-vector<Type> rmultinom(Type N, vector<Type> p)
+vector<Type> rmultinom(Type N, vector<Type> p, vector<int> ages)
 {
   //multinomial
-  int dim = p.size();
+  int dim = ages.size();
   vector<Type> x(dim);
+  vector<Type> p_use(dim);
+  for(int i = 0; i < dim; i++) p_use(i) = p(ages(i)-1);
+  p_use /= sum(p_use);
   int Nint = CppAD::Integer(N);
   x.setZero();
   for(int i = 0; i < Nint; i++)
   {
     Type y = runif(0.0,1.0);
-    for(int a = 0; a < dim; a++) if(y < p.head(a+1).sum())
+    for(int a = 0; a < dim; a++) if(y < p_use.head(a+1).sum())
     {
       x(a) += 1.0;
       break;
@@ -25,10 +28,10 @@ vector<Type> rdirichlet(vector<Type> alpha){
 }
 
 template<class Type>
-vector<Type> rdirmultinom(Type N, vector<Type> alpha) //dirichlet generated from iid gammas
+vector<Type> rdirmultinom(Type N, vector<Type> alpha, vector<int> ages) //dirichlet generated from iid gammas
 {
   vector<Type> dp = rdirichlet(alpha);
-  vector<Type> obs = rmultinom(N,dp);
+  vector<Type> obs = rmultinom(N,dp, ages);
   return(obs);
 }
 
@@ -96,7 +99,7 @@ vector<Type> rdirichlet(vector<Type> p, Type phi, vector<int> ages, int pool0)
     vector<Type> alpha_pos = p_pos * phi;
     obs = rdirichlet(alpha_pos);
   }
-  if(ages.size() == 1) obs(ages(0)) = 1.0;
+  if(ages.size() == 1) obs(ages(0)-1) = 1.0;
   return(obs);
 }
 
@@ -295,14 +298,14 @@ Type rTweedie( Type mu, Type phi, Type power){
 }
 
 template<class Type>
-vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power)
+vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power, vector<int> ages)
 {
-  int dim = p.size();
+  int dim = ages.size();
   vector<Type> obs(dim);
   //obs.setZero();
   for(int i = 0; i < dim; i++)
   {
-    obs(i) = rTweedie( N*p(i), phi, power );
+    obs(i) = rTweedie( N*p(ages(i)-1), phi, power );
   }
   return(obs);
 }
@@ -318,14 +321,14 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
   {
     //multinomial
     p += 1.0e-15; //for log of any p = 0
-    obs = rmultinom(Neff, p);
+    obs = rmultinom(Neff, p, ages);
     //obs = obs/obs.sum();// proportions
   }
   if(age_comp_model == 2) //dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
   {
     //int N = CppAD::Integer(Neff);
     vector<Type> alpha = p * exp(age_comp_pars(0));
-    obs = rdirmultinom(Neff,alpha);
+    obs = rdirmultinom(Neff,alpha,ages);
     //obs = obs/obs.sum();// proportions
   }
   if(age_comp_model == 3) { //Dirichlet, miss0
@@ -361,13 +364,13 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
   if(age_comp_model == 10) 
   {
     //multivariate Tweedie. 2 parameters
-    obs = rmvtweedie(Neff, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)));
+    obs = rmvtweedie(Neff, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), ages);
   }
   if(age_comp_model == 11) //"linearized" dirichlet-multinomial. dirichlet generated from iid gammas and multinomial from uniform
   {
     //int N = CppAD::Integer(Neff);
     vector<Type> alpha = Neff * p * exp(age_comp_pars(0));
-    obs = rdirmultinom(Neff,alpha);
+    obs = rdirmultinom(Neff,alpha,ages);
     //obs = obs/obs.sum();// proportions
   }
   return obs;
