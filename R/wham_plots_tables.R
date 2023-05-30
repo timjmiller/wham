@@ -2591,8 +2591,19 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     log_b <- mod$parList$mean_rec_pars[2]
     if(missing(SR.par.year)) SR.par.year = nyrs
     a.b.ind = which(rownames(std) == "mean_rec_pars")
-    l.ab = std[a.b.ind,1]
+    l.ab <- TMB:::as.list.sdreport(mod$sdrep, what = "Estimate")$mean_rec_pars
+    #l.ab = std[a.b.ind,1]
     a.b.cov = mod$sdrep$cov.fixed[a.b.ind,a.b.ind]
+    if(length(a.b.ind) == 1 & is.null(mod$input$map$mean_rec_pars)) {
+      warning("The number of estimated stock-recruit parameters is less than 2, but input$map$mean_rec_pars is not provided.")
+      return()
+    }
+    not.na.ind <- 1:2
+    if(!is.null(mod$input$map$mean_rec_pars)) not.na.ind <- which(!is.na(mod$input$map$mean_rec_pars))
+    if(length(not.na.ind)<2) {
+      a.b.cov <- matrix(0, 2,2)
+      if(length(not.na.ind)==1) a.b.cov[not.na.ind,not.na.ind] <- mod$sdrep$cov.fixed[a.b.ind,a.b.ind]
+    }
     lR.fn = function(la, lb, S) la  + log(S) - log(1 + exp(lb)*S)
     dlR.dp = Deriv::Deriv(lR.fn, x = c("la","lb"))
     seq.ssb <- seq(0, max(SR[,2]), length.out=300)
