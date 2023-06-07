@@ -480,20 +480,22 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
   }
 
-  #F at age
-  FAA = FAA.cv = mod$rep$FAA
-  dimnames(FAA) = list(fleet.names.tab, mod$years_full, mod$ages.lab)
-  saveRDS(FAA, file = file.path(od,"FAA_table.RDS"))
-  FAA.cv[] <- NA
-  if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
-    FAA.cv[] = sd["log_FAA"]
-    FAA.sd = FAA * FAA.cv
-    FAA.lo = exp(mod$rep$FAA - qnorm(0.975) * FAA.cv)
-    FAA.hi = exp(mod$rep$FAA + qnorm(0.975) * FAA.cv)
-    dimnames(FAA.sd) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(fleet.names.tab, mod$years_full, mod$ages.lab)
-    saveRDS(FAA.sd, file = file.path(od,"FAA_sd_table.RDS"))
-    saveRDS(FAA.lo, file = file.path(od,"FAA_lo_table.RDS"))
-    saveRDS(FAA.hi, file = file.path(od,"FAA_hi_table.RDS"))
+  #F at age by fleet
+  for(f in 1:data$n_fleets){
+    FAA = FAA.cv = mod$rep$FAA[f,,]
+    dimnames(FAA) = list(mod$years_full, mod$ages.lab)
+    saveRDS(FAA, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_table.RDS")))
+    FAA.cv[] <- NA
+    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+      FAA.cv[] = sd[["log_FAA"]][f,,]
+      FAA.sd = FAA * FAA.cv
+      FAA.lo = exp(mod$rep$FAA[f,,] - qnorm(0.975) * FAA.cv)
+      FAA.hi = exp(mod$rep$FAA[f,,] + qnorm(0.975) * FAA.cv)
+      dimnames(FAA.sd) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(mod$years_full, mod$ages.lab)
+      saveRDS(FAA.sd, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_sd_table.RDS")))
+      saveRDS(FAA.lo, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_lo_table.RDS")))
+      saveRDS(FAA.hi, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_hi_table.RDS")))
+    }
   }
   
   wham.dir <- find.package("wham")

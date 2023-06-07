@@ -1139,6 +1139,7 @@ Type objective_function<Type>::operator() ()
   REPORT(QAA);
   REPORT(log_F_tot);
   REPORT(log_FAA_tot);
+  REPORT(log_FAA_by_region);
   //}
   if(sum_do_post_samp == 0){
     ADREPORT(log_NAA_rep);
@@ -1146,6 +1147,7 @@ Type objective_function<Type>::operator() ()
     ADREPORT(log_SSB_all);
     ADREPORT(log_F);
     ADREPORT(log_FAA);
+    ADREPORT(log_FAA_tot);
     ADREPORT(log_FAA_by_region);
     ADREPORT(log_F_tot);
     ADREPORT(log_Fbar);

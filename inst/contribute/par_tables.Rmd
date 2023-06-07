@@ -67,11 +67,11 @@ for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
   out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0("S-",s, "-R-",r, "-NAA-table"), 
       caption=paste0("Abundance at age (1000s) for ", stock.names.tab[s], " in ", region.names.tab[r],".")) %>%
       kable_styling(latex_options=c("basic", "repeat_header")) #%>%
-cat(knitr::knit_print(out))
+  cat(knitr::knit_print(out))
 }
 ```
 
-## Fishing mortality at age
+## Fishing mortality at age by region
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 for(r in 1:dat$n_regions){
@@ -80,6 +80,19 @@ for(r in 1:dat$n_regions){
   out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0("R-", r, "-FAA-tot-table"),
       caption=paste0("Total fishing mortality at age in ", region.names.tab[r], ".")) %>%
       kable_styling(latex_options=c("basic", "repeat_header")) #%>%
-cat(knitr::knit_print(out))
+  cat(knitr::knit_print(out))
+}
+```
+
+## Fishing mortality at age by fleet
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+for(r in 1:dat$n_fleets){
+  out = readRDS(paste0(input$fleet_names[r], "_FAA_table.RDS"))
+  out = round(out, 3)
+  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0("R-", r, "-FAA-tot-table"),
+      caption=paste0("Total fishing mortality at age in ", fleet.names.tab[r], ".")) %>%
+      kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+  cat(knitr::knit_print(out))
 }
 ```
