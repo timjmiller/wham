@@ -41,9 +41,9 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   # peeling ecov is tricky bc ecov_years can be different than model_years - make sure to peel to same year
   if(any(data$Ecov_model != 0)){
     n.beyond <- tail(data$Ecov_year,1) - tail(temp$years,1) # n years ecov extends beyond model (if > 1 ecov, obs dim = longest)
-    print(n.beyond)
+    # print(n.beyond)
     peel.ecov <- peel + max(n.beyond, 0) # cannot be less than peel bc prepare_wham_input pads Ecov_year if ecov ends before model
-    print(peel.ecov)
+    # print(peel.ecov)
     n_years_Ecov <- data$n_years_Ecov - peel.ecov
     #new year indicator for which random effects to include in likelihoods used primarily for peels
     data$years_use_Ecov <- 1:n_years_Ecov - 1
@@ -68,8 +68,8 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
     #if(sum(!is.na(Ecov_re_na_ind))) Ecov_re_na_ind[!is.na(Ecov_re_na_ind)] = 1:sum(!is.na(Ecov_re_na_ind))
     #temp$map$Ecov_re = factor(Ecov_re_na_ind)
     #data$ind_Ecov_out_end = data$ind_Ecov_out_end - peel # reduce by model dim, not ecov dim
-    print(dim(data$Ecov_use_obs))
-    print(data$n_years_Ecov)
+    # print(dim(data$Ecov_use_obs))
+    # print(data$n_years_Ecov)
     data$Ecov_use_obs[n_years_Ecov + 1:peel.ecov, ] <- 0
     #data$Ecov_use_obs[(data$n_years_Ecov+1):(data$n_years_Ecov+peel.ecov), ] <- 0
   }
@@ -100,15 +100,15 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   #peel any M random effects
   map$M_re <- array(as.integer(map$M_re), dim = dim(par$M_re))
   map$M_re[,,n_years + 1:peel,] <- NA
-  print(dim(map$M_re))
-  print(dim(par$M_re))
+  # print(dim(map$M_re))
+  # print(dim(par$M_re))
   map$M_re <- factor(map$M_re)
 
   # #peel any mu random effects
   map$mu_re <- array(as.integer(map$mu_re), dim = dim(par$mu_re))
   map$mu_re[,,,n_years + 1:peel,,] <- NA
-  print(dim(map$mu_re))
-  print(dim(par$mu_re))
+  # print(dim(map$mu_re))
+  # print(dim(par$mu_re))
   map$mu_re <- factor(map$mu_re)
 
   map$F_pars <- rbind(matrix(1:(data$n_fleets * n_years), n_years), matrix(rep(NA, peel * data$n_fleets), peel))

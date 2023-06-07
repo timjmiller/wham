@@ -222,11 +222,11 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
       if(trace) see(R_XSPR.row(y));
 
       if(proj_F_opt_y == 3) {//option 3: use F X%SPR
-        Type FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
+        vector<Type> FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
           log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, fracyr_seasons, vector<Type> (R_XSPR.row(y)), percentSPR, SPR_weights, 
           SPR_weight_type, small_dim, FXSPR_init(y), 10, trace);
         if(trace) see(FXSPR);
-        FAA_proj = sel_proj * FXSPR;
+        FAA_proj = sel_proj * FXSPR(0);
         if(trace) see(FAA_proj);
       }
       

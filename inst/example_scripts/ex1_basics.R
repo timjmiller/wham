@@ -15,7 +15,7 @@ wham.dir <- find.package("wham")
 #list.files()
 
 # read asap3 data file and convert to input list for wham
-asap3 <- read_asap3_dat(file.path(wham.dir, "extdata","ex1_SNEMAYT.dat")
+asap3 <- read_asap3_dat(list.files(wham.dir, "ex1_SNEMAYT.dat", recursive = TRUE)[1])
 
 # ---------------------------------------------------------------
 # model 1

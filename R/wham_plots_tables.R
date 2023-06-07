@@ -2686,23 +2686,18 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   }
   all_stocks <- mod$input$data$n_stocks +1
   all_catch <- mod$input$data$n_fleets +1
-
   std <- summary(mod$sdrep, "report")
   inds <- list()
-	inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
-	inds$F.t <- which(rownames(std) == "log_FXSPR")
-	inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
-	inds$ssb <- which(rownames(std) == "log_SSB_all")
-	inds$full.f <- which(rownames(std) == "log_full_F_all")
+  inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
+  inds$F.t <- which(rownames(std) == "log_FXSPR")
+  inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
+  inds$ssb <- which(rownames(std) == "log_SSB_all")
+  inds$full.f <- which(rownames(std) == "log_full_F_all")
+  na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
   # log.faa <- array(std[inds$faa,1], dim = dim(mod$rep$FAA_tot))
   # age.full.f <- apply(log.faa,1, function(x) max(which(x == max(x))))
   # inds$full.f <- (age.full.f-1)*n_years_full + 1:n_years_full  + min(inds$faa) - 1 #cbind(1:n_years, age.full.f)
-  na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
-  ylabs <- c(
-    bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
-    bquote(italic(F)[paste(.(percentSPR), "%")]),
-    bquote(paste('SSB(', italic(F)[paste(.(percentSPR), "%")],')')))
-	cov <- mod$sdrep$cov
+  cov <- mod$sdrep$cov
   log.rel.ssb.rel.F.cov <- lapply(1:n_years_full, function(x)
   {
     K <- cbind(c(1,-1,0,0),c(0,0,1,-1))
@@ -2711,6 +2706,10 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     return(t(K) %*% tcov %*% K)
   })
 
+  ylabs <- c(
+    bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
+    bquote(italic(F)[paste(.(percentSPR), "%")]),
+    bquote(paste('SSB(', italic(F)[paste(.(percentSPR), "%")],')')))
   # FSPR absolute --------------------------------------------------
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_absolute.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_absolute.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3061,7 +3060,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     if(what == "NAA_age") {
       age.ind <- (1:mod$input$data$n_ages)[age] 
       #age.ind <- match(age, mod$ages.lab)
-      what.print <- paste0(what, age)
+      what.print <- paste0(what, "_", age)
     } else {
       what.print <- what
     }
@@ -3072,28 +3071,32 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     tcol <- adjustcolor(plot.colors, alpha.f=0.4)
     # tcol = col2rgb(plot.colors)
     # tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
-    if(what == "NAA_age"){
+    if(what %in% c("NAA","NAA_age")){
       res = list(mod$rep$NAA[,,1:n_years,])
-      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA)
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,])
     } else {
       res = list(head(mod$rep[[what]],n_years))
       res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
     }
 
-    if(what %in% c("NAA","NAA_age")) for(s in 1:mod$env$data$n_stocks) for(r in 1:data$n_regions) {
-      what.print.s <- paste0(mod$input$stock_names[s], "_", mod$input$region_names[r], what.print)
-      if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-      if(what == "NAA") {
-        n_ages <- dim(res[[1]])[4]
-        par(mfcol = c(ceiling(n_ages/2),2))
-        for(i in 1:n_ages) {
-          y.range1 <- range(sapply(res, function(x) range(x[,i])))
-          plot(years,res[[1]][s,r,,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
-          grid(col = gray(0.7), lty = 2)
-          for (j in 1:npeels) {
-            lines(years[1:(n_years-j)],res[[j+1]][s,r,,i], col = tcol[j+1])
-            points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
+    if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks) {
+      regions <- 1:mod$input$data$n_regions
+      if(sum(mod$input$data$can_move[s,,,])== 0) regions <- mod$input$data$spawn_regions[s]
+      for(r in regions) {
+        what.print.s <- paste0(mod$input$stock_names[s], "_", mod$input$region_names[r], "_", what.print)
+        if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
+        if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+        if(what == "NAA") {
+          n_ages <- dim(res[[1]])[4]
+          par(mfcol = c(ceiling(n_ages/2),2))
+          for(i in 1:n_ages) {
+            y.range1 <- range(sapply(res, function(x) range(x[s,r,,i])))
+            plot(years,res[[1]][s,r,1:n_years,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
+            grid(col = gray(0.7), lty = 2)
+            for (j in 1:npeels) {
+              lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
+              points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
+            }
           }
         }
       }
@@ -3101,10 +3104,10 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         par(mfrow = c(1,1))
         i = age.ind
         y.range1 <- range(sapply(res, function(x) range(x[s,r,,i])))
-        plot(years,res[[1]][s,r,,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
+        plot(years,res[[1]][s,r,1:n_years,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
         grid(col = gray(0.7), lty = 2)
         for (j in 1:npeels) {
-          lines(years[1:(n_years-j)],res[[j+1]][s,r,,i], col = tcol[j+1])
+          lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
           points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
         }
       }
@@ -3126,7 +3129,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels)
         {
-          lines(years[1:(n_years-i)],res[[i+1]][,p], col = tcol[i+1])
+          lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
           points(years[n_years-i],res[[i+1]][n_years-i,p],pch=16,col=plot.colors[i+1])
         }
         title(names.plot[p], line = 1)
@@ -3136,13 +3139,15 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 
     # relative retro plot
     if(missing(y.lab)) y.lab = bquote(paste("Mohn's ", rho, "(",.(what),")"))
-    if(what %in% c("SSB","Fbar")) rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
+    #if(what %in% c("SSB","Fbar")) rel.res = lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),]/res[[1]][1:(n_years - x + 1),] - 1)
     rho.vals = mohns_rho(mod)
 
-    if(what %in% c("NAA","NAA_age")) {
-      for(s in 1:mod$env$data$n_stocks) for(r in 1:data$n_regions) {
-        rel.res = lapply(1:length(res), function(x) res[[x]][s,r,,]/res[[1]][s,r,1:(n_years - x + 1),] - 1)
-        what.print.s <- paste0(mod$input$stock_names[s], "_", mod$input$region_names[r], what.print)
+    if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks){
+      regions <- 1:mod$input$data$n_regions
+      if(sum(mod$input$data$can_move[s,,,])== 0) regions <- mod$input$data$spawn_regions[s]
+      for(r in regions) {
+        rel.res = lapply(1:length(res), function(x) res[[x]][s,r,1:(n_years - x + 1),]/res[[1]][s,r,1:(n_years - x + 1),] - 1)
+        what.print.s <- paste0(mod$input$stock_names[s], "_", mod$input$region_names[r], "_", what.print)
         if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
         if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
         if(what == "NAA") {
@@ -3152,7 +3157,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
             plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2)
             grid(col = gray(0.7), lty = 2)
             for (j in 1:npeels) {
-              lines(years[1:(n_years-j)],rel.res[[j+1]][,i], col = tcol[j+1])
+              lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),i], col = tcol[j+1])
               points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
             }
             rho.plot <- round(rho.vals$naa[s,r,i],3)
@@ -3166,7 +3171,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
           plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2)
           grid(col = gray(0.7), lty = 2)
           for (j in 1:npeels) {
-            lines(years[1:(n_years-j)],rel.res[[j+1]][,i], col = tcol[j+1])
+            lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),i], col = tcol[j+1])
             points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
           }
           rho.plot <- round(rho.vals$naa[s,r,i],3)
@@ -3177,7 +3182,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     }
 
     if(what %in% c("SSB","Fbar")) {
-      rel.res = lapply(1:length(res), function(x) res[[x]]/res[[1]][1:(n_years - x + 1),] - 1)
+      rel.res = lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),]/res[[1]][1:(n_years - x + 1),] - 1)
       if(what == "SSB") names.plot <- mod$input$stock_names
       if(what == "Fbar") names.plot <- mod$input$region_names
       n <- length(names.plot)
@@ -3191,10 +3196,10 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         plot(years,rel.res[[1]][,p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=y.range2)
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels) {
-          lines(years[1:(n_years-i)],rel.res[[i+1]][,p], col = tcol[i+1])
+          lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
           points(years[n_years-i],rel.res[[i+1]][n_years-i,p],pch=16,col=plot.colors[i+1])
         }
-        rho.plot <- round(rho.vals[what][p],3)
+        rho.plot <- round(rho.vals[[what]][p],3)
         legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
         title(names.plot[p], line = 1)
         if(do.tex | do.png) dev.off() else par(origpar)
@@ -3897,28 +3902,31 @@ plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
 
 plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   origpar <- par(no.readonly = TRUE)
+  q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+  if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
+  if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  par(mar=c(4,4,3,1), oma=c(1,1,1,15))
+  pal = viridisLite::viridis(n=mod$input$data$n_indices)
+  ymax = max(q, na.rm = TRUE)
   if("sdrep" %in% names(mod)){
     if("q_re" %in% mod$input$random) se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
     else se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
       ncol = NROW(mod$rep$logit_q_mat)))
     logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
     logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
-    q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
     q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
     q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
-    if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,3,1), oma=c(1,1,1,15))
-    pal = viridisLite::viridis(n=mod$input$data$n_indices)
     ymax = max(q_hi, na.rm = TRUE)
-    plot(mod$years_full, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
-    for( i in 1:mod$input$data$n_indices){
-      lines(mod$years_full, q[,i], lwd = 2, col = pal[i])
-      polygon(c(mod$years_full,rev(mod$years_full)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-    }
-    leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
-    legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
   }
+  plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+  for( i in 1:mod$input$data$n_indices){
+    lines(mod$years, q[,i], lwd = 2, col = pal[i])
+    if("sdrep" %in% names(mod)){
+      polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    }
+  }
+  leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
+  legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
   if(do.tex | do.png) dev.off() else par(origpar)
 }
 #revised

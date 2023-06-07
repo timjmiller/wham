@@ -4,12 +4,12 @@ verify_version = function(model){
   wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 
   TMB_commit <- packageDescription("TMB")$GithubSHA1
   TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
-  print(model$wham_version)
-  print(model$TMB_version)
-  print(model$wham_commit)
-  print(model$TMB_commit)
-  print(wham_commit)
-  print(TMB_commit)
+  # print(model$wham_version)
+  # print(model$TMB_version)
+  # print(model$wham_commit)
+  # print(model$TMB_commit)
+  # print(wham_commit)
+  # print(TMB_commit)
   if(wham_commit !=  model$wham_commit) {
     if(model$wham_commit != "local install") {
       stop(paste0("your wham version: \n ", wham_commit, 

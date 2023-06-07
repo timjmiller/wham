@@ -559,7 +559,7 @@ struct spr_F_spatial {
     trace(trace_) {}
 
   template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
-  T operator()(vector<T> log_F) { //find such that it maximizes yield
+  vector<T> operator()(vector<T> log_F) { //find such that it maximizes yield
     int n_stocks = log_M.dim(0);
     int n_regions = log_M.dim(1);
     int n_ages = log_M.dim(2);
@@ -569,8 +569,16 @@ struct spr_F_spatial {
     matrix<T> FAA(n_fleets,n_ages);
     FAA.setZero();
     if(trace) see(selectivity);
-    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
-      FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
+    int n_F = log_F.size(); //MUST be 1 or n_regions!!!!
+    if(trace) see(n_F);
+    if(n_F == 1){ //total F across regions or there is just one region
+      for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+        FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
+      }
+    } else{ //total F by region
+      for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+        FAA(f,a) = T(selectivity(f,a)) * exp(log_F(fleet_regions(f)-1));
+      }
     }
     if(trace) see(FAA);
     vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
@@ -612,8 +620,15 @@ struct spr_F_spatial {
     if(trace) see("end get_SPR spr_F_spatial");
 
     //weighted-average of SSB/R returned
-    T SPR = 0;
-    for(int s = 0; s < n_stocks; s++) SPR += T(SPR_weights(s)) * SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+    vector<T> SPR(n_F);
+    SPR.setZero();
+    for(int s = 0; s < n_stocks; s++) {
+      if(n_F==1) {
+        SPR(0) += T(SPR_weights(s)) * SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+      } else {
+        SPR(spawn_regions(s)-1) += SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1);
+      }
+    }
     if(trace) see(SPR_weights);
     if(trace) see(SPR);
     
@@ -646,14 +661,14 @@ struct spr_F_spatial {
 //takes a single year of values for inputs (reduce dimensions appropriately)
 //returns just the "solved" log_FXSPR value
 template <class Type>
-Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
+vector<Type> get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, vector<Type> fracyr_seasons, vector<Type> R_XSPR, 
-  Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace) {
-  int n = n_iter;
+  Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace, int by_region = 0) {
   int n_stocks = spawn_seasons.size();
   int n_fleets = fleet_regions.size();
   int n_ages = mat.cols();
+  int n_regions = log_M.dim(1);
   //define SPR weighting 
   if(SPR_weight_type == 0){ //use average Recruitment
     SPR_weights = R_XSPR/R_XSPR.sum();
@@ -665,23 +680,36 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
   array<Type> SPR0_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA0, log_M, mu, L, 
     mat, waassb, fracyr_seasons, 0, small_dim);
   if(trace) see(SPR0_all);
-  Type SPR0 = 0;
-  for(int s = 0; s < n_stocks; s++) SPR0 += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1); 
+  int n_F = 1;
+  if(by_region) n_F = n_regions;
+  vector<Type> SPR0(n_F);
+  SPR0.setZero();
+  for(int s = 0; s < n_stocks; s++) {
+    if(n_F==1) {
+      SPR0(0) += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
+    } else {
+      SPR0(spawn_regions(s)-1) += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1);
+    }
+  }
+
   if(trace) see(SPR0);
-
-  vector<Type> log_FXSPR_i(1), log_FXSPR_iter(n);
-  log_FXSPR_iter(0) = log(F_init);
-
-  if(trace) see(log_FXSPR_iter(0));
+  vector<Type> log_FXSPR_i(n_F);
+  matrix<Type> log_FXSPR_iter(n_iter,n_F);
+  for(int r = 0; r < n_F; r++) log_FXSPR_iter(0,r) = log(F_init);
+  if(trace) see(log_FXSPR_iter.row(0));
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
-    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);
+    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);    
   if(trace) see("after spr_F_spatial sprF defined");
   //trace = 0;
-  for(int i=0; i<n-1; i++) {
+  for(int i=0; i<n_iter-1; i++) {
     // if(trace) see(i);
-    log_FXSPR_i(0) = log_FXSPR_iter(i);
-    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
-    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * SPR0)/grad_spr_F(0);
+    log_FXSPR_i = log_FXSPR_iter.row(i);
+    matrix<Type> grad_spr_F = autodiff::jacobian(sprF,log_FXSPR_i);
+    matrix<Type> inv_grad = grad_spr_F.inverse(); 
+    vector<Type> SPR_i = sprF(log_FXSPR_i);
+    vector<Type> diff = SPR_i - 0.01*percentSPR * SPR0;
+    vector<Type> change = inv_grad * diff; 
+    log_FXSPR_iter.row(i+1) = vector<Type> (log_FXSPR_iter.row(i)) - change; // vector<Type>(grad_spr_F.inverse() * (SPR_i - 0.01*percentSPR * SPR0));
   }
   if(trace) see(log_FXSPR_iter);
 
@@ -712,47 +740,64 @@ Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int>
     // if(trace) see(SPR_FXSPR_alt);
   }
 
-  Type FXSPR = exp(log_FXSPR_iter(n-1));
+  vector<Type> FXSPR = exp(vector<Type> (log_FXSPR_iter.row(n_iter-1)));
   return FXSPR;
 }
 
 //takes a single year of values for inputs including log_SPR0 (reduce dimensions appropriately)
 //returns just the "solved" log_FXSPR value
 template <class Type>
-Type get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
+vector<Type> get_FXSPR(vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions, matrix<int> fleet_seasons,
   array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, vector<Type> fracyr_seasons, vector<Type> R_XSPR, vector<Type> log_SPR0,
-  Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace) {
-  int n = n_iter;
+  Type percentSPR, vector<Type> SPR_weights, int SPR_weight_type, int small_dim, Type F_init, int n_iter, int trace, int by_region = 0) {
   int n_stocks = spawn_seasons.size();
   int n_fleets = fleet_regions.size();
   int n_ages = mat.cols();
+  int n_regions = log_M.dim(1);
   //define SPR weighting 
   if(SPR_weight_type == 0){ //use average Recruitment
     SPR_weights = R_XSPR/R_XSPR.sum();
   } else { //use user-specified weights as provided. do nothing
   }
   if(trace) see(SPR_weights);
-  matrix<Type> FAA0(n_fleets,n_ages);
-  FAA0.setZero();
-  Type SPR0 = 0;
-  for(int s = 0; s < n_stocks; s++) SPR0 += SPR_weights(s) * exp(log_SPR0(s)); 
-  if(trace) see(SPR0);
-
-  vector<Type> log_FXSPR_i(1), log_FXSPR_iter(n);
-  log_FXSPR_iter(0) = log(F_init);
-
-  if(trace) see(log_FXSPR_iter(0));
-  spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
-    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, 0);
-  if(trace) see("after spr_F_spatial sprF defined");
-  for(int i=0; i<n-1; i++) {
-    // if(trace) see(i);
-    log_FXSPR_i(0) = log_FXSPR_iter(i);
-    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
-    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * SPR0)/grad_spr_F(0);
+  int n_F = 1;
+  if(by_region) n_F = n_regions;
+  vector<Type> SPR0(n_F);
+  SPR0.setZero();
+  for(int s = 0; s < n_stocks; s++) {
+    if(n_F==1) {
+      SPR0(0) += SPR_weights(s) * exp(log_SPR0(s));
+    } else {
+      SPR0(spawn_regions(s)-1) += SPR_weights(s) * exp(log_SPR0(s));
+    }
   }
-  Type FXSPR = exp(log_FXSPR_iter(n-1));
+  if(trace) see(SPR0);
+  
+  vector<Type> log_FXSPR_i(n_F);
+  matrix<Type> log_FXSPR_iter(n_iter,n_F);
+  for(int r = 0; r < n_F; r++) log_FXSPR_iter(0,r) = log(F_init);
+  if(trace) see(log_FXSPR_iter.row(0));
+  spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M,
+    mu, L, mat, waassb, fracyr_seasons, SPR_weights, 0, small_dim, trace);    
+  if(trace) see("after spr_F_spatial sprF defined");
+  //trace = 0;
+  for(int i=0; i<n_iter-1; i++) {
+    // if(trace) see(i);
+    log_FXSPR_i = log_FXSPR_iter.row(i);
+    matrix<Type> grad_spr_F = autodiff::jacobian(sprF,log_FXSPR_i);
+    matrix<Type> inv_grad = grad_spr_F.inverse(); 
+    vector<Type> SPR_i = sprF(log_FXSPR_i);
+    vector<Type> diff = SPR_i - 0.01*percentSPR * SPR0;
+    vector<Type> change = inv_grad * diff; 
+    log_FXSPR_iter.row(i+1) = vector<Type> (log_FXSPR_iter.row(i)) - change; // vector<Type>(grad_spr_F.inverse() * (SPR_i - 0.01*percentSPR * SPR0));
+   // vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
+    // vector<Type> SPR_i = sprF(log_FXSPR_i);
+    // for(int r = 0; r < n_F; r++) log_FXSPR_iter(i+1,r) = log_FXSPR_iter(i,r) - (SPR_i(r) - 0.01*percentSPR * SPR0(r))/grad_spr_F(r);
+  }
+  if(trace) see(log_FXSPR_iter);
+
+  vector<Type> FXSPR = exp(vector<Type> (log_FXSPR_iter.row(n_iter-1)));
   return FXSPR;
 }
 
@@ -784,10 +829,10 @@ vector<Type> get_log_FXSPR(Type percentSPR, array<Type> FAA, vector<int> fleet_r
     if(trace) see(mu_y);
     if(trace) see(mu_y.dim);
 
-    Type FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, vector<Type> (fracyr_SSB.row(y)),
+    vector<Type> FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, vector<Type> (fracyr_SSB.row(y)),
       sel_y, log_M_y, mu_y, L_y, mature_y,  waa_ssb_y, fracyr_seasons, vector<Type> (R_XSPR.row(y)), vector<Type> (log_SPR0.row(y)),
       percentSPR, SPR_weights, SPR_weight_type, small_dim, FXSPR_init(y), 10, trace);
-    log_FXSPR(y) = log(FXSPR);
+    log_FXSPR(y) = log(FXSPR(0));
     if(trace) see(log_FXSPR(y));
   }
 
@@ -822,10 +867,10 @@ Type get_log_FXSPR_static(Type percentSPR, vector<int> avg_years_ind, array<Type
     R_XSPR(s) += NAA(s,spawn_regions(s)-1,XSPR_R_avg_yrs(y),0)/XSPR_R_avg_yrs.size();
   }
 
-  Type FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, avg_fracyr_SSB,
+  vector<Type> FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, avg_fracyr_SSB,
     avg_sel, log_avg_M, avg_mu, avg_L, avg_mat, waa_ssb, fracyr_seasons, R_XSPR, log_SPR0_static,
     percentSPR, SPR_weights, SPR_weight_type, small_dim, FXSPR_init, 10, trace);
-  Type log_FXSPR = log(FXSPR);
+  Type log_FXSPR = log(FXSPR(0));
   if(trace) see(log_FXSPR);
   return log_FXSPR;
 }
@@ -866,7 +911,6 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M,
   if(trace) see("inside get_SPR_res");
   //see(SPR_weights);
   //see(log_M);
-  int n = n_iter;
   int n_stocks = log_M.dim(0);
   int n_fleets = FAA.dim(0);
   int n_regions = NAA.dim(1);
@@ -929,20 +973,22 @@ vector< vector <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M,
   for(int s = 0; s < n_stocks; s++) SPR0 += SPR_weights(s) * SPR0_all(s,spawn_regions(s)-1,spawn_regions(s)-1); 
   if(trace) see(SPR0);
 
-  vector<Type> log_FXSPR_i(1), log_FXSPR_iter(n);
+  vector<Type> log_FXSPR_i(1), log_FXSPR_iter(n_iter);
   log_FXSPR_iter(0) = log(F_init);
 
   if(trace) see(log_FXSPR_iter(0));
   spr_F_spatial<Type> sprF(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, sel, log_M_avg,
-    mu_avg, L_avg, mat, waa_ssb_avg, fracyr_seasons, SPR_weights, 0, small_dim, 0);
+    mu_avg, L_avg, mat, waa_ssb_avg, fracyr_seasons, SPR_weights, 0, small_dim, trace);
   if(trace) see("after spr_F_spatial sprF defined");
-  for(int i=0; i<n-1; i++) {
+  for(int i=0; i<n_iter-1; i++) {
     if(trace) see(i);
     log_FXSPR_i(0) = log_FXSPR_iter(i);
-    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
-    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * SPR0)/grad_spr_F(0);
+    matrix<Type> grad_spr_F = autodiff::jacobian(sprF,log_FXSPR_i);
+    //vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
+    Type SPR_i = sprF(log_FXSPR_i)(0);
+    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (SPR_i - 0.01*percentSPR * SPR0)/grad_spr_F(0,0);
   }
-  matrix<Type> FAA_XSPR = exp(log_FXSPR_iter(n-1)) * sel;
+  matrix<Type> FAA_XSPR = exp(log_FXSPR_iter(n_iter-1)) * sel;
   if(trace) see(FAA_XSPR);
   vector<Type> log_FAA_XSPR((n_fleets+1)*n_ages);
   log_FAA_XSPR.setZero();

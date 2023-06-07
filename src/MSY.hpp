@@ -150,6 +150,158 @@ struct sr_yield_spatial {
   }
 };
 
+/* calculate single yield at F for spatial model across stocks and regions given stock-specific B-H/Ricker SR functions */
+template<class Type>
+struct sr_yield_gradient_spatial {
+  // Data and parameter objects for calculation: 
+  vector<Type> SR_a;
+  vector<Type> SR_b; 
+  vector<int> spawn_seasons;
+  vector<int> spawn_regions;
+  vector<int> fleet_regions; 
+  matrix<int> fleet_seasons; 
+  array<int> can_move; 
+  vector<int> mig_type;
+  vector<Type> fracyr_SSB;
+  matrix<Type> selectivity;
+  array<Type> log_M;
+  array<Type> mu; 
+  vector<Type> L;
+  matrix<Type> mature;
+  matrix<Type> waa_ssb; 
+  matrix<Type> waa_catch; 
+  vector<Type> fracyr_seasons;
+  //vector<Type> SPR_weights; //how to weight stock-specific SSB/R for aggregate SSB/R.
+  int age_specific; 
+  vector<int> recruit_model;
+  int small_dim;
+  int trace=0;
+
+  // Constructor 
+  sr_yield_gradient_spatial(
+  vector<Type> SR_a_, 
+  vector<Type> SR_b_, 
+  vector<int> spawn_seasons_,
+  vector<int> spawn_regions_,
+  vector<int> fleet_regions_, 
+  matrix<int> fleet_seasons_, 
+  array<int> can_move_, 
+  vector<int> mig_type_,
+  vector<Type> fracyr_SSB_,
+  matrix<Type> selectivity_,
+  array<Type> log_M_,
+  array<Type> mu_, 
+  vector<Type> L_,
+  matrix<Type> mature_,
+  matrix<Type> waa_ssb_, 
+  matrix<Type> waa_catch_, 
+  vector<Type> fracyr_seasons_,
+  //vector<Type> SPR_weights_,
+  int age_specific_, 
+  vector<int> recruit_model_,
+  int small_dim_,
+  int trace_) :
+    SR_a(SR_a_),
+    SR_b(SR_b_),
+    spawn_seasons(spawn_seasons_), 
+    spawn_regions(spawn_regions_), 
+    fleet_regions(fleet_regions_),
+    fleet_seasons(fleet_seasons_),
+    can_move(can_move_),
+    mig_type(mig_type_),
+    fracyr_SSB(fracyr_SSB_),
+    selectivity(selectivity_),
+    log_M(log_M_),
+    mu(mu_),
+    L(L_),
+    mature(mature_),
+    waa_ssb(waa_ssb_),
+    waa_catch(waa_catch_),
+    fracyr_seasons(fracyr_seasons_),
+    //SPR_weights(SPR_weights_),
+    age_specific(age_specific_),
+    recruit_model(recruit_model_), 
+    small_dim(small_dim_),
+    trace(trace_) {}
+
+  template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
+  vector<T> operator()(vector<T> log_F) { //find such that it maximizes yield
+    int n_stocks = log_M.dim(0);
+    int n_regions = log_M.dim(1);
+    int n_ages = log_M.dim(2);
+    int n_fleets = selectivity.rows();
+    if(trace) see("in sr_yield_gradient_spatial");
+    //int n_seasons = can_move.dim(2);
+    matrix<T> FAA(n_fleets,n_ages);
+    FAA.setZero();
+    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+      FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
+    }
+    if(trace) see(FAA);
+    vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
+    array<T> logMbaseT(log_M.dim(0),log_M.dim(1),log_M.dim(2));
+    for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
+      logMbaseT(s,r,a) = T(log_M(s,r,a));
+    }
+    if(trace) see(logMbaseT);
+    array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
+      for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
+        muT(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
+      }
+    }
+    if(trace) see(muT);
+    vector<T> LT = L.template cast<T>();
+    matrix<T> matT = mature.template cast<T>();
+    matrix<T> waassbT = waa_ssb.template cast<T>();
+    matrix<T> waacatchT = waa_catch.template cast<T>();
+    vector<T> fracyrseasonT = fracyr_seasons.template cast<T>();
+    //stock-specific SSB/R
+    array<T> SPR_sr = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, 
+      fracyrssbT, 
+      FAA, 
+      logMbaseT, 
+      muT, 
+      LT, 
+      matT, 
+      waassbT, 
+      fracyrseasonT, 
+      0, small_dim, trace);
+    if(trace) see("end get_SPR sr_yield_gradient_spatial");
+    if(trace) see(SPR_sr);
+    array<T> YPR_srf = get_YPR_srf(
+      fleet_regions, 
+      fleet_seasons, 
+      can_move, 
+      mig_type, 
+      FAA, 
+      logMbaseT, 
+      muT,
+      LT,
+      waacatchT,
+      fracyrseasonT,
+      0, small_dim);
+    if(trace) see("end get_YPR_srf sr_yield_gradient_spatial");
+    if(trace) see(YPR_srf);
+
+    //weighted-average of SSB/R returned
+    vector<T> SPR(n_stocks), Y(n_stocks), R(n_stocks);
+    SPR.setZero(); Y.setZero(); R.setZero();
+    for(int s = 0; s < n_stocks; s++) {
+      SPR(s) = SPR_sr(s,spawn_regions(s)-1,spawn_regions(s)-1);
+      if(trace) see(SPR(s));
+      if(recruit_model(s) == 3) R(s) = (T(SR_a(s)) - 1/SPR(s)) / T(SR_b(s)); //beverton-holt
+      if(recruit_model(s) == 4) R(s) = log(T(SR_a(s)) * SPR(s))/(T(SR_b(s)) * SPR(s)); //ricker
+      for(int r = 0; r < n_regions; r++) for(int f = 0; f < n_fleets; f ++) Y(s) += YPR_srf(s,r,f) * R(s);
+    }
+    if(trace) see(R);
+    if(trace) see(SR_a);
+    if(trace) see(SR_b);
+    if(trace) see(Y);
+    return Y;
+  }
+};
+
 //takes a single year of values for inputs (reduce dimensions appropriately)
 //returns just the "solved" log_Fmsy value
 template <class Type>

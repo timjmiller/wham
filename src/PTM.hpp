@@ -108,6 +108,7 @@ matrix<T> get_P_t_base(vector<int> fleet_regions, matrix<int> can_move, int mig_
         {
           P(fleet_regions(f)-1,n_regions+f) = F(f) * (1.0 - exp(-Z(fleet_regions(f)-1) * time))/Z(fleet_regions(f)-1);
         } 
+        for(int i = n_regions; i < dim; i++) P(i,i) = 1.0; 
       }
     }
   } //end n_regions > 1
