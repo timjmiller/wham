@@ -168,70 +168,76 @@ set_NAA = function(input, NAA_re=NULL)
       input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$sigma being used for all stocks.\n")
       NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
     }
-    for(s in 1:data$n_stocks) if(NAA_re$sigma[[s]][1] == "rec"){
-      data$NAA_re_model[s] = 1
-      map$log_NAA_sigma[s,1] = k
-      #below is already done above for SCAA
-      #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
-      k = k + 1
-      #data$n_NAA_sigma <- 1
-      #data$NAA_sigma_pointers <- rep(1,data$n_ages)
-    } else {
-      if(NAA_re$sigma[[s]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
-        data$NAA_re_model[s] = 2
-        map$log_NAA_sigma[s,] = c(k, rep(k+1, data$n_ages-1))
-        for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
-        k = k + 2
-        #data$n_NAA_sigma <- 2
-        #data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+    for(s in 1:data$n_stocks) {
+      if(NAA_re$sigma[[s]][1] == "rec"){
+        data$NAA_re_model[s] = 1
+        map$log_NAA_sigma[s,1] = k
+        #below is already done above for SCAA
+        #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
+        k = k + 1
+        #data$n_NAA_sigma <- 1
+        #data$NAA_sigma_pointers <- rep(1,data$n_ages)
       } else {
-        if(length(NAA_re$sigma[[s]]) != data$n_ages) stop("each element of NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
-'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
-or a vector with length == n.ages specifying which sigma_a to use for each age.")
-        #if(length(NAA_re$sigma[[s]]) == data$n_ages){
-          if(any(is.na(unique(NAA_re$sigma[[s]])))){
-            #use SCAA because of na values
-            #data$n_NAA_sigma <- 0
-            #data$NAA_sigma_pointers <- rep(1,data$n_ages)            
-          } else {
-            tmp = unique(NAA_re_sigma[[s]])
-            ind = 1:length(tmp)
-            ind = ind[match(NAA_re_sigma[[s]],tmp)] - 1
-            map$log_NAA_sigma[s,] <- k + ind
-            for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
-            k <- max(k + ind, na.rm=T)
-            #data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
-            #data$NAA_sigma_pointers <- NAA_re$sigma
-          }
-        #}
+        if(NAA_re$sigma[[s]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
+          data$NAA_re_model[s] = 2
+          map$log_NAA_sigma[s,] = c(k, rep(k+1, data$n_ages-1))
+          for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
+          k = k + 2
+          #data$n_NAA_sigma <- 2
+          #data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+        } else {
+          if(length(NAA_re$sigma[[s]]) != data$n_ages) stop("each element of NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
+  'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
+  or a vector with length == n.ages specifying which sigma_a to use for each age.")
+          #if(length(NAA_re$sigma[[s]]) == data$n_ages){
+            if(any(is.na(unique(NAA_re$sigma[[s]])))){
+              #use SCAA because of na values
+              #data$n_NAA_sigma <- 0
+              #data$NAA_sigma_pointers <- rep(1,data$n_ages)            
+            } else {
+              tmp = unique(NAA_re_sigma[[s]])
+              ind = 1:length(tmp)
+              ind = ind[match(NAA_re_sigma[[s]],tmp)] - 1
+              map$log_NAA_sigma[s,] <- k + ind
+              for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
+              k <- max(k + ind, na.rm=T)
+              #data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
+              #data$NAA_sigma_pointers <- NAA_re$sigma
+            }
+          #}
+        }
       }
-    }
-    if(!is.null(NAA_re$sigma_vals[[s]])) {
-      if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
-      par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
+      if(!is.null(NAA_re$sigma_vals[[s]])) {
+        if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
+        par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
+      }
     }
     
     if(length(NAA_re$cor == 1) & data$n_stocks>1) {
       input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$cor being used for all stocks.\n")
       NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
     }
-    if(!is.null(NAA_re$cor[[s]])){
-      if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
-      if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- 1
-      if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,2] <- 1
-      if(NAA_re$cor[[s]] == "2dar1") map$trans_NAA_rho[s,] <- 1
-    } else {
-      NAA_re$cor[[s]] <- 'iid'
-    }
-    if(!is.null(NAA_re$cor_vals[[s]])) {
-      if(!length(NAA_re$cor_vals[[s]]) %in% 1:2) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
-      if(length(NAA_re$cor_vals[[s]]) == 2) par$trans_NAA_rho[s,] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-      if(length(NAA_re$cor_vals[[s]]) == 1) {
-        if(NAA_re$cor[[s]] == "ar1_a") {
-          par$trans_NAA_rho[s,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-        }
-        if(NAA_re$cor[[s]] == "ar1_y") {
-          par$trans_NAA_rho[s,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+    k = 0
+    for(s in 1:data$n_stocks) {
+      if(!is.null(NAA_re$cor[[s]])){
+        if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
+        if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- k + 1
+        if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,2] <- k + 1
+        if(NAA_re$cor[[s]] == "2dar1") map$trans_NAA_rho[s,] <- k + 1:2
+        k <- max(map$trans_NAA_rho, na.rm = TRUE)
+      } else {
+        NAA_re$cor[[s]] <- 'iid'
+      }
+      if(!is.null(NAA_re$cor_vals[[s]])) {
+        if(!length(NAA_re$cor_vals[[s]]) %in% 1:2) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
+        if(length(NAA_re$cor_vals[[s]]) == 2) par$trans_NAA_rho[s,] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+        if(length(NAA_re$cor_vals[[s]]) == 1) {
+          if(NAA_re$cor[[s]] == "ar1_a") {
+            par$trans_NAA_rho[s,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+          }
+          if(NAA_re$cor[[s]] == "ar1_y") {
+            par$trans_NAA_rho[s,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+          }
         }
       }
     }

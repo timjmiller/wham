@@ -36,6 +36,7 @@ set_indices = function(input, index_info=NULL) {
 			asap3[[i]]$survey_index_units <- asap3[[i]]$index_units[which_indices]
 			asap3[[i]]$survey_acomp_units <- asap3[[i]]$index_acomp_units[which_indices]
 			asap3[[i]]$survey_WAA_pointers <- asap3[[i]]$index_WAA_pointers[which_indices]
+			asap3[[i]]$survey_month <- asap3[[i]]$index_month[which_indices]
 			#asap3[[i]]$survey_month <- matrix(asap3[[i]]$index_month[which_indices], asap3[[i]]$n_years, asap3[[i]]$n_indices, byrow = TRUE)
 			asap3[[i]]$use_survey_acomp <- asap3[[i]]$use_index_acomp[which_indices]
 			asap3[[i]]$index_WAA_pointers = asap3[[i]]$index_WAA_pointers[which_indices]
@@ -60,6 +61,7 @@ set_indices = function(input, index_info=NULL) {
   data$units_indices = rep(2,data$n_indices)
   data$units_index_paa = rep(2,data$n_indices)
   data$fracyr_indices = matrix(data$fracyr_seasons[1]*0.5, data$n_years_model, data$n_indices)
+  print("here")
 
 	if(!is.null(asap3)) {
     k <- 1
@@ -67,7 +69,7 @@ set_indices = function(input, index_info=NULL) {
       for(j in 1:asap3[[i]]$n_indices) {
         data$index_regions[k] = i #each asap file is a separate region
 		  	data$units_indices[k] <- asap3[[i]]$survey_index_units[j]
-		  	tmp = (asap3[[i]]$index_month[j]-1)/12 #make sure that this is right
+		  	tmp = (asap3[[i]]$survey_month[j]-1)/12 #make sure that this is right
 				int_starts <- cumsum(c(0,data$fracyr_seasons))
 		  	ind = max(which(int_starts <= tmp))
 		  	data$index_seasons[k] = ind
@@ -80,11 +82,14 @@ set_indices = function(input, index_info=NULL) {
 		    temp = asap3[[i]]$IAA_mats[[j]][,3 + 1:data$n_ages]
 	    	temp[which(is.na(temp))] = 0
 	    	temp[which(temp<0)] = 0
-	    	data$index_paa[k,,] = temp/apply(temp,1,sum)
+	    	data$index_paa[k,,] = temp/apply(temp,1,sum) #all 0s will make NaN
 				if(asap3[[i]]$use_survey_acomp[j] != 1){
 					data$use_index_paa[,k] = 0
 				} else {
-					for(y in 1:data$n_years_model) if(asap3[[i]]$IAA_mats[[j]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[k,y,] > 1e-15) < 2) data$use_index_paa[y,k] = 0
+					for(y in 1:data$n_years_model) {
+						flag <- asap3[[i]]$IAA_mats[[j]][y,4 + data$n_ages] < 1e-15 | sum(data$index_paa[k,y,] > 1e-15) < 2 | any(is.na(data$index_paa[k,y,]))
+						if(flag) data$use_index_paa[y,k] = 0
+					}
 				}
 				data$units_index_paa[k] <- asap3[[i]]$survey_acomp_units[j]
 				data$index_Neff[,k] = asap3[[i]]$IAA_mats[[j]][,4 + data$n_ages]
