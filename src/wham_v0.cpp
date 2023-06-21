@@ -1422,12 +1422,12 @@ Type objective_function<Type>::operator() ()
     matrix<Type> Neff_est_indices(n_years_model, n_indices);
     Neff_est_indices.setZero();
     for(int i = 0; i < n_indices; i++){
-      if(any_DM_fleets(i) == 1) {
+      if(any_DM_indices(i) == 1) {
         // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) - log(N_eff) for normal D-M option, so CI's could be created from that SE estimate.
         for(int y = 0; y < n_years_model; y++) Neff_est_indices(y,i) = 1 + (index_Neff(y,i) -1)/(1 + index_Neff(y,i)*exp(-index_paa_pars(i,0)));
         // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for either D-M option, so CI's could be created from that SE estimate.
       }
-      if(any_DM_fleets(i) == 2) {
+      if(any_DM_indices(i) == 2) {
         // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for linear D-M option, so CI's could be created from that SE estimate.
         for(int y = 0; y < n_years_model; y++) Neff_est_indices(y,i) = 1 + (index_Neff(y,i) -1)/(1 + exp(-index_paa_pars(i,0)));
         // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for either D-M option, so CI's could be created from that SE estimate.
