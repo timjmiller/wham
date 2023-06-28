@@ -405,7 +405,7 @@ template <class Type>
 matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_age, array<Type> waa, int waa_pointer_ssb, vector<int> waa_pointer_fleets,
   matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<Type> F_init)
 {
-  int n = 10;
+  int n = 20;
   int ny = MAA.rows();
   int na = MAA.cols();
   int nf = waa_pointer_fleets.size();
@@ -433,7 +433,8 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_
     {
       log_FXSPR_i(0) = log_FXSPR_iter(y,i);
       vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
-      log_FXSPR_iter(y,i+1) = log_FXSPR_iter(y,i) - (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0(y)))/grad_spr_F(0);// /hess_sr_yield(0,0);
+      Type diff = (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0(y)));
+      log_FXSPR_iter(y,i+1) = log_FXSPR_iter(y,i) - diff/(2.0*grad_spr_F(0));// /hess_sr_yield(0,0);
       res(y,5+i+1) = log_FXSPR_iter(y,i+1);
     }
     log_FXSPR(y) = log_FXSPR_iter(y,n-1);
@@ -455,7 +456,7 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
   matrix<Type> mature, Type percentSPR, matrix<Type> NAA, vector<Type> fracyr_SSB, Type F_init, 
   vector<int> years_M, vector<int> years_mat, vector<int> years_sel, vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_R)
 {
-  int n = 10;
+  int n = 20;
   int na = MAA.cols();
   int nf = waa_pointer_fleets.size();
   //matrix<Type> waacatch = extract_matrix_array3(waa, waa_pointer_tot_catch-1);
@@ -490,7 +491,7 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
   {
     log_FXSPR_i(0) = log_FXSPR_iter(i);
     vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
-    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * spr0)/grad_spr_F(0);// /hess_sr_yield(0,0);
+    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * spr0)/(2.0*grad_spr_F(0));// /hess_sr_yield(0,0);
     res(6+i+1) = log_FXSPR_iter(i+1);
   }
   res(0) = log_FXSPR_iter(n-1); //log_FXSPR
