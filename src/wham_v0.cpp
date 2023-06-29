@@ -1051,7 +1051,7 @@ Type objective_function<Type>::operator() ()
           {
             for(int a = 0; a < n_ages; a++) paa_obs_y(a) = 1/n_ages; //only needed for LN obs to tell where the last non-zero age class is. No zeros in projections.
             vector<int> ages_obs_y(n_ages);
-            for(int a = 0; a < n_ages; a++) ages_obs_y(a) = a;
+            for(int a = 0; a < n_ages; a++) ages_obs_y(a) = a+1;
             vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, catch_Neff(usey,f), ages_obs_y, age_comp_model_fleets(f), vector<Type>(catch_paa_pars.row(f)));
             paa_obs_y = make_paa(tf_paa_obs, age_comp_model_fleets(f), ages_obs_y, paa_obs_y);
             for(int a = 0; a < n_ages; a++) catch_paa_proj(f,y-n_years_model,a) = paa_obs_y(a);
@@ -1146,7 +1146,7 @@ Type objective_function<Type>::operator() ()
           {
             for(int a = 0; a < n_ages; a++) paa_obs_y(a) = 1/n_ages; //only needed for LN obs to tell where the last non-zero age class is. No zeros in projections.
             vector<int> ages_obs_y(n_ages);
-            for(int a = 0; a < n_ages; a++) ages_obs_y(a) = a;
+            for(int a = 0; a < n_ages; a++) ages_obs_y(a) = a+1;
             vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, index_Neff(usey,i), ages_obs_y, age_comp_model_indices(i), vector<Type>(index_paa_pars.row(i)));//acomp_pars);
             paa_obs_y = make_paa(tf_paa_obs, age_comp_model_indices(i), ages_obs_y, paa_obs_y);
             for(int a = 0; a < n_ages; a++) index_paa_proj(i,y-n_years_model,a) = paa_obs_y(a);
