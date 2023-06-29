@@ -953,7 +953,7 @@ Type objective_function<Type>::operator() ()
   }
   if((n_NAA_sigma > 0) | (do_proj == 1)) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
     matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
-      n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_totcatch, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
+      n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_fleets, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
       avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init, percentFMSY);
     SSB = sims.col(sims.cols()-1);
     for(int a = 0; a < n_ages; a++) 
