@@ -425,7 +425,7 @@ Type objective_function<Type>::operator() ()
   int n_effects = Ecov_beta.dim(0); // 2 + n_indices (recruitment, mortality and any catchabilities)
   array<Type> Ecov_out(n_years_model + n_years_proj, n_effects, n_Ecov); // Pop model uses Ecov_out(t) for processes in year t (Ecov_x shifted by lag and padded)
   Ecov_out.setZero(); // set Ecov_out = 0
-  for(int i = 0; i < n_Ecov; i++){
+  for(int i = 0; i < n_Ecov; i++) if(Ecov_model(i) > 0) {
     for(int t = 0; t < n_effects; t++){
       int ct = 0;
       for(int y = ind_Ecov_out_start(i,t); y < ind_Ecov_out_end(i,t) + 1 + n_years_proj; y++){
