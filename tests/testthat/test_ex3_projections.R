@@ -105,6 +105,7 @@ mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, u
 # saveRDS(mod_proj, file="m6_proj.rds")
 # mod_proj <- readRDS("/home/bstock/Documents/wham/sandbox/ex3_projections/m6_proj.rds")
 
+
 #  check marginal nll is the same
 nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)
 # mod$opt$obj
@@ -116,6 +117,10 @@ for(m in 1:length(mod_proj)){
   suppressWarnings(plot_wham_output(mod_proj[[m]], dir.main=tmp.dir))
   expect_equal(nll_proj[m], as.numeric(mod$opt$obj), tolerance=1e-6)
   expect_equal(as.numeric(mod_proj[[m]]$opt$par), as.numeric(mod$opt$par), tolerance=1e-3) # parameter values
+}
+#test simulation works with projections included.
+for(m in 1:length(mod_proj)){
+  temp <- mod_proj[[m]]$simulate(complete=TRUE)
 }
 
 })
