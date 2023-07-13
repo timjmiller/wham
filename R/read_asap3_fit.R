@@ -84,34 +84,29 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   SSB.CV <- a1$asap.std[SSB.rows, 4]/a1$asap.st[SSB.rows, 3]
   log_SSB[,2] <- sqrt( log(SSB.CV*SSB.CV +1 )   )
 
-  logFmult1  <- unlist(a1$asap.std[ which(a1$asap.std$name=="log_Fmult_year1")  ,3] )
-  logFmult_devs <- a1$asap.std[which(a1$asap.std$name=="log_Fmult_devs")  ,3]
-  log_F <- matrix(NA, nrow=nyears*n.fleet, ncol=2)
-  #year 1 for each fleet
-  log_F[1+nyears*(0:(n.fleet-1)),] <- logFmult1
-
-  log.fmult.rows <- which(substr(a1$asap.cor.names, 1, 9)=="log_Fmult")  #this is nyears*n.fleet
+  log.fmult1.rows <- which(a1$asap.std$name=="log_Fmult_year1")
+  log.fmultdev.rows <- which(a1$asap.std$name=="log_Fmult_devs")
+  log.fmult.rows <- integer()
+  #put the indexing for F1, Fdevs in order by fleet
+  log.fmult.rows[1+nyears*(0:(n.fleet-1))] <- log.fmult1.rows
+  for(f in 1:n.fleet) log.fmult.rows[(f-1)*nyears + 2:nyears] <- log.fmultdev.rows[1:(nyears-1) + (f-1)*(nyears-1)]
+  
+  logFmult  <- unlist(a1$asap.std[log.fmult.rows,3] )
   log.fmult.cor <- a1$asap.cor.mat[log.fmult.rows, log.fmult.rows]  #this has dimension nyears*n.fleet x nyears*n.fleet
-  diag(log.fmult.cor) <- rep(1, nyears*n.fleet)
+  log.fmult.cor[is.na(log.fmult.cor)] <- 0
+  log.fmult.cor <- log.fmult.cor + t(log.fmult.cor)
+  diag(log.fmult.cor) <- 1
   log.fmult.std <- a1$asap.std[log.fmult.rows, 4]
   log.fmult.cov <- log.fmult.cor*(log.fmult.std %o% log.fmult.std) #creates var-cov matrix
-  var.logFmult <- rep(NA, nyears*n.fleet)
-  sigma.logFmult <- rep(NA, nyears*n.fleet)
-  #year 1 for each fleet
-  var.logFmult[1+nyears*(0:(n.fleet-1))] <- log.fmult.cov[1+nyears*(0:(n.fleet-1)),1+nyears*(0:(n.fleet-1))] #need to modify for multifleet
-  #var.logFmult[1] <- log.fmult.cov[1,1] #need to modify for multifleet
-
-  for(f in 1:n.fleet) for (y in 2:nyears ) {
-
-    ind <- y + nyears*(0:(f-1))
-    log_F[ind,1] <- log_F[ind-1] + logFmult_devs[ind-1]
-    var.logFmult[ind] <- var.logFmult[ind-1] + a1$asap.std[log.fmult.rows[ind],4]*a1$asap.std[log.fmult.rows[ind],4]+2*(log.fmult.cov[ind,(ind-1)])
-    #log_F[y,1] <- log_F[y-1] + logFmult_devs[y-1]
-    #var.logFmult[y] <- var.logFmult[(y-1)] + a1$asap.std[log.fmult.rows[y],4]*a1$asap.std[log.fmult.rows[y],4]+2*(log.fmult.cov[y,(y-1)])
+  var.logFmult <- numeric()
+  for(f in 1:n.fleet) {
+    #estimates and var are just cumulative sums
+    logFmult[(f-1)*nyears + 1:nyears] <- cumsum(logFmult[(f-1)*nyears + 1:nyears])
+    for(y in 1:nyears){
+      var.logFmult[(f-1)*nyears + y] <- sum(log.fmult.cov[(f-1)*nyears + 1:y,(f-1)*nyears + 1:y]) 
+    }
   }
-
-  sigma.logFmult <- sqrt(var.logFmult)
-  log_F[,2] <- sigma.logFmult
+  log_F <- cbind(logFmult,sqrt(var.logFmult))
 
   log_NAA <- log(asap$N.age)
   NAA_CV <- matrix(NA, nrow=nyears, ncol=nages) # not sure how to derive this, but I can get it for age 1 recruits

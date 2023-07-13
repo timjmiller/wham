@@ -106,5 +106,6 @@ set_catch = function(input, catch_info= NULL) {
   input$map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
 
   input$data = data
+  input$asap3 <- asap3
   return(input)
 }

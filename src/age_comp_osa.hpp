@@ -26,32 +26,39 @@ vector<int> order(vector<Type> k){
 }
 
 template <class Type>
-Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type> keep, int give_log, int do_osa)
+Type dmultinom(vector<Type> x, vector<Type> p, vector<int> ages, data_indicator<vector<Type>, Type> keep, int give_log, int do_osa)
 {
   Type logres = 0;
+  vector<Type> p_x(ages.size());
+  for(int i = 0; i < ages.size(); i++) p_x(i) = p(ages(i)-1);
+  p_x /= sum(p_x);
+
   if(do_osa){
     vector<Type> k=keep;
     //vector<Type> l=keep.cdf_lower;
     //vector<Type> h=keep.cdf_upper;
     vector<int> o=order(k);
-    x=x(o); p=p(o); k=k(o); //l=l(o); h=h(o);
+    x=x(o); p_x=p_x(o); k=k(o); //l=l(o); h=h(o);
     Type nUnused=asDouble(sum(x));
     Type pUsed=0;
     //Type cdf;
     for(int i=0; i<x.size(); ++i){
       if(i!=(x.size()-1)){
         vector<Type> x2(2), p2(2);
-        //Type p_i = squeeze(p(i));
+        //Type p_i = squeeze(p_x(i));
         //Type one_minus_pUsed_i = squeeze(1.0-pUsed);
         x2(0) = x(i);
         x2(1) = nUnused-x(i);
-        p2(0) = squeeze(p(i)/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
+        p2(0) = squeeze(p_x(i));
+        p2(0) /= squeeze((Type(1)-pUsed));
+        p2(0) = squeeze(p2(0));
+        // p2(0) = squeeze(p(i)/(Type(1)-pUsed));//(Type(1)-pUsed_i); //for log of any p = 0
         p2(1) = 1. - p2(0);
         logres += k(i) * dmultinom(x2,p2,1); //binomial the hard way.
         //logres += k(i)*dbinom(x(i),nUnused,p(i)/(Type(1)-pUsed),true);
         //cdf = pbinom(x(i),nUnused,p(i)/(Type(1)-pUsed));
         nUnused -= x(i);
-        pUsed += p(i);
+        pUsed += p_x(i);
       }else{ // last index 
         logres += k(i)*Type(0);
         //cdf = Type(1);
@@ -61,7 +68,7 @@ Type dmultinom(vector<Type> x, vector<Type> p, data_indicator<vector<Type>, Type
       //logres += h[i] * log( 1.0 - cdf ); // NaN protected
     }
   } else {
-    logres = dmultinom(x,p,1);
+    logres = dmultinom(x,p_x,1);
   }
   if(give_log){
     return logres;
@@ -182,8 +189,11 @@ Type pbetabinom(Type x, Type N, Type alpha, Type beta, int do_log)
 
 //the D-M as a series of conditional beta-binomials and added args for osa residuals
 template<class Type> 
-Type ddirmultinom(vector<Type> obs, vector<Type> alpha, data_indicator<vector<Type>, Type> keep, int do_log, int do_osa)
+Type ddirmultinom(vector<Type> obs, vector<Type> alpha, vector<int> ages, data_indicator<vector<Type>, Type> keep, int do_log, int do_osa)
 {
+  vector<Type> alpha_obs(ages.size());
+  for(int i = 0; i < ages.size(); i++) alpha_obs(i) = alpha(ages(i)-1);
+  
   Type ll = 0.0;
   if(do_osa){
     vector<Type> k=keep;
@@ -191,17 +201,17 @@ Type ddirmultinom(vector<Type> obs, vector<Type> alpha, data_indicator<vector<Ty
     //vector<Type> h=keep.cdf_upper;
     
     vector<int> o=order(k);
-    obs=obs(o); alpha=alpha(o); k=k(o); //l=l(o); h=h(o);   
+    obs=obs(o); alpha_obs=alpha_obs(o); k=k(o); //l=l(o); h=h(o);   
     int dim = obs.size();
     vector<Type> alphas_a(2), obs_a(2);
-    Type alp_sum = alpha.sum();
+    Type alp_sum = alpha_obs.sum();
     Type obs_sum = asDouble(obs.sum());
     for(int a = 0; a < dim-1; a++){
       obs_sum -= obs[a];
-      alp_sum -= alpha[a];
+      alp_sum -= alpha_obs[a];
       obs_a(0) = obs(a);
       obs_a(1) = obs_sum;
-      alphas_a(0) = alpha(a);
+      alphas_a(0) = alpha_obs(a);
       alphas_a(1) = alp_sum;
       ll += k(a) * ddirmultinom(obs_a, alphas_a, 1); //beta-binomial, just two categories
       //Type cdf = pbetabinom(obs_a(0), obs_a.sum(), alphas_a(0), alphas_a(1), 0);
@@ -211,7 +221,7 @@ Type ddirmultinom(vector<Type> obs, vector<Type> alpha, data_indicator<vector<Ty
     }
   }
   else{
-    ll = ddirmultinom(obs,alpha,1);
+    ll = ddirmultinom(obs,alpha_obs,1);
   }
   if(do_log) return ll;
   else return exp(ll);
@@ -414,13 +424,16 @@ Type dzinf_logisticnormal_2(vector<Type> obs, vector<Type> p, vector<Type> pars,
 
 // multivariate-Tweedie
 template<class Type>
-Type dmvtweedie(vector<Type> x, vector<Type> prob, Type phi, Type power, data_indicator<vector<Type>, Type> keep, int give_log=0 ){
+Type dmvtweedie(vector<Type> x, vector<Type> prob, Type phi, Type power, vector<int> ages, data_indicator<vector<Type>, Type> keep, int give_log=0 ){
 
   int n_c = x.size();
   vector<Type> p_exp(n_c);
-  vector<Type> p_obs(n_c);
+  for(int i = 0; i < n_c; i++) p_exp(i) = prob(ages(i)-1);
+  p_exp /= sum(p_exp);
+
+  //vector<Type> p_exp(n_c);
   Type Ntotal = asDouble(sum(x)); //x.sum();
-  p_exp = prob / prob.sum();
+  //p_exp = prob / prob.sum();
   
   //NO OSA available
   // vector<Type> k=keep;
@@ -444,13 +457,13 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
   if(age_comp_model == 1) {
     //multinomial
     //tf_paa_obs = Neff * paa_obs
-    ll = dmultinom(tf_paa_obs, p, keep, 1, 1);
+    ll = dmultinom(tf_paa_obs, p, ages, keep, 1, 1);
   }
   if(age_comp_model == 2) {
-    //dirichlet-multinomial
+    //saturating dirichlet-multinomial
     //tf_paa_obs = Neff * paa_obs
     vector<Type> alphas = p * exp(age_comp_pars(0));
-    ll = ddirmultinom(tf_paa_obs, alphas, keep, 1, 1);
+    ll = ddirmultinom(tf_paa_obs, alphas, ages, keep, 1, 1);
   }
   if(age_comp_model == 3) { 
     //Dirichlet, miss0
@@ -503,7 +516,14 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
     //multivariate Tweedie. 2 parameters
     //NO OSA available?
     //vector<Type> temp_n = Neff * paa_obs;
-    ll = dmvtweedie(tf_paa_obs, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), keep, 1);
+    ll = dmvtweedie(tf_paa_obs, p, exp(age_comp_pars(0)), Type(1.0)+invlogit(age_comp_pars(1)), ages, keep, 1);
+  }
+  if(age_comp_model == 11) {
+    //dirichlet-multinomial -- LINEAR
+    // see https://doi.org/10.1016/j.fishres.2016.06.005
+    vector<Type> alphas = sum(tf_paa_obs) * p * exp(age_comp_pars(0));
+    //vector<Type> alphas = p * exp(age_comp_pars(0));
+    ll = ddirmultinom(tf_paa_obs, alphas, ages, keep, 1, 1);
   }
 
   return ll;

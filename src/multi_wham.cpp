@@ -711,7 +711,7 @@ Type objective_function<Type>::operator() ()
   bool any_N1_re = false;
   for(int s = 0; s < n_stocks; s++) if(N1_model(s) ==2) any_N1_re = true;
   if(any_N1_re) { //Initial numbers at age are random effects
-    vector<Type> nll_N1 = get_nll_N1(N1_model, log_N1, N1_repars, NAA_where);
+    matrix<Type> nll_N1 = get_nll_N1(N1_model, log_N1, N1_repars, NAA_where);
     nll += nll_N1.sum();
     //see(nll);
     REPORT(nll_N1);

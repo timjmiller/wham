@@ -375,10 +375,11 @@ array<Type> sim_obsvec_in_index_paa(vector<Type> obsvec, vector<int> agesvec, ar
   int n_y = index_paa.dim(1);
   int n_ages = index_paa.dim(2);
   array<Type> index_paa_out = index_paa;
+  vector<Type> paa_obs_y(n_ages);
   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {
     vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
     vector<Type> tf_paa_obs = obsvec.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1));
-    vector<Type> paa_obs_y = make_paa(tf_paa_obs, age_comp_model_indices(i), ages_obs_y, n_ages);
+    paa_obs_y = make_paa(tf_paa_obs, age_comp_model_indices(i), ages_obs_y, paa_obs_y);
     for(int a = 0; a < n_ages; a++) index_paa_out(i,y,a) = paa_obs_y(a);
   }
   return index_paa_out;

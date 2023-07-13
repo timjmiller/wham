@@ -252,8 +252,9 @@ set_selectivity = function(input, selectivity)
         paa = rbind(paa,y)
       }
       y = apply(paa,2,sum)
-      selpars_ini[b, which(y < 1e-5)] = 0
-      phase_selpars[b, which(y < 1e-5)] = -1
+      ind <- which(y < 1e-5 & phase_selpars[b,1:data$n_ages] > 0) #if phase is set to -1 and 0s in all years for an age and selpars_ini >0, then keep selpars as is.
+      selpars_ini[b, ind] = 0
+      phase_selpars[b, ind] = -1
     }
   }
   temp <- matrix(NA, data$n_selblocks, data$n_ages + 6)

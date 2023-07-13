@@ -102,16 +102,12 @@ set_osa_obs = function(input)
       if(data$use_index_paa[y,i] == 1)
       {
         obs_y = x[y,]
-        #print(data$selblock_pointer_indices)
-        #print(y)
-        #print(i)
-        #print(data$selblock_pointer_indices[y,i])
         tmp <- ages_omit[[data$selblock_pointer_indices[y,i]]]
         res = transform_paa_obs(obs_y, data$age_comp_model_indices[i], ages_omit = tmp)
         obs_y = res[[1]]
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
         #multinom, D-M, mvtweedie
-        if(data$age_comp_model_indices[i] %in% c(1:2,10)) obs_y = obs_y * data$index_Neff[y,i]
+        if(data$age_comp_model_indices[i] %in% c(1:2,10,11)) obs_y = obs_y * data$index_Neff[y,i]
 
         #if(data$age_comp_model_indices[i] %in% 3:7) {
         #  ind = res[[2]]
@@ -133,16 +129,19 @@ set_osa_obs = function(input)
       #obs_levels <- c(obs_levels, paste0("fleet_",i, "_paa"))
       x <- data$catch_paa[i,,]
       x[which(data$use_catch_paa[,i]==0),] <- NA # only include catch data to fit in obsvec
+      #x = as.data.frame(x)
       fleets = paste0("fleet_", 1:data$n_fleets)
       if(data$use_catch_paa[y,i] == 1) {
         obs_y = x[y,]
         tmp <- ages_omit[[data$selblock_pointer_fleets[y,i]]]
-
         #multinom, D-M, mvtweedie
         res = transform_paa_obs(obs_y, data$age_comp_model_fleets[i], ages_omit = tmp)
         obs_y = res[[1]]
         ind = res[[2]] #now the ages to use is specified for all likelihods by transform_paa_obs
-        if(data$age_comp_model_fleets[i] %in% c(1:2,10)) obs_y = obs_y * data$catch_Neff[y,i]
+        if(data$age_comp_model_fleets[i] %in% c(1:2,10,11)) obs_y = obs_y * data$catch_Neff[y,i]
+        #if(data$age_comp_model_fleets[i] %in% 3:7) {
+        #  ind = res[[2]]
+        #} else ind = 1:data$n_ages
 
         if(length(ind)) {
           tmp = data.frame(year = y, fleet = fleets[i], age = (1:data$n_ages)[ind], type = 'catchpaa', val = obs_y[ind])
@@ -239,7 +238,7 @@ transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE, a
     #transform logistic-normal obs to MVN obs (analogous to log-catch and log-indices)
     all_models <- c("multinomial","dir-mult","dirichlet-miss0","dirichlet-pool0",
     "logistic-normal-miss0", "logistic-normal-ar1-miss0", "logistic-normal-pool0",
-    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie")
+    "logistic-normal-01-infl","logistic-normal-01-infl-2par", "mvtweedie", "dir-mult-linear")
   # if model %in% 1:2 do nothing for multinomial and D-m
   is_pred_pos = !(1:length(x) %in% ages_omit)
   x[which(!is_pred_pos)] = 0 #if obs in omitted ages are zero this does nothing

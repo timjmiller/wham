@@ -134,6 +134,7 @@ set_indices = function(input, index_info=NULL) {
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
   input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))
+  input$asap3 <- asap3
 
   input$data = data
   return(input)

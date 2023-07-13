@@ -88,11 +88,12 @@ set_NAA = function(input, NAA_re=NULL)
   map$log_N1 = array(NA,dim = c(data$n_stocks,data$n_regions,data$n_ages))
   par$N1_repars = array(0,dim = c(data$n_stocks,data$n_regions,3))
   map$N1_repars = array(NA,dim = c(data$n_stocks,data$n_regions,3))
+  init_NAA = log(exp(10)*exp(-(0:(data$n_ages-1))*0.2))
   if(!is.null(NAA_re$N1_model)) {
     options = c("age-specific-fe", "equilibrium","iid-re", "ar1-re")
     k = 1
     for(s in 1:data$n_stocks) {
-      if(!(NAA_re$N1_model[s] %in% options)) stop("NAA_re$N1_model must all be 'age-specific-fe', 'equilibrium', 'iid-fe' or 'ar1-fe'.")
+      if(!(NAA_re$N1_model[s] %in% options)) stop("NAA_re$N1_model must all be 'age-specific-fe', 'equilibrium', 'iid-re' or 'ar1-re'.")
       if(NAA_re$N1_model[s] == options[1]) data$N1_model[s] = 0
       if(NAA_re$N1_model[s] == options[2]) data$N1_model[s] = 1
       if(NAA_re$N1_model[s] %in% options[3:4]) {
@@ -109,7 +110,9 @@ set_NAA = function(input, NAA_re=NULL)
   }
   map$N1_repars = factor(map$N1_repars)
   k = 1
-  init_NAA = log(exp(10)*exp(-(0:(data$n_ages-1))*0.2))
+  if(any(data$N1_model == 2) & any(data$N1_model != 2)) stop("If any initial numbers at age are treated as RE, then all must.")
+  print("data$N1_model")
+  print(data$N1_model)
   for(s in 1:data$n_stocks) {
     if(data$N1_model[s] == 0){
       for(r in 1:data$n_regions) for(a in 1:data$n_ages) {
@@ -162,81 +165,106 @@ set_NAA = function(input, NAA_re=NULL)
   #  data$NAA_sigma_pointers <- rep(1,data$n_ages)
   #}
   if(!is.null(NAA_re$sigma)){
-    k = 0
+    k <- 1
     if(!length(NAA_re$sigma) %in% c(1,data$n_stocks)) stop("NAA_re$sigma length must be 1 or equal to the number of stocks.")
-    if(length(NAA_re$sigma == 1) & data$n_stocks>1) {
-      input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$sigma being used for all stocks.\n")
-      NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
-    }
-    for(s in 1:data$n_stocks) {
-      if(NAA_re$sigma[[s]][1] == "rec"){
-        data$NAA_re_model[s] = 1
-        map$log_NAA_sigma[s,1] = k
-        #below is already done above for SCAA
-        #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
-        k = k + 1
-        #data$n_NAA_sigma <- 1
-        #data$NAA_sigma_pointers <- rep(1,data$n_ages)
-      } else {
-        if(NAA_re$sigma[[s]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
-          data$NAA_re_model[s] = 2
-          map$log_NAA_sigma[s,] = c(k, rep(k+1, data$n_ages-1))
-          for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
-          k = k + 2
-          #data$n_NAA_sigma <- 2
-          #data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+    if(length(NAA_re$sigma) == 1 & data$n_stocks>1) {
+      input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$sigma being used for all stocks (", NAA_re$sigma[[1]][1], ").\n"))
+      #NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
+      map$log_NAA_sigma[,1] <- k
+      data$NAA_re_model[] <- 1
+      #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) if(data$NAA_where[s,r,1]==1) map$log_NAA[s,r,,1] <- 1 #change to unique values later
+      if(NAA_re$sigma[[1]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
+        map$log_NAA_sigma[,-1] <- k+1
+        data$NAA_re_model[] <- 2
+        #also RE for ages>1
+        for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(a in 2:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
+      }
+    } else {
+      for(s in 1:data$n_stocks) {
+        if(NAA_re$sigma[[s]][1] == "rec"){
+          data$NAA_re_model[s] <- 1
+          map$log_NAA_sigma[s,1] <- k
+          #below is already done above for SCAA
+          #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
+          k <- k + 1
+          #data$n_NAA_sigma <- 1
+          #data$NAA_sigma_pointers <- rep(1,data$n_ages)
         } else {
-          if(length(NAA_re$sigma[[s]]) != data$n_ages) stop("each element of NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
-  'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
-  or a vector with length == n.ages specifying which sigma_a to use for each age.")
-          #if(length(NAA_re$sigma[[s]]) == data$n_ages){
-            if(any(is.na(unique(NAA_re$sigma[[s]])))){
-              #use SCAA because of na values
-              #data$n_NAA_sigma <- 0
-              #data$NAA_sigma_pointers <- rep(1,data$n_ages)            
-            } else {
-              tmp = unique(NAA_re_sigma[[s]])
-              ind = 1:length(tmp)
-              ind = ind[match(NAA_re_sigma[[s]],tmp)] - 1
-              map$log_NAA_sigma[s,] <- k + ind
-              for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] = 1 #change to unique values later
-              k <- max(k + ind, na.rm=T)
-              #data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
-              #data$NAA_sigma_pointers <- NAA_re$sigma
-            }
-          #}
+          if(NAA_re$sigma[[s]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
+            data$NAA_re_model[s] <- 2
+            map$log_NAA_sigma[s,] <- c(k, rep(k+1, data$n_ages-1))
+            for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
+            k <- k + 2
+            #data$n_NAA_sigma <- 2
+            #data$NAA_sigma_pointers <- c(1,rep(2,data$n_ages-1))
+          } else {
+            if(length(NAA_re$sigma[[s]]) != data$n_ages) stop("each element of NAA_re$sigma must either be 'rec' (random effects on recruitment only), 
+    'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
+    or a vector with length == n.ages specifying which sigma_a to use for each age.")
+            #if(length(NAA_re$sigma[[s]]) == data$n_ages){
+              if(any(is.na(unique(NAA_re$sigma[[s]])))){
+                #use SCAA because of na values
+                #data$n_NAA_sigma <- 0
+                #data$NAA_sigma_pointers <- rep(1,data$n_ages)            
+              } else {
+                tmp <- unique(NAA_re_sigma[[s]])
+                ind <- 1:length(tmp)
+                ind <- ind[match(NAA_re_sigma[[s]],tmp)] - 1
+                map$log_NAA_sigma[s,] <- k + ind
+                for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
+                k <- max(k + ind, na.rm=T)
+                #data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
+                #data$NAA_sigma_pointers <- NAA_re$sigma
+              }
+            #}
+          }
         }
       }
-      if(!is.null(NAA_re$sigma_vals[[s]])) {
+    }
+    if(!is.null(NAA_re$sigma_vals)) {
+      if(NAA_re$sigma_vals != data$n_stocks) stop("NAA_re$sigma_vals must be a list with length = number of stocks")
+      for(s in 1:data$n_stocks) {
         if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
         par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
       }
     }
-    
-    if(length(NAA_re$cor == 1) & data$n_stocks>1) {
-      input$log$NAA <- c(input$log$NAA, "\n Same NAA_re$cor being used for all stocks.\n")
-      NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
-    }
-    k = 0
-    for(s in 1:data$n_stocks) {
-      if(!is.null(NAA_re$cor[[s]])){
-        if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
-        if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- k + 1
-        if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,2] <- k + 1
-        if(NAA_re$cor[[s]] == "2dar1") map$trans_NAA_rho[s,] <- k + 1:2
-        if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
-      } else {
-        NAA_re$cor[[s]] <- 'iid'
+
+    if(is.null(NAA_re$cor)) NAA_re$cor <- "iid"
+    k <- 1
+    if(length(NAA_re$cor) == 1 & data$n_stocks>1) {
+      input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$cor being used for all stocks (",NAA_re$cor[[1]][1],").\n"))
+      #NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
+      if(!NAA_re$cor[[1]][1] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
+      if(NAA_re$cor[[1]][1] %in% c("ar1_a","2dar1")) map$trans_NAA_rho[,1] <- k
+      if(NAA_re$cor[[1]][1] == "ar1_y") map$trans_NAA_rho[,2] <- k
+      if(NAA_re$cor[[1]][1] == "2dar1") map$trans_NAA_rho[,2] <- k + 1
+      if(NAA_re$cor[[1]][1] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
+    } else {
+      for(s in 1:data$n_stocks) {
+        if(!is.null(NAA_re$cor[[s]])){
+          if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
+          if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- k
+          if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,2] <- k
+          if(NAA_re$cor[[s]] == "2dar1") map$trans_NAA_rho[s,] <- k + 0:1
+          if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
+        } else {
+          NAA_re$cor[[s]] <- 'iid'
+        }
       }
-      if(!is.null(NAA_re$cor_vals[[s]])) {
-        if(!length(NAA_re$cor_vals[[s]]) %in% 1:2) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
-        if(length(NAA_re$cor_vals[[s]]) == 2) par$trans_NAA_rho[s,] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-        if(length(NAA_re$cor_vals[[s]]) == 1) {
-          if(NAA_re$cor[[s]] == "ar1_a") {
-            par$trans_NAA_rho[s,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-          }
-          if(NAA_re$cor[[s]] == "ar1_y") {
-            par$trans_NAA_rho[s,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+    }
+    if(!is.null(NAA_re$cor_vals)) {
+      if(NAA_re$cor_vals != data$n_stocks) stop("NAA_re$cor_vals must be a list with length = number of stocks")
+      for(s in 1:data$n_stocks) {
+        if(!is.null(NAA_re$cor_vals[[s]])) {
+          if(!length(NAA_re$cor_vals[[s]]) %in% 1:2) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
+          if(length(NAA_re$cor_vals[[s]]) == 2) par$trans_NAA_rho[s,] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+          if(length(NAA_re$cor_vals[[s]]) == 1) {
+            if(NAA_re$cor[[s]] == "ar1_a") {
+              par$trans_NAA_rho[s,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+            }
+            if(NAA_re$cor[[s]] == "ar1_y") {
+              par$trans_NAA_rho[s,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+            }
           }
         }
       }
