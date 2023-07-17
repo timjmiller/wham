@@ -272,7 +272,7 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
       k++;
     }
   }
-  
+
   for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
     if((mu_model(r,rr) > 1) & (mu_model(r,rr) <= 4)) if(can_move_reduced(0,0,r,rr)) {//constant, RE
       Type sigma_mu = exp(mu_repars(0,0,r,rr,0));
@@ -455,29 +455,29 @@ array<Type> get_trans_mu_base(array<Type> trans_mu, array<Type>mu_re, array<Type
     for(int r = 0; r< n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++) {
       for(int s = 0; s< n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int y = 0; y < ny; y++){
         if((mu_model(r,rr) > 0) & (mu_model(r,rr) <= 4)){ //constant
-          if(mu_model(r,r) == 2) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,0,0,r,rr); // age random effects
-          if(mu_model(r,r) == 3) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,0,0,y,r,rr); // year random effects
-          if(mu_model(r,r) == 4) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,0,y,r,rr); // age,year random effects
+          if(mu_model(r,rr) == 2) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,0,0,r,rr); // age random effects
+          if(mu_model(r,rr) == 3) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,0,0,y,r,rr); // year random effects
+          if(mu_model(r,rr) == 4) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,0,y,r,rr); // age,year random effects
           if(use_mu_prior(0,0,r,rr)) trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(0,0,r,rr);
           else trans_mu_base(s,a,t,y,r,rr) += trans_mu(s,t,r,rr);
         }
         if((mu_model(r,rr) > 4) & (mu_model(r,rr) <= 8)){ //stock
-          if(mu_model(r,r) == 6) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,0,0,r,rr); // age random effects
-          if(mu_model(r,r) == 7) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,0,0,y,r,rr); // year random effects
-          if(mu_model(r,r) == 8) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,0,y,r,rr); // age,year random effects
+          if(mu_model(r,rr) == 6) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,0,0,r,rr); // age random effects
+          if(mu_model(r,rr) == 7) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,0,0,y,r,rr); // year random effects
+          if(mu_model(r,rr) == 8) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,0,y,r,rr); // age,year random effects
           if(use_mu_prior(s,0,r,rr)) trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(s,0,r,rr);
           else trans_mu_base(s,a,t,y,r,rr) += trans_mu(s,t,r,rr);
         }
         if((mu_model(r,rr) > 8) & (mu_model(r,rr) <= 12)){ //season
-          if(mu_model(r,r) == 10) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,t,0,r,rr); // age random effects
-          if(mu_model(r,r) == 11) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,0,t,y,r,rr); // year random effects
-          if(mu_model(r,r) == 12) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,t,y,r,rr); // age,year random effects
+          if(mu_model(r,rr) == 10) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,t,0,r,rr); // age random effects
+          if(mu_model(r,rr) == 11) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,0,t,y,r,rr); // year random effects
+          if(mu_model(r,rr) == 12) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,t,y,r,rr); // age,year random effects
           if(use_mu_prior(0,t,r,rr)) trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(0,t,r,rr);
         }
         if((mu_model(r,rr) > 12) & (mu_model(r,rr) <= 16)){ //stock,season
-          if(mu_model(r,r) == 14) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,t,0,r,rr); // age random effects
-          if(mu_model(r,r) == 15) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,0,t,y,r,rr); // year random effects
-          if(mu_model(r,r) == 16) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,t,y,r,rr); // age,year random effects
+          if(mu_model(r,rr) == 14) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,t,0,r,rr); // age random effects
+          if(mu_model(r,rr) == 15) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,0,t,y,r,rr); // year random effects
+          if(mu_model(r,rr) == 16) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,t,y,r,rr); // age,year random effects
           if(use_mu_prior(s,t,r,rr)) trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(s,t,r,rr);
           else trans_mu_base(s,a,t,y,r,rr) += trans_mu(s,t,r,rr);
         }
