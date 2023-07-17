@@ -142,7 +142,7 @@ set_ecov = function(input, ecov) {
   data$Ecov_use_re <- rep(0, data$n_Ecov)
 
   data$n_poly_Ecov_R <- matrix(1,data$n_Ecov, data$n_stocks)
-  data$n_poly_Ecov_M <- array(1,dim = c(data$n_Ecov, data$n_stocks, data$n_regions, data$n_ages))
+  data$n_poly_Ecov_M <- array(1,dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_regions))
   data$n_poly_Ecov_mu <- array(1,dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
   #print(data$n_Ecov)
   #print(dim(data$n_poly_Ecov_mu))
