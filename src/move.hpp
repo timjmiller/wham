@@ -681,7 +681,10 @@ array<int> get_mu_sdrep_indices(matrix<int> mu_model, array<Type> trans_mu_base)
   int k = 0;
   for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++) {
     mu_index(r,rr,0) = k;
-    if(mu_model(r,rr) == 1) k++; //do nothing 0,0 already, increment k
+    if(mu_model(r,rr) == 1) {
+      mu_index(r,rr,1) = k;
+      k++;
+    }
     if(mu_model(r,rr) == 2) { 
       mu_index(r,rr,1) = k + n_ages-1;
       k += n_ages;
