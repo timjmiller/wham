@@ -672,8 +672,10 @@ get.RMSEs.fn <- function(model)
   out <- list(RMSE=list(), RMSE_n = list())
   if(class(mod$sdrep)[1] == "sdreport"){
     #sdrep = summary(model$sdrep)
-    catch_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_catch_resid/as.list(model$sdrep, "Std", report=TRUE)$log_catch_resid
-    index_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_index_resid/as.list(model$sdrep, "Std", report=TRUE)$log_index_resid
+    # catch_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_catch_resid/as.list(model$sdrep, "Std", report=TRUE)$log_catch_resid
+    # index_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_index_resid/as.list(model$sdrep, "Std", report=TRUE)$log_index_resid
+    catch_stdresid <- model$rep$log_catch_resid/model$input$data$agg_catch_sigma
+    index_stdresid <- model$rep$log_index_resid/model$input$data$agg_index_sigma
   # } else {
   #   sdrep = model$sdrep
   # }  

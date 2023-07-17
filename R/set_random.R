@@ -11,7 +11,7 @@ set_random <- function(input){
   #print("here")
   #print(input$data$use_mu_prior)
   #print(input$data$mu_model)
-  if(!is.null(input$data$mu_model)) if(input$data$mu_model %in% c(2:4,6:8,10:12,14:16)) random = c(random, "mu_re")
+  if(any(input$data$mu_model %in% c(2:4,6:8,10:12,14:16))) random = c(random, "mu_re")
   if(sum(input$data$use_q_prior)) random = c(random, "q_prior_re")
   if(sum(input$data$use_q_re)) random = c(random, "q_re")
   input$random = random	

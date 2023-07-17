@@ -132,23 +132,23 @@ Type objective_function<Type>::operator() ()
   DATA_IARRAY(must_move); //n_stocks x n_seasons x n_regions: 0/1 determining if it must leave the region
   DATA_ARRAY(trans_mu_prior_sigma); //n_stocks x n_region(from) x n_regions-1 (to); sd for mu parameters on transformed (-inf,inf) scale for 
   DATA_IARRAY(use_mu_prior); //n_stocks x n_seasons x n_regions x n_regions-1: 0/1 whether to apply prior for each movement parameter
-  DATA_INTEGER(mu_model); 
-  // 1 = constant across stocks, ages, time (n_regions x (n_regions -1) pars). 
-  // 2 = differ by age (n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 3 = differ by year (n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 4 = differ by age,year (n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 5 = differ by stock (n_stocks x n_regions x (n_regions -1) pars). 
-  // 6 = differ by stock, age (n_stocks x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 7 = differ by stock, year (n_stocks x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 8 = differ by stock, age,year (n_stocks x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 9 = differ by season (n_seasons x n_regions x (n_regions -1) pars). 
-  // 10 = differ by season,age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 11 = differ by season,year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 12 = differ by season,age,year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 13 = differ by stock, season (n_stocks x n_seasons x n_regions x (n_regions -1) pars). 
-  // 14 = differ by stock, season, age (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 15 = differ by stock, season, year (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 16 = differ by stock, season, age,year (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
+  DATA_IMATRIX(mu_model); //n_regions x n_regions - 1 
+  // 1 = constant across stocks, ages, time (1 fixed effect for r,rr). 
+  // 2 = differ by age (1 fixed effect, n_ages random effects for r,rr). 
+  // 3 = differ by year, (1 fixed effect, n_years random effects for r,rr)
+  // 4 = differ by age,year (1 fixed effect, n_years x n_ages random effects for r,rr)
+  // 5 = differ by stock (n_stocks fixed effects for r,rr). 
+  // 6 = differ by stock, age (n_stocks fixed effects, n_ages random effects for r,rr). 
+  // 7 = differ by stock, year (n_stocks fixed effects, n_years random effects for r,rr)
+  // 8 = differ by stock, age,year (n_stocks fixed effects, n_years x n_ages random effects for r,rr)
+  // 9 = differ by season (n_seasons fixed effects for r,rr). 
+  // 10 = differ by season,age (n_seasons fixed effects, n_ages random effects for r,rr). 
+  // 11 = differ by season,year (n_seasons fixed effects, n_years random effects for r,rr)
+  // 12 = differ by season,age,year (n_seasons fixed effects, n_years x n_ages random effects for r,rr)
+  // 13 = differ by stock, season (n_stocks x n_seasons fixed effects for r,rr). 
+  // 14 = differ by stock, season, age (n_stocks x n_seasons fixed effects, n_ages random effects for r,rr). 
+  // 15 = differ by stock, season, year (n_stocks x n_seasons fixed effects, n_years random effects for r,rr)
+  // 16 = differ by stock, season, age,year (n_stocks x n_seasons fixed effects, n_years x n_ages random effects for r,rr)
   //DATA_IARRAY(use_mu_re); //n_stocks x ages x n_seasons x n_years_model x n_regions x n_regions-1: 0/1 whether to use temporal RE for each movement parameter
 
   //DATA_IMATRIX(which_F_age); // (n_years_model + n_years_proj x 2); age, fleet for which F to use for max F for msy/ypr calculations and projections
@@ -632,22 +632,22 @@ Type objective_function<Type>::operator() ()
   /////////////////////////////////////////
   //movement
   // mu_model: 
-  // 1 = constant across stocks, ages, time (n_regions x (n_regions -1) pars). 
-  // 2 = differ by age (n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 3 = differ by year (n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 4 = differ by age,year (n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 5 = differ by stock (n_stocks x n_regions x (n_regions -1) pars). 
-  // 6 = differ by stock, age (n_stocks x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 7 = differ by stock, year (n_stocks x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 8 = differ by stock, age,year (n_stocks x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 9 = differ by season (n_seasons x n_regions x (n_regions -1) pars). 
-  // 10 = differ by season,age (n_seasons x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 11 = differ by season,year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 12 = differ by season,age,year (n_seasons x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
-  // 13 = differ by stock, season (n_stocks x n_seasons x n_regions x (n_regions -1) pars). 
-  // 14 = differ by stock, season, age (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_ages random effects for each). 
-  // 15 = differ by stock, season, year (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_years random effects for each)
-  // 16 = differ by stock, season, age,year (n_stocks x n_seasons x n_regions x (n_regions -1) fixed effects, n_years x n_ages random effects for each)
+  // 1 = constant across stocks, ages, time (1 fixed effect for r,rr). 
+  // 2 = differ by age (1 fixed effect, n_ages random effects for r,rr). 
+  // 3 = differ by year, (1 fixed effect, n_years random effects for r,rr)
+  // 4 = differ by age,year (1 fixed effect, n_years x n_ages random effects for r,rr)
+  // 5 = differ by stock (n_stocks fixed effects for r,rr). 
+  // 6 = differ by stock, age (n_stocks fixed effects, n_ages random effects for r,rr). 
+  // 7 = differ by stock, year (n_stocks fixed effects, n_years random effects for r,rr)
+  // 8 = differ by stock, age,year (n_stocks fixed effects, n_years x n_ages random effects for r,rr)
+  // 9 = differ by season (n_seasons fixed effects for r,rr). 
+  // 10 = differ by season,age (n_seasons fixed effects, n_ages random effects for r,rr). 
+  // 11 = differ by season,year (n_seasons fixed effects, n_years random effects for r,rr)
+  // 12 = differ by season,age,year (n_seasons fixed effects, n_years x n_ages random effects for r,rr)
+  // 13 = differ by stock, season (n_stocks x n_seasons fixed effects for r,rr). 
+  // 14 = differ by stock, season, age (n_stocks x n_seasons fixed effects, n_ages random effects for r,rr). 
+  // 15 = differ by stock, season, year (n_stocks x n_seasons fixed effects, n_years random effects for r,rr)
+  // 16 = differ by stock, season, age,year (n_stocks x n_seasons fixed effects, n_years x n_ages random effects for r,rr)
   //priors, RE, get full lm link for migration parameters
   //n_stocks x n_ages x n_seasons x n_years_pop X n_regions x n_regions-1
   //continues random processes in projection years!
@@ -661,14 +661,13 @@ Type objective_function<Type>::operator() ()
         REPORT(mu_prior_re);
       }
     }
-    if((mu_model != 1) & (mu_model != 5) & (mu_model != 9) & (mu_model != 13)){ //some type of random effects
-      see(11.2);
-      array<Type> nll_mu_re = get_nll_mu(mu_repars, mu_re, mu_model, can_move, years_use);
-      nll += nll_mu_re.sum();
-      REPORT(nll_mu_re);
-      SIMULATE if(do_simulate_mu_re){
-        mu_re = simulate_mu_re(mu_repars, mu_re, mu_model, can_move, years_use);
-      }
+    //if((mu_model != 1) & (mu_model != 5) & (mu_model != 9) & (mu_model != 13)){ //some type of random effects
+    see(11.2);
+    array<Type> nll_mu_re = get_nll_mu(mu_repars, mu_re, mu_model, can_move, years_use);
+    nll += nll_mu_re.sum();
+    REPORT(nll_mu_re);
+    SIMULATE if(do_simulate_mu_re){
+      mu_re = simulate_mu_re(mu_repars, mu_re, mu_model, can_move, years_use);
     }
     if(do_post_samp_mu) ADREPORT(mu_re);
   }
@@ -1151,8 +1150,15 @@ Type objective_function<Type>::operator() ()
     ADREPORT(log_FAA_by_region);
     ADREPORT(log_F_tot);
     ADREPORT(log_Fbar);
-    ADREPORT(log_catch_resid);
-    ADREPORT(log_index_resid);
+    //ADREPORT(log_catch_resid);
+    //ADREPORT(log_index_resid);
+    if((n_regions>1) & (sum(can_move)>0)){ //only adreport the necessary parameters
+      array<int> mu_sdrep_index = get_mu_sdrep_indices(mu_model, trans_mu_base);
+      REPORT(mu_sdrep_index);
+      vector<Type> trans_mu_base_sdrep = get_trans_mu_base_sdrep(trans_mu_base, mu_model, mu_sdrep_index);
+      REPORT(trans_mu_base_sdrep);
+      ADREPORT(trans_mu_base_sdrep);
+    }
   }
   see(nll);
   return nll;
