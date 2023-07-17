@@ -119,7 +119,7 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
       mu_repars: n_stocks x n_seasons x n_regions x n_regions-1 x 3. parameters for distributions of random effects (sig, rho_a, rho_y)
           mu_re: n_stocks x n_ages x n_seasons x n_y x n_regions x n_regions-1. RE for movement.
                   mu_model: n_regions x n_regions-1. see definitions at top of move.hpp.
-       can_move: n_stocks x n_seasons x n_regions x n_regions-1 0/1 whether fish can move from one region to another
+       can_move: n_stocks x n_seasons x n_regions x n_regions 0/1 whether fish can move from one region to another
       years_use: is possibly a subset of years to use for evaluating likelihood (and simulating values). normally = 0,....,n_years_model-1
   */
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
@@ -131,8 +131,18 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
   int n_regions = mu_re.dim(4);
   array<Type> nll(n_stocks,n_seasons,n_regions,n_regions-1);
   nll.setZero();
+
+  array<int> can_move_reduced(n_stocks,n_seasons,n_regions,n_regions-1);
+  for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
+    int k = 0;
+    for(int rr = 0; rr < n_regions; rr++) if(rr!=r) {
+      can_move_reduced(s,t,r,k) = can_move(s,t,r,rr);
+      k++;
+    }
+  }
+
   for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++) {
-    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <=4)) if(can_move(0,0,r,rr)) {//constant, RE
+    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <=4)) if(can_move_reduced(0,0,r,rr)) {//constant, RE
       Type sigma_mu = exp(mu_repars(0,0,r,rr,0));
       Type rho_mu_a = geninvlogit(mu_repars(0,0,r,rr,1),Type(-1),Type(1),Type(1));
       Type rho_mu_y = geninvlogit(mu_repars(0,0,r,rr,2),Type(-1),Type(1),Type(1));
@@ -156,7 +166,7 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
       }
     }
     if((mu_model(r,rr) > 5) & (mu_model(r,rr) <=8)) {//stock, RE
-      for(int s = 0; s < n_stocks; s++) if(can_move(s,0,r,rr)) {
+      for(int s = 0; s < n_stocks; s++) if(can_move_reduced(s,0,r,rr)) {
         Type sigma_mu = exp(mu_repars(s,0,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(s,0,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(s,0,r,rr,2),Type(-1),Type(1),Type(1));
@@ -181,7 +191,7 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
       }
     }
     if((mu_model(r,rr) > 9) & (mu_model(r,rr) <=12)) {//season, RE
-      for(int t = 0; t < n_seasons; t++) if(can_move(0,t,r,rr)){
+      for(int t = 0; t < n_seasons; t++) if(can_move_reduced(0,t,r,rr)){
         Type sigma_mu = exp(mu_repars(0,t,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(0,t,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(0,t,r,rr,2),Type(-1),Type(1),Type(1));
@@ -206,7 +216,7 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
       }
     }
     if((mu_model(r,rr) > 13) & (mu_model(r,rr) <=16)) {//stock,season, RE
-      for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) if(can_move(s,t,r,rr)) {
+      for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) if(can_move_reduced(s,t,r,rr)) {
         Type sigma_mu = exp(mu_repars(s,t,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(s,t,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(s,t,r,rr,2),Type(-1),Type(1),Type(1));
@@ -241,6 +251,7 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
       mu_repars: n_stocks x n_seasons x n_regions x n_regions-1 x 3. parameters for distributions of random effects (sig, rho_a, rho_y)
           mu_re: n_stocks x n_ages x n_seasons x n_y x n_regions x n_regions-1. RE for movement.
        mu_model: n_regions x n_regions-1. see definitions at top of move.hpp.
+       can_move: n_stocks x n_seasons x n_regions x n_regions 0/1 whether fish can move from one region to another
       years_use: is possibly a subset of years to use for evaluating likelihood (and simulating values). normally = 0,....,n_years_model-1
   */
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
@@ -252,8 +263,18 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
   int n_regions = mu_re.dim(4);
   array<Type> sim_mu_re = mu_re;//(n_stocks,n_ages,n_seasons,n_years_model, n_regions,n_regions-1);
   //sim_mu_re.setZero();
+
+  array<int> can_move_reduced(n_stocks,n_seasons,n_regions,n_regions-1);
+  for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) {
+    int k = 0;
+    for(int rr = 0; rr < n_regions; rr++) if(rr!=r) {
+      can_move_reduced(s,t,r,k) = can_move(s,t,r,rr);
+      k++;
+    }
+  }
+  
   for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
-    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <= 4)) if(can_move(0,0,r,rr)) {//constant, RE
+    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <= 4)) if(can_move_reduced(0,0,r,rr)) {//constant, RE
       Type sigma_mu = exp(mu_repars(0,0,r,rr,0));
       Type rho_mu_a = geninvlogit(mu_repars(0,0,r,rr,1),Type(-1),Type(1),Type(1));
       Type rho_mu_y = geninvlogit(mu_repars(0,0,r,rr,2),Type(-1),Type(1),Type(1));
@@ -283,7 +304,7 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
       }
     }
     if((mu_model(r,rr) > 5) & (mu_model(r,rr) <= 8)) {//stock, RE
-      for(int s = 0; s < n_stocks; s++) if(can_move(s,0,r,rr)){
+      for(int s = 0; s < n_stocks; s++) if(can_move_reduced(s,0,r,rr)){
         Type sigma_mu = exp(mu_repars(s,0,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(s,0,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(s,0,r,rr,2),Type(-1),Type(1),Type(1));
@@ -314,7 +335,7 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
       }
     }
     if((mu_model(r,rr) > 9) & (mu_model(r,rr) <= 12)) {//season, RE
-      for(int t = 0; t < n_seasons; t++) if(can_move(0,t,r,rr)){ 
+      for(int t = 0; t < n_seasons; t++) if(can_move_reduced(0,t,r,rr)){ 
         Type sigma_mu = exp(mu_repars(0,t,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(0,t,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(0,t,r,rr,2),Type(-1),Type(1),Type(1));
@@ -345,7 +366,7 @@ array<Type> simulate_mu_re(array<Type> mu_repars, array<Type> mu_re, matrix<int>
       }
     }
     if((mu_model(r,rr) > 13) & (mu_model(r,rr) <= 16)) {//stock,season, RE
-      for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) if(can_move(s,t,r,rr)){
+      for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++) if(can_move_reduced(s,t,r,rr)){
         Type sigma_mu = exp(mu_repars(s,t,r,rr,0));
         Type rho_mu_a = geninvlogit(mu_repars(s,t,r,rr,1),Type(-1),Type(1),Type(1));
         Type rho_mu_y = geninvlogit(mu_repars(s,t,r,rr,2),Type(-1),Type(1),Type(1));
