@@ -32,6 +32,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   region.names.tab <- gsub("_", " ", mod$input$region_names, fixed = TRUE)
   index.names.tab <- gsub("_", " ", mod$input$index_names, fixed = TRUE)
   fleet.names.tab <- gsub("_", " ", mod$input$fleet_names, fixed = TRUE)
+  stock.names.f <- gsub(" ", "_", mod$input$stock_names, fixed = TRUE)
+  region.names.f <- gsub(" ", "_", mod$input$region_names, fixed = TRUE)
+  index.names.f <- gsub(" ", "_", mod$input$index_names, fixed = TRUE)
+  fleet.names.f <- gsub(" ", "_", mod$input$fleet_names, fixed = TRUE)
 
   fe.names = character()
   fe.vals = numeric()
@@ -182,12 +186,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$selblock_models[i] %in% c(2,4)) modify = " $\\rho$ for $a_{50}$ and 1/slope" 
       if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$sel_repars[i,2])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
       fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE AR1 $\\rho$ (year)"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$sel_repars[i,3])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit", k = 2))
     }
   }
@@ -310,14 +314,80 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     if(!is.na(sd$M_repars[s,r,2])) {
     #if(data$M_re_model %in% c(3,5)){
       fe.names = c(fe.names, paste0(modify, "M RE AR1 $\\rho$ (age)"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$M_repars[s,r,2])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$M_repars[s,r,2])))
       fe.cis = rbind(fe.cis, ci(pars$M_repars[s,r,2], sd$M_repars[s,r,2], lo = -1, hi = 1, type = "expit"))
     }
-    if(!is.na(sd$M_repars[s,r,2])) {
+    if(!is.na(sd$M_repars[s,r,3])) {
     #if(data$M_re_model %in% c(4,5)) {
       fe.names = c(fe.names, paste0(modify, "M RE AR1 $\\rho$ (year)"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- 2 * pars$M_repars[s,r,3])))
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$M_repars[s,r,3])))
       fe.cis = rbind(fe.cis, ci(pars$M_repars[s,r,3], sd$M_repars[s,r,3], lo = -1, hi = 1, type = "expit"))
+    }
+  }
+
+  #movement fixed effects or prior-based RE
+  if(data$n_regions>1) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
+    k <- rr
+    if(rr>=r) k <- k + 1
+    if(data$mu_model[r,rr] %in% 1:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+    if(data$mu_model[r,rr] %in% 5:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+    if(data$mu_model[r,rr] %in% 9:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+    if(data$mu_model[r,rr] %in% 13:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
+      "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+    if(data$mu_model[r,rr] %in% c(1:4,9:12)) ns <- 1
+    else ns <- data$n_stocks
+    if(data$mu_model[r,rr] %in% c(1:4,5:8)) nt <- 1
+    else nt <- data$n_seasons
+    modify <- matrix(modify, nt, ns)
+    for(s in 1:ns) for(t in 1:nt) {
+      if(data$use_mu_prior[s,t,r,rr]) parname <- "mu_prior_re"
+      else parname <- "trans_mu"
+      
+      if(!is.na(sd[[parname]][s,t,r,rr])) {
+        fe.names = c(fe.names, paste0(modify[t,s], " (intercept)"))
+        if(data$mig_type[s] == 1){ #instantaneous: log transform
+          fe.vals = c(fe.vals, exp(pars[[parname]][s,t,r,rr]))
+          fe.cis = rbind(fe.cis, ci(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], type = "exp"))
+        } else { #sequential: logit transform
+          fe.vals = c(fe.vals, 1/(1 + exp(- pars[[parname]][s,t,r,rr])))
+          fe.cis = rbind(fe.cis, ci(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], lo = 0, hi = 1, type = "expit"))
+        }
+      }
+    }
+  }
+
+  #movement random effects variance, correlation
+  if(data$n_regions>1) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
+    k <- rr
+    if(rr>=r) k <- k + 1
+    if(data$mu_model[r,rr] %in% c(2:4,6:8,10:12,14:16)){ #some movement random effects
+      if(data$mu_model[r,rr] %in% 2:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      if(data$mu_model[r,rr] %in% 6:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      if(data$mu_model[r,rr] %in% 10:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      if(data$mu_model[r,rr] %in% 14:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
+        "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      if(data$mu_model[r,rr] %in% c(2:4,10:12)) ns <- 1
+      else ns <- data$n_stocks
+      if(data$mu_model[r,rr] %in% c(2:4,6:8)) nt <- 1
+      else nt <- data$n_seasons
+      modify <- matrix(modify, nt, ns)
+      for(s in 1:ns) for(t in 1:nt) {
+        if(!is.na(sd$mu_repars[s,t,r,rr,1])) {
+          fe.names = c(fe.names, paste0(modify[t,s], " RE $\\sigma$"))
+          fe.vals = c(fe.vals, exp(pars$mu_repars[s,t,r,rr,1]))
+          fe.cis = rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,1], sd$mu_repars[s,t,r,rr,1], type = "exp"))
+        }
+        if(!is.na(sd$mu_repars[s,t,r,rr,2])) {
+          fe.names = c(fe.names, paste0(modify[t,s], " RE AR1 $\\rho$ (age)"))
+          fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$mu_repars[s,t,r,rr,2])))
+          fe.cis = rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,2], sd$mu_repars[s,t,r,rr,2], lo = -1, hi = 1, type = "expit"))
+        }
+        if(!is.na(sd$mu_repars[s,t,r,rr,3])) {
+          fe.names = c(fe.names, paste0(modify[t,s], " RE AR1 $\\rho$ (year)"))
+          fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$mu_repars[s,t,r,rr,3])))
+          fe.cis = rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,3], sd$mu_repars[s,t,r,rr,3], lo = -1, hi = 1, type = "expit"))
+        }
+      }
     }
   }
   for(i in 1:data$n_fleets){
@@ -445,7 +515,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     NAA = NAA.cv = mod$rep$NAA[s,r,,]
     rownames(NAA) =mod$years_full
     colnames(NAA) = mod$ages.lab
-    saveRDS(NAA, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_table.RDS")))
+    saveRDS(NAA, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_table.RDS")))
     NAA.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       NAA.cv[] = sd[["log_NAA_rep"]][s,r,,]
@@ -454,9 +524,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       NAA.hi = exp(log(NAA) + qnorm(0.975) * NAA.cv)
       rownames(NAA.sd) = rownames(NAA.cv) = rownames(NAA.lo) = rownames(NAA.hi) = mod$years_full
       colnames(NAA.sd) = colnames(NAA.cv) = colnames(NAA.lo) = colnames(NAA.hi) = mod$ages.lab
-      saveRDS(NAA.sd, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_sd_table.RDS")))
-      saveRDS(NAA.lo, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_lo_table.RDS")))
-      saveRDS(NAA.hi, file = file.path(od,paste0(mod$input$stock_names[s],"_", mod$input$region_names[r], "_NAA_hi_table.RDS")))
+      saveRDS(NAA.sd, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_sd_table.RDS")))
+      saveRDS(NAA.lo, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_lo_table.RDS")))
+      saveRDS(NAA.hi, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_hi_table.RDS")))
     }
   }
       
@@ -465,7 +535,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     FAA_r = FAA_r.cv <- mod$rep$FAA[r,,]
     rownames(FAA_r) = mod$years_full
     colnames(FAA_r) = mod$ages.lab
-    saveRDS(FAA_r, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_table.RDS")))
+    saveRDS(FAA_r, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_table.RDS")))
     FAA_r.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA_r.cv = sd[["log_FAA_by_region"]][r,,]
@@ -474,9 +544,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       FAA_r.hi = FAA_r * exp( qnorm(0.975) * FAA_r.cv)
       rownames(FAA_r.sd) = rownames(FAA_r.cv) = rownames(FAA_r.lo) = rownames(FAA_r.hi) = mod$years_full
       colnames(FAA_r.sd) = colnames(FAA_r.cv) = colnames(FAA_r.lo) = colnames(FAA_r.hi) = mod$ages.lab
-      saveRDS(FAA_r.sd, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_sd_table.RDS")))
-      saveRDS(FAA_r.lo, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_lo_table.RDS")))
-      saveRDS(FAA_r.hi, file = file.path(od,paste0(mod$input$region_names[r], "_FAA_tot_hi_table.RDS")))
+      saveRDS(FAA_r.sd, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_sd_table.RDS")))
+      saveRDS(FAA_r.lo, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_lo_table.RDS")))
+      saveRDS(FAA_r.hi, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_hi_table.RDS")))
     }
   }
 
@@ -484,7 +554,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(f in 1:data$n_fleets){
     FAA = FAA.cv = mod$rep$FAA[f,,]
     dimnames(FAA) = list(mod$years_full, mod$ages.lab)
-    saveRDS(FAA, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_table.RDS")))
+    saveRDS(FAA, file = file.path(od,paste0(fleet.names.f[f], "_FAA_table.RDS")))
     FAA.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA.cv[] = sd[["log_FAA"]][f,,]
@@ -492,9 +562,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       FAA.lo = exp(mod$rep$FAA[f,,] - qnorm(0.975) * FAA.cv)
       FAA.hi = exp(mod$rep$FAA[f,,] + qnorm(0.975) * FAA.cv)
       dimnames(FAA.sd) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(mod$years_full, mod$ages.lab)
-      saveRDS(FAA.sd, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_sd_table.RDS")))
-      saveRDS(FAA.lo, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_lo_table.RDS")))
-      saveRDS(FAA.hi, file = file.path(od,paste0(mod$input$fleet_names[f], "_FAA_hi_table.RDS")))
+      saveRDS(FAA.sd, file = file.path(od,paste0(fleet.names.f[f], "_FAA_sd_table.RDS")))
+      saveRDS(FAA.lo, file = file.path(od,paste0(fleet.names.f[f], "_FAA_lo_table.RDS")))
+      saveRDS(FAA.hi, file = file.path(od,paste0(fleet.names.f[f], "_FAA_hi_table.RDS")))
     }
   }
   

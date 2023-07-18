@@ -9,7 +9,7 @@ output:
     includes:
     keep_tex: yes
     number_sections: no
-title: "WHAM output tables"
+title: "WHAM figures and tables"
 header-includes:
   - \usepackage{longtable}
   - \usepackage{booktabs}
@@ -34,10 +34,19 @@ library(kableExtra)
 library(png)
 library(tinytex)
 ```
-
 # {.tabset}
 
-## Parameter estimates
+## Figures {.tabset}
+
+### Input
+
+### Diagnostics
+
+### Results
+
+## Tables {.tabset}
+
+### Parameter estimates
 
 ```{r par-table, echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 type = "latex"
@@ -58,7 +67,7 @@ dat <- input$data
   fleet.names.tab <- gsub("_", " ", mod$input$fleet_names, fixed = TRUE)
 ```
 
-## Abundance at age
+### Abundance at age
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
@@ -71,7 +80,7 @@ for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
 }
 ```
 
-## Fishing mortality at age by region
+### Fishing mortality at age by region
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 for(r in 1:dat$n_regions){
@@ -84,7 +93,7 @@ for(r in 1:dat$n_regions){
 }
 ```
 
-## Fishing mortality at age by fleet
+### Fishing mortality at age by fleet
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 for(r in 1:dat$n_fleets){

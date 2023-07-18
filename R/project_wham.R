@@ -114,8 +114,10 @@ project_wham = function(model,
   if("err_proj" %in% names(model)) stop(model$err_proj)
   else{# refit model to estimate derived quantities in projection years
   #if(!exists("err")) 
-    #mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
-    mod <- fit_wham(input2, n.newton=n.newton, MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
+    mod$proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    mod$proj_mod$fn()
+    mod$proj_sdrep <- TMB::sdreport(proj_mod, bias.correct = TRUE) #better accuracy of projection output
+    #mod <- fit_wham(input2, n.newton=n.newton, MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
     is.fit = !is.null(model$opt)

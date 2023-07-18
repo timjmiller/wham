@@ -2,9 +2,9 @@
 #'
 #' Generates many output plots and tables for a fit WHAM model.
 #'
-#' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
+#' \code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} 
 #' creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-#' \code{out.type = 'html'} makes a html files for viewing plot .png files and html tables of parameter estimates in a browser.
+#' \code{out.type = 'html'} (default) makes a html file for viewing plot .png files and html tables of parameter estimates in a browser.
 #' \code{out.type = 'pdf' or 'png'} makes LaTeX and pdf files of tables of parameter estimates.
 #' (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 #' 
@@ -35,7 +35,7 @@
 #' mod <- fit_wham(input4_SNEMAYT)
 #' plot_wham_output(mod)
 #' }
-plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72, plot.opts = NULL){
+plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 72, plot.opts = NULL){
   # if sdreport succeeded but didn't save full sdreport object in mod, recalculate it here
   if(mod$is_sdrep & class(mod$sdrep)[1] != "sdreport"){
     mod$sdrep <- TMB::sdreport(mod)
@@ -120,8 +120,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
 
     # PDF results -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"results.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
-    for(i in 1:mod$env$data$n_fleets) plot.sel.blocks.fn(mod, use.i=i, indices = FALSE)
-    for(i in 1:mod$env$data$n_indices) plot.sel.blocks.fn(mod, use.i=i, indices = TRUE)
+    for(i in 1:mod$env$data$n_fleets) plot.sel.blocks(mod, ages.lab = mod$ages.lab, use.i=i, indices = FALSE)
+    for(i in 1:mod$env$data$n_indices) plot.sel.blocks(mod, ages.lab = mod$ages.lab, use.i=i, indices = TRUE)
     if(mod$is_sdrep) plot.SSB.F.trend(mod)
     for(i in 1:mod$env$data$n_stocks) {
       plot.SSB.AA(mod, prop=FALSE, stock = i)
@@ -191,6 +191,11 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     dev.off()
 
   } # end PDF section =============================================================
+  #take out any spaces
+  sfns <- chartr(" ", "_", mod$input$stock_names)
+  rfns <- chartr(" ", "_", mod$input$region_names)
+  ffns <- chartr(" ", "_", mod$input$fleet_names)
+  ifns <- chartr(" ", "_", mod$input$index_names)
 
   if(out.type %in% c('png','html')){
     dir.plots <- file.path(dir.main, "plots_png")
@@ -207,7 +212,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.catch.by.fleet(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("catch_age_comp_", mod$input$fleet_names[i],"_", mod$input$region_names[mod$input$data$fleet_regions[i]], ".png")),
+      png(file.path(dir.data, paste0("catch_age_comp_", ffns[i],"_", rfns[mod$input$data$fleet_regions[i]], ".png")),
         width=10,height=10,units="in",res=res,family=fontfam)
       plot.catch.age.comp.bubbles(mod, i=i)
       dev.off()
@@ -216,13 +221,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.index.input(mod)
     dev.off()
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0(mod$input$index_names[i], "_", mod$input$region_names[mod$input$data$index_regions[i]], "_age_comp.png")),
+      png(file.path(dir.data, paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]], "_age_comp.png")),
         width=10,height=10,units="in",res=res,family=fontfam)
       plot.index.age.comp.bubbles(mod, i=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_stocks) {
-      png(file.path(dir.data,paste0("weight_at_age_SSB_", mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data,paste0("weight_at_age_SSB_", sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"ssb", ind = i)
       dev.off()
     }
@@ -233,17 +238,17 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     # plot.waa(mod,"totcatch")
     # dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("weight_at_age_fleet_", mod$input$fleet_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0("weight_at_age_fleet_", ffns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"fleets", ind=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("weight_at_age_index",mod$input$index_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0("weight_at_age_index",ifns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"indices", ind=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_stocks) {
-      png(file.path(dir.data,paste0("maturity_", mod$input$stock_names[i], ".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data,paste0("maturity_", sfns[i], ".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.maturity(mod, stock = i)
       dev.off()
     }
@@ -295,19 +300,19 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
       plot.SSB.F.trend(mod)
       dev.off()
     }
-      png(file.path(dir.res,paste0("SSB_at_age_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
     for(i in 1:mod$env$data$n_stocks) {
+      png(file.path(dir.res,paste0("SSB_at_age_",sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.AA(mod, prop=FALSE, stock = i)
       dev.off()
-      png(file.path(dir.res,paste0("SSB_at_age_proportion_",mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.res,paste0("SSB_at_age_proportion_",sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.SSB.AA(mod, prop=TRUE, stock = i)
       dev.off()
       for(r in 1:mod$env$data$n_regions) {
-        png(file.path(dir.res,paste0("Numbers_at_age_", mod$input$stock_names[i],"_", mod$input$region_names[r],".png")),
+        png(file.path(dir.res,paste0("Numbers_at_age_", sfns[i],"_", rfns[r],".png")),
           width=10,height=10,units="in",res=res,family=fontfam)
         plot.NAA(mod, prop=FALSE, stock = i, region = r)
         dev.off()
-        png(file.path(dir.res,paste0("Numbers_at_age_proportion_", mod$input$stock_names[i],"_", mod$input$region_names[r],".png")),
+        png(file.path(dir.res,paste0("Numbers_at_age_proportion_", sfns[i],"_", rfns[r],".png")),
           width=10,height=10,units="in",res=res,family=fontfam)
         plot.NAA(mod, prop=TRUE, stock = i, region = r)
         dev.off()
@@ -316,17 +321,17 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
         if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
-          png(file.path(dir.res,paste0("SSB_Rec_", mod$input$stock_names[i],"_fit.png")),width=10,height=10,units="in",res=res,family=fontfam)
+          png(file.path(dir.res,paste0("SSB_Rec_", sfns[i],"_fit.png")),width=10,height=10,units="in",res=res,family=fontfam)
           plot.SR.pred.line(mod, stock = i)
           dev.off()
         }
-        png(file.path(dir.res,paste0("SSB_Rec_", mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        png(file.path(dir.res,paste0("SSB_Rec_", sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
         plot.recr.ssb.yr(mod, loglog=FALSE, stock = i)
         dev.off()
-        png(file.path(dir.res,paste0("SSB_Rec_loglog_", mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        png(file.path(dir.res,paste0("SSB_Rec_loglog_", sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
         plot.recr.ssb.yr(mod, loglog=TRUE, stock = i)
         dev.off()
-        png(file.path(dir.res,paste0("SSB_Rec_time_", mod$input$stock_names[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+        png(file.path(dir.res,paste0("SSB_Rec_time_", sfns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
         plot.SARC.R.SSB(mod, stock = i)
         dev.off()
       }
@@ -338,7 +343,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
     plot.fleet.F(mod)
     dev.off()
     for(i in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions) {
-      png(file.path(dir.res,paste0("M_at_age_", mod$input$stock_names[i], "_", mod$input$region_names[mod$input$data$stock_regions[i]],".png")),
+      png(file.path(dir.res,paste0("M_at_age_", sfns[i], "_", rfns[mod$input$data$stock_regions[i]],".png")),
         width=10,height=10,units="in",res=res,family=fontfam)
       plot.M(mod, stock = i, region = r)
       dev.off()
@@ -392,22 +397,29 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'png', res = 72
   } # end PNG section =====================================================
 
 
-  # uses png output, automatically opens in browser
-  if(out.type == 'html'){
-    wham_html(dir.main = dir.main)
-  }
   if(rmarkdown::pandoc_available()){
     if(table.type == "pdf"){
       cat(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
       par_tables_fn(mod, od = dir.res.tables, do.tex = T)
     }
-    if(table.type == "html"){
-      cat("Making HTML tables.\n")
-      par_tables_fn(mod, od = dir.res.tables, do.html = T)
-      cat("Opening HTML tables in your default web-browser.\n")
-      browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
+    # if(table.type == "html"){
+    #   cat("Making HTML tables.\n")
+    #   par_tables_fn(mod, od = dir.res.tables, do.html = T)
+    #   cat("Opening HTML tables in your default web-browser.\n")
+    #   browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
+    # }
+    if(out.type == "html"){
+      cat("Making HTML document.\n")
+      par_tables_fn(mod, od = dir.res.tables)
+      make_html_figs_tables_fn(od = dir.main, do.html = T)
+      cat("Opening HTML document in your default web-browser.\n")
+      browseURL(file.path(dir.main, "wham_figures_tables.html"))
     }
   } else {
+    #uses png output, and old html product that automatically opens in browser
+    if(out.type == 'html'){
+      wham_html(dir.main = dir.main)
+    }
     cat("document of parameter tables was not generated because rmarkdown could not find pandoc. Try plot_wham_output() from Rstudio.\n")
   }
 }
