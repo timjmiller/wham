@@ -83,7 +83,7 @@ prepare_projection = function(model, proj.opts) {
   # add new data objects for projections
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
-  input$years_full <- c(input$years, tail(input$years,data$n_years_proj) + data$n_years_proj)
+  input$years_full = c(input$years, tail(input$years,1) +1:proj.opts$n.yrs)
   
   proj_yrs_ind <- data$n_years_model+1:data$n_years_proj
   avg.yrs.ind <- match(proj.opts$avg.yrs, input$years)
