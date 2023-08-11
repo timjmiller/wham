@@ -154,6 +154,10 @@
 #'                    \item{"2dar1"}{NAA deviations correlated by year and age (2D AR1).}
 #'                  }
 #'                }
+#'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
+#'        (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"}. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+#'        have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate yeaer correlation parameters are estimated for recruitment and older
+#'        ages.}
 #'   }
 #' \code{NAA_re} also can be used to configure initial numbers at age and recruitment models. The optional associated components of \code{NAA_re} are:
 #'   \describe{

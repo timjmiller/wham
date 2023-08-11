@@ -46,10 +46,11 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   }
 
   #peel any q random effects
-  if(any(temp$data$use_q_re >0)) {
+  n_q_re <- sum(temp$data$use_q_re >0)
+  if(n_q_re >0) {
     ind = which(temp$data$use_q_re >0)
     tmp = matrix(NA, n_years + peel, temp$data$n_indices)
-    tmp[1:n_years,ind] = 1:(n_years*ind)
+    tmp[1:n_years,ind] = 1:(n_years*n_q_re)
     temp$map$q_re = factor(tmp)
   }
   

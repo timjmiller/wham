@@ -195,17 +195,21 @@ set_selectivity = function(input, selectivity)
     for(b in 1:data$n_selblocks){
       if(data$selblock_models_re[b] > 1){
         tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
-        if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
-          tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
+        if(length(tmp)){ #n_years>0 and n_selpars_est>1
+          if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
+            tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
+          }
+          if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)
+            for(i in 1:dim(tmp)[2]) tmp[,i] = (i + ct)
+          }
+          if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
+            for(i in 1:dim(tmp)[1]) tmp[i,] = (i + ct)
+          }
+          ct = max(tmp)
+          tmp_vec = c(tmp_vec, as.vector(tmp))
+        } else {
+          stop("selectivity$re not 'none' for a selbock that is not used or for which all mean selectivity paramereters are fixed.")
         }
-        if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)
-          for(i in 1:dim(tmp)[2]) tmp[,i] = (i + ct)
-        }
-        if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
-          for(i in 1:dim(tmp)[1]) tmp[i,] = (i + ct)
-        }
-        ct = max(tmp)
-        tmp_vec = c(tmp_vec, as.vector(tmp))
       }
     }
     map$selpars_re <- factor(tmp_vec)

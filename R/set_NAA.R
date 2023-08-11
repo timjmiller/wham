@@ -63,7 +63,7 @@ This message will not appear if you set recruit_model = 2 (random about mean).")
   } else {
     par$log_NAA_sigma <- rep(0,data$n_NAA_sigma)
   }
-  par$trans_NAA_rho <- c(0,0)
+  par$trans_NAA_rho <- c(0,0,0)
   par$log_NAA = matrix(10, data$n_years_model-1, data$n_ages)
   par$logR_proj <- 0 # will be set by prepare_projection if SCAA
   map$logR_proj <- factor(NA)
@@ -75,8 +75,14 @@ This message will not appear if you set recruit_model = 2 (random about mean).")
     NAA_re$cor <- 'iid'
   }
   tmp <- par$trans_NAA_rho
+  data$decouple_rec <- 0
+  tmp[3] <- NA #rho_y for recruits if NAA_re$decouple_recruitment = TRUE
   if(NAA_re$cor %in% c("iid","ar1_y")) tmp[1] = NA 
   if(NAA_re$cor %in% c("iid","ar1_a")) tmp[2] = NA
+  if(!is.null(NAA_re$decouple_recruitment)) if(NAA_re$decouple_recruitment) {
+    data$decouple_rec <- 1
+    if(NAA_re$cor %in% c("ar1_y","2ar1")) tmp[3] <-0
+  }
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
   map$trans_NAA_rho = factor(tmp)

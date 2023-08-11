@@ -60,6 +60,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(selpars_upper);
   DATA_INTEGER(n_NAA_sigma); // 0 = SCAA, 1 = logR only, 2 = full state-space with shared sig_a for a > 1
   DATA_IVECTOR(NAA_sigma_pointers);
+  DATA_INTEGER(decouple_rec)
   DATA_INTEGER(recruit_model);
   DATA_INTEGER(n_M_a);
   DATA_INTEGER(M_model); // 1: "constant", 2: "age-specific", 3: "weight-at-age"
@@ -922,7 +923,7 @@ Type objective_function<Type>::operator() ()
     }
     REPORT(logR_proj);
   }
-  if(n_NAA_sigma == 1){
+  if((n_NAA_sigma == 1) | ((n_NAA_sigma > 1) & (decouple_rec==1))){
     if(bias_correct_pe == 1) NAA_devs.col(0) += 0.5*pow(sigma_a_sig(0),2); //make sure this is ok when just recruitment is random.
     nll_NAA += SCALE(AR1(NAA_rho_y),sigma_a_sig(0))(NAA_devs.col(0));
     SIMULATE if(simulate_state(0) == 1) {
@@ -938,15 +939,35 @@ Type objective_function<Type>::operator() ()
     }
   }
   if(n_NAA_sigma > 1){
-    if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) += 0.5*pow(sigma_a_sig(a),2);
-    nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
-    SIMULATE if(simulate_state(0) == 1) {
-      array<Type> NAAdevs = NAA_devs;
-      SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); // scaled here
-      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
-      for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
-        if(((simulate_period(0) == 1) & (y < n_years_model - 1)) | ((simulate_period(1) == 1) & (y > n_years_model - 2))){
-          for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
+    if(decouple_rec==0){
+      if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAA_devs.col(a) += 0.5*pow(sigma_a_sig(a),2);
+      nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y))(NAA_devs);
+      SIMULATE if(simulate_state(0) == 1) {
+        array<Type> NAAdevs = NAA_devs;
+        SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig),AR1(NAA_rho_y)).simulate(NAAdevs); // scaled here
+        if(bias_correct_pe == 1) for(int a = 0; a < n_ages; a++) NAAdevs.col(a) -= 0.5*pow(sigma_a_sig(a),2);
+        for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
+          if(((simulate_period(0) == 1) & (y < n_years_model - 1)) | ((simulate_period(1) == 1) & (y > n_years_model - 2))){
+            for(int a = 0; a < n_ages; a++) NAA_devs(y,a) = NAAdevs(y,a);
+          }
+        }
+      }
+    } else{ //decoupling Recruitment random effects from ages 2+, like SAM?
+      Type NAA_rho_y_plus = rho_trans(trans_NAA_rho(2)); //allow different rho_y for older ages
+
+      array<Type> NAA_devs_plus(NAA_devs.dim(0),NAA_devs.dim(1)-1);
+      vector<Type> sigma_a_sig_plus = sigma_a_sig.segment(1,n_ages-1); 
+      for(int a = 1; a < n_ages; a++) NAA_devs_plus.col(a-1) = NAA_devs.col(a);
+      if(bias_correct_pe == 1) for(int a = 1; a < n_ages; a++) NAA_devs_plus.col(a-1) += 0.5*pow(sigma_a_sig(a),2);
+      nll_NAA += SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig_plus),AR1(NAA_rho_y_plus))(NAA_devs_plus);
+      SIMULATE if(simulate_state(0) == 1) {
+        array<Type> NAAdevsplus = NAA_devs_plus;
+        SEPARABLE(VECSCALE(AR1(NAA_rho_a), sigma_a_sig_plus),AR1(NAA_rho_y_plus)).simulate(NAAdevsplus); // scaled here
+        if(bias_correct_pe == 1) for(int a = 1; a < n_ages; a++) NAAdevsplus.col(a-1) -= 0.5*pow(sigma_a_sig(a),2);
+        for(int y = 0; y < n_years_model + n_years_proj - 1; y++){
+          if(((simulate_period(0) == 1) & (y < n_years_model - 1)) | ((simulate_period(1) == 1) & (y > n_years_model - 2))){
+            for(int a = 1; a < n_ages; a++) NAA_devs(y,a) = NAAdevsplus(y,a-1);
+          }
         }
       }
     }
