@@ -1391,14 +1391,16 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_obs_sigma);
 
   if(do_post_samp.sum()==0){
-    ADREPORT(log_F);
-    ADREPORT(log_FAA);
-    ADREPORT(log_FAA_tot);
-    ADREPORT(log_Fbar);
+    //ADREPORT(log_F);
+    //ADREPORT(log_FAA);
+    //ADREPORT(log_FAA_tot);
+    //ADREPORT(log_Fbar);
+    ADREPORT(NAA);
     ADREPORT(log_NAA_rep);
     ADREPORT(log_SSB);
-    ADREPORT(log_index_resid);
-    ADREPORT(log_catch_resid);
+    ADREPORT(SSB);
+    //ADREPORT(log_index_resid);
+    //ADREPORT(log_catch_resid);
   }
 
   REPORT(nll);
