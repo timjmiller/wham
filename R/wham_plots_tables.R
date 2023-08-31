@@ -1465,7 +1465,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
       legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
       legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
       legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
-      title (paste0(my.title,i), outer=T, line=-1)
+      title (paste0(paste0(my.title,mod$input$index_names[i])), outer=T, line=-1)
       if(do.tex | do.png) dev.off() else par(origpar)
     } #end if any age comp for index
 	}   #end loop n_fleets
@@ -3097,8 +3097,8 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     # tcol = col2rgb(plot.colors)
     # tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
     if(what %in% c("NAA","NAA_age")){
-      res = list(mod$rep$NAA[,,1:n_years,])
-      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,])
+      res = list(mod$rep$NAA[,,1:n_years,, drop = FALSE])
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,, drop = FALSE])
     } else {
       res = list(head(mod$rep[[what]],n_years))
       res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
@@ -3113,7 +3113,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
           what.print.s <- paste0(sfns[s], "_", rfns[r], "_", what.print)
           if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
           if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-          n_ages <- dim(res[[1]])[4]
+          #n_ages <- dim(res[[1]])[4]
           par(mfcol = c(ceiling(n_ages/2),2), mar = c(4,4,1,1), oma = c(0,0,4,0))
           for(i in 1:n_ages) if(mod$input$data$NAA_where[s,r,i]>0) {
             y.range1 <- range(sapply(res, function(x) range(x[s,r,,i])))
@@ -3168,7 +3168,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
           lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
           points(years[n_years-i],res[[i+1]][n_years-i,p],pch=16,col=plot.colors[i+1])
         }
-        title(names.plot[p], line = 1)
+        title(names.plot[p], line = 1, outer = TRUE)
         if(do.tex | do.png) dev.off() else par(origpar)
       }
     }
@@ -3235,7 +3235,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     }
 
     if(what %in% c("SSB","Fbar")) {
-      rel.res = lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),]/res[[1]][1:(n_years - x + 1),] - 1)
+      rel.res = lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),,drop=FALSE]/res[[1]][1:(n_years - x + 1),,drop=FALSE] - 1)
       if(what == "SSB") names.plot <- mod$input$stock_names
       if(what == "Fbar") names.plot <- mod$input$region_names
       n <- length(names.plot)
@@ -3254,7 +3254,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         }
         rho.plot <- round(rho.vals[[what]][p],3)
         legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-        title(names.plot[p], line = 1)
+        title(names.plot[p], line = 1, outer = TRUE)
         if(do.tex | do.png) dev.off() else par(origpar)
       }
     }
