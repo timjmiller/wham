@@ -2302,7 +2302,7 @@ plot.maturity <- function(mod, ages.lab, plot.colors, stock = 1)
   n_years = length(years)
   ages = 1:dat$n_ages
   if(missing(ages.lab)) ages.lab = mod$ages.lab
-  mature <- dat$mature[stock,,]
+  mature <- dat$mature[stock,,] #matrix
 	meanmaturity <- apply(mature,2,mean)
 	if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_years) #mypalette(n_years)
 
@@ -2312,7 +2312,7 @@ plot.maturity <- function(mod, ages.lab, plot.colors, stock = 1)
   box(lwd = 2)
 	if (length(unique(mature)) > length(ages))
 	{
-		for (i in 1:n_years) points(jitter(ages, factor=0.4), mature[stock, i,],col=plot.colors[i])
+		for (i in 1:n_years) points(jitter(ages, factor=0.4), mature[i,],col=plot.colors[i])
     midi <- floor(n_years/2)
 		legend('topleft', horiz=FALSE, legend=c(years[1],years[midi],years[n_years]), pch=c(1,1,1), col=c(plot.colors[1], plot.colors[midi], plot.colors[n_years]))
 	}
@@ -2713,8 +2713,8 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
   inds$F.t <- which(rownames(std) == "log_FXSPR")
   inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
-  print(dim(inds$SSB.t))
-  print(all_stocks)
+  # print(dim(inds$SSB.t))
+  # print(all_stocks)
   inds$ssb <- which(rownames(std) == "log_SSB_all")
   inds$full.f <- which(rownames(std) == "log_full_F_all")
   na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))
