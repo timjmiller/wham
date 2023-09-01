@@ -57,7 +57,7 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
         mu_t.setZero();
         matrix<int> can_move_t(n_regions, n_regions);
         can_move_t.setZero();
-        for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
+        if(n_regions>1) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
           can_move_t(r,rr) = can_move(s,t,r,rr);
           mu_t(r,rr) = mu(s,a,t,r,rr);
         }
