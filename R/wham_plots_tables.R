@@ -2713,6 +2713,8 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
   inds$F.t <- which(rownames(std) == "log_FXSPR")
   inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = all_stocks)
+  print(dim(inds$SSB.t))
+  print(all_stocks)
   inds$ssb <- which(rownames(std) == "log_SSB_all")
   inds$full.f <- which(rownames(std) == "log_full_F_all")
   na.sd <- sapply(inds, function(x) any(is.na(std[x,2])))

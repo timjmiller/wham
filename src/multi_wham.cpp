@@ -1010,16 +1010,16 @@ Type objective_function<Type>::operator() ()
       mig_type, trans_mu_base, L, waa_ssb,  mature_all, fracyr_SSB_all, n_regions_is_small);
     REPORT(annual_SPR0AA);
 
-    // if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
-    //   ADREPORT(log_FXSPR);
-    //   ADREPORT(log_SSB_FXSPR);
-    //   ADREPORT(log_Y_FXSPR);
-    //   ADREPORT(log_SPR0);
-    //   ADREPORT(log_FXSPR_static);
-    //   ADREPORT(log_SSB_FXSPR_static);
-    //   ADREPORT(log_SPR0_static);
-    //   ADREPORT(log_Y_FXSPR_static);
-    // }
+    if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
+      ADREPORT(log_FXSPR);
+      ADREPORT(log_SSB_FXSPR);
+      ADREPORT(log_Y_FXSPR);
+      ADREPORT(log_SPR0);
+      ADREPORT(log_FXSPR_static);
+      ADREPORT(log_SSB_FXSPR_static);
+      ADREPORT(log_SPR0_static);
+      ADREPORT(log_Y_FXSPR_static);
+    }
   }
   int is_SR = 0;
   for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
