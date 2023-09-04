@@ -92,12 +92,12 @@ set_move = function(input, move)
   mean_mods <- c(mean_mods, paste0("stock_", mean_mods[2:3]))
   if(is.null(move$mean_model)){
     if(is.null(move$can_move) | data$n_regions == 1) {
-      move$mean_model <- matrix("none", n_regions, n_regions-1)
+      move$mean_model <- matrix("none", data$n_regions, data$n_regions-1)
     } else{
-      if(sum(move$can_move)>0) move$mean_model <- matrix("constant", n_regions, n_regions-1)
+      if(sum(move$can_move)>0) move$mean_model <- matrix("constant", data$n_regions, data$n_regions-1)
       else {
-        if(data$n_regions==1) move$mean_model <- matrix("none", n_regions, n_regions-1)
-        else move$mean_model <- matrix("constant", n_regions, n_regions-1)
+        if(data$n_regions==1) move$mean_model <- matrix("none", data$n_regions, data$n_regions-1)
+        else move$mean_model <- matrix("constant", data$n_regions, data$n_regions-1)
       }
     }
     input$log$move <- c(input$log$move, paste0("\n move$mean_model was not specified and set to ", move$mean_model[1], " for all movement parameters based on data$n_regions and move$can_move if provided. \n"))
