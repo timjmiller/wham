@@ -223,8 +223,8 @@ set_ecov = function(input, ecov) {
       #data$Ecov_obs_sigma_opt[] = 1 #defined above
       input$log$ecov <- c(input$log$ecov, "ecov$logsigma is numeric. Coercing to a matrix... \n")
       if(length(ecov$logsigma) == data$n_Ecov) par$Ecov_obs_logsigma <- matrix(rep(ecov$logsigma, each=n_Ecov_obs), ncol=data$n_Ecov)
-      if(length(ecov$logsigma) == n_Ecov_obs && data$n_Ecov == 1) par$Ecov_obs_logsigma <- matrix(ecov$logsigma, ncol=1)
-      if(length(ecov$logsigma) != data$n_Ecov && length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
+      if(length(ecov$logsigma) == n_Ecov_obs & data$n_Ecov == 1) par$Ecov_obs_logsigma <- matrix(ecov$logsigma, ncol=1)
+      if(length(ecov$logsigma) != data$n_Ecov & length(ecov$logsigma) != n_Ecov_obs) stop("ecov$logsigma is numeric but length is not equal to # of ecovs or ecov observations")
     }
 
     #set up and check length of ecov$process_model

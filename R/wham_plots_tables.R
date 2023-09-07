@@ -3420,17 +3420,17 @@ convert_survey_to_at_age <- function(mod)
 			}
 
 			# create index.obs and pred based on which of the four possible combinations of units is used for this index
-			if (agg.units==1 && prp.units==1)
+			if (agg.units==1 & prp.units==1)
 			{  # both in weight
 				index.ob <- agg.ob * props.ob / waa
 				index.pr <- agg.pr * props.pr / waa
 			}
-			if (agg.units==1 && prp.units==2)
+			if (agg.units==1 & prp.units==2)
 			{  # agg in weight, props in numbers
         index.ob = props.ob * agg.ob/apply(props.ob * waa,1,sum)
         index.pr = props.pr * agg.pr/apply(props.pr * waa,1,sum)
 			}
-			if (agg.units==2 && prp.units==1)
+			if (agg.units==2 & prp.units==1)
 			{  # agg in numbers, props in weight
 				# need to search for correct agg total in weight to result in observed agg total in number
 				# for now just use simple approximation that agg.wt = sum(waa*prop) *ctot and then solve using both in weight approach
@@ -3439,7 +3439,7 @@ convert_survey_to_at_age <- function(mod)
 				index.ob <- agg.wt.ob * props.ob / waa
 				index.pr <- agg.wt.pr * props.pr / waa
 			}
-			if (agg.units==2 && prp.units==2)
+			if (agg.units==2 & prp.units==2)
 			{  # both in numbers
 				index.ob <- agg.ob * props.ob
 				index.pr <- agg.pr * props.pr

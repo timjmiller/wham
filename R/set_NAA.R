@@ -276,7 +276,7 @@ set_NAA = function(input, NAA_re=NULL)
   map$log_NAA <- factor(map$log_NAA)
   map$log_NAA_sigma <- factor(map$log_NAA_sigma)
 
-  if(any(data$recruit_model > 2 && data$NAA_re_model == 0)) input$log$NAA <- c(input$log$NAA, "NOTE: SCAA model specified, yearly recruitment deviations estimated as fixed effects. Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
+  if(any(data$recruit_model > 2 & data$NAA_re_model == 0)) input$log$NAA <- c(input$log$NAA, "NOTE: SCAA model specified, yearly recruitment deviations estimated as fixed effects. Stock-recruit function also specified. WHAM will fit the SCAA model but without estimating a stock-recruit function.
     This message will not appear if you set recruit_model = 2 (random about mean).")
 
   #set up recruitment
