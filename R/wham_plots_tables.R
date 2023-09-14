@@ -88,12 +88,13 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   years <- mod$years
   if("logcatch" %in% mod$osa$type){
     dat <- subset(mod$osa, type == "logcatch")
-    dat$fleet <- factor(as.character(dat$fleet))
-    n.fleets <- length(table(dat$fleet))
+    dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
+    dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
+    n.fleets <- length(levels(dat$fleet))
     plot.colors = mypalette(n.fleets)
     ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets){
-      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      tmp <- subset(dat, fleet==as.character(f))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
@@ -147,7 +148,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   }
   if("catchpaa" %in% mod$osa$type) {
     dat <- subset(mod$osa, type == "catchpaa")
-    n.fleets <- mod$input$data$n_fleets
+    dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
+    dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
+    n.fleets <- length(levels(dat$fleet))
     plot.colors = mypalette(n.fleets)
     ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
@@ -159,7 +162,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
       for(j in yind){
-        tmp = subset(dat, year == j & fleet == paste0("fleet_",f))
+        tmp = subset(dat, year == j & fleet == as.character(f))
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
         ages[j,tmp$age] = tmp$age
@@ -236,12 +239,13 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
   if("logindex" %in% mod$osa$type){
     dat <- subset(mod$osa, type == "logindex")
-    dat$fleet <- factor(as.character(dat$fleet))
-    n.fleets <- length(table(dat$fleet))
+    dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
+    dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
+    n.fleets <- length(levels(dat$fleet))
     plot.colors = mypalette(n.fleets)
     ifns <- chartr(" ", "_", mod$input$index_names)
     for(f in 1:n.fleets){
-      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      tmp <- subset(dat, fleet==as.character(f))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],".pdf")), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
@@ -299,7 +303,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
   }
   if("indexpaa" %in% mod$osa$type) {
     dat <- subset(mod$osa, type == "indexpaa")
-    dat$fleet <- factor(as.character(dat$fleet))
+    dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
+    dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
+    n.fleets <- length(levels(dat$fleet))
     dat$residual[which(is.infinite(dat$residual))] = NA #some happen for zeros or last age class
     #dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] = NA #remove last age class
     
@@ -315,7 +321,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       resids = vals = ages = pyears = cohorts = matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
       for(j in yind){
-        tmp = subset(dat, year == j & fleet == paste0("index_",i))
+        tmp = subset(dat, year == j & fleet == as.character(i))
         resids[j,tmp$age] = tmp$residual
         vals[j,tmp$age] = tmp$val
         ages[j,tmp$age] = tmp$age
@@ -392,8 +398,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
   if(!all(mod$env$data$Ecov_model == 0)){
     dat <- subset(mod$osa, type == "Ecov")
-    dat$fleet <- factor(as.character(dat$fleet))
-    n.fleets <- length(table(dat$fleet))
+    dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
+    dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
+    n.fleets <- length(levels(dat$fleet))
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
