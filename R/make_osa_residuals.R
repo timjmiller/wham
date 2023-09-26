@@ -34,7 +34,7 @@
 #' plot_wham_output(mod)
 #' }
 #' 
-make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)){
+make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), sdrep_required = TRUE){
   verify_version(model)
   orig_vals <- c(model$env$data$do_SPR_BRPs,model$env$data$do_MSY_BRPs)
   model$env$data$do_SPR_BRPs <- model$env$data$do_MSY_BRPs <- 0
@@ -45,7 +45,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     stop(paste0("Only osa methods allowed for TMB::oneStepPredict currently in WHAM are oneStepGaussianoffMode (default), oneStepGaussian, or oneStepGeneric"))
   }
   if(is.null(osa.opts$parallel)) osa.opts$parallel <- TRUE
-  if(!model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
+  if(sdrep_required & !model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
   if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   

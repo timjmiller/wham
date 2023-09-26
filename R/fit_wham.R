@@ -160,6 +160,16 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     mod$rep <- mod$report() #par values don't matter because function has not been evaluated
     mod$parList <- mod$env$parList()
     mod <- check_which_F_age(mod)
+    if(is.null(mod$TMB_commit)){
+      TMB_commit <- packageDescription("TMB")$GithubSHA1
+      mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
+    }
+    if(is.null(mod$TMB_version)){
+      TMB_version <- packageDescription("TMB")$Version
+      mod$TMB_version <- paste0(TMB_version, " / ", mod$TMB_commit, ")")
+    }
+    if(is.null(mod$is_sdrep)) mod$is_sdrep = FALSE
+
     #mod <- check_FXSPR(mod)
   }
 

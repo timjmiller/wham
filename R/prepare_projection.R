@@ -427,6 +427,19 @@ prepare_projection = function(model, proj.opts) {
   }
         # print("here8")
 
+  # expand q_re
+  input_q <- input
+  input_q$asap3 <- NULL
+  input_q$data$n_years_model <- data$n_years_model + data$n_years_proj
+  q_opts <- eval(model$call$q)
+  input_q <- set_q(input_q, q_opts) #use same machinery to map M and now we have call saved with M list
+  map$q_re <- input_q$map$q_re
+  dims <- dim(par$q_re)
+  dims[2] <- data$n_years_model + data$n_years_proj
+  tmp <- matrix(0, nrow = data$n_years_model + data$n_years_proj, ncol = NCOL(par$q_re))
+  tmp[1:data$n_years_model,] <- par$q_re
+  par$q_re <- tmp
+
   data$years_use <- 1:(data$n_years_model + data$n_years_proj) -1
   data$years_use_Ecov <-  1:data$n_years_Ecov - 1
   input$data <- data

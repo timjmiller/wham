@@ -56,8 +56,8 @@ matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> u
   */
   
   int n_indices = q_re.cols();
-  // int n_y = years_use.size(); //years_use can include projection years, but q_re is not currently projected
-  int n_y = q_re.rows();
+  int n_y = years_use.size(); 
+  // int n_y = q_re.rows();
   matrix<Type> nll_q(n_y,n_indices);
   nll_q.setZero();
   vector<Type> sigma_q(n_indices);

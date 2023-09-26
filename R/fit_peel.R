@@ -83,8 +83,9 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
 
   # #peel any q random effects
   map$q_re <- matrix(as.integer(map$q_re), NROW(par$q_re), NCOL(par$q_re))
-  map$q_re[n_years + 1:peel] <- NA
+  map$q_re[n_years + 1:peel,] <- NA
   map$q_re <- factor(map$q_re)
+
 #print("in fit peel")
   
   #peel any NAA fixed effects
