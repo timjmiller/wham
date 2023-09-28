@@ -2736,6 +2736,16 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
     tcov <- cov[ind,ind]
     return(t(K) %*% tcov %*% K)
   })
+  if(mod$env$data$n_years_proj>0) { #check whether projecting at F40 because the ratio to status those years will be 1 and variance 0, but numerical accuracy might be an issue.
+    proj_F40 <- which(mod$env$data$proj_F_opt==3)
+    if(length(proj_F40)){
+      proj_F40 <- mod$env$data$n_years_model + proj_F40
+      log.rel.ssb.rel.F.cov[proj_F40] <- lapply(log.rel.ssb.rel.F.cov[proj_F40], function(x) {
+        x[cbind(c(1,2,2),c(2,2,1))] <- 0
+        return(x)
+      })      
+    }
+  }
 
   ylabs <- c(
     bquote(paste('Yield(',italic(F)[paste(.(percentSPR), "%")], ')')),
@@ -3861,7 +3871,21 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.selAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+2))
     colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Block")
     block.names <- paste0("Block ",1:n_selblocks,": ", sel_mod,"\n(",sel_re," random effects)")
-    for(i in 1:n_selblocks){
+    block.fleets.indices <- lapply(1:n_selblocks, function(x){
+      y <- dat$selblock_pointer_fleets
+      z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
+      fleet_ind <- apply(z,2,any)
+      out <- mod$input$fleet_names[which(fleet_ind)]
+      y <- dat$selblock_pointer_indices
+      z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
+      index_ind <- apply(z,2,any)
+      out <- c(out, mod$input$index_names[which(index_ind)])
+    })
+    include.selblock <- sapply(block.fleets.indices, length) > 0
+    for(i in 1:n_selblocks) if(include.selblock[i]){
+      block.names[i] <- paste0(block.names[i], "\n", paste(block.fleets.indices[[i]], collapse = ", "))
+    }
+    for(i in 1:n_selblocks) if(include.selblock[i]){
       tmp = as.data.frame(rep$selAA[[i]])
       tmp$Year <- years
       colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
@@ -3875,7 +3899,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
               values_to = "Selectivity")
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) = ages.lab
-    df.plot$Block <- factor(as.character(df.plot$Block), levels=block.names)
+    df.plot$Block <- factor(as.character(df.plot$Block), levels=block.names[include.selblock])
 
     if(do.tex) cairo_pdf(file.path(od, paste0("SelAA_tile.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("SelAA_tile.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3967,18 +3991,19 @@ plot_q_prior_post = function(mod, do.tex = F, do.png = F, fontfam="", od){
 
 plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   origpar <- par(no.readonly = TRUE)
-  q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+  yrs <- 1:length(mod$years)
+  q = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat[yrs,,drop = FALSE]))))
   if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   par(mar=c(4,4,3,1), oma=c(1,1,1,15))
   pal = viridisLite::viridis(n=mod$input$data$n_indices)
   ymax = max(q, na.rm = TRUE)
   if("sdrep" %in% names(mod)){
-    if("q_re" %in% mod$input$random) se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+    if("q_re" %in% mod$input$random) se = as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat[yrs,,drop = FALSE]
     else se = t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
-      ncol = NROW(mod$rep$logit_q_mat)))
-    logit_q_lo = mod$rep$logit_q_mat - qnorm(0.975)*se
-    logit_q_hi = mod$rep$logit_q_mat + qnorm(0.975)*se
+      ncol = NROW(mod$rep$logit_q_mat[yrs,,drop = FALSE])))
+    logit_q_lo = mod$rep$logit_q_mat[yrs,,drop = FALSE] - qnorm(0.975)*se
+    logit_q_hi = mod$rep$logit_q_mat[yrs,,drop = FALSE] + qnorm(0.975)*se
     q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
     q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
     ymax = max(q_hi, na.rm = TRUE)

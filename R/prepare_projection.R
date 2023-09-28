@@ -27,6 +27,7 @@
 #'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
 #'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
 #'   }
+#' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
 #'   \describe{
@@ -44,13 +45,13 @@
 #'
 #'
 #' @export
-prepare_projection = function(model, proj.opts) {
+prepare_projection = function(model, proj.opts, check.version=FALSE) {
 # if(is.null(proj.opts)) proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
 #                                       cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.M.re=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
 #                                       percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL)
   if(is.null(proj.opts)) proj.opts <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100)
-  verify_version(model)
+  if(check.version) verify_version(model)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points

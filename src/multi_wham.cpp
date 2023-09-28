@@ -662,7 +662,7 @@ Type objective_function<Type>::operator() ()
       }
     }
     //if((mu_model != 1) & (mu_model != 5) & (mu_model != 9) & (mu_model != 13)){ //some type of random effects
-    see(11.2);
+    //see(11.2);
     array<Type> nll_mu_re = get_nll_mu(mu_repars, mu_re, mu_model, can_move, years_use);
     nll += nll_mu_re.sum();
     REPORT(nll_mu_re);
@@ -907,8 +907,8 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
     obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
-      age_comp_model_fleets, catch_paa_pars, 1);
-    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, 1);
+      age_comp_model_fleets, catch_paa_pars, no_trace);
+    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, no_trace);
     REPORT(catch_paa);
   }
   /////////////////////////////////////////
@@ -1160,7 +1160,7 @@ Type objective_function<Type>::operator() ()
       ADREPORT(trans_mu_base_sdrep);
     }
   }
-  see(nll);
+  //see(nll);
   return nll;
 }
 

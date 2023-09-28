@@ -65,6 +65,8 @@
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
+#' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
+#' @param TMB.bias.correct T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.
 #'
 #' @return a projected WHAM model with additional output if specified:
 #'   \describe{
@@ -105,18 +107,21 @@
 project_wham = function(model, 
   proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100),
-  n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
+  n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE, check.version = TRUE, TMB.bias.correct=FALSE)
 {
-  verify_version(model)
+  if(check.version) verify_version(model)
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
-  tryCatch(input2 <- prepare_projection(model, proj.opts)
+  tryCatch(input2 <- prepare_projection(model, proj.opts, check.version = check.version)
     , error = function(e) {model$err_proj <<- conditionMessage(e)})
   if("err_proj" %in% names(model)) stop(model$err_proj)
   else{# refit model to estimate derived quantities in projection years
   #if(!exists("err")) 
-    mod$proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
-    mod$proj_mod$fn()
-    mod$proj_sdrep <- TMB::sdreport(proj_mod, bias.correct = TRUE) #better accuracy of projection output
+    proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    #mod$proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    proj_mod$input <- input2
+
+    proj_mod$fn()
+    #mod$proj_sdrep <- TMB::sdreport(mod$proj_mod, bias.correct = TRUE) #better accuracy of projection output
     #mod <- fit_wham(input2, n.newton=n.newton, MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
@@ -124,23 +129,24 @@ project_wham = function(model,
     if(!is.fit) mle = model$par
     else {
       mle = model$opt$par
-      mod$fn(mle)
+      proj_mod$fn(mle)
     }
     
-    mod$rep = mod$report()
-    mod$parList <- mod$env$parList(x=mle)
+    proj_mod$rep = proj_mod$report()
+    proj_mod$parList <- proj_mod$env$parList(x=mle)
     #mod <- check_FXSPR(mod)
     #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
-    mod <- check_projF(mod) #projections added.
+    proj_mod <- check_projF(proj_mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {
-      mod$sdrep <- try(TMB::sdreport(mod))
-      mod$is_sdrep <- !is.character(mod$sdrep)
-      if(mod$is_sdrep) mod$na_sdrep <- any(is.na(summary(mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
-      if(!save.sdrep) mod$sdrep <- summary(mod$sdrep) # only save summary to reduce model object size
+
+      proj_mod$sdrep <- try(TMB::sdreport(proj_mod, bias.correct = TMB.bias.correct))
+      proj_mod$is_sdrep <- !is.character(proj_mod$sdrep)
+      if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
+      if(!save.sdrep) mod$sdrep <- summary(proj_mod$sdrep) # only save summary to reduce model object size
     } else {
-      mod$is_sdrep = FALSE
-      mod$na_sdrep = NA
+      proj_mod$is_sdrep = FALSE
+      proj_mod$na_sdrep = NA
     }
   }
   #assigning model$err_proj above already accomplishes this
@@ -155,7 +161,8 @@ project_wham = function(model,
 
   elements <- elements[which(elements %in% names(model))]
   # print(elements)
-  mod[elements] <- model[elements]
+  proj_mod[elements] <- model[elements]
+  proj_mod[c("years","years_full","ages.lab")] <- proj_mod$input[c("years","years_full","ages.lab")]
   #if(!is.null(model$final_gradient)) mod$final_gradient <- model$final_gradient # final_gradient
   #if(!is.null(model$opt)) mod$opt <- model$opt # optimization results
   #if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
@@ -167,9 +174,9 @@ project_wham = function(model,
   # print error message
   if(!is.null(model$err_proj))
   {
-    mod$err_proj <- model$err_proj
+    proj_mod$err_proj <- model$err_proj
     warning(paste("","** Error during projections. **",
       paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
   }
-  return(mod)
+  return(proj_mod)
 }
