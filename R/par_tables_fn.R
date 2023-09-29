@@ -1,4 +1,4 @@
-par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
+par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 {
   library(rmarkdown)
 
@@ -108,10 +108,11 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     for(i in ind) {
       #al = c(al, ages[min(which(ind == ind[i]))])
       #ah = c(ah, ages[max(which(ind == ind[i]))])
-      as <- ages[which(ind == i)]
-      if(length(as==1)) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (age ", as[1], ")"))
+      as <- ages[which(map[s,] == i)]
+      diff.ages <- diff(which(map[s,] == i))
+      if(length(as)==1) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (age ", as[1], ")"))
       else{
-        if(all(diff(as)==1)) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (age ", as[1], "-", as[length(as)], ")"))
+        if(all(diff.ages==1)) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (ages ", as[1], "-", as[length(as)], ")"))
         else fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (ages ", paste0(as, collapse = ","), ")"))
       }
       #more = ah[i] != al[i]
@@ -150,25 +151,41 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       fe.cis = rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i]))
     }
   }
-  for(i in 1:data$n_selblocks){
-    if(all(apply(mod$rep$selAA[[i]], 2, function(x) length(unique(x))) == 1)){
-      extra.name = ""
-    } else extra.name = "Mean "
+  block.fleets.indices <- lapply(1:data$n_selblocks, function(x){
+    y <- data$selblock_pointer_fleets
+    z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
+    fleet_ind <- apply(z,2,any)
+    out <- mod$input$fleet_names[which(fleet_ind)]
+    y <- data$selblock_pointer_indices
+    z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
+    index_ind <- apply(z,2,any)
+    out <- c(out, mod$input$index_names[which(index_ind)])
+  })
+  include.selblock <- sapply(block.fleets.indices, length) > 0
+  extra.names = rep("", data$n_selblocks)
+  for(i in 1:data$n_selblocks) if(include.selblock[i]){
+    extra.names[i] <- paste0(extra.names[i], paste(block.fleets.indices[[i]], collapse = ", "), " ")
+  }
+  extra.names.mean <- extra.names
+  for(i in 1:data$n_selblocks) if(include.selblock[i]){
+    if(!all(apply(mod$rep$selAA[[i]], 2, function(x) length(unique(x))) == 1)){
+      extra.names.mean[i] <- paste0(extra.names.mean[i], "Mean ")
+    }
 
     if(data$selblock_models[i] == 1) {
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, "Selectivity for age ", mod$ages.lab))
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], "Selectivity for age ", mod$ages.lab))
       ind = 1:data$n_ages
     }
     if(data$selblock_models[i] == 2){ #increasing logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "1/slope (increasing)")))
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$", "1/slope (increasing)")))
       ind = data$n_ages + 1:2
     }
     if(data$selblock_models[i] == 3){ #double logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)")))
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)")))
       ind = data$n_ages + 3:6
     }
     if(data$selblock_models[i] == 4){ #increasing logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.name, c("$a_{50}$", "-1/slope (decreasing)")))
+      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$", "-1/slope (decreasing)")))
       ind = data$n_ages + 1:2
     }
     fe.vals = c(fe.vals, ((data$selpars_lower + data$selpars_upper-data$selpars_lower)/(1 + exp(-pars$logit_selpars)))[i,ind])
@@ -177,7 +194,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     }
   }
   for(i in 1:data$n_selblocks) if(data$selblock_models_re[i]>1){
-    fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE $\\sigma$"))
+    fe.names = c(fe.names, paste0("Block ", i , ": ", extra.names[i], "Selectivity RE $\\sigma$"))
     fe.vals = c(fe.vals, exp(pars$sel_repars[i,1]))
     fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,1], sd$sel_repars[i,1], type = "exp"))
     if(data$selblock_models_re[i] %in% c(3,5)) {
@@ -185,12 +202,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$selblock_models[i] == 1) modify = " AR1 $\\rho$ (age)"
       if(data$selblock_models[i] %in% c(2,4)) modify = " $\\rho$ for $a_{50}$ and 1/slope" 
       if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
-      fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE", modify))
+      fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE", modify))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
-      fe.names = c(fe.names, paste0("Block ", i , ": Selectivity RE AR1 $\\rho$ (year)"))
+      fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE AR1 $\\rho$ (year)"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit", k = 2))
     }
@@ -502,8 +519,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   fe = cbind(fe.vals, fe.cis)
   rownames(fe) = fe.names
   colnames(fe) = c("Estimate", "Std. Error", "95\\% CI lower", "95\\% CI upper")
-  saveRDS(fe, file = file.path(od,"parameter_estimates_table.RDS"))
-  saveRDS(mod$input, file = file.path(od,"fit_input.RDS"))
+  if(!is.null(od)) {
+    saveRDS(fe, file = file.path(od,"parameter_estimates_table.RDS"))
+    saveRDS(mod$input, file = file.path(od,"fit_input.RDS"))
+  }
   
   if(mod$is_sdrep) {
     sdrep = mod$sdrep
@@ -515,7 +534,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
     NAA = NAA.cv = mod$rep$NAA[s,r,,]
     rownames(NAA) =mod$years_full
     colnames(NAA) = mod$ages.lab
-    saveRDS(NAA, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_table.RDS")))
+    if(!is.null(od)) saveRDS(NAA, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_table.RDS")))
     NAA.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       NAA.cv[] = sd[["log_NAA_rep"]][s,r,,]
@@ -524,18 +543,20 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       NAA.hi = exp(log(NAA) + qnorm(0.975) * NAA.cv)
       rownames(NAA.sd) = rownames(NAA.cv) = rownames(NAA.lo) = rownames(NAA.hi) = mod$years_full
       colnames(NAA.sd) = colnames(NAA.cv) = colnames(NAA.lo) = colnames(NAA.hi) = mod$ages.lab
-      saveRDS(NAA.sd, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_sd_table.RDS")))
-      saveRDS(NAA.lo, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_lo_table.RDS")))
-      saveRDS(NAA.hi, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_hi_table.RDS")))
+      if(!is.null(od)){
+        saveRDS(NAA.sd, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_sd_table.RDS")))
+        saveRDS(NAA.lo, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_lo_table.RDS")))
+        saveRDS(NAA.hi, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_hi_table.RDS")))
+      }
     }
   }
       
   #Total F at age by region
   for(r in 1:data$n_regions){
-    FAA_r = FAA_r.cv <- mod$rep$FAA[r,,]
+    FAA_r <- FAA_r.cv <- mod$rep$FAA_by_region[r,,]
     rownames(FAA_r) = mod$years_full
     colnames(FAA_r) = mod$ages.lab
-    saveRDS(FAA_r, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_table.RDS")))
+    if(!is.null(od)) saveRDS(FAA_r, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_table.RDS")))
     FAA_r.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA_r.cv = sd[["log_FAA_by_region"]][r,,]
@@ -544,9 +565,11 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       FAA_r.hi = FAA_r * exp( qnorm(0.975) * FAA_r.cv)
       rownames(FAA_r.sd) = rownames(FAA_r.cv) = rownames(FAA_r.lo) = rownames(FAA_r.hi) = mod$years_full
       colnames(FAA_r.sd) = colnames(FAA_r.cv) = colnames(FAA_r.lo) = colnames(FAA_r.hi) = mod$ages.lab
-      saveRDS(FAA_r.sd, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_sd_table.RDS")))
-      saveRDS(FAA_r.lo, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_lo_table.RDS")))
-      saveRDS(FAA_r.hi, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_hi_table.RDS")))
+      if(!is.null(od)){ 
+        saveRDS(FAA_r.sd, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_sd_table.RDS")))
+        saveRDS(FAA_r.lo, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_lo_table.RDS")))
+        saveRDS(FAA_r.hi, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_hi_table.RDS")))
+      }
     }
   }
 
@@ -554,7 +577,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(f in 1:data$n_fleets){
     FAA = FAA.cv = mod$rep$FAA[f,,]
     dimnames(FAA) = list(mod$years_full, mod$ages.lab)
-    saveRDS(FAA, file = file.path(od,paste0(fleet.names.f[f], "_FAA_table.RDS")))
+    if(!is.null(od)) saveRDS(FAA, file = file.path(od,paste0(fleet.names.f[f], "_FAA_table.RDS")))
     FAA.cv[] <- NA
     if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA.cv[] = sd[["log_FAA"]][f,,]
@@ -562,25 +585,29 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       FAA.lo = exp(mod$rep$FAA[f,,] - qnorm(0.975) * FAA.cv)
       FAA.hi = exp(mod$rep$FAA[f,,] + qnorm(0.975) * FAA.cv)
       dimnames(FAA.sd) = dimnames(FAA.cv) = dimnames(FAA.lo) = dimnames(FAA.hi) = list(mod$years_full, mod$ages.lab)
-      saveRDS(FAA.sd, file = file.path(od,paste0(fleet.names.f[f], "_FAA_sd_table.RDS")))
-      saveRDS(FAA.lo, file = file.path(od,paste0(fleet.names.f[f], "_FAA_lo_table.RDS")))
-      saveRDS(FAA.hi, file = file.path(od,paste0(fleet.names.f[f], "_FAA_hi_table.RDS")))
+      if(!is.null(od)){ 
+        saveRDS(FAA.sd, file = file.path(od,paste0(fleet.names.f[f], "_FAA_sd_table.RDS")))
+        saveRDS(FAA.lo, file = file.path(od,paste0(fleet.names.f[f], "_FAA_lo_table.RDS")))
+        saveRDS(FAA.hi, file = file.path(od,paste0(fleet.names.f[f], "_FAA_hi_table.RDS")))
+      }
     }
   }
   
   wham.dir <- find.package("wham")
   pt = list.files(find.package("wham"), pattern = "par_tables.Rmd", recursive = T, full.names = T)[1]
-  file.copy(from=pt, to=od, overwrite=TRUE)
-  #print(dir(od))
-  
-  if(do.html) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(od, "wham_par_tables.html"), 
-    quiet = T, envir = new.env())
-  #if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
-  if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.
-    origdir = getwd()
-    setwd(od)
-    rmarkdown::render("par_tables.Rmd", output_format = "pdf_document", output_file = "wham_par_tables.pdf", quiet = T)
-    setwd(origdir)
+  if(!is.null(od)){ 
+    file.copy(from=pt, to=od, overwrite=TRUE)
+    #print(dir(od))
+    
+    if(do.html) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "html_document", output_file = file.path(od, "wham_par_tables.html"), 
+      quiet = T, envir = new.env())
+    #if(do.tex) rmarkdown::render(file.path(od,"par_tables.Rmd"), output_format = "pdf_document", output_file = file.path(od,"wham_par_tables.pdf"), quiet = T)
+    if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.
+      origdir = getwd()
+      setwd(od)
+      rmarkdown::render("par_tables.Rmd", output_format = "pdf_document", output_file = "wham_par_tables.pdf", quiet = T)
+      setwd(origdir)
+    }
   }
 
   #delete par_tables.Rmd from od

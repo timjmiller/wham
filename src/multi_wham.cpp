@@ -847,12 +847,12 @@ Type objective_function<Type>::operator() ()
   }
   //need to do this
   //log_F = update_log_F(log_F, FAA, which_F_age);
-  matrix<Type> F(n_years_pop,n_fleets); //n_years_pop x n_fleets (projection years not yet populated)
-  for(int f = 0; f < log_F.cols(); f++) F.col(f) = exp(vector<Type> (log_F.col(f)));
+  //matrix<Type> F(n_years_pop,n_fleets); //n_years_pop x n_fleets (projection years not yet populated)
+  //for(int f = 0; f < log_F.cols(); f++) F.col(f) = exp(vector<Type> (log_F.col(f)));
   // see(F);
   REPORT(annual_Ps);
   REPORT(annual_SAA_spawn);
-  REPORT(F);
+  //REPORT(F);
   REPORT(all_NAA);
   // REPORT(log_F);
   REPORT(NAA);
@@ -1134,7 +1134,6 @@ Type objective_function<Type>::operator() ()
   REPORT(Fbar);
 
   REPORT(q);
-  REPORT(F);
   REPORT(QAA);
   REPORT(log_F_tot);
   REPORT(log_FAA_tot);
@@ -1144,7 +1143,7 @@ Type objective_function<Type>::operator() ()
     ADREPORT(log_NAA_rep);
     ADREPORT(log_SSB);
     ADREPORT(log_SSB_all);
-    ADREPORT(log_F);
+    //ADREPORT(log_F);
     ADREPORT(log_FAA);
     ADREPORT(log_FAA_tot);
     ADREPORT(log_FAA_by_region);

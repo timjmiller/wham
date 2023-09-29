@@ -118,7 +118,20 @@ project_wham = function(model,
   #if(!exists("err")) 
     proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
     #mod$proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    proj_mod$years <- input2$years
+    proj_mod$years_full <- input2$years_full
+    proj_mod$ages.lab <- input2$ages.lab
+    proj_mod$model_name <- input2$model_name
+    proj_mod$call <- match.call()
     proj_mod$input <- input2
+    wham_commit <- packageDescription("wham")$GithubSHA1
+    proj_mod$wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 
+    wham_version <- packageDescription("wham")$Version
+    proj_mod$wham_version <- paste0(wham_version, " / ", proj_mod$wham_commit)
+    TMB_commit <- packageDescription("TMB")$GithubSHA1
+    proj_mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
+    TMB_version <- packageDescription("TMB")$Version
+    proj_mod$TMB_version <- paste0(TMB_version, " / ", proj_mod$TMB_commit, ")")
 
     proj_mod$fn()
     #mod$proj_sdrep <- TMB::sdreport(mod$proj_mod, bias.correct = TRUE) #better accuracy of projection output
@@ -157,11 +170,12 @@ project_wham = function(model,
   #}
 
   # pass along previously calculated retros, OSA residuals, error messages, and runtime
-  elements <- c("final_gradient","opt","peels","osa","err","err_retro","runtime","TMB_version","dir")
+  noproj_elements <- names(model)[!names(model) %in% names(proj_mod)] #if anything, should just be OSA.aggregate and OSA.agecomp
+#  elements <- c("final_gradient","opt","peels","osa","err","err_retro","runtime","TMB_version","dir")
 
-  elements <- elements[which(elements %in% names(model))]
+#  elements <- elements[which(elements %in% names(model))]
   # print(elements)
-  proj_mod[elements] <- model[elements]
+  proj_mod[noproj_elements] <- model[noproj_elements]
   proj_mod[c("years","years_full","ages.lab")] <- proj_mod$input[c("years","years_full","ages.lab")]
   #if(!is.null(model$final_gradient)) mod$final_gradient <- model$final_gradient # final_gradient
   #if(!is.null(model$opt)) mod$opt <- model$opt # optimization results
@@ -170,6 +184,7 @@ project_wham = function(model,
   #if(!is.null(model$err)) mod$err <- model$err # error messages
   #if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
   #mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
+  proj_mod$date = Sys.time()
 
   # print error message
   if(!is.null(model$err_proj))

@@ -2031,18 +2031,25 @@ plot.cv <- function(mod)
   } else {
     std = mod$sdrep
   }
-  ssb.ind <- matrix(which(rownames(std) == "log_SSB"), nyrs, dat$n_stocks)
-	log.ssb <- matrix(std[ssb.ind,1], ncol = dat$n_stocks)
-	ssb.cv <- matrix(std[ssb.ind,2], ncol = dat$n_stocks)
-  NAA.ind = array(which(rownames(std) == "log_NAA_rep"),dim = dim(mod$rep$NAA))
+  rep_est <- as.list(mod$sdrep, "Est", report=T)
+  rep_std <- as.list(mod$sdrep, "Std", report=T)
+  #ssb.ind <- matrix(which(rownames(std) == "log_SSB"), nyrs, dat$n_stocks)
+	log.ssb <- rep_est$log_SSB #matrix(std[ssb.ind,1], ncol = dat$n_stocks)
+	ssb.cv <- rep_std$log_SSB #matrix(std[ssb.ind,2], ncol = dat$n_stocks)
+  #NAA.ind = array(which(rownames(std) == "log_NAA_rep"),dim = dim(mod$rep$NAA))
   log.R <- R.cv <- matrix(NA, nyrs, dat$n_stocks)
   for(s in 1:dat$n_stocks) {
-    log.R[,s] <- array(std[NAA.ind,1], dim = dim(mod$rep$NAA))[s, dat$spawn_regions[s],,1]
-    R.cv[,s] <- array(std[NAA.ind,2], dim = dim(mod$rep$NAA))[s, dat$spawn_regions[s],,1]
+    log.R[,s] <- rep_est$log_NAA_rep[s,dat$spawn_regions[s],,1] #[NAA.ind,1], dim = dim(mod$rep$NAA))[s, dat$spawn_regions[s],,1]
+    R.cv[,s] <- rep_std$log_NAA_rep[s,dat$spawn_regions[s],,1] #array(std[NAA.ind,2], dim = dim(mod$rep$NAA))[s, dat$spawn_regions[s],,1]
   }
-  F.ind = matrix(which(rownames(std) == "log_F"), nyrs, ncol = dat$n_fleets)
-  log.F = matrix(std[F.ind,1], nyrs, ncol = dat$n_fleets)
-  F.cv = matrix(std[F.ind,2], nyrs, ncol = dat$n_fleets)
+  FAA <- exp(rep_est$log_FAA)
+  FAA.cv <- rep_std$log_FAA
+  #F.ind = matrix(which(rownames(std) == "log_F"), nyrs, ncol = dat$n_fleets)
+  F.cv <- matrix(NA, nyrs, dat$n_fleets)
+  for(i in 1:dat$n_fleets) {
+    ages <- apply(FAA[i,,],1, function(x) which(x==max(x))[1])
+    F.cv[,i] <- FAA.cv[i,,][cbind(1:nyrs, ages)]
+  }
 
   any.na <- any(is.na(c(R.cv, ssb.cv, F.cv)))
 
