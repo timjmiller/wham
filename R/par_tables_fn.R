@@ -41,6 +41,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   fe.vals = numeric()
   fe.cis = matrix(nrow = 0,ncol = 3)
 
+  ages = mod$ages.lab
+  map_sig <- array(mod$input$map$log_NAA_sigma, dim = dim(pars$log_NAA_sigma))
+  map_rho <- array(mod$input$map$trans_NAA_rho, dim = dim(pars$trans_NAA_rho))
   for(s in 1:data$n_stocks) if(data$NAA_re_model[s]>0) {
     if(data$recruit_model[s] == 2) { #random about mean
       tvar = sum(data$Ecov_how_R[,s]) == 1
@@ -100,41 +103,55 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       }
     }
 
-    ages = mod$ages.lab
-    map <- matrix(mod$input$map$log_NAA_sigma, nrow = data$n_stocks)
-    ind = unique(map[s,])
-    #npar = length(ind)
-    #al = ah = integer()
-    for(i in ind) {
-      #al = c(al, ages[min(which(ind == ind[i]))])
-      #ah = c(ah, ages[max(which(ind == ind[i]))])
-      as <- ages[which(map[s,] == i)]
-      diff.ages <- diff(which(map[s,] == i))
-      if(length(as)==1) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (age ", as[1], ")"))
-      else{
-        if(all(diff.ages==1)) fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (ages ", as[1], "-", as[length(as)], ")"))
-        else fe.names = c(fe.names, paste0(stock.names.tab[s], " NAA $\\sigma$ (ages ", paste0(as, collapse = ","), ")"))
+    for(r in 1:data$n_regions){
+      ind = unique(map_sig[s,r,])
+      use.reg.name <- ""
+      if(data$n_regions>1) use.reg.name <- paste0(" in ", region.names.tab[r])
+      #npar = length(ind)
+      #al = ah = integer()
+      for(i in ind) {
+        #al = c(al, ages[min(which(ind == ind[i]))])
+        #ah = c(ah, ages[max(which(ind == ind[i]))])
+        as <- ages[which(map_sig[s,r,] == i)]
+        diff.ages <- diff(which(map_sig[s,r,] == i))
+        if(length(as)){
+          if(length(as)==1) fe.names = c(fe.names, paste0(stock.names.tab[s], use.reg.name, " NAA $\\sigma$ (age ", as[1], ")"))
+          else{
+            if(all(diff.ages==1)) fe.names = c(fe.names, paste0(stock.names.tab[s], use.reg.name, " NAA $\\sigma$ (ages ", as[1], "-", as[length(as)], ")"))
+            else fe.names = c(fe.names, paste0(stock.names.tab[s], use.reg.name, " NAA $\\sigma$ (ages ", paste0(as, collapse = ","), ")"))
+          }
+          #more = ah[i] != al[i]
+          #fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", al[i], ifelse(more, paste0("-", ah[i], ")"), ")")))
+          fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[s,r,which(ind==i)[1]]))
+          fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[s,r,which(ind==i)[1]], sd$log_NAA_sigma[s,r,which(ind==i)[1]], type = "exp"))
+        }
       }
-      #more = ah[i] != al[i]
-      #fe.names = c(fe.names, paste0("NAA $\\sigma$ (age ", al[i], ifelse(more, paste0("-", ah[i], ")"), ")")))
-      fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[s,which(ind==i)[1]]))
-      fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[s,which(ind==i)[1]], sd$log_NAA_sigma[s,which(ind==i)[1]], type = "exp"))
     }
-    if(is.null(mod$input$map$trans_NAA_rho)) mod$input$map$trans_NAA_rho <- 1:length(mod$input$par$trans_NAA_rho)
-    map <- matrix(mod$input$map$trans_NAA_rho, nrow = data$n_stocks)[s,]
-    if(!is.na(map[1])){
-      fe.names = c(fe.names, paste(stock.names.tab[s], " NAA AR1 $\\rho$", "age"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,1])))
-      fe.cis = rbind(fe.cis, 
-        ci(pars$trans_NAA_rho[s,1], sd$trans_NAA_rho[s,1], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
-      )
-    }
-    if(!is.na(map[2])){
-      fe.names = c(fe.names, paste(stock.names.tab[s], " NAA AR1 $\\rho$", "year"))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,2])))
-      fe.cis = rbind(fe.cis, 
-        ci(pars$trans_NAA_rho[s,2], sd$trans_NAA_rho[s,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
-      )
+    # if(is.null(mod$input$map$trans_NAA_rho)) mod$input$map$trans_NAA_rho <- 1:length(mod$input$par$trans_NAA_rho)
+    for(r in 1:data$n_regions){
+      use.reg.name <- ""
+      if(data$n_regions>1) use.reg.name <- paste0(" in ", region.names.tab[r])
+      if(!is.na(map_rho[s,r,1])){
+        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " NAA AR1 $\\rho$", "age"))
+        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,1])))
+        fe.cis = rbind(fe.cis, 
+          ci(pars$trans_NAA_rho[s,r,1], sd$trans_NAA_rho[s,r,1], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
+        )
+      }
+      if(!is.na(map_rho[s,r,2])){
+        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " NAA AR1 $\\rho$", "year"))
+        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,2])))
+        fe.cis = rbind(fe.cis, 
+          ci(pars$trans_NAA_rho[s,r,2], sd$trans_NAA_rho[s,r,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
+        )
+      }
+      if(!is.na(map_rho[s,r,3])){ #not yet implemented
+        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " Recruitment AR1 $\\rho$", "year"))
+        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,2])))
+        fe.cis = rbind(fe.cis, 
+          ci(pars$trans_NAA_rho[s,r,2], sd$trans_NAA_rho[s,r,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
+        )
+      }
     }
   }
 

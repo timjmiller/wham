@@ -6,22 +6,27 @@
 #' If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic). Otherwise,
 #' \code{NAA_re} specifies numbers-at-age configuration. It is a list with the following possible entries:
 #'   \describe{
-#'     \item{$sigma}{Which ages allow deviations from pred_NAA? Common options are specified with the strings:
+#'     \item{$sigma}{Which ages allow deviations from the predicted NAA given NAA from previou time step? Must be a single character string described below or a vector
+#'                    of length n_stocks. If length = 1, assumptions will be applied to all stocks. Common options are specified with the strings:
 #'                    \describe{
 #'                      \item{"rec"}{Random effects on recruitment (deviations), all other ages deterministic}
 #'                      \item{"rec+1"}{"Full state space" model with 2 estimated \code{sigma_a}, one for recruitment and one shared among other ages}
 #'                    }
-#'                   Alternatively, you can specify a more complex structure by entering a vector with length = n.ages, where each entry points to the
-#'                   NAA_sigma to use for that age. E.g. c(1,2,2,3,3,3) will estimate 3 \code{sigma_a}, with recruitment (age-1) deviations having their
-#'                   own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}. If length = 1, assumptions will be applied to all stocks.
 #'                  }
-#'     \item{$sigma_vals}{Initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and NAA_re$sigma is
+#'     \item{$sigma_map}{You can specify a more complex parameter configuration by entering an integer array (nstocks x n_regions x n_ages), where each entry points to the
+#'                   NAA_sigma to use for that stock and age. E.g., for 2 stocks, 2 regions, and 6 ages, array(rep(c(1,2,2,3,3,3), each = 4),c(2,2,6)) will estimate 3 
+#'                   sigmas, with recruitment (age-1) deviations having their own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}. 
+#'                   All parameters being the same for both stocks and across regions. The user must be sure that a compatible \code{NAA_re$sigma} configuration is defined.
+#'                   Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is not specified.
+#'                  }
+#'     \item{$sigma_vals}{Initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is
 #'                  not specifed. Otherwise when \code{NAA_re$sigma} =
 #'                  \describe{
-#'                    \item{"rec"}{must be a single value.}
-#'                    \item{"rec+1"}{2 values must be specified. First is for the first age class (recruits), second is for all other ages.}
-#'                    \item{vector of values (length = number of age classes)}{either 1 value or the number of values is equal to the number of unique values provided to \code{NAA_re$sigma}.}
+#'                    \item{"rec"}{must be a list (length = n_stocks) of single values .}
+#'                    \item{"rec+1"}{Either 1) a list (length = n_stocks) of 2 values must be specified. First is for the first age class (recruits), second is for all other ages,
+#'                      or 2) an array (nstocks x nregions x nages)}{only the value for age 1 in the spawning region is used.}
 #'                  }
+#'                  If \code{NAA_re$sigma_map} is defined, the user must ensure that the configuration is compatible with \code{NAA_re$sigma_vals}
 #'                }
 #'     \item{$cor}{Correlation structure for the NAA deviations. Options are:
 #'                  \describe{
@@ -49,7 +54,7 @@
 #'     \item{$N1_pars}{if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
 #'        initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
 #'     }
-#'     \item{$recruit_model}{Integer determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
+#'     \item{$recruit_model}{Integer vector (n_stocks) determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
 #'        and \code{ecov} are properly specified.
 #'       \describe{
 #'           \item{1}{SCAA, estimating all recruitements as fixed effects or a random walk if NAA_re$sigma specified}
@@ -111,8 +116,6 @@ set_NAA = function(input, NAA_re=NULL)
   map$N1_repars = factor(map$N1_repars)
   k = 1
   if(any(data$N1_model == 2) & any(data$N1_model != 2)) stop("If any initial numbers at age are treated as RE, then all must.")
-  print("data$N1_model")
-  print(data$N1_model)
   for(s in 1:data$n_stocks) {
     if(data$N1_model[s] == 0){
       for(r in 1:data$n_regions) for(a in 1:data$n_ages) {
@@ -150,10 +153,10 @@ set_NAA = function(input, NAA_re=NULL)
   # NAA_re options for beyond year 1
   # default = SCAA for each stock
   data$NAA_re_model = rep(0, data$n_stocks)
-  par$log_NAA_sigma = matrix(0,data$n_stocks, data$n_ages)
-  map$log_NAA_sigma = matrix(NA, data$n_stocks, data$n_ages)
-  par$trans_NAA_rho = matrix(0,data$n_stocks, 2)
-  map$trans_NAA_rho = matrix(NA, data$n_stocks, 2)
+  par$log_NAA_sigma = array(0, c(data$n_stocks, data$n_regions, data$n_ages))
+  map$log_NAA_sigma = array(NA, c(data$n_stocks, data$n_regions, data$n_ages))
+  par$trans_NAA_rho = array(0,c(data$n_stocks, data$n_regions, 3))
+  map$trans_NAA_rho = array(NA,c(data$n_stocks, data$n_regions, 3))
   par$log_NAA = array(10,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
   map$log_NAA = array(NA,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
   for(s in 1:data$n_stocks){
@@ -167,14 +170,14 @@ set_NAA = function(input, NAA_re=NULL)
   if(!is.null(NAA_re$sigma)){
     k <- 1
     if(!length(NAA_re$sigma) %in% c(1,data$n_stocks)) stop("NAA_re$sigma length must be 1 or equal to the number of stocks.")
-    if(length(NAA_re$sigma) == 1 & data$n_stocks>1) {
+    if(length(NAA_re$sigma) == 1) {
       input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$sigma being used for all stocks (", NAA_re$sigma[[1]][1], ").\n"))
       #NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
-      map$log_NAA_sigma[,1] <- k
+      map$log_NAA_sigma[,,1] <- k
       data$NAA_re_model[] <- 1
       #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) if(data$NAA_where[s,r,1]==1) map$log_NAA[s,r,,1] <- 1 #change to unique values later
       if(NAA_re$sigma[[1]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
-        map$log_NAA_sigma[,-1] <- k+1
+        map$log_NAA_sigma[,,-1] <- k+1
         data$NAA_re_model[] <- 2
         #also RE for ages>1
         for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(a in 2:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
@@ -183,7 +186,7 @@ set_NAA = function(input, NAA_re=NULL)
       for(s in 1:data$n_stocks) {
         if(NAA_re$sigma[[s]][1] == "rec"){
           data$NAA_re_model[s] <- 1
-          map$log_NAA_sigma[s,1] <- k
+          map$log_NAA_sigma[s,,1] <- k
           #below is already done above for SCAA
           #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
           k <- k + 1
@@ -192,7 +195,7 @@ set_NAA = function(input, NAA_re=NULL)
         } else {
           if(NAA_re$sigma[[s]][1] == "rec+1"){ # default state-space model with two NAA_sigma (one for recruits, one for ages > 1)
             data$NAA_re_model[s] <- 2
-            map$log_NAA_sigma[s,] <- c(k, rep(k+1, data$n_ages-1))
+            for(r in 1:data$n_regions) map$log_NAA_sigma[s,r,] <- c(k, rep(k+1, data$n_ages-1))
             for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
             k <- k + 2
             #data$n_NAA_sigma <- 2
@@ -210,7 +213,7 @@ set_NAA = function(input, NAA_re=NULL)
                 tmp <- unique(NAA_re_sigma[[s]])
                 ind <- 1:length(tmp)
                 ind <- ind[match(NAA_re_sigma[[s]],tmp)] - 1
-                map$log_NAA_sigma[s,] <- k + ind
+                for(r in 1:data$n_regions) map$log_NAA_sigma[s,r,] <- k + ind
                 for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
                 k <- max(k + ind, na.rm=T)
                 #data$n_NAA_sigma <- max(unique(NAA_re$sigma), na.rm=T)
@@ -222,31 +225,37 @@ set_NAA = function(input, NAA_re=NULL)
       }
     }
     if(!is.null(NAA_re$sigma_vals)) {
-      if(NAA_re$sigma_vals != data$n_stocks) stop("NAA_re$sigma_vals must be a list with length = number of stocks")
-      for(s in 1:data$n_stocks) {
-        if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
-        par$log_NAA_sigma[s,] <- log(NAA_re$sigma_vals[[s]])
+      if(!is.array(NAA_re$sigma_vals)) {
+        if(NAA_re$sigma_vals != data$n_stocks) stop("NAA_re$sigma_vals must be a list with length = number of stocks")
+        for(s in 1:data$n_stocks) {
+          if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
+          par$log_NAA_sigma[s,,] <- log(NAA_re$sigma_vals[[s]])
+        }
+      } else {
+        if(any(dim(NAA_re$sigma_vals) != c(data$n_stocks, data$n_regions, data$n_ages))) stop("dimensions of NAA_re$sigma_vals array are not c(nstocks,nregions,nages)")
+        par$log_NAA_sigma[] <- log(NAA_re$sigma_vals)
       }
     }
 
     if(is.null(NAA_re$cor)) NAA_re$cor <- "iid"
     k <- 1
-    if(length(NAA_re$cor) == 1 & data$n_stocks>1) {
+    if(length(NAA_re$cor) == 1) {
       input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$cor being used for all stocks (",NAA_re$cor[[1]][1],").\n"))
       #NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
       if(!NAA_re$cor[[1]][1] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
-      if(NAA_re$cor[[1]][1] %in% c("ar1_a","2dar1")) map$trans_NAA_rho[,1] <- k
-      if(NAA_re$cor[[1]][1] == "ar1_y") map$trans_NAA_rho[,2] <- k
-      if(NAA_re$cor[[1]][1] == "2dar1") map$trans_NAA_rho[,2] <- k + 1
-      if(NAA_re$cor[[1]][1] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
+      if(NAA_re$cor[[1]][1] %in% c("ar1_a","2dar1")) map$trans_NAA_rho[,,1] <- k
+      if(NAA_re$cor[[1]][1] == "ar1_y") map$trans_NAA_rho[,,2] <- k
+      if(NAA_re$cor[[1]][1] == "2dar1") map$trans_NAA_rho[,,2] <- k + 1
+      #if(NAA_re$cor[[1]][1] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
     } else {
       for(s in 1:data$n_stocks) {
         if(!is.null(NAA_re$cor[[s]])){
           if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
-          if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,1] <- k
-          if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,2] <- k
-          if(NAA_re$cor[[s]] == "2dar1") map$trans_NAA_rho[s,] <- k + 0:1
-          if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
+          if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,,1] <- k
+          if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,,2] <- k
+          if(NAA_re$cor[[s]] == "2dar1") for(r in 1:data$n_regions) map$trans_NAA_rho[s,r,1:2] <- k + 0:1
+          k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
+          #if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
         } else {
           NAA_re$cor[[s]] <- 'iid'
         }
@@ -257,20 +266,25 @@ set_NAA = function(input, NAA_re=NULL)
       for(s in 1:data$n_stocks) {
         if(!is.null(NAA_re$cor_vals[[s]])) {
           if(!length(NAA_re$cor_vals[[s]]) %in% 1:2) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
-          if(length(NAA_re$cor_vals[[s]]) == 2) par$trans_NAA_rho[s,] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+          if(length(NAA_re$cor_vals[[s]]) == 2)  for(r in 1:data$n_regions) par$trans_NAA_rho[s,r,1:2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
           if(length(NAA_re$cor_vals[[s]]) == 1) {
             if(NAA_re$cor[[s]] == "ar1_a") {
-              par$trans_NAA_rho[s,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+              par$trans_NAA_rho[s,,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
             }
             if(NAA_re$cor[[s]] == "ar1_y") {
-              par$trans_NAA_rho[s,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
+              par$trans_NAA_rho[s,,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
             }
           }
         }
       }
     }
+    if(!is.null(NAA_re$sigma_map)) {
+      if(!is.array(NAA_re$sigma_map)) stop("NAA_re$sigma_map must be an array with dimensions = nstocks x nregions x nages")
+      if(any(dim(NAA_re$sigma_map) != c(data$n_stocks, data$n_regions, data$n_ages))) stop("dimensions of NAA_re$sigma_vals array are not c(nstocks,nregions,nages)")
+      map$log_NAA_sigma[] <- NAA_re$sigma_map
+    }
   }
-  map$trans_NAA_rho[which(!is.na(map$trans_NAA_rho))] <- 1:sum(!is.na(map$trans_NAA_rho))
+  #map$trans_NAA_rho[which(!is.na(map$trans_NAA_rho))] <- 1:sum(!is.na(map$trans_NAA_rho))
   map$trans_NAA_rho <- factor(map$trans_NAA_rho)
   map$log_NAA[which(!is.na(map$log_NAA))] <- 1:sum(!is.na(map$log_NAA))
   map$log_NAA <- factor(map$log_NAA)
@@ -313,7 +327,6 @@ set_NAA = function(input, NAA_re=NULL)
   input$par = par
   input$map = map
 	if(length(input$log$NAA))	input$log$NAA <- c("NAA: \n", input$log$NAA)
-
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
 	#input = wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?

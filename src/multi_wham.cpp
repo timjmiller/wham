@@ -250,8 +250,8 @@ Type objective_function<Type>::operator() ()
   //PARAMETER_VECTOR(log_R1); //length must be consistent with R1_pointer above.
   PARAMETER_ARRAY(N1_repars); // (n_stocks x n_regions x 3) mean, sig, rho
   PARAMETER_ARRAY(log_N1); // (n_stocks x n_regions x n_ages)
-  PARAMETER_MATRIX(log_NAA_sigma); // (n_stocks x n_ages) vector sigmas used with NAA_sigma_pointers
-  PARAMETER_MATRIX(trans_NAA_rho); // (n_stocks x 2) rho_a, rho_y (length = 2)
+  PARAMETER_ARRAY(log_NAA_sigma); // (n_stocks x n_regions x n_ages) sigmas for NAA RE
+  PARAMETER_ARRAY(trans_NAA_rho); // (n_stocks x n_regions x 3) rho_a, rho_y, recruits rho_y
   //Just have annual NAA currently
   PARAMETER_ARRAY(log_NAA); //(n_stocks x n_regions x nyears-1 x n_ages) 
   

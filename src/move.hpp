@@ -142,51 +142,68 @@ array<Type> get_nll_mu(array<Type> mu_repars, array<Type> mu_re, matrix<int> mu_
   }
 
   for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++) {
-    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <=4)) if(can_move_reduced(0,0,r,rr)) {//constant, RE
-      Type sigma_mu = exp(mu_repars(0,0,r,rr,0));
-      Type rho_mu_a = geninvlogit(mu_repars(0,0,r,rr,1),Type(-1),Type(1),Type(1));
-      Type rho_mu_y = geninvlogit(mu_repars(0,0,r,rr,2),Type(-1),Type(1),Type(1));
+    vector<int> stock_season_can_move(n_stocks);
+    int season_can_move = 0;
+    stock_season_can_move.setZero();
+    for(int s = 0; s < n_stocks; s++) for(int t = 0; t < n_seasons; t++){
+      if(can_move_reduced(s,t,r,rr)) {
+        season_can_move = t+1; //first season any stock can move 
+        break;
+      }
+    }
+    for(int s = 0; s < n_stocks; s++) {
+      for(int t = 0; t < n_seasons; t++){
+        if(can_move_reduced(s,t,r,rr)) {
+          stock_season_can_move(s) = t+1; //first season each stock can move
+          break;
+        }
+      }
+    } 
+    if((mu_model(r,rr) > 1) & (mu_model(r,rr) <=4)) if(season_can_move>0) {//constant, RE
+      Type sigma_mu = exp(mu_repars(0,season_can_move-1,r,rr,0));
+      Type rho_mu_a = geninvlogit(mu_repars(0,season_can_move-1,r,rr,1),Type(-1),Type(1),Type(1));
+      Type rho_mu_y = geninvlogit(mu_repars(0,season_can_move-1,r,rr,2),Type(-1),Type(1),Type(1));
       if(mu_model(r,rr) == 2) { //age re
         Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_a,2)),-0.5); //marginal sd
         vector<Type> mu_re_a(n_ages);
-        for(int a = 0; a < n_ages; a++) mu_re_a(a) = mu_re(0,a,0,years_use(0),r,rr);
-        nll(0,0,r,rr) += SCALE(AR1(rho_mu_a), Sigma_MU)(mu_re_a);
+        for(int a = 0; a < n_ages; a++) mu_re_a(a) = mu_re(0,a,season_can_move-1,years_use(0),r,rr);
+        nll(0,season_can_move-1,r,rr) += SCALE(AR1(rho_mu_a), Sigma_MU)(mu_re_a);
       }
       if(mu_model(r,rr) == 3) { //year re
         Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2)),-0.5); //marginal sd
         vector<Type> mu_re_y(n_y);
-        for(int y = 0; y< n_y; y++) mu_re_y(y) = mu_re(0,0,0,years_use(y),r,rr);
-        nll(0,0,r,rr) += SCALE(AR1(rho_mu_y), Sigma_MU)(mu_re_y);
+        for(int y = 0; y< n_y; y++) mu_re_y(y) = mu_re(0,0,season_can_move-1,years_use(y),r,rr);
+        nll(0,season_can_move-1,r,rr) += SCALE(AR1(rho_mu_y), Sigma_MU)(mu_re_y);
       }
       if(mu_model(r,rr) == 4) { //age,year re
         Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2)) * (1-pow(rho_mu_a,2)),-0.5); //marginal sd
         array<Type> mu_re_ya(n_y,n_ages);
-        for(int y = 0; y< n_y; y++) for(int a = 0; a < n_ages; a++) mu_re_ya(y,a) = mu_re(0,a,0,years_use(y),r,rr);
-        nll(0,0,r,rr) += SCALE(SEPARABLE(AR1(rho_mu_a),AR1(rho_mu_y)), Sigma_MU)(mu_re_ya); // must be array, not matrix!
+        for(int y = 0; y< n_y; y++) for(int a = 0; a < n_ages; a++) mu_re_ya(y,a) = mu_re(0,a,season_can_move-1,years_use(y),r,rr);
+        nll(0,season_can_move-1,r,rr) += SCALE(SEPARABLE(AR1(rho_mu_a),AR1(rho_mu_y)), Sigma_MU)(mu_re_ya); // must be array, not matrix!
       }
     }
     if((mu_model(r,rr) > 5) & (mu_model(r,rr) <=8)) {//stock, RE
-      for(int s = 0; s < n_stocks; s++) if(can_move_reduced(s,0,r,rr)) {
-        Type sigma_mu = exp(mu_repars(s,0,r,rr,0));
-        Type rho_mu_a = geninvlogit(mu_repars(s,0,r,rr,1),Type(-1),Type(1),Type(1));
-        Type rho_mu_y = geninvlogit(mu_repars(s,0,r,rr,2),Type(-1),Type(1),Type(1));
+      for(int s = 0; s < n_stocks; s++) if(stock_season_can_move(s)>0) {
+        Type sigma_mu = exp(mu_repars(s,stock_season_can_move(s)-1,r,rr,0));
+        Type rho_mu_a = geninvlogit(mu_repars(s,stock_season_can_move(s)-1,r,rr,1),Type(-1),Type(1),Type(1));
+        Type rho_mu_y = geninvlogit(mu_repars(s,stock_season_can_move(s)-1,r,rr,2),Type(-1),Type(1),Type(1));
         if(mu_model(r,rr) == 6) { //age re
           Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_a,2)),-0.5); //marginal sd
           vector<Type> mu_re_a(n_ages);
-          for(int a = 0; a < n_ages; a++) mu_re_a(a) = mu_re(s,a,0,0,r,rr);
-          nll(s,0,r,rr) += SCALE(AR1(rho_mu_a), Sigma_MU)(mu_re_a);
+          for(int a = 0; a < n_ages; a++) mu_re_a(a) = mu_re(s,a,stock_season_can_move(s)-1,0,r,rr);
+          nll(s,stock_season_can_move(s)-1,r,rr) += SCALE(AR1(rho_mu_a), Sigma_MU)(mu_re_a);
         }
         if(mu_model(r,rr) == 7) { //year re
           Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2)),-0.5); //marginal sd
           vector<Type> mu_re_y(n_y);
-          for(int y = 0; y< n_y; y++) mu_re_y(y) = mu_re(s,0,0,years_use(y),r,rr);
-          nll(s,0,r,rr) += SCALE(AR1(rho_mu_y), Sigma_MU)(mu_re_y);
+          for(int y = 0; y< n_y; y++) mu_re_y(y) = mu_re(s,0,stock_season_can_move(s)-1,years_use(y),r,rr);
+          nll(s,stock_season_can_move(s)-1,r,rr) += SCALE(AR1(rho_mu_y), Sigma_MU)(mu_re_y);
         }
         if(mu_model(r,rr) == 8) { //age,year re
           Type Sigma_MU = sigma_mu * pow((1-pow(rho_mu_y,2)) * (1-pow(rho_mu_a,2)),-0.5); //marginal sd
           array<Type> mu_re_ya(n_y,n_ages);
-          for(int y = 0; y< n_y; y++) for(int a = 0; a < n_ages; a++) mu_re_ya(y,a) = mu_re(s,a,0,years_use(y),r,rr);
-          nll(s,0,r,rr) += SCALE(SEPARABLE(AR1(rho_mu_a),AR1(rho_mu_y)), Sigma_MU)(mu_re_ya); // must be array, not matrix!
+          for(int y = 0; y< n_y; y++) for(int a = 0; a < n_ages; a++) mu_re_ya(y,a) = mu_re(s,a,stock_season_can_move(s)-1,years_use(y),r,rr);
+          nll(s,stock_season_can_move(s)-1,r,rr) += SCALE(SEPARABLE(AR1(rho_mu_a),AR1(rho_mu_y)), Sigma_MU)(mu_re_ya); // must be array, not matrix!
         }
       }
     }

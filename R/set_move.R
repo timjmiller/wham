@@ -102,8 +102,8 @@ set_move = function(input, move)
     }
     input$log$move <- c(input$log$move, paste0("\n move$mean_model was not specified and set to ", move$mean_model[1], " for all movement parameters based on data$n_regions and move$can_move if provided. \n"))
   }
-  if(!is.matrix(move$mean_model)) stop(paste0("move$mean_model must be a n_regions x n_region-1 matrix filled with one of", paste0(mean_mods, collapse = ","), " when provided."))
-  if(any(!move$mean_model %in% mean_mods)) stop(paste0("elements of move$mean_model must each be one of", paste0(mean_mods, collapse = ","), " when provided."))
+  if(!is.matrix(move$mean_model)) stop(paste0("move$mean_model must be a n_regions x n_region-1 matrix filled with one of ", paste0(mean_mods, collapse = ", "), " when provided."))
+  if(any(!move$mean_model %in% mean_mods)) stop(paste0("elements of move$mean_model must each be one of ", paste0(mean_mods, collapse = ", "), " when provided."))
   if(all(move$mean_model == "none")) {
     if(data$n_regions>1) input$log$move <- c(input$log$move, "all move$mean_model = 'none', so model assumes no movement for any stocks.\n")
     data$can_move[] <- 0
@@ -133,16 +133,16 @@ set_move = function(input, move)
   #define data$mu_model and map for mu_re and mu_repars
   data$mu_model[] = 1 #this value needs to be between 1-8 after below
   data$mu_model[which(move$mean_model == "constant")] = 1 #already defined
-  data$mu_model[which(move$mean_model == "stock")] = 5 #already defined
+  data$mu_model[which(move$mean_model == "stock_constant")] = 5 #already defined
   data$mu_model[which(move$mean_model == "season")] = 9 #already defined
   data$mu_model[which(move$mean_model == "stock_season")] = 13 #already defined
   re_mods <- c("none","iid", "ar1")
   if(is.null(move$age_re)) move$age_re <- matrix("none", data$n_regions, data$n_regions -1)
-  if(!is.matrix(move$age_re)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of", paste0(re_mods, collapse = ","), " when provided."))
-  if(!all(dim(move$age_re) == data$n_regions - 0:1)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of", paste0(re_mods, collapse = ","), " when provided."))
+  if(!is.matrix(move$age_re)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
+  if(!all(dim(move$age_re) == data$n_regions - 0:1)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
   if(is.null(move$year_re)) move$year_re = matrix("none", data$n_regions, data$n_regions -1)
-  if(!is.matrix(move$year_re)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of", paste0(re_mods, collapse = ","), " when provided."))
-  if(!all(dim(move$year_re) == data$n_regions - 0:1)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of", paste0(re_mods, collapse = ","), " when provided."))
+  if(!is.matrix(move$year_re)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
+  if(!all(dim(move$year_re) == data$n_regions - 0:1)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
   ind <- which(move$age_re != "none" & move$year_re == "none")
   data$mu_model[ind] <- data$mu_model[ind] + 1
   ind <- which(move$age_re == "none" & move$year_re != "none")

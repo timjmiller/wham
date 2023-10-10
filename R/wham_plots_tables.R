@@ -1099,8 +1099,6 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
   pred_NAA = mod$rep$pred_NAA
   NAA = mod$rep$NAA
   sigma_all = exp(mod$parList$log_NAA_sigma) #n_stocks x n_ages
-  #sigma = exp(mod$parList$log_NAA_sigma[mod$env$data$NAA_sigma_pointers])
-  #sigma = matrix(sigma, length(years_full), dat$n_ages, byrow = TRUE)
   stocks <- 1:dat$n_stocks
   if(!missing(use.s)) stocks <- use.s
   regions <- 1:dat$n_regions
@@ -1112,7 +1110,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
   rfns <- chartr(" ", "_", mod$input$region_names)
 	for(s in stocks) for(r in regions) for (i in ages) if(dat$NAA_where[s,r,i])
 	{
-    sigma = matrix(sigma_all[s,], length(years_full), dat$n_ages, byrow = TRUE)
+    sigma = matrix(sigma_all[s,r,], length(years_full), dat$n_ages, byrow = TRUE)
     log_stdres = (log(NAA[s,r,,])-log(pred_NAA[s,r,,]))/sigma
 		if(do.tex) cairo_pdf(file.path(od, paste0("NAA_4panel_", sfns[s], "_", rfns[r], "_age_",i,".pdf")), 
       family = fontfam, height = 10, width = 10)
@@ -1165,13 +1163,13 @@ plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 
 	n.yrs <- length(years)
   pred_NAA = mod$rep$pred_NAA
   NAA = mod$rep$NAA
-  sigma_all = exp(mod$parList$log_NAA_sigma) #n_stocks x n_ages
+  sigma_all = exp(mod$parList$log_NAA_sigma) #n_stocks x n_regions x n_ages
   x.at <- seq(1,n.yrs,5)
   x.lab <- years[x.at]
   sfns <- chartr(" ", "_", mod$input$stock_names)
   rfns <- chartr(" ", "_", mod$input$region_names)
   for(s in stocks) for(r in regions){
-    sigma = matrix(sigma_all[s,], length(years), length(ages), byrow = TRUE)
+    sigma = matrix(sigma_all[s,r,], length(years), length(ages), byrow = TRUE)
     log_stdres = (log(NAA[s,r,,])-log(pred_NAA[s,r,,]))/sigma
     ymin <- min(apply(log_stdres,1, function(x) sum(x[which(x<0)])))
     ymax <- max(apply(log_stdres,1, function(x) sum(x[which(x>0)])))
