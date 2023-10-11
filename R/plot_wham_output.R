@@ -148,6 +148,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     }
     plot.tile.age.year(mod, type="selAA")
     plot.tile.age.year(mod, type="MAA")
+    plot.tile.age.year(mod, type="NAA_devs")
     plot_q_prior_post(mod) #flag inside to plot if prior is being used. 
     plot_q(mod)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod)
@@ -350,6 +351,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     }
     plot.tile.age.year(mod, type="selAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
     plot.tile.age.year(mod, type="MAA", do.png=TRUE, fontfam=fontfam, od=dir.res)
+    plot.tile.age.year(mod, type="NAA_devs", do.png=TRUE, fontfam=fontfam, od=dir.res)
     plot_q_prior_post(mod, do.png=TRUE, fontfam=fontfam, od=dir.res) #flag inside to plot if prior is being used. 
     plot_q(mod, do.png=TRUE, fontfam=fontfam, od=dir.res)
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov(mod, do.png=TRUE, fontfam=fontfam, od=dir.res, res=res)

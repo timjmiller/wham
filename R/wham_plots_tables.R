@@ -3905,9 +3905,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) = ages.lab
     df.plot$Block <- factor(as.character(df.plot$Block), levels=block.names[include.selblock])
-
-    if(do.tex) cairo_pdf(file.path(od, paste0("SelAA_tile.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("SelAA_tile.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    fn <- "SelAA_tile"
+    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -3928,31 +3928,73 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     }
     sfns <- chartr(" ", "_", mod$input$stock_names)
     rfns <- chartr(" ", "_", mod$input$region_names)
+    df.plot <- data.frame(Stock = character(), Region = character(), Year = integer(), Age = integer(), Deviation = numeric())
     for(s in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions){
       df.MAA <- as.data.frame(rep$MAA[s,r,,])
-      df.MAA$Year <- years_full
-      colnames(df.MAA) <- c(paste0("Age_",1:n_ages),"Year")
-      df.plot <- df.MAA %>% tidyr::pivot_longer(-Year,
+      colnames(df.MAA) <- paste0("Age_",1:n_ages)
+      df.MAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.MAA)
+      temp <- df.MAA %>% tidyr::pivot_longer(tidyr::starts_with("Age"),
                 names_to = "Age", 
                 names_prefix = "Age_",
                 names_ptypes = list(Age = character()),
-                values_to = "M")
-      df.plot$Age <- as.factor(as.integer(df.plot$Age))
-      levels(df.plot$Age) = ages.lab
-
-      fn <- paste0("MAA_tile_",sfns[s], "_", rfns[r])
-
-      if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
-      if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
-        print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
-          ggplot2::geom_tile() +
-          ggplot2::scale_x_continuous(expand=c(0,0)) +
-          ggplot2::scale_y_discrete(expand=c(0,0)) + #, breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
-  #        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +
-          ggplot2::theme_bw() + 
-          viridis::scale_fill_viridis())
-      if(do.tex | do.png) dev.off()
+                values_to = "M") %>% as.data.frame()
+      df.plot <- rbind(df.plot, temp)
     }
+    df.plot$Age <- as.factor(as.integer(df.plot$Age))
+    levels(df.plot$Age) = ages.lab
+    fn <- paste0("MAA_tile")
+
+    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
+      ggplot2::geom_tile() +
+      ggplot2::scale_x_continuous(expand=c(0,0)) +
+      ggplot2::scale_y_discrete(expand=c(0,0)) + 
+      ggplot2::theme_bw() + 
+      ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
+      ggplot2::ggtitle("MAA") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+      viridis::scale_fill_viridis()
+      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
+      print(plt)
+    if(do.tex | do.png) dev.off()
+  }
+
+  # NAA_devs
+  if(type=="NAA_devs"){ 
+    if(mod$env$data$n_years_proj>0){
+      years_full = mod$years_full
+    } else {
+      years_full = years
+    }
+    df.plot <- data.frame(Stock = character(), Region = character(), Year = integer(), Age = integer(), Deviation = numeric())
+    for(s in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions){
+      df.NAA <- as.data.frame(rep$NAA_devs[s,r,,])
+      colnames(df.NAA) <- paste0("Age_",1:n_ages)
+      df.NAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.NAA)
+      temp <- df.NAA %>% tidyr::pivot_longer(tidyr::starts_with("Age"),
+                names_to = "Age", 
+                names_prefix = "Age_",
+                names_ptypes = list(Age = character()),
+                values_to = "Deviation") %>% as.data.frame()
+      df.plot <- rbind(df.plot, temp)
+    }
+    df.plot$Age <- as.factor(as.integer(df.plot$Age))
+    levels(df.plot$Age) = ages.lab
+    fn <- paste0("NAA_dev_tile")
+
+    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Deviation)) + 
+        ggplot2::geom_tile() +
+        ggplot2::scale_x_continuous(expand=c(0,0)) +
+        ggplot2::scale_y_discrete(expand=c(0,0)) + 
+        ggplot2::theme_bw() + 
+        ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
+        ggplot2::ggtitle("NAA deviations") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+        viridis::scale_fill_viridis()
+      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
+      print(plt)
+    if(do.tex | do.png) dev.off()
   }
 }  
 
