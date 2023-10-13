@@ -66,7 +66,7 @@
 #'          }
 #'       }
 #'     \item{$M_effect_map}{integer array (n_stocks x n_ages x n_regions x n_Ecov) indicating which estimated effects are common by age,stock,region.
-#'       If not specified there will be one effect estimated for all M where $M_how is other than "none".}
+#'       If not specified there the same effect is estimated for all M where $M_how is other than "none" for each covariate.}
 #'     \item{$q_how}{character matrix (n_Ecov x n_indices) indicating whether each ecov affects catchability for each index. and has 
 #'      the form "lag-order". "lag" can be:
 #'         \describe{
@@ -92,8 +92,8 @@
 #'          }
 #'        }
 #'     \item{$move_effect_map}{integer array (n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_Ecov) indicating which estimated 
-#'        effects are common by age,stock,region, season etc. If not specified there will be one effect estimated for all movement parameters
-#'        where $move_how is other than "none".}
+#'        effects are common by age,stock,region, season etc. If not specified the same effect is estimated for all movement parameters
+#'        where $move_how is other than "none" for each covariate.}
 #'     \item{$R_beta_vals}{array of initial values for effects on recruitment.}
 #'     \item{$M_beta_vals}{array of initial values for effects on natural mortality.}
 #'     \item{$q_beta_vals}{array of initial values for effects on cathability.}
@@ -207,6 +207,7 @@ set_ecov = function(input, ecov) {
     
     #default NAs for parameter matrix of observation standard deviations
     par$Ecov_obs_logsigma = matrix(NA, n_Ecov_obs, data$n_Ecov)
+    map$Ecov_obs_logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
 
     logsig_more = list()
     if(is.list(ecov$logsigma)){
@@ -234,15 +235,6 @@ set_ecov = function(input, ecov) {
     #now over write ecov$logsigma with logsig_more if available because the fixed obs var matrices have been defined
     if(length(logsig_more)) ecov$logsigma = logsig_more
 
-    #default values for: 
-    #map of observation error variance parameters
-    map$Ecov_obs_logsigma_re <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
-    #map of observation standard deviation
-    map$Ecov_obs_logsigma <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
-    #initial values variance parameter (fixed effects) for random effects 
-    par$Ecov_obs_sigma_par <- matrix(-1.3, nrow=2, ncol=data$n_Ecov)
-    #map of variance parameter (fixed effects) for random effects
-    map$Ecov_obs_sigma_par <- matrix(NA, nrow=2, ncol=data$n_Ecov) # turn off RE pars
 
     if(class(ecov$logsigma)[1] == 'character'){
       #check that estimation options are right
@@ -252,6 +244,7 @@ set_ecov = function(input, ecov) {
       if(length(ecov$logsigma) == 1) ecov$logsigma = rep(ecov$logsigma, data$n_Ecov) #use the single value for all Ecovs
       #check length of estimation options
       if(length(ecov$logsigma) != data$n_Ecov) stop("length of ecov$logsigma when character must be either 1 or the number of Ecovs")
+
 
       for(i in 1:data$n_Ecov) {
         if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
@@ -266,6 +259,18 @@ set_ecov = function(input, ecov) {
           map$Ecov_obs_sigma_par[,i] <- max(0, map$Ecov_obs_sigma_par, na.rm =T) + 1:2 
         }
       }
+
+      #default values for: 
+      #map of observation error variance parameters
+      map$Ecov_obs_logsigma_re <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
+      #initial values of random effects
+      par$Ecov_obs_logsigma_re = matrix(0, data$n_Ecov_obs, data$n_Ecov)
+
+      for(i in 1:data$n_Ecov) if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re') {
+        map$Ecov_obs_logsigma_re[,i] = max(0, map$Ecov_obs_logsigma_re, na.rm=T) + 1:data$n_years_Ecov
+        par$Ecov_obs_logsigma_re[,i] <- par$Ecov_obs_logsigma[,i] # random effect initialize at values in matrix provided
+      }
+
     }
 
     
@@ -279,9 +284,9 @@ set_ecov = function(input, ecov) {
     if(is.null(ecov$recruitment_how)) ecov$recruitment_how <- matrix("none", data$n_Ecov, data$n_stocks)
     if(is.null(ecov$q_how)) ecov$q_how <- matrix("none", data$n_Ecov, data$n_indices)
     if(is.null(ecov$M_how)) ecov$M_how <- array("none", dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_regions))
-    if(is.null(ecov$M_effect_map)) ecov$M_effect_map <- array(1, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov))
+    if(is.null(ecov$M_effect_map)) ecov$M_effect_map <- array(NA, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov))
     if(is.null(ecov$move_how)) ecov$move_how <- array("none", dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
-    if(is.null(ecov$move_effect_map)) ecov$move_effect_map <- array(1, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1, data$n_Ecov))
+    if(is.null(ecov$move_effect_map)) ecov$move_effect_map <- array(NA, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1, data$n_Ecov))
     
     for(i in 1:data$n_Ecov) {
       ecov_used <- any(c(ecov$recruitment_how[i,],ecov$q_how[i,],ecov$M_how[i,,,],ecov$move_how[i,,,,,]) != "none")
@@ -364,21 +369,44 @@ set_ecov = function(input, ecov) {
     #print(c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov, max(data$n_poly_Ecov_M)))
      # stop()
     par$Ecov_beta_M <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov, max(data$n_poly_Ecov_M)))
-
     map$Ecov_beta_M <- array(NA, dim = dim(par$Ecov_beta_M))
-    for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) for(i in 1:data$n_Ecov) {
-      if(data$Ecov_how_M[i,s,a,r] == 0) ecov$M_effect_map[s,a,r,i] <- NA #no effect so map it so.
-    }
-    ecov$M_effect_map[] <- as.integer(factor(ecov$M_effect_map)) #reset to 1:n_unique_effects_M
-    map$Ecov_beta_M[,,,,1] <- ecov$M_effect_map# k + 1:n
-    unique_effects_M <- unique(ecov$M_effect_map[which(!is.na(ecov$M_effect_map))]) #will be at least 1 value
-    n_unique_effects_M <- length(unique_effects_M)
-    for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) for(i in 1:data$n_Ecov) if(data$Ecov_how_M[i,s,a,r]>0){
-      n <- data$n_poly_Ecov_M[i,s,a,r]
-      if(n>1) { #need unique parameters for higher order polynomials
-        for(eff in 2:n) map$Ecov_beta_M[s,a,r,i,eff] <- map$Ecov_beta_M[s,a,r,i,1] + n_unique_effects_M * (eff-1)
+    
+    if(all(is.na(ecov$M_effect_map))){ #wasn't provided or some non-NA values were provided
+      k <- 0 #same beta for all effects of this covariate
+      for(i in 1:data$n_Ecov) {
+        for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) {
+          if(data$Ecov_how_M[i,s,a,r] != 0) {
+            map$Ecov_beta_M[s,a,r,i,] <- k + 1:data$n_poly_Ecov_M[i,s,a,r]
+            #ecov$M_effect_map[s,a,r,i] <- i #same beta for all M for each Ecov
+          }
+        }
+        k <- max(map$Ecov_beta_M, 0, na.rm = TRUE)
+      }
+    } else { #user provided 
+      ecov$M_effect_map[] <- as.integer(factor(ecov$M_effect_map)) #reset to 1:n_unique_effects_M
+      n_eff_tot <- max(ecov$M_effect_map, na.rm = TRUE)
+      for(i in 1:data$n_Ecov) {
+        for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) {
+          if(data$Ecov_how_M[i,s,a,r] != 0) {
+            n_eff <- data$n_poly_Ecov_M[i,s,a,r]
+            k <- ecov$M_effect_map[s,a,r,i]
+            if(n_eff>1) {
+              k <- c(k, neff_tot+1:(neff-1))
+              n_eff_tot <- max(k)
+            }
+            map$Ecov_beta_M[s,a,r,i,1:neff] <- k
+          }
+        }
       }
     }
+    # unique_effects_M <- unique(ecov$M_effect_map[which(!is.na(ecov$M_effect_map))]) #will be at least 1 value
+    # n_unique_effects_M <- length(unique_effects_M)
+    # for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(r in 1:data$n_regions) for(i in 1:data$n_Ecov) if(data$Ecov_how_M[i,s,a,r]>0){
+    #   n <- data$n_poly_Ecov_M[i,s,a,r]
+    #   if(n>1) { #need unique parameters for higher order polynomials
+    #     for(eff in 2:n) map$Ecov_beta_M[s,a,r,i,eff] <- map$Ecov_beta_M[s,a,r,i,1] + n_unique_effects_M * (eff-1)
+    #   }
+    # }
 
     #make q
     ecov$lag_q <- matrix(0, data$n_Ecov, data$n_indices)
@@ -431,21 +459,48 @@ set_ecov = function(input, ecov) {
     par$Ecov_beta_mu <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1, data$n_Ecov, 
       max(data$n_poly_Ecov_mu,0)))
     map$Ecov_beta_mu <- array(NA, dim = dim(par$Ecov_beta_mu))
-    if(data$n_regions>1){
-      for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) for(i in 1:data$n_Ecov) {
-        if(data$Ecov_how_mu[i,s,a,t,r,rr] == 0) ecov$move_effect_map[s,a,t,r,rr,i] <- NA #no effect so map it so.
-      }
-      ecov$mu_effect_map[] <- as.integer(factor(ecov$move_effect_map)) #reset to 1:n_unique_effects_M
-      map$Ecov_beta_mu[,,,,,,1] <- ecov$mu_effect_map# k + 1:n
-      unique_effects_mu <- unique(ecov$move_effect_map[which(!is.na(ecov$move_effect_map))]) #will be at least 1 value
-      n_unique_effects_mu <- length(unique_effects_mu)
-      for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) for(i in 1:data$n_Ecov) if(data$Ecov_how_M[i,s,a,r]>0){
-        n <- data$n_poly_Ecov_mu[i,s,a,t,r,rr]
-        if(n>1) { #need unique parameters for higher order polynomials
-          for(eff in 2:n) map$Ecov_beta_mu[s,a,t,r,rr,i,eff] <- map$Ecov_beta_mu[s,a,t,r,rr,i,1] + n_unique_effects_mu * (eff-1)
+
+    if(data$n_regions>1) {
+      if(all(is.na(ecov$move_effect_map))){ #wasn't provided or some non-NA values were provided
+        k <- 0 #same beta for all effects of this covariate
+        for(i in 1:data$n_Ecov) {
+          for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)){
+            if(data$Ecov_how_mu[i,s,a,t,r,rr] != 0) {
+              #ecov$move_effect_map[s,a,t,r,rr,i] <- NA #no effect so map it so.
+              map$Ecov_beta_mu[s,a,t,r,rr,i,] <- k + 1:data$n_poly_Ecov_mu[i,s,a,t,r,rr]
+            }
+          }
+          k <- max(map$Ecov_beta_mu, 0, na.rm = TRUE)
+        }
+      } else { #user provided 
+        ecov$move_effect_map[] <- as.integer(factor(ecov$move_effect_map))
+        n_eff_tot <- max(ecov$move_effect_map, na.rm = TRUE)
+        for(i in 1:data$n_Ecov) {
+          for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)){
+            if(data$Ecov_how_mu[i,s,a,t,r,rr] != 0) {
+              n_eff <- data$n_poly_Ecov_mu[i,s,a,t,r,rr]
+              k <- ecov$move_effect_map[s,a,t,r,rr,i]
+              if(n_eff>1) {
+                k <- c(k, neff_tot+1:(neff-1))
+                n_eff_tot <- max(k)
+              }
+              map$Ecov_beta_mu[s,a,t,r,rr,i,] <- k
+            }
+          }
         }
       }
     }
+
+    #   map$Ecov_beta_mu[,,,,,,1] <- ecov$move_effect_map# k + 1:n
+    #   unique_effects_mu <- unique(ecov$move_effect_map[which(!is.na(ecov$move_effect_map))]) #will be at least 1 value
+    #   n_unique_effects_mu <- length(unique_effects_mu)
+    #   for(s in 1:data$n_stocks) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) for(i in 1:data$n_Ecov) if(data$Ecov_how_M[i,s,a,r]>0){
+    #     n <- data$n_poly_Ecov_mu[i,s,a,t,r,rr]
+    #     if(n>1) { #need unique parameters for higher order polynomials
+    #       for(eff in 2:n) map$Ecov_beta_mu[s,a,t,r,rr,i,eff] <- map$Ecov_beta_mu[s,a,t,r,rr,i,1] + n_unique_effects_mu * (eff-1)
+    #     }
+    #   }
+    # }
     
     # # check that Ecov year vector doesn't have missing gaps
     # pad Ecov if it starts after model year1 - max(lag)
@@ -475,7 +530,7 @@ set_ecov = function(input, ecov) {
     data$n_years_Ecov <- dim(data$Ecov_obs)[1] # num years Ecov to model (padded)
     data$years_use_Ecov <- 1:data$n_years_Ecov - 1
     
-    data$Ecov_use_re <- rep(1, ncol=data$n_Ecov)
+    data$Ecov_use_re <- rep(1, data$n_Ecov)
     for(i in 1:data$n_Ecov){
       if(all(data$Ecov_use_obs[,i]==0)) {
         data$Ecov_use_re[i] <- data$Ecov_model[i] <- 0
@@ -483,17 +538,6 @@ set_ecov = function(input, ecov) {
       }
     }
 
-    #map of random effects
-    #do this now in case of padding 
-    map$Ecov_obs_logsigma_re = matrix(NA, data$n_years_Ecov, data$n_Ecov)
-    
-    #initial values of random effects
-    par$Ecov_obs_logsigma_re = matrix(0, data$n_years_Ecov, data$n_Ecov)
-
-    for(i in 1:data$n_Ecov) if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re') {
-      map$Ecov_obs_logsigma_re[,i] = max(0, map$Ecov_obs_logsigma_re, na.rm=T) + 1:data$n_years_Ecov
-      par$Ecov_obs_logsigma_re[,i] <- par$Ecov_obs_logsigma[,i] # random effect initialize at values in matrix provided
-    }
 
     #set up Ecov_re with padded dimensions
     #par$Ecov_re = matrix(rnorm(data$n_years_Ecov*data$n_Ecov), data$n_years_Ecov, data$n_Ecov)
@@ -512,14 +556,14 @@ set_ecov = function(input, ecov) {
     # print(end_model)
     # print(ecov$lag_R)
     #stop()
-    data$ind_Ecov_out_start_R[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_R - 1
-    data$ind_Ecov_out_end_R[] <- which(input$years_Ecov==end_model)- ecov$lag_R - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_M[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_M - 1
-    data$ind_Ecov_out_end_M[] <- which(input$years_Ecov==end_model)- ecov$lag_M - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_q[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_q - 1
-    data$ind_Ecov_out_end_q[] <- which(input$years_Ecov==end_model)- ecov$lag_q - 1 # -1 is for cpp indexing
-    data$ind_Ecov_out_start_mu[] <- which(input$years_Ecov == input$years[1]) - ecov$lag_mu - 1
-    data$ind_Ecov_out_end_mu[] <- which(input$years_Ecov==end_model)- ecov$lag_mu - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_R <- which(input$years_Ecov == input$years[1]) - ecov$lag_R - 1
+    data$ind_Ecov_out_end_R <- which(input$years_Ecov==end_model)- ecov$lag_R - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_M <- which(input$years_Ecov == input$years[1]) - ecov$lag_M - 1
+    data$ind_Ecov_out_end_M <- which(input$years_Ecov==end_model)- ecov$lag_M - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_q <- which(input$years_Ecov == input$years[1]) - ecov$lag_q - 1
+    data$ind_Ecov_out_end_q <- which(input$years_Ecov==end_model)- ecov$lag_q - 1 # -1 is for cpp indexing
+    data$ind_Ecov_out_start_mu <- which(input$years_Ecov == input$years[1]) - ecov$lag_mu - 1
+    data$ind_Ecov_out_end_mu <- which(input$years_Ecov==end_model)- ecov$lag_mu - 1 # -1 is for cpp indexing
     
     input$log$ecov <- c(input$log$ecov, paste0("Please check that the environmental covariates have been loaded and interpreted correctly.
 
@@ -607,7 +651,7 @@ set_ecov = function(input, ecov) {
         }
       }
     }
-    input$Ecov_names <- list(input$Ecov_names)
+    #input$Ecov_names <- list(input$Ecov_names)
 
     # Ecov process pars
     par$Ecov_process_pars = matrix(0, 3, data$n_Ecov) # nrows = RW: 2 par (Ecov1, log_sig), AR1: 3 par (mu, log_sig, phi); ncol = N_ecov

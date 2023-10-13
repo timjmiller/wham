@@ -440,7 +440,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   }
 
   for(i in 1:data$n_Ecov){
-    ecov.label <- paste0("Ecov ", mod$input$Ecov_names[[1]][i], ": ")
+    ecov.label <- paste0("Ecov ", mod$input$Ecov_names[i], ": ")
     #if any parameters sds are not NA, then Ecov_model != 0
     if(!is.na(sd$Ecov_process_pars[1,i])){
       fe.vals = c(fe.vals, pars$Ecov_process_pars[1,i])
@@ -462,55 +462,56 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   }
   ecov_beta_names = paste0("Ecov_beta_", c("R", "M", "mu","q"))
   for(et in 1:4){
-    ecov_beta_map = array(mod$input$map[[ecov_beta_names[et]]], dim = dim(pars[[ecov_beta_names[et]]])) 
-    # R: n_stocks x n_ecov x n_poly
-    # M: n_stocks x n_ages x n_regions x n_ecov x n_poly
-    #mu: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_ecov x n_poly
-    #q : n_indices x n_ecov x n_poly
-  }
-  for(i in 1:data$n_Ecov){
-    if(any(!is.na(sd[[ecov_beta_names[et]]]))){
-      if(et<4) for(s in 1:data$n_stocks){
-        if(et==1) if(any(!is.na(sd[[ecov_beta_names[et]]][s,i,]))){ #Recruitment
-          ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,i,]))
-          for(k in ind) {
-            fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,i,k])
-            fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,i,k], sd$Ecov_beta[[ecov_beta_names[et]]][s,i,k]))
-            fe.names = c(fe.names, paste0(stock.names.tab[s], " Recruitment Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", k, "$"))
-          }
-        }
-        if(et==2) for(a in 1:data$n_ages) for(r in 1:data$n_regions) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))){ #M
-          ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))
-          modify <- paste(stock.names.tab[s], region.names.tab[r], "M at age", mod$ages.lab[a])
-          for(k in ind) {
-            fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,r,i,k])
-            fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd$Ecov_beta[[ecov_beta_names[et]]][s,a,r,i,k]))
-            fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", k, "$"))
-          }
-        }
-        if(et==3) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)){#movement
-          if(rr != r) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,]))){ 
-            ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,]))
-            from <- region.names.tab[r]
-            to <- rr
-            if(rr >= r) to <- rr+1
-            to <- region.names.tab[to]
-            modify <- paste(stock.names.tab[s], " age ", mod$ages.lab[a], "season", t, "move from", from, "to", to)
+  #   ecov_beta_map = array(mod$input$map[[ecov_beta_names[i]]], dim = dim(pars[[ecov_beta_names[i]]])) 
+  #   # R: n_stocks x n_ecov x n_poly
+  #   # M: n_stocks x n_ages x n_regions x n_ecov x n_poly
+  #   #mu: n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_ecov x n_poly
+  #   #q : n_indices x n_ecov x n_poly
+  # }
+    for(i in 1:data$n_Ecov){
+      if(any(!is.na(sd[[ecov_beta_names[et]]]))){
+        if(et<4) for(s in 1:data$n_stocks){
+          if(et==1) if(any(!is.na(sd[[ecov_beta_names[et]]][s,i,]))){ #Recruitment
+            ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,i,]))
             for(k in ind) {
-              fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k])
-              fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k], sd$Ecov_beta[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k]))
-              fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_",k, "$"))
+              fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,i,k])
+              fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,i,k], sd[[ecov_beta_names[et]]][s,i,k]))
+              fe.names = c(fe.names, paste0(stock.names.tab[s], " Recruitment Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+            }
+          }
+          if(et==2) for(a in 1:data$n_ages) for(r in 1:data$n_regions) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))){ #M
+            ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))
+            modify <- paste(stock.names.tab[s], region.names.tab[r], "M at age", mod$ages.lab[a])
+            for(k in ind) {
+              fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,r,i,k])
+              fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd[[ecov_beta_names[et]]][s,a,r,i,k]))
+              fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+            }
+          }
+          if(et==3) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)){#movement
+            if(rr != r) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,]))){ 
+              ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,]))
+              from <- region.names.tab[r]
+              to <- rr
+              if(rr >= r) to <- rr+1
+              to <- region.names.tab[to]
+              modify <- paste(stock.names.tab[s], " age ", mod$ages.lab[a], "season", t, "move from", from, "to", to)
+              for(k in ind) {
+                fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k])
+                fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k], sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k]))
+                fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[i], " $\\beta_",k, "$"))
+              }
             }
           }
         }
-      }
-      if(et == 4) for(j in 1:data$n_indices){ #q
-        if(any(!is.na(sd[[ecov_beta_names[et]]][j,i,]))){
-          ind <- which(!is.na(sd[[ecov_beta_names[et]]][j,i,]))
-          for(k in ind) {
-            fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][j,i,k])
-            fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][j,i,k], sd$Ecov_beta[[ecov_beta_names[et]]][j,i,k]))
-            fe.names = c(fe.names, paste0(index.names.tab[j], " Catchability Ecov: ", mod$input$Ecov_names[[1]][i], " $\\beta_", k, "$"))
+        if(et == 4) for(j in 1:data$n_indices){ #q
+          if(any(!is.na(sd[[ecov_beta_names[et]]][j,i,]))){
+            ind <- which(!is.na(sd[[ecov_beta_names[et]]][j,i,]))
+            for(k in ind) {
+              fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][j,i,k])
+              fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][j,i,k], sd[[ecov_beta_names[et]]][j,i,k]))
+              fe.names = c(fe.names, paste0(index.names.tab[j], " Catchability Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+            }
           }
         }
       }
@@ -519,13 +520,13 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
-      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[[1]][i], " obs. sd."))
+      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[i], " obs. sd."))
       ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
     if(data$Ecov_obs_sigma_opt[i] == 4){
-      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[[1]][i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
+      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
       fe.vals = c(fe.vals, pars$Ecov_obs_sigma_pars[1,i])
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_sigma_pars[1,i], sd$Ecov_obs_sigma_pars[1,i]))
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_sigma_par[2,i]))

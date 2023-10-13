@@ -2,15 +2,23 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
   ecov.pred = mod$rep$Ecov_x
+  ecov.pred.low <- ecov.pred.high <- ecov.pred.se <- matrix(NA, NROW(ecov.pred), NCOL(ecov.pred))
   ecov.obs = dat$Ecov_obs[1:dat$n_years_Ecov,,drop=F]
-  years <- seq(from=mod$input$years_Ecov[1], by=1, length.out=NROWS(ecov.obs))
-  years_full <- seq(from=mod$input$years_Ecov[1], by=1, length.out=NROWS(ecov.pred))#dat$n_years_Ecov+dat$n_years_proj_Ecov)
+  years <- seq(from=mod$input$years_Ecov[1], by=1, length.out=NROW(ecov.obs))
+  years_full <- seq(from=mod$input$years_Ecov[1], by=1, length.out=NROW(ecov.pred))#dat$n_years_Ecov+dat$n_years_proj_Ecov)
 
   # ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma now a derived quantity in sdrep
+  # if(class(mod$sdrep)[1] == "sdreport"){
+  #   sdrep = summary(mod$sdrep)
+  # } else {
+  #   sdrep = mod$sdrep
+  # }
   if(class(mod$sdrep)[1] == "sdreport"){
-    sdrep = summary(mod$sdrep)
-  } else {
-    sdrep = mod$sdrep
+    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+    ecov.pred.se[] <- temp[[2]]$Ecov_x #TMB:::as.list.sdreport(mod$sdrep, what = "Std.", report=TRUE)$Ecov_x
+    ecov.pred.low[] <- ecov.pred - 1.96 * ecov.pred.se
+    ecov.pred.high[] <- ecov.pred + 1.96 * ecov.pred.se
   }
 
   ecov.obs.sig = mod$rep$Ecov_obs_sigma # Ecov_obs_sigma is filled with fixed, or estimated values (fe or re) for each covariate depending on the respective options
@@ -23,7 +31,6 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   ecov.use = dat$Ecov_use_obs[1:dat$n_years_Ecov,,drop=F]
   ecov.obs.sig = ecov.obs.sig[1:dat$n_years_Ecov,,drop=F]
   ecov.obs.sig[ecov.use == 0] <- NA
-  ecov.pred.se <- as.list(sdrep, what = "Std", report=TRUE)$Ecov_x
   #ecov.pred.se = matrix(sdrep[rownames(sdrep) %in% "Ecov_x",2], ncol=dat$n_Ecov)
 
   # default: don't plot the padded entries that weren't used in ecov likelihood
@@ -35,24 +42,24 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   plot.colors = mypalette(dat$n_Ecov)
   for (i in ecovs)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,"_",mod$input$Ecov_names[i],".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 
-    ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
-    ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
+    # ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
+    # ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
     ecov.low <- ecov.obs[,i] - 1.96 * ecov.obs.sig[,i]
     ecov.high <- ecov.obs[,i] + 1.96 * ecov.obs.sig[,i]
     y.min <- ifelse(min(ecov.low,na.rm=T) < 0, 1.1*min(ecov.low,na.rm=T), 0.9*min(ecov.low,na.rm=T))
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=unlist(mod$input$Ecov_names)[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
-    polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    polygon(c(years_full,rev(years_full)), c(ecov.pred.low[,i], rev(ecov.pred.high[,i])), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
     lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",unlist(mod$input$Ecov_names)[i]), outer=T, line=-1)
+    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
     if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
 
     if(do.tex | do.png) dev.off() else par(origpar)
@@ -61,20 +68,20 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   ecov.obs.sigma.cv = as.list(mod$sdrep, "Std")$Ecov_obs_logsigma_re
   for (i in ecovs) if(dat$Ecov_obs_sigma_opt[i]==4)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,"_sig_re.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i,'_sig_re.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],"_sig_re.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i], '_sig_re.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     sigmas = ecov.obs.sig[,i]
     sigmas.cv = ecov.obs.sigma.cv[,i]
     sigmas.low <- exp(log(sigmas) - 1.96 * sigmas.cv)
     sigmas.high <- exp(log(sigmas) + 1.96 * sigmas.cv)
     y.min = min(sigmas.low, na.rm =T)
     y.max = max(sigmas.high, na.rm =T)
-    plot(years, sigmas, type='n', xlab="Year", ylab=unlist(mod$input$Ecov_names)[i],
+    plot(years, sigmas, type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
     polygon(c(years,rev(years)), c(sigmas.low, rev(sigmas.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     points(years, sigmas, pch=19)
     lines(years, sigmas, col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",unlist(mod$input$Ecov_names)[i], " SD"), outer=T, line=-1)
+    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i], " SD"), outer=T, line=-1)
     if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
 
     if(do.tex | do.png) dev.off() else par(origpar)
@@ -405,17 +412,17 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
       ecov_years = mod$input$years_Ecov[1] + 0:(mod$env$data$n_years_Ecov-1)
-      tmp$year <- ecov_years[tmp$year+1] # year in osa is MODEL year, not Ecov year
+      tmp$year <- ecov_years#[tmp$year+1] # year in osa is MODEL year, not Ecov year
       tmp$pred <- mod$rep$Ecov_x[1:dim(tmp)[1],f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[[1]][f]),".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[[1]][f]),'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for Environmental observations in series ", mod$input$Ecov_names[[1]][f], ", so using +/-10 for range of y axis \n")
+        cat("Infinite osa residuals for Environmental observations in series ", mod$input$Ecov_names[f], ", so using +/-10 for range of y axis \n")
         ylim.max = 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -426,7 +433,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
-      plot(tmp$pred, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Predicted ", mod$input$Ecov_names[[1]][f]), ylab="OSA Residuals",
+      plot(tmp$pred, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Predicted ", mod$input$Ecov_names[f]), ylab="OSA Residuals",
            ylim=ylims)
       abline(h=0, col=plot.colors[f], lwd=2)
 
@@ -455,7 +462,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       lines(z, upper, lty=2, col=plot.colors[f])
       lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("OSA residual diagnostics: ", mod$input$Ecov_names[[1]][f]), outer=T, line=-1)
+      title (paste0("OSA residual diagnostics: ", mod$input$Ecov_names[f]), outer=T, line=-1)
       if(do.tex | do.png) dev.off() else par(origpar)
     }
   }
@@ -499,15 +506,15 @@ fit.summary.text.plot.fn <- function(mod){
   if(!all(mod$env$data$Ecov_model == 0)){
     for(ec in 1:mod$env$data$n_Ecov) {
       ec.mod = env.mod[mod$env$data$Ecov_model[ec]]
-      ec.label = mod$input$Ecov_names[[1]][ec]
+      ec.label = mod$input$Ecov_names[ec]
       if(length(ec.mod)) {
-        out = paste0("Environmental covariate ", ec.label, ," modeled as ",ec.mod,".\n")
+        out = paste0("Environmental covariate ", ec.label, " modeled as ",ec.mod,".\n")
         for(i in 1:dat$n_stocks){
           if(dat$Ecov_how_R[ec,i]>0) out = paste0(out, paste0(" Effects on recruitment for stock ", i, " assumed. \n"))
           for(a in 1:dat$n_ages) for(r in 1:dat$n_regions) if(dat$Ecov_how_M[ec,i,a,r]>0){
             out = paste0(out, paste0(" Effects on M for stock ", i, "at age ", a, "in region ", r, " assumed. \n"))
           }
-          if(dat$n_regions>1) for(a in 1:dat$n_ages) for(s in 1:dat$seasons) for(r in 1:dat$n_regions) for(rr in 1:(dat$n_regions-1)){
+          if(dat$n_regions>1) for(a in 1:dat$n_ages) for(s in 1:dat$n_seasons) for(r in 1:dat$n_regions) for(rr in 1:(dat$n_regions-1)){
             if(dat$Ecov_how_mu[ec,i,a,s,r,rr]>0) {
               out = paste0(out, paste0(" Effects on movement for stock ", i, "at age ", a, "in season ", s, " from region ", r, "to region ",
               ifelse(rr>=r, rr+1, rr), "  assumed. \n"))
@@ -864,7 +871,7 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
   if(!all(mod$env$data$Ecov_model == 0)){
     ny = mod$env$data$n_years_Ecov
     ni = mod$env$data$n_Ecov
-    Ecov_resid <- Ecov_resid.lo <- Ecov_resid..hi <- matrix(NA, nrow = ny, ncol = ni)
+    Ecov_resid <- Ecov_resid.lo <- Ecov_resid.hi <- matrix(NA, nrow = ny, ncol = ni)
     if(class(mod$sdrep)[1] == "sdreport"){
       temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
         TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
@@ -895,7 +902,7 @@ plot.all.stdresids.fn = function(mod, do.tex = FALSE, do.png = FALSE, fontfam=""
     }
     xe$row = xe$Label
     xe$Label = factor(xe$Label)
-    levels(xe$Label) = mod$input$Ecov_names[[1]]
+    levels(xe$Label) = mod$input$Ecov_names
     xe$type = "Ecov"
   }
 
@@ -3838,13 +3845,13 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
     y.max <- ifelse(max(ecov.high,na.rm=T) < 0, 0.9*max(ecov.high,na.rm=T), 1.1*max(ecov.high,na.rm=T))
     if(max(ecov.pred[,i],na.rm=T) > y.max) y.max <- max(ecov.pred[,i],na.rm=T)
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
-    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=unlist(mod$input$Ecov_names)[i],
+    plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
     polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
     arrows(years, ecov.low, years, ecov.high, length=0)
     points(years, ecov.obs[,i], pch=19)
     lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",unlist(mod$input$Ecov_names)[i]), outer=T, line=-1)
+    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
     if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
 
     plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")
