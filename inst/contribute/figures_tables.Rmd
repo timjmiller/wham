@@ -95,10 +95,12 @@ if(length(plot_files)) knitr::include_graphics(plot_files)
 ### Parameter estimates
 
 ```{r par-table, echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
-out = readRDS("res_tables/parameter_estimates_table.RDS")
-out = round(out, 3)
+out = as.data.frame(readRDS("res_tables/parameter_estimates_table.RDS"))
+#out = round(out, 3)
+out <- sci_note(out,cols=1:4)
+
 out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T,label = "par-table",
-    caption="Parameter estimates, standard errors, and confidence intervals. Rounded to 3 decimal places.") %>%
+    caption="Parameter estimates, standard errors, and confidence intervals. Rounded to 3 decimal places.", align = c(rep("r",4))) %>%
     kable_styling(latex_options=c("basic", "repeat_header")) %>% landscape()
 cat(knitr::knit_print(out))
 
@@ -124,7 +126,8 @@ dat <- input$data
 for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
   out = readRDS(paste0("res_tables/",stock.names.f[s], "_", region.names.f[r], "_NAA_table.RDS"))
   out = round(out, 0)
-  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(stock.names.l[s], "-", region.names.l[r], "-NAA-table"), 
+  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, 
+    label = paste0(stock.names.l[s], "-", region.names.l[r], "-NAA-table"), 
       caption=paste0("Abundance at age (1000s) for ", stock.names.tab[s], " in ", region.names.tab[r],".")) %>%
       kable_styling(latex_options=c("basic", "repeat_header")) #%>%
   cat(knitr::knit_print(out))
@@ -137,7 +140,7 @@ for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
 for(r in 1:dat$n_regions){
   out = readRDS(paste0("res_tables/",region.names.f[r], "_FAA_tot_table.RDS"))
   out = round(out, 3)
-  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(region.names.l[r], "-FAA-table"),
+  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(region.names.l[r], "-region-FAA-table"),
       caption=paste0("Total fishing mortality at age in ", region.names.tab[r], ".")) %>%
       kable_styling(latex_options=c("basic", "repeat_header")) #%>%
   cat(knitr::knit_print(out))
@@ -150,7 +153,7 @@ for(r in 1:dat$n_regions){
 for(r in 1:dat$n_fleets){
   out = readRDS(paste0("res_tables/",fleet.names.f[r], "_FAA_table.RDS"))
   out = round(out, 3)
-  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(fleet.names.l[r], "-FAA-fleet-table"),
+  out <- out %>% kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(fleet.names.l[r], "-fleet-FAA-table"),
       caption=paste0("Total fishing mortality at age in ", fleet.names.tab[r], ".")) %>%
       kable_styling(latex_options=c("basic", "repeat_header")) #%>%
   cat(knitr::knit_print(out))

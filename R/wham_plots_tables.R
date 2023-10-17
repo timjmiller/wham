@@ -411,9 +411,11 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     plot.colors = mypalette(n.fleets)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
-      ecov_years = mod$input$years_Ecov[1] + 0:(mod$env$data$n_years_Ecov-1)
+      obs_ind <- which(mod$input$data$Ecov_use_obs[,f]==1)
+      ecov_years <- mod$input$years_Ecov[obs_ind] 
+      #ecov_years = mod$input$years_Ecov[1] + 0:(mod$env$data$n_years_Ecov-1)
       tmp$year <- ecov_years#[tmp$year+1] # year in osa is MODEL year, not Ecov year
-      tmp$pred <- mod$rep$Ecov_x[1:dim(tmp)[1],f]
+      tmp$pred <- mod$rep$Ecov_x[obs_ind,f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),".pdf")), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
@@ -4135,6 +4137,23 @@ plot_mu = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   # }
   # leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
   # legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
+}
+
+sci_note <- function(x, cols=1:4){
+  for(i in cols){
+    temp <- formatC(x[,i], format = "e")
+    temp <- strsplit(temp, "e")
+    exps <- suppressWarnings(as.integer(sapply(temp, function(x) x[2])))
+    coefs <- suppressWarnings(as.numeric(sapply(temp, function(x) x[1])))
+    coefs <- formatC(coefs, format = "f", digits = 3)
+    do.notation <- which(exps < -3)
+    NA.ind <- which(is.na(x[,i]))
+    x[,i] <- formatC(round(x[,i],3), format = "f", digits = 3)
+    x[do.notation,i] <- paste0(coefs[do.notation], "\\times 10^{", exps[do.notation], "}") 
+    x[,i] <- paste0("$", x[,i], "$")
+    x[NA.ind,i] <- NA
+  }
+  return(x)
 }
 
 #revised

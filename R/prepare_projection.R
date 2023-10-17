@@ -80,7 +80,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     capture.output(cat("  $proj.F = ",proj.opts$proj.F)),
     capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
 
-
   # add new data objects for projections
   data$do_proj = 1
   data$n_years_proj = proj.opts$n.yrs
@@ -178,18 +177,10 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     for(r in 1:dims[2]){
     # pad log_NAA (even if projection years not used)
       if(data$NAA_re_model[s] == 0) {} #tmp.map already set to NA
-      # print("here")
-      # print(dim(tmp.map))
-      # print(proj_yrs_ind)
-      # print(data$n_years_proj)
-      # print(data$n_years_model)
-      # print(dim(par$log_NAA))
       if(data$NAA_re_model[s] > 0 & data$spawn_regions[s] == r) tmp.map[s,r,proj_yrs_ind-1,1] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-      # print("here2")
       if(data$NAA_re_model[s] == 2) for(a in 2:dims[4]) {
         if(data$NAA_where[s,r,a]) tmp.map[s,r,proj_yrs_ind-1,a] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
       }
-      # print("here3")
     }
   }
   par$log_NAA <- tmp
@@ -222,11 +213,9 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   }
   if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE #one of the other ecov options is not null
 
-      # print("here4")
-
   if(any(input$data$Ecov_model > 0)){
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
-    end_Ecov <- tail(input$data$Ecov_year, 1)
+    end_Ecov <- tail(input$years_Ecov, 1)
     if(end_Ecov < end_model){
       print("prepare_projection: Ecov last year is before model last projection year. Padding Ecov...")
       map$Ecov_obs_logsigma <- matrix(as.integer(map$Ecov_obs_logsigma), ncol = data$n_Ecov)
@@ -240,9 +229,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
       #data$years_use_Ecov <- 1:(data$n_years_Ecov + n_years_proj_Ecov) - 1
 
       # pad Ecov_re for projections
-      #print(data$Ecov_use_re)
-      #data$Ecov_use_re <- rbind(data$Ecov_use_re, matrix(0, nrow=n_years_proj_Ecov, ncol=data$n_Ecov))
-      #print(dim(data$Ecov_use_re))
       map$Ecov_re = matrix(as.integer(map$Ecov_re), data$n_years_Ecov, data$n_Ecov)
       par$Ecov_re = rbind(par$Ecov_re, matrix(0,n_years_proj_Ecov, data$n_Ecov))
 
@@ -255,18 +241,16 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
           if(data$Ecov_model[i] == 2) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i] - par$Ecov_process_pars[1,i] # AR(1)
         }
       }
-      # print(dim(tmp.re))
-      # print(data$n_years_Ecov)
       for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
         tmp.re[,i] = 1
       }
       if(sum(!is.na(tmp.re))) tmp.re[which(!is.na(tmp.re))] <- max(map$Ecov_re, na.rm = TRUE) + 1:sum(!is.na(tmp.re))
       map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
       
-      data$Ecov_year <- c(data$Ecov_year, seq(end_Ecov+1, end_model))
+      input$years_Ecov <- c(input$years_Ecov, seq(end_Ecov+1, end_model))
       map$Ecov_obs_logsigma = factor(map$Ecov_obs_logsigma)
       end_Ecov <- end_model
-      data$n_years_Ecov <- length(data$Ecov_year)
+      data$n_years_Ecov <- length(input$years_Ecov)
 
       Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
       if(Ecov.opt.ct == 0) proj.opts$cont.ecov = TRUE; Ecov.opt.ct = 1;
@@ -297,11 +281,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     #   n.beyond[i] = data$n_years_Ecov-1-max(data$ind_Ecov_out_end_R[i,],data$ind_Ecov_out_end_mu[i,,,,,],
     #     data$ind_Ecov_out_end_M[i,,,],data$ind_Ecov_out_end_q[i,])
     #   end.beyond[i] <- min(n.beyond[i], data$n_years_proj)
-    #   print(end.beyond)
-    #   print(n.beyond)
-    #   print(data$n_years_proj)
-    #   print(data$n_years_Ecov)
-    #   #print(data$ind_Ecov_out_end)
     #   stop()
     #   if(end.beyond[i] == data$n_years_proj) print(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
     # }
@@ -340,7 +319,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   #     map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
   #   }
   # }
-      # print("here5")
   
   #M
   # options for M in projections, data$proj_M_opt:
@@ -394,9 +372,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   dims[1] <- data$n_years_model + data$n_years_proj
   tmp <- matrix(0, dims[1], dims[2])
   tmp[1:data$n_years_model,] <- par$L_re
-  #for(b in 1:dims[2]) tmp[,b] <- c(par$L_re[,b], rep(0,data$n_years_proj))
   par$L_re <- tmp
-      # print("here7")
 
   # options for mu in projections, data$proj_mu_opt:
   #   1 = continue random effects (if they exist) - need to pad mu_re
@@ -423,10 +399,8 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     dims[4] <- data$n_years_model + data$n_years_proj
     tmp <- array(0, dim = dims)
     tmp[,,,1:data$n_years_model,,] <- par$mu_re
-    #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[3]) for(d in 1:dims[5]) tmp[a,b,c,,d] <- c(par$mu_re[a,b,c,,d], rep(0,data$n_years_proj))
     par$mu_re <- tmp
   }
-        # print("here8")
 
   # expand q_re
   input_q <- input

@@ -32,10 +32,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   region.names.tab <- gsub("_", " ", mod$input$region_names, fixed = TRUE)
   index.names.tab <- gsub("_", " ", mod$input$index_names, fixed = TRUE)
   fleet.names.tab <- gsub("_", " ", mod$input$fleet_names, fixed = TRUE)
+  ecov.names.tab <- gsub("_", " ", mod$input$Ecov_names, fixed = TRUE)
   stock.names.f <- gsub(" ", "_", mod$input$stock_names, fixed = TRUE)
   region.names.f <- gsub(" ", "_", mod$input$region_names, fixed = TRUE)
   index.names.f <- gsub(" ", "_", mod$input$index_names, fixed = TRUE)
   fleet.names.f <- gsub(" ", "_", mod$input$fleet_names, fixed = TRUE)
+  ecov.names.f <- gsub(" ", "_", mod$input$Ecov_names, fixed = TRUE)
 
   fe.names = character()
   fe.vals = numeric()
@@ -172,11 +174,11 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     y <- data$selblock_pointer_fleets
     z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
     fleet_ind <- apply(z,2,any)
-    out <- mod$input$fleet_names[which(fleet_ind)]
+    out <- fleet.names.tab[which(fleet_ind)]
     y <- data$selblock_pointer_indices
     z <- matrix(as.integer(y == x), NROW(y), NCOL(y))
     index_ind <- apply(z,2,any)
-    out <- c(out, mod$input$index_names[which(index_ind)])
+    out <- c(out, index.names.tab[which(index_ind)])
   })
   include.selblock <- sapply(block.fleets.indices, length) > 0
   extra.names = rep("", data$n_selblocks)
@@ -439,25 +441,25 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
 
+  ecov.labels <- paste0("Ecov ", ecov.names.tab, ": ")
   for(i in 1:data$n_Ecov){
-    ecov.label <- paste0("Ecov ", mod$input$Ecov_names[i], ": ")
     #if any parameters sds are not NA, then Ecov_model != 0
     if(!is.na(sd$Ecov_process_pars[1,i])){
       fe.vals = c(fe.vals, pars$Ecov_process_pars[1,i])
       fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[1,i], sd$Ecov_process_pars[1,i]))
-      if(data$Ecov_model[i] == 1) fe.names = c(fe.names, paste0(ecov.label, "RW Ecov$_1$"))
-      if(data$Ecov_model[i] == 2) fe.names = c(fe.names, paste0(ecov.label, "$\\mu$"))
+      if(data$Ecov_model[i] == 1) fe.names = c(fe.names, paste0(ecov.labels[i], "RW Ecov$_1$"))
+      if(data$Ecov_model[i] == 2) fe.names = c(fe.names, paste0(ecov.labels[i], "$\\mu$"))
     }
     if(!is.na(sd$Ecov_process_pars[2,i])){
-      fe.vals = c(fe.vals, pars$Ecov_process_pars[2,i])
+      fe.vals = c(fe.vals, exp(pars$Ecov_process_pars[2,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[2,i], sd$Ecov_process_pars[2,i], type = "exp"))
-      if(data$Ecov_model[i] == 1) fe.names = c(fe.names, paste0(ecov.label, "RW $\\sigma$"))
-      if(data$Ecov_model[i] == 2) fe.names = c(fe.names, paste0(ecov.label, "$\\sigma$"))
+      if(data$Ecov_model[i] == 1) fe.names = c(fe.names, paste0(ecov.labels[i], "RW $\\sigma$"))
+      if(data$Ecov_model[i] == 2) fe.names = c(fe.names, paste0(ecov.labels[i], "$\\sigma$"))
     }
     if(!is.na(sd$Ecov_process_pars[3,i])){
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(-pars$Ecov_process_pars[3,i])))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit")) #doesn't use rho_trans
-      fe.names = c(fe.names, paste0(ecov.label, "AR1 $\\rho$"))
+      fe.names = c(fe.names, paste0(ecov.labels[i], "AR1 $\\rho$"))
     }
   }
   ecov_beta_names = paste0("Ecov_beta_", c("R", "M", "mu","q"))
@@ -476,7 +478,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             for(k in ind) {
               fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,i,k])
               fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,i,k], sd[[ecov_beta_names[et]]][s,i,k]))
-              fe.names = c(fe.names, paste0(stock.names.tab[s], " Recruitment Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+              fe.names = c(fe.names, paste0(stock.names.tab[s], " Recruitment Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
           if(et==2) for(a in 1:data$n_ages) for(r in 1:data$n_regions) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))){ #M
@@ -485,7 +487,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             for(k in ind) {
               fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,r,i,k])
               fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd[[ecov_beta_names[et]]][s,a,r,i,k]))
-              fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+              fe.names = c(fe.names, paste0(modify, " Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
           if(et==3) for(a in 1:data$n_ages) for(t in 1:data$n_seasons) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)){#movement
@@ -499,7 +501,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
               for(k in ind) {
                 fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k])
                 fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k], sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k]))
-                fe.names = c(fe.names, paste0(modify, " Ecov: ", mod$input$Ecov_names[i], " $\\beta_",k, "$"))
+                fe.names = c(fe.names, paste0(modify, " Ecov: ", ecov.names.tab[i], " $\\beta_",k, "$"))
               }
             }
           }
@@ -510,7 +512,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             for(k in ind) {
               fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][j,i,k])
               fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][j,i,k], sd[[ecov_beta_names[et]]][j,i,k]))
-              fe.names = c(fe.names, paste0(index.names.tab[j], " Catchability Ecov: ", mod$input$Ecov_names[i], " $\\beta_", k, "$"))
+              fe.names = c(fe.names, paste0(index.names.tab[j], " Catchability Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
         }
@@ -520,13 +522,13 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
-      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[i], " obs. sd."))
+      fe.names = c(fe.names, paste0("Ecov: ", ecov.names.tab[i], " obs. sd."))
       ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
     if(data$Ecov_obs_sigma_opt[i] == 4){
-      fe.names = c(fe.names, paste0("Ecov: ", mod$input$Ecov_names[i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
+      fe.names = c(fe.names, paste0("Ecov: ", ecov.names.tab[i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
       fe.vals = c(fe.vals, pars$Ecov_obs_sigma_pars[1,i])
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_sigma_pars[1,i], sd$Ecov_obs_sigma_pars[1,i]))
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_sigma_par[2,i]))
@@ -623,7 +625,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(do.tex) { #for some reason on windows working outside of the temp directory was causing issues for tinytex::latexmf.
       origdir = getwd()
       setwd(od)
-      rmarkdown::render("par_tables.Rmd", output_format = "pdf_document", output_file = "wham_par_tables.pdf", quiet = T)
+      rmarkdown::render("par_tables.Rmd", output_format = "pdf_document", output_file = file.path(od, "wham_par_tables.pdf"), quiet = T, envir = new.env())
       setwd(origdir)
     }
   }

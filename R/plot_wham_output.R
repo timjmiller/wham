@@ -85,7 +85,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.index.input(mod)
     for(i in 1:mod$env$data$n_indices) plot.index.age.comp.bubbles(mod, i=i)
     for(i in 1:mod$env$data$n_stocks) plot.waa(mod,"ssb", ind = i)
-    plot.waa(mod,"jan1")
+    #plot.waa(mod,"jan1")
     #plot.waa(mod,"totcatch")
     for(i in 1:mod$env$data$n_fleets) plot.waa(mod,"fleets", ind=i)
     for(i in 1:mod$env$data$n_indices) plot.waa(mod,"indices", ind=i)

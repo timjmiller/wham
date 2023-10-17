@@ -237,7 +237,6 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
           FAA_proj.setZero();
         } else {
           array<Type> NAA_y = get_NAA_y(y, NAA);
-          see(NAA_y);
           FAA_proj = sel_proj * get_F_from_Catch(thecatch, NAA_y, log_M_proj, mu_proj, L_proj, sel_proj, fracyr_seasons, fleet_regions, 
           fleet_seasons, can_move, mig_type, waa_catch_proj, trace, F_proj_init(y- n_years_model));
         }
