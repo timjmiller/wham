@@ -104,14 +104,14 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
     #remove any 0 residuals associated with last ages of multinomial and D-M
     model$osa$residual[subset.agecomp] <- model$OSA.agecomp$residual
     conditional. = c(conditional., subset.agecomp)
-    ind <- which(input$data$age_comp_model_fleets < 3)
+    ind <- which(input$data$age_comp_model_fleets %in% c(1:2,11))
     if(length(ind)) {
       for(i in ind) {
         NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("fleet_", i))
         model$osa$residual[NAind] <- NA
       }
     }
-    ind <- which(input$data$age_comp_model_indices < 3)
+    ind <- which(input$data$age_comp_model_indices %in% c(1:2,11))
     if(length(ind)) {
       for(i in ind) {
         NAind <- which(model$osa$age == max(model$osa$age, na.rm =T) & model$osa$fleet == paste0("index_", i))

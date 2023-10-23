@@ -238,7 +238,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     else startnames <- paste0(index.names.tab, " in ", region.names.tab[mod$input$data$index_regions])
     for(i in 1:n_mods){
       if(sum(use_paa[,i]) > 0){
-        if(age_comp_models[i] %in% c(2:5,7)){
+        if(age_comp_models[i] %in% c(2:5,7,11)){
           if(age_comp_models[i] == 2){
             fe.names = c(fe.names, paste0(startnames[i] , " age comp, Dirichlet-multinomial: dispersion ($\\phi$)"))
             #ind = acomp_par_count+1
@@ -249,6 +249,10 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
           }
           if(age_comp_models[i] %in% c(5,7)){
             fe.names = c(fe.names, paste0(startnames[i] , " age comp, logistic-normal: $\\sigma$"))
+            #ind = acomp_par_count+1
+          }
+          if(age_comp_models[i] == 11){
+            fe.names = c(fe.names, paste0(startnames[i] , " age comp, Dirichlet-multinomial (linearized): dispersion ($\\phi$)"))
             #ind = acomp_par_count+1
           }
           fe.vals = c(fe.vals, exp(pars[i,1]))

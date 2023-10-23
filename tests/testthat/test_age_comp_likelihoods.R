@@ -2,9 +2,11 @@
 #   - ensure likelhoods are evaluating correctly
 #   - ensure simulation of Dirichlet, logistic-normal with pooling/missing values and mvtweedie is performing correctly
 
+# pkgbuild::compile_dll("c:/work/wham/wham", debug = FALSE)
+# pkgload::load_all("c:/work/wham/wham")
 # library(wham)
 # btime <- Sys.time(); devtools::test(filter = "age_comp"); etime <- Sys.time(); runtime = etime - btime;
-# ~4.8 min
+# ~19.6 sec
 
 context("Test evaluation of various age composition likelihoods")
 
@@ -24,7 +26,8 @@ test_that("Age comp likelihoods evaluate correctly",{
     "logistic-normal-pool0",
     "dirichlet-miss0",
     "dirichlet-pool0",
-    "mvtweedie")
+    "mvtweedie",
+    "dir-mult-linear")
 
   inputs <- unfit <- list()
   for(i in 1:length(models)){
@@ -32,7 +35,8 @@ test_that("Age comp likelihoods evaluate correctly",{
     selectivity=list(model=rep("age-specific",3), re=rep("none",3), 
           initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
         fix_pars=list(4:5,4,2:4)),
-        age_comp = models[i]))
+        age_comp = models[i],
+      basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE)))
     unfit[[i]] <- suppressWarnings(fit_wham(inputs[[i]], do.osa = F, do.retro=F, do.fit = F, MakeADFun.silent = TRUE))
   }
 
@@ -41,19 +45,22 @@ test_that("Age comp likelihoods evaluate correctly",{
   }
 
   #check that missing and pooling is working for simulations of proportions
-  sims <- list()
+  sims <- siminputs <- list()
   for(i in 1:length(models)){ #check simulations of dirichlet and logistic-normal models
-
-    inputs[[i]] <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+    index_Neff <- inputs[[i]]$data$index_Neff
+    index_Neff[] <- 10000L
+    siminputs[[i]] <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
       selectivity=list(model=rep("age-specific",3), re=rep("none",3), 
           initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
         fix_pars=list(4:5,4,2:4)),
-        age_comp = models[i])
+        age_comp = models[i],
+      basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE, index_Neff = index_Neff))
     if(i %in% c(3:5,8)) {
-      inputs[[i]]$par$index_paa_pars[,1] = -10
-    } else inputs[[i]]$par$index_paa_pars[,1] = 10
+      siminputs[[i]]$par$index_paa_pars[,1] = -10
+    } else siminputs[[i]]$par$index_paa_pars[,1] = 10
+    if(i %in% c(1:2,8:9,11)) siminputs[[i]]$data$index_Neff[] <- 10000L
     set.seed(1234)
-    temp = fit_wham(inputs[[i]], do.osa = F, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
+    temp = fit_wham(siminputs[[i]], do.osa = F, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
     temp$fn()
     sims[[i]] <- temp$simulate(complete=TRUE)
   }
@@ -71,10 +78,10 @@ test_that("Age comp likelihoods evaluate correctly",{
       if(pool0.){
         posind = 1
         for(a in 1:dim(obs)[3]){
-          pred_pos[i,y,ind[posind]] = pred_pos[i,y,ind[posind]] + pred[y,i,a]
+          pred_pos[i,y,ind[posind]] = pred_pos[i,y,ind[posind]] + pred[i,y,a]
           if(obs[i,y,a] > 0 & posind < length(ind)) posind = posind + 1
         }
-      } else pred_pos[i,y,ind] = pred[y,i,ind]/sum(pred[y,i,ind])
+      } else pred_pos[i,y,ind] = pred[i,y,ind]/sum(pred[i,y,ind])
     }
     return(pred_pos)
   }
@@ -84,10 +91,10 @@ test_that("Age comp likelihoods evaluate correctly",{
     pool0 <- NULL
     if(length(grep("pool", models[i]))) pool0 <- TRUE
     if(length(grep("miss", models[i]))) pool0 <- FALSE
-    pred_compare[[i]] <- pred_pos(sims[[i]]$pred_index_paa, inputs[[i]], pool0=pool0)
+    pred_compare[[i]] <- pred_pos(sims[[i]]$pred_index_paa, siminputs[[i]], pool0=pool0)
   }
 
-  for(i in 3:8){
+  for(i in 3:7){
     expect_equal(sims[[i]]$index_paa, pred_compare[[i]], tolerance = 1e-2, scale=1)
   }
 

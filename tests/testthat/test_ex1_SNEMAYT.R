@@ -8,9 +8,11 @@
 #   - Compare models by AIC and Mohn’s rho (retrospective analysis)
 #   - Plots of input data, diagnostics, and results
 
+# pkgbuild::compile_dll("c:/work/wham/wham", debug = FALSE)
+# pkgload::load_all("c:/work/wham/wham")
 # library(wham)
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex1_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
-# 5.5 min
+# btime <- Sys.time(); devtools::test(filter = "ex1_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime;
+# ~19.6 sec
 
 context("Ex 1: SNEMA yellowtail")
 

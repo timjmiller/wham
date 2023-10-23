@@ -338,7 +338,7 @@ array<Type> sim_obsvec_in_catch_paa(vector<Type> obsvec, vector<int> agesvec, ar
     if(trace) see(tf_paa_obs);
     vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
     if(trace) see(ages_obs_y);
-    paa_obs_y = make_paa(tf_paa_obs, age_comp_model_fleets(f), ages_obs_y, paa_obs_y);
+    paa_obs_y = make_paa(tf_paa_obs, age_comp_model_fleets(f), ages_obs_y, n_ages);
     if(trace) see(paa_obs_y);
     for(int a = 0; a < n_ages; a++) catch_paa_out(f,y,a) = paa_obs_y(a);
   }

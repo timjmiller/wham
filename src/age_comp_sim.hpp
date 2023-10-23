@@ -378,17 +378,22 @@ vector<Type> sim_acomp(vector<Type> paa_pred, Type Neff, vector<int> ages, int a
 
 //make proporportions at age observations from transformed versions
 template<class Type>
-vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> ages, vector<Type> paa_obs)
+vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> ages, int n_ages)
 {
-  int n_ages = paa_obs.size();
+  //int n_ages = paa_obs.size();
   vector<Type> paa_out(n_ages);
   paa_out.setZero();
   if((age_comp_model <5) | (age_comp_model > 7)) {
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = tf_paa_obs(i); //identity transform, zeros allowed
     if((age_comp_model < 3) | (age_comp_model > 9)) paa_out /= sum(paa_out); //multinomial, D-M, mvtweedie are in numbers, linear D-M
   }
-  if((age_comp_model > 4) & (age_comp_model < 8)) {
-    vector<Type> p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
+  if((age_comp_model > 4) & (age_comp_model < 8)) { //logistic normal
+    vector<Type> p_pos(ages.size());
+    if(tf_paa_obs.size() == ages.size()){ //unused last element has been provided
+      p_pos = mvn_to_LN(vector<Type> (tf_paa_obs.head(tf_paa_obs.size()-1)), 0);// no multiplicative options right now
+    } else {
+      p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
+    }
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = p_pos(i); 
   }
   return paa_out;

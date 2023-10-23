@@ -904,6 +904,8 @@ Type objective_function<Type>::operator() ()
     catch_Neff, age_comp_model_fleets, catch_paa_pars, keep_Cpaa, keep, obsvec, agesvec, do_osa);
   nll += nll_catch_acomp.sum();
   REPORT(nll_catch_acomp);
+  matrix<Type> catch_Neff_out = get_Neff_out(catch_Neff, age_comp_model_fleets, catch_paa_pars);
+  REPORT(catch_Neff_out);
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
     obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
@@ -944,12 +946,26 @@ Type objective_function<Type>::operator() ()
     index_Neff, age_comp_model_indices, index_paa_pars, keep_Ipaa, keep, obsvec, agesvec, do_osa);
   nll += nll_index_acomp.sum();
   REPORT(nll_index_acomp);
+  matrix<Type> index_Neff_out = get_Neff_out(index_Neff, age_comp_model_indices, index_paa_pars);
+  REPORT(index_Neff_out);
   //see(nll);
   SIMULATE if(do_simulate_data(1)){
     obsvec = simulate_index_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
       age_comp_model_indices, index_paa_pars);
     index_paa = sim_obsvec_in_index_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
     REPORT(index_paa);
+    // vector<Type> tf_paa_check = obsvec.segment(keep_Ipaa(0,5,0),keep_Ipaa(0,5,1));
+    // REPORT(tf_paa_check);
+    // vector<Type> t_pred_paa(n_ages);
+    // for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_index_paa(0,5,a);    
+    // vector<int> age_check = agesvec.segment(keep_Ipaa(0,5,0), keep_Ipaa(0,5,1));
+    // REPORT(age_check);
+    // vector<Type> tf_paa_check = sim_acomp(t_pred_paa, index_Neff(5,0), age_check, age_comp_model_indices(0), 
+    //   vector<Type>(index_paa_pars.row(0)));
+    // REPORT(tf_paa_check);
+    // vector<Type> paa_check = make_paa(tf_paa_check, age_comp_model_indices(0), age_check, n_ages);
+    // //vector<Type> paa_check = obsvec_to_paa(0, 5, obsvec, agesvec, use_index_paa, keep_Ipaa, age_comp_model_indices, n_ages);
+    // REPORT(paa_check);
   }
   /////////////////////////////////////////
   SIMULATE if(sum(do_simulate_data) > 0) REPORT(obsvec);

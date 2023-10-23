@@ -479,7 +479,8 @@ mypalette = function(n){
 
 fit.summary.text.plot.fn <- function(mod){
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
-    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie")
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie", 
+    "Dirichlet-multinomial (linearized)")
   selmods = c("Age-specific", "Logistic(+)", "Double-Logistic", "Logistic(-)")
   recs <- c("Random walk","Random about mean","Bev-Holt","Ricker")
   env.mod <- c("RW", "AR1")
@@ -591,7 +592,8 @@ plot.ll.table.fn <- function(mod,plot.colors){
   obs.dists$nll_agg_catch[] <- "log(x) ~ Gaussian"
   obs.dists$nll_agg_indices[] <- "log(x) ~ Gaussian"
   acm = c("Multinomial", "Dirichlet-multinomial", "Dirichlet (miss0)", "Dirichlet (pool0)","Logistic normal (miss0)",
-    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie")
+    "Logistic normal AR1 corr (miss0)", "Logistic normal (pool0)", "ZI-logistic normal(1)","ZI-logistic normal(2)", "MV Tweedie", 
+    "Dirichlet-multinomial (linearized)")
   obs.dists$nll_catch_acomp[] <- paste0("x ~ ", acm[mod$env$data$age_comp_model_fleets])
   obs.dists$nll_index_acomp[] <- paste0("x ~ ", acm[mod$env$data$age_comp_model_indices])
   if(!is.null(obs.dists$nll_Ecov_obs)) obs.dists$nll_Ecov_obs[] <- "x ~ Gaussian"
@@ -1361,7 +1363,7 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
           tmp = subset(df, year == j & fleet == paste0("fleet_",i))
           resids[j,tmp$age] = tmp$residual
           vals[j,tmp$age] = tmp$val
-          if(dat$age_comp_model_fleets[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+          if(dat$age_comp_model_fleets[i] %in% c(1:2,10,11)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
         }
 
         scale.resid.bubble.catch <- 2
@@ -1437,7 +1439,7 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
           tmp = subset(df, year == j & fleet == paste0("index_",i))
           resids[j,tmp$age] = tmp$residual
           vals[j,tmp$age] = tmp$val
-          if(dat$age_comp_model_indices[i] %in% c(1:2,10)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
+          if(dat$age_comp_model_indices[i] %in% c(1:2,10,11)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
         }
         scale.resid.bubble.catch <- 2
       } else {

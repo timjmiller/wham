@@ -528,3 +528,30 @@ Type get_acomp_ll(vector<Type> tf_paa_obs, vector<Type> paa_pred, Type Neff, vec
 
   return ll;
 }
+
+template<class Type>
+matrix<Type>  get_Neff_out(matrix<Type> Neff_input, vector<int> age_comp_models, matrix<Type> paa_pars){
+  int n = age_comp_models.size();
+  int n_years = Neff_input.rows();
+  vector<int> any_DM(n);
+  any_DM.setZero();
+  for(int f = 0; f < n; f++){
+    if(age_comp_models(f) == 2) any_DM(f) = 1;
+    if(age_comp_models(f) == 11) any_DM(f) = 2;
+  }
+  matrix<Type> Neff_est = Neff_input;
+  if(sum(any_DM)>0){
+    //Neff_est_fleets.setZero();
+    for(int f = 0; f < n; f++){
+      if(any_DM(f) == 1) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) - log(N_eff) for normal D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years; y++) Neff_est(y,f) = 1 + (Neff_input(y,f) -1)/(1 + Neff_input(y,f) * exp(-paa_pars(f,0)));
+      }
+      if(any_DM(f) == 2) {
+        // 1< N_eff_est < N_eff, logit_Neff_est = catch_paa_pars(0) for linear D-M option, so CI's could be created from that SE estimate.
+        for(int y = 0; y < n_years; y++) Neff_est(y,f) = 1 + (Neff_input(y,f) -1)/(1 + exp(-paa_pars(f,0)));
+      }
+    }
+  }
+  return(Neff_est);
+}
