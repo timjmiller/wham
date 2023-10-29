@@ -48,7 +48,7 @@ prepare_projection = function(model, proj.opts)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- model$years[model$env$data$avg_years_ind+1] #tail(model$years, 5)  
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
