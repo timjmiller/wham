@@ -206,6 +206,10 @@ To fit a state-space model, specify \code{NAA_re}, a list with the following ent
                    \item{"2dar1"}{NAA deviations correlated by year and age (2D AR1).}
                  }
                }
+    \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
+       (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+       have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate year correlation parameters are estimated for recruitment and older
+       ages.}
   }
 \code{NAA_re} also can be used to configure initial numbers at age and recruitment models. The optional associated components of \code{NAA_re} are:
   \describe{
@@ -267,9 +271,9 @@ The age composition models available are:
     \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters. . No OSA residuals.}
     \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.}
     \item{\code{"mvtweedie"}}{Multivariate-tweedie, where the product of composition proportions and input sample sizes follows a distribution with mean equal to the product of predicted proportions and input sample size, and other parameters define the ratio of effective to input sample size (with is bounded 0 to Inf) and the probability of zeros. 2 parameters. No OSA residuals.}
-    \item{\code{"dir-mult-linear"}}{Linear Dirichlet-multinomial, parameterized such that effective-sample-size is a linear function with respect to input-sample-size, estimating 1 parameter, \eqn{log(\theta)}, where the ratio of effective and input sample size is approximately \eqn{\theta / (1+\theta)}, i.e., the logistic transformation of the estimated parameter \eqn{log(\theta)}.  (\href{https://doi.org/10.1016/j.fishres.2016.06.005}{Thorson et al. 2017} }
+    \item{\code{"dir-mult-linear"}}{Linear Dirichlet-multinomial, parameterized such that effective-sample-size is a linear function with respect to input-sample-size, estimating 1 parameter, \eqn{log(\theta)}, where the ratio of effective and input sample size is approximately \eqn{\theta / (1+\theta)}, i.e., the logistic transformation of the estimated parameter \eqn{log(\theta)}.  (\href{https://doi.org/10.1016/j.fishres.2016.06.005}{Thorson et al. 2017}) }
   }
-The two Dirichlet-multinomial options will only differ when input-sample-size differs among years.  In these cases, the linear-Dirichlet multinomial is designed to decrease the effective sample size by approximately the same proportion, while the saturating-Dirichlet multinomial will decrease the years with highest input-sample-size more than those with lower input-sample-size.
+The two Dirichlet-multinomial options will only differ when input-sample-size differs among years.  In these cases, the linear-Dirichlet multinomial is designed to decrease the effective sample size in each year by approximately the same proportion, while the saturating-Dirichlet multinomial will decrease the years with highest input-sample-size much more than those with lower input-sample-size.
 One-step-ahead residuals will be calculated for all but the last three options when \code{do.osa=TRUE} (Nielsen et al. in prep.). An age composition model needs
 to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 
 can simply specify one of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
@@ -311,6 +315,7 @@ The current options are:
     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
+	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
