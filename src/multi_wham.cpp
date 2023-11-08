@@ -996,23 +996,36 @@ Type objective_function<Type>::operator() ()
     vector<Type> log_FXSPR = log_FXSPR_iter.matrix().col(9);
     REPORT(log_FXSPR);
 
-    vector< vector<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
+    vector< array<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
       avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, 
       vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
       n_regions_is_small, SPR_weight_type, 0, 10);
     
-    matrix<Type> log_FAA_XSPR_static(n_fleets+1,n_ages);
-    for(int f = 0; f <= n_fleets; f++) for(int a = 0; a < n_ages; a++) log_FAA_XSPR_static(f,a) = static_SPR_res(0)(n_ages*f + a);
-    vector<Type> log_SSB_FXSPR_static = static_SPR_res(1);
-    vector<Type> log_Y_FXSPR_static = static_SPR_res(2);
-    vector<Type> log_SPR_FXSPR_static = static_SPR_res(3);
-    vector<Type> log_SPR0_static = static_SPR_res(4);
-    matrix<Type> log_YPR_FXSPR_static(n_stocks,n_fleets+1);
-    for(int s = 0; s < n_stocks; s++) for(int f = 0; f <= n_fleets; f++) log_YPR_FXSPR_static(s,f) = static_SPR_res(5)(s*(n_fleets+1) + f);
-    vector<Type> log_FXSPR_iter_static = static_SPR_res(6);
-    Type log_FXSPR_static = static_SPR_res(6)(9);
+    //matrix<Type> log_FAA_XSPR_static = static_SPR_res(0).matrix();
+    array<Type> log_FAA_XSPR_static = static_SPR_res(0);
+    // matrix<Type> log_FAA_XSPR_static(n_fleets+1,n_ages);
+    // for(int f = 0; f <= n_fleets; f++) for(int a = 0; a < n_ages; a++) log_FAA_XSPR_static(f,a) = static_SPR_res(0)(n_ages*f + a);
+    //vector<Type> log_SSB_FXSPR_static = static_SPR_res(1).matrix().row(0);
+    array<Type> log_SSB_FXSPR_static = static_SPR_res(1);
+    //vector<Type> log_Y_FXSPR_static = static_SPR_res(2).matrix().row(0);
+    array<Type> log_Y_FXSPR_static = static_SPR_res(2);
+    //vector<Type> log_SPR_FXSPR_static = static_SPR_res(3).matrix().row(0);
+    array<Type> log_SPR_FXSPR_static = static_SPR_res(3);
+    //vector<Type> log_SPR0_static = static_SPR_res(4).matrix().row(0);
+    array<Type> log_SPR0_static = static_SPR_res(4);
+    //matrix<Type> log_YPR_FXSPR_static = static_SPR_res(5).matrix();
+    array<Type> log_YPR_FXSPR_static = static_SPR_res(5);
+    // matrix<Type> log_YPR_FXSPR_static(n_stocks,n_fleets+1);
+    // for(int s = 0; s < n_stocks; s++) {
+    //   for(int f = 0; f < n_fleets; f++) log_YPR_FXSPR_static(s,f) = static_SPR_res(5)(s*n_fleets + f);
+    //   log_YPR_FXSPR_static(s,n_fleets) = static_SPR_res(5)(n_stocks*n_fleets + s);
+    // }
+    //matrix<Type> log_FXSPR_iter_static = static_SPR_res(6).matrix();
+    array<Type> log_FXSPR_iter_static = static_SPR_res(6);
+    //Type log_FXSPR_static = log_FXSPR_iter_static(9);
+    Type log_FXSPR_static = 0;
     REPORT(log_FAA_XSPR_static);
     REPORT(log_SSB_FXSPR_static);
     REPORT(log_Y_FXSPR_static);
