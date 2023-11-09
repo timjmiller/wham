@@ -2915,7 +2915,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
   }
   all_stocks <- mod$input$data$n_stocks +1
   if(all_stocks == 2) all_stocks <- 1
-  all_catch <- mod$input$data$n_fleets +1
+  all_catch <- mod$input$data$n_fleets + mod$input$data$n_regions + 1
   if(all_catch == 2) all_catch <- 1
   std <- summary(mod$sdrep, "report")
   inds <- list()
@@ -2981,7 +2981,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
         polygon(polyx, polyy, col = tcol[p], border = tcol[p], lwd = 1)
       }
       if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
-      if(i == 1) legend("topright", legend = c(mod$input$fleet_names, "Total"), lty = 1, col = plot.colors, bty = "n")
+      if(i == 1) legend("topright", legend = c(mod$input$fleet_names, mod$input$region_names, "Total"), lty = 1, col = plot.colors, bty = "n")
       if(i == 3) {
         if(np[i] > 1) legend("topright", legend = c(mod$input$stock_names, "Total"), lty = 1, col = plot.colors, bty = "n")
         axis(1, cex.lab= 2)

@@ -1045,7 +1045,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   res(3) = log_SPR; //stock specific log SPRs at FXSPR, (only the weighted sum will be X*SPR0/100)
   res(4) = log_SPR0;
   res(5) = log_YPR_XSPR; 
-  array<Type> log_FXSPR_iter_a(0,n_iter);
+  array<Type> log_FXSPR_iter_a(1,n_iter);
   for(int i = 0; i < n_iter; i++) log_FXSPR_iter_a(0,i) = log_FXSPR_iter(i);
   res(6) = log_FXSPR_iter_a;
   //res(6) = log_FXSPR_iter.matrix().array(); //last value is max F at X%SPR across ages and fleets

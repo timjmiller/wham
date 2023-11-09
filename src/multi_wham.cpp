@@ -1004,17 +1004,17 @@ Type objective_function<Type>::operator() ()
       n_regions_is_small, SPR_weight_type, 0, 10);
     
     //matrix<Type> log_FAA_XSPR_static = static_SPR_res(0).matrix();
-    array<Type> log_FAA_XSPR_static = static_SPR_res(0);
+    array<Type> log_FAA_XSPR_static = static_SPR_res(0); //(n_fleets + n_regions + 1) x n_ages
     // matrix<Type> log_FAA_XSPR_static(n_fleets+1,n_ages);
     // for(int f = 0; f <= n_fleets; f++) for(int a = 0; a < n_ages; a++) log_FAA_XSPR_static(f,a) = static_SPR_res(0)(n_ages*f + a);
-    //vector<Type> log_SSB_FXSPR_static = static_SPR_res(1).matrix().row(0);
-    array<Type> log_SSB_FXSPR_static = static_SPR_res(1);
-    //vector<Type> log_Y_FXSPR_static = static_SPR_res(2).matrix().row(0);
-    array<Type> log_Y_FXSPR_static = static_SPR_res(2);
-    //vector<Type> log_SPR_FXSPR_static = static_SPR_res(3).matrix().row(0);
-    array<Type> log_SPR_FXSPR_static = static_SPR_res(3);
-    //vector<Type> log_SPR0_static = static_SPR_res(4).matrix().row(0);
-    array<Type> log_SPR0_static = static_SPR_res(4);
+    vector<Type> log_SSB_FXSPR_static = static_SPR_res(1).matrix().row(0);
+    //array<Type> log_SSB_FXSPR_static = static_SPR_res(1);
+    vector<Type> log_Y_FXSPR_static = static_SPR_res(2).matrix().row(0);
+    //array<Type> log_Y_FXSPR_static = static_SPR_res(2);
+    vector<Type> log_SPR_FXSPR_static = static_SPR_res(3).matrix().row(0);
+    //array<Type> log_SPR_FXSPR_static = static_SPR_res(3);
+    vector<Type> log_SPR0_static = static_SPR_res(4).matrix().row(0);
+    //array<Type> log_SPR0_static = static_SPR_res(4);
     //matrix<Type> log_YPR_FXSPR_static = static_SPR_res(5).matrix();
     array<Type> log_YPR_FXSPR_static = static_SPR_res(5);
     // matrix<Type> log_YPR_FXSPR_static(n_stocks,n_fleets+1);
@@ -1023,9 +1023,9 @@ Type objective_function<Type>::operator() ()
     //   log_YPR_FXSPR_static(s,n_fleets) = static_SPR_res(5)(n_stocks*n_fleets + s);
     // }
     //matrix<Type> log_FXSPR_iter_static = static_SPR_res(6).matrix();
-    array<Type> log_FXSPR_iter_static = static_SPR_res(6);
-    //Type log_FXSPR_static = log_FXSPR_iter_static(9);
-    Type log_FXSPR_static = 0;
+    //array<Type> log_FXSPR_iter_static = static_SPR_res(6);
+    vector<Type> log_FXSPR_iter_static = static_SPR_res(6).matrix().row(0);
+    Type log_FXSPR_static = log_FXSPR_iter_static(log_FXSPR_iter_static.size()-1);
     REPORT(log_FAA_XSPR_static);
     REPORT(log_SSB_FXSPR_static);
     REPORT(log_Y_FXSPR_static);
@@ -1044,6 +1044,7 @@ Type objective_function<Type>::operator() ()
       ADREPORT(log_SSB_FXSPR);
       ADREPORT(log_Y_FXSPR);
       ADREPORT(log_SPR0);
+      ADREPORT(log_FAA_XSPR_static);
       ADREPORT(log_FXSPR_static);
       ADREPORT(log_SSB_FXSPR_static);
       ADREPORT(log_SPR0_static);
