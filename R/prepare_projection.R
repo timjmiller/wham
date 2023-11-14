@@ -24,7 +24,8 @@
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
 #'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
-#'     \item \code{$waa_input} (3-d array), user-supplied waa values for the projection years with dimensions (waa source x year x age).
+#'     \item \code{$proj_mature} (matrix), user-supplied maturity values for the projection years with dimensions (\code{n.yrs} x n_ages).
+#'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -177,7 +178,23 @@ prepare_projection = function(model, proj.opts)
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
-  data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  
+  if(!is.null(proj.opts$proj_mature)){
+    dims.check <- c(proj.opts$n.yrs, dim(data$mature)[2])
+    cat("\nUsing user-suplied maturity values for projected maturity.\n")
+    if(length(dim(proj.opts$proj_waa)) != 2) {
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_mature must be a matrix with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    if(any(dim(proj.opts$proj_waa)!= dims.check)){
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_mature must be a matrix with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    data$mature <- rbind(data$mature[1:data$n_years_model,], proj.opts$proj_mature)
+  } else {
+    data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  }
+  
   data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
   
   if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
@@ -185,29 +202,19 @@ prepare_projection = function(model, proj.opts)
   tmp[,1:data$n_years_model,] <- data$waa
 
   
-  # proj_waa dims are (waa source x year x age)
+  # proj_waa dims are (dim(input$data$waa)[1] x n.yrs x n_age)
   if(!is.null(proj.opts$proj_waa)){
-    warning("Using user-suplied WAA values for projected WAA.")
+    dims.check <- c(dim(data$waa)[1],proj.opts$n.yrs, dim(data$waa)[3])
+    cat("\nUsing user-suplied WAA values for projected WAA.\n")
     if(length(dim(proj.opts$proj_waa)) != 3) {
-      stop(paste("","** Error setting up projections: **",
-                 "proj.opts$proj_waa must be a 3d-array.","",sep='\n'))
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_waa must be a 3d-array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
     }
-    if(dim(proj.opts$proj_waa)[1] != dim(data$waa)[1]) {
-      stop(paste("","** Error setting up projections: **",
-                 "The number of waa sources (rows) in proj.opts$proj_waa must match the number
-                 of waa sources (rows) in input$data$waa.","",sep='\n'))
-    } 
-    if(dim(proj.opts$proj_waa)[2] != proj.opts$n.yrs) {
-      stop(paste("","** Error setting up projections: **",
-                 "The number of years (columns) in proj.opts$proj_waa must match the number
-                 of years in the projection period (proj.opts$n.yrs).","",sep='\n'))
+    if(any(dim(proj.opts$proj_waa)!= dims.check)){
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_waa must be a 3d-array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
     }
-    if(dim(proj.opts$proj_waa)[3] != dim(data$waa)[3]) {
-      stop(paste("","** Error setting up projections: **",
-                 "The number of ages (3d-slices) in proj.opts$proj_waa must match the number
-                 of ages (3d-slices) in input$data$waa.","",sep='\n'))
-    }    
-      tmp[,(data$n_years_model+1):(data$n_years_model+proj.opts$n.yrs),] <- proj.opts$proj_waa
+    tmp[,data$n_years_model + 1:proj.opts$n.yrs,] <- proj.opts$proj_waa
   } else {
     toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
     for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
