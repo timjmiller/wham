@@ -5,6 +5,7 @@ wham 1.0.7.9000
 
 
 ### Minor improvements
+* Added option to specify WAA and maturity in projection years. [d6f82f1](https://github.com/timjmiller/wham/commit/d6f82f12c525a06ef5f319c477e78a4cfed10dfb)
 * Fix bug in NAA reporting simulated models with projection years when holding process errors constant in data years. [22633c](https://github.com/timjmiller/wham/commit/22633cd126a4d55e34f9d3cc39e3a4ed8229ea17) 
 * Added option to decouple recruitment random effects from those for older ages when NAA_re$sigma = "rec+1". [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
 * Linear parameterization of Dirichlet-multinomial dispersion parameter option for age composition likelihood added [Thorson et al. 2017](https://doi.org/10.1016/j.fishres.2016.06.005) [e3ab77b](https://github.com/timjmiller/wham/commit/e3ab77b8e42c0e68e364f58a0a7855e04a262604). Effective sample size is reported for both Dirichlet-multinomial likelihood options.
