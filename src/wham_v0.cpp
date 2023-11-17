@@ -711,18 +711,15 @@ Type objective_function<Type>::operator() ()
   NAA.setZero();
   matrix<Type> pred_NAA(n_years_model + n_years_proj,n_ages);
   pred_NAA.setZero();
-
+  Type cumS = 1;
   for(int a = 0; a < n_ages; a++)
   {
     if(N1_model == 0) NAA(0,a) = exp(log_N1_pars(a));
-    else
+    else //equilbrium assumption for initial NAA
     {
-      if(a==0) NAA(0,0) = exp(log_N1_pars(0));
-      else
-      {
-        if(a == n_ages-1) NAA(0,a) = NAA(0,a-1)/(1.0 + exp(-MAA(0,a) - exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1)));
-        else NAA(0,a) = NAA(0,a-1)* exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1));
-      }
+      NAA(0,a) = exp(log_N1_pars(0)) * cumS;
+      if(a == n_ages-1) NAA(0,a) = NAA(0,a)/(1.0 - exp(-MAA(0,a) - exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1)));
+      cumS *= exp(-MAA(0,a) -  exp(log_N1_pars(1)) * FAA_tot(0,a)/FAA_tot(0,which_F_age(0)-1)); //accumulate S for next age
     }
     SSB(0) += NAA(0,a) * waa(waa_pointer_ssb-1,0,a) * mature(0,a) * exp(-ZAA(0,a)*fracyr_SSB(0));
     pred_NAA(0,a) = NAA(0,a);
