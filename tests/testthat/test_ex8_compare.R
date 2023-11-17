@@ -21,6 +21,6 @@ mods <- list(base, mod)
 names(mods) <- c("ASAP","WHAM-m1")
 
 tmp.dir <- tempdir(check=TRUE)
-res <- suppressWarnings(compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE)))
+res <- suppressWarnings(compare_wham_models(mods, fdir=tmp.dir, do.table=T, plot.opts=list(kobe.prob=FALSE)))
 
 })

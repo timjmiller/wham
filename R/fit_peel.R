@@ -124,8 +124,6 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   # print(lapply(par, length))
   # print("before TMB call")
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)
-  print(" in 1")
-  print(temp.mod$fn())
   # trep <- temp.mod$report()
   # print(sapply(trep[grep("nll_", names(trep))], sum))
   # print(trep$nll_agg_catch)

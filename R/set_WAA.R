@@ -27,10 +27,8 @@ set_WAA <- function(input, waa_info = NULL) {
 		}
 		#fill with index waa
 		i <- 1
-		print(data$n_indices)
 		for(k in 1:length(asap3)) {
 			x <- asap3[[k]]
-			print(x$n_indices)
 			for(f in 1:x$n_indices){
 				data$waa[data$n_fleets + data$n_regions + i,,] <- x$WAA_mats[[x$index_WAA_pointers[f]]]
 				data$waa_pointer_indices[i] <- data$n_fleets + data$n_regions + i

@@ -61,7 +61,6 @@ set_indices = function(input, index_info=NULL) {
   data$units_indices = rep(2,data$n_indices)
   data$units_index_paa = rep(2,data$n_indices)
   data$fracyr_indices = matrix(data$fracyr_seasons[1]*0.5, data$n_years_model, data$n_indices)
-  print("here")
 
 	if(!is.null(asap3)) {
     k <- 1

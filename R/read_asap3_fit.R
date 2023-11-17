@@ -141,7 +141,10 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
   log_SSB_FXSPR[,1] <- log(mean(recruits)*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec) # match wham default to use average estimated recruitment (all years)
   # log_SSB_FXSPR[,2] <- sd(log(recruits*(pSPR/100)*asap$SR.annual.parms$s.per.r.vec))/sqrt(length(recruits))
 
-  log_rel_ssb_F_cov <- rep(list(matrix(-99, 2,2)), nyears )
+  #log_rel_ssb_F_cov <- rep(list(matrix(-99, 2,2)), nyears )
+  log_rel_ssb_F_cov <- lapply(1:nyears, function(x) {
+    list(c(log_SSB[x,1]-log_SSB_FXSPR[x,1], log_F[x,1]-log_FXSPR[x,1]), matrix(-99, 2,2))
+  })
 
 
   return(list(years=years, years_full=years_full, selAA=selAA, selblock_pointer_fleets=selblock_pointer_fleets,

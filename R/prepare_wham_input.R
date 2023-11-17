@@ -505,6 +505,8 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#print("random")
 	cat(unlist(input$log, recursive=T))
 
+	input$call <- match.call()
+
 	return(input)
 }
 

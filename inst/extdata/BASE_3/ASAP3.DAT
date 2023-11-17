@@ -903,7 +903,7 @@
 # Weight at Age Matrix
 2  2  2  2  
 # Index Month
-0.292  0.75  0.167  0.292  
+4.5  10  3  4.5  
 # Index Selectivity Link to Fleet
 -1  -1  -1  -1  
 # Index Selectivity Options 1=by age, 2=logisitic, 3=double logistic

@@ -24,6 +24,11 @@
 #' @param do.table T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.
 #' @param do.plot T/F, produce plots? Default = TRUE.
 #' @param fdir character, path to directory to save table and/or plots. Default = \code{getwd()}.
+#' @param compare.opts list of options to generate comparison results:
+#'   \describe{
+#'     \item{\code{$stock}}{integer, which stock to include in results. Default = 1.}
+#'     \item{\code{$region}}{integer, which region to include in results. Default = 1.}
+#'   }
 #' @param table.opts list of options for AIC/rho table:
 #'   \describe{
 #'     \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = \code{'model_comparison'}.}
@@ -31,7 +36,7 @@
 #'     \item{\code{$calc.rho}}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
 #'     \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
 #'     \item{\code{$print}}{T/F, print table to console? Default = TRUE.}
-#'     \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = TRUE.}
+#'     \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = FALSE.}
 #'   }
 #' @param plot.opts list of options for plots:
 #'   \describe{
@@ -71,19 +76,25 @@
 #' }
 #'
 #' @export
-compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(), table.opts=NULL, plot.opts=NULL, fname=NULL, sort=NULL, calc.rho=NULL, calc.aic=NULL, do.print=NULL){
+compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(), compare.opts=NULL, table.opts=NULL, plot.opts=NULL, fname=NULL, sort=NULL, calc.rho=NULL, calc.aic=NULL, do.print=NULL){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
   if(!any(c(missing("fname"),missing("sort"),missing("calc.rho"),missing("calc.aic"),missing("do.print")))){
     warning("Argument deprecated, use table.opts=list(fname, sort, calc.rho, calc.aic, print, save.csv) instead.
       Using default: table.opts=list(fname='model_comparison', sort=TRUE, calc.rho=TRUE, calc.aic=TRUE, print=TRUE, save.csv=TRUE)")
   }
-  y <- list() # to return
+  out <- list() # to return
   wham.mods.ind <- which(sapply(mods, function(x) "wham_version" %in% names(x))) # otherwise asap model output read in from read_asap3_fit
   asap.mods.ind <- c(1:length(mods))[-wham.mods.ind] # otherwise asap model output read in from read_asap3_fit
   wham.mods <- mods[wham.mods.ind] # get wham models only
   asap.mods <- mods[asap.mods.ind] # get asap models only
   all.wham <- ifelse(length(wham.mods.ind)==length(mods), TRUE, FALSE)
   no.wham <- ifelse(length(wham.mods.ind)==0, TRUE, FALSE)
+
+  if(is.null(compare.opts)) compare.opts <- list(stock = 1, region = 1)
+  if(is.null(compare.opts$stock)) compare.opts$stock = 1
+  if(is.null(compare.opts$region)) compare.opts$region = 1
+  stock <- compare.opts$stock
+  region <- compare.opts$region
 
   if(do.table){
     if(is.null(table.opts)) table.opts=list(fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, print=TRUE, save.csv=TRUE)
@@ -92,59 +103,59 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(is.null(table.opts$calc.rho)) table.opts$calc.rho = TRUE
     if(is.null(table.opts$calc.aic)) table.opts$calc.aic = TRUE
     if(is.null(table.opts$print)) table.opts$print = TRUE
-    if(is.null(table.opts$save.csv)) table.opts$save.csv = TRUE
+    if(is.null(table.opts$save.csv)) table.opts$save.csv = FALSE
     aic.tab <- aic <- daic <- NULL
-    if(length(wham.mods.ind) == 0) warning("No WHAM models. Consider setting do.table = FALSE.")
+    if(no.wham) warning("No WHAM models. Consider setting do.table = FALSE.\n")
     if(!all.wham){
-      cat("Cannot calculate AIC or Mohn's rho for ASAP3 models.
-Returning AIC/rho table for WHAM models only.
-")
+      cat("Cannot calculate AIC or Mohn's rho for ASAP3 models.\n
+        Returning AIC/rho table for WHAM models only.\n")
     }
-    if(table.opts$calc.aic & length(wham.mods.ind) > 0){
+    if(table.opts$calc.aic & !no.wham) if(length(wham.mods)>1) {
       if(sum(mapply(function(x) x$env$data$Ecov_model==0, wham.mods)) %in% c(0,length(wham.mods))){
         ecov.obs <- lapply(wham.mods, function(x) x$env$data$Ecov_use_obs)
         all.identical <- function(l) all(mapply(identical, head(l, 1), tail(l, -1)))
-        if(!all.identical(ecov.obs)){
-          stop("Different env covariate data used, cannot compare models' AIC. \n\n
-               Set 'calc.aic = FALSE' to make other comparisons, or only select
-               models fit to the same data.\n")
+        if(!all.identical(ecov.obs)){ #covariate obs in each model, but not the same covariates.
+          warning("Inclusion of environmental covariate observations differs among models, cannot compare models' AIC. \n
+            Setting 'calc.aic = FALSE' to make other comparisons. \n\n")
+          table.opts$calc.aic = FALSE
         }
-        aic <- sapply(wham.mods, function(x){
-          k = length(x$opt$par)
-          2*(x$opt$obj + k) # AIC
-          # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
-        })
-        aic <- round(aic, 1)
-        daic <- round(aic - min(aic), 1)
-      } else {
-        stop("Env covariate in some model(s) but not all. Cannot compare AIC \n
-             for models with different data (here, some have environmental data \n
-             and some do not). Set 'calc.aic = FALSE' to make other comparisons, \n
-             or only select models fit to the same data.\n")
+      } else { 
+        warning("Inclusion of environmental covariate observations differs among models, cannot compare models' AIC. \n
+          Setting 'calc.aic = FALSE' to make other comparisons. \n\n")
+          table.opts$calc.aic = FALSE
       }
+    }
+
+    if(table.opts$calc.aic){
+      aic <- sapply(wham.mods, function(x){
+        k = length(x$opt$par)
+        2*(x$opt$obj + k) # AIC
+        # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
+      })
+      aic <- round(aic, 1)
+      daic <- round(aic - min(aic), 1)
       aic.tab <- cbind(daic, aic)
       colnames(aic.tab) <- c("dAIC","AIC")
+      tab <- cbind(aic.tab)
     }
     rho <- NULL
     if(table.opts$calc.rho){
       if(any(mapply(function(x) is.null(x$peels), wham.mods))){
-        stop("Not all models have peels --> Cannot compare Mohn's rho. \n
-             Set 'calc.rho = FALSE' to make other comparisons, or re-run models \n
-             with 'fit_wham(do.retro = TRUE)'.\n")
+        warning("Not all models have peels --> Cannot compare Mohn's rho. \n
+             Setting 'calc.rho = FALSE' to make other comparisons. \n")
+        table.opts$calc.rho = FALSE
+      } else{
+        rho <- t(sapply(wham.mods, function(x){
+          rho <- mohns_rho(x)
+          rho <- c(rho$naa[stock,region,1], rho$SSB[stock], rho$Fbar[region])
+        }))#[ ,c("R","SSB","Fbar")]
+        rho <- round(rho, 4)
+        colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
+        # apply(rho, 1, function(y) mean(abs(y)))
+        if(!is.null(tab)) tab <- cbind(tab, rho)
+        else tab <- cbind(rho)
       }
-      rho <- lapply(wham.mods, function(x){
-        x <- mohns_rho(x)
-        x$R <- x$naa[,"R"]
-        x <- c(x$R,x$SSB, x$Fbar)
-      })
-      #RIGHT HERE!!!!!
-
-      rho <- lapply(rho, round, digits = 4)
-      rho <- c(rho$R, rho$SSB, rho$Fbar)
-      colnames(rho) <- paste0("rho_",c("R","SSB","Fbar"))
-      # apply(rho, 1, function(y) mean(abs(y)))
     }
-    tab <- cbind(aic.tab, rho)
 
     best <- NULL
     if(table.opts$calc.aic) best <- names(wham.mods)[which(aic == min(aic))]
@@ -155,11 +166,12 @@ Returning AIC/rho table for WHAM models only.
       rho <- rho[ord,]
       tab <- tab[ord,]
     }
-    if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
-    if(table.opts$print) print(tab) # print to console
-    y$daic = daic; y$aic=aic; y$rho=rho; y$best=best; y$tab=tab
+    if(!is.null(tab)){ 
+      if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
+      if(table.opts$print) print(tab) # print to console
+    }
+    out[c("daic","aic","rho","best","tab")] <- list(daic,aic,rho,best,tab)
   }
-
   if(do.plot){
     if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE)
     if(is.null(plot.opts$out.type)) plot.opts$out.type <- 'png'
@@ -172,7 +184,7 @@ Returning AIC/rho table for WHAM models only.
     if(!all(plot.opts$years %in% all.yrs)) stop("plot.opts$years must be a subset of $years_full in model fits")
     if(!is.null(plot.opts$relative.to)) if(!plot.opts$relative.to %in% names(mods)) stop("plot.opts$relative.to must match a model name, e.g. 'm1'.")
     if(is.null(plot.opts$which)) plot.opts$which <- 1:10
-    if(!all(plot.opts$which %in% 1:10)) stop("All elements of plot.opts$which must be in 1:11. See ?compare_wham_models for available plots.")
+    if(!all(plot.opts$which %in% 1:10)) stop("All elements of plot.opts$which must be in 1:10. See ?compare_wham_models for available plots.")
     if(is.null(plot.opts$alpha)) plot.opts$alpha <- 0.05
     if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- tail(mods[[1]]$years, 1)
     if(!(plot.opts$kobe.yr %in% all.yrs)) stop("plot.opts$kobe.yr must be a year in $years_full from model fits.")
@@ -185,8 +197,10 @@ Returning AIC/rho table for WHAM models only.
     for(i in 1:length(mods)){
       if(i %in% wham.mods.ind){
         x[[i]] <- read_wham_fit(mods[[i]])
+        x[[i]]$is.wham = TRUE
       } else {
         x[[i]] <- mods[[i]] # already processed by read_asap3_fit
+        x[[i]]$is.wham <- FALSE
       }
     }
     names(x) <- names(mods)
@@ -219,17 +233,27 @@ Returning AIC/rho table for WHAM models only.
       } else return(NULL)
     }
     g <-  vector("list", 10)
+    no.SPR <- sapply(x, function(x) !("log_FXSPR" %in% names(x)))
+    no.MSY <- sapply(x, function(x) !("log_FMSY" %in% names(x)))
+    if((any(no.SPR) & plot.opts$refpt == "XSPR") | (any(no.MSY) & plot.opts$refpt == "MSY")){
+      if(plot.opts$refpt == "XSPR"){
+        warning("Not plotting SPR-based reference points and status because at least one model does not have them reported.")
+      }
+      if(plot.opts$refpt == "MSY"){
+        warning("Not plotting MSY-based reference points and status because at least one model does not have them reported.")
+      }
+      plot.opts$which <- plot.opts$which[which(!(plot.opts$which %in% 8:10))]
+    }
     for(i in plot.opts$which){
-      if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, plot.opts))
-      if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(x, plot.opts))
+      if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, compare.opts, plot.opts))
+      if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(x, compare.opts, plot.opts))
       if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="fleet"))
       if(i==4) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="indices"))
-      if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(x, plot.opts, type="selAA"))
-      if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(x, plot.opts))
-      if(i==7) g[[i]] <- suppressWarnings(plot.tile.compare(x, plot.opts, type="MAA"))
+      if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(x, compare.opts, plot.opts, type="selAA"))
+      if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(x, compare.opts, plot.opts))
+      if(i==7) g[[i]] <- suppressWarnings(plot.tile.compare(x, compare.opts, plot.opts, type="MAA"))
       if(i==8) g[[i]] <- suppressWarnings(plot.refpt.compare(x, plot.opts))
       if(i==9) g[[i]] <- suppressWarnings(plot.rel.compare(x, plot.opts))
-      # if(i==10) g[[i]] <- plot.kobe.compare(x, plot.opts)
     }
     pdims <- lapply(g, gg_facet_dims)
     pdims[[10]] <- c(7,7)
@@ -249,10 +273,10 @@ Returning AIC/rho table for WHAM models only.
       if(i == 10) g[[i]] <- suppressWarnings(plot.kobe.compare(x, plot.opts))
       dev.off()
     }
-    if(plot.opts$return.ggplot) y$g <- g
+    if(plot.opts$return.ggplot) out$g <- g
   }
 
-  return(y)
+  return(out)
 }
 fancy_scientific <- function(l) {
   if(max(l, na.rm=T) < 100){
@@ -267,11 +291,30 @@ fancy_scientific <- function(l) {
   }
   parse(text=l)
 }
-get.ci <- function(x, alpha=0.05, getci=TRUE){
-  if(!getci) x[,2] <- 0
-  ci <- exp(x[,1] + cbind(0, -qnorm(1-alpha/2)*x[,2], qnorm(1-alpha/2)*x[,2]))
-  ci[is.nan(ci[,2]),2] = ci[is.nan(ci[,2]),1]
-  ci[is.nan(ci[,3]),3] = ci[is.nan(ci[,3]),1]
+# get.ci <- function(x, alpha=0.05, getci=TRUE){
+#   if(!getci) x[,2] <- 0
+#   ci <- exp(x[,1] + cbind(0, -qnorm(1-alpha/2)*x[,2], qnorm(1-alpha/2)*x[,2]))
+#   ci[is.nan(ci[,2]),2] = ci[is.nan(ci[,2]),1]
+#   ci[is.nan(ci[,3]),3] = ci[is.nan(ci[,3]),1]
+#   return(ci)
+# }
+get.ci = function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1, alpha.ci=0.05, getci=TRUE, asap = FALSE){
+  if(!getci) {
+    ci <- list(lo = par, hi = par)
+    ci$lo[] <- 0
+    ci$hi[] <- 0
+  } else {
+    if(!asap) ci <- list(lo = par - qnorm(1-alpha.ci/2) * se, hi = par + qnorm(1-alpha.ci/2) * se)
+    else ci <- list(lo = cbind(par[,1] - qnorm(1-alpha.ci/2)* par[,2]), hi = cbind(par[,1] + qnorm(1-alpha.ci/2)* par[,2]))
+  }
+  if(type == "I") {
+  }
+  if(type == "exp") {
+    ci <- lapply(ci, exp)
+  }
+  if(type == "expit") { #Delta-method: V(lo + (hi-lo)/(1 + exp(-x))) ~ ((hi-lo) * p * (1-p))^2 * V(x)
+    ci <- lapply(ci, function(x) lo + (hi-lo)/(1+ exp(-k * x)))
+  }
   return(ci)
 }
 plot.timeseries.compare <- function(df, x, plot.opts){
@@ -311,58 +354,113 @@ plot.timeseries.compare <- function(df, x, plot.opts){
 
   return(g)
 }
-plot.SSB.F.R.compare <- function(x, plot.opts){
+plot.SSB.F.R.compare <- function(x, compare.opts, plot.opts){
+  stock <- compare.opts$stock
+  region <- compare.opts$region
   df <- data.frame(matrix(NA, nrow=0, ncol=6))
   colnames(df) <- c("Year","var","val","lo","hi","Model")
   if(!is.null(plot.opts$relative.to)){
     base.i <- which(names(x) == plot.opts$relative.to)
-    plot.opts$ci <- rep(FALSE, length(x))
+    plot.opts$ci <- rep(FALSE, length(x)) #no confidence intervals
     for(i in 1:length(x)){
-      ci <- get.ci(x[[i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[i])
-      ci2 <- get.ci(x[[base.i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[base.i])
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB_all$est)
+        else ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB[,1])
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
+        else ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB[,1])
+      }
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("SSB relative to ",plot.opts$relative.to),
-        val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
-      ci <- get.ci(x[[i]][["log_F"]], plot.opts$alpha, plot.opts$ci[i])
-      ci2 <- get.ci(x[[base.i]][["log_F"]], plot.opts$alpha, plot.opts$ci[base.i])
+        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F_tot$est)
+        else ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F[,1])
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
+        else ratio <- exp(x[[i]]$log_F[,1])/exp(x[[base.i]]$log_F[,1])
+      }
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("F relative to ",plot.opts$relative.to),
-        val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
-      ci <- get.ci(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[i])
-      ci2 <- get.ci(cbind(x[[base.i]]$log_NAA[,1], x[[base.i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[base.i])
+        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
+        else ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA[,1])
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
+        else ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA[,1])
+      }
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("Recruitment relative to ",plot.opts$relative.to),
-        val=ci[,1]/ci2[,1], lo=ci[,1]/ci2[,1], hi=ci[,1]/ci2[,1], Model=names(x)[i]))
+        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
     }
   } else {
     for(i in 1:length(x)){
-      ci <- get.ci(x[[i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[i])
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-      ci <- get.ci(x[[i]][["log_F"]], plot.opts$alpha, plot.opts$ci[i])
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-      ci <- get.ci(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[i])
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Recruitment", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB", val=exp(x[[i]]$log_SSB_all$est), lo=x[[i]]$log_SSB_all$ci$lo, 
+          hi=x[[i]]$log_SSB_all$ci$hi, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F", val=exp(x[[i]]$log_F_tot$est), lo=x[[i]]$log_F_tot$ci$lo, 
+          hi=x[[i]]$log_F_tot$ci$hi, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Recruitment", val=exp(x[[i]]$log_NAA_rep$est[stock,region,,1]), 
+          lo=x[[i]]$log_NAA_rep$ci$lo[stock,region,,1], hi=x[[i]]$log_NAA_rep$ci$hi[stock,region,,1], Model=names(x)[i]))
+      } else{
+        ci <- get.ci(x[[i]][["log_SSB"]], plot.opts$alpha, plot.opts$ci[i], asap = TRUE)
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB", val=exp(x[[i]][["log_SSB"]][,1]), lo=ci$lo[,1], hi=ci$hi[,1], Model=names(x)[i]))
+        ci <- get.ci(x[[i]][["log_F"]], plot.opts$alpha, plot.opts$ci[i], asap = TRUE)
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F", val=exp(x[[i]][["log_F"]][,1]), lo=ci$lo[,1], hi=ci$hi[,1], Model=names(x)[i]))
+        ci <- get.ci(cbind(x[[i]]$log_NAA[,1], x[[i]]$NAA_CV[,1]), plot.opts$alpha, plot.opts$ci[i], asap = TRUE)
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Recruitment", val=exp(x[[i]]$log_NAA[,1]), lo=ci$lo[,1], hi=ci$hi[,1], Model=names(x)[i]))
+      }
     }
   }
   g <- plot.timeseries.compare(df, x, plot.opts)
   return(g)
 }
-plot.cv.compare <- function(x, plot.opts){
+plot.cv.compare <- function(x, compare.opts, plot.opts){
+  stock <- compare.opts$stock
+  region <- compare.opts$region
   plot.opts$ci <- rep(FALSE, length(x))
   df <- data.frame(matrix(NA, nrow=0, ncol=6))
   colnames(df) <- c("Year","var","val","lo","hi","Model")
   if(!is.null(plot.opts$relative.to)){
     base.i <- which(names(x) == plot.opts$relative.to)
     for(i in 1:length(x)){
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV (SSB) relative to ",plot.opts$relative.to),
-                                 val=x[[i]][["log_SSB"]][,2]/x[[base.i]][["log_SSB"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV (F) relative to ",plot.opts$relative.to),
-                                 val=x[[i]][["log_F"]][,2]/x[[base.i]][["log_F"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV (Rec) relative to ",plot.opts$relative.to),
-                                 val=x[[i]][["NAA_CV"]][,1]/x[[base.i]][["NAA_CV"]][,1], lo=NA, hi=NA, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$log_SSB_all$se/x[[base.i]]$log_SSB_all$se
+        else ratio <- x[[i]]$log_SSB_all$se/x[[base.i]]$log_SSB[,2]
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$log_SSB[,2]/x[[base.i]]$log_SSB_all$se
+        else ratio <- x[[i]]$log_SSB[,2]/x[[base.i]]$log_SSB[,2]
+      }
+      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV(SSB) relative to ",plot.opts$relative.to),
+        val=ratio, lo=NA, hi=NA, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$log_F_tot$se/x[[base.i]]$log_F_tot$se
+        else ratio <- x[[i]]$log_F_tot$se/x[[base.i]]$log_F[,2]
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$log_F[,2]/x[[base.i]]$log_F_tot$se
+        else ratio <- x[[i]]$log_F[,2]/x[[base.i]]$log_F[,2]
+      }
+      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV(F) relative to ",plot.opts$relative.to),
+        val=ratio, lo=NA, hi=NA, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$log_NAA_rep$se[stock,region,,1]/x[[base.i]]$log_NAA_rep$se[stock,region,,1]
+        else ratio <- x[[i]]$log_NAA_rep$se[stock,region,,1]/x[[base.i]]$NAA_CV[,1]
+      } else {
+        if(x[[base.i]]$is.wham) ratio <- x[[i]]$NAA_CV[,1]/x[[base.i]]$log_NAA_rep$se[stock,region,,1]
+        else ratio <- x[[i]]$NAA_CV[,1]/x[[base.i]]$NAA_CV[,1]
+      }
+      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("CV(Rec) relative to ",plot.opts$relative.to),
+        val=ratio, lo=NA, hi=NA, Model=names(x)[i]))
     }
   } else {
     for(i in 1:length(x)){
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV (SSB)", val=x[[i]][["log_SSB"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV (F)", val=x[[i]][["log_F"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV (Recruitment)", val=x[[i]][["NAA_CV"]][,1], lo=NA, hi=NA, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(SSB)", val=x[[i]][["log_SSB_all"]]$se, lo=NA, hi=NA, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(F)", val=x[[i]][["log_F_tot"]]$se, lo=NA, hi=NA, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(Rec)", val=x[[i]][["log_NAA_rep"]]$se[stock,region,,1], lo=NA, hi=NA, Model=names(x)[i]))
+      } else {
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(SSB)", val=x[[i]][["log_SSB"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(F)", val=x[[i]][["log_F"]][,2], lo=NA, hi=NA, Model=names(x)[i]))
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="CV(Rec)", val=x[[i]][["NAA_CV"]][,1], lo=NA, hi=NA, Model=names(x)[i]))
+      }
     }
   }
   g <- plot.timeseries.compare(df, x, plot.opts)
@@ -371,44 +469,46 @@ plot.cv.compare <- function(x, plot.opts){
 plot.refpt.compare <- function(x, plot.opts){
   df <- data.frame(matrix(NA, nrow=0, ncol=6))
   colnames(df) <- c("Year","var","val","lo","hi","Model")
+  nms.df <- c("F_refpt","SSB_refpt","Y_refpt")
+  if(plot.opts$refpt == "XSPR"){
+    nms <- c("log_FXSPR","log_SSB_FXSPR","log_Y_FXSPR")
+  } else{ # MSY ref pt
+    nms <- c("log_FMSY","log_SSB_MSY","log_MSY")
+  }
   if(!is.null(plot.opts$relative.to)){
     plot.opts$ci <- rep(FALSE, length(x))
     base.i <- which(names(x) == plot.opts$relative.to)
     for(i in 1:length(x)){
-      if(plot.opts$refpt == "XSPR"){
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt",
-          val=exp(x[[i]][["log_FXSPR"]][,1])/exp(x[[base.i]][["log_FXSPR"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt",
-          val=exp(x[[i]][["log_SSB_FXSPR"]][,1])/exp(x[[base.i]][["log_SSB_FXSPR"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt",
-          val=exp(x[[i]][["log_Y_FXSPR"]][,1])/exp(x[[base.i]][["log_Y_FXSPR"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
-      } else { # MSY ref pt
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt",
-          val=exp(x[[i]][["log_FMSY"]][,1])/exp(x[[base.i]][["log_FMSY"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt",
-          val=exp(x[[i]][["log_SSB_MSY"]][,1])/exp(x[[base.i]][["log_SSB_MSY"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt",
-          val=exp(x[[i]][["log_MSY"]][,1])/exp(x[[base.i]][["log_MSY"]][,1]), lo=NA, hi=NA, Model=names(x)[i]))
+      for(j in 1:length(nms)){
+        if(x[[base.i]]$is.wham) {
+          denom <- cbind(exp(x[[base.i]][[nms[j]]]$est[,]))
+          denom <- denom[,NCOL(denom)]
+        } else denom <- exp(x[[base.i]][[nms[j]]][,1])
+        if(x[[i]]$is.wham) {
+          num <- cbind(exp(x[[i]][[nms[j]]]$est))
+          num <- num[,NCOL(num)]
+        } else num <- exp(x[[i]][[nms[j]]][,1])
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=nms.df[j], #changed later
+          val=num/denom, lo=num/denom, hi=num/denom, Model=names(x)[i]))
       }
     }
-    df$lo = df$val
-    df$hi = df$val
   } else {
     for(i in 1:length(x)){
-      if(plot.opts$refpt == "XSPR"){
-        ci <- get.ci(x[[i]][["log_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci(x[[i]][["log_SSB_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci(x[[i]][["log_Y_FXSPR"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-      } else { # MSY ref pt
-        ci <- get.ci(x[[i]][["log_FMSY"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci(x[[i]][["log_SSB_MSY"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        ci <- get.ci(x[[i]][["log_MSY"]], plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Y_refpt", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
+      for(j in 1:length(nms)){
+        if(x[[i]]$is.wham) {
+          val <- cbind(exp(x[[i]][[nms[j]]]$est))
+          col <- NCOL(val)
+          val <- val[,col]
+          lo <- cbind(x[[i]][[nms[j]]]$ci$lo)[,col]
+          hi <- cbind(x[[i]][[nms[j]]]$ci$hi)[,col]
+        }
+        else {
+          val <- exp(x[[i]][[nms[j]]][,1])
+          ci <- get.ci(x[[i]][[nms[j]]], plot.opts$alpha, plot.opts$ci[i], asap = TRUE)
+          lo <- ci$lo
+          hi <- ci$hi
+        }
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=nms.df[j], val=val, lo=lo, hi=hi, Model=names(x)[i]))
       }
     }
   }
@@ -419,24 +519,24 @@ plot.refpt.compare <- function(x, plot.opts){
   }
   if(!is.null(plot.opts$relative.to)) {
     if(plot.opts$refpt == "XSPR"){
-      df$var <- factor(df$var, levels=c("F_refpt","SSB_refpt","Y_refpt"),
+      df$var <- factor(df$var, levels=nms.df, #c("F_refpt","SSB_refpt","Y_refpt"),
                            labels=c(bquote(italic(F)[paste(.(pSPR), "%")] ~relative~to~.(plot.opts$relative.to)),
                                     bquote(paste('SSB (', italic(F)[paste(.(pSPR), "%")],')')~relative~to~.(plot.opts$relative.to)),
                                     bquote(paste('Yield (',italic(F)[paste(.(pSPR), "%")], ')')~relative~to~.(plot.opts$relative.to))))
     } else {
-      df$var <- factor(df$var, levels=c("F_refpt","SSB_refpt","Y_refpt"),
+      df$var <- factor(df$var, levels=nms.df,#c("F_refpt","SSB_refpt","Y_refpt"),
                            labels=c(bquote(italic(F)[MSY] ~relative~to~.(plot.opts$relative.to)),
                                     bquote(SSB[MSY]~relative~to~.(plot.opts$relative.to)),
                                     bquote(MSY~relative~to~.(plot.opts$relative.to))))      
     }
   } else {
     if(plot.opts$refpt == "XSPR"){
-      df$var <- factor(df$var, levels=c("F_refpt","SSB_refpt","Y_refpt"),
+      df$var <- factor(df$var, levels=nms.df, #c("F_refpt","SSB_refpt","Y_refpt"),
                            labels=c(bquote(italic(F)[paste(.(pSPR), "%")]),
                                     bquote(paste('SSB (', italic(F)[paste(.(pSPR), "%")],')')),
                                     bquote(paste('Yield (',italic(F)[paste(.(pSPR), "%")], ')'))))
     } else {
-      df$var <- factor(df$var, levels=c("F_refpt","SSB_refpt","Y_refpt"),
+      df$var <- factor(df$var, levels=nms.df, #c("F_refpt","SSB_refpt","Y_refpt"),
                            labels=c(bquote(italic(F)[MSY]),
                                     bquote(SSB[MSY]),
                                     bquote(MSY)))      
@@ -452,57 +552,47 @@ plot.rel.compare <- function(x, plot.opts){
   if(!is.null(plot.opts$relative.to)){
     plot.opts$ci <- rep(FALSE, length(x))
     base.i <- which(names(x) == plot.opts$relative.to)
+    vars <- c("relSSB", "relF")
     if(plot.opts$refpt == "XSPR"){
       for(i in 1:length(x)){
-        relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
-        relF2 <- cbind(x[[base.i]][["log_F"]][,1]-x[[base.i]][["log_FXSPR"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci2 <- get.ci(relF2, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF",
-          val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
-        relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
-        relSSB2 <- cbind(x[[base.i]][["log_SSB"]][,1]-x[[base.i]][["log_SSB_FXSPR"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci2 <- get.ci(relSSB2, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB",
-          val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
+        for(j in 1:length(vars)){
+          vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          vals2 <- t(sapply(x[[base.i]][["log_rel_ssb_F_cov"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
+            val=exp(vals[,1])/exp(vals2[,1]), lo=NA, hi=NA, Model=names(x)[i]))
+        }
       }
     } else { # msy ref pt
       for(i in 1:length(x)){
-        relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FMSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
-        relF2 <- cbind(x[[base.i]][["log_F"]][,1]-x[[base.i]][["log_FMSY"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci2 <- get.ci(relF2, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF",
-          val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
-        relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_MSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
-        relSSB2 <- cbind(x[[base.i]][["log_SSB"]][,1]-x[[base.i]][["log_SSB_MSY"]][,1], sapply(x[[base.i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci2 <- get.ci(relSSB2, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB",
-          val=ci[,1]/ci2[,1], lo=NA, hi=NA, Model=names(x)[i]))
+        for(j in 1:length(vars)){
+          vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          vals2 <- t(sapply(x[[base.i]][["log_rel_ssb_F_cov_msy"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
+            val=exp(vals[,1])/exp(vals2[,1]), lo=NA, hi=NA, Model=names(x)[i]))
+        }
       }      
     }
     df$lo = df$val
     df$hi = df$val
   } else {
+    vars <- c("relSSB", "relF")
     if(plot.opts$refpt == "XSPR"){
       for(i in 1:length(x)){
-        relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_FXSPR"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
+        for(j in 1:length(vars)){
+          vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          ci <- exp(vals[,1] +qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
+          df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
+            val=exp(vals[,1]), lo=ci[,1], hi=ci[,2], Model=names(x)[i]))
+        }
       }
     } else { # msy ref pt
       for(i in 1:length(x)){
-        relF <- cbind(x[[i]][["log_F"]][,1]-x[[i]][["log_FMSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[2,2]))))
-        ci <- get.ci(relF, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relF", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
-        relSSB <- cbind(x[[i]][["log_SSB"]][,1]-x[[i]][["log_SSB_MSY"]][,1], sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) return(sqrt(x[1,1]))))
-        ci <- get.ci(relSSB, plot.opts$alpha, plot.opts$ci[i])
-        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="relSSB", val=ci[,1], lo=ci[,2], hi=ci[,3], Model=names(x)[i]))
+        for(j in 1:length(vars)){
+          vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
+          ci <- exp(vals[,1] +qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
+          df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
+            val=exp(vals[,1]), lo=ci[,1], hi=ci[,2], Model=names(x)[i]))
+        }
       }
     }
   }
@@ -542,8 +632,10 @@ plot.rel.compare <- function(x, plot.opts){
 }
 #-------------------------------------------------------------------------------
 # 2D tile plot by age and year (e.g. selAA, MAA)
-plot.tile.compare <- function(x, plot.opts, type="selAA"){
+plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
   n_ages = length(plot.opts$ages.lab)
+  stock <- compare.opts$stock
+  region <- compare.opts$region  
 
   if(type=="selAA"){
     n_years = length(x[[1]]$years)
@@ -591,7 +683,11 @@ plot.tile.compare <- function(x, plot.opts, type="selAA"){
     df <- data.frame(matrix(NA, nrow=0, ncol=4))
     colnames(df) <- c("Year","Age","M","Model")
     for(j in 1:length(x)){
-      MAA <- as.data.frame(x[[j]][["MAA"]])
+      if(x[[j]]$is.wham){
+        MAA <- as.data.frame(x[[j]][["MAA"]][stock,region,,])
+      } else {
+        MAA <- as.data.frame(x[[j]][["MAA"]])
+      }
       MAA$Year <- x[[j]]$years_full
       colnames(MAA) <- c(paste0("Age_",1:n_ages),"Year")
       df <- rbind(df, MAA %>% tidyr::pivot_longer(-Year,
@@ -613,20 +709,24 @@ plot.tile.compare <- function(x, plot.opts, type="selAA"){
   return(g)
 }
 plot.kobe.compare <- function(x, plot.opts){
-  status.years.ind <- sapply(x, function(x) which(x$years_full == plot.opts$kobe.yr))
-  do.kobe <- unlist(sapply(mapply(function(x,i) x$log_rel_ssb_F_cov[i], x, status.years.ind), function(y) !all(!is.finite(y)))) # only if some non-infinite values for at least some status years
-  if(any(do.kobe)){
-    fxn <- function(y,i) y[["log_F"]][i,1]-y[["log_FXSPR"]][i,1]
-    rel.f.vals <- mapply(fxn, x, status.years.ind)
-    fxn <- function(y,i) y[["log_SSB"]][i,1]-y[["log_SSB_FXSPR"]][i,1]
-    rel.ssb.vals <- mapply(fxn, x, status.years.ind)
-    log.rel.ssb.rel.F.cov <- mapply(function(x,i) x$log_rel_ssb_F_cov[i], x, status.years.ind)
+  status.year.ind <- sapply(x, function(x) which(x$years_full == plot.opts$kobe.yr))
+  #if any of the models have non-finite values for cov, then don't do that status years
+  do.kobe <- sapply(status.year.ind, function(y) !any(sapply(x, function(z) any(!is.finite(z$log_rel_ssb_F_cov[[y]][[2]])))))
+  #do.kobe <- unlist(sapply(mapply(function(x,i) x$log_rel_ssb_F_cov[i], x, status.year.ind), function(y) !all(!is.finite(y)))) # only if some non-infinite values for at least some status years
+  if(any(do.kobe)){ #length(do.kobe) == length(x)
+    #fxn <- function(y,i) y[["log_F"]][i,1]-y[["log_FXSPR"]][i,1]
+    fxn <- function(y,i,j) y$log_rel_ssb_F_cov[[i]][[1]][j] #i: yr, j: rel ssb or f 
+    rel.f.vals <- mapply(fxn, x, status.year.ind, 2)
+    rel.ssb.vals <- mapply(fxn, x, status.year.ind, 1)
+    fxn <- function(y,i) y$log_rel_ssb_F_cov[[i]][[2]] #i: yr
+    log.rel.ssb.rel.F.cov <- mapply(fxn, x, status.year.ind, SIMPLIFY=F)
+
     log.rel.ssb.rel.F.ci.regs <- lapply(1:length(x), function(x){
       if(is.na(rel.f.vals[x]) | any(diag(log.rel.ssb.rel.F.cov[[x]])<0)) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-plot.opts$alpha)))
       })
-    p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.years.ind))
-    for(i in 1:length(status.years.ind)){
+    p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.year.ind))
+    for(i in 1:length(status.year.ind)){
       check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[i]])==0 | diag(log.rel.ssb.rel.F.cov[[i]]) < 0
       if(!any(is.na(check.zero.sd))) if(!any(check.zero.sd)){
         p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[i],rel.f.vals[i]), varcov = log.rel.ssb.rel.F.cov[[i]])
@@ -654,29 +754,50 @@ plot.kobe.compare <- function(x, plot.opts){
     polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
     polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
     if(plot.opts$kobe.prob){
-      legend("topleft", legend = paste0("Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", cex=0.7)
-      legend("topright", legend = paste0("Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", cex=0.7)
-      legend("bottomleft", legend = paste0("Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", cex=0.7)
-      legend("bottomright", legend = paste0("Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
+      legend("topleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", cex=0.7)
+      legend("topright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", cex=0.7)
+      legend("bottomleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", cex=0.7)
+      legend("bottomright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
     }
     text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"), cex=0.7)
-    for(i in 1:length(status.years.ind)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
+    for(i in 1:length(status.year.ind)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
     return(list(rel.status = vals, p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
-  } else return(NULL)
+  } else {
+    return(NULL)
+  }
 }
-plot.M.compare <- function(x, plot.opts){
+plot.M.compare <- function(x, compare.opts, plot.opts){
+  stock <- compare.opts$stock
+  region <- compare.opts$region  
   plot.opts$ci <- rep(FALSE, length(x))
   df <- data.frame(matrix(NA, nrow=0, ncol=6))
   colnames(df) <- c("Year","var","val","lo","hi","Model")
   if(!is.null(plot.opts$relative.to)){
     base.i <- which(names(x) == plot.opts$relative.to)
     for(i in 1:length(x)){
+      if(x[[base.i]]$is.wham){
+        if(x[[i]]$is.wham){
+          ratio <- x[[i]][["MAA"]][stock,region,,plot.opts$M.age]/x[[i]][["MAA"]][stock,region,,plot.opts$M.age]
+        } else{
+          ratio <- x[[i]][["MAA"]][,plot.opts$M.age]/x[[i]][["MAA"]][stock,region,,plot.opts$M.age]
+        }
+      } else{
+        if(x[[i]]$is.wham){
+          ratio <- x[[i]][["MAA"]][stock,region,,plot.opts$M.age]/x[[base.i]][["MAA"]][,plot.opts$M.age]
+        } else{
+          ratio <- x[[i]][["MAA"]][,plot.opts$M.age]/x[[base.i]][["MAA"]][,plot.opts$M.age]
+        }        
+      }
       df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("M at age ",plot.opts$M.age," relative to ",plot.opts$relative.to),
-                                 val=x[[i]][["MAA"]][,plot.opts$M.age]/x[[base.i]][["MAA"]][,plot.opts$M.age], lo=NA, hi=NA, Model=names(x)[i]))
+                                 val=ratio, lo=NA, hi=NA, Model=names(x)[i]))
     }
   } else {
     for(i in 1:length(x)){
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("M at age ",plot.opts$M.age), val=x[[i]][["MAA"]][,plot.opts$M.age], lo=NA, hi=NA, Model=names(x)[i]))
+      if(x[[i]]$is.wham){
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("M at age ",plot.opts$M.age), val=x[[i]][["MAA"]][stock,region,,plot.opts$M.age], lo=NA, hi=NA, Model=names(x)[i]))
+      } else {
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("M at age ",plot.opts$M.age), val=x[[i]][["MAA"]][,plot.opts$M.age], lo=NA, hi=NA, Model=names(x)[i]))
+      }
     }
   }
   g <- plot.timeseries.compare(df, x, plot.opts)

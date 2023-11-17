@@ -140,6 +140,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
         plot.recr.ssb.yr(mod, loglog=TRUE, stock = i)
         plot.SARC.R.SSB(mod, stock = i)
       }
+      if(mod$env_data$n_stocks>1) plot.SARC.R.SSB(mod, stock = NULL) #totals
       plot.cv(mod)
     }
     plot.fleet.F(mod)
@@ -336,6 +337,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
         plot.SARC.R.SSB(mod, stock = i)
         dev.off()
       }
+      if(mod$env_data$n_stocks>1) { 
+        png(file.path(dir.res,paste0("SSB_Rec_time_total.png")),width=10,height=10,units="in",res=res,family=fontfam)
+        plot.SARC.R.SSB(mod, stock = NULL) #totals
+        dev.off()
+      }
+
       png(file.path(dir.res,"CV_SSB_Rec_F.png"),width=10,height=10,units="in",res=res,family=fontfam)
       plot.cv(mod)
       dev.off()
