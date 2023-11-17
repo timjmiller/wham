@@ -156,12 +156,10 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
   array<Type> NAA_1(n_stocks, n_regions, n_ages);
   NAA_1.setZero();
   //see("inside get_NAA_1");
-  matrix<Type> FAA1(n_fleets,n_ages);
-  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA1(f,a) = FAA(f,0,a);
-  vector<Type> temp = FAA1.colwise().sum();
-  matrix<Type> sel1 = FAA1/temp(which_F_age(0)-1);
-  //see("inside get_NAA_1 1");
-  //see(N1_model);
+  matrix<Type> sel1(n_fleets,n_ages);
+  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) sel1(f,a) = FAA(f,0,a);
+  vector<Type> temp = sel1.colwise().sum();
+  sel1 = sel1/temp(which_F_age(0)-1);
   //NAA_where(s,r,0) must be consistent with spawn_regions  
   for(int s = 0; s < n_stocks; s++) {
     if((N1_model(s) == 0) | (N1_model(s) == 2)) { //log_N1 is either fixed or random effects parameters for initial numbers at age
@@ -169,10 +167,7 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
       for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
         NAA_1(s,r,a) = exp(log_N1(s,r,a)); //log_N1 has to be mapped to not be estimated for NAA_where(s,r,a)==0
       }
-  //see("inside get_NAA_1 3");
     } else{ //N1_model(s) == 1
-      vector<int> no_avg_yrs_ind(1);
-      no_avg_yrs_ind(0) = 0;
       array<Type> FAA1(n_fleets,1,n_ages);
       FAA1.setZero();
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
@@ -187,6 +182,45 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
   }
   return NAA_1;
 }
+
+///////////////////THIS IS JUST TO return the components that go into creating equilibrium NAA for that option for initial numbers at age!!!!!!!!!!!!!!!
+template <class Type>
+vector< array<Type>> get_eq_NAA_components(vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M, array<Type> FAA, 
+  vector<int> which_F_age, vector<int> spawn_regions, 
+  vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, array<Type> mu, 
+  matrix<Type> L, vector<Type> fracyr_seasons, 
+  vector<int> avg_years_ind, int small_dim) {
+
+  int n_stocks = log_N1.dim(0);
+  int n_fleets = FAA.dim(0);
+  int n_regions = log_N1.dim(1);
+  int n_ages = log_M.dim(3);
+  array<Type> NAA_1(n_stocks, n_regions, n_ages);
+  NAA_1.setZero();
+  array<Type> sel1(n_fleets,n_ages);
+  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) sel1(f,a) = FAA(f,0,a);
+  vector<Type> temp = sel1.matrix().colwise().sum();
+  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) sel1(f,a) = sel1(f,a)/temp(which_F_age(0)-1);
+  vector< array<Type>> out(n_stocks*2+1);
+  //NAA_where(s,r,0) must be consistent with spawn_regions  
+  for(int s = 0; s < n_stocks; s++) {
+    array<Type> FAA1(n_fleets,1,n_ages);
+    FAA1.setZero();
+    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+      FAA1(f,0,a) = exp(log_N1(s,spawn_regions(s)-1,1)) * sel1(f,a); //only 1 F0 per stock
+    }
+    out(s*2) = FAA1;
+    array<Type> SAA1 = get_eq_SAA(0, fleet_regions, fleet_seasons, can_move, mig_type, FAA1, log_M, 
+      mu, L, fracyr_seasons, small_dim);
+    out(s*2+1) = SAA1;
+    for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_regions; i++) if(NAA_where(s,i,a)) {
+      NAA_1(s,i,a) += exp(log_N1(s,spawn_regions(s)-1,0)) * SAA1(s,a,spawn_regions(s)-1,i); //only 1 Rec per stock, this must be consistent with NAA_where
+    }
+  }
+  out(n_stocks*2) = sel1;
+  return out;
+}
+
 
 template <class Type>
 array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vector<int> N1_model, array<Type> log_N1, array<int> NAA_where, array<Type> log_M, 

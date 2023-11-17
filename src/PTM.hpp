@@ -470,16 +470,14 @@ array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seaso
   for(int s = 0; s < n_stocks; s++) {
     matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
     matrix<Type> S_ya = get_S(P_ya, n_regions);
-    for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,0,i,j) = S_ya(i,j);
-    for(int a = 1; a < n_ages; a++) {
+    for(int a = 0; a < n_ages; a++) {
       matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
       for(int t = 0; t < n_seasons; t++) {
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
         P_ya = P_ya * get_P_t(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       }
-      S_ya = S_ya * get_S(P_ya, n_regions); //accumulate for next age
       if(a == n_ages-1){
-        //now plus group
+        //plus group
         matrix<Type> fundm(n_regions,n_regions);
         fundm.setZero();
         for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) {
@@ -487,25 +485,14 @@ array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seaso
           if(i==j) fundm(i,j) += 1;
         }
         if(small_dim) fundm = fundm.inverse(); else fundm = atomic::matinv(fundm);
-        //for plus group S_ya = S_y,a-1 x (I - S_y,+)^-1
+        //for plus group S_ya = cum(S_y,a-1) x (I - S_y,+)^-1
         S_ya = S_ya * fundm;
+        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
+      } else{
+        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
+        S_ya = S_ya * get_S(P_ya, n_regions); //accumulate for next age
       }
-      for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
     }
-    // for(int t = 0; t < n_seasons; t++) {
-    //   //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
-    //   P_ya = P_ya * get_P_t(n_ages-1, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
-    // }
-    // matrix<Type> fundm(n_regions,n_regions);
-    // fundm.setZero();
-    // for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) {
-    //   fundm(i,j) = -P_ya(i,j);
-    //   if(i==j) fundm(i,j) += 1;
-    // }
-    // if(small_dim) fundm = fundm.inverse(); else fundm = atomic::matinv(fundm);
-    // //for plus group S_ya = S_y,a-1 x (I - S_y,+)^-1
-    // S_ya = S_ya * fundm;
-    // for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,n_ages-1,i,j) = S_ya(i,j);
   }
   return SAA;
 }

@@ -727,6 +727,23 @@ Type objective_function<Type>::operator() ()
    spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, mu, L, fracyr_seasons, 
    avg_years_ind, n_regions_is_small);
   REPORT(N1);
+  // vector<array<Type>> N1_components = get_eq_NAA_components(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, spawn_regions, fleet_regions, fleet_seasons, 
+  //     can_move, mig_type, mu, L, fracyr_seasons, avg_years_ind, n_regions_is_small);
+  // // see(N1_components.size());
+  // array<Type> FAA11 = N1_components(0);
+  // // see(FAA11);
+  // REPORT(FAA11);
+  // array<Type> SAA11 = N1_components(1);
+  // REPORT(SAA11);
+  // if(n_stocks == 2){
+  //   array<Type> FAA12 = N1_components(2);
+  //   // see(FAA12);
+  //   REPORT(FAA12);
+  //   array<Type> SAA12 = N1_components(3);
+  //   REPORT(SAA12);
+  // }
+  // array<Type> selex = N1_components(n_stocks*2);
+  // REPORT(selex);
 
   //initial predicted numbers at age
   //n_stocks x n_regions x n_ages
