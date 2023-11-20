@@ -12,7 +12,8 @@ wham 1.0.7.9000
 
 ### Bug fixes
 
-* Fixed bug in fit_peel function when modeling random effects on catchability. [a7880b](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
+* Fixed bug in make_osa_residuals when checking for a data frame. [9f65ad6](https://github.com/timjmiller/wham/commit/9f65ad62b366fc08e35df48178e87cd39d330cd3)
+* Fixed bug in fit_peel function when modeling random effects on catchability. [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
 * Fixed issue in multinomial, D-M, MVTweedie likelihoods when selectivity = 0 for some ages with age-specific selectivity configuration [issue 80](https://github.com/timjmiller/wham/issues/80) [ad22b8a](https://github.com/timjmiller/wham/commit/ad22b8a2dec86d22525f58f5f7db9bc6e3d18fc6)
 * Fixed NaN issue in multinomial for extremely small (e.g. 1e-17) predicted proportions [issue 76](https://github.com/timjmiller/wham/issues/76) [99ec44f](https://github.com/timjmiller/wham/commit/99ec44f7f3c4647d1e882d3102d3da5d31afbb8b)
 * Fix incorrect flag for simulating catch age composition data and incorrect indexing for years to average over for SPR inputs [4f06dc7](https://github.com/timjmiller/wham/commit/4f06dc7baff3b6bef3e7c8eb262dcdedefbb33dc)
