@@ -138,6 +138,6 @@ set_q = function(input, catchability = NULL){
   #set any parameters as random effects
   input$random = NULL
   input = set_random(input)
-
+	input$options$q <- q_opts
 	return(input)
 }

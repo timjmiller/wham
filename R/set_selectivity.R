@@ -412,6 +412,7 @@ set_selectivity = function(input, selectivity)
   #set any parameters as random effects
   input$random = NULL
   input = set_random(input)
+  input$options$selectivity <- selectivity
   return(input)
 
 }

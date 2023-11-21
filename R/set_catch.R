@@ -107,5 +107,7 @@ set_catch = function(input, catch_info= NULL) {
 
   input$data = data
   input$asap3 <- asap3
+  input$options$catch <- catch_info
+  
   return(input)
 }

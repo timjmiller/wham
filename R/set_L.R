@@ -87,6 +87,7 @@ set_L = function(input, L)
 	#set any parameters as random effects
 	input$random = NULL
 	input = set_random(input)
+  input$options$L <- L
   return(input)
 
 }

@@ -93,7 +93,7 @@ struct sr_yield_spatial {
     }
     if(trace) see(logMbaseT);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
-    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
+    if(n_regions>1) for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
         muT(s,a,t,r,rr) = T(mu(s,a,t,r,rr));
       }
@@ -114,7 +114,7 @@ struct sr_yield_spatial {
       matT, 
       waassbT, 
       fracyrseasonT, 
-      0, small_dim, trace);
+      0, small_dim, 0);
     if(trace) see("end get_SPR sr_yield_spatial");
     if(trace) see(SPR_sr);
     array<T> YPR_srf = get_YPR_srf(
@@ -140,7 +140,7 @@ struct sr_yield_spatial {
       if(trace) see(SPR(s));
       if(recruit_model(s) == 3) R(s) = (T(SR_a(s)) - 1/SPR(s)) / T(SR_b(s)); //beverton-holt
       if(recruit_model(s) == 4) R(s) = log(T(SR_a(s)) * SPR(s))/(T(SR_b(s)) * SPR(s)); //ricker
-      for(int r = 0; r < n_regions; r++) for(int f = 0; f < n_fleets; f ++) Y(s) += YPR_srf(s,r,f) * R(s);
+      for(int r = 0; r < n_regions; r++) for(int f = 0; f < n_fleets; f ++) Y(s) += YPR_srf(s,spawn_regions(s)-1,f) * R(s);
     }
     if(trace) see(R);
     if(trace) see(SR_a);
@@ -239,11 +239,14 @@ struct sr_yield_gradient_spatial {
     }
     if(trace) see(FAA);
     vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
+    if(trace) see(fracyrssbT);
     array<T> logMbaseT(log_M.dim(0),log_M.dim(1),log_M.dim(2));
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
       logMbaseT(s,r,a) = T(log_M(s,r,a));
     }
+    if(trace) see(log_M);
     if(trace) see(logMbaseT);
+    if(trace) see(log_M.dim);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
     for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < mu.dim(2); t++) {
       for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
@@ -390,7 +393,7 @@ vector< matrix <Type> > get_MSY_res(
   vector<int> years_M, vector<int> years_mu, vector<int> years_L, vector<int> years_mat, vector<int> years_sel, 
   vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_SR_ab,
   int small_dim, int trace = 0, int n_iter = 10) {
-  if(trace) see("inside get_SPR_res");
+  if(trace) see("inside get_MSY_res");
   int n = n_iter;
   int n_stocks = log_M.dim(0);
   int n_fleets = FAA.dim(0);
@@ -423,6 +426,12 @@ vector< matrix <Type> > get_MSY_res(
   L_avg = get_avg_L(L, years_L, 0);
   //for(int y = 0; y < years_L.size(); y++) for(int i = 0; i < n_regions; i++) L_avg(i) += L(years_L(y),i)/Type(years_L.size());
   if(trace) see(L_avg);
+  if(trace){
+    see(log_M.dim);
+    array<Type> temp_log_M(n_stocks,n_regions,n_ages);
+    for(int s = 0; s < n_stocks; s++) for(int r = 0; r< n_regions; r++) for(int a = 0; a < n_ages; a++) temp_log_M(s,r,a) = log_M(s,r,years_M(0),a);
+    see(temp_log_M);
+  }
   array<Type> log_avg_M = get_avg_M(log_M, years_M, 1);
   if(trace) see(log_avg_M);
 
@@ -440,6 +449,7 @@ vector< matrix <Type> > get_MSY_res(
   if(trace) see(waa_catch);
 
   matrix<Type> FAA_avg = get_avg_FAA(FAA,years_sel,0);
+  if(trace) see(FAA_avg);
   vector<Type> FAA_avg_tot = FAA_avg.colwise().sum();
   if(trace) see(FAA_avg_tot);
 
@@ -500,31 +510,34 @@ vector< matrix <Type> > get_MSY_res(
     log_SSB_MSY(n_stocks,0) += exp(log_SSB_MSY(s,0)); //not logged
     for(int f = 0; f < n_fleets; f++) {
       //NOTE: If stock s cannot ever be in fleet_region(f)-1 then this will give log(0);
-      log_YPR_MSY(f,s) = log(YPR_srf(s,fleet_regions(f)-1,f));
+      log_YPR_MSY(f,s) = log(YPR_srf(s,spawn_regions(s)-1,f)); //originate in spawning region and end up captured by fleet f
       //log_YPR_MSY(n_stocks*n_fleets + s) += YPR_srf(s,fleet_regions(f)-1,f); //not logged yet
-      log_YPR_MSY(f,s) = log(YPR_srf(s,fleet_regions(f)-1,f));
-      log_MSY(f,s) += exp(log_R_MSY(s,0)) * YPR_srf(s,fleet_regions(f)-1,f); //not logged yet, can be 0
-      log_MSY(n_fleets,s) += log_MSY(f,s); //not logged yet
-      log_MSY(f,n_stocks) += log_MSY(f,s); //not logged yet
-      log_MSY(n_fleets,n_stocks) += log_MSY(f,s); //total yield across stocks, fleets not logged yet
+      log_MSY(f,s) += log_R_MSY(s,0) + log_YPR_MSY(f,s); //not logged yet, can be 0
+      log_YPR_MSY(n_fleets,s) += exp(log_YPR_MSY(f,s));//not logged yet
+      log_YPR_MSY(f,n_stocks) += exp(log_YPR_MSY(f,s));//not logged yet
+      log_MSY(n_fleets,s) += exp(log_MSY(f,s)); //not logged yet
+      log_MSY(f,n_stocks) += exp(log_MSY(f,s)); //not logged yet
+      if(f == n_fleets - 1) {
+        log_MSY(n_fleets,s) = log(log_MSY(n_fleets,s)); //logged now.
+        log_YPR_MSY(n_fleets,s) = log(log_YPR_MSY(n_fleets,s)); //logged now.
+      }
+      if(s == n_stocks - 1) {
+        log_MSY(f,n_stocks) = log(log_MSY(f,n_stocks)); //logged now.
+        log_YPR_MSY(f,n_stocks) = log(log_YPR_MSY(f,n_stocks)); //logged now.
+      }
+      log_YPR_MSY(n_fleets,n_stocks) += exp(log_YPR_MSY(f,s));//not logged yet
+      log_MSY(n_fleets,n_stocks) += exp(log_MSY(f,s)); //total yield across stocks, fleets not logged yet
     }
-    log_MSY(n_fleets,s) = log(log_MSY(n_fleets,s)); //logged now.
-    log_YPR_MSY(n_fleets,s) = log_MSY(n_fleets,s) - log_R_MSY(s,0); //total YPR for stock s 
-    //log_YPR_MSY(n_stocks*n_fleets + s) = log(log_YPR_MSY(n_stocks*n_fleets + s)); //log total YPR (across fleets) for stock s
   }
+  log_MSY(n_fleets,n_stocks) = log(log_MSY(n_fleets,n_stocks)); //logged now.
+  log_YPR_MSY(n_fleets,n_stocks) = log(log_YPR_MSY(n_fleets,n_stocks)); //logged now.
   if(trace) see(log_MSY);
   log_SSB_MSY(n_stocks,0) = log(log_SSB_MSY(n_stocks,0)); //logged now
   log_R_MSY(n_stocks,0) = log(log_R_MSY(n_stocks,0)); //logged now
   log_SPR_MSY(n_stocks,0) = log_SSB_MSY(n_stocks,0) - log_R_MSY(n_stocks,0);
-  for(int f = 0; f < n_fleets; f++) {
-    log_MSY(f,n_stocks) = log(log_MSY(f,n_stocks)); //logged now.
-    log_YPR_MSY(f,n_stocks) = log_MSY(f,n_stocks) - log_R_MSY(n_stocks,0); //total YPR for fleet f 
-  }
-  log_MSY(n_fleets,n_stocks) = log(log_MSY(n_fleets,n_stocks)); //logged now.
-  log_YPR_MSY(n_fleets,n_stocks) = log_MSY(n_fleets,n_stocks) - log_R_MSY(n_stocks,0); //logged now
   //not done with the next line yet!!!!!!!!
   //log_YPR_MSY(n_stocks*n_fleets + s)
-  vector< matrix<Type> > res(6); 
+  vector< matrix<Type> > res(7); 
   res(0) = log_SSB_MSY;
   res(1) = log_R_MSY;
   res(2) = log_SPR_MSY; //log SSB/R at FMSY
@@ -575,7 +588,7 @@ vector< array <Type> > get_annual_MSY_res(
 
   for(int y = 0; y < ny; y++){
     yvec(0) = y;
-
+    if(y == 0){
     vector<matrix<Type>> MSY_res_y = get_MSY_res(
       recruit_model, log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions,
       fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type,
@@ -583,7 +596,7 @@ vector< array <Type> > get_annual_MSY_res(
       waa, waa_pointer_ssb, waa_pointer_fleets,
       mature, fracyr_SSB, F_init(y), 
       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
-      small_dim, trace, n_iter);
+      small_dim, 1, n_iter);
     for(int s = 0; s <= n_stocks; s++) {
       log_SSB_MSY(y,s) = MSY_res_y(0)(s,0);
       log_R_MSY(y,s) = MSY_res_y(1)(s,0);
@@ -594,7 +607,8 @@ vector< array <Type> > get_annual_MSY_res(
         log_YPR_MSY(s,f,y) = MSY_res_y(5)(f,s);
       }
     }
-    for(int i = 0; i < n_iter; i++) log_FMSY_iter(y,i) = MSY_res_y(6)(i);
+    for(int i = 0; i < n_iter; i++) log_FMSY_iter(y,i) = MSY_res_y(6)(i,0);
+  }
   }
   vector< array <Type>> res(7);
   res(0) = log_SSB_MSY;

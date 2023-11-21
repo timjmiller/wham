@@ -37,5 +37,6 @@ set_F = function(input, F_opts = NULL)
       for(f in 1:data$n_fleets) input$par$F_pars[-1,f] <- diff(log(F_opts$F[,f]))
     }
   }
+  input$options$F <- F_opts
   return(input)
 }

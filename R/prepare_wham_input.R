@@ -433,6 +433,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
   input$years_full = input$years
 
+  input$options <- list()
 	 print("start")
 	#some basic input elements see the function code below
 	input = add_basic_info(input, basic_info)
@@ -609,6 +610,7 @@ add_basic_info = function(input, basic_info){
 		paste0(input$years[input$data$XSPR_R_avg_yrs+1], collapse = ","), " are used. \n"))
 	}
 
+	input$options$basic_info <- basic_info
   return(input)
 
 }

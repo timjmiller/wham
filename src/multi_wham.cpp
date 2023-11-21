@@ -1076,7 +1076,7 @@ Type objective_function<Type>::operator() ()
       log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
       fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, fracyr_SSB, FMSY_init, 
-      n_regions_is_small, 0, 10);
+      n_regions_is_small, 1, 10);
     
     array<Type> log_SSB_MSY = annual_MSY_res(0);
     REPORT(log_SSB_MSY);

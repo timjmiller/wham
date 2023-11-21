@@ -59,7 +59,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
-print("in 1")
   if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
   if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY = 100
 
@@ -79,7 +78,6 @@ print("in 1")
     capture.output(cat("  $use.FMSY = ",proj.opts$use.FMSY)),
     capture.output(cat("  $proj.F = ",proj.opts$proj.F)),
     capture.output(cat("  $proj.catch = ",proj.opts$proj.catch)),"",sep='\n'))
-print("in 2")
 
   # add new data objects for projections
   data$do_proj = 1
@@ -100,7 +98,6 @@ print("in 2")
       data$proj_F_opt[] = 3
     }
   }
-print("in 3")
   data$proj_Fcatch = rep(0,data$n_years_proj)
   if(!is.null(proj.opts$proj.F)){
     data$proj_F_opt[] = 4
@@ -121,7 +118,6 @@ print("in 3")
     data$proj_Fcatch = proj.opts$proj_Fcatch
   }
   data$proj_Fcatch[which(!data$proj_F_opt %in% 4:5)] = 0
-print("in 4")
 
   if(any(data$proj_F_opt == 3)) data$percentFXSPR = proj.opts$percentFXSPR
   if(any(data$proj_F_opt == 6)) data$percentFMSY = proj.opts$percentFMSY
@@ -136,7 +132,6 @@ print("in 4")
   #FAA_proj = colMeans(rbind(model$rep$FAA_tot[avg.yrs.ind,]))
   data$which_F_age = c(data$which_F_age, rep(which.max(FAA_proj), data$n_years_proj))
 
-print("in 5")
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
   #This is all now done on c++ side
@@ -156,7 +151,6 @@ print("in 5")
   map <- input$map
   random <- input$random
   # map <- lapply(par, fill_vals)
-print("in 6")
 
   # SCAA (fixed effect Rec devs): set up logR_proj to treat recruitment as random effects in projections
   # will need to add this to likelihood for all stocks whether SCAA is used or not, but it will only be used in projections for SCAA stocks?
@@ -172,7 +166,6 @@ print("in 6")
     random = c(random, "logR_proj")
   }
 
-print("in 7")
   dims = dim(par$log_NAA)
   dims[3] = dims[3] + data$n_years_proj
   tmp <- array(10, dim = dims)
@@ -195,7 +188,6 @@ print("in 7")
   if(all(data$NAA_re_model>0) & !is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
     This model already treats recruitment deviations as random effects.","",sep='\n'))
-print("in 8")
 
   # pad q_re
   # par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
@@ -219,7 +211,6 @@ print("in 8")
     proj.opts$use.last.ecov=FALSE
   }
   if(is.null(proj.opts$cont.ecov)) proj.opts$cont.ecov=FALSE #one of the other ecov options is not null
-print("in 9")
 
   if(any(input$data$Ecov_model > 0)){
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
@@ -332,7 +323,6 @@ print("in 9")
   # options for M in projections, data$proj_M_opt:
   #   1 = continue random effects (if they exist) - need to pad M_re
   #   2 = use average
-print("in 10")
   if(!is.null(proj.opts$cont.M.re)){
     if(proj.opts$cont.M.re & !"M_re" %in% input$random){
       stop(paste("","** Error setting up projections **",
@@ -343,30 +333,19 @@ print("in 10")
     data$proj_M_opt <- 2 #default is to use average M
     #data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
-print("in 10.1")
   # expand M_re
   input_M <- input
   input_M$asap3 <- NULL
   input_M$data$n_years_model <- data$n_years_model + data$n_years_proj
-print("in 10.11")
-  M_opts <- eval(model$call$M)
-  print(names(model$call))
-  stop()
-  print(M_opts)
-print("in 10.12")
-  input_M <- set_M(input_M, M_opts) #use same machinery to map M and now we have call saved with M list
-print("in 10.13")
+  input_M <- set_M(input_M, input$options$M) #use same machinery to map M and now we have options saved
   map$M_re <- input_M$map$M_re
-print("in 10.14")
   dims <- dim(par$M_re)
-print("in 10.2")
   dims[3] <- data$n_years_model + data$n_years_proj
   tmp <- array(0, dim = dims)
   tmp[,,1:data$n_years_model,] <- par$M_re
   #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[4]) tmp[a,b,,c] <- c(par$M_re[a,b,,c], rep(0,data$n_years_proj))
   par$M_re <- tmp
       # print("here6")
-print("in 11")
 
   # options for L in projections, data$proj_L_opt:
   #   1 = continue random effects (if they exist) - need to pad L_re
@@ -384,15 +363,13 @@ print("in 11")
   input_L <- input
   input_L$asap3 <- NULL
   input_L$data$n_years_model <- data$n_years_model + data$n_years_proj
-  L_opts <- eval(model$call$L)
-  input_L <- set_L(input_L, L_opts) #use same machinery to map M and now we have call saved with M list
+  input_L <- set_L(input_L, input$options$L) #use same machinery to map M and now we have options saved
   map$L_re <- input_L$map$L_re
   dims <- dim(par$L_re)
   dims[1] <- data$n_years_model + data$n_years_proj
   tmp <- matrix(0, dims[1], dims[2])
   tmp[1:data$n_years_model,] <- par$L_re
   par$L_re <- tmp
-print("in 12")
 
   # options for mu in projections, data$proj_mu_opt:
   #   1 = continue random effects (if they exist) - need to pad mu_re
@@ -412,8 +389,7 @@ print("in 12")
     input_mu <- input
     input_mu$asap3 <- NULL
     input_mu$data$n_years_model <- data$n_years_model + data$n_years_proj
-    move_opts <- eval(model$call$move)
-    input_mu <- set_move(input_mu, move_opts) #use same machinery to map mu and now we have call saved with move list
+    input_mu <- set_move(input_mu, input$options$move) #use same machinery to map M and now we have options saved
     map$mu_re <- input_mu$map$mu_re
     dims <- dim(par$mu_re)
     dims[4] <- data$n_years_model + data$n_years_proj
@@ -422,13 +398,11 @@ print("in 12")
     par$mu_re <- tmp
   }
 
-print("in 13")
   # expand q_re
   input_q <- input
   input_q$asap3 <- NULL
   input_q$data$n_years_model <- data$n_years_model + data$n_years_proj
-  q_opts <- eval(model$call$q)
-  input_q <- set_q(input_q, q_opts) #use same machinery to map M and now we have call saved with M list
+  input_q <- set_q(input_q, input$options$q) #use same machinery to map M and now we have options saved
   map$q_re <- input_q$map$q_re
   dims <- dim(par$q_re)
   dims[2] <- data$n_years_model + data$n_years_proj
@@ -442,6 +416,7 @@ print("in 13")
   input$par <- par
   input$map <- map
   input$random <- random
+  input$options$proj <- proj.opts
   attr(input$par, 'check.passed') = NULL
   attr(input$data, 'check.passed') = NULL
   return(input)

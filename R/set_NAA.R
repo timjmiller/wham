@@ -335,6 +335,6 @@ set_NAA = function(input, NAA_re=NULL)
   #print(sort(names(input$data)))
 	input$random = NULL
 	input = set_random(input)
-
+  input$options$NAA_re <- NAA_re
   return(input)
 }

@@ -708,6 +708,7 @@ set_ecov = function(input, ecov) {
 	input$random = NULL
 	input = set_random(input)
 	#print("random")
+  input$options$ecov <- ecov
 	
   return(input)
 }

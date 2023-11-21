@@ -136,5 +136,6 @@ set_indices = function(input, index_info=NULL) {
   input$asap3 <- asap3
 
   input$data = data
+ 	input$options$index <- index_info
   return(input)
 }

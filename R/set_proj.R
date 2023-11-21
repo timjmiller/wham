@@ -35,5 +35,6 @@ set_proj = function(input, proj.opts = NULL)
 
 	}
 	input$data = data
+	input$options$proj <- proj.opts
 	return(input)
 }

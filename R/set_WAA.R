@@ -160,5 +160,6 @@ set_WAA <- function(input, waa_info = NULL) {
 	if(length(input$log$waa))	input$log$waa <- c("WAA: \n", input$log$waa)
 
   input$data = data
-  return(input)
+  input$options$waa <- waa_info
+ 	return(input)
 }

@@ -403,6 +403,7 @@ set_M = function(input, M)
 	#set any parameters as random effects
 	input$random = NULL
 	input = set_random(input)
+  input$options$M <- M
   return(input)
 
 }

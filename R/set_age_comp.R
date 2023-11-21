@@ -90,5 +90,6 @@ set_age_comp = function(input, age_comp)
 	input$par = par
   input$map = map
 	if(length(input$log$age_comp))	input$log$age_comp <- c("Age composition: \n", input$log$age_comp)
+  input$options$age_comp <- age_comp
 	return(input)
 }
