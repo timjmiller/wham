@@ -2722,33 +2722,38 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units = "thousands", scale.ssb = 1,
 	scale.recruits = 1, age.recruit = 1, plot.colors, stock = 1) {
   dat <- mod$env$data
-  if(sum(dat$Ecov_how_R[,stock]) == 0 & dat$recruit_model[stock] == 3) {#B-H stock recruit function with alpha/beta, no ecov effects
+  if(sum(dat$Ecov_how_R[,stock]) == 0 & dat$recruit_model[stock] %in% (3:4)) {#B-H stock recruit function with alpha/beta, no ecov effects
     if(class(mod$sdrep)[1] == "sdreport"){
       std = summary(mod$sdrep)
     } else {
       std = mod$sdrep
     }
     ssb.ind = which(rownames(std) == "log_SSB")
-    print(ssb.ind)
     years = mod$years
     nyrs = length(years)
     log.ssb <- matrix(std[ssb.ind,1], ncol = dat$n_stocks)[,stock]
-    print(log.ssb)
     R <- mod$rep$NAA[stock, dat$spawn_regions[stock],,1]
-    print(R)
     SR <- matrix(NA, (nyrs-age.recruit), 3)
     SR[,1] <- years[1:(nyrs-age.recruit)]
     SR[,2] <- exp(log.ssb[1:(nyrs-age.recruit)])/scale.ssb
     SR[,3] <- R[age.recruit +1:(nyrs-age.recruit)]/scale.recruits
-    log_a <- mod$parList$mean_rec_pars[stock,1]
-    log_b <- mod$parList$mean_rec_pars[stock,2]
+    a.ind = which(rownames(std) == "log_SR_a")
+    b.ind = which(rownames(std) == "log_SR_b")
+    log_a <- matrix(std[a.ind,1], ncol = dat$n_stocks)[,stock]
+    log_b <- matrix(std[b.ind,1], ncol = dat$n_stocks)[,stock]
     if(missing(SR.par.year)) SR.par.year = nyrs
-    a.b.ind = matrix(which(rownames(std) == "mean_rec_pars"),dat$n_stocks,2)[stock,]
+    a.b.ind <- cbind(a.ind,b.ind)[SR.par.year,]
+    #a.b.ind = matrix(which(rownames(std) == "mean_rec_pars"),dat$n_stocks,2)[stock,]
     l.ab = std[a.b.ind,1]
-    a.b.cov = mod$sdrep$cov.fixed[a.b.ind,a.b.ind]
-    lR.fn = function(la, lb, S) la  + log(S) - log(1 + exp(lb)*S)
-    dlR.dp = Deriv::Deriv(lR.fn, x = c("la","lb"))
+    a.b.cov = mod$sdrep$cov[a.b.ind,a.b.ind]
     seq.ssb <- seq(0, max(SR[,2]), length.out=300)
+    if(dat$recruit_model[stock] == 3){#B-H
+      lR.fn = function(la, lb, S) la  + log(S) - log(1 + exp(lb)*S)
+    } else{ #Ricker
+      lR.fn = function(la, lb, S) la  + log(S) - exp(lb)*S
+    }
+    dlR.dp = Deriv::Deriv(lR.fn, x = c("la","lb"))
+
     sd.pred.lR = sapply(seq.ssb, function(x) {
       d = dlR.dp(l.ab[1], l.ab[2], S= x)
       return(c(sqrt(t(d) %*% a.b.cov %*% d)))
@@ -2757,7 +2762,7 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     #exp(log_a) *seq.ssb/(1 + exp(log_b)*seq.ssb)
     ci.pred.lR = pred.lR + qnorm(0.975)*cbind(-sd.pred.lR, sd.pred.lR) - log(scale.recruits)
 
-    if(missing(plot.colors)) plot.colors = viridisLite::viridis(n = nyrs-age.recruit)
+    if(missing(plot.colors)) plot.colors = viridisLite::viridis(n = 1)
     tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
     # tcol <- col2rgb(plot.colors[1])
     # tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -2768,6 +2773,7 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
         list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max(SR[,3])), xlim=c(0,1.1*max(SR[,2])))
     lines(seq.ssb, exp(pred.lR), col=plot.colors[1], lwd=2)
     polygon(c(seq.ssb,rev(seq.ssb)), exp(c(ci.pred.lR[,1],rev(ci.pred.lR[,2]))), col = tcol, border = "transparent")
+    mtext(paste0("Stock-recruit parameters from year: ", mod$years[SR.par.year]), side = 3, outer = F)
   }
 }
 #revised 
@@ -3065,7 +3071,7 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
   n_years_full = length(years_full)
   std = summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov
-	if(dat$recruit_model == 3) #Beverton-Holt assumed in model fit
+	if(dat$recruit_model %in% (3:4)) #Beverton-Holt assumed in model fit
 	{ # test to make sure steepness was estimated
     tcol <- col2rgb('black')
     tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -3096,8 +3102,22 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
     {
       t.ind <- inds[[i]]
       t.ylab <- ylabs[i]
-      vals <- std[t.ind,1][1:n_years_full]
-  	  cv <- std[t.ind,2][1:n_years_full]
+      if(i == 1) {
+        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full] #total MSY
+        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full] #total MSY
+      }
+      if(i == 2) {
+        vals <- std[t.ind,1][1:n_years_full] #Fmsy
+        cv <- std[t.ind,2][1:n_years_full]
+      }
+      if(i == 3) {
+        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_SSB_MSY))[1:n_years_full,dat$n_stocks+1] #total SSB_MSY
+        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_SSB_MSY))[1:n_years_full,dat$n_stocks+1] #total SSB_MSY
+      }
+      if(i == 4) {
+        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_R_MSY))[1:n_years_full,dat$n_stocks+1] #total R_MSY
+        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_R_MSY))[1:n_years_full,dat$n_stocks+1] #total R_MSY
+      }
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
       na.ci <- all(is.na(ci))
       # remove NaN and Inf

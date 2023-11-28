@@ -6,16 +6,17 @@
 #   age compositions = 5, logistic normal pool zero obs (ex 1: 7, logistic normal missing zero obs)
 #   selectivity = logistic (ex 1: age-specific)
 
-# btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex3_projections.R"); etime <- Sys.time(); runtime = etime - btime;
-# 5.7 min
+# pkgbuild::compile_dll(debug = FALSE)
+# pkgload::load_all()
+# library(wham)
+# btime <- Sys.time(); devtools::test(filter = "ex03_projections"); etime <- Sys.time(); runtime = etime - btime; runtime;
+# ~6 min
 
 context("Ex 3: Projections")
 
 test_that("Ex 3 works",{
 # get results to check NLL and par estimates
 path_to_examples <- system.file("extdata", package="wham")
-# ex3_test_results <- readRDS(file.path(path_to_examples,"ex3_test_results.rds"))
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"CPI.csv"), header=T)
@@ -27,16 +28,16 @@ env <- list(
   logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
   year = env.dat$Year,
   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-  lag = 1, # CPI in year t affects recruitment in year t+1
   process_model = "ar1", # fit CPI as AR1 process
-  where = "recruit", # CPI affects recruitment
-  how = 2) # limiting (carrying capacity)
+  recruitment_how = matrix("limiting-lag-1-linear",1,1)) # limiting (carrying capacity)
+basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
                             ecov = env,
                             NAA_re = list(sigma="rec+1", cor="iid"),
-                            age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
+                            age_comp = "logistic-normal-pool0", # logistic normal pool 0 obs
+                            basic_info = basic_info)
 
 # selectivity = logistic, not age-specific
 #   2 pars per block instead of n.ages
@@ -46,8 +47,6 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 # ---------------------------------------------------------
 ## Fit model without projections
 mod <- suppressWarnings(fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE))
-# saveRDS(mod, file="m6.rds")
-# mod <- readRDS("/home/bstock/Documents/wham/sandbox/ex3_projections/m6.rds")
 
 # Add projections to previously fit model
 mod_proj <- list()
@@ -70,12 +69,12 @@ mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 # 5 years, use last F, specify high CPI ~ 0.5
 mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)), MakeADFun.silent = TRUE)
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5,0.55),ncol=1)), MakeADFun.silent = TRUE)
 
 # 5 years, use last F, specify low CPI ~ -1.5
 mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)), MakeADFun.silent = TRUE)
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2,-1.25),ncol=1)), MakeADFun.silent = TRUE)
 
 # specify catch, 5 years
 mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
@@ -106,16 +105,15 @@ mod_proj[[10]] <- project_wham(mod, proj.opts=list(n.yrs=10, use.last.F=FALSE, u
 # mod_proj <- readRDS("/home/bstock/Documents/wham/sandbox/ex3_projections/m6_proj.rds")
 
 #  check marginal nll is the same
-nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)
-# mod$opt$obj
-
+nll_proj <-  sapply(mod_proj, function(x) x$fn())
 
 # plot results
 tmp.dir <- tempdir(check=TRUE)
 for(m in 1:length(mod_proj)){
+  print(m)
   suppressWarnings(plot_wham_output(mod_proj[[m]], dir.main=tmp.dir))
   expect_equal(nll_proj[m], as.numeric(mod$opt$obj), tolerance=1e-6)
-  expect_equal(as.numeric(mod_proj[[m]]$opt$par), as.numeric(mod$opt$par), tolerance=1e-3) # parameter values
+  expect_equal(mod_proj[[m]]$opt$par, mod$opt$par, tolerance=1e-3) # parameter values
 }
 
 })

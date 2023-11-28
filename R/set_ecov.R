@@ -287,7 +287,7 @@ set_ecov = function(input, ecov) {
     if(is.null(ecov$M_effect_map)) ecov$M_effect_map <- array(NA, dim = c(data$n_stocks, data$n_ages, data$n_regions, data$n_Ecov))
     if(is.null(ecov$move_how)) ecov$move_how <- array("none", dim = c(data$n_Ecov, data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1))
     if(is.null(ecov$move_effect_map)) ecov$move_effect_map <- array(NA, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_regions, data$n_regions-1, data$n_Ecov))
-    
+
     for(i in 1:data$n_Ecov) {
       ecov_used <- any(c(ecov$recruitment_how[i,],ecov$q_how[i,],ecov$M_how[i,,,],ecov$move_how[i,,,,,]) != "none")
       if(data$Ecov_model[i] == 0 & ecov_used) {

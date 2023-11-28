@@ -12,55 +12,6 @@ vector<T> get_F_t(vector<int> fleet_season, int age, matrix<T> FAA){
   return F_t;
 }
 
-template <class Type>
-matrix<Type> get_avg_FAA(array<Type> FAA, vector<int> years, int do_log){
-  
-  int n_fleets = FAA.dim(0);
-  int n_ages = FAA.dim(2);
-  matrix<Type> FAA_avg(n_fleets, n_ages);
-
-  FAA_avg.setZero();
-  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){
-    for(int y = 0; y < years.size(); y++) FAA_avg(f,a) += FAA(f,years(y),a)/Type(years.size()); //average F at fleet,season,age over years
-    if(do_log) FAA_avg(f,a) = log(FAA_avg(f,a));
-  }
-  return FAA_avg;
-}
-
-template <class Type>
-matrix<Type> get_avg_fleet_sel(array<Type> FAA, vector<int> avg_years_ind,
-  int which_F_age){
-    /* 
-     get average selectivity. Typically to define referene points or for projections
-                 FAA:  FAA (n_fleets x n_years x n_ages) array from main code.
-       avg_years_ind:  integer vector of years to average FAA
-         which_F_age:  define which age has max F
-    */
-  //average F by fleet, and age is used to find selectivity (fleet,season,age) to project 
-  //full F is the FAA for fleet, season and age defined by which_F_age
-  int n_toavg = avg_years_ind.size();
-  int n_fleets = FAA.dim(0);
-  int n_ages = FAA.dim(2);
-  matrix<Type> FAA_avg(n_fleets, n_ages);
-  FAA_avg.setZero();
-  for(int f = 0; f < n_fleets; f++) {
-    for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_toavg; i++){
-      FAA_avg(f,a) += FAA(f,avg_years_ind(i),a)/Type(n_toavg);
-    }
-  }
-  vector<Type> FAA_avg_tot = FAA_avg.colwise().sum();
-  Type F_full = FAA_avg_tot(which_F_age-1);
-
-  //get selectivity using average over avg.yrs
-  matrix<Type> sel(n_fleets,n_ages);
-  //fully selected F across regions, seasons, and ages
-  for(int f = 0; f < n_fleets; f++){
-    for(int a = 0; a < n_ages; a++) {
-      sel(f,a) = FAA_avg(f,a)/F_full;
-    }
-  }
-  return sel;
-}
 
 template<class Type>
 matrix<Type> get_log_F(matrix<Type>Fpars, int Fconfig, int n_years_pop){

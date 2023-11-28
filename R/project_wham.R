@@ -113,7 +113,6 @@ project_wham = function(model,
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
   tryCatch(input2 <- prepare_projection(model, proj.opts, check.version = check.version)
     , error = function(e) {model$err_proj <<- conditionMessage(e)})
-  print(model$err_proj)
 
   if("err_proj" %in% names(model)) stop(model$err_proj)
   else{# refit model to estimate derived quantities in projection years

@@ -273,20 +273,23 @@ set_selectivity = function(input, selectivity)
       # print(bl)
       if(sum(!is.na(bl)) < 3) {
         #data$selblock_models_re[b] <- 1 #no RE for this block
-        stop(paste0("'ar1' (AR1(age)) selectivity random effects specified for block ",b," but no number of free mean parameters is <= 2, 
+        stop(paste0("'ar1' (AR1(age)) selectivity random effects specified for block ",b,", but number of free mean parameters is <= 2, 
         which will not be identifiable. Use age-specific selectivity with more free mean selectivity parameters (par$logit_selpars) or use 
         a different random effects specification."))
       } else {
-      # if re='ar1' (by age) with age-specific selectivity, only estimate one mean shared across ages
+      # if re='ar1' (by age) with age-specific selectivity, warning that only estimate one mean shared across ages
       # but don't overwrite fixed pars (likely will be fixing one age at 1)
+        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) with age-specific selectivity for block ",b,
+        ". Only estimating one mean parameter to be shared across ages that are not fixed (there are at least 3 ages that are free here).\n"))
+        # but don't overwrite fixed pars (likely will be fixing one age at 1)
         bl[!is.na(bl)] = min(bl, na.rm=TRUE)
         temp[b, par_index[[data$selblock_models[b]]]] = bl
       }
       # warning message if no mean sel pars (logit_selpars) are fixed
       # allow so user can fit model without fixing and then fix the age with highest sel at 1
-      if(all(!is.na(bl))  & data$selblock_models[b] == 1) input$log$selectivity <- c(input$log$selectivity, paste0("NOTE: 'ar1' (AR1(age)) with age-specfici selectivity for block ",b,
-        " but no age fixed at 1. Advised to fit the current model and then fix the age with highest selectivity at 1. 
-        Can use selectivity$fix_pars."))
+      if(all(!is.na(bl))  & data$selblock_models[b] == 1) input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) with age-specific selectivity for block ",b,
+        ", but no age fixed at 1. Advised to fit the current model and then fix the age with highest selectivity at 1. 
+        Can use selectivity$fix_pars.\n"))
       # could add warning message if most ages are fixed, leaving less than xx ages to estimate with the AR1 re
     }
   }

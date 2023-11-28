@@ -11,8 +11,8 @@
 # pkgbuild::compile_dll(debug = FALSE)
 # pkgload::load_all()
 # library(wham)
-# btime <- Sys.time(); devtools::test(filter = "ex1_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime;
-# ~19.6 sec
+# btime <- Sys.time(); devtools::test(filter = "ex01_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime; runtime;
+# ~6 min
 
 context("Ex 1: SNEMA yellowtail")
 
@@ -74,7 +74,7 @@ res <- compare_wham_models(mods, fdir=tmp.dir, table.opts=list(fname="ex1_table"
 
 # WHAM output plots for best model with projections
 m4_proj <- project_wham(model=mods$m4, MakeADFun.silent=TRUE)
-plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir)
+suppressWarnings(plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir, plot.opts$browse = FALSE))
 
 # hard to see which model fails bc they're indexed by m
 # print out each one by one

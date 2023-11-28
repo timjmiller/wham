@@ -6,10 +6,11 @@
 #   age compositions = 5, logistic normal pool zero obs (ex 1: 7, logistic normal missing zero obs)
 #   selectivity = logistic (ex 1: age-specific)
 
-# devtools::load_all()
-# btime <- Sys.time(); devtools::test("/home/bstock/Documents/wham"); etime <- Sys.time(); runtime = etime - btime;
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex2_CPI_SNEMAYT.R"); etime <- Sys.time(); runtime = etime - btime;
-# 12 min
+# pkgbuild::compile_dll(debug = FALSE)
+# pkgload::load_all()
+# library(wham)
+# btime <- Sys.time(); devtools::test(filter = "ex02_CPI_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime; runtime;
+# ~14 min
 
 context("Ex 2: CPI on yellowtail recruitment")
 
@@ -21,12 +22,19 @@ ex2_test_results <- readRDS(file.path(path_to_examples,"ex2_test_results.rds"))
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"CPI.csv"), header=T)
 
+Ecov_how <- paste0(
+  c("none", "controlling-", "none", "limiting-", "limiting-", "controlling-", "controlling-"), 
+  c("", "lag-1-", "", rep("lag-1-",4)),
+  c("", "linear", "", rep("linear", 4)))
+
 df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
                       Ecov_process = c(rep("rw",4),rep("ar1",3)),
-                      Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
+                      Ecov_how = Ecov_how, stringsAsFactors=FALSE)
+
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model to first col
+basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
 
 tmp.dir <- tempdir(check=TRUE)
 mods <- list()
@@ -37,10 +45,8 @@ for(m in 1:n.mods){
     logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    lag = 1, # CPI in year t affects recruitment in year t+1
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
-    where = c("none","recruit")[as.logical(df.mods$Ecov_how[m])+1], # CPI affects recruitment
-    how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+    recruitment_how = matrix(df.mods$Ecov_how[m],1,1)) #
 
   # (not used in this vignette) can set Ecov = NULL to fit model without Ecov data
   if(is.na(df.mods$Ecov_process[m])) Ecov = NULL
@@ -50,7 +56,8 @@ for(m in 1:n.mods){
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
                               ecov = ecov,
                               NAA_re = list(sigma="rec+1", cor="iid"),
-                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
+                              age_comp = "logistic-normal-pool0", # logistic normal pool 0 obs
+                              basic_info = basic_info)
 
   # Selectivity = logistic, not age-specific as in ex1
   #   2 pars per block instead of n.ages
@@ -59,14 +66,12 @@ for(m in 1:n.mods){
 
   # Fit model
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=T, do.osa=F, MakeADFun.silent = TRUE, retro.silent = TRUE))
-  suppressWarnings(plot_wham_output(mod=mods[[m]], dir.main=tmp.dir))
+  suppressWarnings(plot_wham_output(mod=mods[[m]], dir.main=tmp.dir, plot.opts$browse = FALSE))
 }
-# mod.list <- paste0("/home/bstock/Documents/wham/sandbox/ex2/",grep(".rds",list.files("/home/bstock/Documents/wham/sandbox/ex2"),value=TRUE))
-# mods <- lapply(mod.list, readRDS)
 # ex2_test_results <- list()
-# ex2_test_results$pars <- lapply(mods, function(x) as.numeric(x$opt$par))
 # ex2_test_results$nll <- sapply(mods, function(x) x$opt$obj)
-# saveRDS(ex2_test_results, file="/home/bstock/Documents/wham/inst/extdata/ex2_test_results.rds")
+# ex2_test_results$par <- lapply(mods, function(x) x$opt$par)
+# saveRDS(ex2_test_results, file.path(path_to_examples,"ex2_test_results.RDS"))
 
 # hard to see which model fails bc they're indexed by m
 # print out each one by one
@@ -74,50 +79,49 @@ mcheck <- check_convergence(mods[[1]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[1]]$opt$par), ex2_test_results$pars[[1]], tolerance=1e-3) # parameter values
+expect_equal(mods[[1]]$opt$par, ex2_test_results$par[[1]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[1]]$opt$obj), ex2_test_results$nll[1], tolerance=1e-6) # nll
 
 mcheck <- check_convergence(mods[[2]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[2]]$opt$par), ex2_test_results$pars[[2]], tolerance=1e-3) # parameter values
+expect_equal(mods[[2]]$opt$par, ex2_test_results$par[[2]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[2]]$opt$obj), ex2_test_results$nll[2], tolerance=1e-6) # nll
 
 mcheck <- check_convergence(mods[[3]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[3]]$opt$par), ex2_test_results$pars[[3]], tolerance=1e-3) # parameter values
+expect_equal(mods[[3]]$opt$par, ex2_test_results$par[[3]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[3]]$opt$obj), ex2_test_results$nll[3], tolerance=1e-6) # nll
 
 mcheck <- check_convergence(mods[[4]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[4]]$opt$par), ex2_test_results$pars[[4]], tolerance=1e-3) # parameter values
+expect_equal(mods[[4]]$opt$par, ex2_test_results$par[[4]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[4]]$opt$obj), ex2_test_results$nll[4], tolerance=1e-6) # nll
 
 mcheck <- check_convergence(mods[[5]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[5]]$opt$par), ex2_test_results$pars[[5]], tolerance=1e-3) # parameter values
+expect_equal(mods[[5]]$opt$par, ex2_test_results$par[[5]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[5]]$opt$obj), ex2_test_results$nll[5], tolerance=1e-6) # nll
 
-# m6 does not converge now
-# mcheck <- check_convergence(mods[[6]], ret=TRUE)
-# expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
-# expect_false(mcheck$na_sdrep) # sdrep should succeed
-# expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-# expect_equal(as.numeric(mods[[6]]$opt$par), ex2_test_results$pars[[6]], tolerance=1e-3) # parameter values
-# expect_equal(as.numeric(mods[[6]]$opt$obj), ex2_test_results$nll[6], tolerance=1e-6) # nll
+mcheck <- check_convergence(mods[[6]], ret=TRUE)
+expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+expect_false(mcheck$na_sdrep) # sdrep should succeed
+expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
+expect_equal(mods[[6]]$opt$par, ex2_test_results$par[[6]], tolerance=1e-3) # parameter values
+expect_equal(as.numeric(mods[[6]]$opt$obj), ex2_test_results$nll[6], tolerance=1e-6) # nll
 
 mcheck <- check_convergence(mods[[7]], ret=TRUE)
 expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
 expect_false(mcheck$na_sdrep) # sdrep should succeed
 expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
-expect_equal(as.numeric(mods[[7]]$opt$par), ex2_test_results$pars[[7]], tolerance=1e-3) # parameter values
+expect_equal(mods[[7]]$opt$par, ex2_test_results$par[[7]], tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mods[[7]]$opt$obj), ex2_test_results$nll[7], tolerance=1e-6) # nll
 })
 

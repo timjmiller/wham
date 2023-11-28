@@ -11,13 +11,13 @@ struct sr_yield_spatial {
   array<int> can_move; 
   vector<int> mig_type;
   vector<Type> fracyr_SSB;
-  matrix<Type> selectivity;
+  array<Type> selectivity;
   array<Type> log_M;
   array<Type> mu; 
   vector<Type> L;
-  matrix<Type> mature;
-  matrix<Type> waa_ssb; 
-  matrix<Type> waa_catch; 
+  array<Type> mature;
+  array<Type> waa_ssb; 
+  array<Type> waa_catch; 
   vector<Type> fracyr_seasons;
   //vector<Type> SPR_weights; //how to weight stock-specific SSB/R for aggregate SSB/R.
   int age_specific; 
@@ -36,13 +36,13 @@ struct sr_yield_spatial {
   array<int> can_move_, 
   vector<int> mig_type_,
   vector<Type> fracyr_SSB_,
-  matrix<Type> selectivity_,
+  array<Type> selectivity_,
   array<Type> log_M_,
   array<Type> mu_, 
   vector<Type> L_,
-  matrix<Type> mature_,
-  matrix<Type> waa_ssb_, 
-  matrix<Type> waa_catch_, 
+  array<Type> mature_,
+  array<Type> waa_ssb_, 
+  array<Type> waa_catch_, 
   vector<Type> fracyr_seasons_,
   //vector<Type> SPR_weights_,
   int age_specific_, 
@@ -80,7 +80,7 @@ struct sr_yield_spatial {
     int n_fleets = selectivity.rows();
     if(trace) see("in sr_yield_spatial");
     //int n_seasons = can_move.dim(2);
-    matrix<T> FAA(n_fleets,n_ages);
+    array<T> FAA(n_fleets,n_ages);
     FAA.setZero();
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
       FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
@@ -100,9 +100,15 @@ struct sr_yield_spatial {
     }
     if(trace) see(muT);
     vector<T> LT = L.template cast<T>();
-    matrix<T> matT = mature.template cast<T>();
-    matrix<T> waassbT = waa_ssb.template cast<T>();
-    matrix<T> waacatchT = waa_catch.template cast<T>();
+    array<T> matT(mature.dim(0),mature.dim(1));
+    for(int i = 0; i < mature.dim(0); i++) for(int j = 0; j < mature.dim(1); j++) matT(i,j) = T(mature(i,j));
+    if(trace) see(matT);
+    array<T> waassbT(waa_ssb.dim(0), waa_ssb.dim(1));
+    for(int i = 0; i < waa_ssb.dim(0); i++) for(int j = 0; j < waa_ssb.dim(1); j++) waassbT(i,j) = T(waa_ssb(i,j));
+    if(trace) see(waassbT);
+    array<T> waacatchT(waa_catch.dim(0), waa_catch.dim(1));
+    for(int i = 0; i < waa_catch.dim(0); i++) for(int j = 0; j < waa_catch.dim(1); j++) waacatchT(i,j) = T(waa_catch(i,j));
+    if(trace) see(waacatchT);
     vector<T> fracyrseasonT = fracyr_seasons.template cast<T>();
     //stock-specific SSB/R
     array<T> SPR_sr = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, 
@@ -114,7 +120,7 @@ struct sr_yield_spatial {
       matT, 
       waassbT, 
       fracyrseasonT, 
-      0, small_dim, 0);
+      0, small_dim, 0, 0);
     if(trace) see("end get_SPR sr_yield_spatial");
     if(trace) see(SPR_sr);
     array<T> YPR_srf = get_YPR_srf(
@@ -146,7 +152,7 @@ struct sr_yield_spatial {
     if(trace) see(SR_a);
     if(trace) see(SR_b);
     if(trace) see(Y);
-    return Y.sum();
+    return Y.sum(); //summing yield across stocks
   }
 };
 
@@ -163,13 +169,13 @@ struct sr_yield_gradient_spatial {
   array<int> can_move; 
   vector<int> mig_type;
   vector<Type> fracyr_SSB;
-  matrix<Type> selectivity;
+  array<Type> selectivity;
   array<Type> log_M;
   array<Type> mu; 
   vector<Type> L;
-  matrix<Type> mature;
-  matrix<Type> waa_ssb; 
-  matrix<Type> waa_catch; 
+  array<Type> mature;
+  array<Type> waa_ssb; 
+  array<Type> waa_catch; 
   vector<Type> fracyr_seasons;
   //vector<Type> SPR_weights; //how to weight stock-specific SSB/R for aggregate SSB/R.
   int age_specific; 
@@ -188,13 +194,13 @@ struct sr_yield_gradient_spatial {
   array<int> can_move_, 
   vector<int> mig_type_,
   vector<Type> fracyr_SSB_,
-  matrix<Type> selectivity_,
+  array<Type> selectivity_,
   array<Type> log_M_,
   array<Type> mu_, 
   vector<Type> L_,
-  matrix<Type> mature_,
-  matrix<Type> waa_ssb_, 
-  matrix<Type> waa_catch_, 
+  array<Type> mature_,
+  array<Type> waa_ssb_, 
+  array<Type> waa_catch_, 
   vector<Type> fracyr_seasons_,
   //vector<Type> SPR_weights_,
   int age_specific_, 
@@ -232,7 +238,7 @@ struct sr_yield_gradient_spatial {
     int n_fleets = selectivity.rows();
     if(trace) see("in sr_yield_gradient_spatial");
     //int n_seasons = can_move.dim(2);
-    matrix<T> FAA(n_fleets,n_ages);
+    array<T> FAA(n_fleets,n_ages);
     FAA.setZero();
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
       FAA(f,a) = T(selectivity(f,a)) * exp(log_F(0));
@@ -255,9 +261,9 @@ struct sr_yield_gradient_spatial {
     }
     if(trace) see(muT);
     vector<T> LT = L.template cast<T>();
-    matrix<T> matT = mature.template cast<T>();
-    matrix<T> waassbT = waa_ssb.template cast<T>();
-    matrix<T> waacatchT = waa_catch.template cast<T>();
+    array<T> matT = mature.template cast<T>();
+    array<T> waassbT = waa_ssb.template cast<T>();
+    array<T> waacatchT = waa_catch.template cast<T>();
     vector<T> fracyrseasonT = fracyr_seasons.template cast<T>();
     //stock-specific SSB/R
     array<T> SPR_sr = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, 
@@ -269,7 +275,7 @@ struct sr_yield_gradient_spatial {
       matT, 
       waassbT, 
       fracyrseasonT, 
-      0, small_dim, trace);
+      0, small_dim, trace, 0);
     if(trace) see("end get_SPR sr_yield_gradient_spatial");
     if(trace) see(SPR_sr);
     array<T> YPR_srf = get_YPR_srf(
@@ -309,8 +315,8 @@ struct sr_yield_gradient_spatial {
 //returns just the "solved" log_Fmsy value
 template <class Type>
 Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<int> spawn_regions, vector<int> fleet_regions,
-  matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, matrix<Type> sel, array<Type> log_M, array<Type> mu, 
-  vector<Type> L, matrix<Type> mat,  matrix<Type> waassb, matrix<Type> waacatch,
+  matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, array<Type> sel, array<Type> log_M, array<Type> mu, 
+  vector<Type> L, array<Type> mat,  array<Type> waassb, array<Type> waacatch,
   vector<Type> fracyr_seasons, vector<int> recruit_model, int small_dim, Type F_init, int n_iter, int trace = 0) {
   int n = n_iter;
   vector<Type> log_FMSY_i(1);
@@ -345,10 +351,10 @@ vector<Type> get_log_FMSY(array<Type> FAA, vector<int> fleet_regions, matrix<int
   for(int y = 0; y < n_years_pop; y++){
     yvec(0) = y;
     if(trace) see(y);
-    matrix<Type> waa_ssb_y = get_matrix_y(waa_ssb, y);
-    matrix<Type> waa_catch_y = get_matrix_y(waa_catch, y);
-    matrix<Type> mature_y = get_matrix_y(mature, y);
-    matrix<Type> sel_y = get_avg_fleet_sel(FAA, yvec, which_F_age(y));
+    array<Type> waa_ssb_y = get_matrix_y(waa_ssb, y);
+    array<Type> waa_catch_y = get_matrix_y(waa_catch, y);
+    array<Type> mature_y = get_matrix_y(mature, y);
+    array<Type> sel_y = get_avg_fleet_sel_as_array(FAA, yvec, which_F_age(y));
     if(trace) see(sel_y);
     vector<Type> L_y = L.row(y);
     if(trace) see(L_y);
@@ -401,29 +407,12 @@ vector< matrix <Type> > get_MSY_res(
   int n_seasons = fleet_seasons.cols();
   int n_ages = log_M.dim(3);
   if(trace) see(n_ages);
-  matrix<Type> waa_ssb(n_stocks,n_ages);
-  matrix<Type> waa_catch(n_fleets,n_ages);
-  matrix<Type> sel(n_fleets, n_ages);
-  array<Type> M(n_stocks,n_regions,n_ages);
-  array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
-  vector<Type> L_avg(n_regions);
-  matrix<Type> mat(n_stocks, n_ages);
-  vector<Type> ssbfrac(n_stocks); //R(n_stocks); R.setZero(); 
-  vector<Type> SR_a_avg(n_stocks), SR_b_avg(n_stocks);
-
-  waa_ssb.setZero(); waa_catch.setZero(); sel.setZero(); M.setZero(); mu_avg.setZero(); L_avg.setZero(); 
-  mat.setZero(); ssbfrac.setZero();
-  SR_a_avg.setZero(); SR_b_avg.setZero();
   //get average inputs over specified years
 
-  matrix<Type> SR_ab_avg = get_avg_SR_ab(log_SR_a, log_SR_b, years_SR_ab, 0);
-  // for(int y = 0; y < years_SR_ab.size(); y++) for(int s = 0; s < n_stocks; s++) {
-  //   SR_a_avg(s) += exp(log_SR_a(y,s))/Type(years_SR_ab.size());
-  //   SR_b_avg(s) += exp(log_SR_b(y,s))/Type(years_SR_ab.size());
-  // }
+  matrix<Type> SR_ab_avg = get_avg_SR_ab(log_SR_a, log_SR_b, years_SR_ab, 0); //nstocks x 2
   if(trace) see(SR_ab_avg);
 
-  L_avg = get_avg_L(L, years_L, 0);
+  vector<Type> L_avg = get_avg_L(L, years_L, 0);
   //for(int y = 0; y < years_L.size(); y++) for(int i = 0; i < n_regions; i++) L_avg(i) += L(years_L(y),i)/Type(years_L.size());
   if(trace) see(L_avg);
   if(trace){
@@ -435,27 +424,29 @@ vector< matrix <Type> > get_MSY_res(
   array<Type> log_avg_M = get_avg_M(log_M, years_M, 1);
   if(trace) see(log_avg_M);
 
+  array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
+  mu_avg.setZero();
   if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,years_mu,mig_type, can_move, must_move);
   if(trace) see(mu_avg);
 
-  mat = get_avg_mat(mature,years_mat);
+  array<Type> mat = get_avg_mat_as_array(mature,years_mat);
   if(trace) see(mat);
-  ssbfrac = get_avg_ssbfrac(fracyr_SSB,years_waa_ssb);
+  vector<Type> ssbfrac = get_avg_ssbfrac(fracyr_SSB,years_waa_ssb);
   if(trace) see(ssbfrac);
   
-  waa_ssb = get_avg_waa(waa, years_waa_ssb, waa_pointer_ssb);
+  array<Type> waa_ssb = get_avg_waa_as_array(waa, years_waa_ssb, waa_pointer_ssb);
   if(trace) see(waa_ssb);
-  waa_catch = get_avg_waa(waa, years_waa_catch, waa_pointer_fleets);
+  array<Type> waa_catch = get_avg_waa_as_array(waa, years_waa_catch, waa_pointer_fleets);
   if(trace) see(waa_catch);
 
-  matrix<Type> FAA_avg = get_avg_FAA(FAA,years_sel,0);
+  array<Type> FAA_avg = get_avg_FAA_as_array(FAA,years_sel,0);
   if(trace) see(FAA_avg);
-  vector<Type> FAA_avg_tot = FAA_avg.colwise().sum();
+  vector<Type> FAA_avg_tot = FAA_avg.matrix().colwise().sum();
   if(trace) see(FAA_avg_tot);
 
   //which_F_age needs to be set appropriately by user or by wham:::check_which_F_age.
   if(trace) see(which_F_age);
-  sel = FAA_avg/FAA_avg_tot(which_F_age-1);
+  array<Type> sel = FAA_avg/FAA_avg_tot(which_F_age-1);
   if(trace) see(sel);
 
   vector<Type> log_FMSY_i(1);
@@ -479,20 +470,23 @@ vector< matrix <Type> > get_MSY_res(
     log_FMSY_iter(i+1,0) = log_FMSY_iter(i,0) - grad_srY(0)/hess_srY(0,0);
     if(trace) see(log_FMSY_iter(i,0));
   }
-  matrix<Type> FAA_MSY = exp(log_FMSY_iter(n-1,0)) * sel;
-  if(trace) see(FAA_MSY);
+  array<Type> FAA_MSY(n_fleets,n_ages);
+  FAA_MSY.setZero();
+  // array<Type> FAA_MSY = exp(log_FMSY_iter(n-1,0)) * sel;
   matrix<Type> log_FAA_MSY(n_fleets+1,n_ages);
   log_FAA_MSY.setZero();
   for(int a = 0; a < n_ages; a++){
     for(int f = 0; f < n_fleets; f++) {
+      FAA_MSY(f,a) = exp(log_FMSY_iter(n-1,0)) * sel(f,a);
       log_FAA_MSY(f,a) = log(FAA_MSY(f,a));
       log_FAA_MSY(n_fleets, a) += FAA_MSY(f,a); //summing, not log yet
     }
     log_FAA_MSY(n_fleets, a) = log(log_FAA_MSY(n_fleets, a)); //log it
   }
+  if(trace) see(FAA_MSY);
   if(trace) see(log_FAA_MSY);
   array<Type> SPR_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA_MSY, log_avg_M, mu_avg, L_avg, 
-    mat, waa_ssb, fracyr_seasons, 0, small_dim);
+    mat, waa_ssb, fracyr_seasons, 0, small_dim, 0);
   if(trace) see(SPR_all);
 
   array<Type> YPR_srf = get_YPR_srf(fleet_regions, fleet_seasons, can_move, mig_type, FAA_MSY, log_avg_M, mu_avg, L_avg, waa_catch, 
@@ -503,8 +497,8 @@ vector< matrix <Type> > get_MSY_res(
   log_SPR_MSY.setZero(); log_MSY.setZero(); log_R_MSY.setZero(); log_SSB_MSY.setZero(); log_YPR_MSY.setZero();
   for(int s = 0; s < n_stocks; s++) {
     log_SPR_MSY(s,0) = log(SPR_all(s,spawn_regions(s)-1,spawn_regions(s)-1));
-    if(recruit_model(s) == 3) log_R_MSY(s,0) = log((SR_a_avg(s) - 1/exp(log_SPR_MSY(s,0))) / SR_b_avg(s)); //b-h
-    if(recruit_model(s) == 4) log_R_MSY(s,0) = log(log(SR_a_avg(s)) + log_SPR_MSY(s,0)) - log(SR_b_avg(s)) - log_SPR_MSY(s,0); //ricker
+    if(recruit_model(s) == 3) log_R_MSY(s,0) = log((SR_ab_avg(s,0) - 1/exp(log_SPR_MSY(s,0))) / SR_ab_avg(s,1)); //b-h
+    if(recruit_model(s) == 4) log_R_MSY(s,0) = log(log(SR_ab_avg(s,0)) + log_SPR_MSY(s,0)) - log(SR_ab_avg(s,1)) - log_SPR_MSY(s,0); //ricker
     log_SSB_MSY(s,0) = log_R_MSY(s,0) + log_SPR_MSY(s,0);
     log_R_MSY(n_stocks,0) += exp(log_R_MSY(s,0)); //not logged
     log_SSB_MSY(n_stocks,0) += exp(log_SSB_MSY(s,0)); //not logged
@@ -588,7 +582,6 @@ vector< array <Type> > get_annual_MSY_res(
 
   for(int y = 0; y < ny; y++){
     yvec(0) = y;
-    if(y == 0){
     vector<matrix<Type>> MSY_res_y = get_MSY_res(
       recruit_model, log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions,
       fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type,
@@ -596,7 +589,7 @@ vector< array <Type> > get_annual_MSY_res(
       waa, waa_pointer_ssb, waa_pointer_fleets,
       mature, fracyr_SSB, F_init(y), 
       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec,
-      small_dim, 1, n_iter);
+      small_dim, trace, n_iter);
     for(int s = 0; s <= n_stocks; s++) {
       log_SSB_MSY(y,s) = MSY_res_y(0)(s,0);
       log_R_MSY(y,s) = MSY_res_y(1)(s,0);
@@ -608,7 +601,6 @@ vector< array <Type> > get_annual_MSY_res(
       }
     }
     for(int i = 0; i < n_iter; i++) log_FMSY_iter(y,i) = MSY_res_y(6)(i,0);
-  }
   }
   vector< array <Type>> res(7);
   res(0) = log_SSB_MSY;

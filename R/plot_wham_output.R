@@ -12,6 +12,7 @@
 #'   \describe{
 #'     \item{\code{$ages.lab}}{Character vector, will change age labels in plots (default is \code{1:n.ages}).}
 #'     \item{\code{$font.family}}{Font family, e.g. \code{"Times"}.}
+#'     \item{\code{$browse}}{T/F whether to open the html file in a browser. Default = T.}
 #'   }
 #'
 #' Plot functions are located in \code{wham_plots_tables.R}
@@ -47,8 +48,10 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   if(!is.null(plot.opts)){
     if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab
     if(!is.null(plot.opts[["font.family"]])) fontfam = plot.opts$font.family
+    if(!is.null(plot.opts[["browse"]])) browse = plot.opts$browse
   } else {
     fontfam = ""
+    browse = TRUE
   }
 
   if(!out.type %in% c('html', 'pdf', 'png')){
@@ -133,7 +136,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     }
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
-        if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
+        if(mod$env$data$recruit_model[i] %in% (3:4)) {
           plot.SR.pred.line(mod, stock = i)
         }
         plot.recr.ssb.yr(mod, loglog=FALSE, stock = i)
@@ -165,7 +168,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       if(mod$is_sdrep) plot.FXSPR.annual(mod)
     }
     if(mod$env$data$do_MSY_BRPs){
-      if(mod$env$data$recruit_model == 3 & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
+      if(mod$env$data$recruit_model %in% (3:4) & mod$is_sdrep){ # these only work if Bev-Holt S-R was fit
         plot.MSY.annual(mod)
       }
     }
@@ -322,7 +325,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     }
     if(mod$is_sdrep){
       for(i in 1:mod$env$data$n_stocks) {
-        if(sum(mod$env$data$Ecov_how_R[,i]) == 0 & mod$env$data$recruit_model[i] == 3) {
+        if(mod$env$data$recruit_model[i] %in% (3:4)) {
           png(file.path(dir.res,paste0("SSB_Rec_", sfns[i],"_fit.png")),width=10,height=10,units="in",res=res,family=fontfam)
           plot.SR.pred.line(mod, stock = i)
           dev.off()
@@ -381,7 +384,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
     }
     if(mod$env$data$do_MSY_BRPs){
-      if(mod$env$data$recruit_model == 3 & mod$is_sdrep) plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
+      if(mod$env$data$recruit_model %in% (3:4) & mod$is_sdrep) plot.MSY.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
     }
 
     # PNG retrospective -----------------
@@ -422,12 +425,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       par_tables_fn(mod, od = dir.res.tables)
       make_html_figs_tables_fn(od = dir.main, do.html = T)
       cat("Opening HTML document in your default web-browser.\n")
-      browseURL(file.path(dir.main, "wham_figures_tables.html"))
+      if(browse) browseURL(file.path(dir.main, "wham_figures_tables.html"))
     }
   } else {
     #uses png output, and old html product that automatically opens in browser
     if(out.type == 'html'){
-      wham_html(dir.main = dir.main)
+      if(browse) wham_html(dir.main = dir.main)
     }
     cat("document of parameter tables was not generated because rmarkdown could not find pandoc. Try plot_wham_output() from Rstudio.\n")
   }

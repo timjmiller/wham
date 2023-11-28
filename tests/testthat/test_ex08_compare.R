@@ -1,6 +1,9 @@
 # WHAM example 8: compare asap and wham models
 
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex8_compare.R"); etime <- Sys.time(); runtime = etime - btime;
+# pkgbuild::compile_dll(debug = FALSE)
+# pkgload::load_all()
+# library(wham)
+# btime <- Sys.time(); devtools::test(filter = "ex08_compare"); etime <- Sys.time(); runtime = etime - btime; runtime;
 # 0.25 min
 
 context("Ex 8: Compare")
