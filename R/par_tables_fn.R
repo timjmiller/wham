@@ -315,7 +315,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
       if(data$M_model != 3 | data$Ecov_where[2] == 1) modify = "mean log(M) intercept for ages ("
     }
     age.list = M_a_point = list()
-    M_map = as.integer(as.character(input$map$M_a))
+    M_map = as.integer(as.character(mod$input$map$M_a))
     ind = unique(M_map[which(!is.na(M_map))])
     if(data$M_model == 1) {
       M_a_point[[1]] = 1
@@ -452,7 +452,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
   for(i in 1:data$n_Ecov){
     if(data$Ecov_obs_sigma_opt[i] == 2){ #single ecov obs sd estimated
       fe.names = c(fe.names, paste0("Ecov: ", data$Ecov_label[[1]][i], " obs. sd."))
-      ind = which(!is.na(matrix(input$map$Ecov_obs_logsigma, NROW(input$par$Ecov_obs_logsigma))[,i]))[1]
+      ind = which(!is.na(matrix(mod$input$map$Ecov_obs_logsigma, NROW(mod$input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals = c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
       fe.cis = rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
