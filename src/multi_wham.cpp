@@ -808,21 +808,16 @@ Type objective_function<Type>::operator() ()
     //see(nll);
     REPORT(nll_NAA);
     SIMULATE if(do_simulate_N_re){
-      see("before simulate_NAA_devs")
       array<Type> NAA_devs_sim = simulate_NAA_devs(NAA, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
         bias_correct_pe);
-      see("after simulate_NAA_devs")
       //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
       log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
         log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
-      see("after get_simulated_log_NAA")
       all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
         Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,trace);
-      see("after get_all_NAA")
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
-      see("after get_RXSPR")
-      
+
       if(n_years_proj > 0){
 
         for(int y = n_years_model; y < n_years_pop; y++){
@@ -847,11 +842,8 @@ Type objective_function<Type>::operator() ()
       }
 
       NAA = extract_NAA(all_NAA);
-      see("after extract_NAA")
       pred_NAA = extract_pred_NAA(all_NAA);
-      see("after extract_pred_NAA")
       NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
-      see("after get_NAA_devs")
       REPORT(log_NAA);
       REPORT(NAA_devs_sim);
     }
