@@ -254,7 +254,7 @@ set_NAA = function(input, NAA_re=NULL)
           if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,,1] <- k
           if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,,2] <- k
           if(NAA_re$cor[[s]] == "2dar1") for(r in 1:data$n_regions) map$trans_NAA_rho[s,r,1:2] <- k + 0:1
-          k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
+          if(any(!is.na(map$trans_NAA_rho))) k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
           #if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
         } else {
           NAA_re$cor[[s]] <- 'iid'

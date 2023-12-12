@@ -1300,7 +1300,7 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
   array<Type> NAA_y_minus_1 = N1;
   matrix<Type> NAA_spawn_y_minus_1 = get_NAA_spawn_y(0, NAA_y_minus_1,  annual_SAA_spawn, spawn_regions);
   vector<Type> SSB_y_minus_1 = get_SSB_y(0, NAA_spawn_y_minus_1, waa_ssb, mature);
-  
+  see("step 1");
   for(int y = 1; y < n_years_pop; y++) {
     //for y-1 = 0, it will populate with full initial NAA
     // vector<Type> logR_proj_y(n_stocks);
@@ -1309,9 +1309,11 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
     //   logR_proj_y = logR_proj.row(y-n_years_model);
     //   //is_projyr = 1;
     // }
+    see(y);
 
     array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_y_minus_1, NAA_y_minus_1, 
       log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, NAA_re_model);
+    see(y);
     NAA_y_minus_1.setZero();
     for(int s = 0; s < n_stocks; s++){
       // NOT NEEDED for SCAA models 
@@ -1327,16 +1329,23 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
         for(int a = 1; a < n_ages; a++) for(int r = 0; r < n_regions; r++) NAA_y_minus_1(s,r,a) = pred_NAA_y(s,r,a);
       }
       if(NAA_re_model(s)==2){ //rec+1
+          see(s);
         for(int r = 0; r < n_regions; r++){
+          see(r);
           for(int a = 0; a < n_ages; a++) if(NAA_where(s,r,a)) {
+          see(a);
             sim_log_NAA(s,r,y-1,a) += log(pred_NAA_y(s,r,a)) + NAA_devs(s,r,y-1,a);
+          see(a);
             NAA_y_minus_1(s,r,a) = exp(sim_log_NAA(s,r,y-1,a));
+          see(a);
           }
         }
       }
     }
     NAA_spawn_y_minus_1 = get_NAA_spawn_y(y, NAA_y_minus_1, annual_SAA_spawn, spawn_regions);
+    see(y);
     SSB_y_minus_1 = get_SSB_y(y, NAA_spawn_y_minus_1, waa_ssb, mature);
+    see(y);
   }
 
   return sim_log_NAA;
