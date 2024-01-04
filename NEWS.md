@@ -5,6 +5,7 @@ wham 1.0.7.9000
 
 
 ### Minor improvements
+* Added option to make recruitment in projection years consistent with that used for prevailing SPR-based BRPs [4edf29a](https://github.com/timjmiller/wham/commit/4edf29a97964b7cbacf830c25effd9100697f4ad)
 * Added option to specify WAA and maturity in projection years. [d6f82f1](https://github.com/timjmiller/wham/commit/d6f82f12c525a06ef5f319c477e78a4cfed10dfb)
 * Fix bug in NAA reporting simulated models with projection years when holding process errors constant in data years. [22633c](https://github.com/timjmiller/wham/commit/22633cd126a4d55e34f9d3cc39e3a4ed8229ea17) 
 * Added option to decouple recruitment random effects from those for older ages when NAA_re$sigma = "rec+1". [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
