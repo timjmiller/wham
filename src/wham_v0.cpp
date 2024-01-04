@@ -125,6 +125,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_INTEGER(proj_R_opt); // 1 = continue RE model (when recruitment is treated as RE), 2 = "expected" recruitment is the same as that used for SPR BRPs
   DATA_SCALAR(logR_mean); // empirical mean recruitment in model years, used for SCAA recruit projections
   DATA_SCALAR(logR_sd); // empirical sd recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(F_proj_init); // annual initial values  to use for newton steps to find F for use in projections  (n_years_proj)
@@ -837,13 +838,36 @@ Type objective_function<Type>::operator() ()
   // Population model (get NAA, numbers-at-age, for all years)
   array<Type> NAA_devs(n_years_model+n_years_proj-1, n_ages);
   NAA_devs.setZero();
+  Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
+  Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
+  vector<Type> NAA_sigma = exp(log_NAA_sigma);
+  vector<Type> sigma_a_sig(n_ages);
+  sigma_a_sig.setZero();
+  if(n_NAA_sigma == 1){
+    sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
+  }
+  if(n_NAA_sigma > 1){
+    for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
+  }
+  if(n_NAA_sigma > 0){
+    if(do_post_samp.sum()==0){
+      ADREPORT(NAA_sigma);
+      ADREPORT(NAA_rho_a);
+      ADREPORT(NAA_rho_y);
+    }
+  }
+
 
   for(int y = 1; y < n_years_model + n_years_proj; y++)
   {
     
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
       log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
-    
+    if((y > n_years_model-1) & proj_R_opt ==2) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
+      vector<Type> Rproj = get_R_FXSPR(pred_NAA, NAA, XSPR_R_opt, XSPR_R_avg_yrs);
+      pred_NAA(y,0) = Rproj(y);
+      if(bias_correct_pe == 1)  for(int a = 0; a < n_ages; a++) pred_NAA(y,a) *= exp(0.5 * pow(sigma_a_sig(a),2)); //take out bias correction in projections in this option
+    }
     // calculate NAA
     if(n_NAA_sigma > 1){
       // all NAA are estimated (random effects)
@@ -885,23 +909,7 @@ Type objective_function<Type>::operator() ()
   // --------------------------------------------------------------------------
   // NAA random effects
   Type nll_NAA = Type(0);
-  Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
-  Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
-  vector<Type> NAA_sigma = exp(log_NAA_sigma);
-  vector<Type> sigma_a_sig(n_ages);
-  sigma_a_sig.setZero();
-  if(n_NAA_sigma == 1){
-    sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
-  }
-  if(n_NAA_sigma > 1){
-    for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
-  }
   if(n_NAA_sigma > 0){
-    if(do_post_samp.sum()==0){
-      ADREPORT(NAA_sigma);
-      ADREPORT(NAA_rho_a);
-      ADREPORT(NAA_rho_y);
-    }
     if(do_post_samp(0) == 1){
       ADREPORT(log_NAA);
     }
@@ -999,7 +1007,8 @@ Type objective_function<Type>::operator() ()
   if((n_NAA_sigma > 0) | (do_proj == 1)) SIMULATE if(simulate_state(0) == 1){ // if n_NAA_sigma = 0 (SCAA), recruitment now random effects in projections
     matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_fleets, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
-      avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init, percentFMSY);
+      avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init, percentFMSY, proj_R_opt, XSPR_R_opt, 
+      XSPR_R_avg_yrs, bias_correct_pe, sigma_a_sig);
     SSB = sims.col(sims.cols()-1);
     for(int a = 0; a < n_ages; a++) 
     {
@@ -1244,18 +1253,18 @@ Type objective_function<Type>::operator() ()
   //calculate BRPs
   //First SPR-based proxies
   //Type percentSPR = 40;
-  vector<Type> predR(pred_NAA.rows());
-  if(XSPR_R_opt == 1) predR = NAA.col(0);
-  if(XSPR_R_opt == 3) predR = pred_NAA.col(0);
+  vector<Type> R_XSPR(pred_NAA.rows());
+  if(XSPR_R_opt == 1) R_XSPR = NAA.col(0);
+  if(XSPR_R_opt == 3) R_XSPR = pred_NAA.col(0);
   if(XSPR_R_opt == 2){
-    vector<Type> predR_toavg = XSPR_R_avg_yrs.unaryExpr(NAA.col(0));
-    predR.fill(predR_toavg.mean());
+    vector<Type> R_XSPR_toavg = XSPR_R_avg_yrs.unaryExpr(NAA.col(0));
+    R_XSPR.fill(R_XSPR_toavg.mean());
   }
   if(XSPR_R_opt == 4){
-    vector<Type> predR_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
-    predR.fill(predR_toavg.mean());
+    vector<Type> R_XSPR_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
+    R_XSPR.fill(R_XSPR_toavg.mean());
   }
-  matrix<Type> SPR_res = get_SPR_res(MAA, FAA, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, predR, fracyr_SSB, log_SPR0, FXSPR_init);
+  matrix<Type> SPR_res = get_SPR_res(MAA, FAA, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, R_XSPR, fracyr_SSB, log_SPR0, FXSPR_init);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);
   vector<Type> log_Y_FXSPR = SPR_res.col(2);
@@ -1263,6 +1272,7 @@ Type objective_function<Type>::operator() ()
   vector<Type> log_YPR_FXSPR = SPR_res.col(4);
   matrix<Type> log_FXSPR_iter = SPR_res.block(0,5,n_years_model + n_years_proj,10);
 
+  REPORT(R_XSPR);
   REPORT(log_FXSPR_iter);
   REPORT(log_FXSPR);
   REPORT(log_SSB_FXSPR);

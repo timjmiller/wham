@@ -26,6 +26,7 @@
 #'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
 #'     \item \code{$proj_mature} (matrix), user-supplied maturity values for the projection years with dimensions (\code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
+#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -75,6 +76,12 @@ prepare_projection = function(model, proj.opts)
   } else { # if NULL, default is to continue M random effects (if they exist!)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
+
+  #new option for making long term projections consistent with prevailing spr-based reference points.
+  if(!is.null(proj.opts$proj_R_opt)){
+    if(length(proj.opts$proj_R_opt)!= 1 | !(proj.opts$proj_R_opt %in% 1:2)) stop("proj.opts$proj_R_opt must be either 1 or 2.\n")
+    data$proj_R_opt = proj.opts$proj_R_opt
+  } else data$proj_R_opt = 1 #continue using mean of RE process for predicted R by default
 
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",

@@ -11,6 +11,7 @@ set_proj = function(input, proj.opts = NULL)
 	  data$proj_F_opt <- 0
 	  data$proj_Fcatch <- 0
 	  data$proj_M_opt <- 0
+	  data$proj_R_opt <- 0
 	  data$logR_mean <- 0 # only used for SCAA projections
 	  data$logR_sd <- 0 # only used for SCAA projections
 	  data$FXSPR_init = rep(0.1, data$n_years_model + data$n_years_proj)
