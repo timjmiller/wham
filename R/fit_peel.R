@@ -25,7 +25,15 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   n_years = temp$data$n_years_catch = temp$data$n_years_indices = temp$data$n_years_model = temp$data$n_years_model - peel
   temp$data$which_F_age = temp$data$which_F_age[1:n_years]
   temp$data$avg_years_ind = temp$data$avg_years_ind - peel
-  temp$data$XSPR_R_avg_yrs = temp$data$XSPR_R_avg_yrs[1:n_years]
+  temp$data$avg_years_ind <- temp$data$avg_years_ind[which(temp$data$avg_years_ind>0)] #in case peels going all the way back near initial year.
+  peel_R_avg_yrs <- which((temp$data$XSPR_R_avg_yrs+1) %in% (1:n_years))
+  if(length(peel_R_avg_yrs)) {
+    temp$data$XSPR_R_avg_yrs <- temp$data$XSPR_R_avg_yrs[peel_R_avg_yrs]
+  } else{
+    warning("Years specified to use for average recruitment in SPR-based reference points are not included in peel ", peel, " so all years in peel will be used.")
+    temp$data$XSPR_R_avg_yrs <- 1:n_years - 1
+  }
+  #temp$data$XSPR_R_avg_yrs = temp$data$XSPR_R_avg_yrs[1:n_years]
   
   # peeling ecov is tricky bc ecov_years can be different than model_years - make sure to peel to same year
   if(any(temp$data$Ecov_model != 0)){

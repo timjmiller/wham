@@ -1011,13 +1011,29 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
   return(FAA_proj);
 }
 
+template <class Type>
+vector<Type> get_R_FXSPR(matrix<Type> pred_NAA, matrix<Type> NAA, int XSPR_R_opt, vector<int> XSPR_R_avg_yrs){
+  vector<Type> R(pred_NAA.rows());
+  if(XSPR_R_opt == 1) R = NAA.col(0);
+  if(XSPR_R_opt == 3) R = pred_NAA.col(0);
+  if(XSPR_R_opt == 2){
+    vector<Type> R_toavg = XSPR_R_avg_yrs.unaryExpr(NAA.col(0));
+    R.fill(R_toavg.mean());
+  }
+  if(XSPR_R_opt == 4){
+    vector<Type> R_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
+    R.fill(R_toavg.mean());
+  }
+  return(R);
+}
 
 template <class Type>
 matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_rec_pars, vector<Type> SSBin, matrix<Type> NAAin, vector<Type> log_SR_a, 
   vector<Type> log_SR_b, matrix<int> Ecov_where, vector<int> Ecov_how, array<Type> Ecov_lm, int n_NAA_sigma, 
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   vector<int> waa_pointer_fleets, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
-  int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY){
+  int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY,
+  int proj_R_opt, int XSPR_R_opt, vector<int> XSPR_R_avg_yrs, int bias_correct_pe, vector<Type> sigma_a_sig){
 
   // Population model (get NAA, numbers-at-age, for all years)
   int ny = log_SR_a.size();
@@ -1034,6 +1050,11 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
     //use NAA.row(y-1)
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
       log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
+    if((y > n_years_model-1) & proj_R_opt ==2) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
+      vector<Type> Rproj = get_R_FXSPR(pred_NAA, NAA, XSPR_R_opt, XSPR_R_avg_yrs);
+      pred_NAA(y,0) = Rproj(y);
+      if(bias_correct_pe == 1)  for(int a = 0; a < n_ages; a++) pred_NAA(y,a) *= exp(0.5 * pow(sigma_a_sig(a),2)); //take out bias correction in projections in this option
+    }
     
     // calculate NAA
     if(n_NAA_sigma > 1){
@@ -1074,3 +1095,5 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   out.col(out.cols()-1) = SSB;
   return(out);
 }
+
+

@@ -155,8 +155,8 @@
 #'                  }
 #'                }
 #'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
-#'        (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"}. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
-#'        have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate yeaer correlation parameters are estimated for recruitment and older
+#'        (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+#'        have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate year correlation parameters are estimated for recruitment and older
 #'        ages.}
 #'   }
 #' \code{NAA_re} also can be used to configure initial numbers at age and recruitment models. The optional associated components of \code{NAA_re} are:
@@ -263,6 +263,7 @@
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
 #'     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
 #'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
+#'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
 #'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
 #'     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
@@ -465,6 +466,7 @@ initial_input_fn = function(input, basic_info){
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
+  input$data$avg_years_ind <- tail(1:length(input$years),5) - 1 #shifted to start @ 0
   
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
@@ -475,6 +477,7 @@ initial_input_fn = function(input, basic_info){
   if(!is.null(basic_info$percentSPR)) input$data$percentSPR = basic_info$percentSPR
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
+  if(!is.null(basic_info$XSPR_input_average_years)) input$data$avg_years_ind = basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0 
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
   if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
 

@@ -151,7 +151,7 @@ fit_wham = function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pee
 
 check_which_F_age = function(mod)
 {
-  mod$env$data$which_F_age[] = apply(mod$rep$FAA_tot,1, function(x) which(x == max(x))[1])
+  mod$env$data$which_F_age[] <- mod$input$data$which_F_age[] <- apply(mod$rep$FAA_tot,1, function(x) which(x == max(x))[1])
   mod$rep = mod$report()
   return(mod)
 }

@@ -24,6 +24,9 @@
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
 #'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
+#'     \item \code{$proj_mature} (matrix), user-supplied maturity values for the projection years with dimensions (\code{n.yrs} x n_ages).
+#'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
+#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
 #'   }
 #'
 #' @return same as \code{\link{prepare_wham_input}}, a list ready for \code{\link{fit_wham}}:
@@ -48,7 +51,7 @@ prepare_projection = function(model, proj.opts)
   # default: 3 projection years
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- model$years[model$env$data$avg_years_ind+1] #tail(model$years, 5)  
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
@@ -73,6 +76,12 @@ prepare_projection = function(model, proj.opts)
   } else { # if NULL, default is to continue M random effects (if they exist!)
     data$proj_M_opt <- ifelse(model$env$data$M_re_model %in% c(2,4,5), 1, 2) # 2 = IID, 4 = AR1_y, 5 = 2D AR1
   }
+
+  #new option for making long term projections consistent with prevailing spr-based reference points.
+  if(!is.null(proj.opts$proj_R_opt)){
+    if(length(proj.opts$proj_R_opt)!= 1 | !(proj.opts$proj_R_opt %in% 1:2)) stop("proj.opts$proj_R_opt must be either 1 or 2.\n")
+    data$proj_R_opt = proj.opts$proj_R_opt
+  } else data$proj_R_opt = 1 #continue using mean of RE process for predicted R by default
 
   # check options for F/catch are valid
   if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
@@ -176,15 +185,49 @@ prepare_projection = function(model, proj.opts)
 
   # modify data objects for projections (pad with average over avg.yrs): mature, fracyr_SSB, waa
   avg_cols = function(x) apply(x, 2, mean, na.rm=TRUE)
-  data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  
+  if(!is.null(proj.opts$proj_mature)){
+    dims.check <- c(proj.opts$n.yrs, dim(data$mature)[2])
+    cat("\nUsing user-suplied maturity values for projected maturity.\n")
+    if(length(dim(proj.opts$proj_waa)) != 2) {
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_mature must be a matrix with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    if(any(dim(proj.opts$proj_waa)!= dims.check)){
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_mature must be a matrix with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    data$mature <- rbind(data$mature[1:data$n_years_model,], proj.opts$proj_mature)
+  } else {
+    data$mature <- rbind(data$mature[1:data$n_years_model,], matrix(rep(avg_cols(data$mature[avg.yrs.ind,]), proj.opts$n.yrs), nrow=proj.opts$n.yrs, byrow=TRUE))
+  }
+  
   data$fracyr_SSB <- c(data$fracyr_SSB[1:data$n_years_model], rep(mean(data$fracyr_SSB[avg.yrs.ind]), proj.opts$n.yrs))
-  toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+  
   if(dim(data$waa)[2] > data$n_years_model) data$waa <- data$waa[,1:data$n_years_model,]
   tmp <- array(NA, dim = dim(data$waa) + c(0,proj.opts$n.yrs,0))
   tmp[,1:data$n_years_model,] <- data$waa
-  for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
-  data$waa <- tmp
 
+  
+  # proj_waa dims are (dim(input$data$waa)[1] x n.yrs x n_age)
+  if(!is.null(proj.opts$proj_waa)){
+    dims.check <- c(dim(data$waa)[1],proj.opts$n.yrs, dim(data$waa)[3])
+    cat("\nUsing user-suplied WAA values for projected WAA.\n")
+    if(length(dim(proj.opts$proj_waa)) != 3) {
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_waa must be a 3d-array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    if(any(dim(proj.opts$proj_waa)!= dims.check)){
+      stop(paste0("\n** Error setting up projections: **\n",
+                 "proj.opts$proj_waa must be a 3d-array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
+    }
+    tmp[,data$n_years_model + 1:proj.opts$n.yrs,] <- proj.opts$proj_waa
+  } else {
+    toadd <- apply(data$waa[,avg.yrs.ind,], c(1,3), mean)
+    for(i in seq(data$n_years_model+1,data$n_years_model+proj.opts$n.yrs)) tmp[,i,] <- toadd
+  }
+  data$waa <- tmp
+  
   # initialize pars at previously estimated values
   par <- model$parList
   # fill_vals <- function(x){as.factor(rep(NA, length(x)))}

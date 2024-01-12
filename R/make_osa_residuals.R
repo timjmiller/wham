@@ -47,7 +47,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
   
   cat("Doing OSA residuals...\n");
   input = model$input
-  if(class(input$data$obs) == "list") input$data$obs <- as.data.frame(input$data$obs) #simulated data$obs will be a list
+  input$data$obs <- as.data.frame(input$data$obs) #simulated data$obs will be a list
   model$osa = input$data$obs
   model$osa$residual = NA
   #first do continuous obs, condition on obs without osa (probably none)
