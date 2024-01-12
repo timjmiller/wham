@@ -139,6 +139,30 @@ Type get_SPR(Type log_F, vector<Type> M, matrix<Type> sel, vector<Type> mat, vec
   return SPR;
 }
 
+template <class T>
+T get_SPR(T log_F, vector<T> M, matrix<T> sel, vector<T> mat, vector<T> waassb, T fracyearSSB, vector<T> marg_sig)
+{
+  //will account for bias-correction in NAA
+  int n_ages = M.size();
+  int n_fleets = sel.rows();
+  T SPR = 0.0, ntemp = 1.0;
+  vector<T> Z = M;
+  matrix<T> F = exp(log_F) * sel;
+  //Z = F + M;
+  for(int age=0; age<n_ages-1; age++)
+  {
+    for(int f = 0; f < n_fleets;f++) Z(age) += F(f,age);
+    SPR += ntemp * mat(age) * waassb(age) * exp(-fracyearSSB * Z(age));
+    ntemp *= exp(-Z(age));
+    ntemp *= exp(-0.5*pow(marg_sig(age+1),2));
+  }
+  for(int f = 0; f < n_fleets;f++) Z(n_ages-1) += F(f,n_ages-1);
+  ntemp /= 1.0-exp(-Z(n_ages-1)-0.5*pow(marg_sig(n_ages-1),2));
+  SPR += ntemp * mat(n_ages-1) * waassb(n_ages-1) * exp(-fracyearSSB*Z(n_ages-1));
+
+  return SPR;
+}
+
 
 template <class Type>
 vector<Type> get_SPRAA(Type log_F, vector<Type> M, vector<Type> sel, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
@@ -199,6 +223,26 @@ Type get_YPR(Type log_F, vector<Type> M, matrix<Type> sel, matrix<Type> waacatch
   return YPR;
 }
 
+template <class T>
+T get_YPR(T log_F, vector<T> M, matrix<T> sel, matrix<T> waacatch, vector<T> marg_sig)
+{
+  int n_ages = M.size();
+  int n_fleets = sel.rows();
+  T YPR = 0.0, ntemp = 1.0;
+  vector<T> Z = M;
+
+  matrix<T> F = exp(log_F) * sel;
+  for(int age=0; age<n_ages; age++) for(int f = 0; f < n_fleets; f ++) Z(age) += F(f,age);
+  for(int age=0; age<n_ages-1; age++) {
+    for(int f = 0; f < n_fleets; f ++) YPR += ntemp * F(f,age) * waacatch(f,age) * (1.0 - exp(-Z(age)))/Z(age);
+    ntemp *= exp(-Z(age));
+    ntemp *= exp(-0.5*pow(marg_sig(age+1),2));
+  }
+  ntemp /= 1.0 - exp(-Z(n_ages-1)-0.5*pow(marg_sig(n_ages-1),2));
+  for(int f = 0; f < n_fleets; f ++) YPR += ntemp * F(f,n_ages-1) * waacatch(f,n_ages-1) * (1.0 - exp(-Z(n_ages-1)))/Z(n_ages-1);
+  return YPR;
+}
+
 template <class Type>
 Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracyearSSB)
 {
@@ -211,6 +255,23 @@ Type get_SPR_0(vector<Type> M, vector<Type> mat, vector<Type> waassb, Type fracy
     ntemp0 *= exp(-M(a));
   }
   ntemp0 /= Type(1.0)-exp(-M(n_ages-1));
+  SPR_0 += ntemp0 * mat(n_ages-1) * waassb(n_ages-1) * exp(-fracyearSSB * M(n_ages-1));
+  return SPR_0;
+}
+
+template <class T>
+T get_SPR_0(vector<T> M, vector<T> mat, vector<T> waassb, T fracyearSSB, vector<T> marg_sig)
+{
+  int n_ages = M.size();
+  T SPR_0 = T(0.0);
+  T ntemp0 = T(1.0);
+  for (int a = 0; a < n_ages - 1; a++)
+  {
+    SPR_0 += ntemp0 * mat(a) * waassb(a) * exp(-fracyearSSB * M(a));
+    ntemp0 *= exp(-M(a));
+    ntemp0 *= exp(-0.5*pow(marg_sig(a+1),2));
+  }
+  ntemp0 /= 1.0-exp(-M(n_ages-1)-0.5*pow(marg_sig(n_ages-1),2));
   SPR_0 += ntemp0 * mat(n_ages-1) * waassb(n_ages-1) * exp(-fracyearSSB * M(n_ages-1));
   return SPR_0;
 }
@@ -275,6 +336,7 @@ struct sr_yield_fleet {
   Type SR_b;
   vector<Type> M;
   matrix<Type> sel;
+  vector<Type> marg_sig;
   vector<Type> mat;
   vector<Type> waassb;
   matrix<Type> waacatch;
@@ -285,33 +347,44 @@ struct sr_yield_fleet {
   sr_yield_fleet(Type SR_a_, Type SR_b_,
   vector<Type> M_,
   matrix<Type> sel_,
+  vector<Type> marg_sig_,
   vector<Type> mat_,
   vector<Type> waassb_,
   matrix<Type> waacatch_,
   Type fracyearSSB_, int sr_type_) :
-    SR_a(SR_a_), SR_b(SR_b_), M(M_), sel(sel_), mat(mat_),
+    SR_a(SR_a_), SR_b(SR_b_), M(M_), sel(sel_), marg_sig(marg_sig_), mat(mat_),
   waassb(waassb_), waacatch(waacatch_), fracyearSSB(fracyearSSB_), sr_type(sr_type_) {}
 
   template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
   T operator()(vector<T> log_F) { //find such that it maximizes yield
-    int n_ages = M.size();
-    int n_fleets = sel.rows();
-    T YPR = 0, SPR = 0, ntemp = 1, R;
+    // int n_ages = M.size();
+    // int n_fleets = sel.rows();
+    // T YPR = 0, SPR = 0, ntemp = 1, R;
+    T R;
+    vector<T> MT = M.template cast<T>();
+    vector<T> matT = mat.template cast<T>();
+    vector<T> waassbT = waassb.template cast<T>();
+    matrix<T> waacatchT = waacatch.template cast<T>();
+    vector<T> marg_sigT = marg_sig.template cast<T>();
+    T fracyearSSBT = T(fracyearSSB);
     vector<T> Z = M.template cast<T>();
 
-    matrix<T> F = exp(log_F(0)) * sel.template cast<T>();
+    matrix<T> selT = sel.template cast<T>();
+    // matrix<T> F = exp(log_F(0)) * selT;
     //Z = F + M.template cast<T>();
-    for(int age=0; age<n_ages; age++) for(int f = 0; f < n_fleets; f++) Z(age) += F(f,age);
-    for(int age=0; age<n_ages-1; age++) {
-      for(int f = 0; f < n_fleets; f++) YPR += ntemp * F(f,age) * T(waacatch(f,age)) * (1- exp(-Z(age)))/Z(age);
-      SPR += ntemp * T(mat(age) * waassb(age)) * exp(-T(fracyearSSB) * Z(age));
-      ntemp *= exp(-Z(age));
-    }
-    ntemp /= 1 - exp(-Z(n_ages-1));
-    for(int f = 0; f < n_fleets; f++) YPR += ntemp * F(f,n_ages-1) * T(waacatch(f,n_ages-1)) * (1 - exp(-Z(n_ages-1)))/Z(n_ages-1);
-    SPR += ntemp * T(mat(n_ages-1) * waassb(n_ages-1)) * exp(-T(fracyearSSB)*Z(n_ages-1));
+    // for(int age=0; age<n_ages; age++) for(int f = 0; f < n_fleets; f++) Z(age) += F(f,age);
+    // for(int age=0; age<n_ages-1; age++) {
+    //   for(int f = 0; f < n_fleets; f++) YPR += ntemp * F(f,age) * T(waacatch(f,age)) * (1- exp(-Z(age)))/Z(age);
+    //   SPR += ntemp * T(mat(age) * waassb(age)) * exp(-T(fracyearSSB) * Z(age));
+    //   ntemp *= exp(-Z(age));
+    // }
+    // ntemp /= 1 - exp(-Z(n_ages-1));
+    // for(int f = 0; f < n_fleets; f++) YPR += ntemp * F(f,n_ages-1) * T(waacatch(f,n_ages-1)) * (1 - exp(-Z(n_ages-1)))/Z(n_ages-1);
+    // SPR += ntemp * T(mat(n_ages-1) * waassb(n_ages-1)) * exp(-T(fracyearSSB)*Z(n_ages-1));
 
-    //Type SPR = get_SPR(x, M, sel, mat, waassb, fracyearSSB);
+    T SPR = get_SPR(log_F(0), MT, selT, matT, waassbT, fracyearSSBT, marg_sigT);
+    T YPR = get_YPR(log_F(0), MT, selT, waacatchT, marg_sigT);
+
     if(sr_type == 0) R = (T(SR_a) - 1/SPR) / T(SR_b); //beverton-holt
     if(sr_type == 1) R = log(T(SR_a) * SPR)/(T(SR_b) * SPR); //ricker
     T Y = YPR * R;
@@ -366,6 +439,7 @@ struct spr_F_fleet {
   /* Data and parameter objects for calculation: */
   vector<Type> M;
   matrix<Type> sel;
+  vector<Type> marg_sig;
   vector<Type> mat;
   vector<Type> waassb;
   Type fracyearSSB;
@@ -374,10 +448,11 @@ struct spr_F_fleet {
   spr_F_fleet(
   vector<Type> M_,
   matrix<Type> sel_,
+  vector<Type> marg_sig_,
   vector<Type> mat_,
   vector<Type> waassb_,
   Type fracyearSSB_) :
-    M(M_), sel(sel_), mat(mat_),
+    M(M_), sel(sel_), marg_sig(marg_sig_), mat(mat_),
   waassb(waassb_), fracyearSSB(fracyearSSB_) {}
 
   template <typename T> //I think this allows you to differentiate the function wrt whatever is after operator() on line below
@@ -392,9 +467,9 @@ struct spr_F_fleet {
     //Z = F + M.template cast<T>();
     for(int age=0; age<n_ages-1; age++) {
       SPR += ntemp * T(mat(age) * waassb(age)) * exp(-T(fracyearSSB) * Z(age));
-      ntemp *= exp(-Z(age));
+      ntemp *= exp(-Z(age)-0.5*pow(marg_sig(age+1),2));
     }
-    ntemp /= 1 - exp(-Z(n_ages-1));
+    ntemp /= 1 - exp(-Z(n_ages-1)-0.5*pow(marg_sig(n_ages-1),2));
     SPR += ntemp * T(mat(n_ages-1) * waassb(n_ages-1)) * exp(-T(fracyearSSB)*Z(n_ages-1));
 
     return SPR;
@@ -403,7 +478,7 @@ struct spr_F_fleet {
 
 template <class Type>
 matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_age, array<Type> waa, int waa_pointer_ssb, vector<int> waa_pointer_fleets,
-  matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<Type> F_init)
+  matrix<Type> mature, Type percentSPR, vector<Type> predR, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<Type> F_init, vector<Type> marg_sig)
 {
   int n = 20;
   int ny = MAA.rows();
@@ -428,7 +503,7 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_
     Type F_full = 0;
     for(int f = 0; f < nf; f++) F_full += FAA(y,f,which_F_age(y)-1);
     for(int f = 0; f < nf; f++) for(int a = 0; a < na; a++) sel(f,a) = FAA(y,f,a)/F_full;
-    spr_F_fleet<Type> sprF(M, sel, mat, waassb, fracyr_SSB(y));
+    spr_F_fleet<Type> sprF(M, sel, marg_sig, mat, waassb, fracyr_SSB(y));
     for (int i=0; i<n-1; i++)
     {
       log_FXSPR_i(0) = log_FXSPR_iter(y,i);
@@ -438,8 +513,8 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_
       res(y,5+i+1) = log_FXSPR_iter(y,i+1);
     }
     log_FXSPR(y) = log_FXSPR_iter(y,n-1);
-    log_SPR_FXSPR(y) = log(get_SPR(log_FXSPR(y), M, sel, mat, waassb, fracyr_SSB(y)));
-    log_YPR_FXSPR(y) = log(get_YPR(log_FXSPR(y), M, sel, waacatch));
+    log_SPR_FXSPR(y) = log(get_SPR(log_FXSPR(y), M, sel, mat, waassb, fracyr_SSB(y), marg_sig));
+    log_YPR_FXSPR(y) = log(get_YPR(log_FXSPR(y), M, sel, waacatch, marg_sig));
     log_SSB_FXSPR(y) = log(predR(y)) + log_SPR_FXSPR(y);
     log_Y_FXSPR(y) = log(predR(y)) + log_YPR_FXSPR(y);
     res(y,0) = log_FXSPR(y);
@@ -454,7 +529,7 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_
 template <class Type>
 vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, vector<int> waa_pointer_fleets,
   matrix<Type> mature, Type percentSPR, matrix<Type> NAA, vector<Type> fracyr_SSB, Type F_init, 
-  vector<int> years_M, vector<int> years_mat, vector<int> years_sel, vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_R)
+  vector<int> years_M, vector<int> years_mat, vector<int> years_sel, vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_R, vector<Type> marg_sig)
 {
   int n = 20;
   int na = MAA.cols();
@@ -482,11 +557,11 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
   Type F_mult= 0;
   for(int f = 0; f < nf; f++) F_mult += sel(f,which_F_age-1);
   sel = sel/F_mult;
-  Type spr0 = get_SPR_0(M, mat, waa_s, ssbfrac); 
+  Type spr0 = get_SPR_0(M, mat, waa_s, ssbfrac, marg_sig); 
 
   vector<Type> res(6+n), log_FXSPR_i(1), log_FXSPR_iter(n);
   log_FXSPR_iter(0) = res(6) = log(F_init);
-  spr_F_fleet<Type> sprF(M, sel, mat, waa_s, ssbfrac);
+  spr_F_fleet<Type> sprF(M, sel, marg_sig, mat, waa_s, ssbfrac);
   for (int i=0; i<n-1; i++)
   {
     log_FXSPR_i(0) = log_FXSPR_iter(i);
@@ -495,9 +570,9 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
     res(6+i+1) = log_FXSPR_iter(i+1);
   }
   res(0) = log_FXSPR_iter(n-1); //log_FXSPR
-  res(3) = log(get_SPR(res(0), M, sel, mat, waa_s, ssbfrac)); //log_SPR_FXSPR, should be log(X*SPR0/100)
+  res(3) = log(get_SPR(res(0), M, sel, mat, waa_s, ssbfrac, marg_sig)); //log_SPR_FXSPR, should be log(X*SPR0/100)
   res(1) = log(R) + res(3); //log_SSB_FXSPR
-  res(4) = log(get_YPR(res(0), M, sel, waa_c)); //log_YPR_FXSPR
+  res(4) = log(get_YPR(res(0), M, sel, waa_c, marg_sig)); //log_YPR_FXSPR
   res(2) = log(R) + res(4); //log_Y_FXSPR
   res(5) = log(spr0); //log_SPR0
   return res;
@@ -680,6 +755,25 @@ Type get_FXSPR(vector<Type> M, vector<Type> sel, vector<Type> waassb,
 }
 
 template <class Type>
+Type get_FXSPR(vector<Type> M, matrix<Type> sel, vector<Type> waassb,
+  vector<Type> mat, Type percentSPR, Type fracyr_SSB, Type log_SPR0, Type F_init, vector<Type> marg_sig)
+{
+  int n = 10;
+  vector<Type> log_FXSPR_i(1);
+  vector<Type> log_FXSPR_iter(n);
+  log_FXSPR_iter.fill(log(F_init)); //starting value
+  spr_F_fleet<Type> sprF(M, sel, marg_sig, mat, waassb, fracyr_SSB);
+  for (int i=0; i<n-1; i++)
+  {
+    log_FXSPR_i(0) = log_FXSPR_iter(i);
+    vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
+    log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR*exp(log_SPR0))/grad_spr_F(0);// /hess_sr_yield(0,0);
+  }
+  Type res = exp(log_FXSPR_iter(n-1));
+  return res;
+}
+
+template <class Type>
 Type get_FMSY(Type log_a, Type log_b, vector<Type> M, vector<Type> sel, vector<Type> waacatch, vector<Type> waassb,
   vector<Type> mat, Type fracyr_SSB, Type log_SPR0, int recruit_model, Type F_init)
 {    
@@ -706,7 +800,7 @@ Type get_FMSY(Type log_a, Type log_b, vector<Type> M, vector<Type> sel, vector<T
 //fleet-specific FAA
 template <class Type>
 Type get_FMSY(Type log_a, Type log_b, vector<Type> M, matrix<Type> sel, matrix<Type> waacatch, vector<Type> waassb,
-  vector<Type> mat, Type fracyr_SSB, Type log_SPR0, int recruit_model, Type F_init)
+  vector<Type> mat, Type fracyr_SSB, Type log_SPR0, int recruit_model, Type F_init, vector<Type> marg_sig)
 {    
   int n = 10;
   vector<Type> log_FMSY_i(1);
@@ -716,7 +810,7 @@ Type get_FMSY(Type log_a, Type log_b, vector<Type> M, matrix<Type> sel, matrix<T
   Type b = exp(log_b);
   int sr_type = 0; //recruit_model = 3, B-H
   if(recruit_model == 4) sr_type = 1; //recruit_model = 4, Ricker
-  sr_yield<Type> sryield(a, b, M, sel, mat, waassb, waacatch, fracyr_SSB, sr_type);
+  sr_yield_fleet<Type> sryield(a, b, M, sel, marg_sig, mat, waassb, waacatch, fracyr_SSB, sr_type);
   for (int i=0; i<n-1; i++)
   {
     log_FMSY_i(0) = log_FMSY_iter(i);
@@ -912,7 +1006,7 @@ template <class Type>
 matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> NAA, matrix<Type> MAA, matrix<Type> mature, 
   matrix<Type> waacatch, vector<Type> waassb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
   int n_years_model, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, Type F_init, 
-  vector<Type> log_a, vector<Type> log_b, int recruit_model, Type percentFMSY){
+  vector<Type> log_a, vector<Type> log_b, int recruit_model, Type percentFMSY, vector<Type> marg_sig){
     /* 
      get F to project for next time step
               y:  year of projection (>n_years_model)
@@ -979,8 +1073,10 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
     Type log_a_y = log_a(y);
     Type log_b_y = log_b(y);
     if(proj_F_opt_y == 3){ // F at X% SPR
-      FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init) * sel_tot_proj * 0.01*percentFXSPR;
-      FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
+      FAA_proj = get_FXSPR(M, sel_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init, marg_sig) * sel_proj * 0.01*percentFXSPR;
+      //FAA_tot_proj = get_FXSPR(M, sel_tot_proj, waassb, mat, percentSPR, fracyr_SSB_y, log_SPR0_y, F_init) * sel_tot_proj * 0.01*percentFXSPR;
+      FAA_tot_proj = FAA_proj.colwise().sum();
+      //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
     }
     if(proj_F_opt_y == 4){ // user-specified F
       if(proj_Fcatch(y-n_years_model) < 1e-10){ // if F = 0, sel_proj is NaN
@@ -1003,7 +1099,7 @@ matrix<Type> get_F_proj(int y, int n_fleets, vector<int> proj_F_opt, array<Type>
       }
     }
     if(proj_F_opt_y == 6){ //Fmsy
-      FAA_proj = get_FMSY(log_a_y, log_b_y, M, sel_proj, waacatch, waassb, mat, fracyr_SSB_y, log_SPR0_y, recruit_model, F_init) * sel_proj * 0.01* percentFMSY;
+      FAA_proj = get_FMSY(log_a_y, log_b_y, M, sel_proj, waacatch, waassb, mat, fracyr_SSB_y, log_SPR0_y, recruit_model, F_init, marg_sig) * sel_proj * 0.01* percentFMSY;
       FAA_tot_proj = FAA_proj.colwise().sum();
       //FAA_proj = FAA_tot_proj(which_F_age(y)-1) * sel_proj;
     }
@@ -1079,7 +1175,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         matrix<Type> waacatch = get_waacatch_y(waa, y, n_ages, waa_pointer_fleets);
         vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
-         which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), log_SR_a, log_SR_b, recruit_model, percentFMSY);
+         which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), log_SR_a, log_SR_b, recruit_model, percentFMSY, sigma_a_sig);
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);
