@@ -5,6 +5,7 @@ wham 1.0.7.9000
 
 
 ### Minor improvements
+* Added option to bias-correct SSB/R and Y/R calculations for BRPs. Long-term projections can then be consistent with static BRPs. [4dade43](https://github.com/timjmiller/wham/commit/4dade43485ad35055c7bfc4ee982cf73dadac700)
 * Added option to make recruitment in projection years consistent with that used for prevailing SPR-based BRPs [4edf29a](https://github.com/timjmiller/wham/commit/4edf29a97964b7cbacf830c25effd9100697f4ad)
 * Added option to specify WAA and maturity in projection years. [d6f82f1](https://github.com/timjmiller/wham/commit/d6f82f12c525a06ef5f319c477e78a4cfed10dfb)
 * Fix bug in NAA reporting simulated models with projection years when holding process errors constant in data years. [22633c](https://github.com/timjmiller/wham/commit/22633cd126a4d55e34f9d3cc39e3a4ed8229ea17) 
