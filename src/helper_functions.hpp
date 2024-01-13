@@ -528,7 +528,7 @@ matrix<Type> get_SPR_res(matrix<Type> MAA, array<Type> FAA, vector<int> which_F_
 
 template <class Type>
 vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_age, array<Type> waa, int waa_pointer_ssb, vector<int> waa_pointer_fleets,
-  matrix<Type> mature, Type percentSPR, matrix<Type> NAA, vector<Type> fracyr_SSB, Type F_init, 
+  matrix<Type> mature, Type percentSPR, vector<Type> R, vector<Type> fracyr_SSB, Type F_init, 
   vector<int> years_M, vector<int> years_mat, vector<int> years_sel, vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_R, vector<Type> marg_sig)
 {
   int n = 20;
@@ -539,9 +539,12 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
   matrix<Type> sel(nf,na), waa_c(nf,na);
   vector<Type> M(na), mat(na), waa_s(na);
   sel.setZero(); M.setZero(); mat.setZero(); waa_s.setZero(), waa_c.setZero();
-  Type ssbfrac = 0, R = 0;
+  Type ssbfrac = 0;//, R = 0;
+  vector<Type> R_XSPR_toavg = years_R.unaryExpr(R);
+  Type R_XSPR = R_XSPR_toavg.mean();
+
   //get average inputs over specified years
-  for(int y = 0; y < years_R.size(); y++) R += NAA(years_R(y),0)/years_R.size();
+  //for(int y = 0; y < years_R.size(); y++) R += NAA(years_R(y),0)/years_R.size();
   for(int y = 0; y < years_mat.size(); y++) for(int a = 0; a < na; a++) mat(a) += mature(years_mat(y),a)/years_mat.size();
   for(int y = 0; y < years_M.size(); y++) for(int a = 0; a < na; a++) M(a) += MAA(years_M(y),a)/years_M.size();
   for(int y = 0; y < years_waa_catch.size(); y++) for(int f = 0; f < nf; f++) for(int a = 0; a < na; a++) {
@@ -559,22 +562,23 @@ vector<Type> get_static_SPR_res(matrix<Type> MAA, array<Type> FAA, int which_F_a
   sel = sel/F_mult;
   Type spr0 = get_SPR_0(M, mat, waa_s, ssbfrac, marg_sig); 
 
-  vector<Type> res(6+n), log_FXSPR_i(1), log_FXSPR_iter(n);
-  log_FXSPR_iter(0) = res(6) = log(F_init);
+  vector<Type> res(7+n), log_FXSPR_i(1), log_FXSPR_iter(n);
+  log_FXSPR_iter(0) = res(7) = log(F_init);
   spr_F_fleet<Type> sprF(M, sel, marg_sig, mat, waa_s, ssbfrac);
   for (int i=0; i<n-1; i++)
   {
     log_FXSPR_i(0) = log_FXSPR_iter(i);
     vector<Type> grad_spr_F = autodiff::gradient(sprF,log_FXSPR_i);
     log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (sprF(log_FXSPR_i) - 0.01*percentSPR * spr0)/(2.0*grad_spr_F(0));// /hess_sr_yield(0,0);
-    res(6+i+1) = log_FXSPR_iter(i+1);
+    res(7+i+1) = log_FXSPR_iter(i+1);
   }
   res(0) = log_FXSPR_iter(n-1); //log_FXSPR
   res(3) = log(get_SPR(res(0), M, sel, mat, waa_s, ssbfrac, marg_sig)); //log_SPR_FXSPR, should be log(X*SPR0/100)
-  res(1) = log(R) + res(3); //log_SSB_FXSPR
+  res(1) = log(R_XSPR) + res(3); //log_SSB_FXSPR
   res(4) = log(get_YPR(res(0), M, sel, waa_c, marg_sig)); //log_YPR_FXSPR
-  res(2) = log(R) + res(4); //log_Y_FXSPR
+  res(2) = log(R_XSPR) + res(4); //log_Y_FXSPR
   res(5) = log(spr0); //log_SPR0
+  res(6) = log(R_XSPR); //value of R used for SSB and Yield
   return res;
 }
 
@@ -1129,7 +1133,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   int do_proj, vector<int> proj_F_opt, array<Type> FAA, matrix<Type> FAA_tot, matrix<Type> MAA, matrix<Type> mature, array<Type> waa, 
   vector<int> waa_pointer_fleets, int waa_pointer_ssb, vector<Type> fracyr_SSB, vector<Type> log_SPR0, vector<int> avg_years_ind, 
   int n_years_model, int n_fleets, vector<int> which_F_age, Type percentSPR, vector<Type> proj_Fcatch, Type percentFXSPR, vector<Type> F_proj_init, Type percentFMSY,
-  int proj_R_opt, int XSPR_R_opt, vector<int> XSPR_R_avg_yrs, int bias_correct_pe, vector<Type> sigma_a_sig){
+  int proj_R_opt, int XSPR_R_opt, vector<int> XSPR_R_avg_yrs, int bias_correct_pe, int bias_correct_brps, vector<Type> sigma_a_sig){
 
   // Population model (get NAA, numbers-at-age, for all years)
   int ny = log_SR_a.size();
@@ -1141,12 +1145,17 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
   matrix<Type> log_NAA(ny-1, n_ages);
   log_NAA.setZero();
   NAA.row(0) = pred_NAA.row(0) = NAAin.row(0);
+  
+  vector<Type> sigma_a_sig_brps(n_ages);
+  sigma_a_sig_brps. setZero();
+  if(n_NAA_sigma > 0) if(bias_correct_brps & bias_correct_pe) sigma_a_sig_brps = sigma_a_sig; //to bias correct SSB/R and Y/R
+  
   for(int y = 1; y < ny; y++)
   {
     //use NAA.row(y-1)
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
       log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
-    if((y > n_years_model-1) & proj_R_opt ==2) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
+    if((y > n_years_model-1) & (proj_R_opt ==2)) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
       vector<Type> Rproj = get_R_FXSPR(pred_NAA, NAA, XSPR_R_opt, XSPR_R_avg_yrs);
       pred_NAA(y,0) = Rproj(y);
       if(bias_correct_pe == 1)  for(int a = 0; a < n_ages; a++) pred_NAA(y,a) *= exp(0.5 * pow(sigma_a_sig(a),2)); //take out bias correction in projections in this option
@@ -1175,7 +1184,7 @@ matrix<Type> sim_pop(array<Type> NAA_devs, int recruit_model, vector<Type> mean_
         matrix<Type> waacatch = get_waacatch_y(waa, y, n_ages, waa_pointer_fleets);
         vector<Type> waassb = get_waa_y(waa, y, n_ages, waa_pointer_ssb);
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
-         which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), log_SR_a, log_SR_b, recruit_model, percentFMSY, sigma_a_sig);
+         which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), log_SR_a, log_SR_b, recruit_model, percentFMSY, sigma_a_sig_brps);
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a< n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         ZAA.row(y) = FAA_tot.row(y) + MAA.row(y);

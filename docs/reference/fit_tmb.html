@@ -19,7 +19,7 @@ Internal function called by fit_wham."><!-- mathjax --><script src="https://cdnj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -125,31 +125,44 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">fit_tmb</span><span class="op">(</span>
-  <span class="va">model</span>,
-  n.newton <span class="op">=</span> <span class="fl">3</span>,
-  do.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,
-  do.check <span class="op">=</span> <span class="cn">FALSE</span>,
-  save.sdrep <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_tmb</span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  n.newton <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  do.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  do.check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  save.sdrep <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>model</dt>
 <dd><p>Output from <code><a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">TMB::MakeADFun</a></code>.</p></dd>
+
+
 <dt>n.newton</dt>
 <dd><p>Integer, number of additional Newton steps after optimization. Default = <code>3</code>.</p></dd>
+
+
 <dt>do.sdrep</dt>
 <dd><p>T/F, calculate standard deviations of model parameters? See <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code>. Default = <code>TRUE</code>.</p></dd>
+
+
 <dt>do.check</dt>
 <dd><p>T/F, check if model parameters are identifiable? Runs internal <code>check_estimability</code>, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = <code>TRUE</code>.</p></dd>
+
+
 <dt>save.sdrep</dt>
 <dd><p>T/F, save the full <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href="https://rdrr.io/pkg/TMB/man/summary.sdreport.html" class="external-link">summary.sdreport)</a></code> to reduce model object file size. Default = <code>FALSE</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>model</code>, appends the following:</p><dl><dt><code>model$opt</code></dt>
+    
+
+<p><code>model</code>, appends the following:</p>
+<p></p>
+<dl><dt><code>model$opt</code></dt>
 <dd><p>Output from <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb</a></code></p></dd>
 
     <dt><code>model$date</code></dt>
@@ -177,7 +190,7 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 </dl></div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code><a href="https://rdrr.io/pkg/TMBhelper/man/check_estimability.html" class="external-link">TMBhelper::check_estimability</a></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code>TMBhelper::check_estimability</code></p></div>
     </div>
 
   </div>
@@ -192,8 +205,7 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

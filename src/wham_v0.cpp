@@ -31,7 +31,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(fracyr_SSB);
   DATA_MATRIX(mature);
   DATA_IVECTOR(waa_pointer_fleets);
-  DATA_INTEGER(waa_pointer_totcatch);
+  //DATA_INTEGER(waa_pointer_totcatch);
   DATA_IVECTOR(waa_pointer_indices);
   DATA_INTEGER(waa_pointer_ssb);
   DATA_INTEGER(waa_pointer_jan1);
@@ -74,6 +74,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(use_steepness); // which parameterization to use for BH/Ricker S-R, if needed.
   DATA_INTEGER(bias_correct_pe); //bias correct lognormal process error?
   DATA_INTEGER(bias_correct_oe); //bias correct lognormal observation error?
+  DATA_INTEGER(bias_correct_brps); //bias correct SSB/R and Y/R for lognormal process error?
   DATA_IVECTOR(Fbar_ages);
   DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
   DATA_IVECTOR(simulate_data); //vector (0/1) if 1 then data type (catch, indices, Ecov obs) will be simulated.
@@ -81,7 +82,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
   DATA_SCALAR(percentFXSPR); // percent of F_XSPR to use for calculating catch in projections. For example, GOM cod uses F = 75% F_40%SPR, so percentFXSPR = 75 and percentSPR = 40. Default = 100.
   DATA_SCALAR(percentFMSY); // percent of FMSY to use for calculating catch in projections.
-  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
+  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. See next line for years to average over.
   DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
   DATA_VECTOR(FXSPR_init); // annual initial values to use for newton steps to find FXSPR (n_years_model+n_proj_years)
   DATA_VECTOR(FMSY_init); // annual initial values to use for newton steps to find FMSY (n_years_model+n_proj_years)
@@ -709,8 +710,9 @@ Type objective_function<Type>::operator() ()
   Type NAA_rho_a = rho_trans(trans_NAA_rho(0));
   Type NAA_rho_y = rho_trans(trans_NAA_rho(1));
   vector<Type> NAA_sigma = exp(log_NAA_sigma);
-  vector<Type> sigma_a_sig(n_ages);
+  vector<Type> sigma_a_sig(n_ages), sigma_a_sig_brps(n_ages);
   sigma_a_sig.setZero();
+  sigma_a_sig_brps.setZero();
   if(n_NAA_sigma == 1){
     sigma_a_sig(0) = NAA_sigma(0) / pow((1-pow(NAA_rho_y,2)),0.5);
   }
@@ -718,6 +720,7 @@ Type objective_function<Type>::operator() ()
     for(int a=0; a<n_ages; a++) sigma_a_sig(a) = NAA_sigma(NAA_sigma_pointers(a)-1) / pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),0.5);
   }
   if(n_NAA_sigma > 0){
+    if(bias_correct_brps & bias_correct_pe) sigma_a_sig_brps = sigma_a_sig; //to bias correct SSB/R and Y/R
     if(do_post_samp.sum()==0){
       ADREPORT(NAA_sigma);
       ADREPORT(NAA_rho_a);
@@ -757,7 +760,7 @@ Type objective_function<Type>::operator() ()
       waassb(a) = waa(waa_pointer_ssb-1,y,a);
       mat(a) = mature(y,a);
     }
-    log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y), sigma_a_sig));
+    log_SPR0(y) = log(get_SPR_0(M, mat, waassb, fracyr_SSB(y), sigma_a_sig_brps));
   }
   REPORT(log_SPR0);
 
@@ -863,7 +866,7 @@ Type objective_function<Type>::operator() ()
     
     pred_NAA.row(y) = get_pred_NAA_y(y, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, 
       log_SR_b, Ecov_where, Ecov_how, Ecov_lm, ZAA);
-    if((y > n_years_model-1) & proj_R_opt ==2) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
+    if((y > n_years_model-1) & (proj_R_opt ==2)) {//pred_R in projections == R used for spr-based BRPs. makes long term projections consistent
       vector<Type> Rproj = get_R_FXSPR(pred_NAA, NAA, XSPR_R_opt, XSPR_R_avg_yrs);
       pred_NAA(y,0) = Rproj(y);
       if(bias_correct_pe == 1)  for(int a = 0; a < n_ages; a++) pred_NAA(y,a) *= exp(0.5 * pow(sigma_a_sig(a),2)); //take out bias correction in projections in this option
@@ -895,7 +898,7 @@ Type objective_function<Type>::operator() ()
         //n_fleets x n_ages: projected full F is sum of (means across years at age) across fleets 
         matrix<Type> FAA_proj = get_F_proj(y, n_fleets, proj_F_opt, FAA, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, 
           log_SPR0, avg_years_ind, n_years_model, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init(y-n_years_model), 
-          log_SR_a, log_SR_b, recruit_model, percentFMSY, sigma_a_sig);
+          log_SR_a, log_SR_b, recruit_model, percentFMSY, sigma_a_sig_brps);
         FAA_tot.row(y) = FAA_proj.colwise().sum();
         for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) FAA(y,f,a) = FAA_proj(f,a);
         //FAA_tot.row(y) = get_F_proj(y, proj_F_opt, FAA_tot, NAA, MAA, mature, waacatch, waassb, fracyr_SSB, log_SPR0, avg_years_ind, n_years_model,
@@ -1008,7 +1011,7 @@ Type objective_function<Type>::operator() ()
     matrix<Type> sims = sim_pop(NAA_devs, recruit_model, mean_rec_pars, SSB, NAA, log_SR_a, log_SR_b, Ecov_where, Ecov_how, Ecov_lm, 
       n_NAA_sigma, do_proj, proj_F_opt, FAA, FAA_tot, MAA, mature, waa, waa_pointer_fleets, waa_pointer_ssb, fracyr_SSB, log_SPR0, 
       avg_years_ind, n_years_model, n_fleets, which_F_age, percentSPR, proj_Fcatch, percentFXSPR, F_proj_init, percentFMSY, proj_R_opt, XSPR_R_opt, 
-      XSPR_R_avg_yrs, bias_correct_pe, sigma_a_sig);
+      XSPR_R_avg_yrs, bias_correct_pe, bias_correct_brps, sigma_a_sig);
     SSB = sims.col(sims.cols()-1);
     for(int a = 0; a < n_ages; a++) 
     {
@@ -1264,7 +1267,10 @@ Type objective_function<Type>::operator() ()
     vector<Type> R_XSPR_toavg = XSPR_R_avg_yrs.unaryExpr(pred_NAA.col(0));
     R_XSPR.fill(R_XSPR_toavg.mean());
   }
-  matrix<Type> SPR_res = get_SPR_res(MAA, FAA, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, R_XSPR, fracyr_SSB, log_SPR0, FXSPR_init, sigma_a_sig);
+  if(XSPR_R_opt == 5) {
+    R_XSPR = pred_NAA.col(0)*exp(-0.5*pow(sigma_a_sig_brps(0),2));
+  }
+  matrix<Type> SPR_res = get_SPR_res(MAA, FAA, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, R_XSPR, fracyr_SSB, log_SPR0, FXSPR_init, sigma_a_sig_brps);
   vector<Type> log_FXSPR = SPR_res.col(0);
   vector<Type> log_SSB_FXSPR = SPR_res.col(1);
   vector<Type> log_Y_FXSPR = SPR_res.col(2);
@@ -1286,21 +1292,23 @@ Type objective_function<Type>::operator() ()
   }
 
   //static/avg year results
-  vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, NAA, 
-    fracyr_SSB, static_FXSPR_init, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, XSPR_R_avg_yrs, sigma_a_sig);
+  vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, R_XSPR, 
+    fracyr_SSB, static_FXSPR_init, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, XSPR_R_avg_yrs, sigma_a_sig_brps);
   Type log_FXSPR_static = SPR_res_static(0);
   Type log_SSB_FXSPR_static = SPR_res_static(1);
   Type log_Y_FXSPR_static = SPR_res_static(2);
   Type log_SPR_FXSPR_static = SPR_res_static(3);
   Type log_YPR_FXSPR_static = SPR_res_static(4);
   Type log_SPR0_static = SPR_res_static(5);
-  vector<Type> log_FXSPR_iter_static = SPR_res_static.segment(6,10);
+  Type log_R_FXSPR_static = SPR_res_static(6);
+  vector<Type> log_FXSPR_iter_static = SPR_res_static.segment(7,10);
 
   REPORT(log_SPR0_static);
   REPORT(log_FXSPR_iter_static);
   REPORT(log_FXSPR_static);
   REPORT(log_SSB_FXSPR_static);
   REPORT(log_Y_FXSPR_static);
+  REPORT(log_R_FXSPR_static);
   REPORT(log_SPR_FXSPR_static);
   REPORT(log_YPR_FXSPR_static);
   if(do_post_samp.sum()==0){
@@ -1334,7 +1342,7 @@ Type objective_function<Type>::operator() ()
       SR_b = exp(log_SR_b(y));
       if(recruit_model == 3) //Beverton-Holt selected
       {
-        sr_yield_fleet<Type> sryield(SR_a, SR_b, M, selmat, sigma_a_sig, mat, waassb, waacatch_MSY,fracyr_SSB(y),0);
+        sr_yield_fleet<Type> sryield(SR_a, SR_b, M, selmat, sigma_a_sig_brps, mat, waassb, waacatch_MSY,fracyr_SSB(y),0);
         for (int i=0; i<n-1; i++)
         {
           log_FMSY_i(0) = log_FMSY_iter(y,i);
@@ -1345,7 +1353,7 @@ Type objective_function<Type>::operator() ()
       }
       else //Ricker selected
       {
-        sr_yield_fleet<Type> sryield(SR_a, SR_b, M, selmat, sigma_a_sig, mat, waassb, waacatch_MSY,fracyr_SSB(y),1);
+        sr_yield_fleet<Type> sryield(SR_a, SR_b, M, selmat, sigma_a_sig_brps, mat, waassb, waacatch_MSY,fracyr_SSB(y),1);
         for (int i=0; i<n-1; i++)
         {
           log_FMSY_i(0) = log_FMSY_iter(y,i);
@@ -1355,8 +1363,8 @@ Type objective_function<Type>::operator() ()
         }
       }
       log_FMSY(y) = log_FMSY_iter(y,n-1);
-      log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, selmat, mat, waassb, fracyr_SSB(y), sigma_a_sig));
-      log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, selmat, waacatch_MSY, sigma_a_sig));
+      log_SPR_MSY(y) = log(get_SPR(log_FMSY(y), M, selmat, mat, waassb, fracyr_SSB(y), sigma_a_sig_brps));
+      log_YPR_MSY(y) = log(get_YPR(log_FMSY(y), M, selmat, waacatch_MSY, sigma_a_sig_brps));
       if(recruit_model == 3) log_R_MSY(y) = log((SR_a - 1/exp(log_SPR_MSY(y))) / SR_b); //bh
       else log_R_MSY(y) = log(log(SR_a) + log_SPR_MSY(y)) - log(SR_b) - log_SPR_MSY(y); //ricker
     }
@@ -1426,16 +1434,16 @@ Type objective_function<Type>::operator() ()
   REPORT(Ecov_obs_sigma);
 
   if(do_post_samp.sum()==0){
-    //ADREPORT(log_F);
-    //ADREPORT(log_FAA);
-    //ADREPORT(log_FAA_tot);
-    //ADREPORT(log_Fbar);
+    ADREPORT(log_F);
+    ADREPORT(log_FAA);
+    ADREPORT(log_FAA_tot);
+    ADREPORT(log_Fbar);
     ADREPORT(NAA);
     ADREPORT(log_NAA_rep);
     ADREPORT(log_SSB);
-    ADREPORT(SSB);
-    //ADREPORT(log_index_resid);
-    //ADREPORT(log_catch_resid);
+    //ADREPORT(SSB);
+    ADREPORT(log_index_resid);
+    ADREPORT(log_catch_resid);
   }
 
   REPORT(nll);

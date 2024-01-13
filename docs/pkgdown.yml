@@ -1,5 +1,5 @@
 pandoc: 2.17.1.1
-pkgdown: 2.0.2
+pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
   ex10_simulation: ex10_simulation.html
@@ -13,7 +13,7 @@ articles:
   ex7_debug: ex7_debug.html
   ex8_compare: ex8_compare.html
   ex9_retro_pred: ex9_retro_pred.html
-last_built: 2022-11-03T14:08Z
+last_built: 2024-01-13T17:12Z
 urls:
   reference: https://timjmiller.github.io/wham/reference
   article: https://timjmiller.github.io/wham/articles

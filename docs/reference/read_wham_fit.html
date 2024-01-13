@@ -18,7 +18,7 @@ Internal function, called within compare_wham_models."><!-- mathjax --><script s
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -123,19 +123,26 @@ Internal function, called within <code><a href="compare_wham_models.html">compar
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">read_wham_fit</span><span class="op">(</span><span class="va">mod</span>, alphaCI <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_wham_fit</span><span class="op">(</span><span class="va">mod</span>, alphaCI <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>mod</dt>
 <dd><p>output from <code><a href="fit_wham.html">fit_wham</a></code></p></dd>
+
+
 <dt>alphaCI</dt>
 <dd><p>(1-alpha)% confidence intervals will be calculated. Default = 0.05 for 95% CI.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a named list with the following elements:</p><dl><dt><code>$years</code></dt>
+    
+
+<p>a named list with the following elements:</p>
+<p></p>
+<dl><dt><code>$years</code></dt>
 <dd><p>numeric vector, model years only, e.g. <code>1972:2020</code></p></dd>
 
     <dt><code>$years_full</code></dt>
@@ -199,8 +206,7 @@ Internal function, called within <code><a href="compare_wham_models.html">compar
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

@@ -207,7 +207,7 @@ To fit a state-space model, specify \code{NAA_re}, a list with the following ent
                  }
                }
     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
-       (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+       (default = FALSE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
        have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate year correlation parameters are estimated for recruitment and older
        ages.}
   }
@@ -317,12 +317,13 @@ The current options are:
     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
 	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
-    \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
+    \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment}
     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
     \item{$bias_correct_observation}{T/F. Perform bias correction of log-normal observations.}
+    \item{$bias_correct_BRPs}{T/F. Perform bias correction of analytic SSB/R and Y/R when there is bias correction of log-normal NAA.}
   }
 If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
 must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.

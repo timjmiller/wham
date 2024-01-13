@@ -155,7 +155,7 @@
 #'                  }
 #'                }
 #'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
-#'        (default = FALSE). Only applicable for \cod{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+#'        (default = FALSE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
 #'        have the correlation structure. If TRUE and NAA_re$cor is not "iid" separate year correlation parameters are estimated for recruitment and older
 #'        ages.}
 #'   }
@@ -265,12 +265,13 @@
 #'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
 #'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
-#'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
+#'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment}
 #'     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
 #'     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
 #'     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
 #'     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
 #'     \item{$bias_correct_observation}{T/F. Perform bias correction of log-normal observations.}
+#'     \item{$bias_correct_BRPs}{T/F. Perform bias correction of analytic SSB/R and Y/R when there is bias correction of log-normal NAA.}
 #'   }
 #' If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
 #' must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.
@@ -455,6 +456,7 @@ initial_input_fn = function(input, basic_info){
   input$data$which_F_age_static = input$data$n_ages #plus group by default used to define full F (total) for static SPR-based ref points.
 
   input$data$bias_correct_pe = 1 #bias correct log-normal process errors?
+  input$data$bias_correct_brps = 0 #bias correct SSB/R and Y/R when NAA re are bias-corrected?
   input$data$bias_correct_oe = 1 #bias correct log-normal observation errors?
   input$data$simulate_state = rep(1,5) #simulate state variables (NAA, M, sel, Ecov, q)
   input$data$simulate_data = rep(1,3) #simulate data types (catch, indices, Ecov)
@@ -468,8 +470,9 @@ initial_input_fn = function(input, basic_info){
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
   input$data$avg_years_ind <- tail(1:length(input$years),5) - 1 #shifted to start @ 0
   
-  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = basic_info$bias_correct_process
-  if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = basic_info$bias_correct_observation
+  if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
+  if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = as.integer(basic_info$bias_correct_observation)
+  if(!is.null(basic_info$bias_correct_BRPs)) input$data$bias_correct_brps = as.integer(basic_info$bias_correct_BRPs)
   if(!is.null(basic_info$simulate_process_error)) input$data$simulate_state = basic_info$simulate_process_error
   if(!is.null(basic_info$simulate_observation_error)) input$data$simulate_data = basic_info$simulate_observation_error
   if(!is.null(basic_info$simulate_period)) input$data$simulate_period = basic_info$simulate_period
