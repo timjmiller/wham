@@ -300,9 +300,6 @@ set_selectivity = function(input, selectivity)
   # print(data$selpars_est)
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   map$logit_selpars = factor(temp)
-  # print(temp)
-  # print(data$n_selpars_est)
-
 
   # initial values on logit scale, par$logit_selpars
   selpars_lo = selpars_hi = matrix(0, data$n_selblocks, data$n_ages + 6)
@@ -335,8 +332,11 @@ set_selectivity = function(input, selectivity)
         if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
           for(i in 1:dim(tmp)[1]) tmp[i,] = (i + ct)
         }
-        ct = max(tmp)
-        tmp_vec = c(tmp_vec, as.vector(tmp))
+        if(length(tmp)){
+          ct = max(tmp)
+          tmp_vec = c(tmp_vec, as.vector(tmp))
+        } else stop(paste0("set_selectivity thinks you want to use random effects for selblock ", b, 
+            ", but either the selblock is not used, or there are no selectivity parameters being estimated."))
       }
     }
     map$selpars_re <- factor(tmp_vec)
