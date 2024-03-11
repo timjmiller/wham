@@ -583,7 +583,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   if(trace) see(mat);
   array<Type> log_M_avg = get_avg_M(log_M, years_M, 1);
   if(trace) see(log_M_avg);
-  array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
+  array<Type> mu_avg(n_stocks, n_ages, n_seasons, n_regions, n_regions);
   mu_avg.setZero(); 
   if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,years_mu,mig_type, can_move, must_move);
   if(trace) see(mu_avg);
@@ -846,7 +846,7 @@ array <Type> get_annual_SPR0_at_age(array<Type> log_M, vector<int> spawn_seasons
     // see(mat);
     array<Type> log_M_avg = get_avg_M(log_M, yvec, 1);
     // see(log_M_avg.dim);
-    array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
+    array<Type> mu_avg(n_stocks, n_ages, n_seasons, n_regions, n_regions);
     mu_avg.setZero(); 
     if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,yvec,mig_type, can_move, must_move);
     // see(mu_avg.dim);
