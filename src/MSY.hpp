@@ -424,7 +424,7 @@ vector< matrix <Type> > get_MSY_res(
   array<Type> log_avg_M = get_avg_M(log_M, years_M, 1);
   if(trace) see(log_avg_M);
 
-  array<Type> mu_avg(n_stocks,n_seasons,n_ages, n_regions, n_regions);
+  array<Type> mu_avg(n_stocks, n_ages, n_seasons, n_regions, n_regions);
   mu_avg.setZero();
   if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,years_mu,mig_type, can_move, must_move);
   if(trace) see(mu_avg);
