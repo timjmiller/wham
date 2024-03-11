@@ -19,8 +19,8 @@ matrix<Type> get_nll_M(array<Type> M_repars, matrix<int> M_re_model, int M_model
   for(int s = 0; s < n_stocks; s++) for(int r = 0; r< n_regions; r++) {
     if(M_re_model(s,r) > 1){ // random effects on M, M_re = 2D AR1 deviations on M(year,age), dim = n_years x n_M_re(s,r)
       Type sigma_M = exp(M_repars(s,r,0));
-      Type rho_M_a = rho_trans(M_repars(s,r,1));
-      Type rho_M_y = rho_trans(M_repars(s,r,2));
+      Type rho_M_a = geninvlogit(M_repars(s,r,1),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy
+      Type rho_M_y = geninvlogit(M_repars(s,r,2),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy
       Type Sigma_M;
       // likelihood of M deviations, M_re
       array<Type> M_re_r_s(n_y,n_M_re(s,r));
@@ -69,8 +69,8 @@ array<Type> simulate_M_re(array<Type> M_repars, matrix<int> M_re_model, int M_mo
   for(int s = 0; s < n_stocks; s++) for(int r = 0; r< n_regions; r++){
     if(M_re_model(s,r) > 1){ // random effects on M, M_re = 2D AR1 deviations on M(year,age), dim = n_years x n_M_re(s,r)
       Type sigma_M = exp(M_repars(s,r,0));
-      Type rho_M_a = rho_trans(M_repars(s,r,1));
-      Type rho_M_y = rho_trans(M_repars(s,r,2));
+      Type rho_M_a = geninvlogit(M_repars(s,r,1),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy
+      Type rho_M_y = geninvlogit(M_repars(s,r,2),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy
       Type Sigma_M;
       // likelihood of M deviations, M_re
       array<Type> M_re_r_s(n_y,n_M_re(s,r));

@@ -32,7 +32,7 @@ matrix<Type> get_nll_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_process_pars
       //Type Ecov_mu = Ecov_process_pars(0,i);  // mean
       Type Ecov_phi = geninvlogit(Ecov_process_pars(2,i), Type(-1), Type(1), Type(1)); // autocorrelation
       //Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
-      Type Ecov_sig = exp(Ecov_process_pars(1,i)); // marginal sd
+      Type Ecov_sig = exp(Ecov_process_pars(1,i)) *pow(1 - pow(Ecov_phi,2),-0.5); // marginal sd
       vector<Type> re_i(n_y);
       for(int y = 0; y < n_y; y++) re_i(y) = Ecov_re(years_use(y),i);
       //vector<Type> re_i = Ecov_re.col(i);
@@ -107,7 +107,7 @@ matrix<Type> simulate_Ecov_re(vector<int> Ecov_model, matrix<Type> Ecov_process_
       if((Ecov_model(i) == 2) & (Ecov_use_re(i)==1)){
         Type Ecov_phi = geninvlogit(Ecov_process_pars(2,i), Type(-1), Type(1), Type(1)); // autocorrelation
         //Type Ecov_phi = -1 + 2/(1 + exp(-Ecov_process_pars(2,i))); // autocorrelation
-        Type Ecov_sig = exp(Ecov_process_pars(1,i)); // marginal sd
+        Type Ecov_sig = exp(Ecov_process_pars(1,i)) *pow(1 - pow(Ecov_phi,2),-0.5); // marginal sd
         //vector<Type> re_i = re_sim.col(i);
         vector<Type> re_i(n_y);
         AR1(Ecov_phi).simulate(re_i);

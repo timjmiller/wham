@@ -264,7 +264,7 @@ set_ecov = function(input, ecov) {
       #map of observation error variance parameters
       map$Ecov_obs_logsigma_re <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
       #initial values of random effects
-      par$Ecov_obs_logsigma_re = matrix(0, data$n_Ecov_obs, data$n_Ecov)
+      par$Ecov_obs_logsigma_re = matrix(0, n_Ecov_obs, data$n_Ecov)
 
       for(i in 1:data$n_Ecov) if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re') {
         map$Ecov_obs_logsigma_re[,i] = max(0, map$Ecov_obs_logsigma_re, na.rm=T) + 1:data$n_years_Ecov
@@ -666,7 +666,7 @@ set_ecov = function(input, ecov) {
       for(i in 1:data$n_Ecov) par$Ecov_process_pars[2,i] = log(ecov$process_sig_vals[i])
     }
     if(!is.null(ecov$process_cor_vals)){
-      inv_trans_rho <- function(rho) log(rho+1) - log(1-rho) # not same transformation as other re on cpp side.
+      inv_trans_rho <- function(rho) log(rho+1) - log(1-rho) 
       for(i in 1:data$n_Ecov)  if(data$Ecov_model[i]==2) par$Ecov_process_pars[3,i] = inv_trans_rho(ecov$process_cor_vals[i])
     }
 

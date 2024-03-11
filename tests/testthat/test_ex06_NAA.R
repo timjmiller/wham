@@ -1,10 +1,8 @@
 # WHAM example 6: Numbers-at-age options
 
-# devtools::install_github("timjmiller/wham", dependencies=TRUE, ref='naa')
-# library(wham)
-# devtools::load_all()
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex6_NAA.R"); etime <- Sys.time(); runtime = etime - btime;
-# 11 min
+# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
+# btime <- Sys.time(); devtools::test(filter = "ex06_NAA"); etime <- Sys.time(); runtime = etime - btime; runtime;
+# 17 min
 
 context("Ex 6: Numbers-at-age")
 
@@ -17,10 +15,12 @@ env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
 
 df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
                       NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
-                      GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
+                      R_how = paste0(c(rep("none",7),rep("limiting-lag-1-linear",6))), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+
+basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
 
 mods <- vector("list",n.mods)
 mods_proj <- vector("list",n.mods)
@@ -35,11 +35,8 @@ for(m in fit.mods){
     logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
     year = env.dat$year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    lag = 1, # GSI in year t affects Rec in year t + 1
     process_model = 'ar1', # "rw" or "ar1"
-    where = c("none","recruit")[as.logical(df.mods$GSI_how[m])+1],
-    how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
-    link_model = "linear")
+    recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
   input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
@@ -48,10 +45,14 @@ for(m in fit.mods){
                                 fix_pars=list(4:6,4,3:6)),
                               NAA_re = NAA_list,
                               ecov=ecov,
+                              basic_info = basic_info,
                               age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing
 
   # Fit model
+  print(m)
+  # temp <- suppressWarnings(fit_wham(input, do.fit=F))
   mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
+  print(c(mods[[m]]$opt$obj, ex6_test_results$nll[m]))
   mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 
   # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values

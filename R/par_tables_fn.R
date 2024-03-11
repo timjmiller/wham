@@ -223,12 +223,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
       fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE", modify))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
-      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit", k = 2))
+      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
       fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE AR1 $\\rho$ (year)"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
-      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit", k = 2))
+      fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
     }
   }
   #acomp_par_count = 0

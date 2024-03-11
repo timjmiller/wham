@@ -69,7 +69,7 @@ set_q = function(input, catchability = NULL){
 	}
 	if(!is.null(q_opts$initial_q)) {
 		if(length(q_opts$initial_q) != data$n_indices) stop("the length of catchability$initial_q is not equal to the number of indices")
-		par$logit_q = wham:::gen.logit(q_opts$initial_q, data$q_lower, data$q_upper)
+		par$logit_q = gen.logit(q_opts$initial_q, data$q_lower, data$q_upper)
 	}
 
 	data$use_q_re = rep(0, data$n_indices)
@@ -92,7 +92,7 @@ set_q = function(input, catchability = NULL){
 			if(length(q_opts$cor_val) != data$n_indices) stop("the length of catchability$cor_val provided is not equal to the number of indices")
 			if(abs(q_opts$cor_val[ind])>1) stop("it must be that -1 < catchability$cor_val < 1 ")
 			if(any(iids & abs(q_opts$cor_val)>1e-10)) input$log$q <- c(input$log$q, "certain indices have re='iid' and cor_val not = 0. Those will values will be ignored. \n")
-			par$q_repars[ind,2] = wham:::gen.logit(q_opts$cor_val[ind], -1, 1, 2) #need 2 for unusual logit transform on the c++ side.
+			par$q_repars[ind,2] = gen.logit(q_opts$cor_val[ind], -1, 1, 1) 
 			par$q_repars[which(iids),2] = 0 #iids must be set to 0.
 
 		}

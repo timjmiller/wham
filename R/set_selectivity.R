@@ -346,7 +346,7 @@ set_selectivity = function(input, selectivity)
   }
   
   # initial and map for parameters controlling selectivity RE
-  trans <- function(x) return((2/(1 + exp(-2*x))) - 1) # transform for correlation par
+  trans <- function(x) return((2/(1 + exp(-x))) - 1) # transform for correlation par
   # default initial values: sigma = 0.1, rho = 0
   par$sel_repars <- matrix(0, nrow=data$n_selblocks, ncol=3)
   par$sel_repars[,1] <- log(0.1)

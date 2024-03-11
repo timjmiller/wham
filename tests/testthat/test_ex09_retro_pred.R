@@ -1,6 +1,7 @@
 # WHAM example 9: retrospective predictions
 
-# btime <- Sys.time(); testthat::test_file("/home/bstock/Documents/wham/tests/testthat/test_ex9_retro_pred.R"); etime <- Sys.time(); runtime = etime - btime;
+# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
+# btime <- Sys.time(); devtools::test(filter = "ex09_retro_pred"); etime <- Sys.time(); runtime = etime - btime; runtime;
 # xx min
 
 context("Ex 9: Retro predictions")
@@ -15,7 +16,9 @@ env.dat  <- read.csv(file.path(path_to_examples,"CPI.csv"), header=T)
 # Model  Recruit_mod  Ecov_mod     Ecov_how
 #    m1     Bev-Holt       ar1        ---
 #    m2     Bev-Holt       ar1     Limiting
-df.mods <- data.frame(Model = c("m1","m2"), Ecov_how = c(0,2), stringsAsFactors=FALSE)
+df.mods <- data.frame(Model = c("m1","m2"), Ecov_how = c(0,2), 
+	R_how = c("none", "limiting-lag-1-linear"), stringsAsFactors=FALSE)
+
 n.mods <- dim(df.mods)[1]
 
 # specify CPI model
@@ -25,14 +28,23 @@ env <- list(
   logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
   year = env.dat$Year,
   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-  lag = 1, # CPI in year t affects recruitment in year t+1
-  process_model = "ar1", # fit CPI as AR1 process
-  where = "recruit", # CPI affects recruitment
-  how = NA) # fill in by model in loop
+  process_model = 'ar1')#, # "rw" or "ar1"
+  #recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
+
+# env <- list(
+#   label = "CPI",
+#   mean = as.matrix(env.dat$CPI), # CPI observations
+#   logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
+#   year = env.dat$Year,
+#   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+#   lag = 1, # CPI in year t affects recruitment in year t+1
+#   process_model = "ar1", # fit CPI as AR1 process
+#   where = "recruit", # CPI affects recruitment
+#   how = NA) # fill in by model in loop
 
 mods <- vector("list",n.mods)
 for(m in 1:n.mods){
-	env$how = df.mods$Ecov_how[m]
+	env$recruitment_how = matrix(df.mods$R_how[m],1,1)
 	input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3,
 	                            model_name = df.mods$Model[m],
 	                            ecov = env,
@@ -48,11 +60,20 @@ names(mods) <- c("m1 (no CPI)","m2 (CPI)")
 tmp.dir <- tempdir(check=TRUE)
 res <- suppressWarnings(compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE)))
 
+# 	input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3,
+# 	                            model_name = df.mods$Model[m],
+# #	                            ecov = env,
+# 	                            NAA_re = list(sigma="rec+1", cor="iid"),
+# 	                            age_comp = "logistic-normal-pool0")) # logistic normal pool 0 obs
+# 	input$par$logit_selpars[1:4,7:8] <- 0
+
 n.yrs.peel <- 5
 n.yrs.proj <- 3
 for(m in 1:n.mods){
 	mods[[m]]$peels <- suppressWarnings(retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = T, MakeADFun.silent=TRUE))
-	for(p in 3:n.yrs.peel) mods[[m]]$peels[[p]] <- suppressWarnings(project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE))
+	for(p in 3:n.yrs.peel) {
+		temp <- wham:::prepare_projection(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), check.version = FALSE)
+		#mods[[m]]$peels[[p]] <- suppressWarnings(project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE))
 }
 
 # plot retrospective predictions of recruitment

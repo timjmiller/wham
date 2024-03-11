@@ -236,10 +236,9 @@ set_M = function(input, M)
       #only use first value of M from asap files if estimating M for constant or f(WAA)
       for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
         if(length(unique(par$Mpars[s,r,])) > 1) {
-          input$log$M <- c(input$log$M, "M is estimated and no M$means_map is specified so only 1 mean M parameter),\n
-          but for some stock/region, MAA has > 1 unique value.\n
-          Initializing M at M$initial_means[1,1,1]. To avoid this warning\n
-          without changing ASAP file, specify M$initial_means appropriately.")
+          input$log$M <- c(input$log$M, 
+          "M is estimated and no M$means_map is specified so only 1 mean M parameter), but for some stock/region, MAA has > 1 unique value.
+          Initializing M at M$initial_means[1,1,1]. To avoid this warning without changing ASAP file, specify M$initial_means appropriately.\n")
         }
       }
       par$Mpars[] = par$Mpars[1,1,1]
@@ -262,7 +261,7 @@ set_M = function(input, M)
   if(M$mean_model == "weight-at-age"){
     if(is.null(M$b_model)){
       M$b_model <- "constant"
-      input$log$M <- c(input$log$M, "M$b_model was not specified, so M as a function of weight at age will be used for all stocks and regions.")
+      input$log$M <- c(input$log$M, "M$b_model was not specified, so M as a function of weight at age will be used for all stocks and regions.\n")
     }
     if(length(M$b_model) != 1 | (!M$b_model %in% c("constant", "stock", "regions", "stock_region"))){
       stop("M$b_model must be a single value: 'constant', 'stock', 'region', or 'stock_region'.")
@@ -296,7 +295,7 @@ set_M = function(input, M)
     }
     if(is.null(M$b_prior)){
       M$b_prior = FALSE
-      input$log$M <- c(input$log$M, "M$b_prior was not specified, so prior for the b parameter of M_a = aW_a^b will not be used.")
+      input$log$M <- c(input$log$M, "M$b_prior was not specified, so prior for the b parameter of M_a = aW_a^b will not be used.\n")
     }
     if(length(M$b_prior) != 1 | !is.logical(M$b_prior)) stop("M$b_prior must be single value: TRUE or FALSE")
     if(M$b_prior) data$use_b_prior = 1

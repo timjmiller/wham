@@ -28,8 +28,8 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int> n_years_sel
       // likelihood of RE sel devs (if turned on)
       Type sigma = exp(sel_repars(b,0)); // sd selectivity deviations (fixed effect)
       //rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      Type rho = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(2));//rho_trans(sel_repars(b,1)); // among-par correlation selectivity deviations (fixed effect) 
-      Type rho_y = geninvlogit(sel_repars(b,2),Type(-1),Type(1),Type(2));//rho_trans(sel_repars(b,2)); // among-year correlation selectivity deviations (fixed effect)
+      Type rho = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-par correlation selectivity deviations (fixed effect) 
+      Type rho_y = geninvlogit(sel_repars(b,2),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-year correlation selectivity deviations (fixed effect)
       
       if((selblock_models_re(b) == 2) | (selblock_models_re(b) == 5)){
         // 2D AR1 process on selectivity parameter deviations
@@ -82,8 +82,8 @@ vector<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_y
       // likelihood of RE sel devs (if turned on)
       Type sigma = exp(sel_repars(b,0)); // sd selectivity deviations (fixed effect)
       //rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-      Type rho = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(2));//rho_trans(sel_repars(b,1)); // among-par correlation selectivity deviations (fixed effect) 
-      Type rho_y = geninvlogit(sel_repars(b,2),Type(-1),Type(1),Type(2));//rho_trans(sel_repars(b,2)); // among-year correlation selectivity deviations (fixed effect)
+      Type rho = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-par correlation selectivity deviations (fixed effect) 
+      Type rho_y = geninvlogit(sel_repars(b,2),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-year correlation selectivity deviations (fixed effect)
       Type Sigma_sig_sel = 0;
 
       if((selblock_models_re(b) == 2) | (selblock_models_re(b) == 5)){

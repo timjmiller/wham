@@ -189,16 +189,6 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
     This model already treats recruitment deviations as random effects.","",sep='\n'))
 
-  # pad q_re
-  # par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
-  # map$q_re <- rbind(matrix(as.integer(map$q_re), data$n_years_model, data$n_indices), matrix(NA, data$n_years_proj, data$n_indices))
-  # if(any(data$use_q_re == 1)){
-  #   ind = which(data$use_q_re)
-  #   map$q_re[,ind] <- 1:(length(ind) * (data$n_years_model + data$n_years_proj)) #turn on appropriate columns of q_re
-  # }
-  # map$q_re <- factor(map$q_re)
-
-
   # check ecov options are valid, all Ecov will be projected if there observations do not occur in projection years
   # projection options are for how they are used in effects on population and are now done on c++ side
   # default is to continue Ecov in projection years, but will not matter if effects on M/mu and M/mu is averaged.
@@ -385,7 +375,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     data$proj_mu_opt <- 2 #default is to use average mu
   }
   # expand mu_re
-  if(data$n_regions>1){
+  #if(data$n_regions>1){
     input_mu <- input
     input_mu$asap3 <- NULL
     input_mu$data$n_years_model <- data$n_years_model + data$n_years_proj
@@ -396,7 +386,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     tmp <- array(0, dim = dims)
     tmp[,,,1:data$n_years_model,,] <- par$mu_re
     par$mu_re <- tmp
-  }
+  #}
 
   # expand q_re
   input_q <- input

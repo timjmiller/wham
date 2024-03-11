@@ -166,6 +166,10 @@ Type objective_function<Type>::operator() ()
   //DATA_IARRAY(NAA_re_indicator); //n_stocks x (n_years-1) x n_ages x n_regions will estimate a random effect where indicator is not 0. sum = n_NAA_re.
 
   //DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
+  //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
+  vector<int> do_simulate_period(2);
+  do_simulate_period(0) = 1;
+  do_simulate_period(1) = 1;
   //DATA_INTEGER(do_simulate_NAA_re); //(0/1) if 1 then simulate numbers at age random effects.
   DATA_INTEGER(do_simulate_Ecov_re); //(0/1) if 1 then simulate selectivity random effects.
   DATA_INTEGER(do_simulate_sel_re); //(0/1) if 1 then simulate selectivity random effects.
@@ -196,11 +200,10 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(do_post_samp_q); //whether to ADREPORT posterior residuals for q re. 
   int sum_do_post_samp = do_post_samp_N + do_post_samp_M + do_post_samp_mu + do_post_samp_sel + do_post_samp_Ecov + do_post_samp_q;
   //reference points
-  //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
   DATA_INTEGER(do_SPR_BRPs); //whether to calculate and adreport reference points. 
   DATA_INTEGER(do_MSY_BRPs); //whether to calculate and adreport reference points. 
   DATA_INTEGER(SPR_weight_type); //0 = use average recruitment for each stock for weighting, 1= use SPR_weights 
-  DATA_VECTOR(SPR_weights); //n_stocks; weights to use for stock-specific SPR for weight some. should sum to 1.
+  DATA_VECTOR(SPR_weights); //n_stocks; weights to use for to sum stock-specific SPRs for aggregate reference point. should sum to 1.
   DATA_SCALAR(percentSPR); // percentage to use for SPR-based reference points. Default = 40.
   DATA_IVECTOR(XSPR_R_avg_yrs); // model year indices (TMB, starts @ 0) to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
   DATA_VECTOR(FXSPR_init); // annual initial values to use for newton steps to find FXSPR (n_years_model+n_proj_years)
@@ -341,6 +344,7 @@ Type objective_function<Type>::operator() ()
         nll_Ecov_obs_sig -= dnorm(Ecov_obs_logsigma_re(y,i), mu_logsigma, sd_logsigma, 1);
         SIMULATE if(do_simulate_data(2)) {
           Ecov_obs_logsigma_re(y,i) = rnorm(mu_logsigma, sd_logsigma);
+          REPORT(Ecov_obs_logsigma_re);
         }
         Ecov_obs_sigma(y,i) = exp(Ecov_obs_logsigma_re(y,i));
       } else{
@@ -579,6 +583,7 @@ Type objective_function<Type>::operator() ()
     REPORT(nll_q_re);
     SIMULATE if(do_simulate_q_re ==1){
       q_re = simulate_q_re(q_repars, q_re, use_q_re, years_use);
+      REPORT(q_re);
     }
   }
   if(do_post_samp_q) ADREPORT(q_re);
@@ -667,6 +672,7 @@ Type objective_function<Type>::operator() ()
     REPORT(nll_mu_re);
     SIMULATE if(do_simulate_mu_re){
       mu_re = simulate_mu_re(mu_repars, mu_re, mu_model, can_move, years_use);
+      REPORT(mu_re);
     }
     if(do_post_samp_mu) ADREPORT(mu_re);
   }

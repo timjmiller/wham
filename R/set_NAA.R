@@ -77,7 +77,7 @@ set_NAA = function(input, NAA_re=NULL)
   par = input$par
   map = input$map
   asap3 = input$asap3
-  inv_trans_rho <- function(rho, s = 2) (log(rho+1) - log(1-rho))/s # 0.5 because needed transformation on cpp side is unusual.
+  inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s 
   input$log$NAA <- list()
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mean_rec_pars", "log_N1", "log_NAA_sigma", "trans_NAA_rho","logR_proj", "log_NAA"))]

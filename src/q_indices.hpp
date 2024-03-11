@@ -68,7 +68,7 @@ matrix<Type> get_nll_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> u
     if(use_q_re(i) > 0) // random effects on q, q_re = AR1 deviations on (year,age), dim = n_years x n_M_a
     {
       sigma_q(i) = exp(q_repars(i,0)); // conditional sd
-      rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(2)); // autocorrelation
+      rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(1)); // autocorrelation. using scale =1 ,2 is legacy
       nll_q(years_use(0),i) -= dnorm(q_re(years_use(0),i), Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))), 1);
       for(int y = 1; y < n_y; y++)
       {
@@ -103,7 +103,7 @@ matrix<Type> simulate_q_re(matrix<Type>q_repars, matrix<Type> q_re, vector<int> 
     if(use_q_re(i) > 0) // random effects on q, q_re = AR1 deviations on year, dim = n_years x n_indices
     {
       sigma_q(i) = exp(q_repars(i,0)); // conditional sd
-      rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(2)); // autocorrelation
+      rho_q(i) = geninvlogit(q_repars(i,1),Type(-1), Type(1),Type(1)); // autocorrelation, using scale =1 ,2 is legacy
       sim_q_re(years_use(0),i) = rnorm(Type(0), sigma_q(i)*exp(-0.5 * log(1 - pow(rho_q(i),Type(2)))));
       for(int y = 1; y < n_y; y++) sim_q_re(years_use(y),i) = rnorm(rho_q(i) * sim_q_re(years_use(y)-1,i), sigma_q(i));
     }

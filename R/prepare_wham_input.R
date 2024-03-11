@@ -368,7 +368,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#F_names = c("F")
 	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 	#print("1")
-	input$log$misc <- list("NOTE: WHAM version 1.5.0 makes major changes to the structure of some data, parameters, and reported objects. \n") 
+	input$log$misc <- list("\nNOTE: WHAM version 1.5.0 makes major changes to the structure of some data, parameters, and reported objects. \n") 
+	input$log$misc <- c(input$log$misc, 
+	"NOTE: WHAM version 1.5.0 decouples random effects for recruitment and random effects for older ages by default.
+	To obtain results from previous versions set basic_info$decouple_recruitment = FALSE. \n") 
 
 	if(!is.null(asap3)) {
 		input$log$asap3 <- list()
@@ -542,8 +545,9 @@ add_basic_info = function(input, basic_info){
 	input$data$recruit_model = rep(2,input$data$n_stocks)
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
-		input$log$misc <- c(input$log$misc, "NOTE: WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
-		configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. \n")
+		input$log$misc <- c(input$log$misc, 
+	"NOTE: WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
+	configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. \n")
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 0 #bias correct log-normal observation errors?
