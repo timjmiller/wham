@@ -3921,7 +3921,7 @@ plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
     if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1))
     pal = viridisLite::viridis(n=mod$input$data$n_indices)
-    ymax = max(q_hi, na.rm = TRUE)
+    ymax = max(c(q,q_hi), na.rm = TRUE)
     plot(mod$years_full, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
     for( i in 1:mod$input$data$n_indices){
       lines(mod$years_full, q[,i], lwd = 2, col = pal[i])
