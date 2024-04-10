@@ -25,7 +25,7 @@ See Trijoulet et al. (2023) for OSA methods for age composition OSA residuals.">
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -137,20 +137,26 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">make_osa_residuals</span><span class="op">(</span>
-  <span class="va">model</span>,
-  osa.opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"oneStepGaussianOffMode"</span>, parallel <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">make_osa_residuals</span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  osa.opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"oneStepGaussianOffMode"</span>, parallel <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  sdrep_required <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>model</dt>
 <dd><p>A fit WHAM model, output from <code><a href="fit_wham.html">fit_wham</a></code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>the same fit TMB model with additional elements for osa residuals:</p><dl><dt><code>$OSA.Ecov</code></dt>
+    
+
+<p>the same fit TMB model with additional elements for osa residuals:</p>
+<p></p>
+<dl><dt><code>$OSA.Ecov</code></dt>
 <dd><p>data.frame returned by <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code> for environmental observations, if applicable.</p></dd>
 
     <dt><code>$OSA.agregate</code></dt>
@@ -173,13 +179,13 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"input4_SNEMAYT"</span><span class="op">)</span> <span class="co"># load SNEMA yellowtail flounder data and parameter settings</span></span>
-<span class="r-in"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4_SNEMAYT</span>, do.osa <span class="op">=</span><span class="cn">FALSE</span>, do.retro <span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu">make_osa_residuals</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span> <span class="co"># calculate Mohn's rho</span></span>
-<span class="r-in"><span class="fu"><a href="plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"input4_SNEMAYT"</span><span class="op">)</span> <span class="co"># load SNEMA yellowtail flounder data and parameter settings</span></span></span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4_SNEMAYT</span>, do.osa <span class="op">=</span><span class="cn">FALSE</span>, do.retro <span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu">make_osa_residuals</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span> <span class="co"># calculate Mohn's rho</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -194,8 +200,7 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

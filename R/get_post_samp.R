@@ -10,8 +10,8 @@ get_post_samp <- function(fit){
   res = list()
   if(length(ind)){
     if(fit$is_sdrep) if(!fit$na_sdrep){
-      tfit = fit_wham(input, do.fit = FALSE)
-      sdrep = TMB::sdreport(tfit)
+      # tfit = fit_wham(input, do.fit = FALSE)
+      # sdrep = TMB::sdreport(tfit)
       for(i in re_names[ind]){
         if(i %in% input$random) {
           idx <- which(names(sdrep$value)==i)

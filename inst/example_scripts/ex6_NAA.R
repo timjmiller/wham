@@ -16,26 +16,25 @@
 #   Gulf Stream Index (GSI)
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
-library(wham)
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
+if(is.character(is.repo)) library(wham) #not using repo
+#by default do not perform bias-correction
+if(!exists("basic_info")) basic_info <- NULL
+
 library(ggplot2)
 library(tidyr)
 library(dplyr)
 
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac
-if(!exists("write.dir")) write.dir = getwd()
+if(!exists("write.dir")) write.dir = tempdir(check = TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
-file.copy(from=file.path(wham.dir,"extdata","GSI.csv"), to=write.dir, overwrite=TRUE)
-
-# confirm you are in the working directory and it has the ex2_SNEMAYT.dat file
-list.files()
-
-asap3 <- read_asap3_dat("ex1_SNEMAYT.dat")
-env.dat <- read.csv("GSI.csv", header=T)
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
 
 # specify models:
 #    Model NAA_cor NAA_sigma GSI_how
@@ -54,7 +53,8 @@ env.dat <- read.csv("GSI.csv", header=T)
 # 13   m13   2dar1     rec+1       2
 df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2dar1','iid','ar1_y','iid','ar1_a','ar1_y','2dar1'),
                       NAA_sigma = c('---',rep("rec",2),rep("rec+1",4),rep("rec",2),rep("rec+1",4)),
-                      GSI_how = c(rep(0,7),rep(2,6)), stringsAsFactors=FALSE)
+                      R_how = paste0(c(rep("none",7),rep("limiting-lag-1-linear",6))), stringsAsFactors=FALSE)
+
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -62,6 +62,8 @@ df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 # look at model table
 df.mods
 
+mods <- vector("list",n.mods)
+#mods_proj <- vector("list",n.mods)
 for(m in 1:n.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL
@@ -72,31 +74,34 @@ for(m in 1:n.mods){
     logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
     year = env.dat$year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    lag = 1, # GSI in year t affects Rec in year t + 1
     process_model = 'ar1', # "rw" or "ar1"
-    where = c("none","recruit")[as.logical(df.mods$GSI_how[m])+1], # GSI affects recruitment
-    how = df.mods$GSI_how[m], # 0 = no effect (but still fit Ecov to compare AIC), 2 = limiting
-    link_model = "linear")
+    recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
-  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
                                 fix_pars=list(4:6,4,3:6)),
                               NAA_re = NAA_list,
                               ecov=ecov,
-                              age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
+                              basic_info = basic_info,
+                              age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing
 
   # Fit model
-  mod <- fit_wham(input, do.retro=T, do.osa=F)
+  # mods[[m]] <- fit_wham(input, do.fit=F)
+  # input_t <- mods[[m]]$input
+  # unique(grep("sig|cor|rho", names(mods[[m]]$par), value = TRUE, invert = TRUE))
+  # input_t$random = c(input_t$random, unique(names(mods[[m]]$par)))
+  # fit_t <- fit_wham(input_t, do.fit=F)
+  mods[[m]] <- fit_wham(input, do.retro=T, do.osa=F)
 
   # Save model
-  saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
+  saveRDS(mods[[m]], file=paste0(df.mods$Model[m],".rds"))
 }
 
 # collect fit models into a list
 mod.list <- paste0(df.mods$Model,".rds")
-mods <- lapply(mod.list, readRDS)
+# mods <- lapply(mod.list, readRDS)
 
 # get convergence info
 opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
@@ -105,7 +110,7 @@ df.mods$conv <- as.logical(opt_conv)
 df.mods$pdHess <- as.logical(ok_sdrep)
 
 # make labeling prettier
-df.mods$GSI_how <- c("---","---","Limiting")[df.mods$GSI_how+1]
+#df.mods$GSI_how <- c("---","---","Limiting")[df.mods$GSI_how+1]
 
 # only get AIC and Mohn's rho for converged models
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
@@ -136,7 +141,7 @@ df.mods
 # plot output for all models that converged
 mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
 for(m in which(!not_conv)){
-  plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m)), out.type='png')
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)), plot.opts = list(browse = FALSE))
 }
 
 # save results table
@@ -150,14 +155,14 @@ n_ages = mods[[1]]$env$data$n_ages
 ages <- 1:n_ages
 
 plot.mods <- which(!not_conv)[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
-NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
-NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
-GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[as.numeric(factor(df.mods$GSI_how[plot.mods]))]
+NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[match(df.mods$NAA_sigma[plot.mods], c("---", "rec", "rec+1"))] #[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
+NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[match(df.mods$NAA_cor[plot.mods], c("iid", "ar1_a", "ar1_y", "2dar1"))] #sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
+GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[match(df.mods$R_how[plot.mods], c("none", "limiting-lag-1-linear"))]#as.numeric(factor(df.mods$GSI_how[plot.mods]))]
 NAA_lab <- paste(NAA_mod,NAA_cor,sep=" + ") # duplicate by GSI, for facet_grid
 df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
 colnames(df.NAA) <- c(paste0("Age_",1:n_ages),"Year","GSI_how","NAA_lab")
 for(i in 1:length(plot.mods)){
-  tmp = as.data.frame(mods[[plot.mods[i]]]$rep$NAA_devs)
+  tmp = as.data.frame(mods[[plot.mods[i]]]$rep$NAA_devs[1,1,-1,])
   tmp$Year <- years
   colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
   tmp$GSI_how = GSI_how[i]
@@ -176,7 +181,8 @@ df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=NAA_lab_levels)
 df.plot$NAA_re[df.plot$NAA_lab %in% c("RE: Recruit + IID","RE: Recruit + AR1_y") & df.plot$Age > 1] = 0
 
 png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 8, height = 8.5, res = 200, units='in')
-    print(ggplot(df.plot, ggplot2::aes(x=Year, y=Age)) +
+    print(
+      ggplot(df.plot, ggplot2::aes(x=Year, y=Age)) +
       geom_tile(aes(fill=NAA_re)) +
       geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
           data=data.frame(Year=1976.5, Age=5.8, lab=df.mods$Model[plot.mods], NAA_lab=factor(NAA_lab, levels=NAA_lab_levels), GSI_how=factor(GSI_how, levels=GSI_lab_levels))) +                

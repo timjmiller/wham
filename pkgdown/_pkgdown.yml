@@ -11,23 +11,23 @@ navbar:
       -  text: "Overview"
          href: articles/index.html
       -  text: "Ex 1: The basics"
-         href: articles/ex1_basics.html
+         href: articles/ex01_basics.html
       -  text: "Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)"
-         href: articles/ex2_CPI_recruitment.html
+         href: articles/ex02_CPI_recruitment.html
       -  text: "Ex 3: Projecting / forecasting random effects"
-         href: articles/ex3_projections.html
+         href: articles/ex03_projections.html
       -  text: "Ex 4: Selectivity with time- and age-varying random effects"
          href: articles/ex4_selectivity.html
       -  text: "Ex 5: Time-varying natural mortality linked to the Gulf Stream Index"
-         href: articles/ex5_GSI_M.html
+         href: articles/ex05_GSI_M.html
       -  text: "Ex 6: Numbers-at-age / survival deviations as random effects"
-         href: articles/ex6_NAA.html
+         href: articles/ex06_NAA.html
       -  text: "Ex 7: Debugging WHAM models"
-         href: articles/ex7_debug.html
+         href: articles/ex07_debug.html
       -  text: "Ex 8: Compare ASAP and WHAM model results"
-         href: articles/ex8_compare.html
+         href: articles/ex08_compare.html
       -  text: "Ex 9: Retrospective predictions"
-         href: articles/ex9_retro_pred.html
+         href: articles/ex09_retro_pred.html
       -  text: "Ex 10: Simulation and MSE"
          href: articles/ex10_simulation.html
       -  text: "Ex 11: Catchability configurations"
@@ -64,41 +64,53 @@ articles:
       `wham.dir <- find.package("wham")`<br/>
       `source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))`<br/>
     contents:
-      - ex1_basics
-      - ex2_CPI_recruitment
-      - ex3_projections
-      - ex4_selectivity
-      - ex5_GSI_M
-      - ex6_NAA
-      - ex7_debug
-      - ex8_compare
-      - ex9_retro_pred
+      - ex01_basics
+      - ex02_CPI_recruitment
+      - ex03_projections
+      - ex04_selectivity
+      - ex05_GSI_M
+      - ex06_NAA
+      - ex07_debug
+      - ex08_compare
+      - ex09_retro_pred
       - ex10_simulation
       - ex11_catchability
 
 reference:
-  - title: Functions that users call directly
+  - title: Exported functions that user can call directly
     contents:
-      - '`read_asap3_dat`'
-      - '`prepare_wham_input`'
-      - '`fit_wham`'
       - '`check_convergence`'
-      - '`project_wham`'
-      - '`plot_wham_output`'
       - '`compare_wham_models`'
+      - '`fit_wham`'
       - '`make_osa_residuals`'
-  - title: Helper functions and the like that users do not call
-    contents:
-      - '`set_age_sel0`'
-      - '`fit_tmb`'
-      - '`fit_peel`'
+      - '`plot_wham_output`'
+      - '`prepare_wham_input`'
+      - '`project_wham`'
+      - '`read_asap3_dat`'
       - '`retro`'
-      - '`retro_res`'
-      - '`mohns_rho`'
-      - '`prepare_projection`'
-      - '`wham_html`'
-      - '`read_asap3_fit`'
-      - '`read_wham_fit`'
+      - '`set_catch`'
+      - '`set_ecov`'
+      - '`set_F`'
+      - '`set_indices`'
+      - '`set_L`'
+      - '`set_M`'
+      - '`set_move`'
+      - '`set_NAA`'
+      - '`set_osa_obs`'
+      - '`set_q`'
+      - '`set_selectivity`'      
+  - title: Unexported functions that user do not call
+    contents:
       - '`check_estimability`'
       - '`extract_fixed`'
+      - '`fit_tmb`'
+      - '`fit_peel`'
+      - '`mohns_rho`'
+      - '`prepare_projection`'
+      - '`read_asap3_fit`'
+      - '`read_wham_fit`'
+      - '`reduce_input`'
+      - '`retro_res`'
+      - '`set_age_sel0`'
+      - '`wham_html`'
       - '`%>%`'

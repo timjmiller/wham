@@ -7,7 +7,7 @@
 #' If \code{NULL}, all settings from the ASAP data file or basic_info are used.
 #' \code{index_info} is a list with any of the following entries:
 #'   \describe{
-#'     \item{$n_indices} {number of indices}
+#'     \item{$n_indices}{number of indices}
 #'     \item{$index_regions}{vector (n_indices) of regions where each fleet operates.}
 #'     \item{$index_seasons}{vector (n_indices) of 0/1 values flagging which seasons each index occurs.}
 #'     \item{$agg_indices}{matrix (n_years_model x n_indices) of annual aggregate index catches.}
@@ -137,5 +137,7 @@ set_indices = function(input, index_info=NULL) {
 
   input$data = data
  	input$options$index <- index_info
+  if(!is.null(input$par$logit_selpars)) input <- set_selectivity(input, input$options$selectivity)
+  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
   return(input)
 }

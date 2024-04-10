@@ -9,12 +9,14 @@
 # install.packages("here")
 library(here)
 pkg.dir <- here()
-devtools::load_all(path = pkg.dir)
+pkgbuild::compile_dll(debug = FALSE); 
+pkgload::load_all(compile=FALSE)
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran the ex today. if not, need to change
-main.dir <- file.path(pkg.dir, "sandbox", paste0("runall-",format(Sys.Date(), "%Y%m%d")))
-write.dir <- file.path(main.dir,"ex9")
+main.dir <- here("sandbox", "pkg_example_results", "ex09")
+write.dir <- tempdir(check=TRUE) #will be passed to the ex9_retro_pred.R script to set working directory and for writing all results
+path_to_scripts <- system.file("example_scripts", package="wham")
 
 # copy to vignette plots folder
 to.dir <- file.path(pkg.dir, "vignettes", "ex9_plots")

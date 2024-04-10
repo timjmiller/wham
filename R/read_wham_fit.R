@@ -16,7 +16,7 @@
 #'     \item{\code{$MAA}}{array, stocks x regions x years x ages, natural mortality}
 #'     \item{\code{$log_SSB}}{matrix, years x 2, log-scale spawning stock biomass. 1st col = MLE, 2nd col = SE.}
 #'     \item{\code{$log_F}}{matrix, years x 2, log-scale fully-selected F. 1st col = MLE, 2nd col = SE.}
-#'     \item{\code{$log_NAA}}{array, stocks x regions x years x ages, numbers at age}
+#'     \item{\code{$log_NAA_rep}}{array, stocks x regions x years x ages, numbers at age}
 #'     \item{\code{$NAA_CV}}{array, stocks x regions x years x ages, CV of numbers at age}
 #'     \item{\code{$percentSPR}}{scalar, X\% SPR used to calculate reference points, default = 40}
 #'     \item{\code{$log_Y_FXSPR}}{matrix, years x 2, log-scale yield at FXSPR. 1st col = MLE, 2nd col = SE.}
@@ -82,13 +82,13 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   #   # x$log_FMSY <- cbind(std[inds$Fmsy,1:2], get.ci(std[inds$Fmsy,1:2], alpha=alphaCI))
   #   # colnames(x$log_FMSY) <- c("log_est","log_se","est","lo","hi")
   # }
-  if("log_SSB_MSY" %in% names(std$est)){
+  #if("log_SSB_MSY" %in% names(std$est)){
   # # if("log_SSB_MSY" %in% rownames(std)){
-    inds$SSBmsy <- matrix(which(rownames(std.summ) == "log_SSB_MSY"), ncol = NCOL(std))
+  #  inds$SSBmsy <- matrix(which(rownames(std.summ) == "log_SSB_MSY"), ncol = NCOL(std))
   #   x$log_SSB_MSY <- list(est = std$est$log_SSB_MSY, se = std$se$log_SSB_MSY, ci = get.ci(std$est$log_FMSY, std$se$log_FMSY, type = "exp"))
   #   # x$log_SSB_MSY <- cbind(std[inds$SSBmsy[,all_stocks],1:2], get.ci(std[inds$SSBmsy[,all_stocks],1:2], alpha=alphaCI))
   #   # colnames(x$log_SSB_MSY) <- c("log_est","log_se","est","lo","hi")
-  }
+  # }
   # if("log_MSY" %in% names(std$est)){
   # # if("log_MSY" %in% rownames(std)){
   #   inds$msy <- array(which(rownames(std) == "log_MSY"), dim = dim(mod$rep$log_MSY))
@@ -101,12 +101,13 @@ read_wham_fit <- function(mod, alphaCI=0.05){
 
   # x$log_SSB <- cbind(std[inds$ssb,1:2], get.ci(std[inds$ssb,1:2], alpha=alphaCI))
   # colnames(x$log_SSB) <- c("log_est","log_se","est","lo","hi")
-  # # x$SSB_CV <- std[inds$ssb,2]
+  # x$SSB_CV <- std$se$log_SSB_all
   # x$log_F <- cbind(std[inds$full.f,1:2], get.ci(std[inds$full.f,1:2], alpha=alphaCI))
   # colnames(x$log_F) <- c("log_est","log_se","est","lo","hi")
   # # x$F_CV <- std[inds$full.f,2]
   # x$log_NAA <- array(std[inds$naa,1], dim = dim(mod$rep$NAA))
-  x$NAA_CV <- std$se$log_NAA_rep #array(std[inds$naa,2], dim = dim(mod$rep$NAA))
+  #x$log_NAA <- std$est$log_NAA_rep
+  #x$NAA_CV <- std$se$log_NAA_rep #array(std[inds$naa,2], dim = dim(mod$rep$NAA))
   # x$log_NAA_lo <- exp(x$log_NAA - qnorm(1-alphaCI/2)*x$NAA_CV)
   # x$log_NAA_hi <- exp(x$log_NAA + qnorm(1-alphaCI/2)*x$NAA_CV)
 

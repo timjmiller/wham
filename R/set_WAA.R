@@ -8,7 +8,7 @@ set_WAA <- function(input, waa_info = NULL) {
 		data$waa_pointer_fleets <- integer()
 		data$waa_pointer_ssb <- integer()
 		data$waa_pointer_indices <- integer()
-		data$waa_pointer_totcatch <- integer()
+		waa_pointer_totcatch <- integer()
 		#fill with fleet catch waa
 		i <- 1
 		for(k in 1:length(asap3)) {
@@ -23,7 +23,7 @@ set_WAA <- function(input, waa_info = NULL) {
 		for(k in 1:length(asap3)) {
 			x <- asap3[[k]]
 			data$waa[data$n_fleets + k,,] <- x$WAA_mats[[x$WAA_pointers[2*x$n_fleets+1]]]
-			data$waa_pointer_totcatch[k] <- data$n_fleets + k
+			waa_pointer_totcatch[k] <- data$n_fleets + k
 		}
 		#fill with index waa
 		i <- 1
@@ -84,7 +84,6 @@ set_WAA <- function(input, waa_info = NULL) {
     W = rep(exp(-11)*L^3, each = data$n_years_model)
 		data$waa = array(W, dim = c(1, data$n_years_model, data$n_ages))
 		data$waa_pointer_fleets = rep(1,data$n_fleets)
-		data$waa_pointer_totcatch = 1
 		data$waa_pointer_ssb = 1
 		data$waa_pointer_indices = rep(1,data$n_indices)
 	}
@@ -98,7 +97,7 @@ set_WAA <- function(input, waa_info = NULL) {
 			data$waa_pointer_fleets = rep(1,data$n_fleets)
 		}
 		if(is.null(waa_info$waa_pointer_indices)){
-			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_totcatch so the first waa matrix will be used. \n")
+			input$log$waa <- c(input$log$waa, "waa_info$waa is provided without waa_info$waa_pointer_indices so the first waa matrix will be used. \n")
 			data$waa_pointer_indices = rep(1,data$n_indices)
 		}
 		if(is.null(waa_info$waa_pointer_ssb)){

@@ -15,12 +15,18 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+# wham.dir <- find.package("wham")
+# knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
 wham.dir <- find.package("wham")
-knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+library(ggplot2)
+library(tidyr)
+library(dplyr)
 library(knitr)
 library(kableExtra)
 library(here)
-library(wham)
 ```
 
 # 1. Background
@@ -39,7 +45,7 @@ In this vignette we show how to:
 
 # 2. Setup and read in model input
 
-```{r message=FALSE}
+```{r message=FALSE, echo = FALSE}
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(wham)
 library(ggplot2)
@@ -58,8 +64,7 @@ setwd(write.dir)
 
 ```{r, eval=FALSE}
 wham.dir <- find.package("wham")
-asap.file.path = file.path(wham.dir,"extdata","ex1_SNEMAYT.dat")
-asap3 <- read_asap3_dat(asap.file.path)
+asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"))
 ```
 
 
@@ -127,30 +132,21 @@ set.seed(123)
 self_sim_fit <- sim_fn(mod, self.fit = TRUE)
 ```
 
-```{r, include=FALSE}
-#save(self_sim_fit, file = file.path(here::here(), "data", "vignette_10_self_sim_fit.RData"))
-#data(vignette_10_self_sim_fit)
-```
 ```{r, eval = FALSE}
 plot(mod$years, self_sim_fit$input$data$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, self_sim_fit$rep$SSB, lty = 2, col = 'red')
-```
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "self_fit_1_ssb.png"))
-plot(mod$years, self_sim_fit$input$data$SSB, type = 'l', ylab = "SSB", xlab = "Year")
-lines(mod$years, self_sim_fit$rep$SSB, lty = 2, col = 'red')
-dev.off()
 ```
 
 ![](https://github.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png){ width=80% }
 
 Note that we just have to over-write the data component of the input with the values produced by `om$simulate(complete=TRUE)`. The call of `sim_fn` will fit the same model assumed to simulate the data. `fit_wham` saves the input used to fit the model and `om$simulate(complete=TRUE)` will provide all model output provided by `REPORT` calls in the cpp file. This includes the true SSB for the simulated data which can be compared with the values estimated from the simulated data.
 
-Obviously for a simulation study many simulated data sets and model fits are needed for a given operating model. There are many ways to accomplish this task. It is often desirable to first simulate all the data before fitting each of them and to update results with each fit so that results are not lost if a catastrophic error occurs. Here is a lo-tech approach to simulating 100 data inputs and save information from fits of the same model to each of those data sets.
+Obviously for a simulation study many simulated data sets and model fits are needed for a given operating model. There are many ways to accomplish this task. It is often desirable to first simulate all the data before fitting each of them and to update results with each fit so that results are not lost if a catastrophic error occurs. Here is a lo-tech approach to simulating many data inputs and save information from fits of the same model to each of those data sets.
 
 ```{r, eval=FALSE}
 set.seed(123)
-sim_inputs <- replicate(100, sim_fn(mod), simplify=F)
+n_sims <- 10 #more is better, but takes longer
+sim_inputs <- replicate(n_sims, sim_fn(mod), simplify=F)
 res = list(reps = list(), par.est = list(), par.se = list(), adrep.est = list(), adrep.se =list())
 for(i in 1:length(sim_inputs)){
   cat(paste0("i: ",i, "\n"))
@@ -160,16 +156,10 @@ for(i in 1:length(sim_inputs)){
   res$par.se[[i]] = as.list(tfit$sdrep, "Std. Error")
   res$adrep.est[[i]] = as.list(tfit$sdrep, "Estimate", report = TRUE)
   res$adrep.se[[i]] = as.list(tfit$sdrep, "Std. Error", report = TRUE)
+  saveRDS(res, "self_test_res.RDS")
 }
 ```
-```{r, include = FALSE}
-#these results have already been saved
-#save(res, file = file.path(here(),"data","vignette_10_res_1.RData"))
-#data(vignette_10_res_1)
-#these results have already been saved.
-#save(sim_inputs, file = file.path(here(),"data","vignette_10_sim_inputs.RData"))
-#sim_inputs = readRDS(file.path(here(), "wham_simulation","tutorial", "vignette_10_sim_inputs.RDS"))
-```
+
 The `replicate` function is used to generate 100 simulated inputs. Then we loop over the simulated data sets, fit each of them and save results for each fit. The results saved are the values provided by `REPORT` calls in the cpp file, the fixed effects MLEs (and PEBEs for random effects) and their standard errors, and the estimates for values provided by `ADREPORT` calls in the cpp file and their standard errors. See `?TMB::as.list.sdreport` for more information about accessing sdreport information like this. Saving these attributes will allow one to make inferences about bias of the maximum likelihood estimators, and corresponding standard errors, and confidence interval coverage for the basic parameters as well as a variety of derived model output (e.g., SSB, reference points).
 
 Below is a plot of bias and 95% confidence intervals for SSB estimation.
@@ -178,21 +168,12 @@ Below is a plot of bias and 95% confidence intervals for SSB estimation.
 true = sapply(sim_inputs, function(x) x$data$SSB)
 est = sapply(res$rep, function(x) return(x$SSB))
 SSB_rel_resid = est/true - 1
-resid_cis = apply(SSB_rel_resid,1,mean) + apply(SSB_rel_resid,1,sd)*qnorm(0.975)*t(matrix(c(-1,1),2,44))/10
+resid_cis = apply(SSB_rel_resid,1,mean) + apply(SSB_rel_resid,1,sd)*qnorm(0.975)*t(matrix(c(-1,1),2,44))/sqrt(n_sims)
 
 plot(mod$years, apply(SSB_rel_resid,1,mean), ylim = c(-0.1,0.05), ylab = "Estimated Relative Bias SSB", xlab = "Year")
 lines(mod$years, resid_cis[,1])
 lines(mod$years, resid_cis[,2])
 abline(h = 0, lty = 2)
-
-```
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "ssb_rel_bias.png"))
-plot(mod$years, apply(SSB_rel_resid,1,mean), ylim = c(-0.1,0.05), ylab = "Estimated Relative Bias SSB", xlab = "Year")
-lines(mod$years, resid_cis[,1])
-lines(mod$years, resid_cis[,2])
-abline(h = 0, lty = 2)
-dev.off()
 ```
 
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/ssb_rel_bias.png){ width=80% }
@@ -200,59 +181,87 @@ dev.off()
 # 3. Fitting a model different from the operating model
 
 When the fitted model is different from that used to simulate the data, there is a bit more work involved. Some components of the input used by `fit_wham` are important. 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
+input <- prepare_wham_input(
+  asap3, 
+  selectivity = selectivity,
+  NAA_re = NAA_re,
+  model_name="Ex 1: SNEMA Yellowtail Flounder", basic_info = basic_info) 
 names(input)
 ```
-
-The first 4 elements of the input (`data`, `par`, `map`, `random`) are those used by TMB::MakeADFun to set up an objective function with derivative information (i.e.,gradient, hessian) used by the optimizer nlminb in fit_wham. We saw above that we could just swap the entire `data` element of the input when the estimation model is the same as the operating model. More generally though, components of these 4 input lists will need to be modified for the simulation studies where the operating model and estimation model are not the same. If the available data is the same for the operating and fitted model only a few elements of the input$data list need to be moved. 
+```{r, echo=FALSE}
+names(input_3)
+```
+Many of the elements of the input (e.g., `data`, `par`, `map`, `random`) are those used by TMB::MakeADFun to set up an objective function with derivative information (i.e.,gradient, hessian) used by the optimizer nlminb in fit_wham. We saw above that we could just swap the entire `data` element of the input when the estimation model is the same as the operating model. More generally though, components of these 4 input lists will need to be modified for the simulation studies where the operating model and estimation model are not the same. If the available data is the same for the operating and fitted model only a few elements of the input$data list need to be moved. 
 
 ## 3a. An alternative age composition likelihood for the estimating model
 
 Below is an example where an alternative likelihood for the age composition observations is assumed for the estimation model.
 ```{r, eval=FALSE}
-
 input_em <- prepare_wham_input(
-    asap3, 
-    recruit_model=2, 
-    model_name="Ex 1: SNEMA Yellowtail Flounder",
-    selectivity=selectivity,
-	  NAA_re = NAA_re,
-    age_comp = "logistic-normal-miss0") #the only difference from original input
+  asap3, 
+  recruit_model=2, 
+  model_name="Ex 1: SNEMA Yellowtail Flounder",
+  selectivity=selectivity,
+  NAA_re = NAA_re,
+  basic_info = basic_info,
+  age_comp = "logistic-normal-miss0") #the only difference from original input
 
-#only replace the observations so that the other inputs for configuration are correct.
+#only eval the observations so that the other inputs for configuration are correct.
 #IMPORTANT TO PROVIDE obsvec!
 sim_fn = function(om, input, do.fit = FALSE){
 	obs_names = c("agg_indices","agg_catch","catch_paa","index_paa", "Ecov_obs", "obsvec")
 	om_data = om$simulate(complete = TRUE)
 	input$data[obs_names] = om_data[obs_names]
+	input <- set_osa_obs(input) #to transform catch and index paa appropriately
 	if(do.fit) {
 		fit = fit_wham(input, do.osa = F, do.retro = F, MakeADFun.silent = TRUE)
 		return(list(fit, om_data))
 	} else return(list(input,om_data))
 }
+```
+
+By using do.fit = FALSE, we can see the difference between the age composition observations that are fitted and those that were simulated. The 4-9 elements correspond to the index age composition observations in the first year:
+```{r, eval = FALSE}
+set.seed(123)
+sim = sim_fn(mod, input_em, do.fit = FALSE)
+sim[[1]]$data$obs[1:10,] #data.frame of observations and identifying information
+sim[[2]]$obsvec[4:9] #showing obsvec that is simulated (multinomial frequencies)
+sim[[1]]$data$obsvec[4:9] #showing obsvec that is used (MVN = logistic normal)
+paa <- sim[[2]]$index_paa[1,1,]
+paa #multinomial proportions : naa/sum(naa)
+sim[[2]]$index_Neff[1] * paa # = simulated obsvec (multinomial frequencies)
+log(paa[-6]) - log(paa[6]) # = inverse additive logistic transform for obsvec that is used
+```
+
+```{r, echo = FALSE}
+sim_3a[[1]]$data$obs[1:10,] #data.frame of observations and identifying information
+sim_3a[[2]]$obsvec[4:9] #showing obsvec that is simulated (multinomial frequencies)
+sim_3a[[1]]$data$obsvec[4:9] #showing obsvec that is used (MVN = logistic normal)
+paa <- sim_3a[[2]]$index_paa[1,1,]
+paa #multinomial proportions : naa/sum(naa)
+sim_3a[[2]]$index_Neff[1] * paa # = simulated obsvec (multinomial frequencies)
+log(paa[-6]) - log(paa[6]) # = inverse additive logistic transform for obsvec that is used
+```
+
+
+The multinomial was used to simulate the observations and therefore the observations are frequencies. The logistic normal expects proportions, but there is an equivalent multivariate normal transformation that is used to allow the OSA residuals to be calculated efficiently so this is the form of the observations. Note that the last age class is NA because the dimension of the MVN is one less than the number of age classes due to the constraint of proportions summing to 1. Similarly, the log transform of aggregate index and catch observations (e.g., first three observations in the obs data.frame above) are provided in the vector of observations (`obsvec`) used to fit the model as those are treated as normal distributed observations. 
+
+Now go ahead and fit the simulated data.
+```{r, eval = FALSE}
 set.seed(123)
 simfit = sim_fn(mod, input_em, do.fit = TRUE)
 ```
-```{r, include = FALSE}
-#save(simfit, file.path(here::here(), "data", "vignette_10_simfit_3a.RData"))
-#data(vignette_10_simfit_3a)
-```
+
 ```{r, eval = FALSE}
 plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_3a.png"))
-plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
-lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
-dev.off()
-```
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3a.png){ width=80% }
 
 
-
-It is very important that the `obsvec` component of the simulated data is put into the input used for fitting because this holds the values in `agg_catch`, `agg_indices`, etc. in vector form for evaluating the likelihood. This is necessary to allow one-step-ahead residuals to be calculated using TMB. Note also because only a few elements are copied into `input$data` we need to save all of the true values of the simulated population as a separate component that is returned. For this particular simulation, SSB is estimated greater than the truth when the logistic normal is assumed but observations were generated by a multinomial. The same sort of approach as above can be used for simulating and fitting many data sets.
+It is very important that the `obsvec` component of the simulated data is put into the input used for fitting because this holds the values in `agg_catch`, `agg_indices`, etc. in vector form for evaluating the likelihood. Having all observations in a vector is necessary to allow one-step-ahead residuals to be calculated using the TMB package. Note also because only a few elements are copied into `input$data` we need to save all of the true values of the simulated population as a separate component that is returned. For this particular simulation, SSB is estimated greater than the truth when the logistic normal is assumed but observations were generated by a multinomial. The same sort of approach as above can be used for simulating and fitting many data sets.
 
 ## 3b. Effective sample size assumption
 
@@ -271,34 +280,56 @@ sim_fn = function(om, Neff_om = 50, Neff_em = 200, do.fit = FALSE){
 	em_input$data$catch_Neff[] = Neff_em #assumed effective sample size for the indices
 	obs_names = c("agg_indices","agg_catch","catch_paa","index_paa", "Ecov_obs", "obsvec")
 	em_input$data[obs_names] = om_data[obs_names]
+	em_input <- set_osa_obs(em_input) #to rescale the frequencies appropriately
 	if(do.fit) {
 		fit = fit_wham(input, do.osa = F, do.retro = F, MakeADFun.silent = TRUE)
 		return(list(fit, om_data))
 	} else return(list(em_input,om_data))
 }
+```
+
+We still need to reset the `obsvec` because the frequencies are rescaled by the assumed multinomial sample size. Again, we can check the observations are being used correctly by usingg do.fit = FALSE:
+
+```{r, include = FALSE}
+set.seed(123)
+simfit = sim_fn(mod, do.fit = FALSE)
+sim[[1]]$data$obs[1:10,] #data.frame of observations and identifying information
+sim[[2]]$obsvec[4:9] #showing obsvec that is simulated (multinomial frequencies)
+sim[[1]]$data$obsvec[4:9] #showing obsvec that is used (MVN = logistic normal)
+paa <- sim[[2]]$index_paa[1,1,] #simulated paa
+paa #multinomial proportions : naa/sum(naa)
+sim[[1]]$data$index_paa[1,1,] #paa in estimating model (the same)
+sim[[2]]$index_Neff[1] * paa # = simulated obsvec (multinomial frequencies)
+sim[[1]]$data$index_Neff[1] * paa # = em obsvec (multinomial frequencies with larger Neff)
+```
+
+```{r, echo = FALSE}
+sim_3b[[1]]$data$obs[1:10,] #data.frame of observations and identifying information
+sim_3b[[2]]$obsvec[4:9] #showing obsvec that is simulated (multinomial frequencies)
+sim_3b[[1]]$data$obsvec[4:9] #showing obsvec that is used (MVN = logistic normal)
+paa <- sim_3b[[2]]$index_paa[1,1,] #simulated paa
+paa #multinomial proportions : naa/sum(naa)
+sim_3b[[1]]$data$index_paa[1,1,] #paa in estimating model (the same)
+sim_3b[[2]]$index_Neff[1] * paa # = simulated obsvec (multinomial frequencies)
+sim_3b[[1]]$data$index_Neff[1] * paa # = em obsvec (multinomial frequencies with larger Neff)
+```
+
+We can see that the proportions at age are the same between the operating and estimating model, but the frequencies in the estimating model are 4 times those in the operating model because we are assuming the effective sample size is 4 times the true value.
+
+Now go ahead and fit the simulated data.
+```{r, include = FALSE}
 set.seed(123)
 simfit = sim_fn(mod, do.fit = TRUE)
 ```
-```{r, include = FALSE}
-#save(simfit, file.path(here::here(), "data", "vignette_10_simfit_3b.RData"))
-data(vignette_10_simfit_3b)
-```
+
 ```{r, eval = FALSE}
 plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_3b.png"))
-plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
-lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
-dev.off()
-```
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3b.png){ width=80% }
 
-Note that we could make the assumed effective sample size only incorrect for some subset of the fleets and indices. In the `sim_fn` function here we could have also just supplied all of `om_data` to `em_input$data` and then changed the Neff appropriately rather than just change the observations. Also, note that changing the Neff will only affect fits to those indices and fleets where the multinomial age comp assumption is made and where age composition observations are available. 
-
-The incorrect age composition precision has a large effect here!
+The incorrect age composition precision has a large effect here! Note that we could make the assumed effective sample size only incorrect for some subset of the fleets and indices. Note that changing the Neff will only affect fits to those indices and fleets where the multinomial age comp assumption is made and where age composition observations are available. 
 
 ## 3c. Population assumptions
 
@@ -330,6 +361,7 @@ input_em <- prepare_wham_input(
 
 om_ss <- fit_wham(input_om, do.osa = F, do.retro=F, MakeADFun.silent = T) # don't do retro peels and OSA residuals, don't show output during optimization
 
+#no differences in treatment of observations
 sim_fn = function(om, input, do.fit = FALSE){
 	obs_names = c("agg_indices","agg_catch","catch_paa","index_paa", "Ecov_obs", "obsvec")
 	om_data = om$simulate(complete = TRUE)
@@ -343,24 +375,15 @@ set.seed(123)
 simfit = sim_fn(om_ss, input_em, do.fit = TRUE)
 ```
 
-```{r, include = FALSE}
-#save(simfit, file.path(here::here(), "data", "vignette_10_simfit_3c.RData"))
-#data(vignette_10_simfit_3c)
-```
 ```{r, eval = FALSE}
 plot(om_ss$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(om_ss$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_3c.png"))
-plot(om_ss$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
-lines(om_ss$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
-dev.off()
-```
+
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3c.png){ width=80% }
 
 
-The scale of the population estimates from the recruitment-only model is similar to the true value, but it does not have sufficient flexibility to capture the inter-annual variability in the population size.
+The scale of the population estimates from the recruitment-only model is similar to the true value, but it does not have sufficient flexibility to capture the inter-annual variability in the population size and terminal year stock size is very different.
 
 ## 3d. Selectivity assumptions
 
@@ -397,219 +420,243 @@ simfit = sim_fn(mod, input_em, do.fit = TRUE)
 plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_1_3d.png"))
-plot(mod$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
-lines(mod$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
-dev.off()
-```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_1_3d.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_1.png){ width=80% }
 
 ```{r, eval = FALSE}
-plot(mod$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year")
-lines(mod$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR), lty = 2, col = 'red')
+plot(mod$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR[,2]), type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year")
+lines(mod$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR[,2]), lty = 2, col = 'red')
 ```
-```{r, eval = FALSE, include = FALSE}
-png(file = file.path(here::here(), "vignettes", "ex10_plots", "sim_fit_2_3d.png"))
-plot(mod$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR), type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year")
-lines(mod$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR), lty = 2, col = 'red')
-dev.off()
-```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_2_3d.png){ width=80% }
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_2.png){ width=80% }
 
 Lower SSB and stock status are estimated if logistic selectivity is assumed.
 
 
 # 4. Creating a general operating model without an ASAP3 dat file
 
-Note that the simulated data are conditioned on the fixed effects parameter values. If a model is fitted using `fit_wham` then the optimized values will be used `mod$simulate` for simulations, but these parameters can be specified without fitting the model and simulations can be more generally configured. Here we will use the functionality of `prepare_wham_input` to create a model object without an asap3 dat file and, then set parameter values we want to assume for the operating model
+Note that the simulated data are conditioned on the fixed effects parameter values. If a model is fitted using `fit_wham` then the optimized values will be used by `mod$simulate` for simulations, but these parameters can be specified without fitting the model and simulations can be more generally configured. Here we will use the functionality of `prepare_wham_input` to create a model object without an asap3 dat file and, then set parameter values we want to assume for the operating model
 
-First we will read in a function `make_basic_info` that will make a list that can be provided to the `basic_info` argument of `prepare_wham_input`. The function is defined in the vign10_helper.R file and the elements of the output it provides are defined in the help file for `prepare_wham_input`. 
+First we will read in a function `make_info` that will make a list that can be provided to the `basic_info` , `catch_info` and `index_info` arguments of `prepare_wham_input`. The function is defined in the vign10_helper.R file and the elements of the output it provides are defined in the help file for `prepare_wham_input`. 
 
-```{r, eval=FALSE}
-make_basic_info <- function(base_years = 1982:2021, ages = 1:10, Fhist = "updown", n_feedback_years = 0) { #changed years
+```{r, eval=TRUE}
+make_info <- function(base_years = 1982:2021, ages = 1:10, Fhist = "updown", n_feedback_years = 0) { #changed years
     info <- list()
     info$ages <- ages
     info$years <- as.integer(base_years[1] - 1 + 1:(length(base_years) + n_feedback_years))
-    info$n_fleets <- 1 
-    info$n_indices <- 1
     na <- length(info$ages)
     ny <- length(info$years)
-    
+    info$n_regions <- 1L
+    info$n_stocks <- 1L
     nby <- length(base_years)
     mid <- floor(nby/2)
     #up then down
-    if(Fhist == "updown") info$F <- matrix(0.2 + c(seq(0,0.4,length.out = mid),seq(0.4,0,length.out=nby-mid)),nby, info$n_fleets)
+
+    catch_info <- list()
+    catch_info$n_fleets <- 1L
+    catch_info$catch_cv <- matrix(0.1, ny, catch_info$n_fleets)
+    catch_info$catch_Neff <- matrix(200, ny, catch_info$n_fleets)
+
+    if(Fhist == "updown") catch_info$F <- matrix(0.2 + c(seq(0,0.4,length.out = mid),seq(0.4,0,length.out=nby-mid)),nby, catch_info$n_fleets)
 
     #down then up
-    if(Fhist == "downup") info$F <- matrix(0.2 + c(seq(0.4,0,length.out = mid),seq(0,0.4,length.out=nby-mid)),nby, info$n_fleets)
+    if(Fhist == "downup") catch_info$F <- matrix(0.2 + c(seq(0.4,0,length.out = mid),seq(0,0.4,length.out=nby-mid)),nby, catch_info$n_fleets)
 
-    if(n_feedback_years>0) info$F <- rbind(info$F, info$F[rep(nby, n_feedback_years),, drop = F]) #same F as terminal year for feedback period
+    if(n_feedback_years>0) catch_info$F <- rbind(catch_info$F, catch_info$F[rep(nby, n_feedback_years),, drop = F]) #same F as terminal year for feedback period
 
-    info$catch_cv <- matrix(0.1, ny, info$n_fleets)
-    info$catch_Neff <- matrix(200, ny, info$n_fleets)
+    index_info <- list()
+    index_info$n_indices <- 1L
+    index_info$index_cv <- matrix(0.3, ny, index_info$n_indices)
+    index_info$index_Neff <- matrix(100, ny, index_info$n_indices)
+    index_info$fracyr_indices <- matrix(0.5, ny, index_info$n_indices)
+    index_info$index_units <- rep(1, length(index_info$n_indices)) #biomass
+    index_info$index_paa_units <- rep(2, length(index_info$n_indices)) #abundance
+    index_info$q <- rep(0.3, index_info$n_indices)
     
-    info$index_cv <- matrix(0.3, ny, info$n_indices)
-    info$index_Neff <- matrix(100, ny, info$n_indices)
-    info$fracyr_indices <- matrix(0.5, ny, info$n_indices)
-    info$index_units <- rep(1, length(info$n_indices)) #biomass
-    info$index_paa_units <- rep(2, length(info$n_indices)) #abundance
-    
-    info$maturity <- t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny))
+    info$maturity <- array(t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny)), dim = c(1, ny, na))
 
     L <- 100*(1-exp(-0.3*(1:na - 0)))
     W <- exp(-11)*L^3
-    nwaa <- info$n_indices + info$n_fleets + 2
+    nwaa <- index_info$n_indices + catch_info$n_fleets + 2
     info$waa <- array(NA, dim = c(nwaa, ny, na))
     for(i in 1:nwaa) info$waa[i,,] <- t(matrix(W, na, ny))
 
-    info$fracyr_SSB <- rep(0.25,ny)
-    info$q <- rep(0.3, info$n_indices)
+    info$fracyr_SSB <- cbind(rep(0.25,ny))
 
-    info$selblock_pointer_fleets <- t(matrix(1:info$n_fleets, info$n_fleets, ny))
-    info$selblock_pointer_indices <- t(matrix(info$n_fleets + 1:info$n_indices, info$n_indices, ny))
-    return(info)
+    catch_info$selblock_pointer_fleets <- t(matrix(1:catch_info$n_fleets, catch_info$n_fleets, ny))
+    index_info$selblock_pointer_indices <- t(matrix(catch_info$n_fleets + 1:index_info$n_indices, index_info$n_indices, ny))
+    return(list(basic_info = info, catch_info = catch_info, index_info = index_info))
 }
-
 ```
-Various attributes are specified in the make_basic_info function including the number of fleets and indices, the years over which the model spans, the number ages, precision of aggregate catch and index observations. Maturity and weight at age are defined as well as catchabilities for the indices, when they occur during the year and the selectiivty blocks to assign to each fleet and index.
+Various attributes are specified in the `make_info` function including the number of fleets and indices, the years over which the model spans, the number of ages, precision of aggregate catch and index observations. Maturity and weight at age are defined as well as catchabilities for the indices, when they occur during the year and the selectiivty blocks to assign to each fleet and index. The function creates a list of three lists that are arguments to `prepare_wham_input`: `basic_info`, `catch_info`, and `index_info`. The potential elements that might be supplied to these areguments are described in the help file for `prepare_wham_input`.
 
-Many of the other necessary attributes and initial parameters can be defined using the arguments `NAA_re`, `selectivity`, `M` to `prepare_wham_input`.  Below we use specify logistic selectivity and associated parameters (a50 and /1slope), M = 0.2 and initial numbers at age and mean recruitment all using the lists supplied to these arguments of prepare_wham_input. However, nowhere have we specified a value for the standard deviation of the (log) recruitment random effects and so, the initial value (sd = 1) given in `prepare_wham_input` will be used. Importantly, `fit_wham` must be called with `do.fit=FALSE` to set up the model to be simulated with the parameter values specified rather than estimated. 
+Many other necessary attributes and initial parameters can be defined using the arguments `NAA_re`, `selectivity`, `M`, `catchability`, or `move` (when there is more than 1 region) to `prepare_wham_input`.  Below we specify logistic selectivity and associated parameters ($a_{50}$ and slope), M = 0.2, initial numbers at age, and mean recruitment all using the lists supplied to these arguments of prepare_wham_input. We also specify a value for the standard deviation of the (log) recruitment random effects ($\sigma_R = 0.5$). Importantly, `fit_wham` must be called with `do.fit=FALSE` to set up the model to be simulated with the parameter values specified rather than estimated. 
 
 ```{r, include=FALSE}
-data(vignette_10_helper)
+#data(vignette_10_helper)
 ```
 
 ```{r, eval=FALSE}
-data(vignette_10_helper)
+#data(vignette_10_helper)
 
-stock_om_info = make_basic_info()
+stock_om_info <- make_info()
+stock_basic_info <- c(basic_info, stock_om_info$basic_info)
+catch_info <- stock_om_info$catch_info
+index_info <- stock_om_info$index_info
 
-selectivity_om = list(
-  model = c(rep("logistic", stock_om_info$n_fleets),rep("logistic", stock_om_info$n_indices)),
-  initial_pars = rep(list(c(5,1)), stock_om_info$n_fleets + stock_om_info$n_indices)) #fleet, index
+selectivity_om <- list(
+  model = c(rep("logistic", catch_info$n_fleets),rep("logistic", index_info$n_indices)),
+  initial_pars = rep(list(c(5,1)), catch_info$n_fleets + index_info$n_indices)) #fleet, index
 
-M_om = list(initial_means = rep(0.2, length(stock_om_info$ages)))
+M_om <- list(initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))))
 
-NAA_re_om = list(
-  N1_pars = exp(10)*exp(-(0:(length(stock_om_info$ages)-1))*M_om$initial_means[1]),
+NAA_re <- list(
+  N1_pars = array(exp(10)*exp(-(0:(length(basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec", #random about mean
   cor="iid", #random effects are independent
-  use_steepness = 0,
   recruit_model = 2, #random effects with a constant mean
-  recruit_pars = exp(10)
+  recruit_pars = list(exp(10)),
+  sigma_vals = list(0.5) #sigma_R
 )
 
-stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om)
+stock_om_input <- prepare_wham_input(
+  basic_info = stock_basic_info, 
+  selectivity = selectivity_om, 
+  NAA_re = NAA_re_om, 
+  catch_info = catch_info,
+  index_info = index_info,
+  M = M_om)
 
-stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
+stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
 
 ```{r, include = FALSE}
 #save(stock_om, file = file.path(here::here(), "data", "vignette_10_4_stock_om.RData"))
-data(vignette_10_4_stock_om)
-stock_om_input = stock_om$input
+#data(vignette_10_4_stock_om)
+#stock_om_input = stock_om$input
 ```
-
-As stated above, many of the parameter values are specified in the lists supplied to `prepare_wham_input`, but not all of them. In particular, we have not specified the variance parameter for the recruitment random effects so the default value for fitting a wham model is set. 
-
-```{r}
-stock_om_input$par$log_NAA_sigma
-```
-which will mean a standard deviation = 1 is assumed. In general, the parameters defining the variance and correlation of any random effects and any effects of environmental covariates currently need to be specified by changing the input returned by `prepare_wham_input`.
 
 ## 4a. Setting NAA random effects variance parameters.
 
-There are two parameter elements that we need to consider when using these random effects: `log_NAA_sigma` as mentioned above and `trans_NAA_rho` which defines the autocorrelation parameters on a logit scale with the parameter bounds of (-1,1). The latter need to be specified when the `cor` element of the `NAA_re` list is not `'iid'`. So here we will consider a 2d AR1 autoregressing model for the numbers at age random effects to demonstrate setting the parameters. We will suppose that we want to assume standard deviations of 0.6 for recruitment and 0.2 for older ages, and correlations of 0.4 temporally and 0.7 with age.
+Here we will consider a 2d AR1 autoregressing model for the numbers at age random effects to demonstrate setting the parameters. We will suppose that we want to assume (or initialize) standard deviations of 0.6 for recruitment and 0.2 for older ages, and correlations of 0.7 with age and 0.4 temporally.
+There are two parameter elements that we need to consider when using these random effects: `log_NAA_sigma` as mentioned above and `trans_NAA_rho` which defines the autocorrelation parameters on a logit scale with the parameter bounds of (-1,1). The latter need to be specified when the `cor` element of the `NAA_re` list is not `'iid'`. So 
 
-```{r, eval = FALSE}
-stock_om_info = make_basic_info()
+```{r, eval = TRUE, echo = FALSE}
+stock_om_info <- make_info()
+stock_basic_info <- c(basic_info, stock_om_info$basic_info)
+catch_info <- stock_om_info$catch_info
+index_info <- stock_om_info$index_info
 
-M_om = list(initial_means = rep(0.2, length(stock_om_info$ages)))
+selectivity_om <- list(
+  model = c(rep("logistic", catch_info$n_fleets),rep("logistic", index_info$n_indices)),
+  initial_pars = rep(list(c(5,1)), catch_info$n_fleets + index_info$n_indices)) #fleet, index
 
-selectivity_om = list(
-  model = c(rep("logistic", stock_om_info$n_fleets),rep("logistic", stock_om_info$n_indices)),
-  initial_pars = rep(list(c(5,1)), stock_om_info$n_fleets + stock_om_info$n_indices)) #fleet, index
+M_om <- list(initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))))
 
-NAA_re_om = list(
-  N1_pars = exp(10)*exp(-(0:(length(stock_om_info$ages)-1))*M_om$initial_means[1]),
+NAA_re_om <- list(
+  N1_pars = array(exp(10)*exp(-(0:(length(basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec+1", #random about mean
   cor="2dar1", #random effects correlated among age classes and across time (separably)
-  use_steepness = 0,
   recruit_model = 2, #random effects with a constant mean
-  recruit_pars = exp(10)
+  recruit_pars = list(exp(10)),
+  sigma_vals = list(c(0.6, rep(0.2,length(stock_basic_info$ages)-1))), #sigma_R and sigma_2+
+  cor_vals = list(c(0.7, 0.4)) #age, then year
 )
 
-stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om)
+
+stock_om_input <- prepare_wham_input(
+  basic_info = stock_basic_info, 
+  selectivity = selectivity_om, 
+  NAA_re = NAA_re_om, 
+  catch_info = catch_info,
+  index_info = index_info,
+  M = M_om)
+
+stock_om_input <- prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om)
+
+#stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
 
 ```{r, include = FALSE}
 #save(stock_om_input, file = file.path(here::here(), "data", "vignette_10_4a_stock_om_input.RData"))
-data(vignette_10_4a_stock_om_input)
+#data(vignette_10_4a_stock_om_input)
 ```
 ```{r}
-stock_om_input$par$log_NAA_sigma
-stock_om_input$par$log_NAA_sigma = log(c(0.6,0.2))
-stock_om_input$par$log_NAA_sigma
-
-stock_om_input$par$trans_NAA_rho
-stock_om_input$par$trans_NAA_rho = wham:::gen.logit(c(0.7,0.4), -1, 1,s=2) #age first, year second
-stock_om_input$par$trans_NAA_rho
+#n_stock x n_regions x 3 array
+stock_om_input$par$trans_NAA_rho[1:2]
+wham:::gen.logit(c(0.7,0.4), -1, 1,s=2) #age first, year second
 ```
 
-Note we made use of an unexported function from the wham package that will do the transformation of parameters estimated on the logit scale. Not also, that the correlation parameter for age is first and that for time is second in the `trans_NAA_rho` vector. If `cor = 'ar1_a'` then we would only change the first parameter in `trans_NAA_rho` and if  `cor = 'ar1_y'` we would only change the second parameter. Leaving the other value at zero makes those correlation parameters zero and the random effects independent in the appropriate way. Now when `stock_om$simulate()` is called the variability will be as we specified.
+Note we made use of an unexported function from the wham package that can do the transformation of parameters estimated on the logit scale. Not also, that the correlation parameter for age is first and that for time is second in the `trans_NAA_rho` vector. If `cor = 'ar1_a'` then we would only change the first parameter in `trans_NAA_rho` and if  `cor = 'ar1_y'` we would only change the second parameter. Leaving the other value at zero makes those correlation parameters zero and the random effects independent in the appropriate way. Now when `stock_om$simulate()` is called the variability will be as we specified.
 
 ## 4b. Setting M random effects variance parameters
 
 M random effects assumptions are similar to the NAA random effects, but the parameter names are different. For M there is a single vector (`M_repars`) of 3 values that defines the transformed M variance and autoregressing parameters: standard deviation, correlation with age, correlation with year. Here we assume we have random effects on recruitment and on natural mortality. As above, we define the general model to have 2d autocorrelation of M random effects for the most general case with variance of the (log) M random effects = 0.1 and correlations with age and time  of 0.7 and 0.4.
 
 ```{r, eval = FALSE}
-stock_om_info = make_basic_info()
+stock_om_info <- make_info()
+stock_basic_info <- c(basic_info, stock_om_info$basic_info)
+catch_info <- stock_om_info$catch_info
+index_info <- stock_om_info$index_info
 
-M_om = list(
-  model = "constant", # a single mean M for all ages
-  initial_means = 0.2,
-  re = "2dar1")
+selectivity_om <- list(
+  model = c(rep("logistic", catch_info$n_fleets),rep("logistic", index_info$n_indices)),
+  initial_pars = rep(list(c(5,1)), catch_info$n_fleets + index_info$n_indices)) #fleet, index
 
-selectivity_om = list(
-  model = c(rep("logistic", stock_om_info$n_fleets),rep("logistic", stock_om_info$n_indices)),
-  initial_pars = rep(list(c(5,1)), stock_om_info$n_fleets + stock_om_info$n_indices)) #fleet, index
-
-NAA_re_om = list(
-  N1_pars = exp(10)*exp(-(0:(length(stock_om_info$ages)-1))*M_om$initial_means[1]),
+M_om <- list(
+  mean_model = "estimate-M",
+  re_model = matrix("ar1_ay", 1,1),
+	initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))),
+	sigma_vals = matrix(0.2, 1,1),
+	cor_vals = array(c(0.7,0.4),dim = c(1,1,2)))
+	
+NAA_re_om <- list(
+  N1_pars = array(exp(10)*exp(-(0:(length(basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec", #random about mean
-  use_steepness = 0,
   recruit_model = 2, #random effects with a constant mean
-  recruit_pars = exp(10)
+  sigma_vals = list(0.6), #sigma_R
+  recruit_pars = list(exp(10))
 )
 
-stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om)
+stock_om_input <- prepare_wham_input(
+  basic_info = stock_basic_info, 
+  selectivity = selectivity_om, 
+  NAA_re = NAA_re_om, 
+  catch_info = catch_info,
+  index_info = index_info,
+  M = M_om)
+
+#stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
+
 ```
 
 ```{r, include = FALSE}
 #save(stock_om_input, file = file.path(here::here(), "data", "vignette_10_4b_stock_om_input.RData"))
-data(vignette_10_4b_stock_om_input)
+#data(vignette_10_4b_stock_om_input)
 ```
 
 ```{r}
-stock_om_input$par$log_NAA_sigma
-stock_om_input$par$log_NAA_sigma = log(0.6)
-stock_om_input$par$log_NAA_sigma
+#n_stock x n_regions x 3 array
 
-stock_om_input$par$M_repars
-stock_om_input$par$M_repars = c(log(0.1), wham:::gen.logit(c(0.7,0.4),-1,1, s=2))
-stock_om_input$par$M_repars
+stock_om_input$par$log_NAA_sigma[1]
+log(0.6)
+
+stock_om_input$par$M_repars[1]
+log(0.2)
+
+stock_om_input$par$M_repars[2:3]
+wham:::gen.logit(c(0.7,0.4), -1, 1) #age first, year second
 
 #stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
-Note that the variance of the M random effects we are assuming is the same as the default value for estimation. Note also, that the mean of the M autoregressing random effects is defined by the  `initial_means` component of the `M` argument to `prepare_wham_input` and it is not estimated by default. To estimate the mean of the M random effects at age, or just estimate a constant M without random effects, specify the `M$est_ages` argument to `prepare_wham_input`. There is a difference from numbers at age in how random effects for M are specified. If `M$re = "ar_a"` then there are only `n_ages` random effects that are constant over time. Similarly for `M$re = "ar_y"`, there are `n_years_model` random effects that are used for each age class. However, Setting the correlation parameters when `M$re = "ar_a"` or  `M$re = "ar_y"` is analogous to the description for numbers at age random effects. To get `ar_a` or `ar_y` models analogous to numbers at age, one would have to specify `M$re = "2dar1"` and change `map$M_repars` to fix the appropriate parameter fixed at 0. To force random effects for certain age classes to be the same, one would also have to configure `map$M_re` appropriately.
+Note that the variance of the M random effects we are assuming is the same as the default value for estimation. Note also, that the initial value for the mean of the M autoregressing random effects is defined by the  `initial_means` component of the `M` argument to `prepare_wham_input`. It is not estimated by default, so therefore fixed at these initial values. To estimate the mean of the M random effects at age, or just estimate a constant M without random effects, specify M$model = "estimate-M". To estimates different mean parameters across age (and possibly stock and region) specify M$means_map as an array (n_stock x n_regions x n_ages) with unique values shared by ages that should have the same value. There is a difference from numbers at age in how random effects for M are specified. If `M$re = "ar_a"` then there are only `n_ages` random effects that are constant over time. Similarly for `M$re = "ar_y"`, there are `n_years_model` random effects that are used for each age class. However, Setting the correlation parameters when `M$re = "ar_a"` or  `M$re = "ar_y"` is analogous to the description for numbers at age random effects. To get `ar_a` or `ar_y` models analogous to numbers at age, one would have to specify `M$re = "2dar1"` and change `map$M_repars` to fix the appropriate parameter fixed at 0. To force random effects for certain age classes to be the same, one would also have to configure `map$M_re` appropriately.
 
 ```{r, eval = FALSE}
-M_om = list(
-  model = "constant", # a single mean M for all ages
-  initial_means = 0.2,
-  est_ages = 1, #must be 1 when model = "constant"
-  re = "2dar1")
+M_om <- list(
+  mean_model = "estimate-M",
+  re_model = matrix("ar1_ay", 1,1),
+	initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))),
+	means_map = array(1, dim(c(1,1,, length(stock_basic_info$ages)))), #one parameters for all ages (the default)
+	sigma_vals = matrix(0.2, 1,1),
+	cor_vals = array(c(0.7,0.4),dim = c(1,1,2)))
 ```
 
 ## 4c. Setting selectivity random effects variance parameters
@@ -617,26 +664,38 @@ M_om = list(
 Setting the variance parameters for selectivity is analogous to that for natural mortality random effects. The important difference is that the parameter defining the random effects variance parameters (`sel_repars`) is a matrix with rows for each selectivity block and the columns as defined for `M_repars`. Here we have two selectivity blocks: one for the fleet and one for the index. We will assume that the variance parameter for the fleet is 0.4 and that for the index is 0.1, but they both have the same correlation parameters with age and time: 0.7 and 0.4.
 
 ```{r, eval = FALSE}
-stock_om_info = make_basic_info()
-
-M_om = list(
-  model = "constant", # a single mean M for all ages
-  initial_means = 0.2)
+stock_om_info <- make_info()
+stock_basic_info <- c(basic_info, stock_om_info$basic_info)
+catch_info <- stock_om_info$catch_info
+index_info <- stock_om_info$index_info
 
 selectivity_om = list(
   model = c(rep("logistic", stock_om_info$n_fleets),rep("logistic", stock_om_info$n_indices)),
   initial_pars = rep(list(c(5,1)), stock_om_info$n_fleets + stock_om_info$n_indices),
   re = rep("2dar1", stock_om_info$n_fleets + stock_om_info$n_indices)) 
 
-NAA_re_om = list(
-  N1_pars = exp(10)*exp(-(0:(length(stock_om_info$ages)-1))*M_om$initial_means[1]),
+M_om <- list(
+  mean_model = "estimate-M",
+  initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))),
+)
+  
+NAA_re_om <- list(
+  N1_pars = array(exp(10)*exp(-(0:(length(basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec", #random about mean
-  use_steepness = 0,
   recruit_model = 2, #random effects with a constant mean
-  recruit_pars = exp(10)
+  sigma_vals = list(0.6), #sigma_R
+  recruit_pars = list(exp(10))
 )
 
-stock_om_input = prepare_wham_input(basic_info = stock_om_info, selectivity = selectivity_om, NAA_re = NAA_re_om, M = M_om)
+stock_om_input <- prepare_wham_input(
+  basic_info = stock_basic_info, 
+  selectivity = selectivity_om, 
+  NAA_re = NAA_re_om, 
+  catch_info = catch_info,
+  index_info = index_info,
+  M = M_om)
+
+#stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
 
 ```{r, include = FALSE}

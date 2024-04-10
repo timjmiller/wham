@@ -7,7 +7,7 @@
 #' If \code{NULL}, all settings from the ASAP data file or basic_info are used.
 #' \code{catch_info} is a list with any of the following entries:
 #'   \describe{
-#'     \item{$n_fleets} {number of fleets}
+#'     \item{$n_fleets}{number of fleets}
 #'     \item{$fleet_regions}{vector (n_fleets) of regions where each fleet operates.}
 #'     \item{$fleet_seasons}{matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.}
 #'     \item{$agg_catch}{matrix (n_years_model x n_fleets) of annual aggregate catches by fleet.}
@@ -17,6 +17,20 @@
 #'     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
 #'     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
 #'   }
+#'
+#' @return a named list with same elements as the input provided with catch observations and fleet options modified.
+#'
+#' @seealso \code{\link{prepare_wham_input}} 
+#'
+#' @examples
+#' \dontrun{
+#' wham.dir <- find.package("wham")
+#' path_to_examples <- system.file("extdata", package="wham")
+#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+#' input <- prepare_wham_input(asap3)
+#` newcatch <- matrix(500, input$data$n_years_model, input$data$n_fleets)
+#' input <- set_catch(input, catch_info = list(agg_catch = newcatch)) #constant catch of 500 mt
+#' }
 #'
 #' @export
 set_catch = function(input, catch_info= NULL) {
@@ -108,6 +122,8 @@ set_catch = function(input, catch_info= NULL) {
   input$data = data
   input$asap3 <- asap3
   input$options$catch <- catch_info
+  if(!is.null(input$par$logit_selpars)) input <- set_selectivity(input, input$options$selectivity)
+  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
   
   return(input)
 }

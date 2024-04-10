@@ -7,29 +7,23 @@
 #   selectivity = logistic (ex 1: age-specific)
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
-library(wham)
-#library(TMB)
-#devtools::load_all("~/work/wham/wham", compile= FALSE, recompile=FALSE)
-#gdbsource("/home/tmiller2/work/wham/wham/inst/example_scripts/ex3_projections.R", TRUE)
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
+if(is.character(is.repo)) library(wham) #not using repo
+wham.dir <- find.package("wham")
+#by default do not perform bias-correction
+if(!exists("basic_info")) basic_info <- NULL
+
 
 # create directory for analysis, e.g.
-# write.dir <- "/path/to/save/ex2" on linux/mac
-if(!exists("write.dir")) write.dir = getwd()
+if(!exists("write.dir")) write.dir <- tempdir(check=TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 # ---------------------------------------------------------
 # Load data
-wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
-file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=TRUE)
-
-# confirm you are in the working directory and it has the ex2_SNEMAYT.dat and CPI.csv files
-list.files()
-
-# load data files
-asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
-env.dat <- read.csv("CPI.csv", header=T)
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples, "CPI.csv"), header=T)
 
 # specify model: AR1 CPI, limiting effect on Bev-Holt
 env <- list(
@@ -38,22 +32,20 @@ env <- list(
   logsigma = as.matrix(log(env.dat$CPI_sigma)), # CPI standard error is given/fixed as data
   year = env.dat$Year,
   use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-  lag = 1, # CPI in year t affects recruitment in year t+1
   process_model = "ar1", # fit CPI as AR1 process
-  where = "recruit", # CPI affects recruitment
-  how = 2) # limiting (carrying capacity)
+  recruitment_how = matrix("limiting-lag-1-linear")) # limiting (carrying capacity), CPI in year t affects recruitment in year t+1
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
                             ecov = env,
                             NAA_re = list(sigma="rec+1", cor="iid"),
-                            age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
+                            age_comp = "logistic-normal-pool0", basic_info = basic_info) # logistic normal pool 0 obs
 
 # selectivity = logistic, not age-specific
 #   2 pars per block instead of n.ages
 #   sel pars of indices 4/5 fixed at 1.5, 0.1 (neg phase in .dat file)
 input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
-input$data$FMSY_init[] = 0.2
+#input$data$FMSY_init[] = 0.2
 # ---------------------------------------------------------
 ## Fit model without projections
 
@@ -67,7 +59,7 @@ mod_proj <- list()
 # default settings: 3 years, use last F, continue ecov
 mod_proj[[1]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL))#, save.sdrep=FALSE)
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL), save.sdrep=FALSE)
 
 # 5 years, use last F, average ecov 1992-1996
 mod_proj[[2]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
@@ -82,12 +74,12 @@ mod_proj[[3]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.
 # 5 years, use last F, specify high CPI ~ 0.5
 mod_proj[[4]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5),ncol=1)), save.sdrep=FALSE)
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(0.5,0.7,0.4,0.5,0.55),ncol=1)), save.sdrep=FALSE)
 
 # 5 years, use last F, specify low CPI ~ -1.5
 mod_proj[[5]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2),ncol=1)), save.sdrep=FALSE)
+              cont.ecov=FALSE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=matrix(c(-1.6,-1.3,-1,-1.2,-1.25),ncol=1)), save.sdrep=FALSE)
 
 # specify catch, 5 years
 mod_proj[[6]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
@@ -130,18 +122,18 @@ round(nll_proj - mod$opt$obj, 6) # difference between original and projected mod
 
 # plot results
 for(m in 1:length(mod_proj)){
-  plot_wham_output(mod_proj[[m]], dir.main=file.path(write.dir,paste0("proj_",m)), out.type='png')
+  plot_wham_output(mod_proj[[m]], dir.main=file.path(write.dir,paste0("proj_",m)))
 }
 
 # to more easily compare plots, copy to folders organized by plot instead of by model
-plots <- c("Ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_status")
-dirs <- file.path(write.dir,plots)
-lapply(as.list(dirs), FUN=dir.create)
-for(m in 1:length(mod_proj)){
-  for(i in 1:(length(plots)-1)){
-     file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","results",paste0(plots[i],".png")),
-               to=file.path(dirs[i],paste0(plots[i],"_proj_",m,".png")))
-  }
-  file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","ref_points","Kobe_status.png"),
-            to=file.path(dirs[i+1],paste0(plots[i+1],"_proj_",m,".png")))
-}
+# plots <- c("Ecov_1","F_byfleet","SSB_at_age","SSB_F_trend","SSB_Rec_time","Kobe_status")
+# dirs <- file.path(write.dir,plots)
+# lapply(as.list(dirs), FUN=dir.create)
+# for(m in 1:length(mod_proj)){
+#   for(i in 1:(length(plots)-1)){
+#      file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","results",paste0(plots[i],".png")),
+#                to=file.path(dirs[i],paste0(plots[i],"_proj_",m,".png")))
+#   }
+#   file.copy(from=file.path(write.dir,paste0("proj_",m),"plots_png","ref_points","Kobe_status.png"),
+#             to=file.path(dirs[i+1],paste0(plots[i+1],"_proj_",m,".png")))
+# }

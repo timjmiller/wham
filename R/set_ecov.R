@@ -94,11 +94,32 @@
 #'     \item{$move_effect_map}{integer array (n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_Ecov) indicating which estimated 
 #'        effects are common by age,stock,region, season etc. If not specified the same effect is estimated for all movement parameters
 #'        where $move_how is other than "none" for each covariate.}
-#'     \item{$R_beta_vals}{array of initial values for effects on recruitment.}
-#'     \item{$M_beta_vals}{array of initial values for effects on natural mortality.}
-#'     \item{$q_beta_vals}{array of initial values for effects on cathability.}
-#'     \item{$move_beta_vals}{array of initial values for effects on movement parameters.}
+#'     \item{$beta_R_vals}{n_stocks x n_ecov x max(n_poly_R) array of initial values for effects on recruitment.}
+#'     \item{$beta_M_vals}{n_stocks x n_ages x n_regions x n_ecov x max(n_poly_M) array of initial values for effects on natural mortality.}
+#'     \item{$beta_q_vals}{n_indices x n_ecov x max(n_poly_q) array of initial values for effects on catchability.}
+#'     \item{$beta_mu_vals}{n_stocks x n_ages x n_seasons x n_regions x n_regions - 1 x n_ecov x max(n_poly_move) array of initial values for effects on movement parameters.}
 #'   }
+#'
+#' @return a named list with same elements as the input provided with environmental covariate observations, effects, and model options modified.
+#'
+#' @seealso \code{\link{prepare_wham_input}} 
+#'
+#' @examples
+#' \dontrun{
+#' wham.dir <- find.package("wham")
+#' path_to_examples <- system.file("extdata", package="wham")
+#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+#' env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
+#' input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+#' ecov <- list(
+#'  label = "GSI",
+#'  mean = as.matrix(env.dat$GSI),
+#'  logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
+#'  year = env.dat$year,
+#'  use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+#'  process_model = 'ar1') # "rw" or "ar1"
+#' input <- set_ecov(input, ecov = ecov) #GSI in the model without any effects
+#' }
 #'
 #' @export
 set_ecov = function(input, ecov) {
@@ -426,6 +447,7 @@ set_ecov = function(input, ecov) {
     } else {
       input$log$ecov <- c(input$log$ecov, "no ecov$q_how is provided so no effects on catchability will be estimated. \n")
     }
+
     par$Ecov_beta_q <- array(0, dim = c(data$n_indices, data$n_Ecov, max(data$n_poly_Ecov_q)))
     map$Ecov_beta_q <- array(NA, dim = dim(par$Ecov_beta_q))
     k <- 1
@@ -679,6 +701,18 @@ set_ecov = function(input, ecov) {
     }
     ind.notNA <- which(!is.na(map$Ecov_process_pars))
     map$Ecov_process_pars[ind.notNA] <- 1:length(ind.notNA)
+
+    #fill in initial values for any covariate effects
+    for(i in c("beta_q", "beta_R", "beta_M", "beta_mu")){
+      inp <- paste0(i, "_vals")
+      if(!is.null(ecov[[inp]])){
+        if(!length(dim(ecov[[inp]])) == length(dim(par[[paste0("Ecov_",i)]])) | !all(dim(ecov[[inp]]) == dim(par[[paste0("Ecov_",i)]]))){
+          stop(paste0("ecov$",i, "_vals is not an array of the correct dimensions."))
+        }
+        par[[paste0("Ecov_",i)]] <- ecov[[inp]]
+      }
+    }
+
   } # end load Ecov
 
 
@@ -697,7 +731,7 @@ set_ecov = function(input, ecov) {
   input$map = map
   if(length(input$log$ecov)) input$log$ecov <- c("Ecov: \n", input$log$ecov)
 	# add vector of all observations for one step ahead residuals ==========================
-	input = set_osa_obs(input)
+  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
 	#print("osa_obs")
 
 	# projection data will always be modified by 'prepare_projection'

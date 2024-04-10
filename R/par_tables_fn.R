@@ -620,6 +620,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   wham.dir <- find.package("wham")
   pt = list.files(find.package("wham"), pattern = "par_tables.Rmd", recursive = T, full.names = T)[1]
   if(!is.null(od)){ 
+    od <- normalizePath(od) #some latex code doesn't like tildes in abreviated directories
     file.copy(from=pt, to=od, overwrite=TRUE)
     #print(dir(od))
     

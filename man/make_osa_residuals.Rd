@@ -6,7 +6,8 @@
 \usage{
 make_osa_residuals(
   model,
-  osa.opts = list(method = "oneStepGaussianOffMode", parallel = TRUE)
+  osa.opts = list(method = "oneStepGaussianOffMode", parallel = TRUE),
+  sdrep_required = TRUE
 )
 }
 \arguments{

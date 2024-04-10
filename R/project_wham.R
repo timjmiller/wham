@@ -99,11 +99,6 @@
 #' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
 #' tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
 #' }
-# project_wham = function(model, proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
-#                                               proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
-#                                               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100,
-#                                               percentFMSY=100, proj_F_opt = NULL, proj_Fcatch = NULL),
-#                         n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE)
 project_wham = function(model, 
   proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100),
@@ -118,7 +113,6 @@ project_wham = function(model,
   else{# refit model to estimate derived quantities in projection years
   #if(!exists("err")) 
     proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
-    #mod$proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
     proj_mod$years <- input2$years
     proj_mod$years_full <- input2$years_full
     proj_mod$ages.lab <- input2$ages.lab
@@ -134,9 +128,7 @@ project_wham = function(model,
     TMB_version <- packageDescription("TMB")$Version
     proj_mod$TMB_version <- paste0(TMB_version, " / ", proj_mod$TMB_commit, ")")
 
-    proj_mod$fn()
-    #mod$proj_sdrep <- TMB::sdreport(mod$proj_mod, bias.correct = TRUE) #better accuracy of projection output
-    #mod <- fit_wham(input2, n.newton=n.newton, MakeADFun.silent = MakeADFun.silent, save.sdrep=save.sdrep, do.fit = F)
+    proj_mod$marg_nll <- proj_mod$fn() #to make sure it is the same as the base model
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
     is.fit = !is.null(model$opt)
@@ -148,12 +140,9 @@ project_wham = function(model,
     
     proj_mod$rep = proj_mod$report()
     proj_mod$parList <- proj_mod$env$parList(x=mle)
-    #mod <- check_FXSPR(mod)
-    #if(mod$env$data$n_fleets == 1) mod <- check_projF(mod) #projections added.
     proj_mod <- check_projF(proj_mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {
-
       proj_mod$sdrep <- try(TMB::sdreport(proj_mod, bias.correct = TMB.bias.correct))
       proj_mod$is_sdrep <- !is.character(proj_mod$sdrep)
       if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
@@ -163,28 +152,12 @@ project_wham = function(model,
       proj_mod$na_sdrep = NA
     }
   }
-  #assigning model$err_proj above already accomplishes this
-  #if(exists("err")){
-  #  mod <- model # if error, still pass previous/full fit
-  #  mod$err_proj <- err # store error message to print out in fit_wham
-  #  rm("err")
-  #}
 
   # pass along previously calculated retros, OSA residuals, error messages, and runtime
   noproj_elements <- names(model)[!names(model) %in% names(proj_mod)] #if anything, should just be OSA.aggregate and OSA.agecomp
-#  elements <- c("final_gradient","opt","peels","osa","err","err_retro","runtime","TMB_version","dir")
 
-#  elements <- elements[which(elements %in% names(model))]
-  # print(elements)
   proj_mod[noproj_elements] <- model[noproj_elements]
   proj_mod[c("years","years_full","ages.lab")] <- proj_mod$input[c("years","years_full","ages.lab")]
-  #if(!is.null(model$final_gradient)) mod$final_gradient <- model$final_gradient # final_gradient
-  #if(!is.null(model$opt)) mod$opt <- model$opt # optimization results
-  #if(!is.null(model$peels)) mod$peels <- model$peels # retrospective analysis
-  #if(!is.null(model$osa)) mod$osa <- model$osa # OSA residuals
-  #if(!is.null(model$err)) mod$err <- model$err # error messages
-  #if(!is.null(model$err_retro)) mod$err_retro <- model$err_retro # error messages
-  #mod$runtime <- model$runtime # runtime (otherwise would be just for projections)
   proj_mod$date = Sys.time()
 
   # print error message

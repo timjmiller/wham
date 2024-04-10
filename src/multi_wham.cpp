@@ -116,6 +116,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(selpars_upper);
   
   DATA_IVECTOR(recruit_model); //length = n_stocks
+  DATA_INTEGER(decouple_recruitment); //0: keep recruitment and abundance at age correlation, 1: recruitment is independent of RE for older NAA
   DATA_IVECTOR(N1_model); //n_stocks, 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
   DATA_IVECTOR(NAA_re_model); //n_stocks, 0 SCAA, 1 "rec", 2 "rec+1"
   DATA_IARRAY(NAA_where); //n_stocks x n_regions x n_ages: 0/1 whether NAA exists in region at beginning of year. Also controls inclusion of any RE in nll.
@@ -166,10 +167,10 @@ Type objective_function<Type>::operator() ()
   //DATA_IARRAY(NAA_re_indicator); //n_stocks x (n_years-1) x n_ages x n_regions will estimate a random effect where indicator is not 0. sum = n_NAA_re.
 
   //DATA_IVECTOR(simulate_state); //vector (0/1) if 1 then state parameters (NAA, MAA, sel, Ecov, q) in that order) will be simulated.
-  //DATA_IVECTOR(do_simulate_period); //vector (0/1) if 1 then period (model years, projection years) will be simulated.
-  vector<int> do_simulate_period(2);
-  do_simulate_period(0) = 1;
-  do_simulate_period(1) = 1;
+  DATA_IVECTOR(do_simulate_period); //vector length 2 (0/1) if 1 then that period (model years, projection years) will be simulated.
+  // vector<int> do_simulate_period(2);
+  // do_simulate_period(0) = 1;
+  // do_simulate_period(1) = 1;
   //DATA_INTEGER(do_simulate_NAA_re); //(0/1) if 1 then simulate numbers at age random effects.
   DATA_INTEGER(do_simulate_Ecov_re); //(0/1) if 1 then simulate selectivity random effects.
   DATA_INTEGER(do_simulate_sel_re); //(0/1) if 1 then simulate selectivity random effects.
@@ -216,7 +217,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(which_F_age_static); // which age,fleet of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
   DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See XSPR_R_avg_yrs for years to average over.
   
-  DATA_INTEGER(use_alt_AR1) //0: use density namespace, 1: use nll calculated by "hand".
+  DATA_INTEGER(use_alt_AR1) //0: use density namespace, 1: use ar1 or 2dar1 calculated by "hand" for nll and simulation.
   
   // data for projections
   DATA_INTEGER(n_years_proj); // number of years to project  
@@ -224,7 +225,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_Ecov_opt); // if any, how to use each ecov in pop projections: 1 = continue Ecov_re, 2 = average Ecov (over avg_years_ind), 3 = terminal year Ecov, 4 = user-specified
   DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 4
   DATA_IVECTOR(avg_years_Ecov); // model year indices (TMB, starts @ 0) to use for averaging ecov for projections if proj_Ecov_opt = 2
-  DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch
+  DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch, 6 = FMSY (if SRR estimated)
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_INTEGER(proj_mu_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)
@@ -260,7 +261,7 @@ Type objective_function<Type>::operator() ()
   
   PARAMETER_MATRIX(logR_proj); // (n_proj_years x n_stocks) recruitment (random effects) in proj years, only if SCAA
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
-  PARAMETER_VECTOR(selpars_re);    // deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+  PARAMETER_ARRAY(selpars_re);    // (n_selblocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
@@ -387,143 +388,156 @@ Type objective_function<Type>::operator() ()
   // Lag environmental covariates -------------------------------------
   // Then use Ecov_out_*(t) for processes in year t, instead of Ecov_x
   //Recruit
+  array<Type> Ecov_lm_R(n_stocks, n_years_pop, n_Ecov); 
+  Ecov_lm_R.setZero();
   array<Type> Ecov_out_R(n_stocks, n_years_pop, n_Ecov);
   Ecov_out_R.setZero();
-  for(int s = 0; s < n_stocks; s++){
-    vector<int> t_ind_s = ind_Ecov_out_start_R.col(s);
-    vector<int> t_ind_e = ind_Ecov_out_end_R.col(s);
-    //see(t_ind_s);
-    //see(t_ind_e);
-    matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
-    //see(tmp);
-    for(int j = 0; j < tmp.rows(); j++) for(int k = 0; k < n_Ecov; k++) Ecov_out_R(s,j,k) = tmp(j,k);
-  }
-  REPORT(Ecov_out_R); 
-  //see(Ecov_out_R);
-  array<Type> Ecov_lm_R(n_stocks, n_years_pop, n_Ecov); 
-  int max_n_poly_R = Ecov_beta_R.dim(2); // now a 3D array dim: (n_stocks,n_Ecov,max(n_poly_Ecov_R))
-  //see(max_n_poly_R);
-  for(int s = 0; s < n_stocks; s++) {
-    matrix<Type> Ecov_beta_R_s(n_Ecov,max_n_poly_R);
-    matrix<Type> Ecov_out_R_s(n_years_pop,n_Ecov);
-    vector<int> n_poly_Ecov_R_s(n_Ecov);
-    Ecov_beta_R_s.setZero();
-    for(int i = 0; i <n_Ecov; i++) {
-      n_poly_Ecov_R_s(i) = n_poly_Ecov_R(i,s);
-      //see(n_poly_Ecov_R_s(i));
-      //see(n_years_pop);
-      //see(Ecov_out_R.dim);
-      //see(Ecov_beta_R_s);
-      for(int y = 0; y < n_years_pop; y++) Ecov_out_R_s(y,i) = Ecov_out_R(s,y,i);
-      //see("here");
-      for(int j = 0; j < max_n_poly_R; j++) Ecov_beta_R_s(i,j) = Ecov_beta_R(s,i,j);
+  if(Ecov_how_R.sum()>0){
+    for(int s = 0; s < n_stocks; s++){
+      vector<int> t_ind_s = ind_Ecov_out_start_R.col(s);
+      vector<int> t_ind_e = ind_Ecov_out_end_R.col(s);
+      //see(t_ind_s);
+      //see(t_ind_e);
+      matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
+      //see(tmp);
+      for(int j = 0; j < tmp.rows(); j++) for(int k = 0; k < n_Ecov; k++) Ecov_out_R(s,j,k) = tmp(j,k);
     }
-    //see(n_poly_Ecov_R_s);
-    //see(Ecov_beta_R_s);
-    //see(Ecov_out_R_s);
-    //see("after");
-    matrix<Type> Ecov_lm_R_s = get_Ecov_lm(Ecov_beta_R_s,Ecov_out_R_s, n_years_model, n_years_proj, n_poly_Ecov_R_s);
-    for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_R(s,y,i) = Ecov_lm_R_s(y,i);
+    REPORT(Ecov_out_R); 
+    //see(Ecov_out_R);
+    int max_n_poly_R = Ecov_beta_R.dim(2); // now a 3D array dim: (n_stocks,n_Ecov,max(n_poly_Ecov_R))
+    //see(max_n_poly_R);
+    for(int s = 0; s < n_stocks; s++) {
+      matrix<Type> Ecov_beta_R_s(n_Ecov,max_n_poly_R);
+      matrix<Type> Ecov_out_R_s(n_years_pop,n_Ecov);
+      vector<int> n_poly_Ecov_R_s(n_Ecov);
+      Ecov_beta_R_s.setZero();
+      for(int i = 0; i <n_Ecov; i++) {
+        n_poly_Ecov_R_s(i) = n_poly_Ecov_R(i,s);
+        //see(n_poly_Ecov_R_s(i));
+        //see(n_years_pop);
+        //see(Ecov_out_R.dim);
+        //see(Ecov_beta_R_s);
+        for(int y = 0; y < n_years_pop; y++) Ecov_out_R_s(y,i) = Ecov_out_R(s,y,i);
+        //see("here");
+        for(int j = 0; j < max_n_poly_R; j++) Ecov_beta_R_s(i,j) = Ecov_beta_R(s,i,j);
+      }
+      //see(n_poly_Ecov_R_s);
+      //see(Ecov_beta_R_s);
+      //see(Ecov_out_R_s);
+      //see("after");
+      matrix<Type> Ecov_lm_R_s = get_Ecov_lm(Ecov_beta_R_s,Ecov_out_R_s, n_years_model, n_years_proj, n_poly_Ecov_R_s);
+      for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_R(s,y,i) = Ecov_lm_R_s(y,i);
+    }
+    //see(Ecov_lm_R)
+    REPORT(Ecov_lm_R);
   }
-  //see(Ecov_lm_R)
-  REPORT(Ecov_lm_R);
   ///////////////////////
 
   //M
   array<Type> Ecov_out_M(n_stocks, n_ages, n_regions, n_years_pop, n_Ecov);
   Ecov_out_M.setZero();
-  for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
-    vector<int> t_ind_s(n_Ecov), t_ind_e(n_Ecov);
-    for(int i = 0; i < n_Ecov; i++){
-      t_ind_s(i) = ind_Ecov_out_start_M(i,s,a,r);
-      t_ind_e(i) = ind_Ecov_out_end_M(i,s,a,r);
-    }
-    matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
-    for(int j = 0; j < tmp.rows(); j++) for(int i = 0; i < n_Ecov; i++) Ecov_out_M(s,a,r,j,i) = tmp(j,i);
-  }
-  REPORT(Ecov_out_M);
   array<Type> Ecov_lm_M(n_stocks, n_regions, n_ages, n_years_pop, n_Ecov); 
-  int max_n_poly_M = Ecov_beta_M.dim(4); // now a 5D array dim: (n_stocks, n_ages, n_regions, n_Ecov, max(n_poly_Ecov_M))
-  for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
-    matrix<Type> Ecov_beta_M_s_r_a(n_Ecov,max_n_poly_M);
-    matrix<Type> Ecov_out_M_s_r_a(n_years_pop, n_Ecov);
-    vector<int> n_poly_Ecov_M_s_r_a(n_Ecov);
-    for(int i = 0; i <n_Ecov; i++) {
-      n_poly_Ecov_M_s_r_a(i) = n_poly_Ecov_M(i,s,a,r);
-      for(int y = 0; y < n_years_pop; y++) Ecov_out_M_s_r_a(y,i) = Ecov_out_M(s,a,r,y,i);
-      for(int j = 0; j < max_n_poly_M; j++) Ecov_beta_M_s_r_a(i,j) = Ecov_beta_M(s,a,r,i,j);
+  Ecov_lm_M.setZero();
+  if(Ecov_how_M.sum()>0){
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
+      vector<int> t_ind_s(n_Ecov), t_ind_e(n_Ecov);
+      for(int i = 0; i < n_Ecov; i++){
+        t_ind_s(i) = ind_Ecov_out_start_M(i,s,a,r);
+        t_ind_e(i) = ind_Ecov_out_end_M(i,s,a,r);
+      }
+      matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
+      for(int j = 0; j < tmp.rows(); j++) for(int i = 0; i < n_Ecov; i++) Ecov_out_M(s,a,r,j,i) = tmp(j,i);
     }
-    matrix<Type> Ecov_lm_M_s_r_a = get_Ecov_lm(Ecov_beta_M_s_r_a,Ecov_out_M_s_r_a, n_years_model, n_years_proj, n_poly_Ecov_M_s_r_a);
-    for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_M(s,r,a,y,i) = Ecov_lm_M_s_r_a(y,i);
+    REPORT(Ecov_out_M);
+    int max_n_poly_M = Ecov_beta_M.dim(4); // now a 5D array dim: (n_stocks, n_ages, n_regions, n_Ecov, max(n_poly_Ecov_M))
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++){
+      matrix<Type> Ecov_beta_M_s_r_a(n_Ecov,max_n_poly_M);
+      matrix<Type> Ecov_out_M_s_r_a(n_years_pop, n_Ecov);
+      vector<int> n_poly_Ecov_M_s_r_a(n_Ecov);
+      for(int i = 0; i <n_Ecov; i++) {
+        n_poly_Ecov_M_s_r_a(i) = n_poly_Ecov_M(i,s,a,r);
+        for(int y = 0; y < n_years_pop; y++) Ecov_out_M_s_r_a(y,i) = Ecov_out_M(s,a,r,y,i);
+        for(int j = 0; j < max_n_poly_M; j++) Ecov_beta_M_s_r_a(i,j) = Ecov_beta_M(s,a,r,i,j);
+      }
+      matrix<Type> Ecov_lm_M_s_r_a = get_Ecov_lm(Ecov_beta_M_s_r_a,Ecov_out_M_s_r_a, n_years_model, n_years_proj, n_poly_Ecov_M_s_r_a);
+      for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_M(s,r,a,y,i) = Ecov_lm_M_s_r_a(y,i);
+    }
+    REPORT(Ecov_lm_M);
   }
-  REPORT(Ecov_lm_M);
   
   //q
   array<Type> Ecov_out_q(n_indices, n_years_pop, n_Ecov);
-  for(int i = 0; i < n_indices; i++){
-    vector<int> t_ind_s = ind_Ecov_out_start_q.col(i);
-    vector<int> t_ind_e = ind_Ecov_out_end_q.col(i);
-    matrix<Type> tmp = get_Ecov_out(Ecov_x,n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
-    for(int j = 0; j < tmp.rows(); j++) for(int k = 0; k < n_Ecov; k++) Ecov_out_q(i,j,k) = tmp(j,k);
-  }
-  //see("q");
-  REPORT(Ecov_out_q);
+  Ecov_out_q.setZero();
   array<Type> Ecov_lm_q(n_indices,n_years_pop, n_Ecov); 
-  int max_n_poly_q = Ecov_beta_q.dim(2); // now a 3D array dim: (n_indices, n_Ecov, n_poly)
-  //see(Ecov_lm_q.dim);
-  //see(Ecov_out_q.dim);
-  //see(n_years_pop);
-  for(int i = 0; i < n_indices; i++){
-  //see("q1");
-    matrix<Type> Ecov_beta_q_i(n_Ecov,max_n_poly_q);
-    matrix<Type> Ecov_out_q_i(n_years_pop, n_Ecov);
-    vector<int> n_poly_Ecov_q_i(n_Ecov);
-    for(int k = 0; k <n_Ecov; k++) {
-      n_poly_Ecov_q_i(k) = n_poly_Ecov_q(k,i); 
-      for(int y = 0; y < n_years_pop; y++) Ecov_out_q_i(y,k) = Ecov_out_q(i,y,k);
-      for(int j = 0; j < max_n_poly_q; j++) Ecov_beta_q_i(k,j) = Ecov_beta_q(i,k,j);
+  Ecov_lm_q.setZero();
+  if(Ecov_how_q.sum()>0){
+    for(int i = 0; i < n_indices; i++){
+      vector<int> t_ind_s = ind_Ecov_out_start_q.col(i);
+      vector<int> t_ind_e = ind_Ecov_out_end_q.col(i);
+      matrix<Type> tmp = get_Ecov_out(Ecov_x,n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
+      for(int j = 0; j < tmp.rows(); j++) for(int k = 0; k < n_Ecov; k++) Ecov_out_q(i,j,k) = tmp(j,k);
     }
-    //see("q2");
-    //see(n_poly_Ecov_q_i);
+    //see("q");
+    REPORT(Ecov_out_q);
+    int max_n_poly_q = Ecov_beta_q.dim(2); // now a 3D array dim: (n_indices, n_Ecov, n_poly)
+    //see(Ecov_lm_q.dim);
+    //see(Ecov_out_q.dim);
+    //see(n_years_pop);
+    for(int i = 0; i < n_indices; i++){
+    //see("q1");
+      matrix<Type> Ecov_beta_q_i(n_Ecov,max_n_poly_q);
+      matrix<Type> Ecov_out_q_i(n_years_pop, n_Ecov);
+      vector<int> n_poly_Ecov_q_i(n_Ecov);
+      for(int k = 0; k <n_Ecov; k++) {
+        n_poly_Ecov_q_i(k) = n_poly_Ecov_q(k,i); 
+        for(int y = 0; y < n_years_pop; y++) Ecov_out_q_i(y,k) = Ecov_out_q(i,y,k);
+        for(int j = 0; j < max_n_poly_q; j++) Ecov_beta_q_i(k,j) = Ecov_beta_q(i,k,j);
+      }
+      //see("q2");
+      //see(n_poly_Ecov_q_i);
 
-    matrix<Type> Ecov_lm_q_i = get_Ecov_lm(Ecov_beta_q_i,Ecov_out_q_i, n_years_model, n_years_proj, n_poly_Ecov_q_i);
-    //see(Ecov_lm_q_i.rows());
-    //see(Ecov_lm_q_i.cols());
-    //see("q3");
-    //see(Ecov_lm_q_i);
-    for(int y = 0; y < n_years_pop; y++) for(int k = 0; k < n_Ecov; k++) Ecov_lm_q(i,y,k) = Ecov_lm_q_i(y,k);
-    //see("q4");
+      matrix<Type> Ecov_lm_q_i = get_Ecov_lm(Ecov_beta_q_i,Ecov_out_q_i, n_years_model, n_years_proj, n_poly_Ecov_q_i);
+      //see(Ecov_lm_q_i.rows());
+      //see(Ecov_lm_q_i.cols());
+      //see("q3");
+      //see(Ecov_lm_q_i);
+      for(int y = 0; y < n_years_pop; y++) for(int k = 0; k < n_Ecov; k++) Ecov_lm_q(i,y,k) = Ecov_lm_q_i(y,k);
+      //see("q4");
+    }
+    REPORT(Ecov_lm_q);
   }
-
-  REPORT(Ecov_lm_q);
   
   //mu
   array<Type> Ecov_out_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov);
-  for(int s = 0; s < n_stocks; s++)  for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
-    vector<int> t_ind_s(n_Ecov), t_ind_e(n_Ecov);
-    for(int i = 0; i < n_Ecov; i++) {
-      t_ind_s(i) = ind_Ecov_out_start_mu(i,s,a,t,r,rr);
-      t_ind_e(i) = ind_Ecov_out_end_mu(i,s,a,t,r,rr);
-    }
-    matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
-    for(int j = 0; j < tmp.rows(); j++) for(int i = 0; i < n_Ecov; i++) Ecov_out_mu(s,a,t,r,rr,j,i) = tmp(j,i);
-  }
-  REPORT(Ecov_out_mu);
+  Ecov_out_mu.setZero();
   array<Type> Ecov_lm_mu(n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_years_pop, n_Ecov);
-  int max_n_poly_mu = Ecov_beta_mu.dim(6); // a 7D array dim: (n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_Ecov, max(n_poly))
-  for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
-    matrix<Type> Ecov_beta_mu_s_a_t_r_rr(n_Ecov,max_n_poly_mu);
-    matrix<Type> Ecov_out_mu_s_a_t_r_rr(n_years_pop, n_Ecov);
-    vector<int> n_poly_Ecov_mu_s_a_t_r_rr(n_Ecov);
-    for(int i = 0; i <n_Ecov; i++) {
-      n_poly_Ecov_mu_s_a_t_r_rr(i) = n_poly_Ecov_mu(i,s,a,t,r,rr);
-      for(int y = 0; y < n_years_pop; y++) Ecov_out_mu_s_a_t_r_rr(y,i) = Ecov_out_mu(s,a,t,r,rr,y,i);
-      for(int j = 0; j <max_n_poly_mu; j++) Ecov_beta_mu_s_a_t_r_rr(i,j) = Ecov_beta_mu(s,a,t,r,rr,i,j);
+  Ecov_lm_mu.setZero();
+  if(Ecov_how_mu.sum()>0){
+    for(int s = 0; s < n_stocks; s++)  for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
+      vector<int> t_ind_s(n_Ecov), t_ind_e(n_Ecov);
+      for(int i = 0; i < n_Ecov; i++) {
+        t_ind_s(i) = ind_Ecov_out_start_mu(i,s,a,t,r,rr);
+        t_ind_e(i) = ind_Ecov_out_end_mu(i,s,a,t,r,rr);
+      }
+      matrix<Type> tmp = get_Ecov_out(Ecov_x, n_years_model, n_years_proj, t_ind_s, t_ind_e, proj_Ecov_opt, avg_years_Ecov, Ecov_use_proj);
+      for(int j = 0; j < tmp.rows(); j++) for(int i = 0; i < n_Ecov; i++) Ecov_out_mu(s,a,t,r,rr,j,i) = tmp(j,i);
     }
-    matrix<Type> Ecov_lm_s_a_t_r_rr = get_Ecov_lm(Ecov_beta_mu_s_a_t_r_rr,Ecov_out_mu_s_a_t_r_rr, n_years_model, n_years_proj, n_poly_Ecov_mu_s_a_t_r_rr);
-    for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_mu(s,a,t,r,rr,y,i) = Ecov_lm_s_a_t_r_rr(y,i);
+    REPORT(Ecov_out_mu);
+    int max_n_poly_mu = Ecov_beta_mu.dim(6); // a 7D array dim: (n_stocks, n_ages, n_seasons, n_regions, n_regions-1, n_Ecov, max(n_poly))
+    for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int t = 0; t < n_seasons; t++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){
+      matrix<Type> Ecov_beta_mu_s_a_t_r_rr(n_Ecov,max_n_poly_mu);
+      matrix<Type> Ecov_out_mu_s_a_t_r_rr(n_years_pop, n_Ecov);
+      vector<int> n_poly_Ecov_mu_s_a_t_r_rr(n_Ecov);
+      for(int i = 0; i <n_Ecov; i++) {
+        n_poly_Ecov_mu_s_a_t_r_rr(i) = n_poly_Ecov_mu(i,s,a,t,r,rr);
+        for(int y = 0; y < n_years_pop; y++) Ecov_out_mu_s_a_t_r_rr(y,i) = Ecov_out_mu(s,a,t,r,rr,y,i);
+        for(int j = 0; j <max_n_poly_mu; j++) Ecov_beta_mu_s_a_t_r_rr(i,j) = Ecov_beta_mu(s,a,t,r,rr,i,j);
+      }
+      matrix<Type> Ecov_lm_s_a_t_r_rr = get_Ecov_lm(Ecov_beta_mu_s_a_t_r_rr,Ecov_out_mu_s_a_t_r_rr, n_years_model, n_years_proj, n_poly_Ecov_mu_s_a_t_r_rr);
+      for(int y = 0; y < n_years_pop; y++) for(int i = 0; i <n_Ecov; i++) Ecov_lm_mu(s,a,t,r,rr,y,i) = Ecov_lm_s_a_t_r_rr(y,i);
+    }
+    REPORT(Ecov_lm_mu);
   }
-  REPORT(Ecov_lm_mu);
   /////////////////////////////////////////
   
   /////////////////////////////////////////
@@ -806,7 +820,7 @@ Type objective_function<Type>::operator() ()
   array<Type> NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
 
   if(NAA_re_model.sum() > 0){ //at least one stock is not SCAA
-    matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe,
+    matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe, decouple_recruitment,
       use_alt_AR1);
     // matrix<Type> nll_NAA = get_NAA_nll(N1, N1_model, N1_repars, NAA_re_model, log_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
     //   Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature, years_use, bias_correct_pe, n_years_model);
@@ -814,8 +828,14 @@ Type objective_function<Type>::operator() ()
     //see(nll);
     REPORT(nll_NAA);
     SIMULATE if(do_simulate_N_re){
+      int ystart = 0;
+      int sim_alt_AR1 = 0;
+      if((!do_simulate_period(0)) & do_simulate_period(1) & (n_years_proj>0)) {
+        ystart = n_years_model-1; //only does anything if use_alt_AR1 = 1
+        sim_alt_AR1 = 1;
+      }
       array<Type> NAA_devs_sim = simulate_NAA_devs(NAA, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
-        bias_correct_pe);
+        bias_correct_pe, decouple_recruitment, sim_alt_AR1, ystart);
       //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
       log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
         log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
@@ -1103,11 +1123,11 @@ Type objective_function<Type>::operator() ()
   int is_SR = 0;
   for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
   if((is_SR> 0) & do_MSY_BRPs) {
-    //trace = 1;
+    // trace = 1;
     vector< matrix<Type>> static_MSY_res =  get_MSY_res(recruit_model,
       log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
       fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, fracyr_SSB, FMSY_static_init, 
+      L, which_F_age_static, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_static_init, 
       avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind,
       n_regions_is_small, trace, 10);
       vector<Type> log_SSB_MSY_static = static_MSY_res(0).col(0);
@@ -1126,11 +1146,11 @@ Type objective_function<Type>::operator() ()
       REPORT(log_FMSY_iter_static);
       vector<Type> log_FMSY_static = log_FMSY_iter_static.row(9);
       REPORT(log_FMSY_static);
-    //trace = 0;
+    // trace = 0;
     vector< array <Type> > annual_MSY_res = get_annual_MSY_res(recruit_model,
       log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
       fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age, waa, waa_pointer_ssb, waa_pointer_fleets, mature, fracyr_SSB, FMSY_init, 
+      L, which_F_age, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_init, 
       n_regions_is_small, trace, 10);
     
     array<Type> log_SSB_MSY = annual_MSY_res(0);

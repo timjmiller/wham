@@ -1,27 +1,28 @@
 template <class Type>
 vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int> n_years_selblocks, vector<int> n_selpars_est, 
-  vector<Type> selpars_re, matrix<Type> sel_repars){
+  array<Type> selpars_re, matrix<Type> sel_repars){
   /* 
      get nll contribtions for any selectivity random effects
         selblock_models_re: (n_selblocks) 1 = no RE, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
          n_years_selblocks: for each block, number of years the block covers
              n_selpars_est: n_selbocks, how many selpars are actually estimated (not fixed at 0 or 1) 
-                selpars_re: deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+                selpars_re: (n_selbocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
                 sel_repars: parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   */
   using namespace density;
   int n_selblocks = selblock_models_re.size();
   vector<Type> nll_sel(n_selblocks);
   nll_sel.setZero();
-  int istart = 0;
+  //int istart = 0;
   for(int b = 0; b < n_selblocks; b++){
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
       array<Type> tmp(n_years_selblocks(b), n_selpars_est(b));
-      for(int j=0; j<n_selpars_est(b); j++){
-        tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
-        istart += n_years_selblocks(b);
+      for(int i = 0; i < n_years_selblocks(b); i++) for(int j=0; j<n_selpars_est(b); j++){
+        tmp(i,j) = selpars_re(b,i,j);
+        //tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
+        //istart += n_years_selblocks(b);
       }
 
       //question: is it faster here to just work on the selectivity parameters as re rather than the deviations?
@@ -54,28 +55,29 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int> n_years_sel
 }
 
 template <class Type>
-vector<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_years_selblocks, vector<int> n_selpars_est, 
-  vector<Type> selpars_re, matrix<Type> sel_repars){
+array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_years_selblocks, vector<int> n_selpars_est, 
+  array<Type> selpars_re, matrix<Type> sel_repars){
   /* 
      simulate any selectivity random effects
         selblock_models_re: (n_selblocks) 1 = no RE, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
          n_years_selblocks: for each block, number of years the block covers
              n_selpars_est: n_selbocks, how many selpars are actually estimated (not fixed at 0 or 1) 
-                selpars_re: deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+                selpars_re: (n_selbocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
                 sel_repars: parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   */
   using namespace density;
   int n_selblocks = selblock_models_re.size();
-  int istart = 0;
-  vector<Type> sim_selpars_re = selpars_re;
+  //int istart = 0;
+  array<Type> sim_selpars_re = selpars_re;
   for(int b = 0; b < n_selblocks; b++){
 
     if(selblock_models_re(b) > 1){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
       array<Type> tmp(n_years_selblocks(b), n_selpars_est(b));
-      for(int j=0; j<n_selpars_est(b); j++){
-        tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
-        istart += n_years_selblocks(b);
+      for(int i = 0; i < n_years_selblocks(b); i++) for(int j=0; j<n_selpars_est(b); j++){
+        tmp(i,j) = selpars_re(b,i,j);
+        //tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
+        //istart += n_years_selblocks(b);
       }
 
       //question: is it faster here to just work on the selectivity parameters as re rather than the deviations?
@@ -105,11 +107,12 @@ vector<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_y
         }
       }
       tmp = tmp * Sigma_sig_sel;
-      istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
+      //istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
       for(int j=0; j<n_selpars_est(b); j++){
         for(int y = 0; y < n_years_selblocks(b); y++){
-          sim_selpars_re(istart) = tmp(y,j);
-          istart++;
+          sim_selpars_re(b,y,j) = tmp(y,j);
+          //sim_selpars_re(istart) = tmp(y,j);
+          //istart++;
         }
       }
     }
@@ -119,14 +122,14 @@ vector<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_y
 
 template <class Type>
 vector<matrix<Type> > get_selpars_re_mats(vector<int> n_selpars, matrix<int> selblock_years, matrix<int> selpars_est, 
-  int n_years_model, vector<Type> selpars_re, vector<int> selblock_models, vector<int> selblock_models_re){
+  int n_years_model, array<Type> selpars_re, vector<int> selblock_models, vector<int> selblock_models_re){
   /* 
     get vector of matrices of selectivity random effects.
                  n_selpars: n_selblocks. how many mean selectivity parameters estimated for each selblock 
             selblock_years: n_years_model x n_selblocks, = 1 if block covers year, = 0 if not
                selpars_est: n_blocks x (n_pars(6) + n_ages), 0/1; is the selpar estimated in this block?
              n_years_model: number of non-projection years in the model
-                selpars_re: deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+                selpars_re: (n_selbocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
            selblock_models: n_selblocks. which (mean) selectivity model for each block
         selblock_models_re: (n_selblocks) 1 = no RE, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
   */
@@ -148,9 +151,11 @@ vector<matrix<Type> > get_selpars_re_mats(vector<int> n_selpars, matrix<int> sel
     if(selblock_models_re(b) > 1){
       // construct deviations array with full dimensions (n_years_model instead of n_years_selblocks, n_selpars instead of n_selpars_est)
       for(int j=0; j<n_selpars(b); j++){
+        ct = 0;
         for(int y=0; y<n_years_model; y++){
           if((selblock_years(y,b) == 1) & (selpars_est(b,j+jstart) > 0)){
-            selpars_re_mats(b)(y,j) = selpars_re(ct);
+            selpars_re_mats(b)(y,j) = selpars_re(b,ct,j);
+            //selpars_re_mats(b)(y,j) = selpars_re(ct);
             ct++;
           }
         }

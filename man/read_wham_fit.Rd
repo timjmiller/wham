@@ -19,11 +19,11 @@ a named list with the following elements:
     \item{\code{$selAA}}{list of length(n_selblocks), first the fleet blocks then indices, i.e. if 4 fleet blocks and 3 indices, \code{selAA[[5]]} is for index 1. Each element is a matrix, years (rows) x ages (cols), selectivity at age}
     \item{\code{$selblock_pointer_fleets}}{matrix, years x fleets, indices of selAA used by each fleet in each year}
     \item{\code{$selblock_pointer_indices}}{matrix, years x indices, indices of selAA used by each index in each year}
-    \item{\code{$MAA}}{matrix, years x ages, natural mortality}
+    \item{\code{$MAA}}{array, stocks x regions x years x ages, natural mortality}
     \item{\code{$log_SSB}}{matrix, years x 2, log-scale spawning stock biomass. 1st col = MLE, 2nd col = SE.}
     \item{\code{$log_F}}{matrix, years x 2, log-scale fully-selected F. 1st col = MLE, 2nd col = SE.}
-    \item{\code{$log_NAA}}{matrix, years x ages, numbers at age}
-    \item{\code{$NAA_CV}}{matrix, years x ages, CV of numbers at age}
+    \item{\code{$log_NAA_rep}}{array, stocks x regions x years x ages, numbers at age}
+    \item{\code{$NAA_CV}}{array, stocks x regions x years x ages, CV of numbers at age}
     \item{\code{$percentSPR}}{scalar, X\% SPR used to calculate reference points, default = 40}
     \item{\code{$log_Y_FXSPR}}{matrix, years x 2, log-scale yield at FXSPR. 1st col = MLE, 2nd col = SE.}
     \item{\code{$log_FXSPR}}{matrix, years x 2, log-scale FXSPR. 1st col = MLE, 2nd col = SE.}

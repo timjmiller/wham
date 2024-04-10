@@ -60,7 +60,7 @@
 #'       2 and 3 are identical as are those for ages 4 and 5 and different from age 6+ for stock 2 and region 1. If \code{NULL}, 
 #'       and \code{$re_model} specifies M random effects at age, at least two ages must be 
 #'       specified for correlation among ages to be estimated.}
-#'     \item{$sigma_val}{n_stocks x n_regions matrix Initial standard deviation value to use for the M random effects. Values are not used 
+#'     \item{$sigma_vals}{n_stocks x n_regions matrix Initial standard deviation value to use for the M random effects. Values are not used 
 #'       if \code{M$re_model} = "none". Otherwise, a single value. If unspecified all values are 0.1.}
 #'     \item{$cor_vals}{n_stocks x n_regions x 2 array of initial correlation values to use for the M deviations. If unspecified all initial 
 #'       values are 0. When \code{M$re_model} = 
@@ -77,6 +77,20 @@
 #'       and whether to set any to be identical. If not supplied a single value for age and/or year will be estimated for any stock and region where 
 #'       $re_model is other than "none", "iid_a", "iid_y".}
 #'   }
+#'
+#' @return a named list with same elements as the input provided with natural mortality options modified.
+#'
+#' @seealso \code{\link{prepare_wham_input}} 
+#'
+#' @examples
+#' \dontrun{
+#' wham.dir <- find.package("wham")
+#' path_to_examples <- system.file("extdata", package="wham")
+#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+#' input <- prepare_wham_input(asap3)
+#' M = list(mean_model = "estimate-M")
+#' input <- set_q(input, M = M) #estimate a constant M parameters
+#' }
 #'
 #' @export
 set_M = function(input, M)
@@ -307,7 +321,7 @@ set_M = function(input, M)
     if(length(dimsM) != 2) stop("dimensions of M$sigma_vals must be n_stocks x n_regions.")
     if(!all(dimsM == dim(par$Mpars)[1:2])) stop("dimensions of M$sigma_vals must be n_stocks x n_regions.")
     if(any(M$sigma_vals<0)) stop("M$sigma_vals must be > 0.")
-    for(s in 1:data$n_stocks)for(r in 1:data$n_regions) if(M$re_model[s,r] != "none") par$sigma_vals[s,r,,1] <- log(M$sigma_vals[s,r])
+    for(s in 1:data$n_stocks)for(r in 1:data$n_regions) if(M$re_model[s,r] != "none") par$M_repars[s,r,1] <- log(M$sigma_vals[s,r])
   }
   if(!is.null(M$sigma_map)){
     if(!is.matrix(M$sigma_map)) stop("M$sigma_map must be a n_stocks x n_regions matrix.")
@@ -323,10 +337,10 @@ set_M = function(input, M)
     dimsM = dim(M$cor_vals)
     if(length(dimsM) != 3) stop("dimensions of M$cor_vals must be c(n_stocks,n_regions,2)")
     if(!all(dimsM == c(data$n_stocks,data$n_regions,2))) stop("dimensions of M$cor_vals must be c(n_stocks,n_regions,2)")
-    if(any(M$cor_vals< -1 | M$cor_vals > 1)) stop("M$cor_vals must be > -1 and < 1.")
+    if(any(abs(M$cor_vals) > 1)) stop("M$cor_vals must be > -1 and < 1.")
     for(s in 1:data$n_stocks)for(r in 1:data$n_regions) {
-      if(M$re_model[s,r] %in% c("none","iid_y","ar1_y")) par$M_repars[s,r,3] <- inv_trans_rho(M$cor_vals[s,r,2])
-      if(M$re_model[s,r] %in% c("none","iid_a","ar1_a")) par$M_repars[s,r,2] <- inv_trans_rho(M$cor_vals[s,r,1])
+      if(M$re_model[s,r] %in% c("ar1_ay","ar1_y")) par$M_repars[s,r,3] <- inv_trans_rho(M$cor_vals[s,r,2])
+      if(M$re_model[s,r] %in% c("ar1_ay","ar1_a")) par$M_repars[s,r,2] <- inv_trans_rho(M$cor_vals[s,r,1])
     }
   }
   if(!is.null(M$cor_map)){

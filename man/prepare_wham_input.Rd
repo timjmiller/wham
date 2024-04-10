@@ -14,6 +14,11 @@ prepare_wham_input(
   NAA_re = NULL,
   catchability = NULL,
   age_comp = NULL,
+  move = NULL,
+  L = NULL,
+  F = NULL,
+  catch_info = NULL,
+  index_info = NULL,
   basic_info = NULL
 )
 }
@@ -24,17 +29,27 @@ prepare_wham_input(
 
 \item{recruit_model}{numeric, option to specify stock-recruit model (see details)}
 
-\item{ecov}{(optional) named list of environmental covariate data and parameters (see details)}
+\item{ecov}{(optional) named list of environmental covariate data and parameters (see \code{\link{set_ecov}} for full details)}
 
-\item{selectivity}{(optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see details)}
+\item{selectivity}{(optional) list specifying selectivity options by block: models, initial values, parameters to fix, and random effects (see \code{\link{set_selectivity}} for full details)}
 
-\item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)}
+\item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see \code{\link{set_M}} for full details)}
 
-\item{NAA_re}{(optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see details)}
+\item{NAA_re}{(optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see \code{\link{set_NAA}} for full details)}
 
-\item{catchability}{(optional) list specifying options for priors and random effects on catchability (see details)}
+\item{catchability}{(optional) list specifying options for priors and random effects on catchability (see \code{\link{set_q}} for full details)}
 
-\item{age_comp}{(optional) character or named list, specifies age composition model for fleet(s) and indices (see details)}
+\item{age_comp}{(optional) character or named list, specifies age composition model for fleet(s) and indices (see \code{\link{set_age_comp}} for full details)}
+
+\item{move}{(optional) list specifying movement/migration options for models with more than 1 region (see \code{\link{set_move}} for full details)}
+
+\item{L}{(optional) list specifying "extra" mortality options (see \code{\link{set_L}} for full details)}
+
+\item{F}{(optional) list specifying fishing mortality options (see \code{\link{set_F}} for full details)}
+
+\item{catch_info}{(optional) list specifying catch information (see \code{\link{set_catch}} for full details)}
+
+\item{index_info}{(optional) list specifying index informaiton (see \code{\link{set_indices}} for full details)}
 
 \item{basic_info}{(optional) list of basic population information for use when asap3 is not provided (see details)}
 }
@@ -48,14 +63,14 @@ a named list with the following components:
     \item{\code{years}}{Numeric vector of years to fit WHAM model (specified in ASAP3 .dat file)}
     \item{\code{ages.lab}}{Character vector of age labels, ending with plus-group (specified in ASAP3 .dat file)}
     \item{\code{model_name}}{Character, name of stock/model (specified in call to \code{prepare_wham_input})}
+    \item{\code{log}}{list of character strings attempting to describe the input and what the model assumes.}
   }
 }
 \description{
-After the data file is read into R by \code{\link{read_asap3_dat}}, this function
-prepares the data and parameter settings for \code{\link{fit_wham}}.
-By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}.
-As of version 1.0.5, if an asap3 object is not provided, a dummy input is generated with some arbitrary
-assumptions. The various options described below, such as \code{NAA_re} and \code{selectivity},
+Prepares data and parameter settings for  \code{\link{fit_wham}}, optionally using an ASAP3 data file read into R by \code{\link{read_asap3_dat}}.
+By default, this will set up a SCAA version like \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP} without any penalties or random effects.
+If any asap3, basic_info, catch_info, and index_info arguments are not provided, some respective arbitrary
+assumptions are made. The various options described below, such as \code{NAA_re} and \code{selectivity},
 can still be used without the asap3 object.
 }
 \details{
@@ -72,7 +87,7 @@ If you wish to use a stock-recruit function for expected recruitment, choose rec
 either only age-1 (\code{NAA_re = list(sigma="rec")}) or all ages (\code{NAA_re = list(sigma="rec+1")}, "full state-space" model).
 See below for details on \code{NAA_re} specification.
 
-\code{ecov} specifies any environmental covariate data and model. Environmental covariate data need not span
+\code{ecov} specifies any environmental covariate data and models. See \code{\link{set_ecov}} for full details. Environmental covariate data need not span
 the same years as the fisheries data. It can be \code{NULL} if no environmental data are to be fit.
 Otherwise, it must be a named list with the following components:
   \describe{
@@ -131,7 +146,7 @@ Otherwise, it must be a named list with the following components:
     }
   }
 
-\code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file.
+\code{selectivity} specifies options for selectivity, to overwrite existing options specified in the ASAP data file. See \code{\link{set_selectivity}} for full details. 
 If \code{NULL}, selectivity options from the ASAP data file are used. \code{selectivity} is a list with the following entries:
   \describe{
     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
@@ -151,7 +166,7 @@ If \code{NULL}, selectivity options from the ASAP data file are used. \code{sele
     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
   }
 
-\code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file.
+\code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file. See \code{\link{set_M}} for full details. 
 If \code{NULL}, the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). To estimate M-at-age
 shared/mirrored among some but not all ages, modify \code{input$map$M_a} after calling \code{prepare_wham_input}
 (see vignette for more details). \code{M} is a list with the following entries:
@@ -185,7 +200,7 @@ shared/mirrored among some but not all ages, modify \code{input$map$M_a} after c
                        used on log_b? Based on Fig. 1 and Table 1 (marine fish) in \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)}.}
   }
 
-\code{NAA_re} specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not)
+\code{NAA_re} specifies options for random effects on numbers-at-age (NAA, i.e. state-space model or not). See \code{\link{set_NAA}} for full details. 
 If \code{NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic).
 To fit a state-space model, specify \code{NAA_re}, a list with the following entries:
   \describe{
@@ -233,7 +248,7 @@ To fit a state-space model, specify \code{NAA_re}, a list with the following ent
 	 }
   }
 
-\code{catchability} specifies options for catchability. If \code{NULL} and \code{asap3} is not NULL, a single catchability parameter for each index is used with initial values specified in ASAP file. If both are NULL, initial catchabilities for all indices = 0.3.
+\code{catchability} specifies options for catchability. See \code{\link{set_q}} for full details. If \code{NULL} and \code{asap3} is not NULL, a single catchability parameter for each index is used with initial values specified in ASAP file. If both are NULL, initial catchabilities for all indices = 0.3.
 Otherwise, it is a list with the following optional entries:
   \describe{
     \item{$re}{Time-varying (random effects) for each index. Vector with length = number of indices.
@@ -253,12 +268,14 @@ Otherwise, it is a list with the following optional entries:
       sigma as standard error.}
   }
 
-\code{age_comp} specifies the age composition models for fleet(s) and indices.
+\code{move} specifies options for movement if there are multiple regions. See \code{\link{set_move}} for full details. 
+
+\code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
 If \code{NULL}, the multinomial is used because this was the only option in ASAP.
 The age composition models available are:
   \describe{
     \item{\code{"multinomial"}}{Multinomial. This is the default because it was the only option in ASAP. 0 parameters.}
-    \item{\code{"dir-mult"}}{Dirichlet-multinomial. 1 parameter. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008})}
+    \item{\code{"dir-mult"}}{Saturating Dirichlet-multinomial, parameterized such that effective-sample-size is a nonlinear and saturating function with respect to input-sample-size. 1 parameter. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008})}
     \item{\code{"dirichlet-pool0"}}{Dirichlet, pooling zero observations with adjacent age classes. 1. parameter. See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}}
     \item{\code{"dirichlet-miss0"}}{}{Dirichlet, treating zero observations as missing. 1 parameter.}
     \item{\code{"logistic-normal-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
@@ -267,8 +284,10 @@ The age composition models available are:
     \item{\code{"logistic-normal-01-infl"}}{Zero-or-one inflated logistic normal. Inspired by zero-one inflated beta in \href{https://www.sciencedirect.com/science/article/abs/pii/S0167947311003628}{Ospina and Ferrari (2012)}. 3 parameters. . No OSA residuals.}
     \item{\code{"logistic-normal-01-infl-2par"}}{Zero-one inflated logistic normal where p0 is a function of binomial sample size. 2 parameters. No OSA residuals.}
     \item{\code{"mvtweedie"}}{Multivariate-tweedie, where the product of composition proportions and input sample sizes follows a distribution with mean equal to the product of predicted proportions and input sample size, and other parameters define the ratio of effective to input sample size (with is bounded 0 to Inf) and the probability of zeros. 2 parameters. No OSA residuals.}
+    \item{\code{"dir-mult-linear"}}{Linear Dirichlet-multinomial, parameterized such that effective-sample-size is a linear function with respect to input-sample-size, estimating 1 parameter, \eqn{log(\theta)}, where the ratio of effective and input sample size is approximately \eqn{\theta / (1+\theta)}, i.e., the logistic transformation of the estimated parameter \eqn{log(\theta)}.  (\href{https://doi.org/10.1016/j.fishres.2016.06.005}{Thorson et al. 2017}) }
   }
-One-step-ahead residuals will be calculated for all but the last two options when \code{do.osa=TRUE} (Nielsen et al. in prep.). An age composition model needs
+The two Dirichlet-multinomial options will only differ when input-sample-size differs among years.  In these cases, the linear-Dirichlet multinomial is designed to decrease the effective sample size in each year by approximately the same proportion, while the saturating-Dirichlet multinomial will decrease the years with highest input-sample-size much more than those with lower input-sample-size.
+One-step-ahead residuals will be calculated for all but options 8-10 when \code{do.osa=TRUE} (Nielsen et al. in prep.). An age composition model needs
 to be specified for each fleet and index. If you would like all fleets and indices to use the same age composition likelihood, you 
 can simply specify one of the strings above, i.e. \code{age_comp = "logistic-normal-miss0"}. If you do not want the same
 age composition model to be used for all fleets and indices, you must specify a named list with the following entries:
@@ -277,12 +296,10 @@ age composition model to be used for all fleets and indices, you must specify a 
     \item{$indices}{A vector of the above strings with length = the number of indices.}
   }
 
-\code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
+\code{catch_info} is an optional list of fishery catch information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_catch}} for full details. Particularly useful for setting
 up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
 The current options are:
   \describe{
-    \item{$ages}{integer vector of ages (years) with the last being a plus group}
-    \item{$years}{integer vector of years that the population model spans.}
     \item{$n_fleets}{number of fleets.}
     \item{$agg_catch}{matrix (length(years) x n_fleets) of annual aggregate catches (biomass) for each fleet.}
     \item{$catch_paa}{array (n_fleets x length(years) x n_ages) of each fleet's age composition data (numbers).}
@@ -290,7 +307,12 @@ The current options are:
     \item{$catch_Neff}{matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's age composition observation.}
     \item{$use_catch_paa}{0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's age composition observation.}
     \item{$selblock_pointer_fleets}{integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to \code{selectivity} option.}
-    \item{$F}{matrix (length(years) x n_fleets) of annual fishing mortality rates for each fleet to initialize the model.}
+  }
+
+\code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. articularly useful for setting
+up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+The current options are:
+  \describe{
     \item{$n_indices}{number of indices.}
     \item{$agg_indices}{matrix (length(years) x n_indices) of annual aggregate catches (biomass or number) for each fleet.}
     \item{$index_paa}{array (n_indices x length(years) x n_ages) of each index's age composition data (biomass or number).}
@@ -298,12 +320,27 @@ The current options are:
     \item{$index_Neff}{matrix (length(years) x n_indices) of annual effective sample sizes for each index's age composition observation.}
     \item{$units_indices}{1/2 matrix (length =  n_indices) indicated whether indices are in biomass or numbers, respectively.}
     \item{$units_index_paa}{1/2 matrix (length = n_indices) indicated whether to use each index's age composition observation are in numbers or biomass.}
+    \item{$use_indices}{0/1 matrix (length(years) x n_indices) indicated whether to use each aggregate index observation.}
     \item{$use_index_paa}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's age composition observation.}
     \item{$selblock_pointer_indices}{integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to \code{selectivity} option.}
     \item{$fracyr_indices}{matrix (length(years) x n_indices) of annual proportions of the year elapsed when each index is observing the population.}
-    \item{$waa}{array ((n_fleets + n_indices + 2) x length(years) x length(ages)) of annual weight at at age for each fleet, each index, total catch, and spawning biomass.}
-    \item{$maturity}{matrix (length(years) x length(ages)) of annual maturity at age for estimating spawning biomass.}
-    \item{$fracyr_SSB}{vector (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.}
+  }
+
+\code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
+up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+The current options are:
+  \describe{
+    \item{$ages}{integer vector of ages (years) with the last being a plus group}
+    \item{$years}{integer vector of years that the population model spans.}
+    \item{$n_seasons}{number of seasons within year.}
+    \item{$n_fleets}{number of fishing fleets.}
+    \item{$fracyr_seasons}{proportions of year for each season within year (sums to 1).}
+    \item{$F}{matrix (length(years) x n_fleets) of annual fishing mortality rates for each fleet to initialize the model.}
+    \item{$waa}{array ((n_fleets + n_indices + n_stocks) x length(years) x length(ages)) of annual weight at at age for each fleet, each index, and spawning biomass for each stock.}
+    \item{$maturity}{array (n_stocks x length(years) x length(ages)) of annual maturity at age for estimating spawning biomass for each stock.}
+    \item{$fracyr_SSB}{matrix (n_years x n_stocks) (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.}
+    \item{$spawn_seasons}{vector (n_stocks) of seasons in which each stock spawns.}
+    \item{$spawn_regions}{vector (n_stocks) of regions in which each stock spawns.}
     \item{$Fbar_ages}{integer vector of ages to use to average total F at age defining fully selected F for reference points. May not be clearly known until a model is fitted.}
     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}

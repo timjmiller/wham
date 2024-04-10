@@ -2,9 +2,8 @@
 
 # pkgbuild::compile_dll(debug = FALSE)
 # pkgload::load_all()
-# library(wham)
 # btime <- Sys.time(); devtools::test(filter = "ex08_compare"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# 0.25 min
+# ~30 sec
 
 context("Ex 8: Compare")
 

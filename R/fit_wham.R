@@ -55,6 +55,7 @@
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' @param do.brps T/F, calculate and report biological reference points. Default = \code{TRUE}.
+#' @param fit.tmb.control list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -86,7 +87,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
                     proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, 
                       proj.catch=NULL, avg.yrs=NULL, cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, 
                       proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
-                    do.fit = TRUE, save.sdrep=TRUE, do.brps = TRUE)
+                    do.fit = TRUE, save.sdrep=TRUE, do.brps = TRUE, fit.tmb.control = NULL)
 {
 
   # fit model
@@ -115,15 +116,19 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
   if(do.fit){
     btime <- Sys.time()
     #mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = do.sdrep, do.check = do.check, save.sdrep = save.sdrep)
-    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
+    use.optim <- FALSE
+    opt.control <- NULL
+    if(!is.null(fit.tmb.control$use.optim)) use.optim <- fit.tmb.control$use.optim
+    if(!is.null(fit.tmb.control$opt.control)) opt.control <- fit.tmb.control$opt.control
+    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep, use.optim=use.optim, opt.control = opt.control)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     if(do.brps){
       if(any(mod$input$data$can_move==1) & any(mod$input$data$mig_type == 1)){
-        warning("Cannot currently calculate standard errors of biological reference points internally when migration and movement are simultaneous for any stock.")
+        warning("Cannot currently calculate standard errors of biological reference points internally when survival and movement are simultaneous for any stock.")
       } else {
         mod <- check_which_F_age(mod)
         mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-        if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+        if(any(input$data$recruit_model %in% 3:4)) mod$input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
         mod$rep = mod$report() #par values don't matter because function has not been evaluated
         mod <- check_FXSPR(mod)
       }
@@ -134,7 +139,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
 
     # retrospective analysis
     if(do.retro){
-      tryCatch(mod$peels <- retro(mod, ran = mod$input$random, n.peels= n.peels,
+      tryCatch(mod$peels <- retro(mod, n.peels= n.peels,
         MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
     }
     
@@ -155,8 +160,10 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
   else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
-    #mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-    #if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+    if(do.brps){
+      mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+      if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+    }
     mod$rep <- mod$report() #par values don't matter because function has not been evaluated
     mod$parList <- mod$env$parList()
     mod <- check_which_F_age(mod)
@@ -185,8 +192,7 @@ check_which_F_age <- function(mod)
   }
   for(y in 1:dim(mod$rep$FAA)[2]){
     temp <- apply(rbind(mod$rep$FAA[,y,]),2,sum)
-    mod$env$data$which_F_age[y] <- which(temp == max(temp))[1]
-    mod$input$data$which_F_age[y] <- which(temp == max(temp))[1]
+    mod$env$data$which_F_age[y] <- mod$input$data$which_F_age[y] <- which(temp == max(temp))[1]
   }
   mod$retape()
   mod$fn(mle)
@@ -242,7 +248,7 @@ check_FXSPR <- function(mod)
       # print(mod$rep$log_SPR_FXSPR)
       # print(mod$rep$log_SPR_FXSPR[ind])
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
-      mod$env$data$FXSPR_init[ind] <- mod$env$data$FXSPR_init[ind]*2
+      mod$env$data$FXSPR_init[ind] <- mod$input$data$FXSPR_init[ind] <- mod$env$data$FXSPR_init[ind]*2
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
@@ -260,7 +266,7 @@ check_FXSPR <- function(mod)
     for(i in 1:2) #two tries to fix initial FXSPR value
     {
       warning(paste0("Changing initial values for estimating static FXSPR."))
-      mod$env$data$FXSPR_static_init <- mod$env$data$FXSPR_static_init*0.5
+      mod$env$data$FXSPR_static_init <- mod$input$data$FXSPR_static_init <- mod$env$data$FXSPR_static_init*0.5
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
@@ -306,7 +312,7 @@ check_projF <- function(mod)
       # print(ind)
       # print(length(mod$env$data$FXSPR_init))
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
-      mod$env$data$F_proj_init[ind[bad]] <- mod$env$data$FXSPR_init[y[bad]]
+      mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$FXSPR_init[y[bad]]
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
@@ -328,7 +334,7 @@ check_projF <- function(mod)
       {
         redo_Catch_years <- mod$years_full[y[bad]]
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
-        mod$env$data$F_proj_init[ind[bad]] <- mod$env$data$F_proj_init[ind[bad]]*0.5
+        mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$F_proj_init[ind[bad]]*0.5
         mod$retape()
         mod$fn(mle)
         mod$rep <- mod$report()

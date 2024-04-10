@@ -7,7 +7,7 @@
 plot_wham_output(
   mod,
   dir.main = getwd(),
-  out.type = "png",
+  out.type = "html",
   res = 72,
   plot.opts = NULL
 )
@@ -27,9 +27,9 @@ plot_wham_output(
 Generates many output plots and tables for a fit WHAM model.
 }
 \details{
-\code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} (default)
+\code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} 
 creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
-\code{out.type = 'html'} makes a html files for viewing plot .png files and html tables of parameter estimates in a browser.
+\code{out.type = 'html'} (default) makes a html file for viewing plot .png files and html tables of parameter estimates in a browser.
 \code{out.type = 'pdf' or 'png'} makes LaTeX and pdf files of tables of parameter estimates.
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 
@@ -37,6 +37,7 @@ creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files with
   \describe{
     \item{\code{$ages.lab}}{Character vector, will change age labels in plots (default is \code{1:n.ages}).}
     \item{\code{$font.family}}{Font family, e.g. \code{"Times"}.}
+    \item{\code{$browse}}{T/F whether to open the html file in a browser. Default = T.}
   }
 
 Plot functions are located in \code{wham_plots_tables.R}

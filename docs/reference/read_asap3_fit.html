@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -121,21 +121,30 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">read_asap3_fit</span><span class="op">(</span><span class="va">wd</span>, <span class="va">asap.name</span>, pSPR <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_asap3_fit</span><span class="op">(</span><span class="va">wd</span>, <span class="va">asap.name</span>, pSPR <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>wd</dt>
 <dd><p>character, directory where ASAP3 output files are located (ex: 'C:/MY/file/directories/model/'). 5 files are needed: <code>.rdat</code>, <code>.dat</code>, <code>.std</code>, <code>.cor</code>, and <code>.par</code>.</p></dd>
+
+
 <dt>asap.name</dt>
 <dd><p>character, base name of original .dat file (i.e. without the .dat extension)</p></dd>
+
+
 <dt>pSPR</dt>
 <dd><p>scalar, user-specified percent SPR to use for reference points, expressed as 100*SSBPR(Fspr)/SSBPR(F=0). Default = 40.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a named list with the following elements:</p><dl><dt><code>$years</code></dt>
+    
+
+<p>a named list with the following elements:</p>
+<p></p>
+<dl><dt><code>$years</code></dt>
 <dd><p>numeric vector, model years only, e.g. <code>1972:2020</code></p></dd>
 
     <dt><code>$years_full</code></dt>
@@ -189,14 +198,14 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="va">base</span> <span class="op">&lt;-</span> <span class="fu">read_asap3_fit</span><span class="op">(</span>wd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="st">'asap_results'</span><span class="op">)</span>, asap.name<span class="op">=</span><span class="st">'BASE_5C.DAT'</span>, pSPR<span class="op">=</span><span class="fl">40</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input1</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>base<span class="op">=</span><span class="va">base</span>, m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">base</span> <span class="op">&lt;-</span> <span class="fu">read_asap3_fit</span><span class="op">(</span>wd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="st">'asap_results'</span><span class="op">)</span>, asap.name<span class="op">=</span><span class="st">'BASE_5C.DAT'</span>, pSPR<span class="op">=</span><span class="fl">40</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>base<span class="op">=</span><span class="va">base</span>, m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -211,8 +220,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

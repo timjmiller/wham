@@ -2,7 +2,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex09_retro_pred"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# xx min
+# ~4.4 min
 
 context("Ex 9: Retro predictions")
 
@@ -42,7 +42,7 @@ env <- list(
 #   where = "recruit", # CPI affects recruitment
 #   how = NA) # fill in by model in loop
 
-mods <- vector("list",n.mods)
+mods <- list()
 for(m in 1:n.mods){
 	env$recruitment_how = matrix(df.mods$R_how[m],1,1)
 	input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3,
@@ -56,26 +56,18 @@ for(m in 1:n.mods){
 	mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent=TRUE))
 }
 
-names(mods) <- c("m1 (no CPI)","m2 (CPI)")
+names(mods) <- c("m1 (no CPI)","m2 (CPI)")[1:length(mods)]
 tmp.dir <- tempdir(check=TRUE)
 res <- suppressWarnings(compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE)))
-
-# 	input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3,
-# 	                            model_name = df.mods$Model[m],
-# #	                            ecov = env,
-# 	                            NAA_re = list(sigma="rec+1", cor="iid"),
-# 	                            age_comp = "logistic-normal-pool0")) # logistic normal pool 0 obs
-# 	input$par$logit_selpars[1:4,7:8] <- 0
 
 n.yrs.peel <- 5
 n.yrs.proj <- 3
 for(m in 1:n.mods){
 	mods[[m]]$peels <- suppressWarnings(retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = T, MakeADFun.silent=TRUE))
 	for(p in 3:n.yrs.peel) {
-		temp <- wham:::prepare_projection(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), check.version = FALSE)
-		#mods[[m]]$peels[[p]] <- suppressWarnings(project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE))
+		mods[[m]]$peels[[p]] <- suppressWarnings(project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE))
+	}
 }
-
 # plot retrospective predictions of recruitment
 plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	df <- data.frame(matrix(NA, nrow=0, ncol=6))
@@ -86,7 +78,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 			df <- rbind(df, data.frame(Year=tail(tmp$years_full, n.yrs.proj+1),
 										Model=names(mods)[m],
 										Peel=p,
-										Recruitment=tail(exp(tmp$log_NAA[,1]), n.yrs.proj+1),
+										Recruitment=tail(exp(tmp$log_NAA_rep$est[1,1,,1]), n.yrs.proj+1),
 										termyr=c(1,rep(0,n.yrs.proj))))
 		}
 		# get full model fit, "peel 0"
@@ -94,7 +86,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 		df <- rbind(df, data.frame(Year=tmp$years,
 									Model=names(mods)[m],
 									Peel=0,
-									Recruitment=exp(tmp$log_NAA[1:length(tmp$years),1]),
+									Recruitment=exp(tmp$log_NAA_rep$est[1,1,1:length(tmp$years),1]),
 									termyr=0))
 	}
 
@@ -106,12 +98,12 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 
 	cols <- c("black", viridis::viridis_pal(option="plasma")(length(levels(df$Peel))-1))
 	g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=Recruitment, linetype=Model, color=Peel, fill=Peel, group=interaction(Model,Peel))) + 
-	      ggplot2::geom_line(size=1) +
+	      ggplot2::geom_line(linewidth=1) +
 	      ggplot2::geom_point(data=dfpts, color='black', size=2, pch=21) +
 	      ggplot2::scale_x_continuous(expand=c(0.01,0.01)) + # breaks=scales::breaks_extended(5)
 	      ggplot2::scale_colour_manual(values=cols) +
 	      ggplot2::scale_fill_manual(values=cols) +
-	      ggplot2::guides(color = FALSE, fill=FALSE) +
+	      ggplot2::guides(color = "none", fill="none") +
 	      ggplot2::scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=fancy_scientific) +
 	      ggplot2::theme_bw() +
 	      ggplot2::theme(legend.position=c(.9,.9), legend.box.margin = ggplot2::margin(0,0,0,0), legend.margin = ggplot2::margin(0,0,0,0))

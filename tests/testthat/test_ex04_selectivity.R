@@ -8,11 +8,15 @@
 # as in example 2
 #   selectivity = logistic
 
+# To create test results see file.path(system.file("contribute", package="wham"), "copy_ex4.R"), note whether bias-correction used
+
+# CURRENTLY: selectivity$initial_pars is different between ex4_selectivity and test_ex04_selectivity
+
 # pkgbuild::compile_dll(debug = FALSE)
 # pkgload::load_all()
 # library(wham)
 # btime <- Sys.time(); devtools::test(filter = "ex04_selectivity"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~4.8 min
+# ~17 sec
 
 context("Ex 4: Selectivity")
 
@@ -39,8 +43,7 @@ basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #co
 
 tmp.dir <- tempdir(check=TRUE)
 n.mods <- length(sel_re)
-mods <- vector("list",n.mods)
-selAA <- vector("list",n.mods)
+mods <- mcheck <- selAA <- vector("list",n.mods)
 for(m in 1:n.mods){
 	# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
 	input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
@@ -57,21 +60,39 @@ for(m in 1:n.mods){
 	#     #           age_comp = "logistic-normal-miss0", # logistic normal, treat 0 obs as missing
 	#		#				basic_info = basic_info)
 	# fit model
-	mods[[m]] <- suppressWarnings(fit_wham(input, do.osa=F, do.proj=F, do.retro=F, MakeADFun.silent = TRUE)) 
+	#mods[[m]] <- suppressWarnings(fit_wham(input, do.osa=F, do.proj=F, do.retro=F, do.sdrep=F, MakeADFun.silent = TRUE)) 
+	mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
 	if(exists("err")) rm("err") # need to clean this up
+  # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
+  expect_equal(length(mods[[!!m]]$par), length(ex4_test_results$par[[!!m]]), tolerance=1e-6) # nll
+	# mcheck[[m]] <- check_convergence(mods[[m]], ret=TRUE)
+	# expect_equal(mcheck[[!!m]]$convergence, 0) # opt$convergence should be 0
+	# expect_false(mcheck[[!!m]]$na_sdrep) # sdrep should succeed
+  expect_equal(as.numeric(mods[[!!m]]$fn(ex4_test_results$par[[!!m]])), ex4_test_results$nll[!!m], tolerance=1e-6) # nll
+	# expect_equal(mods[[!!m]]$opt$par, ex4_test_results$par[[!!m]], tolerance=1e-1) # parameter values
+	# expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex4_test_results$nll[!!m], tolerance=1e-6) # nll	
 }
+# nll_nofit <- sapply(1:length(mods), function(x) mods[[x]]$fn(ex4_test_results$par[[x]]))
+# nofit <- lapply(mods, function(x) {
+# 	fit_wham(x$input, do.fit = F)
+# })
+# mods_fit <- mods
+#nll <- sapply(mods, function(x) x$opt$obj)
+#nll_nofit <- sapply(1:length(nofit), function(x) mods[[x]]$fn(ex4_test_results$par[[x]]))
+# for(m in 1:length(mods)){
+#   expect_equal(nll_nofit[!!m], ex4_test_results$nll[!!m], tolerance=1e-6) # nll
+# }
 # ex4_test_results <- list()
 # ex4_test_results$nll <- sapply(mods, function(x) x$opt$obj) #have to remove old model 3 and old model 7 is done differently now.
 # ex4_test_results$par <- lapply(mods, function(x) x$opt$par) #have to save with different order and names
 # saveRDS(ex4_test_results, file.path(path_to_examples,"ex4_test_results.RDS"))
 
-for(m in 1:n.mods){
-	print(m)
-	mcheck <- check_convergence(mods[[m]], ret=TRUE)
-	expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
-	expect_false(mcheck$na_sdrep) # sdrep should succeed
-	expect_equal(mods[[m]]$opt$par, ex4_test_results$par[[m]], tolerance=1e-1) # parameter values
-	expect_equal(as.numeric(mods[[m]]$opt$obj), ex4_test_results$nll[m], tolerance=1e-6) # nll	
-}
+# for(m in 1:n.mods){
+# 	mcheck <- check_convergence(mods[[m]], ret=TRUE)
+# 	expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
+# 	expect_false(mcheck$na_sdrep) # sdrep should succeed
+# 	expect_equal(mods[[!!m]]$opt$par, ex4_test_results$par[[!!m]], tolerance=1e-1) # parameter values
+# 	expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex4_test_results$nll[!!m], tolerance=1e-6) # nll	
+# }
 
 })

@@ -45,13 +45,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   dir.main = fslash(dir.main)
 
 # allow overwrite of default ages.lab = 1:n.ages
+  fontfam = ""
+  browse = TRUE
   if(!is.null(plot.opts)){
     if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab
     if(!is.null(plot.opts[["font.family"]])) fontfam = plot.opts$font.family
     if(!is.null(plot.opts[["browse"]])) browse = plot.opts$browse
-  } else {
-    fontfam = ""
-    browse = TRUE
   }
 
   if(!out.type %in% c('html', 'pdf', 'png')){
@@ -243,12 +242,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     # plot.waa(mod,"totcatch")
     # dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      png(file.path(dir.data, paste0("weight_at_age_fleet_", ffns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0("weight_at_age_", ffns[i],"_fleet.png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"fleets", ind=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_indices){
-      png(file.path(dir.data, paste0("weight_at_age_index",ifns[i],".png")),width=10,height=10,units="in",res=res,family=fontfam)
+      png(file.path(dir.data, paste0("weight_at_age_",ifns[i],"_index.png")),width=10,height=10,units="in",res=res,family=fontfam)
       plot.waa(mod,"indices", ind=i)
       dev.off()
     }
@@ -424,8 +423,12 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
       cat("Making HTML document.\n")
       par_tables_fn(mod, od = dir.res.tables)
       make_html_figs_tables_fn(od = dir.main, do.html = T)
-      cat("Opening HTML document in your default web-browser.\n")
-      if(browse) browseURL(file.path(dir.main, "wham_figures_tables.html"))
+      html_file <- file.path(dir.main, "wham_figures_tables.html")
+      if(browse) {
+        cat("Opening HTML document in your default web-browser.\n")
+        browseURL(html_file)
+      }
+      else cat(paste0("HTML document is \n", html_file, "\n"))
     }
   } else {
     #uses png output, and old html product that automatically opens in browser

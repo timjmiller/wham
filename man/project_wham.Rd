@@ -7,14 +7,14 @@
 project_wham(
   model,
   proj.opts = list(n.yrs = 3, use.last.F = TRUE, use.avg.F = FALSE, use.FXSPR = FALSE,
-    use.FMSY = FALSE, proj.F = NULL, proj.catch = NULL, avg.yrs = NULL, cont.ecov = TRUE,
-    use.last.ecov = FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL,
-    avg.rec.yrs = NULL, percentFXSPR = 100, percentFMSY = 100, proj_F_opt = NULL,
-    proj_Fcatch = NULL),
+    use.FMSY = FALSE, cont.ecov = TRUE, use.last.ecov = FALSE, percentFXSPR = 100,
+    percentFMSY = 100),
   n.newton = 3,
   do.sdrep = TRUE,
   MakeADFun.silent = FALSE,
-  save.sdrep = TRUE
+  save.sdrep = TRUE,
+  check.version = TRUE,
+  TMB.bias.correct = FALSE
 )
 }
 \arguments{
@@ -34,7 +34,9 @@ project_wham(
   \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
   \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
   \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
-  \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+  \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+  \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+  \item \code{$cont.L.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
   \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
   \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
   \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
@@ -49,6 +51,10 @@ project_wham(
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
+
+\item{check.version}{T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.}
+
+\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
 }
 \value{
 a projected WHAM model with additional output if specified:

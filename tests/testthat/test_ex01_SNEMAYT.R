@@ -8,11 +8,9 @@
 #   - Compare models by AIC and Mohn’s rho (retrospective analysis)
 #   - Plots of input data, diagnostics, and results
 
-# pkgbuild::compile_dll(debug = FALSE)
-# pkgload::load_all()
-# library(wham)
+# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex01_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~6 min
+# ~7 min
 
 context("Ex 1: SNEMA yellowtail")
 
@@ -24,13 +22,14 @@ ex1_test_results <- readRDS(file.path(path_to_examples,"ex1_test_results.rds"))
 # read asap3 data file and convert to input list for wham
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
+do.fit = TRUE
 input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
 	                            selectivity=list(model=rep("age-specific",3), 
                                 	re=rep("none",3), 
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec", cor="iid"), basic_info = basic_info)
-m1 <- suppressWarnings(fit_wham(input1, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
+m1 <- suppressWarnings(fit_wham(input1, do.fit = do.fit, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #Like m1, but change age comp likelihoods to logistic normal
 input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -40,7 +39,7 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0", basic_info = basic_info)
-m2 <- suppressWarnings(fit_wham(input2, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
+m2 <- suppressWarnings(fit_wham(input2, do.fit = do.fit, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #full state-space model, abundance is the state vector
 input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -49,7 +48,7 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                 	fix_pars=list(4:5,4,2:4)),
 	                            NAA_re = list(sigma="rec+1", cor="iid"), basic_info = basic_info)
-m3 <- suppressWarnings(fit_wham(input3, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
+m3 <- suppressWarnings(fit_wham(input3, do.fit = do.fit, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 #Like m3, but change age comp likelihoods to logistic normal
 input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
@@ -59,14 +58,20 @@ input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0", basic_info = basic_info)
-m4 <- suppressWarnings(fit_wham(input4, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
+m4 <- suppressWarnings(fit_wham(input4, do.fit = do.fit, do.osa = F, MakeADFun.silent=TRUE, retro.silent = TRUE)) # turn off OSA residuals to save time
 
 # Save list of all fit models
 mods <- list(m1=m1, m2=m2, m3=m3, m4=m4)
 
+# ex1_test_results <- list()
+# ex1_test_results$nll <- sapply(mods, function(x) x$opt$obj) #have to remove old model 3 and old model 7 is done differently now.
+# ex1_test_results$par <- lapply(mods, function(x) x$opt$par) #have to save with different order and names
+# saveRDS(ex1_test_results, file.path(path_to_examples,"ex1_test_results.RDS"))
+
 # Check neg-log-likelihoods are within 1e-6
 nll <- sapply(mods, function(x) x$opt$obj)
-expect_equal(nll, ex1_test_results$nll, tolerance=1e-6, scale=1)
+#nll <- sapply(1:length(mods), function(m) mods[[m]]$fn(ex1_test_results$par[[m]]))
+for(m in 1:length(mods)) expect_equal(as.numeric(nll[!!m]), as.numeric(ex1_test_results$nll[!!m]), tolerance=1e-6, scale=1)
 
 # Compare models by AIC and Mohn's rho
 tmp.dir <- tempdir(check=TRUE)
@@ -74,7 +79,7 @@ res <- compare_wham_models(mods, fdir=tmp.dir, table.opts=list(fname="ex1_table"
 
 # WHAM output plots for best model with projections
 m4_proj <- project_wham(model=mods$m4, MakeADFun.silent=TRUE)
-suppressWarnings(plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir, plot.opts$browse = FALSE))
+suppressWarnings(plot_wham_output(mod=m4_proj, out.type='html', dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
 
 # hard to see which model fails bc they're indexed by m
 # print out each one by one
@@ -113,7 +118,4 @@ expect_lt(m4_check$maxgr, 1e-5) # maximum gradient should be < 1e-06
 expect_equal(m4$opt$par, ex1_test_results$par[[4]], tolerance=1e-1)
 
 })
-
-# # remove files created during testing
-# teardown(unlink(tmp.dir, recursive=TRUE))
 

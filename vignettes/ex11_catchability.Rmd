@@ -179,6 +179,7 @@ plot_wham_output(fit)
 ```
 
 This is similar to what is provided in `plot_wham_output`, but with the true values from the simulation also plotted
+
 ```{r, eval=FALSE}
 pal = viridisLite::viridis(n=2)
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")

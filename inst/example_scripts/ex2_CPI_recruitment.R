@@ -1,34 +1,26 @@
-# WHAM example 2: Cold Pool Index effect on SNEMA Yellowtail Flounder recruitment
-# Replicate Miller et al 2016 results
-#   adds environmental covariate (CPI, treated as rw)
-#   uses 5 indices (ex 1: only 2 indices)
-#   only fit to 1973-2011 data (ex 1: 1973-2016)
-#   age compositions = 5, logistic normal pool zero obs (ex 1: 7, logistic normal missing zero obs)
-#   selectivity = logistic (ex 1: age-specific)
-
-# load wham
-library(wham)
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
+if(is.character(is.repo)) library(wham) #not using repo
 library(dplyr)
+#by default do not perform bias-correction
+if(!exists("basic_info")) basic_info <- NULL
 
-# create directory for analysis, e.g.
-# write.dir <- "/path/to/save/ex2" on linux/mac
-if(!exists("write.dir")) write.dir = getwd()
+# create directory for analysis, E.g.,
+#write.dir <- "/path/to/save/output"
+if(!exists("write.dir")) write.dir <- tempdir(check=TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples, "CPI.csv"), header=T)
 
-# copy data files to working directory
-wham.dir <- find.package("wham")
-file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
-file.copy(from=file.path(wham.dir,"extdata","CPI.csv"), to=write.dir, overwrite=TRUE)
+Ecov_how <- paste0(
+  c("none", "controlling-", "none", "limiting-", "limiting-", "controlling-", "controlling-"), 
+  c("", "lag-1-", "", rep("lag-1-",4)),
+  c("", "linear", "", rep("linear", 4)))
 
-# confirm you are in the working directory and it has the ex2_SNEMAYT.dat and CPI.csv files
-list.files()
-
-# read asap3 data file and convert to input list for wham
-asap3 <- read_asap3_dat("ex2_SNEMAYT.dat")
-
-# load env covariate, CPI (Cold Pool Index)
-env.dat <- read.csv("CPI.csv", header=T)
+df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
+                      Ecov_process = c(rep("rw",4),rep("ar1",3)),
+                      Ecov_how = Ecov_how, stringsAsFactors=FALSE)
 
 # specify 7 models:
 # Model  Recruit_mod  Ecov_mod     Ecov_how
@@ -39,9 +31,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 #    m5     Bev-Holt       ar1     Limiting
 #    m6     Bev-Holt       ar1  Controlling
 #    m7       Ricker       ar1  Controlling
-df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
-                      Ecov_process = c(rep("rw",4),rep("ar1",3)),
-                      Ecov_how = c(0,1,0,2,2,1,1), stringsAsFactors=FALSE)
+
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
@@ -49,6 +39,7 @@ df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 # look at model table
 df.mods
 
+mods <- list()
 # run the 7 models
 for(m in 1:n.mods){
   # set up environmental covariate data and model options
@@ -59,10 +50,8 @@ for(m in 1:n.mods){
     logsigma = as.matrix(log(env.dat$CPI_sigma)),
     year = env.dat$Year,
     use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
-    lag = 1, # CPI in year t affects recruitment in year t+1
     process_model = df.mods$Ecov_process[m], # "rw" or "ar1"
-    where = c("none","recruit")[as.logical(df.mods$Ecov_how[m])+1], # 'recruit' = CPI affects recruitment, 'none' = no effect (how = 0)
-    how = df.mods$Ecov_how[m]) # 0 = no effect (but still fit Ecov to compare AIC), 1 = controlling (dens-indep mortality), 2 = limiting (carrying capacity), 3 = lethal (threshold), 4 = masking (metabolism/growth), 5 = directive (behavior)
+    recruitment_how = matrix(df.mods$Ecov_how[m],1,1)) #controlling  (dens-indep mortality), limiting (carrying capacity), lethal (threshold), masking (metabolism/growth), directive (behavior)
 
   # (not used in this vignette) can set ecov = NULL to fit model without Ecov data
   if(is.na(df.mods$Ecov_process[m])) ecov = NULL
@@ -72,7 +61,7 @@ for(m in 1:n.mods){
                               model_name = "Ex 2: SNEMA Yellowtail Flounder with CPI effects on R",
                               ecov = ecov,
                               NAA_re = list(sigma="rec+1", cor="iid"),
-                              age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
+                              age_comp = "logistic-normal-pool0", basic_info = basic_info) # logistic normal pool 0 obs
 
   # Selectivity = logistic, not age-specific as in ex1
   #   2 pars per block instead of n.ages
@@ -80,18 +69,16 @@ for(m in 1:n.mods){
   input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
   # Fit model
-  mod <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
+  # collect fit models into a list
+  mods[[m]] <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
 
   # Save model
-  saveRDS(mod, file=paste0(df.mods$Model[m],".rds"))
+  saveRDS(mods[[m]], file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
 
   # Plot output in new subfolder
-  plot_wham_output(mod=mod, dir.main=file.path(getwd(),df.mods$Model[m]), out.type='png')
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,df.mods$Model[m]))
 }
 
-# collect fit models into a list
-mod.list <- paste0(df.mods$Model,".rds")
-mods <- lapply(mod.list, readRDS)
 
 # check convergence of all models
 vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
@@ -99,7 +86,7 @@ for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
 # make results table prettier
 df.mods$Recruitment <- dplyr::recode(df.mods$Recruitment, `2`='Random', `3`='Bev-Holt', `4`='Ricker')
-df.mods$Ecov_how <- dplyr::recode(df.mods$Ecov_how, `0`='---',`1`='Controlling', `2`='Limiting', `4`='Masking')
+df.mods$Ecov_how <- c("---", "Controlling", "---", "Limiting", "Limiting", "Controlling", "Controlling")
 
 # get convergence info
 opt_conv = 1-sapply(mods, function(x) x$opt$convergence)
@@ -107,12 +94,14 @@ ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1
 df.mods$conv <- as.logical(opt_conv)
 df.mods$pdHess <- as.logical(ok_sdrep)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
+df.mods$Rsig <- sapply(mods, function(x) round(exp(x$parList$log_NAA_sigma[1]),3))
 
 # only get AIC and Mohn's rho for converged models
 not_conv <- !df.mods$conv | !df.mods$pdHess
 mods2 <- mods
 mods2[not_conv] <- NULL
-df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=T))$tab)
+res <- compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=T))
+df.aic.tmp <- as.data.frame(res$tab)
 df.aic <- df.aic.tmp[FALSE,]
 ct = 1
 for(i in 1:n.mods){
@@ -131,6 +120,3 @@ rownames(df.mods) <- NULL
 # look at results table
 df.mods
 
-# save results table
-save("df.mods", file="vign2_res.RData")
-write.csv(df.mods, file="vign2_res.csv",row.names=F,quote=F)

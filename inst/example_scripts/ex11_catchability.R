@@ -3,21 +3,17 @@
 #   - estimating environmental effects on catchability (and recuitment at the same time)
 #   - estimating time-varying random effects on catchability.
 
-#library(wham)
-# btime <- Sys.time()
-# wham.dir <- find.package("wham")
-# source(file.path(wham.dir, "example_scripts", "ex11_catchability.R"))
-# etime <- Sys.time()
-# runtime = etime - btime
-
-# ~X min
-
-# devtools::install_github("timjmiller/wham", dependencies=TRUE)
-# devtools::load_all("~/work/wham/wham", compile= TRUE, recompile=TRUE, reset = FALSE)
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
+if(is.character(is.repo)) library(wham) #not using repo
+#by default do not perform bias-correction
+if(!exists("basic_info")) basic_info <- NULL
 
 library(ggplot2)
 library(tidyr)
 library(dplyr)
+
+#by default do not perform bias-correction
+if(!exists(basic_info)) basic_info <- NULL
 
 # create directory for analysis, e.g.
 # write.dir <- "/path/to/save/ex2" on linux/mac

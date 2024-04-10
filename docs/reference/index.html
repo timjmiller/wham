@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -115,86 +115,90 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="functions-that-users-call-directly">Functions that users call directly <a href="#functions-that-users-call-directly" class="anchor" aria-hidden="true"></a></h2>
+          <h2 id="exported-functions-that-user-can-call-directly">Exported functions that user can call directly <a href="#exported-functions-that-user-can-call-directly" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="read_asap3_dat.html">read_asap3_dat()</a></code> </p>
-        </td>
-        <td><p>Read an ASAP3 .dat file into R</p></td>
-      </tr><tr><td>
-          <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters for WHAM model</p></td>
-      </tr><tr><td>
-          <p><code><a href="fit_wham.html">fit_wham()</a></code> </p>
-        </td>
-        <td><p>Fit WHAM model</p></td>
-      </tr><tr><td>
           <p><code><a href="check_convergence.html">check_convergence()</a></code> </p>
         </td>
         <td><p>Check convergence of WHAM model</p></td>
-      </tr><tr><td>
-          <p><code><a href="project_wham.html">project_wham()</a></code> </p>
-        </td>
-        <td><p>Project a fit WHAM model</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_wham_output.html">plot_wham_output()</a></code> </p>
-        </td>
-        <td><p>Plot WHAM output</p></td>
       </tr><tr><td>
           <p><code><a href="compare_wham_models.html">compare_wham_models()</a></code> </p>
         </td>
         <td><p>Compare multiple WHAM (or ASAP) models</p></td>
       </tr><tr><td>
+          <p><code><a href="fit_wham.html">fit_wham()</a></code> </p>
+        </td>
+        <td><p>Fit WHAM model</p></td>
+      </tr><tr><td>
           <p><code><a href="make_osa_residuals.html">make_osa_residuals()</a></code> </p>
         </td>
         <td><p>Calculate one-step-ahead residuals</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="helper-functions-and-the-like-that-users-do-not-call">Helper functions and the like that users do not call <a href="#helper-functions-and-the-like-that-users-do-not-call" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="set_age_sel0.html">set_age_sel0()</a></code> </p>
-        </td>
-        <td><p>Make one or more selectivity blocks with age-specific parameters</p></td>
       </tr><tr><td>
-          <p><code><a href="fit_tmb.html">fit_tmb()</a></code> </p>
+          <p><code><a href="plot_wham_output.html">plot_wham_output()</a></code> </p>
         </td>
-        <td><p>Fit TMB model using nlminb</p></td>
+        <td><p>Plot WHAM output</p></td>
       </tr><tr><td>
-          <p><code><a href="fit_peel.html">fit_peel()</a></code> </p>
+          <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
         </td>
-        <td><p>Fit model peeling off <em>i</em> years of data</p></td>
+        <td><p>Prepare input data and parameters for WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="project_wham.html">project_wham()</a></code> </p>
+        </td>
+        <td><p>Project a fit WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_asap3_dat.html">read_asap3_dat()</a></code> </p>
+        </td>
+        <td><p>Read an ASAP3 .dat file into R</p></td>
       </tr><tr><td>
           <p><code><a href="retro.html">retro()</a></code> </p>
         </td>
         <td><p>Run retrospective analysis</p></td>
       </tr><tr><td>
-          <p><code><a href="retro_res.html">retro_res()</a></code> </p>
+          <p><code><a href="set_catch.html">set_catch()</a></code> </p>
         </td>
-        <td><p>Extract retrospective results for plotting</p></td>
+        <td><p>Specify catch selectivity blocks and aggregate and age composition observations for catch</p></td>
       </tr><tr><td>
-          <p><code><a href="mohns_rho.html">mohns_rho()</a></code> </p>
+          <p><code><a href="set_ecov.html">set_ecov()</a></code> </p>
         </td>
-        <td><p>Calculate Mohn's rho for a WHAM model with peels</p></td>
+        <td><p>Specify configuration for environmental covariates, effects on the population, and parameter values</p></td>
       </tr><tr><td>
-          <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
+          <p><code><a href="set_F.html">set_F()</a></code> </p>
         </td>
-        <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
+        <td><p>Specify configuration for fully-selected fishing mortality</p></td>
       </tr><tr><td>
-          <p><code><a href="wham_html.html">wham_html()</a></code> </p>
+          <p><code><a href="set_indices.html">set_indices()</a></code> </p>
         </td>
-        <td><p>Create HTML file to view output plots in browser</p></td>
+        <td><p>Specify index selectivity blocks and aggregate and age composition observations for indices</p></td>
       </tr><tr><td>
-          <p><code><a href="read_asap3_fit.html">read_asap3_fit()</a></code> </p>
+          <p><code><a href="set_L.html">set_L()</a></code> </p>
         </td>
-        <td><p>Read ASAP3 fit</p></td>
+        <td><p>Specify model and parameter configuration for "extra" mortality not directly attributed to natural mortality</p></td>
       </tr><tr><td>
-          <p><code><a href="read_wham_fit.html">read_wham_fit()</a></code> </p>
+          <p><code><a href="set_M.html">set_M()</a></code> </p>
         </td>
-        <td><p>Read WHAM fit</p></td>
+        <td><p>Specify model and parameter configuration for natural mortality</p></td>
       </tr><tr><td>
+          <p><code><a href="set_move.html">set_move()</a></code> </p>
+        </td>
+        <td><p>Specify model and parameter configuration for movement when input$data$n_regions &gt; 1</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_NAA.html">set_NAA()</a></code> </p>
+        </td>
+        <td><p>Specify model and parameter configuration for numbers at age</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_q.html">set_q()</a></code> </p>
+        </td>
+        <td><p>Specify model and parameter configuration for catchability</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_selectivity.html">set_selectivity()</a></code> </p>
+        </td>
+        <td><p>Specify model and parameter configuration for selectivity</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="unexported-functions-that-user-do-not-call">Unexported functions that user do not call <a href="#unexported-functions-that-user-do-not-call" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="check_estimability.html">check_estimability()</a></code> </p>
         </td>
         <td><p>Check for identifiability of fixed effects
@@ -206,6 +210,50 @@ Internal function called by <code>fit_tmb</code>.</p></td>
         <td><p>Extract fixed effects
 Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
 Internal function called by <code>check_estimability</code>.</p></td>
+      </tr><tr><td>
+          <p><code><a href="fit_tmb.html">fit_tmb()</a></code> </p>
+        </td>
+        <td><p>Fit TMB model using nlminb</p></td>
+      </tr><tr><td>
+          <p><code><a href="fit_peel.html">fit_peel()</a></code> </p>
+        </td>
+        <td><p>Fit model peeling off <em>i</em> years of data</p></td>
+      </tr><tr><td>
+          <p><code><a href="mohns_rho.html">mohns_rho()</a></code> </p>
+        </td>
+        <td><p>Calculate Mohn's rho for a WHAM model with peels</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
+        </td>
+        <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_asap3_fit.html">read_asap3_fit()</a></code> </p>
+        </td>
+        <td><p>Read ASAP3 fit</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_wham_fit.html">read_wham_fit()</a></code> </p>
+        </td>
+        <td><p>Read WHAM fit</p></td>
+      </tr><tr><td>
+          <p><code><a href="reduce_input.html">reduce_input()</a></code> </p>
+        </td>
+        <td><p>Reduce the years of the model</p></td>
+      </tr><tr><td>
+          <p><code><a href="retro_res.html">retro_res()</a></code> </p>
+        </td>
+        <td><p>Extract retrospective results for plotting</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_age_sel0.html">set_age_sel0()</a></code> </p>
+        </td>
+        <td><p>Make one or more selectivity blocks with age-specific parameters</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_osa_obs.html">set_osa_obs()</a></code> </p>
+        </td>
+        <td><p>Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.</p></td>
+      </tr><tr><td>
+          <p><code><a href="wham_html.html">wham_html()</a></code> </p>
+        </td>
+        <td><p>Create HTML file to view output plots in browser</p></td>
       </tr><tr><td>
           <p><code><a href="pipe.html">%&gt;%</a></code> </p>
         </td>
@@ -223,8 +271,7 @@ Internal function called by <code>check_estimability</code>.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

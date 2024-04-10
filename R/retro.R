@@ -23,10 +23,10 @@
 #retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 retro = function(model, n.peels = 7, ran = NULL, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE)
 {
-  data <- model$env$data
+  data <- model$input$data
   par <- model$parList
-  map <- model$env$map
-  if(!is.null(ran)) ran <- model$input$random
+  map <- model$input$map
+  if(is.null(ran)) ran <- model$input$random
 
   verify_version(model)
   if(do.brps){
@@ -44,11 +44,11 @@ retro = function(model, n.peels = 7, ran = NULL, do.sdrep = FALSE, n.newton = 0,
   temp$data <- data
   temp$par <- par
   peels <- list()
-  # if(n.peels>0) for(i in 1:n.peels) peels[[i]] = tryCatch(
-  #   fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
-  #     save.input = save.input), error = function(e) {peels[[i]]$err <<- conditionMessage(e)})
-  if(n.peels>0) for(i in 1:n.peels) peels[[i]] <- fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, 
-    MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input)
+  if(n.peels>0) for(i in 1:n.peels) peels[[i]] = tryCatch(
+    fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
+      save.input = save.input), error = function(e) {peels[[i]]$err <<- conditionMessage(e)})
+  # if(n.peels>0) for(i in 1:n.peels) peels[[i]] <- fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, 
+  #   MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input)
   #if(n.peels>0) peels = list(fit_peel(1, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input))
   #if(n.peels>1) for(i in 2:n.peels) peels[[i]] = fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input)
   return(peels)

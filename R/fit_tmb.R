@@ -9,6 +9,8 @@
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
 #' @param do.check T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
+#' @param use.optim T/F, use \code{\link[stats]{stats::optim}} instead of \code{\link[stats]{stats::nlminb}}? Default = \code{FALSE}.
+#' @param opt.control list of control parameters to pass to optimizer. For nlminb default = list(iter.max = 1000, eval.max = 1000). For optim default = list(maxit=1000).
 #' @return \code{model}, appends the following:
 #'   \describe{
 #'     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
@@ -25,11 +27,25 @@
 #'
 #'
 #' @export
-fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE)
+fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE, use.optim=FALSE, opt.control = NULL)
 {
-  model$opt <- tryCatch(stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000, eval.max = 1000)), 
+  if(use.optim){
+    if(is.null(opt.control)) opt.control <- list(maxit = 1000)
+    print("Using stats::optim for optimization rather than stats::nlminb with these control parameters:")
+    print(opt.control)
+    model$opt <- tryCatch(stats::optim(model$par, model$fn, model$gr, control = opt.control), 
     error = function(e) {model$opt_err <<- conditionMessage(e)})
-  if(n.newton){ # Take a few extra newton steps
+    model$opt$objective <- model$opt$value #try to make sure calls to get nll will work for both optimizers
+  }
+  else {
+    if(is.null(opt.control)) opt.control <- list(iter.max = 1000, eval.max = 1000)
+    print("Using stats::nlminb for optimization with these control parameters:")
+    print(opt.control)
+    model$opt <- tryCatch(stats::nlminb(model$par, model$fn, model$gr, control = opt.control), 
+    error = function(e) {model$opt_err <<- conditionMessage(e)})
+  }
+  Gr <- model$gr(model$opt$par)
+  if(n.newton) if(!any(is.na(Gr))) if(max(abs(Gr))<1){ # Take a few extra newton steps when useful
     # print("is n.newton")
     tryCatch(for(i in 1:n.newton) { 
       g <- as.numeric(model$gr(model$opt$par))

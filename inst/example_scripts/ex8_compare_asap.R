@@ -1,22 +1,23 @@
 # WHAM example 8: Read ASAP3 results and compare to fit WHAM models
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
+if(is.character(is.repo)) library(wham) #not using repo
+#by default do not perform bias-correction
+if(!exists("basic_info")) basic_info <- NULL
+
 library(tidyverse)
-library(wham)
 
 # create directory for analysis, e.g.
-# main.dir <- "/path/to/save/ex2" on linux/mac
-if(!exists("main.dir")) main.dir = getwd()
-wham.dir <- find.package("wham")
-asap.dir <- file.path(wham.dir,"extdata","BASE_3")
-
-if(!dir.exists(main.dir)) dir.create(main.dir)
-write.dir <- file.path(main.dir,"ex8")
+if(!exists("write.dir")) write.dir <- tempdir(check=TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
 # Georges Bank haddock BASE_5C.DAT
-asap3 <- read_asap3_dat(file.path(asap.dir,"BASE_3.DAT"))
+path_to_examples <- system.file("extdata", package="wham")
+
+# Georges Bank haddock BASE_5C.DAT
+asap3 <- read_asap3_dat(file.path(path_to_examples,"BASE_3", "BASE_3.DAT"))
 
 # Define WHAM models
 #   Model naa_sig naa_cor
@@ -31,20 +32,19 @@ df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 # look at model table
 df.mods
 
+mods <- list()
 for(m in 1:n.mods){
   NAA_list <- list(cor=df.mods[m,"naa_cor"], sigma=df.mods[m,"naa_sig"])
   if(NAA_list$sigma == 'none') NAA_list = NULL
 
   input <- prepare_wham_input(asap3, recruit_model = 2, # match asap model, which does not estimate stock-recruitment relationship
                               model_name = df.mods$Model[m],                         
-                              NAA_re = NAA_list)   
+                              NAA_re = NAA_list, basic_info = basic_info)   
 
-  mod <- fit_wham(input, do.osa=F)
-  saveRDS(mod, file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
+  mods[[m]] <- fit_wham(input, do.osa=F)
+  saveRDS(mods[[m]], file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
 }
 
-mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
-mods <- lapply(mod.list, readRDS)
 ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
 df.mods$conv <- sapply(mods, function(x) x$opt$convergence == 0) # 0 means opt converged
 df.mods$pdHess <- as.logical(ok_sdrep)
@@ -54,7 +54,7 @@ for(m in conv_mods){
 }
 
 # get output from ASAP model run
-base <- read_asap3_fit(wd=asap.dir, asap.name="BASE_3")
+base <- read_asap3_fit(wd=file.path(path_to_examples,"BASE_3"), asap.name="BASE_3")
 mods <- c(list(base),mods)
 names(mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
 

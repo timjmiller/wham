@@ -1,0 +1,122 @@
+---
+title: "Ex 7: Debugging WHAM models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 7: Debugging WHAM models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+# wham.dir <- find.package("wham")
+# knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
+wham.dir <- find.package("wham")
+library(knitr)
+library(kableExtra)
+```
+
+In this vignette we show how to use the `do.fit = FALSE` flag to debug a WHAM model.
+
+```{r eval=FALSE}
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(wham)
+```
+
+Load the ASAP3 data file.
+
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex7_SNEMAYT.dat"))
+```
+
+```{r include=FALSE}
+asap3 <- read_asap3_dat(file.path(system.file("extdata", package="wham"),"ex7_SNEMAYT.dat"))
+```
+
+Prepare the WHAM model (`m3` from [example 1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html)).
+
+```{r}
+input <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
+                              NAA_re = list(sigma="rec+1", cor="iid"))
+```
+
+Try to fit the model... uh oh.
+
+```{r error=TRUE}
+mod <- fit_wham(input, do.osa = F, do.retro = F)
+```
+
+What's wrong? It looks like the likelihood function is returning `NaN`. It is often easier to diagnose problems like this using the *unoptimized* model, i.e. look at everything using the initial parameter values. WHAM includes a `do.fit = F` flag in `fit_wham` to return the unoptimized model object returned by `TMB::MakeADFun`. Let's see how it works.
+
+```{r}
+mod <- fit_wham(input, do.fit = F)
+```
+
+This runs without a fatal error. The optimization failed because the likelihood was `NaN`, and now we can see which of the likelihood components was responsible. To do so, we need to look at the `REPORT`ed objects with `"nll"` in their name. We can use the `$report()` function from TMB.
+
+```{r}
+therep = mod$report()
+```
+
+See all of the `REPORT`ed objects.
+
+```{r}
+names(therep)
+```
+
+Now just get the objects with `"nll"` in their name, and sum over all individual values.
+
+```{r}
+sapply(grep("nll",names(therep),value=T), function(x) sum(therep[[x]]))
+```
+
+The likelihood components that are equal to 0 are not used in the model (no random effects on `M`, `Ecov`, `selectivity`, etc.). `nll` is the total likelihood and is `NaN`. The one troublesome component is `nll_agg_catch`. This is the total (aggregate) catch from the fishery in each year. It could be an issue with the catch data, the model-predicted catch, or the input CVs for the annual catches, since they all are used in the likelihood calculation. Let's take a closer look at all of the annual values in `nll_agg_catch`
+
+```{r}
+therep$nll_agg_catch
+```
+
+We see that the problem is in year 42. The user will not necessarily know what names are used in WHAM to denote the different inputs to `nll_agg_catch`, so we can 
+search the [WHAM .cpp file](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L915) for "nll_agg_catch". We find that it depends on `agg_catch` (the catch data), `pred_log_catch` (model-predicted log catch), `agg_catch_sigma`, and `log_catch_sig_scale`. The aggregate catch CVs from ASAP are transformed to standard deviations for the log-normal assumption on aggregate catch and supplied to WHAM as `input$data$agg_catch_sigma`. It is possible to attempt to estimate a scalar multiple of the annual SDs via `log_catch_sig_scale`, but it is not used by default.
+
+The catch data looks ok.
+
+```{r}
+input$data$agg_catch
+```
+
+The catch SDs looks ok.
+
+```{r}
+input$data$agg_catch_sigma
+```
+
+The predicted log catch in year 42 is the issue.
+
+```{r}
+therep$pred_log_catch
+```
+
+The predicted log catch is just a [log-transformation](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L912) of  `pred_catch` which [aggregates over stock-specific catches](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L910) (if more than 1). The stock-specific catches are a [function](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L908) of stock-specific catch-at-age and weight-at-age for each fleet. These objects are reported out by wham, so first let's look at `pred_stock_CAA` which is an array (n_fleetx x n_stocks x n_years x n_ages). There is only 1 fleet and 1 stock so:
+
+```{r}
+therep$pred_stock_CAA[1,1,,]
+```
+
+The catch in numbers at age looks ok. So, lets look at `waa_catch` which is an array (n_fleet x n_years x n_ages):
+
+```{r}
+therep$waa_catch[1,,] 
+```
+
+Ah, here is the problem. The weight at age data has an entry of `-99` in year 42. This means that `pred_catch` is negative, and we take the log of a negative number for `pred_log_catch`.
+
+
+If we fix this issue with the data file, the model runs fine!

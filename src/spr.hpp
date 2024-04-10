@@ -588,6 +588,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   if(n_regions>1) mu_avg = get_avg_mu(trans_mu_base,years_mu,mig_type, can_move, must_move);
   if(trace) see(mu_avg);
   array<Type> FAA_avg = get_avg_FAA_as_array(FAA,years_sel,0);
+  if(trace) see(FAA_avg);
   vector<Type> FAA_avg_tot = FAA_avg.matrix().colwise().sum();
   if(trace) see(FAA_avg_tot);
 
@@ -721,8 +722,8 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   if(trace) see(YPR_srf.dim);
   res(9) = YPR_srf;
   if(trace) see(waa_ssb_avg);
-  array<Type> temp1 = waa_ssb_avg;
-  res(10) = temp1;
+  // array<Type> temp1 = waa_ssb_avg;
+  res(10) = waa_ssb_avg;
   if(trace) see(waa_catch_avg);
   res(11) = waa_catch_avg;
   if(trace) see(mat);

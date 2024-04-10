@@ -2722,7 +2722,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units = "thousands", scale.ssb = 1,
 	scale.recruits = 1, age.recruit = 1, plot.colors, stock = 1) {
   dat <- mod$env$data
-  if(sum(dat$Ecov_how_R[,stock]) == 0 & dat$recruit_model[stock] %in% (3:4)) {#B-H stock recruit function with alpha/beta, no ecov effects
+  if(dat$recruit_model[stock] %in% (3:4)) {#B-H stock recruit function with alpha/beta, ecov effects and per-recruit inputs from last year
     if(class(mod$sdrep)[1] == "sdreport"){
       std = summary(mod$sdrep)
     } else {
@@ -2773,13 +2773,12 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
         list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max(SR[,3])), xlim=c(0,1.1*max(SR[,2])))
     lines(seq.ssb, exp(pred.lR), col=plot.colors[1], lwd=2)
     polygon(c(seq.ssb,rev(seq.ssb)), exp(c(ci.pred.lR[,1],rev(ci.pred.lR[,2]))), col = tcol, border = "transparent")
-    mtext(paste0("Stock-recruit parameters from year: ", mod$years[SR.par.year]), side = 3, outer = F)
+    mtext(paste0("Stock-recruit parameters, per-recruit inputs, and any environmental effects from year: ", mod$years[SR.par.year]), side = 3, outer = F)
   }
 }
 #revised 
 
-kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE, alpha = 0.05, max.x, max.y){
-
+kobe.plot <- function(mod, status.years=NULL, static = FALSE, msy = FALSE, single.plot = TRUE, alpha = 0.05, max.x=NULL, max.y=NULL){
   if(is.null(status.years)) {
     status.years <- length(mod$years)
     if(length(mod$years_full)> status.years) status.years <- c(status.years, length(mod$years_full))
@@ -2792,9 +2791,17 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE
   inds$full.f <- which(rownames(std) == "log_F_tot")
   inds$F.t <- which(rownames(std) == "log_FXSPR") 
   inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR"), ncol = n_stocks+1)
+  if(msy & any(rownames(std) == "log_FMSY")) {
+    inds$F.t <- which(rownames(std) == "log_FMSY") 
+    inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_MSY"), ncol = n_stocks+1)
+  }
   if(static){
     inds$F.t <- rep(which(rownames(std) == "log_FXSPR_static"), length(mod$years_full)) #only 1 value
     inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_FXSPR_static"), nrow = length(mod$years_full), ncol = n_stocks+1, byrow=TRUE)
+    if(msy & any(rownames(std) == "log_FMSY_static")) {
+      inds$F.t <- rep(which(rownames(std) == "log_FMSY_static"), length(mod$years_full)) #only 1 value
+      inds$SSB.t <- matrix(which(rownames(std) == "log_SSB_MSY_static"), nrow = length(mod$years_full), ncol = n_stocks+1, byrow=TRUE)
+    }
   }
   rel.f.vals <- std[inds$full.f,1][status.years] - std[inds$F.t,1][status.years]
   rel.ssb.vals <- std[inds$ssb,1][status.years] - std[inds$SSB.t[,n_stocks+1],1][status.years]
@@ -2805,8 +2812,9 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE
     tcov <- cov[ind,ind]
     return(t(K) %*% tcov %*% K)
   })
-  if(mod$env$data$n_years_proj>0) { #check whether projecting at F40 because the ratio to status those years will be 1 and variance 0, but numerical accuracy might be an issue.
-    proj_F40 <- which(mod$env$data$proj_F_opt==3)
+  if(mod$env$data$n_years_proj>0) { #check whether projecting at F40/FMSY because the ratio to status those years will be 1 and variance 0, but numerical accuracy might be an issue.
+    if(!msy) proj_F40 <- which(mod$env$data$proj_F_opt==3)
+    if(msy) proj_F40 <- which(mod$env$data$proj_F_opt==6)
     if(length(proj_F40)){
       proj_F40 <- mod$env$data$n_years_model + proj_F40
       proj_F40 <- which(status.years %in% proj_F40)
@@ -2846,8 +2854,8 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE
     }
   }
   vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
-  if(missing(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.cr, function(x) max(x[,1],na.rm = TRUE)),1.5)
-  if(missing(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.cr, function(x) max(x[,2],na.rm = TRUE)),1.5)
+  if(is.null(max.x)) max.x <- max(sapply(log.rel.ssb.rel.F.cr, function(x) max(x[,1],na.rm = TRUE)),1.5)
+  if(is.null(max.y)) max.y <- max(sapply(log.rel.ssb.rel.F.cr, function(x) max(x[,2],na.rm = TRUE)),1.5)
   if(length(do.kobe)){
     if(single.plot){
       pcols <- 1
@@ -2891,8 +2899,14 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE
         polygon(log.rel.ssb.rel.F.cr[[k]][,1], log.rel.ssb.rel.F.cr[[k]][,2], lwd=1)#, border = gray(0.7))
       }
     }
-    mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB[.(percentSPR)*"%"]), line = 2)
-    mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])), line = 2)
+    if(msy & any(rownames(std) == "log_FMSY")){
+      mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB["MSY"]), line = 2)
+      mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)["MSY"])), line = 2)
+    }
+    else {
+      mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB[.(percentSPR)*"%"]), line = 2)
+      mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])), line = 2)
+    }
     title.text <- paste0("Averaged inputs for per recruit calculations")
     if(!static) title.text <- paste0("Annual inputs for per recruit calculations")
     mtext(side = 3, outer = TRUE, title.text, line = 1)
@@ -2900,7 +2914,7 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, single.plot = TRUE
   return(p.status)
 }
 
-plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
+plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   percentSPR = mod$env$data$percentSPR
@@ -3060,7 +3074,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x, max.y, do.
 }  # end function
 #revised
 
-plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
+plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
   origpar <- par(no.readonly = TRUE)
   dat = mod$env$data
@@ -3069,16 +3083,26 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
   n_years = length(years)
   years_full = mod$years_full
   n_years_full = length(years_full)
+  if(missing(status.years)){
+    status.years = n_years
+    status.lwd = 1
+    if(mod$env$data$n_years_proj>0){
+      status.years <- c(status.years, n_years_full)
+      status.lwd <- c(2,1)
+    }
+  } else {
+    status.lwd <- rep(1, length(status.years))
+  }  
   std = summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov
 	if(dat$recruit_model %in% (3:4)) #Beverton-Holt assumed in model fit
 	{ # test to make sure steepness was estimated
     tcol <- col2rgb('black')
     tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-		inds <- list(MSY = which(rownames(std) == "log_MSY"))
+		inds <- list(MSY = array(which(rownames(std) == "log_MSY"), dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full])
 		inds$FMSY <- which(rownames(std) == "log_FMSY")
-		inds$SSBMSY <- which(rownames(std) == "log_SSB_MSY")
-		inds$RMSY <- which(rownames(std) == "log_R_MSY")
+		inds$SSBMSY <- matrix(which(rownames(std) == "log_SSB_MSY"),nrow = n_years_full, ncol = dat$n_stocks+1)[1:n_years_full,dat$n_stocks+1] #total SSBMSY
+		inds$RMSY <- matrix(which(rownames(std) == "log_R_MSY"),nrow = n_years_full, ncol = dat$n_stocks+1)[1:n_years_full,dat$n_stocks+1] #total RMSY
 		inds$ssb <- which(rownames(std) == "log_SSB_all")
     inds$full.f <- which(rownames(std) == "log_F_tot")
   	# inds$faa <- which(rownames(std) == "log_FAA_tot")
@@ -3093,31 +3117,27 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
 	    tcov <- cov[ind,ind]
 	    return(t(K) %*% tcov %*% K)
 	  })
+    if(mod$env$data$n_years_proj>0) { #check whether projecting at Fmsy because the ratio to status those years will be 1 and variance 0, but numerical accuracy might be an issue.
+      proj_Fmsy <- which(mod$env$data$proj_F_opt==6)
+      if(length(proj_Fmsy)){
+        proj_Fmsy <- mod$env$data$n_years_model + proj_Fmsy
+        log.rel.ssb.rel.F.cov[proj_Fmsy] <- lapply(log.rel.ssb.rel.F.cov[proj_Fmsy], function(x) {
+          x[cbind(c(1,2,2),c(2,2,1))] <- 0
+          return(x)
+        })      
+      }
+    }
 
     # 4-panel MSY plot
     if(do.tex) cairo_pdf(file.path(od, paste0("MSY_4panel_F_SSB_R.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("MSY_4panel_F_SSB_R.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mfrow=c(2,2))
+    par(mfrow=c(2,2), oma = c(4,1,3,0), mar = c(1,5,1,1))
     for(i in 1:4)
     {
       t.ind <- inds[[i]]
       t.ylab <- ylabs[i]
-      if(i == 1) {
-        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full] #total MSY
-        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full] #total MSY
-      }
-      if(i == 2) {
-        vals <- std[t.ind,1][1:n_years_full] #Fmsy
-        cv <- std[t.ind,2][1:n_years_full]
-      }
-      if(i == 3) {
-        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_SSB_MSY))[1:n_years_full,dat$n_stocks+1] #total SSB_MSY
-        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_SSB_MSY))[1:n_years_full,dat$n_stocks+1] #total SSB_MSY
-      }
-      if(i == 4) {
-        vals <- array(std[t.ind,1], dim = dim(mod$rep$log_R_MSY))[1:n_years_full,dat$n_stocks+1] #total R_MSY
-        cv <- array(std[t.ind,2], dim = dim(mod$rep$log_R_MSY))[1:n_years_full,dat$n_stocks+1] #total R_MSY
-      }
+      vals <- std[t.ind,1]
+      cv <- std[t.ind,2]
       ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
       na.ci <- all(is.na(ci))
       # remove NaN and Inf
@@ -3127,33 +3147,45 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
       # rm.rows <- which(ci[,2] < 0)
       ci[!is.finite(exp(ci))] = NA
       # ci[rm.rows,] = NA
-		  if(!na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-      if(na.ci) plot(years_full, exp(vals), xlab = 'Year', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
+      labels <- i > 2
+      if(na.ci) ylim <- c(0,max(exp(vals),na.rm=TRUE))
+      else ylim <- c(0,max(exp(ci),na.rm=TRUE))
+      plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = ylim, xaxt = "n", type = 'l')
+      axis(1, labels = labels)
+
+		  # if(!na.ci) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+      # if(na.ci) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
 		  grid(col = gray(0.7))
       not.na.ci <- !is.na(ci[,1])
 		  polygon(c(years_full[not.na.ci],rev(years_full[not.na.ci])), exp(c(ci[,1][not.na.ci],rev(ci[,2][not.na.ci]))), col = tcol, border = tcol, lwd = 1)
       # polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
       if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
 		}
+    title.text <- paste0("Annual inputs used in per recruit calculations")
+    mtext(side = 3, outer = TRUE, title.text, line = 1)
+    mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
     if(do.tex | do.png) dev.off() else par(origpar)
-
     # 2-panel SSB_MSY and F_MSY
     if(do.tex) cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mfrow=c(2,1))
-    rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSBMSY,1][1:n_years_full]
+    par(mfrow=c(2,1), oma = c(4,1,3,0), mar = c(1,5,1,1))
+    rel.ssb.vals <- std[inds$ssb,1] - std[inds$SSBMSY,1]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
     ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
-      # remove NaN and Inf
-      # rm.rows <- which(rel.ssb.vals < 0)
-      rel.ssb.vals[!is.finite(rel.ssb.vals)] = NA
-      # rel.ssb.vals[rm.rows] = NA
-      # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
-      ci[!is.finite(exp(ci))] = NA
-      # ci[rm.rows,] = NA    
-		if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = 'Year', ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
+    # remove NaN and Inf
+    # rm.rows <- which(rel.ssb.vals < 0)
+    rel.ssb.vals[!is.finite(rel.ssb.vals)] = NA
+    # rel.ssb.vals[rm.rows] = NA
+    # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
+    ci[!is.finite(exp(ci))] = NA
+    # ci[rm.rows,] = NA    
+    if(na.ci) ylim <- c(0,max(exp(rel.ssb.vals),na.rm=TRUE))
+    else ylim <- c(0,max(exp(ci),na.rm=TRUE))
+    plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = ylim, type = 'l')
+		# if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
+    # if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
+    axis(1, labels = FALSE)
 	  grid(col = gray(0.7))
 	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
 	  abline(h=1, lty = 2)
@@ -3171,14 +3203,21 @@ plot.MSY.annual <- function(mod, alpha = 0.05, max.x, max.y, do.tex = FALSE, do.
       # rm.rows <- which(ci[,2] < 0 | ci[,1] < 0)
       ci[!is.finite(exp(ci))] = NA
       # ci[rm.rows,] = NA    
-		if(!na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
-    if(na.ci) plot(years_full, exp(rel.f.vals), xlab = 'Year', ylab = expression(paste(italic(F),"/", italic(F)[MSY])),
-      ylim = c(0,max(exp(rel.f.vals),na.rm=TRUE)), type = 'l')
+    if(na.ci) ylim <- c(0,max(exp(rel.f.vals),na.rm=TRUE))
+    else ylim <- c(0,max(exp(ci),na.rm=TRUE))
+    plot(years_full, exp(rel.f.vals), xlab = '', xaxt = "n",ylab = expression(paste(italic(F),"/", italic(F)[MSY])), ylim = ylim, type = 'l')
+    axis(1, labels = TRUE)
 	  grid(col = gray(0.7))
 	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
 	  abline(h=1, lty = 2, col = 'red')
     if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
+    title.text <- paste0("Annual inputs used in per recruit calculations")
+    mtext(side = 3, outer = TRUE, title.text, line = 1)
+    mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
+    if(do.tex | do.png) dev.off() else par(origpar)
+    if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_msy_status.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Kobe_msy_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    x <- kobe.plot(mod, status.years=status.years, static = TRUE, msy = TRUE, single.plot = TRUE, alpha = 0.05, max.x=max.x, max.y= max.y)
     if(do.tex | do.png) dev.off() else par(origpar)
 	}
 }  # end function
@@ -3282,10 +3321,12 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 
   npeels = length(mod$peels)
   if(npeels) {
+    repwhat <- what
     if(what == "NAA_age") {
       age.ind <- (1:mod$input$data$n_ages)[age] 
       #age.ind <- match(age, mod$ages.lab)
       what.print <- paste0(what, "_", age)
+      repwhat <- "NAA"
     } else {
       what.print <- what
     }
@@ -3296,13 +3337,14 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
     tcol <- adjustcolor(plot.colors, alpha.f=0.4)
     # tcol = col2rgb(plot.colors)
     # tcol = rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
-    if(what %in% c("NAA","NAA_age")){
-      res = list(mod$rep$NAA[,,1:n_years,, drop = FALSE])
-      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,, drop = FALSE])
-    } else {
-      res = list(head(mod$rep[[what]],n_years))
-      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[what]])
-    }
+    # if(what %in% c("NAA","NAA_age")){
+    #   res = list(mod$rep$NAA[,,1:n_years,, drop = FALSE])
+    #   res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,, drop = FALSE])
+    # } else {
+      # res = list(head(mod$rep[[what]],n_years))
+      res = list(mod$rep[[repwhat]])
+      res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep[[repwhat]])
+    # }
 
     if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks) {
       regions <- 1:mod$input$data$n_regions
@@ -3361,7 +3403,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
         if(missing(y.range1)) y.range1 <- range(sapply(res, function(x) range(x[,p])))
         par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
-        plot(years,res[[1]][,p],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=y.range1)
+        plot(years,res[[1]][1:n_years,p],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=y.range1)
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels)
         {
@@ -3446,7 +3488,7 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
         if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
         if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,p]))))
         par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
-        plot(years,rel.res[[1]][,p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=y.range2)
+        plot(years,rel.res[[1]][1:n_years,p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=y.range2)
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels) {
           lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
@@ -4229,7 +4271,7 @@ plot_q = function(mod, do.tex = F, do.png = F, fontfam = '', od){
     logit_q_hi = mod$rep$logit_q_mat[yrs,,drop = FALSE] + qnorm(0.975)*se
     q_lo = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
     q_hi = t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
-    ymax = max(q_hi, na.rm = TRUE)
+    ymax = max(c(q,q_hi), na.rm = TRUE)
   }
   plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
   for( i in 1:mod$input$data$n_indices){
@@ -4248,6 +4290,7 @@ plot_mu = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   #only call if n_regions=2
   origpar <- par(no.readonly = TRUE)
   dat <- mod$input$data
+  ymax = max(mod$rep$mu, na.rm = TRUE)
   if(data$n_regions == 2) if(sum(dat$can_move)>0){
     if("sdrep" %in% names(mod)){
       se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$trans_mu_sdrep
@@ -4276,7 +4319,7 @@ plot_mu = function(mod, do.tex = F, do.png = F, fontfam = '', od){
       for(s in 1:ns) for(a in 1:na) for(t in 1:nt) if(dat$can_move[s,t,r,rr]) {
         lines(mod$years, mod$rep$mu[s,a,t,r,rr], lwd = 2, col = pal[t + (s-1)*nt])
         if(!is.null(se)) {
-          mu_lo <- 
+          mu_lo <- mu_hi <- NULL #NEED TO SEE IF YOU CAN transform logit CIs for n_regions>2
           polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
         }
       }

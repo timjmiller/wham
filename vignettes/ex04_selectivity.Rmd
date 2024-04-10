@@ -1,0 +1,313 @@
+---
+title: "Ex 4: Selectivity with time- and age-varying random effects"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 4: Selectivity with time- and age-varying random effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+header-includes:
+   - \usepackage{amsmath}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+#wham.dir <- find.package("wham")
+#knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
+wham.dir <- find.package("wham")
+```
+In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
+
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
+
+- full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
+
+- logistic normal age compositions, treating observations of zero as missing (`age_comp = "logistic-normal-miss0"`)
+
+- random-about-mean recruitment (`recruit_model = 2`)
+
+- no environmental covariate (`ecov = NULL`)
+
+- 2 indices
+
+- fit to 1973-2016 data
+
+In example 4, we demonstrate the time-varying selectivity options in WHAM for both logistic and age-specific selectivity:
+
+- `none`: time-constant
+
+- `iid`: parameter- and year-specific (random effect) deviations from mean selectivity parameters
+
+- `ar1`: as above, but estimate correlation across logistic parameters
+
+- `ar1_y`: as above, but estimate correlation across years
+
+- `2dar1`: as above, but estimate correlation across both years and parameters
+
+Note that each of these options can be applied to any selectivity block (and therefore fleet/catch or index/survey).
+
+## 1. Load data
+
+Open R and load the `wham` package:
+
+```{r message=FALSE}
+library(wham)
+```
+
+For a clean, runnable `.R` script, look at `ex4_selectivity.R` in the `example_scripts` folder of the `wham` package.
+You can run this entire example script with:
+```{r, eval=FALSE}
+wham.dir <- find.package("wham")
+source(file.path(wham.dir, "example_scripts", "ex4_selectivity.R"))
+```
+
+Let's create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output, otherwise will be saved in working directory
+write.dir <- "choose/where/to/save/output" # need to change e.g., tempdir(check=TRUE)
+dir.create(write.dir)
+setwd(write.dir)
+```
+
+We need the same data files as in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html). Read in `ex1_SNEMAYT.dat`:
+```{r, eval = FALSE}
+asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"))
+```
+```{r, include = FALSE}
+asap3 <- read_asap3_dat(file.path(system.file("extdata", package="wham"),"ex1_SNEMAYT.dat"))
+```
+
+## 2. Specify selectivity model options
+
+We are going to run 8 models that differ only in the selectivity options:
+
+```{r}
+# m1-m5 logistic, m6-m9 age-specific
+sel_model <- c(rep("logistic",3), rep("age-specific",5))
+
+# time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)
+sel_re <- list(c("none","none","none"), # m1-m4 logistic
+				c("iid","none","none"),
+#				c("ar1","none","none"), #can't get a converged model for logistic with two re and two fe for
+				c("2dar1","none","none"),
+				c("none","none","none"), # m4-m8 age-specific
+				c("iid","none","none"),
+				c("ar1","none","none"), #will map all age-specific (mean) parameters to one estimated value
+				c("ar1_y","none","none"),
+				c("2dar1","none","none"))
+n.mods <- length(sel_re)
+
+# summary data frame
+df.mods <- data.frame(Model=paste0("m",1:n.mods), 
+	Selectivity=sel_model, # Selectivity model (same for all blocks)
+	Block_1_re=sapply(sel_re, function(x) x[[1]])) # Block 1 random effects
+rownames(df.mods) <- NULL
+
+df.mods
+```
+
+## 3. Setup and run models
+
+The ASAP data file specifies selectivity options (model, initial parameter values, which parameters to fix/estimate). WHAM uses these by default in order to facilitate running ASAP models. To see the currently specified selectivity options in `asap3`:
+
+```{r}
+asap3$dat$sel_block_assign # 1 fleet, all years assigned to block 1
+# by default each index gets its own selectivity block (here, blocks 2 and 3)
+
+asap3$dat$sel_block_option # fleet selectivity (1 block), 2 = logistic
+asap3$dat$index_sel_option # index selectivity (2 blocks), 2 = logistic
+
+asap3$dat$sel_ini # fleet sel initial values (col1), estimation phase (-1 = fix)
+asap3$dat$index_sel_ini # index sel initial values (col1), estimation phase (-1 = fix)
+```
+
+When we specify the WHAM model with `prepare_wham_input()`, we can overwrite the selectivity options from the ASAP data file with the optional list argument `selectivity`. The selectivity model is chosen via `selectivity$model`:
+
+Model | `selectivity$model` | No. Parameters
+--- | --- | ---
+Age-specific | `"age-specific"` | `n_ages`
+Logistic (increasing) | `"logistic"` | 2
+Double logistic (dome) | `"double-logistic"` | 4
+Logistic (decreasing) | `"decreasing-logistic"` | 2
+
+Regardless of the selectivity model used, we incorporate time-varying selectivity by estimating a mean for each selectivity parameter, $\mu^{s}_a$, and (random effect) deviations from the mean, $\delta_{a,y}$. We then estimate the selectivity parameters, $s_{a,y}$, on the logit-scale with (possibly) lower and upper limits: 
+$$s_{a,y} = \mathrm{lower} + \frac{\mathrm{upper} - \mathrm{lower}}{1 + e^{-(\mu^{s}_a + \delta_{a,y})}}$$
+
+The deviations, $\boldsymbol{\delta}$, follow a 2-dimensional AR(1) process defined by the parameters $\sigma^2_s$, $\rho_a$, and $\rho_y$:
+$$\boldsymbol{\delta} \sim \mathrm{MVN}(0,\Sigma)$$
+$$\Sigma = \sigma^2_s(\mathrm{R}_a \otimes \mathrm{R}_y)$$
+$$R_{a,a^*} = \rho_a^{\vert a - a^* \vert}$$
+$$R_{y,y^*} = \rho_y^{\vert y - y^* \vert}$$
+
+Mean selectivity parameters can be initialized at different values from the ASAP file with `selectivity$initial_pars`. Parameters can be fixed at their initial values by specifying `selectivity$fix_pars`. Finally, we specify any time-varying (random effects) on selectivity parameters (`selectivity$re`):
+
+`selectivity$re` | Deviations from mean | Estimated parameters 
+--- | --- | ---
+`"none"` | time-constant (no deviation) | 
+`"iid"` | independent, identically-distributed | $\sigma^2$
+`"ar1"` | autoregressive-1 (correlated across ages/parameters) | $\sigma^2$, $\rho_a$
+`"ar1_y"` | autoregressive-1 (correlated across years) | $\sigma^2$, $\rho_y$
+`"2dar1"` | 2D AR1 (correlated across both years and ages/parameters) | $\sigma^2$, $\rho_a$, $\rho_y$
+
+We will loop over and fit each of the models, but first lets define some initial parameter values and which will be fixed. This is needed specifically for the age-specific selectivity models.
+
+```{r, eval=F}
+#initial pars for logistic or age-specfic selectivity
+initial_pars <- c(rep(list(list(c(2,0.3),c(2,0.3),c(2,0.3))),3), rep(list(list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,1,1,1,1))),5))
+#which pars to fix for age-specific selectivity
+fix_pars <- c(list(NULL,NULL,NULL), rep(list(list(4:6,4:5,3:6)),5))
+```
+
+Now we can run the above models in a loop:
+
+```{r, eval=F}
+#make a list of fits to fill in
+mods <- list()
+
+for(m in 1:n.mods){
+	# overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)
+	input <- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2,
+				selectivity=list(model=rep(sel_model[m],3), re=sel_re[[m]], initial_pars=initial_pars[[m]], fix_pars = fix_pars[[m]]),
+				NAA_re = list(sigma='rec+1',cor='iid'),
+				age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
+
+	# fit model
+	mods[[m]] <- fit_wham(input, do.check=T, do.osa=F, do.retro=F) 
+}
+
+#save the model fits
+for(m in 1:length(mods)) saveRDS(mod[[m]], file=paste0("m",m,".rds"))
+```
+
+## 4. Model convergence and comparison
+
+```{r include=FALSE}
+#data(vign4_res) #not needed. data are available without this call
+#data(vign4_conv)
+#data(vign4_selAA)
+```
+
+Check which models converged.
+
+```{r, eval=FALSE}
+vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
+```
+
+```{r echo=FALSE}
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
+```
+
+Plot output for models that converged (in a subfolder for each model):
+
+```{r, eval=FALSE}
+# Is Hessian positive definite?
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+pdHess <- as.logical(ok_sdrep)
+# did stats::nlminb converge?
+conv <- sapply(mods, function(x) x$opt$convergence == 0) # 0 means opt converged
+conv_mods <- (1:n.mods)[pdHess] 
+for(m in conv_mods){
+	#html and png files by default
+	plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)))
+}
+```
+
+Compare the models using AIC:
+
+```{r, eval=FALSE}
+df.aic <- as.data.frame(compare_wham_models(mods, table.opts=list(sort=FALSE, calc.rho=FALSE))$tab)
+df.aic[!pdHess,] = NA
+minAIC <- min(df.aic$AIC, na.rm=T)
+df.aic$dAIC <- round(df.aic$AIC - minAIC,1)
+df.mods <- cbind(data.frame(Model=paste0("m",1:n.mods), Selectivity=sel_model,
+							"Block1_re"=sapply(sel_re, function(x) x[[1]]),
+							"opt_converged"= ifelse(conv, "Yes", "No"),
+							"pd_hessian"= ifelse(pdHess, "Yes", "No"),
+							"NLL"=sapply(mods, function(x) round(x$opt$objective,3)),
+							"Runtime"=sapply(mods, function(x) x$runtime)), df.aic)
+rownames(df.mods) <- NULL
+df.mods
+```
+
+```{r echo=FALSE}
+vign4_df_mods
+```
+
+Prepare to plot selectivity-at-age for block 1 (fleet).
+
+```{r eval=FALSE}
+library(tidyverse)
+library(viridis)
+
+selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
+sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
+sel_cor <- factor(c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])], levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
+colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
+for(m in 1:n.mods){
+	df <- as.data.frame(selAA[[m]])
+	df$Year <- input$years
+	colnames(df) <- c(paste0("Age_",1:6),"Year")
+	df$Model <- m
+	df$conv <- ifelse(df.mods$pd_hessian[m]=="Yes",1,0)
+	df$sel_mod = sel_mod[m]
+	df$sel_cor = sel_cor[m]
+	df.selAA <- rbind(df.selAA, df)
+}
+df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
+				names_to = "Age",
+				names_prefix = "Age_",
+				names_transform = list(Age = as.integer),
+				values_to = "Selectivity")
+df$Age <- as.integer(df$Age)
+df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
+df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df$conv = factor(df$conv)
+```
+
+Now plot selectivity-at-age for block 1 (fleet) in all models.
+
+```{r eval=FALSE}
+print(ggplot(df, aes(x=Year, y=Age)) +
+	geom_tile(aes(fill=Selectivity)) +
+	geom_label(aes(x=Year, y=Age, label=lab), size=5, alpha=1, #fontface = "bold",
+	  data=data.frame(Year=1975.5, Age=5.8, lab=paste0("m",1:length(mods)), sel_mod=sel_mod, sel_cor=sel_cor)) +	
+	facet_grid(rows=vars(sel_cor), cols=vars(sel_mod)) +
+	scale_fill_viridis() +
+	theme_bw() +
+	scale_x_continuous(expand=c(0,0)) +
+	scale_y_continuous(expand=c(0,0)))
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }
+
+#### A note on convergence
+
+When fitting age-specific selectivity, oftentimes some of the (mean, $\mu^s_a$) selectivity parameters need to be fixed for the model to converge. The specifications used here follow this procedure:
+
+1. Fit the model without fixing any selectivity parameters.
+2. If the model fails to converge or the hessian is not invertible (i.e. not positive definite), look for mean selectivity parameters that are very close to 0 or 1 (> 5 or < -5 on the logit scale) and/or have `NaN` estimates of their standard error:
+
+```{r, eval=F}
+mod$parList$logit_selpars # mean sel pars
+mod$input$map$sel_repars # if time-varying selectivity turned on
+mod$rep$selAA # list of annual selectivity-at-age by block
+mod$sdrep # look for sel pars with NaN standard errors
+```
+3. Re-run the model fixing the worst selectivity-at-age parameter for each block at 0 or 1 as appropriate. In the above age-specific models, we initially just fixed age 4 in block 2. The logit scale selectivity for age 5 for that block was around 20 for at least one model, indicating that they too should be fixed at 1. Sometimes just initializing the worst parameter is enough, without fixing it.
+4. The goal is to find a set of selectivity parameter initial/fixed values that allow all nested models to converge. Fixing parameters should not affect the NLL much, and any model that is a superset of another should not have a greater NLL (indicates not converged to global minimum). The following commands may be helpful:
+
+```{r, eval=F}
+mod.list <- file.path(getwd(),paste0("m",1:n.mods,".rds"))
+mods <- lapply(mod.list, readRDS)
+sapply(mods, function(x) check_convergence(x))
+sapply(mods, function(x) x$opt$obj) # get NLL 
+lapply(mods, function(x) x$parList$logit_selpars)
+lapply(mods, function(x) x$input$map$sel_repars)
+```

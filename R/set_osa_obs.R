@@ -1,3 +1,10 @@
+#' Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.
+#'
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#'
+#' @return the same input list as provided, but with $obs and $obsvec configured.
+#' This is run after any changes have been made to the data
+#' @export
 set_osa_obs = function(input)
 {
   data = input$data
@@ -225,6 +232,8 @@ set_osa_obs = function(input)
   data$obsvec <- obs$val
   data$agesvec <- obs$age #potentially needed for AR1 sigma correlation of logistic-normal paa obs. 
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
+  attr(data, "check.passed") <- NULL #if data have been generated from obj$simulate(complete=T), this can be problematic
+
   #data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
   if(length(input$log$osa_obs)) input$log$osa_obs <- c("OSA obs: \n", input$log$osa_obs)
   input$data = data

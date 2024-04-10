@@ -111,6 +111,8 @@ Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type
   log_F_iter.fill(log(F_init)); //starting value
   if(trace) see(log_F_iter);
   if(trace) see(Catch);
+  if(trace) see(sel);
+  if(trace) see(NAA);
   log_catch_fleets_F_multi<Type> logcatch_at_F(NAA, log_M, mu, L, sel, fracyr_season, fleet_regions, fleet_seasons, can_move, mig_type, 
     waacatch, trace);
   if(trace) see("past log_catch_fleets_F_multi");
@@ -119,7 +121,10 @@ Type get_F_from_Catch(Type Catch, array<Type> NAA, array<Type> log_M, array<Type
     if(trace) see(i);
     vector<Type> grad_log_catch_at_F = autodiff::gradient(logcatch_at_F,log_F_i);
     if(trace) see(grad_log_catch_at_F);
+    if(trace) see(logcatch_at_F(log_F_i));
+    if(trace) see(log(Catch));
     if(trace) see("after autodiff::gradient");
+    //log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
     log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
     if(trace) see(log_F_iter);
   }

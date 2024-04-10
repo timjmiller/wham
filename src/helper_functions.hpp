@@ -382,23 +382,55 @@ matrix<Type> poly_trans(vector<Type> x, int degree, int n_years_model, int n_yea
   return finalX;
 }
 
+// template <class Type>
+// Type alt2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns){
+  
+//   Type rho_r = geninvlogit(tf_rho_r, Type(-1), Type(1), Type(1)); //rho_year
+//   Type rho_c = geninvlogit(tf_rho_c,Type(-1), Type(1), Type(1)); //rho_age
+//   vector<Type> sig_c = exp(log_sig_c); //sd at age
+//   Type marg_sig = sig_c(0) * pow((1 - pow(rho_r,2))*(1 - pow(rho_c,2)),-0.5);
+//   //Type marg_sig_r = sig_r * pow(1-pow(rho_r,2),-0.5); //marginal sd year
+//   vector<Type> marg_sig_c = sig_c * pow(1-pow(rho_r,2),-0.5); //marginal sd at age
+//   Type res = 0;
+//   if(use_dns == 0){
+//     res -= dnorm(delta(0,0), Type(0), marg_sig,1); //marginal across year and age
+//     for(int y = 1; y < delta.dim(0); y++){
+//       res -= dnorm(delta(y,0), rho_r * delta(y-1,0), marg_sig_c(0), 1); //marginal at age 1 and conditional on year y-1
+//     }
+//     for(int a = 1; a < delta.dim(1); a++){
+//       res -= dnorm(delta(0,a), rho_c * delta(0,a-1) * marg_sig_c(a) / marg_sig_c(a-1), marg_sig_c(a), 1); //marginal at year 1 conditional on age a-1
+//     }
+//     for(int y = 1; y < delta.dim(0); y++) {
+//       for(int a = 1; a < delta.dim(1); a++) {
+//         res -= dnorm(delta(y,a), rho_r *delta(y-1,a) + rho_c * (delta(y,a-1) - rho_r * delta(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a), 1); 
+//       }
+//     }
+//   } else{
+//     using namespace density;
+//     res = SEPARABLE(VECSCALE(AR1(rho_c), marg_sig_c), AR1(rho_r))(delta);
+//   }
+//   return res;
+// }
+
 template <class Type>
-Type alt2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns){
+Type d2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns=1){
   
   Type rho_r = geninvlogit(tf_rho_r, Type(-1), Type(1), Type(1)); //rho_year
   Type rho_c = geninvlogit(tf_rho_c,Type(-1), Type(1), Type(1)); //rho_age
   vector<Type> sig_c = exp(log_sig_c); //sd at age
-  Type marg_sig = sig_c(0) * pow((1 - pow(rho_r,2))*(1 - pow(rho_c,2)),-0.5);
-  //Type marg_sig_r = sig_r * pow(1-pow(rho_r,2),-0.5); //marginal sd year
-  vector<Type> marg_sig_c = sig_c * pow(1-pow(rho_r,2),-0.5); //marginal sd at age
+  vector<Type> marg_sig = sig_c * pow((1 - pow(rho_r,2))*(1 - pow(rho_c,2)),-0.5); // marginal at age across years and ages
+  vector<Type> sig_r1 = sig_c * pow(1-pow(rho_r,2),-0.5); //marginal sd at age across years
+  Type sig_c1 = sig_c(0) * pow(1-pow(rho_c,2),-0.5); //marginal sd age 1 across ages given year
   Type res = 0;
   if(use_dns == 0){
-    res -= dnorm(delta(0,0), Type(0), marg_sig,1); //marginal across year and age
-    for(int y = 1; y < delta.dim(0); y++){
-      res -= dnorm(delta(y,0), rho_r * delta(y-1,0), marg_sig_c(0), 1); //marginal at age 1 and conditional on year y-1
-    }
+    //first row
+    res -= dnorm(delta(0,0), Type(0), marg_sig(0),1); //marginal across year and age
     for(int a = 1; a < delta.dim(1); a++){
-      res -= dnorm(delta(0,a), rho_c * delta(0,a-1) * marg_sig_c(a) / marg_sig_c(a-1), marg_sig_c(a), 1); //marginal at year 1 conditional on age a-1
+      res -= dnorm(delta(0,a), rho_c * delta(0,a-1) * sig_c(a) / sig_c(a-1), sig_r1(a), 1); //marginal across years conditional on age a-1
+    }
+    //subsequent rows
+    for(int y = 1; y < delta.dim(0); y++){
+      res -= dnorm(delta(y,0), rho_r * delta(y-1,0), sig_c1, 1); //marginal at age 1 across ages and conditional on year y-1
     }
     for(int y = 1; y < delta.dim(0); y++) {
       for(int a = 1; a < delta.dim(1); a++) {
@@ -407,13 +439,47 @@ Type alt2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_
     }
   } else{
     using namespace density;
-    res = SEPARABLE(VECSCALE(AR1(rho_c), marg_sig_c), AR1(rho_r))(delta);
+    res = SEPARABLE(VECSCALE(AR1(rho_c), marg_sig), AR1(rho_r))(delta);
   }
   return res;
 }
 
 template <class Type>
-Type alt1dar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns){
+array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns=1, int ystart=0){
+  
+  Type rho_r = geninvlogit(tf_rho_r, Type(-1), Type(1), Type(1)); //rho_year (rows)
+  Type rho_c = geninvlogit(tf_rho_c,Type(-1), Type(1), Type(1)); //rho_age (columns)
+  vector<Type> sig_c = exp(log_sig_c); //conditional sd at age
+  vector<Type> marg_sig = sig_c * pow((1 - pow(rho_r,2))*(1 - pow(rho_c,2)),-0.5); // marginal at age across years and ages
+  vector<Type> sig_r1 = sig_c * pow(1-pow(rho_r,2),-0.5); //marginal sd at age across years
+  Type sig_c1 = sig_c(0) * pow(1-pow(rho_c,2),-0.5); //marginal sd age 1 across ages given year
+  // Type res = 0;
+  array<Type> delta_out = delta;
+  if(use_dns == 0){
+    if(ystart == 0){ //first row, no conditioning on previous years
+      delta_out(0,0) = rnorm(Type(0), marg_sig(0)); //marginal across year and age at age 1
+      for(int a = 1; a < delta.dim(1); a++){
+        delta_out(0,a) = rnorm(rho_c * delta_out(0,a-1) * sig_c(a) / sig_c(a-1), sig_r1(a)); //marginal across years conditional on age a-1
+      }
+    }
+    //subsequent rows
+    for(int y = ystart+1; y < delta.dim(0); y++){
+      delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
+    }
+    for(int y = ystart+1; y < delta.dim(0); y++) {
+      for(int a = 1; a < delta.dim(1); a++) {
+        delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+      }
+    }
+  } else{
+    using namespace density;
+    SEPARABLE(VECSCALE(AR1(rho_c), marg_sig),AR1(rho_r)).simulate(delta_out); // scaled here
+  }
+  return delta_out;
+}
+
+template <class Type>
+Type dar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns){
   
   Type rho = geninvlogit(tf_rho, Type(-1), Type(1), Type(1)); 
   Type sig = exp(log_sig); 
@@ -431,4 +497,23 @@ Type alt1dar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns){
   return res;
 }
 
+
+template <class Type>
+vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, int ystart=0){
+  
+  Type rho = geninvlogit(tf_rho, Type(-1), Type(1), Type(1)); 
+  Type sig = exp(log_sig); 
+  Type marg_sig = sig * pow(1 - pow(rho,2),-0.5);
+  vector<Type> delta_out = delta;
+  if(use_dns == 0){
+    if(ystart == 0) delta_out(0) = rnorm(Type(0), marg_sig); //marginal across year and age
+    for(int y = ystart+1; y < delta.size(); y++){
+      delta_out(y) = rnorm(rho * delta_out(y-1), sig); //marginal at age 1 and conditional on year y-1
+    }
+  } else{
+    using namespace density;
+    SCALE(AR1(rho), marg_sig).simulate(delta_out);
+  }
+  return delta_out;
+}
 

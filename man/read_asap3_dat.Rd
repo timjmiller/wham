@@ -7,8 +7,9 @@
 read_asap3_dat(filename)
 }
 \arguments{
-\item{filename}{character, name of ASAP3 .dat file. The file either needs to be
-in the current working directory, or \code{filename} can include the path.}
+\item{filename}{character vector, names of ASAP3 .dat files. The file either needs to be
+in the current working directory, or \code{filename} can include the path. If multipile files,
+a multi-stock model will be assumed.}
 }
 \value{
 a named list with the following components:

@@ -18,7 +18,7 @@ and a table of AIC and Mohn's rho to aid model comparison."><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -123,19 +123,20 @@ and a table of AIC and Mohn's rho to aid model comparison.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">compare_wham_models</span><span class="op">(</span>
-  <span class="va">mods</span>,
-  do.table <span class="op">=</span> <span class="cn">TRUE</span>,
-  do.plot <span class="op">=</span> <span class="cn">TRUE</span>,
-  fdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,
-  table.opts <span class="op">=</span> <span class="cn">NULL</span>,
-  plot.opts <span class="op">=</span> <span class="cn">NULL</span>,
-  fname <span class="op">=</span> <span class="cn">NULL</span>,
-  sort <span class="op">=</span> <span class="cn">NULL</span>,
-  calc.rho <span class="op">=</span> <span class="cn">NULL</span>,
-  calc.aic <span class="op">=</span> <span class="cn">NULL</span>,
-  do.print <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compare_wham_models</span><span class="op">(</span></span>
+<span>  <span class="va">mods</span>,</span>
+<span>  do.table <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  do.plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  fdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  compare.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  table.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  plot.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fname <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sort <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  calc.rho <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  calc.aic <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  do.print <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -143,12 +144,31 @@ and a table of AIC and Mohn's rho to aid model comparison.</p>
     <dl><dt>mods</dt>
 <dd><p>(named) list of fit WHAM/ASAP models. To read in ASAP model output, use <code><a href="read_asap3_fit.html">read_asap3_fit</a></code>. If no names are given, 'm1', 'm2', ...
 will be used.</p></dd>
+
+
 <dt>do.table</dt>
 <dd><p>T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.</p></dd>
+
+
 <dt>do.plot</dt>
 <dd><p>T/F, produce plots? Default = TRUE.</p></dd>
+
+
 <dt>fdir</dt>
 <dd><p>character, path to directory to save table and/or plots. Default = <code><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd()</a></code>.</p></dd>
+
+
+<dt>compare.opts</dt>
+<dd><p>list of options to generate comparison results:</p><dl><dt><code>$stock</code></dt>
+<dd><p>integer, which stock to include in results. Default = 1.</p></dd>
+
+  <dt><code>$region</code></dt>
+<dd><p>integer, which region to include in results. Default = 1.</p></dd>
+
+
+</dl></dd>
+
+
 <dt>table.opts</dt>
 <dd><p>list of options for AIC/rho table:</p><dl><dt><code>$fname</code></dt>
 <dd><p>character, filename to save CSV results table (.csv will be appended). Default = <code>'model_comparison'</code>.</p></dd>
@@ -166,10 +186,12 @@ will be used.</p></dd>
 <dd><p>T/F, print table to console? Default = TRUE.</p></dd>
 
   <dt><code>$save.csv</code></dt>
-<dd><p>T/F, save table as a CSV file? Default = TRUE.</p></dd>
+<dd><p>T/F, save table as a CSV file? Default = FALSE.</p></dd>
 
 
 </dl></dd>
+
+
 <dt>plot.opts</dt>
 <dd><p>list of options for plots:</p><dl><dt><code>$out.type</code></dt>
 <dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code>system('pdftk')</code> will work across platforms.)</p></dd>
@@ -209,10 +231,15 @@ will be used.</p></dd>
 
 
 </dl></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a list with the following components:</p><dl><dt><code>daic</code></dt>
+    
+
+<p>a list with the following components:</p>
+<p></p>
+<dl><dt><code>daic</code></dt>
 <dd><p>Vector of delta-AIC by model (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
 
     <dt><code>aic</code></dt>
@@ -275,14 +302,14 @@ will be used.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="va">base</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_asap3_fit.html">read_asap3_fit</a></span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input1</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>base<span class="op">=</span><span class="va">base</span>, m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">compare_wham_models</span><span class="op">(</span><span class="va">mods</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">base</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_asap3_fit.html">read_asap3_fit</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>base<span class="op">=</span><span class="va">base</span>, m1<span class="op">=</span><span class="va">m1</span>, m2<span class="op">=</span><span class="va">m2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">compare_wham_models</span><span class="op">(</span><span class="va">mods</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -297,8 +324,7 @@ will be used.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

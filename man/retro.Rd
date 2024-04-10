@@ -7,12 +7,13 @@
 retro(
   model,
   n.peels = 7,
-  ran = "log_NAA",
+  ran = NULL,
   do.sdrep = FALSE,
   n.newton = 0,
   MakeADFun.silent = FALSE,
   retro.silent = FALSE,
-  save.input = FALSE
+  save.input = FALSE,
+  do.brps = FALSE
 )
 }
 \arguments{
@@ -20,7 +21,7 @@ retro(
 
 \item{n.peels}{Integer, number of peels to use in retrospective analysis. Default = \code{7}.}
 
-\item{ran}{Character, specifies which parameters to treat as random effects. Default = \code{"log_NAA"}.}
+\item{ran}{Character, specifies which parameters to treat as random effects. Default = \code{"model$input$random"}.}
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters for each peel? Default = \code{FALSE}.}
 
@@ -31,6 +32,8 @@ retro(
 \item{retro.silent}{T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.}
 
 \item{save.input}{T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.}
+
+\item{do.brps}{T/F, calculate and report biological reference points}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model

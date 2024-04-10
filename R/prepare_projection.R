@@ -53,9 +53,13 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100)
   if(check.version) verify_version(model)
   # default: 3 projection years
+  # peel <- 0
+  # if(!is.null(model$peel)) peel <- model$peel # projecting off of a peel
+
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$input$years, 5)
+  if(any(proj.opts$avg.yrs<0)) stop("negative years are specified in proj.opts$avg.yrs to average projection inputs")
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
@@ -64,9 +68,8 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
 
   input <- model$input
   data <- input$data
-
   # check options for F/catch are valid
-  if(any(proj.opts$avg.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
+  if(any(proj.opts$avg.yrs %in% input$years == FALSE)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
   F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, proj.opts$use.FMSY, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
@@ -81,10 +84,13 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
 
   # add new data objects for projections
   data$do_proj = 1
+  data$n_years_model <- data$n_years_model
   data$n_years_proj = proj.opts$n.yrs
-  input$years_full = c(input$years, tail(input$years,1) +1:proj.opts$n.yrs)
-  
-  proj_yrs_ind <- data$n_years_model+1:data$n_years_proj
+  years_full <- head(input$years, length(input$years))
+  years_full <- c(years_full, tail(years_full,1) + 1:proj.opts$n.yrs)
+  input$years_full <- years_full
+  #input$years_full = c(input$years, tail(input$years,1) +1:proj.opts$n.yrs)
+  proj_yrs_ind <- data$n_years_model + 1:data$n_years_proj
   avg.yrs.ind <- match(proj.opts$avg.yrs, input$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
   data$proj_F_opt = rep(0,data$n_years_proj) 
@@ -166,28 +172,48 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     random = c(random, "logR_proj")
   }
 
-  dims = dim(par$log_NAA)
-  dims[3] = dims[3] + data$n_years_proj
-  tmp <- array(10, dim = dims)
-  tmp[,,1:(data$n_years_model-1),] <- par$log_NAA
-  tmp.map <- array(NA, dim = dims)
-  tmp.map[,,1:(data$n_years_model-1),] <- as.integer(map$log_NAA)
-  for(s in 1:dims[1]) {
-    for(r in 1:dims[2]){
-    # pad log_NAA (even if projection years not used)
-      if(data$NAA_re_model[s] == 0) {} #tmp.map already set to NA
-      if(data$NAA_re_model[s] > 0 & data$spawn_regions[s] == r) tmp.map[s,r,proj_yrs_ind-1,1] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-      if(data$NAA_re_model[s] == 2) for(a in 2:dims[4]) {
-        if(data$NAA_where[s,r,a]) tmp.map[s,r,proj_yrs_ind-1,a] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-      }
-    }
-  }
-  par$log_NAA <- tmp
-  map$log_NAA <- factor(tmp.map)
-
   if(all(data$NAA_re_model>0) & !is.null(proj.opts$avg.rec.yrs)) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.rec.yrs should only be used for SCAA model projections.
     This model already treats recruitment deviations as random effects.","",sep='\n'))
+
+  # # in case projecting off of a peel
+  # data$use_agg_catch <- cbind(data$use_agg_catch[1:data$n_years_model,])
+  # data$use_catch_paa <- cbind(data$use_catch_paa[1:data$n_years_model,])
+  # data$use_indices <- cbind(data$use_indices[1:data$n_years_model,])
+  # data$use_index_paa <- cbind(data$use_index_paa[1:data$n_years_model,])
+
+  # expand NAA_re
+  input_NAA <- input
+  input_NAA$asap3 <- NULL
+  input_NAA$data$n_years_model <- data$n_years_model + data$n_years_proj
+  input_NAA <- set_NAA(input_NAA, input$options$NAA_re) #use same machinery to map NAA and now we have options saved
+  map$log_NAA <- input_NAA$map$log_NAA
+  dims <- dim(input_NAA$par$log_NAA)
+  #dims[3] <- data$n_years_model + data$n_years_proj
+  tmp <- array(10, dim = dims) #a large number for projections is particularly important when user is specifying catch.
+  tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
+  par$log_NAA <- tmp
+
+  # dims = dim(par$log_NAA)
+  # tmp.map.in <- array(as.integer(map$log_NAA), dim = dims)
+  # dims[3] = dims[3] + data$n_years_proj
+  # tmp <- array(10, dim = dims)
+  # tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
+  # tmp.map <- array(NA, dim = dims)
+  # tmp.map[,,1:(data$n_years_model-1),] <- tmp.map.in[,,1:(data$n_years_model-1),]
+  # for(s in 1:dims[1]) {
+  #   for(r in 1:dims[2]){
+  #   # pad log_NAA (even if projection years not used)
+  #     if(data$NAA_re_model[s] == 0) {} #tmp.map already set to NA
+  #     if(data$NAA_re_model[s] > 0 & data$spawn_regions[s] == r) tmp.map[s,r,proj_yrs_ind-1,1] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
+  #     if(data$NAA_re_model[s] == 2) for(a in 2:dims[4]) {
+  #       if(data$NAA_where[s,r,a]) tmp.map[s,r,proj_yrs_ind-1,a] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
+  #     }
+  #   }
+  # }
+  # par$log_NAA <- tmp
+  # map$log_NAA <- factor(tmp.map)
+
 
   # check ecov options are valid, all Ecov will be projected if there observations do not occur in projection years
   # projection options are for how they are used in effects on population and are now done on c++ side
@@ -332,7 +358,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   dims <- dim(par$M_re)
   dims[3] <- data$n_years_model + data$n_years_proj
   tmp <- array(0, dim = dims)
-  tmp[,,1:data$n_years_model,] <- par$M_re
+  tmp[,,1:data$n_years_model,] <- par$M_re[,,1:data$n_years_model,]
   #for(a in 1:dims[1]) for(b in 1:dims[2]) for(c in 1:dims[4]) tmp[a,b,,c] <- c(par$M_re[a,b,,c], rep(0,data$n_years_proj))
   par$M_re <- tmp
       # print("here6")
@@ -358,7 +384,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   dims <- dim(par$L_re)
   dims[1] <- data$n_years_model + data$n_years_proj
   tmp <- matrix(0, dims[1], dims[2])
-  tmp[1:data$n_years_model,] <- par$L_re
+  tmp[1:data$n_years_model,] <- par$L_re[1:data$n_years_model,]
   par$L_re <- tmp
 
   # options for mu in projections, data$proj_mu_opt:
@@ -384,7 +410,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     dims <- dim(par$mu_re)
     dims[4] <- data$n_years_model + data$n_years_proj
     tmp <- array(0, dim = dims)
-    tmp[,,,1:data$n_years_model,,] <- par$mu_re
+    tmp[,,,1:data$n_years_model,,] <- par$mu_re[,,,1:data$n_years_model,,]
     par$mu_re <- tmp
   #}
 
@@ -392,12 +418,12 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   input_q <- input
   input_q$asap3 <- NULL
   input_q$data$n_years_model <- data$n_years_model + data$n_years_proj
-  input_q <- set_q(input_q, input$options$q) #use same machinery to map M and now we have options saved
+  input_q <- set_q(input_q, input$options$q) #use same machinery to map q and now we have options saved
   map$q_re <- input_q$map$q_re
   dims <- dim(par$q_re)
   dims[2] <- data$n_years_model + data$n_years_proj
   tmp <- matrix(0, nrow = data$n_years_model + data$n_years_proj, ncol = NCOL(par$q_re))
-  tmp[1:data$n_years_model,] <- par$q_re
+  tmp[1:data$n_years_model,] <- par$q_re[1:data$n_years_model,]
   par$q_re <- tmp
 
   data$years_use <- 1:(data$n_years_model + data$n_years_proj) -1

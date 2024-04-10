@@ -26,8 +26,8 @@
 #'                  }
 #'                 }
 #'     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be
-#'                a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for
-#'                age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 
+#'                a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic (a50 and 1/slope) or \code{c(0.5,0.5,0.5,1,1,0.5)} for
+#'                age-specific parameters when there are 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 
 #'                or logistic, double-logistic, and decreasing-logistic.}
 #'     \item{$fix_pars}{Alternative to \code{$map_pars} for specifying which selectivity parameters (only fixed effects) to fix at initial values. 
 #'                List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, 
@@ -58,6 +58,22 @@
 #'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
 #'   }
 #'
+#' @return a named list with same elements as the input provided with selectivity options modified.
+#'
+#' @seealso \code{\link{prepare_wham_input}} 
+#'
+#' @examples
+#' \dontrun{
+#' wham.dir <- find.package("wham")
+#' path_to_examples <- system.file("extdata", package="wham")
+#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+#' input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+#' sel <- list(model=rep("logistic",input$data$n_selblocks),
+#'    initial_pars=rep(list(c(3,3)),input$data$n_selblocks),
+#'    fix_pars=rep(list(NULL),input$data$n_selblocks),
+#' input <- set_selectivity(input, selectivity = sel) #logistic selectivity for all selectivity blocks
+#' }
+#'
 #' @export
 set_selectivity = function(input, selectivity)
 {
@@ -75,10 +91,11 @@ set_selectivity = function(input, selectivity)
   input$log$selectivity <- list()
   if(is.null(asap3)) {
     if(is.null(selectivity$n_selblocks)) {
+      #data$n_selblocks <- data$n_fleets+ data$n_indices
+      #selblock pointers are defined upstream in set_indices and set_catch
       data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
       input$log$selectivity <- c(input$log$selectivity, paste0("number of selblocks, ", data$n_selblocks, 
-        ", is being determined by input$data$selblock_pointer_fleets and input$data$selblock_pointer_indices. Those should be 1,...,max(pointers)."))
-      data$n_selblocks = max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
+        ", is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).\n"))
       #data$n_selblocks = data$n_fleets + data$n_indices  #1 for fleet, 1 for index
     } else data$n_selblocks = selectivity$n_selblocks
   } else {
@@ -101,7 +118,7 @@ set_selectivity = function(input, selectivity)
   selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
   
   if(is.null(selectivity$model)) {
-    if(no_asap) data$selblock_models = rep(2, data$n_selblocks)
+    if(no_asap) data$selblock_models <- rep(2, data$n_selblocks)
   } 
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (e.g., asap3$n_fleet_sel_blocks + asap3$n_indices)")
@@ -175,7 +192,7 @@ set_selectivity = function(input, selectivity)
           selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
           sel_mod_diff_warn <- paste(sel_mod_diff_warn, paste0("For Selectivity Block ",b,":"), 
             #paste0("  ASAP .dat file: ",selopts[orig_sel_models[b]]),
-            paste0("  selectivity$models: ",selopts[data$selblock_models[b]]),
+            paste0("  selectivity$model: ",selopts[data$selblock_model[b]]),
             paste0("  Changing values from ASAP3 .dat file ",
             #paste0(orig_selpars[[b]], collapse = ", "),
             " to inits in middle of par range ",
@@ -316,34 +333,48 @@ set_selectivity = function(input, selectivity)
   
   # random effects, selpars_re
   # number of estimated selpars per block * number of years per block (only if that block has re)
+  par$selpars_re <- array(0, c(data$n_selblocks, data$n_years_model, data$n_ages))
+  map$selpars_re <- array(NA, c(data$n_selblocks, data$n_years_model, data$n_ages))
   if(any(data$selblock_models_re > 1)){
-    par$selpars_re <- rep(0, sum((data$selblock_models_re > 1)*data$n_selpars_est*data$n_years_selblocks))
-    tmp_vec <- c()
+    #par$selpars_re <- rep(0, sum((data$selblock_models_re > 1)*data$n_selpars_est*data$n_years_selblocks))
+    #tmp_vec <- c()
     ct <- 0
     for(b in 1:data$n_selblocks){
       if(data$selblock_models_re[b] > 1){
-        tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
+        #tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
         if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
-          tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
+          map$selpars_re[b,which(data$selblock_years[,b]==1),1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
+          #tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
         }
         if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)
-          for(i in 1:dim(tmp)[2]) tmp[,i] = (i + ct)
+          #for(i in 1:dim(tmp)[2]) {
+          for(i in 1:data$n_selpars_est[b]) {
+            map$selpars_re[b,1:data$n_years_selblocks[b],i] <- ct + i
+            #tmp[,i] = (i + ct)
+          }
         }
         if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
-          for(i in 1:dim(tmp)[1]) tmp[i,] = (i + ct)
+          #for(i in 1:dim(tmp)[1]) {
+          for(i in 1:data$n_years_selblocks[b]) {
+            map$selpars_re[b,i,1:data$n_selpars_est[b]] <- ct + i
+            #tmp[i,] = (i + ct)
+          }
         }
-        if(length(tmp)){
-          ct = max(tmp)
-          tmp_vec = c(tmp_vec, as.vector(tmp))
+        #if(length(tmp)){
+        if(any(!is.na(map$selpars_re))){
+          #ct = max(tmp)
+          ct <- max(map$selpars_re, na.rm =T)
+          #tmp_vec = c(tmp_vec, as.vector(tmp))
         } else stop(paste0("set_selectivity thinks you want to use random effects for selblock ", b, 
             ", but either the selblock is not used, or there are no selectivity parameters being estimated."))
       }
     }
-    map$selpars_re <- factor(tmp_vec)
+    #map$selpars_re <- factor(tmp_vec)
   } else {
-    par$selpars_re <- matrix(0)
-    map$selpars_re <- factor(NA)
+    #par$selpars_re <- matrix(0)
+    #map$selpars_re <- factor(NA)
   }
+  map$selpars_re <- factor(map$selpars_re)
   
   # initial and map for parameters controlling selectivity RE
   trans <- function(x) return((2/(1 + exp(-x))) - 1) # transform for correlation par

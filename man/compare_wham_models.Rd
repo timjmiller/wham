@@ -9,6 +9,7 @@ compare_wham_models(
   do.table = TRUE,
   do.plot = TRUE,
   fdir = getwd(),
+  compare.opts = NULL,
   table.opts = NULL,
   plot.opts = NULL,
   fname = NULL,
@@ -28,6 +29,12 @@ will be used.}
 
 \item{fdir}{character, path to directory to save table and/or plots. Default = \code{getwd()}.}
 
+\item{compare.opts}{list of options to generate comparison results:
+\describe{
+  \item{\code{$stock}}{integer, which stock to include in results. Default = 1.}
+  \item{\code{$region}}{integer, which region to include in results. Default = 1.}
+}}
+
 \item{table.opts}{list of options for AIC/rho table:
 \describe{
   \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = \code{'model_comparison'}.}
@@ -35,7 +42,7 @@ will be used.}
   \item{\code{$calc.rho}}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
   \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
   \item{\code{$print}}{T/F, print table to console? Default = TRUE.}
-  \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = TRUE.}
+  \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = FALSE.}
 }}
 
 \item{plot.opts}{list of options for plots:

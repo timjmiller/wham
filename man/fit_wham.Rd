@@ -11,7 +11,7 @@ fit_wham(
   do.retro = TRUE,
   n.peels = 7,
   do.osa = TRUE,
-  osa.opts = list(method = "cdf", parallel = TRUE),
+  osa.opts = list(method = "oneStepGaussianOffMode", parallel = TRUE),
   do.post.samp = TRUE,
   model = NULL,
   do.check = FALSE,
@@ -23,7 +23,8 @@ fit_wham(
     FALSE, avg.ecov.yrs = NULL, proj.ecov = NULL, cont.Mre = NULL, avg.rec.yrs = NULL,
     percentFXSPR = 100),
   do.fit = TRUE,
-  save.sdrep = TRUE
+  save.sdrep = TRUE,
+  do.brps = TRUE
 )
 }
 \arguments{
@@ -76,7 +77,7 @@ Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}.
   \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
   \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
   \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
-  \item \code{$proj.ecov} (vector), user-specified environmental covariate(s) for projections. Length must equal \code{n.yrs}.
+  \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n_Ecov}.
   \item \code{$cont.Mre} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{TRUE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
   \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years.
   \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if proj.opts$use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
@@ -86,6 +87,8 @@ Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}.
 \item{do.fit}{T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
+
+\item{do.brps}{T/F, calculate and report biological reference points. Default = \code{TRUE}.}
 }
 \value{
 a fit TMB model with additional output if specified:

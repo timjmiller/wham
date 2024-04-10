@@ -1101,11 +1101,6 @@ template <class Type>
 matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Type> log_NAA_sigma, array<Type> trans_NAA_rho, 
   array<int> NAA_where,
   vector<int> spawn_regions, vector<int> years_use, int bias_correct_pe, int decouple_recruitment = 0, int use_alt_AR1 = 0){
-// matrix<Type> get_NAA_nll(array<Type> N1, vector<int> N1_model, array<Type> N1_repars, vector<int> NAA_re_model, array<Type> log_NAA, matrix<Type> log_NAA_sigma, matrix<Type> trans_NAA_rho, 
-//   array<int> NAA_where, vector<int> recruit_model, matrix<Type> mean_rec_pars, 
-//   matrix<Type> log_SR_a, matrix<Type> log_SR_b, matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
-//   vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, array<Type> waa_ssb, 
-//   array<Type> mature, vector<int> years_use, int bias_correct_pe, int n_years_model){
   /*
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   */
@@ -1126,6 +1121,8 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
   //int n_years = NAA.dim(2);
   int n_ages = NAA.dim(3);
   int n_regions = NAA.dim(1);
+  int rho_y_ind = 1;
+  if(decouple_recruitment) rho_y_ind = 2;
 
   vector<Type> marginal_sigma(n_ages); //sigmas for one stock
   Type NAA_rho_a = 0, NAA_rho_y = 0;
@@ -1139,17 +1136,16 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
       vector<Type> NAA_devs_r_s(n_years-1);
       // for NAA_re_model = 1, must make sure that rho_a = 0 and rho_y is set appropriately (cor = "iid" or "ar1_y") on R side
       //NAA_rho_a = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,0), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
-      if(!decouple_recruitment) NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,1), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
-      else NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,2), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
+      NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
       marginal_sigma(0) = exp(log_NAA_sigma(s,spawn_regions(s)-1,0)) * pow(1-pow(NAA_rho_y,2),-0.5);
       //marginal_sigma.col(s) = exp(vector<Type>(log_NAA_sigma.row(s))) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
       for(int y = 1; y < n_years; y++) NAA_devs_r_s(y-1) = log(NAA(s,spawn_regions(s)-1,years_use(y),0)) - log(pred_NAA(s,spawn_regions(s)-1,years_use(y),0));
       if(bias_correct_pe) NAA_devs_r_s += 0.5*pow(marginal_sigma(0),2); //make sure this is ok when just recruitment is random.
-      //if(use_alt_AR1==0){
-      nll_NAA(s,spawn_regions(s)-1) += SCALE(AR1(NAA_rho_y), marginal_sigma(0))(NAA_devs_r_s);
-      //} else {
-      //  nll_NAA(s,spawn_regions(s)-1) +=  alt1dar1(NAA_devs_r_s, trans_NAA_rho(s,spawn_regions(s)-1,1), log_NAA_sigma(s,spawn_regions(s)-1,0), 1);
-      //}
+      if(use_alt_AR1==0){
+        nll_NAA(s,spawn_regions(s)-1) += SCALE(AR1(NAA_rho_y), marginal_sigma(0))(NAA_devs_r_s);
+      } else {
+        nll_NAA(s,spawn_regions(s)-1) +=  dar1(NAA_devs_r_s, trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind), log_NAA_sigma(s,spawn_regions(s)-1,0), 0);
+      }
     }
     if(NAA_re_model(s) == 2){ //"rec+1"
       for(int r = 0; r < n_regions; r++){
@@ -1161,16 +1157,17 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
         int age_start = 0;
         if(decouple_recruitment) age_start = 1;
         for(int a = age_start; a< n_ages; a++) {
-          marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
+          //marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
           if(NAA_where(s,r,a)) n_age_s_r++; //start after recruitment when decouple_recruitment= 1
         }
         if(n_age_s_r>0) {// has to be some fish of some age in this region
           array<Type> NAA_devs_s_r(n_years-1, n_age_s_r);
           NAA_devs_s_r.setZero();
-          vector<Type> marginal_sigma_s_r(n_age_s_r);
+          vector<Type> marginal_sigma_s_r(n_age_s_r), log_sigma_s_r(n_age_s_r);
           int k=0;
           for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
-            marginal_sigma_s_r(k) = marginal_sigma(a);
+            log_sigma_s_r(k) = log_NAA_sigma(s,r,a);
+            marginal_sigma_s_r(k) = exp(log_sigma_s_r(k)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
             k++;
           }
           for(int y = 1; y < n_years; y++) {
@@ -1187,12 +1184,12 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
           // see(marginal_sigma_s_r);
           // see(NAA_rho_a);
           // see(NAA_rho_y);
-          // if(use_alt_AR1==0){
+          if(use_alt_AR1==0){
             nll_NAA(s,r) += SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y))(NAA_devs_s_r);
-          // } else {
-          //   see("using alt2dar1");
-          //   nll_NAA(s,r) += alt2dar1(NAA_devs_s_r, trans_NAA_rho(s,r,0), trans_NAA_rho(s,r,1), vector<Type>(log_NAA_sigma.row(s)), 0);
-          // }
+          } else {
+            see("using alt2dar1");
+            nll_NAA(s,r) += d2dar1(NAA_devs_s_r, trans_NAA_rho(s,r,1), trans_NAA_rho(s,r,0), log_sigma_s_r, 0);
+          }
           // see(nll_NAA(s,r));
           //std::exit(EXIT_FAILURE);
         }
@@ -1203,8 +1200,8 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
 }
 
 template <class Type>
-array<Type> simulate_NAA_devs(array<Type> NAA, vector<int> NAA_re_model, array<Type> log_NAA_sigma, array<Type> trans_NAA_rho, array<int> NAA_where, 
-  vector<int> spawn_regions, vector<int> years_use, int bias_correct_pe, int decouple_recruitment = 0){
+array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, array<Type> log_NAA_sigma, array<Type> trans_NAA_rho, array<int> NAA_where, 
+  vector<int> spawn_regions, vector<int> years_use, int bias_correct_pe, int decouple_recruitment = 0, int use_alt_AR1 = 0, int ystart = 0){
   /*
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   */
@@ -1215,33 +1212,38 @@ array<Type> simulate_NAA_devs(array<Type> NAA, vector<int> NAA_re_model, array<T
   //years_use is possibly a subset of years to use for evaluating likelihood (and simulating values). normally = 0,....,n_years_model-1
   using namespace density; // necessary to use AR1, SCALE, SEPARABLE
 
-  int n_stocks = NAA.dim(0);
+  int n_stocks = NAA_devs.dim(0);
   //int n_years_sim = years_use.size()-1;
   int n_years = years_use.size();
-  int n_years_pop = NAA.dim(2); //all years
-  int n_ages = NAA.dim(3);
-  int n_regions = NAA.dim(1);
+  //int n_years_pop = NAA_devs.dim(2); //all years
+  int n_ages = NAA_devs.dim(3);
+  int n_regions = NAA_devs.dim(1);
   Type NAA_rho_y = 0, NAA_rho_a = 0;
-  array<Type> NAA_devs(n_stocks, n_regions, n_years_pop, n_ages); //same dims as that provided by get_NAA_devs
-  NAA_devs.setZero();
+  array<Type> NAA_devs_out = NAA_devs; //(n_stocks, n_regions, n_years_pop, n_ages); //same dims as that provided by get_NAA_devs
   vector<Type> marginal_sigma(n_ages);
+  int rho_y_ind = 1;
+  if(decouple_recruitment) rho_y_ind = 2; //different rho_y for recruitment and survival
 
   //NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0){
     marginal_sigma.setZero();  //clear for each stock
     if((NAA_re_model(s) == 1) | ((NAA_re_model(s) == 2) & decouple_recruitment)){ //"rec"
       // for NAA_re_model = 1, must make sure that rho_a = 0 and rho_y is set appropriately (cor = "iid" or "ar1_y") on R side
-      //NAA_rho_a = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,0), Type(-1), Type(1), Type(2)); //2 is legacy
-      if(!decouple_recruitment) NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,1), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
-      else NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,2), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
+      NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
       marginal_sigma(0) = exp(log_NAA_sigma(s,spawn_regions(s)-1,0)) * pow(1-pow(NAA_rho_y,2),-0.5);
-      //marginal_sigma.col(s) = exp(vector<Type> (log_NAA_sigma.row(s))) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
       vector<Type> NAA_devs_r_s(n_years-1);
-      AR1(NAA_rho_y).simulate(NAA_devs_r_s); // sigma = 1, scale below
-      NAA_devs_r_s = marginal_sigma(0) * NAA_devs_r_s;
+      if(use_alt_AR1==1){ //do simulation using conditional pdfs
+        for(int y = 1; y < n_years; y++){
+          NAA_devs_r_s(y-1) = NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0);
+        }
+        NAA_devs_r_s = rar1(NAA_devs_r_s,trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind),log_NAA_sigma(s,spawn_regions(s)-1,0),0,ystart);
+      } else{
+        AR1(NAA_rho_y).simulate(NAA_devs_r_s); // sigma = 1, scale below
+        NAA_devs_r_s = marginal_sigma(0) * NAA_devs_r_s;
+      }
       if(bias_correct_pe) NAA_devs_r_s -= 0.5*pow(marginal_sigma(0),2);
       for(int y = 1; y < n_years; y++){
-        NAA_devs(s,spawn_regions(s)-1,years_use(y),0) = NAA_devs_r_s(y-1);
+        NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0) = NAA_devs_r_s(y-1);
       }
     }
     if(NAA_re_model(s) == 2){ //"rec+1"
@@ -1252,24 +1254,36 @@ array<Type> simulate_NAA_devs(array<Type> NAA, vector<int> NAA_re_model, array<T
         int age_start = 0;
         if(decouple_recruitment) age_start = 1;
         for(int a = age_start; a< n_ages; a++) {
-          marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
-          if(NAA_where(s,r,a)) n_age_s_r++;
+          //marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
+          if(NAA_where(s,r,a)) n_age_s_r++; //start after recruitment when decouple_recruitment= 1
         }
         if(n_age_s_r>0) {// has to be some fish of some age in this region
           array<Type> NAA_devs_s_r(n_years-1, n_age_s_r);
           NAA_devs_s_r.setZero();
-          vector<Type> marginal_sigma_s_r(n_age_s_r);
+          vector<Type> marginal_sigma_s_r(n_age_s_r), log_sigma_s_r(n_age_s_r);
           int k=0;
           for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
-            marginal_sigma_s_r(k) = marginal_sigma(a);
+            log_sigma_s_r(k) = log_NAA_sigma(s,r,a);
+            marginal_sigma_s_r(k) = exp(log_sigma_s_r(k)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
             k++;
           }
-          SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y)).simulate(NAA_devs_s_r); // scaled here
+          if(use_alt_AR1==1){ //do simulation using conditional pdfs
+            for(int y = 1; y < n_years; y++) {
+              k=0;
+              for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
+                NAA_devs_s_r(y-1,k) = NAA_devs_out(s,r,years_use(y),a);
+                k++;
+              }
+              NAA_devs_s_r = r2dar1(NAA_devs_s_r,trans_NAA_rho(s,r,1), trans_NAA_rho(s,r,0), log_sigma_s_r,0,ystart);
+            }
+          } else {
+            SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y)).simulate(NAA_devs_s_r); // scaled here
+          }
           for(int y = 1; y < n_years; y++) { 
             k=0;
             for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
               if(bias_correct_pe) NAA_devs_s_r(y-1,k) -= 0.5*pow(marginal_sigma_s_r(k),2);
-              NAA_devs(s,r,years_use(y),a) = NAA_devs_s_r(y-1,k);
+              NAA_devs_out(s,r,years_use(y),a) = NAA_devs_s_r(y-1,k);
               k++;
             }
           }
@@ -1277,7 +1291,7 @@ array<Type> simulate_NAA_devs(array<Type> NAA, vector<int> NAA_re_model, array<T
       }
     }
   }
-  return NAA_devs;
+  return NAA_devs_out;
 }
 
 // stopped here

@@ -1,0 +1,266 @@
+---
+title: "Ex 8: Compare ASAP and WHAM model results"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 8: Compare ASAP and WHAM model results}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+# wham.dir <- find.package("wham")
+# knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
+wham.dir <- find.package("wham")
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+This is the 8th WHAM example. We assume you already have `wham` installed and are relatively familiar with the package. If not, read the [Introduction](https://timjmiller.github.io/wham/) and  [Tutorial](https://timjmiller.github.io/wham/articles/).
+
+In this vignette we show how to read in ASAP3 model results and compare to WHAM models, using the `compare_wham_models()` function. We use the [2019 Georges Bank haddock stock assessment](https://apps-nefsc.fisheries.noaa.gov/saw/sasi/uploads/2019_HAD_GB_RPT.pdf), which is an update to the VPA benchmark ([NEFSC 2008](https://repository.library.noaa.gov/view/noaa/5227)). Thanks to Liz Brooks for sharing the ASAP3 data file and model output in preparation for the 2021 research track assessment--these files and results are very preliminary.
+
+```{r eval=FALSE}
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(tidyverse)
+library(wham)
+```
+
+Create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output, otherwise will be saved in working directory
+write.dir <- "choose/where/to/save/output"
+dir.create(write.dir)
+setwd(write.dir)
+```
+
+The Georges Bank haddock ASAP data file is distributed in `wham`. Read in the ASAP file, `BASE_3.DAT`.
+```{r eval=FALSE}
+wham.dir <- find.package("wham")
+asap.dir <- file.path(wham.dir,"extdata","BASE_3")
+asap3 <- read_asap3_dat(file.path(asap.dir,"BASE_3.DAT"))
+```
+
+Define three basic WHAM models with different numbers-at-age random effects:
+
+  - `m1`: similar to ASAP, where recruitment deviations in each year are estimated as fixed effect parameters.
+  - `m2`: recruitment as random effects, estimating $\sigma^2_R$. 
+  - `m3`: all numbers-at-age are random effects, i.e. the full state-space model.
+
+```{r}
+df.mods <- data.frame(naa_sig=c('none','rec','rec+1'), naa_cor=c('none','iid','iid'))
+n.mods <- dim(df.mods)[1]
+df.mods$Model <- paste0("m",1:n.mods)
+df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+
+# look at model table
+df.mods
+```
+
+## Run the WHAM models
+
+All models use the same options for expected recruitment (random about mean, no stock-recruit function) and selectivity as specified in `BASE_3.DAT`.
+
+```{r eval=FALSE}
+for(m in 1:n.mods){
+  NAA_list <- list(cor=df.mods[m,"naa_cor"], sigma=df.mods[m,"naa_sig"])
+  if(NAA_list$sigma == 'none') NAA_list = NULL
+
+  input <- prepare_wham_input(asap3, recruit_model = 2,
+                              model_name = df.mods$Model[m],                         
+                              NAA_re = NAA_list)   
+
+  mod <- fit_wham(input, do.osa=F)
+  saveRDS(mod, file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
+}
+```
+
+## Look at convergence and diagnostics
+
+```{r eval=FALSE}
+mod.list <- file.path(write.dir,paste0("m",1:n.mods,".rds"))
+mods <- lapply(mod.list, readRDS)
+ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
+df.mods$conv <- sapply(mods, function(x) x$opt$convergence == 0) # 0 means opt converged
+df.mods$pdHess <- as.logical(ok_sdrep)
+conv_mods <- (1:n.mods)[df.mods$pdHess] 
+for(m in conv_mods){
+  plot_wham_output(mod=mods[[m]], out.type='pdf', dir.main=file.path(write.dir,paste0("m",m)))
+}
+```
+
+Get output from ASAP model run using `read_asap3_fit()`. Then combine the ASAP model and 3 WHAM models into a named list, `mods`.
+
+```{r eval=FALSE}
+base <- read_asap3_fit(wd=asap.dir, asap.name="BASE_3")
+mods <- c(list(base),mods)
+names(mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
+```
+
+## Comparison plots
+
+Now we can use `compare_wham_models()` to plot key output from all 4 models together for comparison.
+
+```{r eval=FALSE}
+res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE))
+saveRDS(res, file=file.path(write.dir,"res.rds"))
+```
+
+```{r include=FALSE}
+data(vign8_res)
+```
+
+There are many options, see `?compare_wham_models`. To only get the AIC and retro table, not plots (note that ASAP models cannot be included here).
+
+```{r eval=FALSE}
+res <- compare_wham_models(mods, fdir=write.dir, do.plot=F)
+round(res$tab,2)
+```
+
+```{r echo=FALSE}
+vign8_res
+```
+
+Only get the plots, not the table
+
+```{r eval=FALSE}
+res <- compare_wham_models(mods, fdir=write.dir, do.table=F)
+```
+
+###### Plot 1: 3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_SSB_F_R.png){ width=60% }
+
+###### Plot 2: CV (coefficient of variation) for SSB, F, and Recruitment
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_CV.png){ width=60% }
+
+###### Plot 3: Fleet selectivity (by block, averaged across years)
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_fleets.png){ width=60% }
+
+###### Plot 4: Index selectivity (by block, averaged across years)
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_indices.png){ width=60% }
+
+###### Plot 5: Selectivity tile (fleets + indices, more useful for time-varying random effects)
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_tile.png){ width=60% }
+
+Plots 6 and 7 are only interesting when M is time-varying, so we omit them there.
+
+###### Plot 8: 3-panel of F X\% SPR, SSB at F_X\%SPR, and yield at F_X\%SPR
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_ref_pts.png){ width=60% }
+
+###### Plot 9: 2-panel of relative status (SSB / SSB at F_X\%SPR and F / F_X\%SPR)
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_timeseries.png){ width=60% }
+
+###### Plot 10: Kobe status (relative SSB vs. relative F)
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_kobe.png){ width=60% }
+
+## Modifying comparison plots
+
+Many modifications can be made using built-in options, see `$plot.opts` in `compare_wham_models()`.
+
+Plots are saved as png by default, can be pdf
+```{r eval=FALSE}
+res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(out.type='pdf'))
+```
+
+`$which` lets you choose which of the plots to make
+`$years` lets you only plot a subset of model years
+```{r eval=FALSE}
+# which = 9 (only plot relative status)
+# years = 1980-2018
+compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, which=9))
+ggsave(file.path(write.dir,"which9_zoom.png"), device='png', width=6.5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_zoom.png){ width=60% }
+
+`$ci` can turn off the confidence interval shading for all or some models
+```{r eval=FALSE}
+# which = 1 (SSB, F, recruitment)
+# ci = FALSE (remove confidence intervals for all models, can also choose a subset)
+compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, which=1))
+ggsave(file.path(write.dir,"which1_noCI.png"), device='png', width=6.5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_noCI.png){ width=60% }
+
+`$relative.to` lets you plot differences between the models relative to a base model (here, ASAP)
+```{r eval=FALSE}
+# which = 2 (CV of SSB, F, recruitment)
+# relative to ASAP
+compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, relative.to="ASAP", which=2))
+ggsave(file.path(write.dir,"which2_relative.png"), device='png', width=6.5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which2_relative.png){ width=60% }
+
+`$kobe.yr` is used to specify the year in the Kobe relative status plot
+`$kobe.prob = F` will turn off the probabilities printed in each quadrant for each model (can be crowded with many models) 
+```{r eval=FALSE}
+# which = 10 (kobe plot)
+# kobe.yr = 2010 (instead of terminal year, 2018)
+# kobe.prob = F (don't print probabilities)
+compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which10_2010.png){ width=60% }
+
+The plots made with `ggplot2` (all except Kobe) are returned in a list, `$g`, so you can modify them later. For example, to re-make the relative status timeseries plot with different fill and color scales:
+
+```{r eval=FALSE}
+res$g[[9]] + scale_colour_brewer(palette="Set1") + scale_fill_brewer(palette="Set1")
+ggsave(file.path(write.dir,"which9_colorchange.png"), device='png', width=6.5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_colorchange.png){ width=60% }
+
+Note that even if you're only making one plot using `$which`, `res$g` is still a list of length 10. For example, to plot SSB, F, and recruitment from 1980-2018 relative to ASAP without confidence intervals:
+
+```{r eval=FALSE}
+res <- compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, ci=FALSE, relative.to="ASAP", which=1))
+cols <- c("black", RColorBrewer::brewer.pal(n = 3, name = "Set1"))
+res$g[[1]] + scale_colour_manual(values=cols)
+ggsave(file.path(write.dir,"which1_relative_colorchange.png"), device='png', width=5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange.png){ width=60% }
+
+Any aesthetics that weren't in the original plot are more complicated. For example, if we want to make the base model line dashed, linetype was not in original plot. We can do:
+
+```{r eval=FALSE}
+res$g[[1]]$mapping$linetype = quote(Model)
+res$g[[1]]$labels$linetype = "Model"
+ltys <- c(2,1,1,1)
+res$g[[1]] + scale_colour_manual(values=cols) + scale_linetype_manual(values=ltys)
+ggsave(file.path(write.dir,"which1_relative_colorchange_linetype.png"), device='png', width=5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange_linetype.png){ width=60% }
+
+Our final example, changing the labels on the selectivity plot facets
+
+```{r eval=FALSE}
+res <- compare_wham_models(mods, do.table=F, plot.opts=list(which=4))
+index_names <- as_labeller(c(`Block 4` = "NEFSC - Spring", `Block 5` = "NEFSC - Fall",`Block 6` = "DFO", `Block 7` = "NEFSC - Spring41"))
+res$g[[4]] + facet_wrap(vars(Block), ncol=1, strip.position = 'right', labeller = index_names)
+ggsave(file.path(write.dir,"which4_labels.png"), device='png', width=4.5, height=5.5, units='in')
+```
+
+![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which4_labels.png){ width=60% }
+
+Hopefully that is enough to get you started!
+

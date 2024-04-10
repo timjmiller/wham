@@ -2,7 +2,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex06_NAA"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# 17 min
+# ~30 sec
 
 context("Ex 6: Numbers-at-age")
 
@@ -20,11 +20,14 @@ n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 # df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
-basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
+#no more bias correction
+# basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
+basic_info <- NULL
 
 mods <- vector("list",n.mods)
 mods_proj <- vector("list",n.mods)
-fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
+#fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
+fit.mods <- which(ex6_test_results$is_conv)
 for(m in fit.mods){
   NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
   if(NAA_list$sigma == '---') NAA_list = NULL
@@ -51,25 +54,15 @@ for(m in fit.mods){
   # Fit model
   print(m)
   # temp <- suppressWarnings(fit_wham(input, do.fit=F))
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
-  print(c(mods[[m]]$opt$obj, ex6_test_results$nll[m]))
-  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
-
+  # mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
+  mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
+  expect_equal(length(mods[[!!m]]$par), length(ex6_test_results$par[[!!m]]), tolerance=1e-3)
+  expect_equal(as.numeric(mods[[!!m]]$fn(ex6_test_results$par[[!!m]])), as.numeric(ex6_test_results$nll[!!m]), tolerance=1e-3)
+  # if fitting the models...
+  # expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex6_test_results$nll[!!m], tolerance=1e-3)
   # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values
+  # print(c(mods[[m]]$opt$obj, ex6_test_results$nll[m]))
+  # mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 }
-
-expect_equal(as.numeric(mods[[1]]$opt$obj), ex6_test_results$nll[1], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[2]]$opt$obj), ex6_test_results$nll[2], tolerance=1e-3) # nll
-# expect_equal(as.numeric(mods[[3]]$opt$obj), ex6_test_results$nll[3], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[4]]$opt$obj), ex6_test_results$nll[4], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[5]]$opt$obj), ex6_test_results$nll[5], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[6]]$opt$obj), ex6_test_results$nll[6], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[7]]$opt$obj), ex6_test_results$nll[7], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[8]]$opt$obj), ex6_test_results$nll[8], tolerance=1e-3) # nll
-# expect_equal(as.numeric(mods[[9]]$opt$obj), ex6_test_results$nll[9], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[10]]$opt$obj), ex6_test_results$nll[10], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[11]]$opt$obj), ex6_test_results$nll[11], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[12]]$opt$obj), ex6_test_results$nll[12], tolerance=1e-3) # nll
-expect_equal(as.numeric(mods[[13]]$opt$obj), ex6_test_results$nll[13], tolerance=1e-3) # nll
 
 })

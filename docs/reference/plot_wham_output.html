@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -121,33 +121,42 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">plot_wham_output</span><span class="op">(</span>
-  <span class="va">mod</span>,
-  dir.main <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,
-  out.type <span class="op">=</span> <span class="st">"png"</span>,
-  res <span class="op">=</span> <span class="fl">72</span>,
-  plot.opts <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_wham_output</span><span class="op">(</span></span>
+<span>  <span class="va">mod</span>,</span>
+<span>  dir.main <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  out.type <span class="op">=</span> <span class="st">"html"</span>,</span>
+<span>  res <span class="op">=</span> <span class="fl">72</span>,</span>
+<span>  plot.opts <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>mod</dt>
 <dd><p>output from <code><a href="fit_wham.html">fit_wham</a></code></p></dd>
+
+
 <dt>dir.main</dt>
 <dd><p>character, directory to save plots to (default = <code><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd()</a></code>)</p></dd>
+
+
 <dt>out.type</dt>
 <dd><p>character, either <code>'html'</code>, <code>'pdf'</code>, or <code>'png'</code> (default = <code>'png'</code>)</p></dd>
+
+
 <dt>res</dt>
 <dd><p>resolution to save .png files (dpi)</p></dd>
+
+
 <dt>plot.opts</dt>
 <dd><p>(optional) list of plot modifications</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p><code>out.type = 'pdf'</code> makes one pdf file of all plots. <code>out.type = 'png'</code> (default)
+    <p><code>out.type = 'pdf'</code> makes one pdf file of all plots. <code>out.type = 'png'</code> 
 creates a subdirectory `plots_png`` in <code>dir.main</code> and saves .png files within.
-<code>out.type = 'html'</code> makes a html files for viewing plot .png files and html tables of parameter estimates in a browser.
+<code>out.type = 'html'</code> (default) makes a html file for viewing plot .png files and html tables of parameter estimates in a browser.
 <code>out.type = 'pdf' or 'png'</code> makes LaTeX and pdf files of tables of parameter estimates.
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').</p>
 <p><code>plot.opts</code> holds optional arguments to modify plots:</p><dl><dt><code>$ages.lab</code></dt>
@@ -155,6 +164,9 @@ creates a subdirectory `plots_png`` in <code>dir.main</code> and saves .png file
 
     <dt><code>$font.family</code></dt>
 <dd><p>Font family, e.g. <code>"Times"</code>.</p></dd>
+
+    <dt><code>$browse</code></dt>
+<dd><p>T/F whether to open the html file in a browser. Default = T.</p></dd>
 
   
 </dl><p>Plot functions are located in <code>wham_plots_tables.R</code>
@@ -167,11 +179,11 @@ Table function is located in <code>par_tables_fn.R</code></p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"input4_SNEMAYT"</span><span class="op">)</span> <span class="co"># load fit wham model</span></span>
-<span class="r-in"><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4_SNEMAYT</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">plot_wham_output</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"input4_SNEMAYT"</span><span class="op">)</span> <span class="co"># load fit wham model</span></span></span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4_SNEMAYT</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_wham_output</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -186,8 +198,7 @@ Table function is located in <code>par_tables_fn.R</code></p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>
