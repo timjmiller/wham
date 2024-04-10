@@ -1232,6 +1232,7 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
       NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
       marginal_sigma(0) = exp(log_NAA_sigma(s,spawn_regions(s)-1,0)) * pow(1-pow(NAA_rho_y,2),-0.5);
       vector<Type> NAA_devs_r_s(n_years-1);
+      NAA_devs_r_s.setZero();
       if(use_alt_AR1==1){ //do simulation using conditional pdfs
         for(int y = 1; y < n_years; y++){
           NAA_devs_r_s(y-1) = NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0);

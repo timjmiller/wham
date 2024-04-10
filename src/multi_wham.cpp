@@ -834,7 +834,7 @@ Type objective_function<Type>::operator() ()
         ystart = n_years_model-1; //only does anything if use_alt_AR1 = 1
         sim_alt_AR1 = 1;
       }
-      array<Type> NAA_devs_sim = simulate_NAA_devs(NAA, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
+      array<Type> NAA_devs_sim = simulate_NAA_devs(NAA_devs, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
         bias_correct_pe, decouple_recruitment, sim_alt_AR1, ystart);
       //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
       log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,

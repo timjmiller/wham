@@ -461,14 +461,23 @@ array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type>
       for(int a = 1; a < delta.dim(1); a++){
         delta_out(0,a) = rnorm(rho_c * delta_out(0,a-1) * sig_c(a) / sig_c(a-1), sig_r1(a)); //marginal across years conditional on age a-1
       }
-    }
-    //subsequent rows
-    for(int y = ystart+1; y < delta.dim(0); y++){
-      delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
-    }
-    for(int y = ystart+1; y < delta.dim(0); y++) {
-      for(int a = 1; a < delta.dim(1); a++) {
-        delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+      for(int y = 1; y < delta.dim(0); y++){
+        delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
+      }
+      for(int y = 1; y < delta.dim(0); y++) {
+        for(int a = 1; a < delta.dim(1); a++) {
+          delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+        }
+      }
+    } else {
+      //subsequent rows
+      for(int y = ystart; y < delta.dim(0); y++){
+        delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
+      }
+      for(int y = ystart; y < delta.dim(0); y++) {
+        for(int a = 1; a < delta.dim(1); a++) {
+          delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+        }
       }
     }
   } else{
@@ -506,9 +515,13 @@ vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, in
   Type marg_sig = sig * pow(1 - pow(rho,2),-0.5);
   vector<Type> delta_out = delta;
   if(use_dns == 0){
-    if(ystart == 0) delta_out(0) = rnorm(Type(0), marg_sig); //marginal across year and age
-    for(int y = ystart+1; y < delta.size(); y++){
-      delta_out(y) = rnorm(rho * delta_out(y-1), sig); //marginal at age 1 and conditional on year y-1
+    if(ystart == 0) {
+      delta_out(0) = rnorm(Type(0), marg_sig); //marginal across year and age
+      for(int y = 1; y < delta.size(); y++){
+        delta_out(y) = rnorm(rho * delta_out(y-1), sig); //marginal at age 1 and conditional on year y-1
+      }
+    } else {
+      for(int y = ystart; y < delta.size(); y++) delta_out(y) = rnorm(rho * delta_out(y-1), sig);
     }
   } else{
     using namespace density;
