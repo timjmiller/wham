@@ -1,15 +1,20 @@
 wham 1.0.7.9000
 =========================
 
-
 ### Major improvements
 
 
 ### Minor improvements
+
+* Added option to bias-correct SSB/R and Y/R calculations for BRPs. Long-term projections can then be consistent with static BRPs. [4dade43](https://github.com/timjmiller/wham/commit/4dade43485ad35055c7bfc4ee982cf73dadac700)
+* Added option to make recruitment in projection years consistent with that used for prevailing SPR-based BRPs [4edf29a](https://github.com/timjmiller/wham/commit/4edf29a97964b7cbacf830c25effd9100697f4ad)
+* Added option to specify WAA and maturity in projection years. [d6f82f1](https://github.com/timjmiller/wham/commit/d6f82f12c525a06ef5f319c477e78a4cfed10dfb)
 * Added option to decouple recruitment random effects from those for older ages when NAA_re$sigma = "rec+1". [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
 * Linear parameterization of Dirichlet-multinomial dispersion parameter option for age composition likelihood added [Thorson et al. 2017](https://doi.org/10.1016/j.fishres.2016.06.005) [e3ab77b](https://github.com/timjmiller/wham/commit/e3ab77b8e42c0e68e364f58a0a7855e04a262604). Effective sample size is reported for both Dirichlet-multinomial likelihood options.
 
 ### Bug fixes
+
+* Fixed bug in make_osa_residuals when checking for a data frame. [9f65ad6](https://github.com/timjmiller/wham/commit/9f65ad62b366fc08e35df48178e87cd39d330cd3)
 * Fix bug in NAA reporting simulated models with projection years when holding process errors constant in data years. [22633c](https://github.com/timjmiller/wham/commit/22633cd126a4d55e34f9d3cc39e3a4ed8229ea17) 
 * Fixed bug in fit_peel function when modeling random effects on catchability. [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
 * Fixed issue in multinomial, D-M, MVTweedie likelihoods when selectivity = 0 for some ages with age-specific selectivity configuration [issue 80](https://github.com/timjmiller/wham/issues/80) [ad22b8a](https://github.com/timjmiller/wham/commit/ad22b8a2dec86d22525f58f5f7db9bc6e3d18fc6)

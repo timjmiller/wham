@@ -47,7 +47,7 @@
 #'     \item{$selblock_pointer_fleets}{integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to \code{selectivity} option.}
 #'   }
 #'
-#' \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. articularly useful for setting
+#' \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. Particularly useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
 #' The current options are:
 #'   \describe{
@@ -84,13 +84,15 @@
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
 #'     \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
 #'     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
+#'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
-#'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions).}
-#'     \item{$simulate_process_error}{T/F vector (length = 5). When simulating from the model, whether to simulate any process errors for NAA, M, selectivity, Ecov, and q. Only used if applicable.}
+#'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment}
+#'     \item{$simulate_process_error}{T/F vector (length = 9). When simulating from the model, whether to simulate any process errors for 
+#'     (NAA, M, selectivity, q, movement, unidentified mortality, q priors, movement priors, Ecov). Only used for applicable random effects.}
 #'     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
 #'     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
 #'     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
-#'     \item{$bias_correct_observation}{T/F. Perform bias correction of log-normal observations.}
+#'     \item{$bias_correct_BRPs}{T/F. Perform bias correction of analytic SSB/R and Y/R when there is bias correction of log-normal NAA.}
 #'   }
 #' If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
 #' must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.
@@ -375,24 +377,27 @@ add_basic_info <- function(input, basic_info){
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?
   input$data$bias_correct_oe = 0 #bias correct log-normal observation errors?
+  input$data$bias_correct_brps = 0 #bias correct SSB/R and Y/R when NAA re are bias-corrected?
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = as.integer(basic_info$bias_correct_observation)
+  if(!is.null(basic_info$bias_correct_BRPs)) input$data$bias_correct_brps = as.integer(basic_info$bias_correct_BRPs)
   
-  sim_pe = 1
-  if(!is.null(basic_info$simulate_process_error)) sim_pe = as.integer(basic_info$simulate_process_error)
-  sim_oe = 1
-  if(!is.null(basic_info$simulate_observation_error)) sim_oe = as.integer(basic_info$simulate_observation_error)
+	#(NAA, M, selectivity, q, movement, unidentified mortality, q priors, movement priors, Ecov). Only used for applicable random effects.
+  sim_pe = rep(1,9)
+  if(!is.null(basic_info$simulate_process_error)) sim_pe[] = as.integer(basic_info$simulate_process_error)
+  sim_oe = rpe(1,3)
+  if(!is.null(basic_info$simulate_observation_error)) sim_oe[] = as.integer(basic_info$simulate_observation_error)
 
-  input$data$do_simulate_Ecov_re = sim_pe #simulate state variable
-  input$data$do_simulate_sel_re = sim_pe #simulate state variable
-  input$data$do_simulate_M_re = sim_pe #simulate state variable
-  input$data$do_simulate_q_re = sim_pe #simulate state variable
-  input$data$do_simulate_q_prior_re = sim_pe #simulate state variable
-  input$data$do_simulate_mu_re = sim_pe #simulate state variable
-  input$data$do_simulate_mu_prior_re = sim_pe #simulate state variable
-  input$data$do_simulate_L_re = sim_pe #simulate state variable
-  input$data$do_simulate_N_re = sim_pe #simulate state variable
-  input$data$do_simulate_data = rep(sim_oe,3) #simulate data types (catch, indices, Ecov)
+  input$data$do_simulate_N_re = sim_pe[1] #simulate state variable
+  input$data$do_simulate_M_re = sim_pe[2] #simulate state variable
+  input$data$do_simulate_sel_re = sim_pe[3] #simulate state variable
+  input$data$do_simulate_q_re = sim_pe[4] #simulate state variable
+  input$data$do_simulate_mu_re = sim_pe[5] #simulate state variable
+  input$data$do_simulate_L_re = sim_pe[6] #simulate state variable
+  input$data$do_simulate_q_prior_re = sim_pe[7] #simulate state variable
+  input$data$do_simulate_mu_prior_re = sim_pe[8] #simulate state variable
+  input$data$do_simulate_Ecov_re = sim_pe[9] #simulate state variable
+  input$data$do_simulate_data =  sim_oe #simulate data types (catch, indices, Ecov)
   input$data$do_simulate_period = c(1,1) #simulate processes and/or observations in model, projection periods
 	input$data$do_post_samp_N = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 	input$data$do_post_samp_M = 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
@@ -417,7 +422,7 @@ add_basic_info <- function(input, basic_info){
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$FXSPR_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
 	input$data$FMSY_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
-
+	input$data$avg_years_ind <- tail(1:data$n_years_model,5) - 1 #default values to average for BRPs and projections
   input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
   	#rep(1,input$data$n_years_model))
   input$data$which_F_age_static = input$data$n_ages #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
@@ -428,6 +433,7 @@ add_basic_info <- function(input, basic_info){
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
+	if(!is.null(basic_info$XSPR_input_average_years)) input$data$avg_years_ind = basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
   if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
 	if(input$data$XSPR_R_opt %in% c(1,3)){
 		annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")

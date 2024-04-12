@@ -794,7 +794,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
       if((y>= n_years_model) & (proj_R_opt == 2)){ 
         //expected recruitment in projection years = RXSPR so that long term projections at FXSPR and SPR-based RFPs are consistent
         if((a == 0) & (r == spawn_regions(s)-1)) pred_NAA_y(s,r,a) = R_XSPR(y,s);
-        if(bias_correct_pe == 1) pred_NAA_y(s,r,a) *= exp(0.5 * pow(exp(log_NAA_sigma(s,r,a)),2)); //take out bias correction in projections in this option
+        if(bias_correct_pe) pred_NAA_y(s,r,a) *= exp(0.5 * pow(exp(log_NAA_sigma(s,r,a)),2)); //take out bias correction in projections in this option
       }
     }
     updated_all_NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);

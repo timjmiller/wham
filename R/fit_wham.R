@@ -291,13 +291,9 @@ check_projF <- function(mod)
   if(length(ind))
   {
     y <- mod$env$data$n_years_model + ind
-    correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
-    # print(correct_F)
-    # print(length(correct_F))
+    correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 2)
     FAA_tot <- apply(mod$rep$FAA,2:3, sum)
-    # print(dim(FAA_tot))
-
-    used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4)
+    used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],2)
     # print(used_F)
     bad <- which(correct_F != used_F)
     if(length(bad))
@@ -316,8 +312,8 @@ check_projF <- function(mod)
       mod$retape()
       mod$fn(mle)
       mod$rep <- mod$report()
-      correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 4)
-      used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],4)
+      correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 2)
+      used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],2)
       bad <- which(correct_F != used_F)
     }
     y_bad_FXSPR <- mod$years_full[y[bad]]
