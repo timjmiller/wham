@@ -385,7 +385,7 @@ add_basic_info <- function(input, basic_info){
 	#(NAA, M, selectivity, q, movement, unidentified mortality, q priors, movement priors, Ecov). Only used for applicable random effects.
   sim_pe = rep(1,9)
   if(!is.null(basic_info$simulate_process_error)) sim_pe[] = as.integer(basic_info$simulate_process_error)
-  sim_oe = rpe(1,3)
+  sim_oe = rep(1,3)
   if(!is.null(basic_info$simulate_observation_error)) sim_oe[] = as.integer(basic_info$simulate_observation_error)
 
   input$data$do_simulate_N_re = sim_pe[1] #simulate state variable
@@ -422,7 +422,7 @@ add_basic_info <- function(input, basic_info){
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$FXSPR_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
 	input$data$FMSY_static_init = 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
-	input$data$avg_years_ind <- tail(1:data$n_years_model,5) - 1 #default values to average for BRPs and projections
+	input$data$avg_years_ind <- tail(1:input$data$n_years_model,5) - 1 #default values to average for BRPs and projections
   input$data$which_F_age = rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
   	#rep(1,input$data$n_years_model))
   input$data$which_F_age_static = input$data$n_ages #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.

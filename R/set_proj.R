@@ -16,6 +16,8 @@ set_proj = function(input, proj.opts = NULL)
 	  data$proj_R_opt <- 1
 		data$proj_L_opt <- 1
 		data$proj_mu_opt <- 1
+		data$mature_proj <- array(0,dim =c(1,1,1))
+		data$waa_proj <- array(0,dim =c(1,1,1))
 		if(!is.null(data$n_Ecov)){ #sometimes set_proj is called within other set_X functions before set_ecov has been called.
 			data$proj_Ecov_opt <- rep(1, data$n_Ecov)
 			data$Ecov_use_proj <- matrix(0, 1, data$n_Ecov)
