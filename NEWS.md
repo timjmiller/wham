@@ -2,8 +2,19 @@ wham 1.0.7.9000
 =========================
 
 
-### Bug fixes
+### Major improvements
 
+
+### Minor improvements
+* Added option to decouple recruitment random effects from those for older ages when NAA_re$sigma = "rec+1". [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
+* Linear parameterization of Dirichlet-multinomial dispersion parameter option for age composition likelihood added [Thorson et al. 2017](https://doi.org/10.1016/j.fishres.2016.06.005) [e3ab77b](https://github.com/timjmiller/wham/commit/e3ab77b8e42c0e68e364f58a0a7855e04a262604). Effective sample size is reported for both Dirichlet-multinomial likelihood options.
+
+### Bug fixes
+* Fix bug in NAA reporting simulated models with projection years when holding process errors constant in data years. [22633c](https://github.com/timjmiller/wham/commit/22633cd126a4d55e34f9d3cc39e3a4ed8229ea17) 
+* Fixed bug in fit_peel function when modeling random effects on catchability. [a7880bf](https://github.com/timjmiller/wham/commit/a7880bf56dc89dd5c60c7f4832027d508d194f6c)
+* Fixed issue in multinomial, D-M, MVTweedie likelihoods when selectivity = 0 for some ages with age-specific selectivity configuration [issue 80](https://github.com/timjmiller/wham/issues/80) [ad22b8a](https://github.com/timjmiller/wham/commit/ad22b8a2dec86d22525f58f5f7db9bc6e3d18fc6)
+* Fixed NaN issue in multinomial for extremely small (e.g. 1e-17) predicted proportions [issue 76](https://github.com/timjmiller/wham/issues/76) [99ec44f](https://github.com/timjmiller/wham/commit/99ec44f7f3c4647d1e882d3102d3da5d31afbb8b)
+* Fix incorrect flag for simulating catch age composition data and incorrect indexing for years to average over for SPR inputs [4f06dc7](https://github.com/timjmiller/wham/commit/4f06dc7baff3b6bef3e7c8eb262dcdedefbb33dc)
 * Fixed bug in reporting correlation parameter estimates in pdf/html tables [31ea94b](https://github.com/timjmiller/wham/commit/31ea94b611844a557947b11ac758531abb83005b)
 * Fixed bug in setting up catch age comp observations when ages are omitted due to selectivity=0 [6667efa](https://github.com/timjmiller/wham/commit/6667efac36df17215b5733e13866a3a78ed4f3b8)
 * Fixed reference point estimation and use in projections when there are multiple fleets [65c0130](https://github.com/timjmiller/wham/commit/65c0130f56e9346a98c1a1a957efe6dd1441c4c1) [b4c1ca3](https://github.com/timjmiller/wham/commit/b4c1ca379476042ef3ae376179df369c13e1fc0e). 

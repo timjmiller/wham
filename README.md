@@ -93,7 +93,7 @@ file.path(wham.dir, "example_scripts")
 You can then run the entire first example script with:
 ```
 setwd("choose/where/to/save/output")
-source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_basics.R"))
 ```
 
 You can run ALL examples with (takes 1 hour):

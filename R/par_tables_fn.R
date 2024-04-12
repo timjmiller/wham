@@ -147,7 +147,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
           ci(pars$trans_NAA_rho[s,r,2], sd$trans_NAA_rho[s,r,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
         )
       }
-      if(!is.na(map_rho[s,r,3])){ #not yet implemented
+      if(!is.na(map_rho[s,r,3])){
         fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " Recruitment AR1 $\\rho$", "year"))
         fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,2])))
         fe.cis = rbind(fe.cis, 

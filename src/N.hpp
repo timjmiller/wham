@@ -743,9 +743,10 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   array<Type> mature, array<Type> waa_ssb,
   vector<int> recruit_model, matrix<Type> mean_rec_pars, matrix<Type> log_SR_a, matrix<Type> log_SR_b, 
   matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
-  vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, int n_years_model, matrix<Type> logR_proj, int trace){
+  vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, int n_years_model, matrix<Type> logR_proj, int proj_R_opt, matrix<Type> R_XSPR, 
+  int bias_correct_pe, array<Type> log_NAA_sigma, int trace){
   /* 
-    fill out numbers at age and "expected" numbers at age
+    fill out numbers at age and "expected" numbers at age for year y (intended for projection years)
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
              N1_model: 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
                N1: (n_stocks x n_regions x n_ages) numbers at age in the first year
@@ -788,10 +789,15 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   if(trace) see(pred_NAA_y);
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
     if((a==0) & (NAA_re_model(s)==0)) { //SCAA recruitment is not populated in get_pred_NAA_y
-      if(r == spawn_regions(s)-1) updated_all_NAA(1,s,r,y,a) = exp(logR_proj_y(s)); // this function is called always in projection years
+      if(r == spawn_regions(s)-1) pred_NAA_y(s,r,a) = exp(logR_proj_y(s)); // this function is called always in projection years
     } else {
-      updated_all_NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);
+      if((y>= n_years_model) & (proj_R_opt == 2)){ 
+        //expected recruitment in projection years = RXSPR so that long term projections at FXSPR and SPR-based RFPs are consistent
+        if((a == 0) & (r == spawn_regions(s)-1)) pred_NAA_y(s,r,a) = R_XSPR(y,s);
+        if(bias_correct_pe == 1) pred_NAA_y(s,r,a) *= exp(0.5 * pow(exp(log_NAA_sigma(s,r,a)),2)); //take out bias correction in projections in this option
+      }
     }
+    updated_all_NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);
   }
   if(trace) see("update_all_NAA(1)");
 

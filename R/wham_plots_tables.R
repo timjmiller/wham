@@ -2745,7 +2745,9 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     a.b.ind <- cbind(a.ind,b.ind)[SR.par.year,]
     #a.b.ind = matrix(which(rownames(std) == "mean_rec_pars"),dat$n_stocks,2)[stock,]
     l.ab = std[a.b.ind,1]
+    ab.na <- which(is.na(std[a.b.ind,2]))
     a.b.cov = mod$sdrep$cov[a.b.ind,a.b.ind]
+    if(length(ab.na)) a.b.cov[ab.na,] <- a.b.cov[,ab.na] <- 0
     seq.ssb <- seq(0, max(SR[,2]), length.out=300)
     if(dat$recruit_model[stock] == 3){#B-H
       lR.fn = function(la, lb, S) la  + log(S) - log(1 + exp(lb)*S)

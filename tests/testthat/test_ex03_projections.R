@@ -132,6 +132,10 @@ for(m in 1:length(proj_opts)) {
   #  check marginal nll is the same
   nll_proj[m] <-  mod_proj[[m]]$fn()
   expect_equal(as.numeric(nll_proj[!!m]), as.numeric(mod$opt$obj), tolerance=1e-6)
+  
+  #test simulation works with projections included.
+  temp <- mod_proj[[!!m]]$simulate(complete=TRUE)
+
   # plot results
   suppressWarnings(plot_wham_output(mod_proj[[m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE)))
 }

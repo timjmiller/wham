@@ -39,7 +39,7 @@ Type objective_function<Type>::operator() ()
   //int n_indices = waa_pointer_indices.size();
   DATA_IVECTOR(waa_pointer_ssb); //n_stocks
   DATA_IVECTOR(waa_pointer_M); //n_stocks, possibly used with M_model = 2, M = a W^b
-  DATA_ARRAY(waa); //(n_fleets + n_indices + n_stocks + 1(totcatch)) x n_years x n_ages_model
+  DATA_ARRAY(waa); //(? x n_years x n_ages_model, first dimension of array just has to be enough to accommodate waa_pointers...
   //M is a parameter
   //DATA_ARRAY(MAA); // n_years x n_ages x n_regions
   
@@ -215,7 +215,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(FXSPR_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_SCALAR(FMSY_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_INTEGER(which_F_age_static); // which age,fleet of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
-  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See XSPR_R_avg_yrs for years to average over.
+  DATA_INTEGER(XSPR_R_opt); //1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. See XSPR_R_avg_yrs for years to average over.
   
   DATA_INTEGER(use_alt_AR1) //0: use density namespace, 1: use ar1 or 2dar1 calculated by "hand" for nll and simulation.
   
@@ -228,8 +228,11 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch, 6 = FMSY (if SRR estimated)
   DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
+  DATA_INTEGER(proj_R_opt); // 1 = continue RE model (when recruitment is treated as RE), 2 = "expected" recruitment is the same as that used for SPR BRPs
   DATA_INTEGER(proj_mu_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)
   DATA_INTEGER(proj_L_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)
+  DATA_ARRAY(mature_proj); // if used, an n_stocks x n_years_proj x n_ages_model matrix for maturity to use in projections
+  DATA_ARRAY(waa_proj); // if used, an ? x n_years_proj x n_ages_model array for waa to use in projections. first dimension of array has to match waa for model years
   DATA_VECTOR(logR_mean); // (n_stocks) empirical mean recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(logR_sd); //  (n_stocks) empirical sd recruitment in model years, used for SCAA recruit projections
   DATA_VECTOR(F_proj_init); // annual initial values  to use for newton steps to find F for use in projections  (n_years_proj)
@@ -788,17 +791,23 @@ Type objective_function<Type>::operator() ()
     for(int y = n_years_model; y < n_years_pop; y++){
       fracyr_SSB_all.row(y) = fracyr_ssb_y;
       for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) {
-        mature_all(s,y,a) = mat_y(s,a);
-        waa_ssb(s,y,a) = waa_ssb_y(s,a);
-      }
-      for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) waa_catch(f,y,a) = waa_catch_y(f,a);
 
+        if(mature_proj.size()>1) mature_all(s,y,a) = mature_proj(s,y-n_years_model,a);
+        else mature_all(s,y,a) = mat_y(s,a);
+
+        if(waa_proj.size()>1) waa_ssb(s,y,a) = waa_proj(waa_pointer_ssb(s)-1,y-n_years_model,a);
+        else waa_ssb(s,y,a) = waa_ssb_y(s,a);
+      }
+      for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
+        if(waa_proj.size()>1) waa_catch(f,y,a) = waa_proj(waa_pointer_fleets(f)-1,y-n_years_model,a);
+        else waa_catch(f,y,a) = waa_catch_y(f,a);
+      }
       // see("yproj");
       // see(y);
       // see(annual_Ps.dim);
       all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
-        Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, trace);
+        Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, proj_R_opt, R_XSPR, bias_correct_pe, log_NAA_sigma, trace);
       NAA = extract_NAA(all_NAA);
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
       //There are many options for defining F in projection years so a lot of inputs
@@ -851,7 +860,7 @@ Type objective_function<Type>::operator() ()
             log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
           all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
             mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
-            Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, trace);
+            Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, proj_R_opt, R_XSPR, bias_correct_pe, log_NAA_sigma, trace);
             
           R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs);
           NAA = extract_NAA(all_NAA);

@@ -9,11 +9,11 @@ set_proj = function(input, proj.opts = NULL)
 	  data$do_proj <- 0
 	  data$n_years_proj <- 0
 	  #data$n_years_proj_Ecov <- 0
-  	data$avg_years_ind <- data$n_years_model - (5:1) # c++ indices start at 0
   	data$avg_years_Ecov <- data$n_years_model - (5:1) # c++ indices start at 0
 	  data$proj_F_opt <- 1
 	  data$proj_Fcatch <- 0
 	  data$proj_M_opt <- 1
+	  data$proj_R_opt <- 1
 		data$proj_L_opt <- 1
 		data$proj_mu_opt <- 1
 		if(!is.null(data$n_Ecov)){ #sometimes set_proj is called within other set_X functions before set_ecov has been called.
