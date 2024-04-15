@@ -28,7 +28,7 @@ reduce_input <- function(input,years_peeled){
 		data$XSPR_R_avg_yrs <- 1:n_years - 1
 	}
 	data$avg_years_ind <- data$n_years_model - input$data$n_years_model + data$avg_years_ind#shift which years to average back given the number of years to peel.
-	if(all(data$avg_years_ind<0)) data$avg_years <- 1:data$n_years_model - 1 #shouldn't really ever happen
+	if(all(data$avg_years_ind<0)) data$avg_years_ind <- 1:data$n_years_model - 1 #shouldn't really ever happen
 	data$avg_years_ind <- data$avg_years_ind[which(data$avg_years_ind>=0)] #reduce if number of years used is more than the number available in the peel.
 
 	data$which_F_age <- data$which_F_age[ind]

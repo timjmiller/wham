@@ -59,9 +59,10 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   # peel <- 0
   # if(!is.null(model$peel)) peel <- model$peel # projecting off of a peel
 
+  input <- model$input
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- model$years[model$env$data$avg_years_ind+1] #tail(model$years, 5)  
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- input$years[model$env$data$avg_years_ind+1] #tail(model$years, 5)  
   if(any(proj.opts$avg.yrs<0)) stop("negative years are specified in proj.opts$avg.yrs to average projection inputs")
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
@@ -69,10 +70,9 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR = 100
   if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY = 100
 
-  input <- model$input
   data <- input$data
   # check options for F/catch are valid
-  if(any(proj.opts$avg.yrs %in% input$years == FALSE)) stop(paste("","** Error setting up projections: **",
+  if(any(!(proj.opts$avg.yrs %in% input$years))) stop(paste("","** Error setting up projections: **",
     "proj.opts$avg.yrs is not a subset of model years.","",sep='\n'))
   F.opt.ct <- sum(proj.opts$use.avg.F, proj.opts$use.last.F, proj.opts$use.FXSPR, proj.opts$use.FMSY, !is.null(proj.opts$proj.F), !is.null(proj.opts$proj.catch))
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
@@ -153,17 +153,17 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   if(!is.null(proj.opts$proj_mature)){
     dims.check <- c(data$n_stocks, proj.opts$n.yrs, dim(data$mature)[2])
     cat("\nUsing user-suplied maturity values for projected maturity.\n")
-    if(length(dim(proj.opts$proj_waa)) != length(dims.check)) {
+    if(length(dim(proj.opts$proj_mature)) != length(dims.check)) {
       stop(paste0("\n** Error setting up projections: **\n",
                  "proj.opts$proj_mature must be an array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
     }
-    if(any(dim(proj.opts$proj_waa)!= dims.check)){
+    if(any(dim(proj.opts$proj_mature)!= dims.check)){
       stop(paste0("\n** Error setting up projections: **\n",
                  "proj.opts$proj_mature must be an array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
     }
     data$mature_proj <- proj.opts$proj_mature
   } else {
-    data$mature_proj <- 0 #tests length on c++ side for whether to use it.
+    data$mature_proj <- array(0, dim = c(1,1,1)) #tests length on c++ side for whether to use it.
   }
 
   # proj_waa dims are (dim(input$data$waa)[1] x n.yrs x n_age)
@@ -180,10 +180,10 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     }
     data$waa_proj <- proj.opts$proj_waa
   } else {
-    data$waa_proj <- 0  #tests length on c++ side for whether to use it.
+    data$waa_proj <- array(0, dim = c(1,1,1))  #tests length on c++ side for whether to use it.
   }
 
-
+  
   # initialize pars at previously estimated values
   par <- model$parList
   # fill_vals <- function(x){as.factor(rep(NA, length(x)))}

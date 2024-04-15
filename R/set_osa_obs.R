@@ -252,7 +252,7 @@ transform_paa_obs = function(x, model, zero.criteria = 1e-15, do_mult = FALSE, a
   is_pred_pos = !(1:length(x) %in% ages_omit)
   x[which(!is_pred_pos)] = 0 #if obs in omitted ages are zero this does nothing
   x =  x/sum(x) #rescale to a reduced set of ages, if obs in omitted ages are zero this does nothing
-  if(model>2 & model<10){ #not multinom, D-M, mvtweedie
+  if(model>2 & model<10){ #not multinom, D-M, mvtweedie or DM-linear
     is_pos = x> zero.criteria # looking for zeros here will also omit the ages with predicted probability = 0
     pos_ind = which(is_pos)
     npos = sum(is_pos)

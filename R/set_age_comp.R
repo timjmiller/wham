@@ -59,7 +59,7 @@ set_age_comp = function(input, age_comp)
                    "mvtweedie",
                    "dir-mult-linear" )
   input$log$age_comp <- list()
-  n_pars <- c(0,1,1,1,1,2,1,3,2,2)
+  n_pars <- c(0,1,1,1,1,2,1,3,2,2,1)
   if(is.null(age_comp)){
     data$age_comp_model_fleets = rep(1, data$n_fleets) # multinomial by default
     data$age_comp_model_indices = rep(1, data$n_indices) # multinomial by default

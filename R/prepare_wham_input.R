@@ -434,16 +434,24 @@ add_basic_info <- function(input, basic_info){
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
 	if(!is.null(basic_info$XSPR_input_average_years)) input$data$avg_years_ind = basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
-  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
-	if(input$data$XSPR_R_opt %in% c(1,3)){
+  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0
+  if(input$data$XSPR_R_opt<5) {
+  	weighting <- "corresponding annual"
+  	weighting <- ifelse(input$data$XSPR_R_opt %in% c(2,4), "corresponding annual", "average of annual")
 		annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
-		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, coresponding annual ", annual_R_type, " recruitments are used. \n"))
+		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, ", weighting, " ", annual_R_type, " recruitments are used. \n"))
+	} else{
+		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, bias-corrected marginally (over time) expected recruitment is used. \n"))
 	}
-	if(input$data$XSPR_R_opt %in% c(2,4)){
-		annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
-		input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, average of annual ", annual_R_type, " recruitments over years, ", 
-		paste0(input$years[input$data$XSPR_R_avg_yrs+1], collapse = ","), " are used. \n"))
-	}
+	# if(input$data$XSPR_R_opt %in% c(1,3)){
+	# 	annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
+	# 	input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, coresponding annual ", annual_R_type, " recruitments are used. \n"))
+	# }
+	# if(input$data$XSPR_R_opt %in% c(2,4)){
+	# 	annual_R_type <- ifelse(input$data$XSPR_R_opt==1, "estimated", "conditionally expected")
+	# 	input$log$misc <- c(input$log$misc, paste0("For annual SPR-based reference points, average of annual ", annual_R_type, " recruitments over years, ", 
+	# 	paste0(input$years[input$data$XSPR_R_avg_yrs+1], collapse = ","), " are used. \n"))
+	# }
 
 	input$options$basic_info <- basic_info
   return(input)

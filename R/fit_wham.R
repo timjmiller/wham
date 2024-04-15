@@ -224,29 +224,13 @@ check_FXSPR <- function(mod)
 
 
   percentSPR_out <- exp(cbind(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$input$data$n_stocks+1])
-  # print(percentSPR_out)
-  # print(mod$env$data$percentSPR)
-  # print(round(percentSPR_out,4))
-  # print(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
   ind = which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
-  #if(mod$env$data$n_years_proj) years = mod$years_full
-  #else 
   years <- mod$years
-  # print(ind)
   if(length(ind))
   {
     for(i in 1:2) #two tries to fix initial FXSPR value
     {
       redo_SPR_years <- years[ind]
-      # print(years)
-      # print(redo_SPR_years)
-      # print(ind)
-      # print(percentSPR_out)
-      # print(percentSPR_out[ind])
-      # print(mod$rep$log_SPR0)
-      # print(mod$rep$log_SPR0[ind])
-      # print(mod$rep$log_SPR_FXSPR)
-      # print(mod$rep$log_SPR_FXSPR[ind])
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] <- mod$input$data$FXSPR_init[ind] <- mod$env$data$FXSPR_init[ind]*2
       mod$retape()
@@ -298,15 +282,7 @@ check_projF <- function(mod)
     bad <- which(correct_F != used_F)
     if(length(bad))
     {
-      # print(y)
-      # print(bad)
-      # print(y[bad])
-      # print(mod$years_full)
-      # print(length(mod$years_full))
       redo_SPR_years <- mod$years_full[y[bad]]
-      # print(length(mod$env$data$F_proj_init))
-      # print(ind)
-      # print(length(mod$env$data$FXSPR_init))
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$FXSPR_init[y[bad]]
       mod$retape()

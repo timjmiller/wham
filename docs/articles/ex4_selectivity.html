@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
       </span>
     </div>
 
@@ -191,44 +191,44 @@ block (and therefore fleet/catch or index/survey).</p>
 </h2>
 <p>Open R and load the <code>wham</code> package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at
 <code>ex4_selectivity.R</code> in the <code>example_scripts</code>
 folder of the <code>wham</code> package install:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span><span class="op">)</span></span></code></pre></div>
 <p>You can run this entire example script with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span>
-<span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex4_selectivity.R"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># otherwise will be saved in working directory</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>, <span class="st">"example_scripts"</span>, <span class="st">"ex4_selectivity.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Let’s create a directory for this analysis:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># choose a location to save output, otherwise will be saved in working directory</span>
-<span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># need to change</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># choose a location to save output, otherwise will be saved in working directory</span></span>
+<span><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># need to change</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span></code></pre></div>
 <p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">example
 1</a>. Let’s copy <code>ex1_SNEMAYT.dat</code> to our analysis
 directory:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span>from<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">wham.dir</span>,<span class="st">"extdata"</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span>, to<span class="op">=</span><span class="va">write.dir</span>, overwrite<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>Confirm you are in the correct directory and it has the required data
 files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt;  [1] "age_comp_likelihood_test_values.rds" "BASE_3"                             </span>
-<span class="co">#&gt;  [3] "CPI.csv"                             "ex1_SNEMAYT.dat"                    </span>
-<span class="co">#&gt;  [5] "ex1_test_results.rds"                "ex11_tests.rds"                     </span>
-<span class="co">#&gt;  [7] "ex2_SNEMAYT.dat"                     "ex2_test_results.rds"               </span>
-<span class="co">#&gt;  [9] "ex4_test_results.rds"                "ex5_summerflounder.dat"             </span>
-<span class="co">#&gt; [11] "ex5_test_results.rds"                "ex6_test_results.rds"               </span>
-<span class="co">#&gt; [13] "ex7_SNEMAYT.dat"                     "GSI.csv"</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "age_comp_likelihood_test_values.rds" "BASE_3"                             </span></span>
+<span><span class="co">#&gt;  [3] "CPI.csv"                             "ex1_SNEMAYT.dat"                    </span></span>
+<span><span class="co">#&gt;  [5] "ex1_test_results.rds"                "ex11_tests.rds"                     </span></span>
+<span><span class="co">#&gt;  [7] "ex2_SNEMAYT.dat"                     "ex2_test_results.rds"               </span></span>
+<span><span class="co">#&gt;  [9] "ex4_test_results.rds"                "ex5_summerflounder.dat"             </span></span>
+<span><span class="co">#&gt; [11] "ex5_test_results.rds"                "ex6_test_results.rds"               </span></span>
+<span><span class="co">#&gt; [13] "ex7_SNEMAYT.dat"                     "GSI.csv"</span></span></code></pre></div>
 <p>Read the ASAP3 .dat file into R and convert to input list for
 wham:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="specify-selectivity-model-options">2. Specify selectivity model options<a class="anchor" aria-label="anchor" href="#specify-selectivity-model-options"></a>
@@ -236,38 +236,38 @@ wham:</p>
 <p>We are going to run 9 models that differ only in the selectivity
 options:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># m1-m5 logistic, m6-m9 age-specific</span>
-<span class="va">sel_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)</span>
-<span class="va">sel_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>, <span class="co"># m1-m4 logistic</span>
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>, <span class="co"># m5-m9 age-specific</span>
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1_y"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,
-                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">)</span>
-
-<span class="co"># summary data frame</span>
-<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>, 
-    Selectivity<span class="op">=</span><span class="va">sel_model</span>, <span class="co"># Selectivity model (same for all blocks)</span>
-    Block1_re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">sel_re</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># Block 1 random effects</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
-
-<span class="va">df.mods</span>
-<span class="co">#&gt;   Model  Selectivity Block1_re</span>
-<span class="co">#&gt; 1    m1     logistic      none</span>
-<span class="co">#&gt; 2    m2     logistic       iid</span>
-<span class="co">#&gt; 3    m3     logistic       ar1</span>
-<span class="co">#&gt; 4    m4     logistic     2dar1</span>
-<span class="co">#&gt; 5    m5 age-specific      none</span>
-<span class="co">#&gt; 6    m6 age-specific       iid</span>
-<span class="co">#&gt; 7    m7 age-specific       ar1</span>
-<span class="co">#&gt; 8    m8 age-specific     ar1_y</span>
-<span class="co">#&gt; 9    m9 age-specific     2dar1</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># m1-m5 logistic, m6-m9 age-specific</span></span>
+<span><span class="va">sel_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># time-varying options for each of 3 blocks (b1 = fleet, b2-3 = indices)</span></span>
+<span><span class="va">sel_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>, <span class="co"># m1-m4 logistic</span></span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>, <span class="co"># m5-m9 age-specific</span></span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iid"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar1_y"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2dar1"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># summary data frame</span></span>
+<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>, </span>
+<span>    Selectivity<span class="op">=</span><span class="va">sel_model</span>, <span class="co"># Selectivity model (same for all blocks)</span></span>
+<span>    Block1_re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">sel_re</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># Block 1 random effects</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span></span>
+<span><span class="va">df.mods</span></span>
+<span><span class="co">#&gt;   Model  Selectivity Block1_re</span></span>
+<span><span class="co">#&gt; 1    m1     logistic      none</span></span>
+<span><span class="co">#&gt; 2    m2     logistic       iid</span></span>
+<span><span class="co">#&gt; 3    m3     logistic       ar1</span></span>
+<span><span class="co">#&gt; 4    m4     logistic     2dar1</span></span>
+<span><span class="co">#&gt; 5    m5 age-specific      none</span></span>
+<span><span class="co">#&gt; 6    m6 age-specific       iid</span></span>
+<span><span class="co">#&gt; 7    m7 age-specific       ar1</span></span>
+<span><span class="co">#&gt; 8    m8 age-specific     ar1_y</span></span>
+<span><span class="co">#&gt; 9    m9 age-specific     2dar1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="setup-and-run-models">3. Setup and run models<a class="anchor" aria-label="anchor" href="#setup-and-run-models"></a>
@@ -277,62 +277,62 @@ parameter values, which parameters to fix/estimate). WHAM uses these by
 default in order to facilitate running ASAP models. To see the currently
 specified selectivity options in <code>asap3</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_block_assign</span> <span class="co"># 1 fleet, all years assigned to block 1</span>
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt;  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
-<span class="co">#&gt; [39] 1 1 1 1 1 1</span>
-<span class="co"># by default each index gets its own selectivity block (here, blocks 2 and 3)</span>
-
-<span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_block_option</span> <span class="co"># fleet selectivity (1 block), 2 = logistic</span>
-<span class="co">#&gt; [1] 2</span>
-<span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">index_sel_option</span> <span class="co"># index selectivity (2 blocks), 2 = logistic</span>
-<span class="co">#&gt; [1] 2 2</span>
-
-<span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_ini</span> <span class="co"># fleet sel initial values (col1), estimation phase (-1 = fix)</span>
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt;       [,1] [,2] [,3] [,4]</span>
-<span class="co">#&gt;  [1,] 0.10    1    0    1</span>
-<span class="co">#&gt;  [2,] 1.00   -1    0    1</span>
-<span class="co">#&gt;  [3,] 0.42    1    0    1</span>
-<span class="co">#&gt;  [4,] 0.58    1    0    1</span>
-<span class="co">#&gt;  [5,] 0.74    1    0    1</span>
-<span class="co">#&gt;  [6,] 0.90    1    0    1</span>
-<span class="co">#&gt;  [7,] 1.00    2    0    1</span>
-<span class="co">#&gt;  [8,] 0.90    3    0    1</span>
-<span class="co">#&gt;  [9,] 0.50    1    0    1</span>
-<span class="co">#&gt; [10,] 0.60    1    0    1</span>
-<span class="co">#&gt; [11,] 4.00    1    0    1</span>
-<span class="co">#&gt; [12,] 1.10    1    0    1</span>
-<span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">index_sel_ini</span> <span class="co"># index sel initial values (col1), estimation phase (-1 = fix)</span>
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt;       [,1] [,2] [,3] [,4]</span>
-<span class="co">#&gt;  [1,] 0.10    1    0    1</span>
-<span class="co">#&gt;  [2,] 0.26    1    0    1</span>
-<span class="co">#&gt;  [3,] 1.00   -1    0    1</span>
-<span class="co">#&gt;  [4,] 0.58    1    0    1</span>
-<span class="co">#&gt;  [5,] 0.74    1    0    1</span>
-<span class="co">#&gt;  [6,] 0.90    1    0    1</span>
-<span class="co">#&gt;  [7,] 1.50    2    0    1</span>
-<span class="co">#&gt;  [8,] 0.90    3    0    1</span>
-<span class="co">#&gt;  [9,] 0.75    1    0    1</span>
-<span class="co">#&gt; [10,] 0.60    1    0    1</span>
-<span class="co">#&gt; [11,] 4.00    1    0    1</span>
-<span class="co">#&gt; [12,] 1.10    1    0    1</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt;       [,1] [,2] [,3] [,4]</span>
-<span class="co">#&gt;  [1,] 0.10    1    0    1</span>
-<span class="co">#&gt;  [2,] 1.00   -1    0    1</span>
-<span class="co">#&gt;  [3,] 0.42    1    0    1</span>
-<span class="co">#&gt;  [4,] 0.58    1    0    1</span>
-<span class="co">#&gt;  [5,] 0.74    1    0    1</span>
-<span class="co">#&gt;  [6,] 0.90    1    0    1</span>
-<span class="co">#&gt;  [7,] 1.00    2    0    1</span>
-<span class="co">#&gt;  [8,] 0.90    3    0    1</span>
-<span class="co">#&gt;  [9,] 0.50    1    0    1</span>
-<span class="co">#&gt; [10,] 0.60    1    0    1</span>
-<span class="co">#&gt; [11,] 4.00    1    0    1</span>
-<span class="co">#&gt; [12,] 1.10    1    0    1</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_block_assign</span> <span class="co"># 1 fleet, all years assigned to block 1</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt;  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span></span>
+<span><span class="co">#&gt; [39] 1 1 1 1 1 1</span></span>
+<span><span class="co"># by default each index gets its own selectivity block (here, blocks 2 and 3)</span></span>
+<span></span>
+<span><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_block_option</span> <span class="co"># fleet selectivity (1 block), 2 = logistic</span></span>
+<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">index_sel_option</span> <span class="co"># index selectivity (2 blocks), 2 = logistic</span></span>
+<span><span class="co">#&gt; [1] 2 2</span></span>
+<span></span>
+<span><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">sel_ini</span> <span class="co"># fleet sel initial values (col1), estimation phase (-1 = fix)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4]</span></span>
+<span><span class="co">#&gt;  [1,] 0.10    1    0    1</span></span>
+<span><span class="co">#&gt;  [2,] 1.00   -1    0    1</span></span>
+<span><span class="co">#&gt;  [3,] 0.42    1    0    1</span></span>
+<span><span class="co">#&gt;  [4,] 0.58    1    0    1</span></span>
+<span><span class="co">#&gt;  [5,] 0.74    1    0    1</span></span>
+<span><span class="co">#&gt;  [6,] 0.90    1    0    1</span></span>
+<span><span class="co">#&gt;  [7,] 1.00    2    0    1</span></span>
+<span><span class="co">#&gt;  [8,] 0.90    3    0    1</span></span>
+<span><span class="co">#&gt;  [9,] 0.50    1    0    1</span></span>
+<span><span class="co">#&gt; [10,] 0.60    1    0    1</span></span>
+<span><span class="co">#&gt; [11,] 4.00    1    0    1</span></span>
+<span><span class="co">#&gt; [12,] 1.10    1    0    1</span></span>
+<span><span class="va">asap3</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">index_sel_ini</span> <span class="co"># index sel initial values (col1), estimation phase (-1 = fix)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4]</span></span>
+<span><span class="co">#&gt;  [1,] 0.10    1    0    1</span></span>
+<span><span class="co">#&gt;  [2,] 0.26    1    0    1</span></span>
+<span><span class="co">#&gt;  [3,] 1.00   -1    0    1</span></span>
+<span><span class="co">#&gt;  [4,] 0.58    1    0    1</span></span>
+<span><span class="co">#&gt;  [5,] 0.74    1    0    1</span></span>
+<span><span class="co">#&gt;  [6,] 0.90    1    0    1</span></span>
+<span><span class="co">#&gt;  [7,] 1.50    2    0    1</span></span>
+<span><span class="co">#&gt;  [8,] 0.90    3    0    1</span></span>
+<span><span class="co">#&gt;  [9,] 0.75    1    0    1</span></span>
+<span><span class="co">#&gt; [10,] 0.60    1    0    1</span></span>
+<span><span class="co">#&gt; [11,] 4.00    1    0    1</span></span>
+<span><span class="co">#&gt; [12,] 1.10    1    0    1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4]</span></span>
+<span><span class="co">#&gt;  [1,] 0.10    1    0    1</span></span>
+<span><span class="co">#&gt;  [2,] 1.00   -1    0    1</span></span>
+<span><span class="co">#&gt;  [3,] 0.42    1    0    1</span></span>
+<span><span class="co">#&gt;  [4,] 0.58    1    0    1</span></span>
+<span><span class="co">#&gt;  [5,] 0.74    1    0    1</span></span>
+<span><span class="co">#&gt;  [6,] 0.90    1    0    1</span></span>
+<span><span class="co">#&gt;  [7,] 1.00    2    0    1</span></span>
+<span><span class="co">#&gt;  [8,] 0.90    3    0    1</span></span>
+<span><span class="co">#&gt;  [9,] 0.50    1    0    1</span></span>
+<span><span class="co">#&gt; [10,] 0.60    1    0    1</span></span>
+<span><span class="co">#&gt; [11,] 4.00    1    0    1</span></span>
+<span><span class="co">#&gt; [12,] 1.10    1    0    1</span></span></code></pre></div>
 <p>When we specify the WHAM model with
 <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code>, we can overwrite the selectivity
 options from the ASAP data file with the optional list argument
@@ -433,184 +433,184 @@ Parameters can be fixed at their initial values by specifying
 </table>
 <p>Now we can run the above models in a loop:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
-    <span class="kw">if</span><span class="op">(</span><span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">==</span> <span class="st">"logistic"</span><span class="op">)</span><span class="op">{</span> <span class="co"># logistic selectivity</span>
-        <span class="co"># overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)</span>
-        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,
-                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,
-                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span>,
-                    age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span> <span class="co"># logistic normal, treat 0 obs as missing</span>
-    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span> <span class="co"># age-specific selectivity</span>
-        <span class="co"># # you can try not fixing any ages first</span>
-        <span class="co"># input &lt;- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, </span>
-        <span class="co">#           selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], </span>
-        <span class="co">#               initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),</span>
-        <span class="co">#           NAA_re = list(sigma='rec+1',cor='iid'),</span>
-        <span class="co">#           age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing</span>
-
-        <span class="co"># often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-6 / 4 / 3-6</span>
-        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,
-                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, 
-                        initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, 
-                        fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span>,
-                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span>,
-                    age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span> <span class="co"># logistic normal, treat 0 obs as missing</span>
-    <span class="op">}</span>
-    
-    <span class="co"># fit model</span>
-    <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.check<span class="op">=</span><span class="cn">T</span>, do.osa<span class="op">=</span><span class="cn">F</span>, do.proj<span class="op">=</span><span class="cn">F</span>, do.retro<span class="op">=</span><span class="cn">F</span><span class="op">)</span> 
-    <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">==</span> <span class="st">"logistic"</span><span class="op">)</span><span class="op">{</span> <span class="co"># logistic selectivity</span></span>
+<span>        <span class="co"># overwrite initial parameter values in ASAP data file (ex1_SNEMAYT.dat)</span></span>
+<span>        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,</span>
+<span>                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span>,</span>
+<span>                    age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span> <span class="co"># logistic normal, treat 0 obs as missing</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span> <span class="co"># age-specific selectivity</span></span>
+<span>        <span class="co"># # you can try not fixing any ages first</span></span>
+<span>        <span class="co"># input &lt;- prepare_wham_input(asap3, model_name=paste(paste0("Model ",m), sel_model[m], paste(sel_re[[m]], collapse="-"), sep=": "), recruit_model=2, </span></span>
+<span>        <span class="co">#           selectivity=list(model=rep("age-specific",3), re=sel_re[[m]], </span></span>
+<span>        <span class="co">#               initial_pars=list(rep(0.5,6), rep(0.5,6), rep(0.5,6))),</span></span>
+<span>        <span class="co">#           NAA_re = list(sigma='rec+1',cor='iid'),</span></span>
+<span>        <span class="co">#           age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing</span></span>
+<span></span>
+<span>        <span class="co"># often need to fix selectivity = 1 for at least one age per age-specific block: ages 4-6 / 4 / 3-6</span></span>
+<span>        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,</span>
+<span>                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, </span>
+<span>                        initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>                        fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span>,</span>
+<span>                    age_comp <span class="op">=</span> <span class="st">"logistic-normal-miss0"</span><span class="op">)</span> <span class="co"># logistic normal, treat 0 obs as missing</span></span>
+<span>    <span class="op">}</span></span>
+<span>    </span>
+<span>    <span class="co"># fit model</span></span>
+<span>    <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.check<span class="op">=</span><span class="cn">T</span>, do.osa<span class="op">=</span><span class="cn">F</span>, do.proj<span class="op">=</span><span class="cn">F</span>, do.retro<span class="op">=</span><span class="cn">F</span><span class="op">)</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod</span>, file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="model-convergence-and-comparison">4. Model convergence and comparison<a class="anchor" aria-label="anchor" href="#model-convergence-and-comparison"></a>
 </h2>
 <p>Collect all models into a list:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></span></code></pre></div>
 <p>Check which models converged.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">vign4_conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/capture.output.html" class="external-link">capture.output</a></span><span class="op">(</span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign4_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">#&gt; Model 1:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.04e-01 </span>
-<span class="co">#&gt; Max gradient parameter: logit_selpars </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 2:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.27e-01 </span>
-<span class="co">#&gt; Max gradient parameter: logit_selpars </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 3:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.04e-01 </span>
-<span class="co">#&gt; Max gradient parameter: logit_selpars </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 4:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.26e-01 </span>
-<span class="co">#&gt; Max gradient parameter: logit_selpars </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 5:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.10e-01 </span>
-<span class="co">#&gt; Max gradient parameter: F_devs </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 6:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.10e-01 </span>
-<span class="co">#&gt; Max gradient parameter: F_devs </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 7:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.10e-01 </span>
-<span class="co">#&gt; Max gradient parameter: F_devs </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 8:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.25e-01 </span>
-<span class="co">#&gt; Max gradient parameter: F_devs </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Model 9:</span>
-<span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span>
-<span class="co">#&gt; Maximum gradient component: 2.27e-01 </span>
-<span class="co">#&gt; Max gradient parameter: F_devs </span>
-<span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></code></pre>
+<code class="sourceCode R"><span><span class="va">vign4_conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/capture.output.html" class="external-link">capture.output</a></span><span class="op">(</span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span>,<span class="st">":"</span><span class="op">)</span>, <span class="va">vign4_conv</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, <span class="st">""</span>, sep<span class="op">=</span><span class="st">'\n'</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; Model 1:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.04e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: logit_selpars </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 2:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.27e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: logit_selpars </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 3:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.04e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: logit_selpars </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 4:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.26e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: logit_selpars </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 5:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.10e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: F_devs </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 6:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.10e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: F_devs </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 7:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.10e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: F_devs </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 8:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.25e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: F_devs </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 9:</span></span>
+<span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.27e-01 </span></span>
+<span><span class="co">#&gt; Max gradient parameter: F_devs </span></span>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre>
 <p>Plot output for models that converged (in a subfolder for each
 model):</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Is Hessian positive definite?</span>
-<span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span>
-<span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span>
-<span class="co"># did stats::nlminb converge?</span>
-<span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 means opt converged</span>
-<span class="va">conv_mods</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">[</span><span class="va">pdHess</span><span class="op">]</span> 
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="va">conv_mods</span><span class="op">)</span><span class="op">{</span>
-    <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, out.type<span class="op">=</span><span class="st">'html'</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Is Hessian positive definite?</span></span>
+<span><span class="va">ok_sdrep</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw">if</span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">==</span><span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">na_sdrep</span><span class="op">)</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">pdHess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">ok_sdrep</span><span class="op">)</span></span>
+<span><span class="co"># did stats::nlminb converge?</span></span>
+<span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">convergence</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># 0 means opt converged</span></span>
+<span><span class="va">conv_mods</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">[</span><span class="va">pdHess</span><span class="op">]</span> </span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="va">conv_mods</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, out.type<span class="op">=</span><span class="st">'html'</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>Compare the models using AIC:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">[</span><span class="op">!</span><span class="va">pdHess</span>,<span class="op">]</span> <span class="op">=</span> <span class="cn">NA</span>
-<span class="va">minAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span>
-<span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span> <span class="op">-</span> <span class="va">minAIC</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>, Selectivity<span class="op">=</span><span class="va">sel_model</span>,
-                            <span class="st">"Block1_re"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">sel_re</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,
-                            <span class="st">"opt_converged"</span><span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">conv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,
-                            <span class="st">"pd_hessian"</span><span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pdHess</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,
-                            <span class="st">"NLL"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">objective</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>,
-                            <span class="st">"Runtime"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span><span class="op">)</span>, <span class="va">df.aic</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
-<span class="va">df.mods</span></code></pre></div>
-<pre><code><span class="co">#&gt;   Model  Selectivity Block1_re opt_converged pd_hessian      NLL Runtime dAIC</span>
-<span class="co">#&gt; 1    m1     logistic      none           Yes        Yes -795.146    0.23 47.6</span>
-<span class="co">#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.31 10.0</span>
-<span class="co">#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.34 51.6</span>
-<span class="co">#&gt; 4    m4     logistic     2dar1           Yes        Yes -821.965    0.36  0.0</span>
-<span class="co">#&gt; 5    m5 age-specific      none           Yes        Yes -800.055    0.23 45.8</span>
-<span class="co">#&gt; 6    m6 age-specific       iid           Yes        Yes -800.055    0.84 47.8</span>
-<span class="co">#&gt; 7    m7 age-specific       ar1           Yes        Yes -800.055    0.84 49.8</span>
-<span class="co">#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -822.528    0.31  4.8</span>
-<span class="co">#&gt; 9    m9 age-specific     2dar1           Yes        Yes -823.888    1.23  4.1</span>
-<span class="co">#&gt;       AIC</span>
-<span class="co">#&gt; 1 -1462.3</span>
-<span class="co">#&gt; 2 -1499.9</span>
-<span class="co">#&gt; 3 -1458.3</span>
-<span class="co">#&gt; 4 -1509.9</span>
-<span class="co">#&gt; 5 -1464.1</span>
-<span class="co">#&gt; 6 -1462.1</span>
-<span class="co">#&gt; 7 -1460.1</span>
-<span class="co">#&gt; 8 -1505.1</span>
-<span class="co">#&gt; 9 -1505.8</span></code></pre>
+<code class="sourceCode R"><span><span class="va">df.aic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/compare_wham_models.html">compare_wham_models</a></span><span class="op">(</span><span class="va">mods</span>, table.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sort<span class="op">=</span><span class="cn">FALSE</span>, calc.rho<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">tab</span><span class="op">)</span></span>
+<span><span class="va">df.aic</span><span class="op">[</span><span class="op">!</span><span class="va">pdHess</span>,<span class="op">]</span> <span class="op">=</span> <span class="cn">NA</span></span>
+<span><span class="va">minAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span>, na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">df.aic</span><span class="op">$</span><span class="va">dAIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">df.aic</span><span class="op">$</span><span class="va">AIC</span> <span class="op">-</span> <span class="va">minAIC</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span>, Selectivity<span class="op">=</span><span class="va">sel_model</span>,</span>
+<span>                            <span class="st">"Block1_re"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">sel_re</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                            <span class="st">"opt_converged"</span><span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">conv</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,</span>
+<span>                            <span class="st">"pd_hessian"</span><span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pdHess</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span>,</span>
+<span>                            <span class="st">"NLL"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">objective</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                            <span class="st">"Runtime"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">runtime</span><span class="op">)</span><span class="op">)</span>, <span class="va">df.aic</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span><span class="va">df.mods</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   Model  Selectivity Block1_re opt_converged pd_hessian      NLL Runtime dAIC</span></span>
+<span><span class="co">#&gt; 1    m1     logistic      none           Yes        Yes -795.146    0.23 47.6</span></span>
+<span><span class="co">#&gt; 2    m2     logistic       iid           Yes        Yes -814.967    0.31 10.0</span></span>
+<span><span class="co">#&gt; 3    m3     logistic       ar1           Yes        Yes -795.146    0.34 51.6</span></span>
+<span><span class="co">#&gt; 4    m4     logistic     2dar1           Yes        Yes -821.965    0.36  0.0</span></span>
+<span><span class="co">#&gt; 5    m5 age-specific      none           Yes        Yes -800.055    0.23 45.8</span></span>
+<span><span class="co">#&gt; 6    m6 age-specific       iid           Yes        Yes -800.055    0.84 47.8</span></span>
+<span><span class="co">#&gt; 7    m7 age-specific       ar1           Yes        Yes -800.055    0.84 49.8</span></span>
+<span><span class="co">#&gt; 8    m8 age-specific     ar1_y           Yes        Yes -822.528    0.31  4.8</span></span>
+<span><span class="co">#&gt; 9    m9 age-specific     2dar1           Yes        Yes -823.888    1.23  4.1</span></span>
+<span><span class="co">#&gt;       AIC</span></span>
+<span><span class="co">#&gt; 1 -1462.3</span></span>
+<span><span class="co">#&gt; 2 -1499.9</span></span>
+<span><span class="co">#&gt; 3 -1458.3</span></span>
+<span><span class="co">#&gt; 4 -1509.9</span></span>
+<span><span class="co">#&gt; 5 -1464.1</span></span>
+<span><span class="co">#&gt; 6 -1462.1</span></span>
+<span><span class="co">#&gt; 7 -1460.1</span></span>
+<span><span class="co">#&gt; 8 -1505.1</span></span>
+<span><span class="co">#&gt; 9 -1505.8</span></span></code></pre>
 <p>Prepare to plot selectivity-at-age for block 1 (fleet).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span>
-
-<span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age-specific"</span>,<span class="st">"Logistic"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models_re</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">df.selAA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow<span class="op">=</span><span class="fl">0</span>, ncol<span class="op">=</span><span class="fl">11</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">df.selAA</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Age_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,<span class="st">"Year"</span>,<span class="st">"Model"</span>,<span class="st">"conv"</span>,<span class="st">"sel_mod"</span>,<span class="st">"sel_cor"</span><span class="op">)</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span>
-    <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">selAA</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
-    <span class="va">df</span><span class="op">$</span><span class="va">Year</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">years</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Age_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,<span class="st">"Year"</span><span class="op">)</span>
-    <span class="va">df</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="va">m</span>
-    <span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pd_hessian</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">==</span><span class="st">"Yes"</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>
-    <span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span> <span class="op">=</span> <span class="va">sel_mod</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>
-    <span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">=</span> <span class="va">sel_cor</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>
-    <span class="va">df.selAA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df.selAA</span>, <span class="va">df</span><span class="op">)</span>
-<span class="op">}</span>
-<span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df.selAA</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Year</span>,<span class="va">Model</span>,<span class="va">conv</span>,<span class="va">sel_mod</span>,<span class="va">sel_cor</span><span class="op">)</span>,
-                names_to <span class="op">=</span> <span class="st">"Age"</span>,
-                names_prefix <span class="op">=</span> <span class="st">"Age_"</span>,
-                names_transform <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Age <span class="op">=</span> <span class="va">as.integer</span><span class="op">)</span>,
-                values_to <span class="op">=</span> <span class="st">"Selectivity"</span><span class="op">)</span>
-<span class="va">df</span><span class="op">$</span><span class="va">Age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Age</span><span class="op">)</span>
-<span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">conv</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Age-specific"</span>,<span class="st">"Logistic"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">selblock_models_re</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">df.selAA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow<span class="op">=</span><span class="fl">0</span>, ncol<span class="op">=</span><span class="fl">11</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">df.selAA</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Age_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,<span class="st">"Year"</span>,<span class="st">"Model"</span>,<span class="st">"conv"</span>,<span class="st">"sel_mod"</span>,<span class="st">"sel_cor"</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">selAA</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">Year</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">years</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Age_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,<span class="st">"Year"</span><span class="op">)</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="va">m</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pd_hessian</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">==</span><span class="st">"Yes"</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span> <span class="op">=</span> <span class="va">sel_mod</span><span class="op">[</span><span class="va">m</span><span class="op">]</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">=</span> <span class="va">sel_cor</span><span class="op">[</span><span class="va">m</span><span class="op">]</span></span>
+<span>    <span class="va">df.selAA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">df.selAA</span>, <span class="va">df</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">df.selAA</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">Year</span>,<span class="va">Model</span>,<span class="va">conv</span>,<span class="va">sel_mod</span>,<span class="va">sel_cor</span><span class="op">)</span>,</span>
+<span>                names_to <span class="op">=</span> <span class="st">"Age"</span>,</span>
+<span>                names_prefix <span class="op">=</span> <span class="st">"Age_"</span>,</span>
+<span>                names_transform <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Age <span class="op">=</span> <span class="va">as.integer</span><span class="op">)</span>,</span>
+<span>                values_to <span class="op">=</span> <span class="st">"Selectivity"</span><span class="op">)</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">Age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">Age</span><span class="op">)</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_mod</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Logistic"</span>,<span class="st">"Age-specific"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">sel_cor</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"None"</span>,<span class="st">"IID"</span>,<span class="st">"AR1"</span>,<span class="st">"AR1_y"</span>,<span class="st">"2D AR1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">df</span><span class="op">$</span><span class="va">conv</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">conv</span><span class="op">)</span></span></code></pre></div>
 <p>Now plot selectivity-at-age for block 1 (fleet) in all models.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">Selectivity</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_label</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span>, label<span class="op">=</span><span class="va">lab</span><span class="op">)</span>, size<span class="op">=</span><span class="fl">5</span>, alpha<span class="op">=</span><span class="fl">1</span>, <span class="co">#fontface = "bold",</span>
-      data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Year<span class="op">=</span><span class="fl">1975.5</span>, Age<span class="op">=</span><span class="fl">5.8</span>, lab<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span><span class="op">)</span>, sel_mod<span class="op">=</span><span class="va">sel_mod</span>, sel_cor<span class="op">=</span><span class="va">sel_cor</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>    
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span>rows<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">sel_cor</span><span class="op">)</span>, cols<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">sel_mod</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html" class="external-link">scale_fill_viridis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">Selectivity</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_label</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">Age</span>, label<span class="op">=</span><span class="va">lab</span><span class="op">)</span>, size<span class="op">=</span><span class="fl">5</span>, alpha<span class="op">=</span><span class="fl">1</span>, <span class="co">#fontface = "bold",</span></span>
+<span>      data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Year<span class="op">=</span><span class="fl">1975.5</span>, Age<span class="op">=</span><span class="fl">5.8</span>, lab<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mods</span><span class="op">)</span><span class="op">)</span>, sel_mod<span class="op">=</span><span class="va">sel_mod</span>, sel_cor<span class="op">=</span><span class="va">sel_cor</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>    </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span>rows<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">sel_cor</span><span class="op">)</span>, cols<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">sel_mod</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://sjmgarnier.github.io/viridis/reference/scale_viridis.html" class="external-link">scale_fill_viridis</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>expand<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png" style="width:90.0%"></p>
 <div class="section level4">
 <h4 id="a-note-on-convergence">A note on convergence<a class="anchor" aria-label="anchor" href="#a-note-on-convergence"></a>
@@ -627,10 +627,10 @@ are very close to 0 or 1 (&gt; 5 or &lt; -5 on the logit scale) and/or
 have <code>NaN</code> estimates of their standard error:</li>
 </ol>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">logit_selpars</span> <span class="co"># mean sel pars</span>
-<span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">sel_repars</span> <span class="co"># if time-varying selectivity turned on</span>
-<span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">selAA</span> <span class="co"># selectivity-at-age by block</span>
-<span class="va">mod</span><span class="op">$</span><span class="va">sdrep</span> <span class="co"># look for sel pars with NaN standard errors</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">logit_selpars</span> <span class="co"># mean sel pars</span></span>
+<span><span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">sel_repars</span> <span class="co"># if time-varying selectivity turned on</span></span>
+<span><span class="va">mod</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">selAA</span> <span class="co"># selectivity-at-age by block</span></span>
+<span><span class="va">mod</span><span class="op">$</span><span class="va">sdrep</span> <span class="co"># look for sel pars with NaN standard errors</span></span></code></pre></div>
 <ol start="3" style="list-style-type: decimal">
 <li>Re-run the model fixing the worst selectivity-at-age parameter for
 each block at 0 or 1 as appropriate. In the above age-specific models,
@@ -641,12 +641,12 @@ fixed at 1. Sometimes just initializing the worst parameter is enough,
 without fixing it.</li>
 </ol>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R">        <span class="co"># fix selectivity at 1 for ages 4-5 / 4 / 2-4 in blocks 1-3</span>
-        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,
-                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, 
-                        initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, 
-                        fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,
-                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span>        <span class="co"># fix selectivity at 1 for ages 4-5 / 4 / 2-4 in blocks 1-3</span></span>
+<span>        <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, model_name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Model "</span>,<span class="va">m</span><span class="op">)</span>, <span class="va">sel_model</span><span class="op">[</span><span class="va">m</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, collapse<span class="op">=</span><span class="st">"-"</span><span class="op">)</span>, sep<span class="op">=</span><span class="st">": "</span><span class="op">)</span>, recruit_model<span class="op">=</span><span class="fl">2</span>,</span>
+<span>                    selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="va">sel_re</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, </span>
+<span>                        initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>                        fix_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                    NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">'rec+1'</span>,cor<span class="op">=</span><span class="st">'iid'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <ol start="4" style="list-style-type: decimal">
 <li>The goal is to find a set of selectivity parameter initial/fixed
 values that allow all nested models to converge. Fixing parameters
@@ -655,12 +655,12 @@ another should not have a greater NLL (indicates not converged to global
 minimum). The following commands may be helpful:</li>
 </ol>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span><span class="op">)</span> <span class="co"># get NLL </span>
-<span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">logit_selpars</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">sel_repars</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mod.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span>,<span class="st">".rds"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mod.list</span>, <span class="va">readRDS</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span><span class="op">)</span> <span class="co"># get NLL </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">logit_selpars</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">sel_repars</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </div>
@@ -682,8 +682,7 @@ minimum). The following commands may be helpful:</li>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
