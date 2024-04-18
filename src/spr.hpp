@@ -212,12 +212,12 @@ array<T> get_SPR(vector<int> spawn_seasons, vector<int> fleet_regions, matrix<in
         //bias-correct for next age going to region j?
         S_ya(i,j) = S_ya(i,j) * exp(-0.5*pow(exp(log_NAA_sigma(s,j,a+1)),2)); 
       }
-      cum_S_ya = cum_S_ya * S_ya; //accumulate for next age
+      if(a < n_ages-1) cum_S_ya = cum_S_ya * S_ya; //accumulate for next age
       if(trace) see(cum_S_ya);
       if(a == n_ages-1){ //plus group
         // matrix<T> fundm(n_regions,n_regions);
-        matrix<T> fundm = -S_ya; //already has any bias correction by column.
-        if(small_dim) fundm = fundm.inverse(); else fundm = atomic::matinv(fundm);
+        matrix<T> fundm = get_S(I, n_regions) - S_ya; //S_ya already has any bias correction by column. 
+        if(small_dim) fundm = fundm.inverse(); else fundm = atomic::matinv(fundm); //fundm = (I - S_y,+)^-1
         //for plus group cum_S_ya = S_y,a-1 x (I - S_y,+)^-1
         cum_S_ya = cum_S_ya * fundm;
         NPR_ya = cum_S_ya; //change NPR_ya for plus group
