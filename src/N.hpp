@@ -1249,7 +1249,7 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
         NAA_devs_r_s = marginal_sigma(0) * NAA_devs_r_s;
       }
       if(bias_correct_pe) NAA_devs_r_s -= 0.5*pow(marginal_sigma(0),2);
-      for(int y = 1; y < n_years; y++){
+      for(int y = ystart+1; y < n_years; y++){
         NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0) = NAA_devs_r_s(y-1);
       }
     }
@@ -1286,7 +1286,7 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
           } else {
             SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y)).simulate(NAA_devs_s_r); // scaled here
           }
-          for(int y = 1; y < n_years; y++) { 
+          for(int y = ystart+1; y < n_years; y++) { 
             k=0;
             for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
               if(bias_correct_pe) NAA_devs_s_r(y-1,k) -= 0.5*pow(marginal_sigma_s_r(k),2);
