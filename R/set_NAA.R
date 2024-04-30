@@ -81,7 +81,7 @@ This message will not appear if you set recruit_model = 2 (random about mean).")
   if(NAA_re$cor %in% c("iid","ar1_a")) tmp[2] = NA
   if(!is.null(NAA_re$decouple_recruitment)) if(NAA_re$decouple_recruitment) {
     data$decouple_rec <- 1
-    if(NAA_re$cor %in% c("ar1_y","2ar1")) tmp[3] <-0
+    if(NAA_re$cor %in% c("ar1_y","2dar1")) tmp[3] <-0
   }
   ind.notNA <- which(!is.na(tmp))
   tmp[ind.notNA] <- 1:length(ind.notNA)
