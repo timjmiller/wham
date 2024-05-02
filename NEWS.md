@@ -1,8 +1,5 @@
-wham 1.0.7.9000
+wham 1.0.8 (2024-04-24)
 =========================
-
-### Major improvements
-
 
 ### Minor improvements
 

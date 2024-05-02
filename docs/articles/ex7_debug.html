@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.8</span>
       </span>
     </div>
 
@@ -247,22 +247,23 @@ can use the <code>$report()</code> function from TMB.</p>
 <span><span class="co">#&gt; [13] "nll_catch_acomp"       "M_a"                   "pred_catch_paa"       </span></span>
 <span><span class="co">#&gt; [16] "MAA"                   "log_Y_FXSPR_static"    "SSB"                  </span></span>
 <span><span class="co">#&gt; [19] "F"                     "nll_agg_indices"       "nll"                  </span></span>
-<span><span class="co">#&gt; [22] "log_YPR_FXSPR"         "nll_Ecov_obs"          "selpars"              </span></span>
-<span><span class="co">#&gt; [25] "nll_Ecov_obs_sig"      "Ecov_re"               "log_SPR_FXSPR"        </span></span>
-<span><span class="co">#&gt; [28] "log_SPR0_static"       "pred_indices"          "nll_NAA"              </span></span>
-<span><span class="co">#&gt; [31] "log_FXSPR_static"      "pred_IAA"              "logit_q_mat"          </span></span>
-<span><span class="co">#&gt; [34] "pred_CAA"              "nll_agg_catch"         "nll_sel"              </span></span>
-<span><span class="co">#&gt; [37] "log_FXSPR_iter"        "nll_q"                 "logit_selpars"        </span></span>
-<span><span class="co">#&gt; [40] "Fbar"                  "nll_Ecov"              "log_FXSPR_iter_static"</span></span>
-<span><span class="co">#&gt; [43] "Ecov_obs_sigma"        "rho_q"                 "q_re"                 </span></span>
-<span><span class="co">#&gt; [46] "Ecov_process_pars"     "sel_repars"            "nll_index_acomp"      </span></span>
-<span><span class="co">#&gt; [49] "ZAA"                   "pred_log_indices"      "M_re"                 </span></span>
-<span><span class="co">#&gt; [52] "selpars_re"            "Ecov_x"                "NAA"                  </span></span>
-<span><span class="co">#&gt; [55] "pred_catch"            "R_XSPR"                "log_SSB_FXSPR"        </span></span>
-<span><span class="co">#&gt; [58] "M_repars"              "log_SSB_FXSPR_static"  "pred_NAA"             </span></span>
-<span><span class="co">#&gt; [61] "FAA"                   "log_SPR_FXSPR_static"  "nll_q_prior"          </span></span>
-<span><span class="co">#&gt; [64] "log_Y_FXSPR"           "pred_index_paa"        "Ecov_out"             </span></span>
-<span><span class="co">#&gt; [67] "nll_M"                 "log_YPR_FXSPR_static"  "q"</span></span></code></pre></div>
+<span><span class="co">#&gt; [22] "log_YPR_FXSPR"         "log_R_FXSPR_static"    "nll_Ecov_obs"         </span></span>
+<span><span class="co">#&gt; [25] "selpars"               "nll_Ecov_obs_sig"      "Ecov_re"              </span></span>
+<span><span class="co">#&gt; [28] "log_SPR_FXSPR"         "log_SPR0_static"       "pred_indices"         </span></span>
+<span><span class="co">#&gt; [31] "nll_NAA"               "log_FXSPR_static"      "pred_IAA"             </span></span>
+<span><span class="co">#&gt; [34] "logit_q_mat"           "pred_CAA"              "nll_agg_catch"        </span></span>
+<span><span class="co">#&gt; [37] "nll_sel"               "log_FXSPR_iter"        "nll_q"                </span></span>
+<span><span class="co">#&gt; [40] "logit_selpars"         "Fbar"                  "nll_Ecov"             </span></span>
+<span><span class="co">#&gt; [43] "log_FXSPR_iter_static" "Ecov_obs_sigma"        "rho_q"                </span></span>
+<span><span class="co">#&gt; [46] "q_re"                  "Ecov_process_pars"     "sel_repars"           </span></span>
+<span><span class="co">#&gt; [49] "nll_index_acomp"       "ZAA"                   "pred_log_indices"     </span></span>
+<span><span class="co">#&gt; [52] "M_re"                  "selpars_re"            "Ecov_x"               </span></span>
+<span><span class="co">#&gt; [55] "NAA"                   "pred_catch"            "R_XSPR"               </span></span>
+<span><span class="co">#&gt; [58] "log_SSB_FXSPR"         "M_repars"              "log_SSB_FXSPR_static" </span></span>
+<span><span class="co">#&gt; [61] "pred_NAA"              "FAA"                   "log_SPR_FXSPR_static" </span></span>
+<span><span class="co">#&gt; [64] "nll_q_prior"           "log_Y_FXSPR"           "pred_index_paa"       </span></span>
+<span><span class="co">#&gt; [67] "Ecov_out"              "nll_M"                 "log_YPR_FXSPR_static" </span></span>
+<span><span class="co">#&gt; [70] "q"</span></span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and
 sum over all individual values.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
