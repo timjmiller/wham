@@ -104,8 +104,8 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
   mod$model_name <- input$model_name
   mod$input <- input
   mod$call <- match.call()
-  mod$rep <- mod$report()
   mod <- check_which_F_age(mod) #can be an issue if estimated full F is at age with 0 selectivity
+  #mod$rep <- mod$report() #not needed because check_which_F_age calls mod$report()
   #ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
   #mod$wham_version <- paste0(ver, collapse=" / ")
   wham_commit <- packageDescription("wham")$GithubSHA1
@@ -164,9 +164,9 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
       mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
       if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
     }
-    mod$rep <- mod$report() #par values don't matter because function has not been evaluated
     mod$parList <- mod$env$parList()
     mod <- check_which_F_age(mod)
+    #mod$rep <- mod$report() #not needed because check_which_F_age calls mod$report()
     if(is.null(mod$TMB_commit)){
       TMB_commit <- packageDescription("TMB")$GithubSHA1
       mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
@@ -190,6 +190,8 @@ check_which_F_age <- function(mod)
   else {
     mle <- mod$opt$par
   }
+  mod$fn(mle)
+  mod$rep <- mod$report()
   for(y in 1:dim(mod$rep$FAA)[2]){
     temp <- apply(rbind(mod$rep$FAA[,y,]),2,sum)
     mod$env$data$which_F_age[y] <- mod$input$data$which_F_age[y] <- which(temp == max(temp))[1]

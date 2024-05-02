@@ -415,7 +415,7 @@ Type d2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_si
 }
 
 template <class Type>
-array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns=1, int ystart=0){
+array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type> log_sig_c, int use_dns=1, int ystart=0, int bias_correct=0){
   
   Type rho_r = geninvlogit(tf_rho_r, Type(-1), Type(1), Type(1)); //rho_year (rows)
   Type rho_c = geninvlogit(tf_rho_c,Type(-1), Type(1), Type(1)); //rho_age (columns)
@@ -428,31 +428,38 @@ array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type>
   if(use_dns == 0){
     if(ystart == 0){ //first row, no conditioning on previous years
       delta_out(0,0) = rnorm(Type(0), marg_sig(0)); //marginal across year and age at age 1
+      if(bias_correct) delta_out(0,0) -= 0.5 * pow(marg_sig(0),2);
       for(int a = 1; a < delta.dim(1); a++){
         delta_out(0,a) = rnorm(rho_c * delta_out(0,a-1) * sig_c(a) / sig_c(a-1), sig_r1(a)); //marginal across years conditional on age a-1
+        if(bias_correct) delta_out(0,a) -= 0.5 * pow(sig_r1(a),2);
       }
       for(int y = 1; y < delta.dim(0); y++){
         delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
+        if(bias_correct) delta_out(y,0) -= 0.5 * pow(sig_c1,2);
       }
       for(int y = 1; y < delta.dim(0); y++) {
         for(int a = 1; a < delta.dim(1); a++) {
           delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+          if(bias_correct) delta_out(y,a) -= 0.5 * pow(sig_c(a),2);
         }
       }
     } else {
       //subsequent rows
       for(int y = ystart; y < delta.dim(0); y++){
         delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
+        if(bias_correct) delta_out(y,0) -= 0.5 * pow(sig_c1,2);
       }
       for(int y = ystart; y < delta.dim(0); y++) {
         for(int a = 1; a < delta.dim(1); a++) {
           delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
+          if(bias_correct) delta_out(y,a) -= 0.5 * pow(sig_c(a),2);
         }
       }
     }
   } else{
     using namespace density;
     SEPARABLE(VECSCALE(AR1(rho_c), marg_sig),AR1(rho_r)).simulate(delta_out); // scaled here
+    if(bias_correct) for(int y = 0; y < delta.dim(0); y++) for(int a = 0; a < delta.dim(1); a++) delta_out(y,a) -= 0.5 * pow(marg_sig(a),2);
   }
   return delta_out;
 }
@@ -478,7 +485,7 @@ Type dar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns){
 
 
 template <class Type>
-vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, int ystart=0){
+vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, int ystart=0, int bias_correct=0){
   
   Type rho = geninvlogit(tf_rho, Type(-1), Type(1), Type(1)); 
   Type sig = exp(log_sig); 
@@ -487,15 +494,21 @@ vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, in
   if(use_dns == 0){
     if(ystart == 0) {
       delta_out(0) = rnorm(Type(0), marg_sig); //marginal across year and age
+      if(bias_correct) delta_out(0) -= 0.5*pow(marg_sig,2);
       for(int y = 1; y < delta.size(); y++){
         delta_out(y) = rnorm(rho * delta_out(y-1), sig); //marginal at age 1 and conditional on year y-1
+        if(bias_correct) delta_out(y) -= 0.5*pow(sig,2);
       }
     } else {
-      for(int y = ystart; y < delta.size(); y++) delta_out(y) = rnorm(rho * delta_out(y-1), sig);
+      for(int y = ystart; y < delta.size(); y++) {
+        delta_out(y) = rnorm(rho * delta_out(y-1), sig);
+        if(bias_correct) delta_out(y) -= 0.5*pow(sig,2);
+      }
     }
-  } else{
+  } else {
     using namespace density;
     SCALE(AR1(rho), marg_sig).simulate(delta_out);
+    if(bias_correct) delta_out -= 0.5*pow(marg_sig,2);
   }
   return delta_out;
 }

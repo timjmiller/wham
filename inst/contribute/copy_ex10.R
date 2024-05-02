@@ -25,6 +25,10 @@ setwd(pkg.dir)
 
 #Section 2
 
+mod_1$sdrep = summary(mod_1$sdrep, "fixed")
+save(mod_1, file = file.path(main.dir, "vign_10_mod_1.RData"))
+save(mod_1, file = here("data", "vign_10_mod_1.RData"))
+
 file.copy(from = file.path(write.dir, "self_fit_1_ssb.png"), to = main.dir, overwrite = TRUE)
 file.copy(from = file.path(write.dir, "self_fit_1_ssb.png"), to = to.dir, overwrite = TRUE)
 
@@ -49,10 +53,32 @@ file.copy(from = file.path(write.dir, "sim_fit_3d_1.png"), to = to.dir, overwrit
 file.copy(from = file.path(write.dir, "sim_fit_3d_2.png"), to = main.dir, overwrite = TRUE)
 file.copy(from = file.path(write.dir, "sim_fit_3d_2.png"), to = to.dir, overwrite = TRUE)
 
-save(input_3, sim_3a, sim_3b, file = file.path(main.dir, "vign_10_3.RData"))
-save(input_3, sim_3a, sim_3b, file = here("data", "vign_10_3.RData"))
+save(vign_10_3_input, vign_10_3a_sim, vign_10_3b_sim, file = file.path(main.dir, "vign_10_3.RData"))
+save(vign_10_3_input, vign_10_3a_sim, vign_10_3b_sim, file = here("data", "vign_10_3.RData"))
 
 #Section 4
-save(stock_om_4, file = file.path(main.dir, "vign_10_4_stock_om.RData"))
-save(stock_om_4, file = here("data", "vign_10_4_stock_om.RData"))
+#save(stock_om_4, file = file.path(main.dir, "vign_10_4_stock_om.RData"))
+#save(stock_om_4, file = here("data", "vign_10_4_stock_om.RData"))
 
+file.copy(from = file.path(write.dir, "sim_plot_4d.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "sim_plot_4d.png"), to = to.dir, overwrite = TRUE)
+
+file.copy(from = file.path(write.dir, "sim_plot_4e_1.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "sim_plot_4e_1.png"), to = to.dir, overwrite = TRUE)
+
+file.copy(from = file.path(write.dir, "sim_plot_4e_2.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "sim_plot_4e_2.png"), to = to.dir, overwrite = TRUE)
+
+file.copy(from = file.path(write.dir, "sim_fit_4f_1.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "sim_fit_4f_1.png"), to = to.dir, overwrite = TRUE)
+
+file.copy(from = file.path(write.dir, "sim_fit_4f_2.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "sim_fit_4f_2.png"), to = to.dir, overwrite = TRUE)
+
+#Section 5
+
+file.copy(from = file.path(write.dir, "looped_rep_5_1.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "looped_rep_5_1.png"), to = to.dir, overwrite = TRUE)
+
+file.copy(from = file.path(write.dir, "looped_rep_5_2.png"), to = main.dir, overwrite = TRUE)
+file.copy(from = file.path(write.dir, "looped_rep_5_2.png"), to = to.dir, overwrite = TRUE)

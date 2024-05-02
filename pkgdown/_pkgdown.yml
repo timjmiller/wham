@@ -28,7 +28,7 @@ navbar:
          href: articles/ex08_compare.html
       -  text: "Ex 9: Retrospective predictions"
          href: articles/ex09_retro_pred.html
-      -  text: "Ex 10: Simulation and MSE"
+      -  text: "Ex 10: Simulations"
          href: articles/ex10_simulation.html
       -  text: "Ex 11: Catchability configurations"
          href: articles/ex11_catchability.html

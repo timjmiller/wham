@@ -1,8 +1,8 @@
 ---
-title: "Ex 11: Catchability configurations"
+title: "Ex 11: Catchability"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Ex 11: Catchability configurations}
+  %\VignetteIndexEntry{Ex 11: Catchability}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -34,9 +34,6 @@ In this vignette we show how to both simulate and estimate:
 ```{r message=FALSE}
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(wham)
-library(ggplot2)
-library(tidyr)
-library(dplyr)
 ```
 
 Create a directory for this analysis:
@@ -49,74 +46,84 @@ setwd(write.dir)
 
 ## 3. A simple operating model
 
-Make a `basic_info` list of input components defining a simple default stock. We'll then pass this to `prepare_wham_input` and `fit_wham`. This is similar to example 10, but now there are two indices.
+Make a lists of information to pass to the  `basic_info` ,  `catch_info`, `index_info` and `F` arguments of `prepare_wham_input`. These components will define a simple default stock and observations on it. We'll then use the input with `fit_wham` to create operating and estimating models. This similar to example 10, but now there are two indices.
 ```{r, eval=FALSE}
 make_digifish <- function(years = 1975:2014) {
-  digifish = list()
-  digifish$ages = 1:10
-  digifish$years = years
-  na = length(digifish$ages)
-  ny = length(digifish$years)
+    digifish = list()
+    digifish$ages <- 1:10
+    digifish$years <- years
+    digifish$n_fleets <- 1
+    na = length(digifish$ages)
+    ny = length(digifish$years)
 
-  digifish$n_fleets = 1
-  digifish$catch_cv = matrix(0.1, ny, digifish$n_fleets)
-  digifish$catch_Neff = matrix(200, ny, digifish$n_fleets)
-  digifish$n_indices = 2
-  digifish$index_cv = matrix(0.3, ny, digifish$n_indices)
-  digifish$index_Neff = matrix(100, ny, digifish$n_indices)
-  digifish$fracyr_indices = matrix(0.5, ny, digifish$n_indices)
-  digifish$index_units = rep(1, length(digifish$n_indices)) #biomass
-  digifish$index_paa_units = rep(2, length(digifish$n_indices)) #abundance
-  digifish$maturity = t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny))
+    digifish$maturity = array(t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny)), c(1,ny,na))
 
-  L = 100*(1-exp(-0.3*(1:na - 0)))
-  W = exp(-11)*L^3
-  nwaa = digifish$n_indices + digifish$n_fleets + 2
-  digifish$waa = array(NA, dim = c(nwaa, ny, na))
-  for(i in 1:nwaa) digifish$waa[i,,] = t(matrix(W, na, ny))
+    L = 100*(1-exp(-0.3*(1:na - 0)))
+    W = exp(-11)*L^3
+    nwaa = 1
+    digifish$waa = array(t(matrix(W, na, ny)), dim = c(1, ny, na))
 
-  digifish$fracyr_SSB = rep(0.25,ny)
-  digifish$q = rep(0.3, digifish$n_indices)
-  digifish$F = matrix(0.2,ny, digifish$n_fleets)
+    digifish$fracyr_SSB <- cbind(rep(0.25,ny))
 
-  digifish$selblock_pointer_fleets = t(matrix(1:digifish$n_fleets, digifish$n_fleets, ny))
-  digifish$selblock_pointer_indices = t(matrix(digifish$n_fleets + 1:digifish$n_indices, digifish$n_indices, ny))
-  return(digifish)
+    digifish$bias_correct_process <- TRUE
+    digifish$bias_correct_observation <- TRUE
+    return(digifish)
 }
 digifish = make_digifish()
+
+catch_info <- list()
+catch_info$n_fleets = 1
+catch_info$catch_cv = matrix(0.1, length(digifish$years), digifish$n_fleets)
+catch_info$catch_Neff = matrix(200, length(digifish$years), digifish$n_fleets)
+catch_info$selblock_pointer_fleets = t(matrix(1:digifish$n_fleets, digifish$n_fleets, length(digifish$years)))
+index_info <- list()
+index_info$n_indices <- 2
+index_info$index_cv = matrix(0.3, length(digifish$years), index_info$n_indices)
+index_info$index_Neff = matrix(100, length(digifish$years), index_info$n_indices)
+index_info$fracyr_indices = matrix(0.5, length(digifish$years), index_info$n_indices)
+index_info$index_units = rep(1, length(index_info$n_indices)) #biomass
+index_info$index_paa_units = rep(2, length(index_info$n_indices)) #abundance
+index_info$selblock_pointer_indices = t(matrix(digifish$n_fleets + 1:index_info$n_indices, index_info$n_indices, length(digifish$years)))
+F_info <- list(F = matrix(0.2,length(digifish$years), catch_info$n_fleets))
 ```
 
-Now define other components needed by `prepare_wham_input` (selectivity and  M).
+Now define `selectivity` and `M` arguments for `prepare_wham_input`.
 ```{r, eval=FALSE}
-selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", digifish$n_indices)),
-    initial_pars = rep(list(c(5,1)), digifish$n_fleets + digifish$n_indices)) #fleet, index
+selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", index_info$n_indices)),
+    initial_pars = rep(list(c(5,1)), digifish$n_fleets + index_info$n_indices)) #fleet, index
 
-M = list(initial_means = rep(0.2, length(digifish$ages)))
+M = list(initial_means = array(0.2, c(1,1,length(digifish$ages))))
 ```
 
-Here we specify that recruitment deviations are independent random effects, with no stock-recruit relationship.
+Here we specify recruitment deviations are independent random effects and no stock-recruit relationship will be assumed.
 ```{r, eval=FALSE}
-NAA_re = list(N1_pars = exp(10)*exp(-(0:(length(digifish$ages)-1))*M$initial_means[1]))
+NAA_re = list(
+  N1_model = "age-specific-fe", 
+  N1_pars = array(exp(10)*exp(-(0:(length(digifish$ages)-1))*M$initial_means[1]), c(1,1,length(digifish$ages))))
 NAA_re$sigma = "rec" #random about mean
-NAA_re$use_steepness = 0
+#NAA_re$use_steepness = 0
 NAA_re$recruit_model = 2 #random effects with a constant mean
-NAA_re$recruit_pars = exp(10)
+NAA_re$recruit_pars = list(exp(10))
 ```
 
 ## 4. Setting up the q parameter for the second index to have a prior distribution.
 
+We can use the `initial_q` and `prior_sd` components of the `catchability ` argument to specify a normal prior distribution for logit catchability of one or more indices. The lower and upper bounds of each catchability can be defined using `q_lower` and `q_upper` elements of the `cactchability` argument, but they are 0 and 1000 by default. Entries in `prior_sd` that are `NA` do not have time-varying random effects values and the corresponding value  `initial_q` will be the initial value when estimated or the assumed catchability for simulation for an operating model. Non-NA entries in `prior_sd` define the standard deviation of the normal prior distribution and the corresponding value of `initial_q` is the inverse-logit of the mean of the prior distribution.
 ```{r, eval=FALSE}
-catchability = list(prior_sd = c(NA, 0.3))
+catchability = list(initial_q = rep(0.3, index_info$n_indices), prior_sd = c(NA, 0.3))
 ```
 
 Now we can make the input list with `prepare_wham_input`
 ```{r, eval=FALSE}
-input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability)
+input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+  index_info = index_info, catch_info = catch_info, F = F_info))
 ```
 
-We can then define an operating model (OM) by simulating data (and recruitment) from this input:
+We can then define an operating model (OM) and simulate data as well as random effects for the q of the second survey and recruitment from this input. Note we first remove any parameters from the random component of the input so that TMB will not try to optimize these random effects if it would normallly when estimating a model. This is not necessary here, but it was for the closed-loop simulations in example 10, and would seem to be a good habit.
 ```{r, eval=FALSE}
-om = fit_wham(input, do.fit = FALSE)
+om_input <- input
+om_input$random <- NULL
+om = fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 #simulate data from operating model
 set.seed(0101010)
@@ -131,37 +138,36 @@ temp$data = newdata
 
 Fit an estimation model that is the same as the operating model (self-test).
 ```{r, eval=FALSE}
-fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
-fit$mohns_rho = mohns_rho(fit)
+fit = fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
 plot_wham_output(fit)
 ```
 
-This plot of the q prior and approximate posterior is provided by `plot_wham_output`
+This plot of the q prior and approximate posterior is provided by `plot_wham_output`. The true simulated q is shown as the solid vertical line.
 ```{r, eval=FALSE}
 wham:::plot_q_prior_post(fit)
+abline(v = newdata$q[1,2], lwd = 2)
 ```
 
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/prior_posterior_q.png){ width=80% }
 
 ## 5. Add random effects on q for first index
 
-This will add time varying iid random effects on catchability for the first index while still keeping the prior on the second index.
+This will add time varying iid random effects on catchability for the first index while still keeping the prior on the second index. We specify the standard deviation of the catchability of the random effects on the logit scale with `sigma_val`.
 ```{r, eval=FALSE}
-catchability = list(prior_sd = c(NA, 0.3), re = c("iid", "none")) 
+catchability = list(prior_sd = c(NA, 0.3), initial_q = rep(0.3, index_info$n_indices), re = c("iid", "none"), sigma_val = c(0.3,0.3))
 ```
 
 Generate input as above. 
 ```{r, eval=FALSE}
-input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability)
+input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 ```
-
-The default initial value for the standard deviation of the random effects is 1 but we will simulate with less variation than that
-```{r, eval=FALSE}
-input$par$q_repars[1] = log(0.2)
 
 Now create the operating model, simulate data and fit as above
 ```{r, eval=FALSE}
-om = fit_wham(input, do.fit = FALSE)
+om_input <- input
+om_input$random <- NULL
+om = fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 #simulate data from operating model
 set.seed(0101010)
@@ -172,8 +178,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE)
-fit$mohns_rho = mohns_rho(fit) 
+fit = fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
 
 plot_wham_output(fit)
 ```
@@ -198,46 +203,38 @@ legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 
 
 ## 6. Add Environmental covariates to the model
 
-First simulate and estimate environmental covariate processes, but no effects of population.
+First simulate and estimate environmental covariate processes, but no effects of population. 
 
 ```{r, eval=FALSE}
 ecov = list(
-    label = c("Climate variable 1", "Climate variable 2"),
-    process_model = c("ar1","ar1"),
-    mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
-    logsigma = log(c(0.01, 0.2)), 
-    lag = c(0,0),
-    years = digifish$years, 
-    use_obs = matrix(1,length(digifish$years),2),  
-    where = c("none","none"),
-    indices = list(2, NULL),
-    how = c(1,0))
+        label = c("Climate variable 1", "Climate variable 2"),
+        process_model = c("ar1","ar1"),
+        mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
+        logsigma = log(c(0.01, 0.2)), 
+        years = digifish$years, 
+        use_obs = matrix(1,length(digifish$years),2),  
+        q_how = matrix("none",2,2))
+
+ecov$process_mean_vals = c(0,0) #mean
+ecov$process_sig_vals = c(0.1,0.2) #sd
+ecov$process_cor_vals <- c(0.4,-0.3)  #cor
+
 ```
-Note that how[1] conflicts with where[1], but `prepare_wham_input` will use where[1].
+We use `process_mean_vals`, `process_sig_vals` and `process_cor_vals` to specify parameters for the AR1 processes assumed for the environmental covariate processes. Note that `ecov$q_how` is a matrix with rows for indices and columns for covariates for whether each covariate affects an index. Note also, that the simulated values for the observations for each covariate here will not be used.
 
 We will not include a prior distribution for the second index, but we will keep the iid random effects on q for the first index.
 ```{r, eval=FALSE}
-catchability = list(re = c("iid", "none"))
+catchability = list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.3,0.3), re = c("iid", "none"))
 
-input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov)
-```
-A warning is thrown about the how[1] and where[1] conflict.
-
-For the simulations, we need to set some values for the standard deviation and correlation parameters of the environmental covariate processes.
-```{r, eval=FALSE}
-input$par$Ecov_process_pars[2,] = log(c(0.1,0.2)) #sd
-#cor pars are c(0.4,-0.3)
-input$par$Ecov_process_pars[3,] = log((c(0.4,-0.3)-(-1))/(1-c(0.4,-0.3)))
-```
-
-The same value for the standard deviation of q random effects on the first index.
-```{r, eval=FALSE}
-input$par$q_repars[1] = log(0.2)
+input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 ```
 
 Now create the operating model and simulate and fit data.
 ```{r, eval=FALSE}
-om = fit_wham(input, do.fit = FALSE)
+om_input <- input
+om_input$random <- NULL
+om = fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 
@@ -246,29 +243,29 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE)#, retro.silent = TRUE)
-fit$mohns_rho = mohns_rho(fit) 
+fit = fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE)
 
 plot_wham_output(fit)
 ```
+Check the table of parameter estimates on the second tab of the html document produced by `plot_wham_output`. It shows parameter estiamtes, standard errors, and confidence intervals on the natural scale of the parameters.
 
-Again, this is similar to what is provided in `plot_wham_output`, but with the true values from the simulation also plotted
+Again, this is similar to what is provided in `plot_wham_output`, but with the true values from the simulation also plotted.
 ```{r, eval=FALSE}
 pal = viridisLite::viridis(n=2)
 se = summary(fit$sdrep)
 se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
-  lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
+    lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
   polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
-  polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-  lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
+    polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 ![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_2.png){ width=80% }
 
-Let's take a look at the true and estimated Environmental covariate process pararameters. Columns are the different covariates. Rows are the mean, sd, and correlation parameters, respectively.
+Let's take a look at the true and estimated environmental covariate process pararameters. Columns are the different covariates. Rows are the mean, sd, and correlation parameters, respectively.
 ```{r, eval=FALSE}
 input$par$Ecov_process_pars
 fit$parList$Ecov_process_pars
@@ -289,51 +286,25 @@ as.list(fit$sdrep, "Std")$q_repars
 
 Allow effects of first Environmental covariate on q for second index.
 ```{r, eval=FALSE}
-ecov = list(
-    label = c("Climate variable 1", "Climate variable 2"),
-    process_model = c("ar1","ar1"),
-    mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
-    logsigma = log(c(0.01, 0.2)), 
-    lag = c(0,0),
-    years = digifish$years, 
-    use_obs = matrix(1,length(digifish$years),2),  
-    where = c("q","none"),
-    indices = list(2, NULL),
-    how = c(1,0))
+ecov$q_how <- matrix(c("none", "none","lag-0-linear","none"),2,2)
+
+#set value for Ecov_beta effect on q (dims are n_effects (n_indices, n_Ecov, max_n_poly)
+ecov$beta_q_vals <- array(0, dim = c(index_info$n_indices, length(ecov$label), 1))
+ecov$beta_q_vals[2,1,1] <- 0.5
 ```
+We set the value for effect of the environmental covariate on q using `ecov$beta_q_vals` (array dims are n_indices, n_Ecov, order of the polynomial).
 
-As above get rid of prior on second index, add random effects on q for first index, generate input 
+As above, generate input.
 ```{r, eval=FALSE}
-catchability = list(re = c("iid", "none"))
-
-input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov)
-```
-how[1] no longer conflicts with where[1].
-
-As above set parameter values for simulation.
-```{r, eval=FALSE}
-#set sd and rho of ecov processes
-input$par$Ecov_process_pars[2,] = log(c(0.1,0.2)) #sd
-#cor pars are c(0.4,-0.3)
-input$par$Ecov_process_pars[3,] = log((c(0.4,-0.3)-(-1))/(1-c(0.4,-0.3)))
-#set value to simulate variation in q
-input$par$q_repars[1] = log(0.2)
-```
-
-Also, set value for Ecov_beta effect on q (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)
-```{r, eval=FALSE}
-input$par$Ecov_beta[4,1,1,] = 0.5
-```
-
-Verify that the map argument is setting all the ``ages'' to use the same value, but only the first value is used for q or recruitment.
-```{r, eval=FALSE}
-x = array(input$map$Ecov_beta, dim = dim(input$par$Ecov_beta))
-x[4,1,1,] 
+input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 ```
 
 As above, create the operating model, simulate and fit data and compare true and estimated parameters.
 ```{r, eval=FALSE}
-om = fit_wham(input, do.fit = FALSE)
+om_input <- input
+om_input$random <- NULL
+om = fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 
@@ -342,8 +313,7 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE)#, retro.silent = TRUE)
-fit$mohns_rho = mohns_rho(fit) 
+fit = fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE)
 
 plot_wham_output(fit)
 
@@ -367,10 +337,10 @@ se = summary(fit$sdrep)
 se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
-  lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
+    lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
   polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
-  polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-  lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
+    polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
@@ -378,49 +348,24 @@ legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 
 
 ## 8. Different effects on q and recruitment of the same environmental covariate.
 
-Add covariates to the model and allow effects of first covariate on q for second index AND recruitment. Then proceed as above.
+Add covariates to the model and allow effects of first covariate on q for second index AND recruitment. Then proceed as above. Use ecov$beta_R_vals to specify effect size of covariate on recruitment.
 ```{r, eval=FALSE}
-ecov = list(
-    label = c("Climate variable 1", "Climate variable 2"),
-    process_model = c("ar1","ar1"),
-    mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
-    logsigma = log(c(0.01, 0.2)), 
-    lag = c(0,0),
-    years = digifish$years, 
-    use_obs = matrix(1,length(digifish$years),2),  
-    where = list(c("recruit","q"),"none"),
-    indices = list(2, NULL),
-    how = c(1,0))
+ecov$recruitment_how <- matrix(c("controlling-lag-0-linear","none"),2,1)
 
-#get rid of prior on second index. add AR1 random effects on q for first index
-catchability = list(re = c("iid", "none"))
+#set value for Ecov_beta effect on recruitment (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)
+ecov$beta_R_vals <- array(0, dim = c(1, length(ecov$label), 1))
+ecov$beta_R_vals[1,1,1] <- -0.5
 
-input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov)
-#how[1] no longer conflicts with where[1].
+input = prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 
-#set sd and rho of ecov processes
-input$par$Ecov_process_pars[2,] = log(c(0.1,0.2)) #sd
-#cor pars are c(0.4,-0.3)
-input$par$Ecov_process_pars[3,] = log((c(0.4,-0.3)-(-1))/(1-c(0.4,-0.3)))
-#set value to simulate variation in q
-input$par$q_repars[1] = log(0.2)
-
-x = array(input$map$Ecov_beta, dim = dim(input$par$Ecov_beta))
-x[1,1,1,] #all the ages mapped to use the same value. Only the first value is used for q or recruitment.
-x[4,1,1,] #all the ages mapped to use the same value. Only the first value is used for q or recruitment.
-
-#set value for Ecov_beta effect on q (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)
-input$par$Ecov_beta[4,1,1,] = 0.5
-```
-
-Also, set a value for Ecov_beta effect on recruitment (dims are n_effects (2 + n_indices, max_n_poly, n_Ecov, n_ages)
-```{r, eval=FALSE}
-input$par$Ecov_beta[1,1,1,] = -0.5
 ```
 
 Create the operating model, simulate and fit data, and compare true and estimated parameters.
 ```{r, eval=FALSE}
-om = fit_wham(input, do.fit = FALSE)
+om_input <- input
+om_input$random <- NULL
+om = fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata = om$simulate(complete=TRUE)
 
@@ -429,26 +374,25 @@ temp = input
 temp$data = newdata
 
 #fit estimating model that is the same as the operating model
-fit = fit_wham(temp, do.osa = FALSE, MakeADFun.silent = TRUE)#, retro.silent = TRUE)
-fit$mohns_rho = mohns_rho(fit) 
+fit = fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE)
 
 plot_wham_output(fit)
 
 #compare assumed and estimated ecov effect on q for second index
-input$par$Ecov_beta[4,1,1,1]
-fit$parList$Ecov_beta[4,1,1,1]
+input$par$Ecov_beta_q[2,1,1]
+fit$parList$Ecov_beta_q[2,1,1]
 
 #compare assumed and estimated ecov effect on recruitment
-input$par$Ecov_beta[1,1,1,1]
-fit$parList$Ecov_beta[1,1,1,1]
+input$par$Ecov_beta_R[1,1,1]
+fit$parList$Ecov_beta_R[1,1,1]
 
 #SE for beta parameters is large, especially for recruitment effect
-as.list(fit$sdrep, "Std")$Ecov_beta[c(4,1),1,1,1]
+as.list(fit$sdrep, "Std")$Ecov_beta_q[2,1,1]
+as.list(fit$sdrep, "Std")$Ecov_beta_R[1,1,1]
 
 #compare assumed and estimated ecov process pars
 input$par$Ecov_process_pars
 fit$parList$Ecov_process_pars
-
 
 #compare true and estimated time-varying q
 input$par$q_repars
@@ -460,12 +404,12 @@ as.list(fit$sdrep, "Std")$q_repars
 pal = viridisLite::viridis(n=2)
 se = summary(fit$sdrep)
 se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
-plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,0.4), ylab = "q", xlab = "Year")
+plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,0.6), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
-  lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
+    lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
   polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
-  polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-  lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
+    polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```

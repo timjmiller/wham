@@ -70,13 +70,13 @@ set_q = function(input, catchability = NULL){
 		if(length(q_opts$q_upper) != data$n_indices) stop("the length of catchability$q_upper is not equal to the number of indices")
   	data$q_upper = q_opts$q_upper
   }
-	par$logit_q = wham:::gen.logit(0.3, data$q_lower, data$q_upper)
+	par$logit_q = gen.logit(0.3, data$q_lower, data$q_upper)
   if(!is.null(asap3)) {
 		k = 0
 		for(i in 1:length(asap3)){
 			ind = which(asap3[[i]]$use_index ==1)
 			k_ind = k + 1:length(ind)
-			par$logit_q[k_ind] = wham:::gen.logit(asap3[[i]]$q_ini[ind], data$q_lower[k_ind], data$q_upper[k_ind]) # use q_ini values from asap3 file
+			par$logit_q[k_ind] = gen.logit(asap3[[i]]$q_ini[ind], data$q_lower[k_ind], data$q_upper[k_ind]) # use q_ini values from asap3 file
 			k = max(k_ind)
 		}
 	}

@@ -2,8 +2,8 @@
 # If all of your tests pass:
 #   Great!
 # If your tests do not pass:
-#   Bummer... Unfortunately the tests do not save objects for debugging. 
-#   You may want to run the failing ex line by line. See inst/contribute/run_all_examples_local.R.
+#   Bummer... the tests do not save objects for debugging, but the tests now provide some information on where failures are occuring within each test. 
+# To run all example scripts, see inst/contribute/run_all_examples_local.R.
 # If you've changed the .cpp and now it doesn't compile:
 #   Check out test_wham_gdb.R and run_gdb.R to use TMB::gdbsource
 

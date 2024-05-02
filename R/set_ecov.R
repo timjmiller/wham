@@ -529,7 +529,6 @@ set_ecov = function(input, ecov) {
     max.lag = max(c(ecov$lag_R,ecov$lag_M,ecov$lag_mu,ecov$lag_q))
     #if(is.null(ecov$lag)) stop("ecov$lag needs to be provided for each ecov")
     #if(!is.list(ecov$lag)) ecov$lag = lapply(ecov$lag, function(x) rep(x,n_effects))
-    # print(max.lag)
     if(input$years_Ecov[1] > input$years[1] - max.lag){
       input$log$ecov <- c(input$log$ecov, "one or more ecov does not start by model year 1 - max(lag). Padding ecov... \n")
       data$Ecov_obs <- rbind(matrix(0, nrow = input$years_Ecov[1]-(input$years[1]-max.lag), ncol = data$n_Ecov), data$Ecov_obs)

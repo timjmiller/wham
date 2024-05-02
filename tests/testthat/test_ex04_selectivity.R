@@ -61,7 +61,7 @@ for(m in 1:n.mods){
 	#		#				basic_info = basic_info)
 	# fit model
 	#mods[[m]] <- suppressWarnings(fit_wham(input, do.osa=F, do.proj=F, do.retro=F, do.sdrep=F, MakeADFun.silent = TRUE)) 
-	mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
+	mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=FALSE, MakeADFun.silent = TRUE))
 	if(exists("err")) rm("err") # need to clean this up
   # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
   expect_equal(length(mods[[!!m]]$par), length(ex4_test_results$par[[!!m]]), tolerance=1e-6) # nll

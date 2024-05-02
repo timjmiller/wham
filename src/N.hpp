@@ -1243,12 +1243,12 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
         for(int y = 1; y < n_years; y++){
           NAA_devs_r_s(y-1) = NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0);
         }
-        NAA_devs_r_s = rar1(NAA_devs_r_s,trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind),log_NAA_sigma(s,spawn_regions(s)-1,0),0,ystart);
+        NAA_devs_r_s = rar1(NAA_devs_r_s,trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind),log_NAA_sigma(s,spawn_regions(s)-1,0),0,ystart,bias_correct_pe);
       } else{
         AR1(NAA_rho_y).simulate(NAA_devs_r_s); // sigma = 1, scale below
         NAA_devs_r_s = marginal_sigma(0) * NAA_devs_r_s;
+        if(bias_correct_pe) NAA_devs_r_s -= 0.5*pow(marginal_sigma(0),2);
       }
-      if(bias_correct_pe) NAA_devs_r_s -= 0.5*pow(marginal_sigma(0),2);
       for(int y = ystart+1; y < n_years; y++){
         NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0) = NAA_devs_r_s(y-1);
       }
@@ -1281,15 +1281,21 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
                 NAA_devs_s_r(y-1,k) = NAA_devs_out(s,r,years_use(y),a);
                 k++;
               }
-              NAA_devs_s_r = r2dar1(NAA_devs_s_r,trans_NAA_rho(s,r,1), trans_NAA_rho(s,r,0), log_sigma_s_r,0,ystart);
+              NAA_devs_s_r = r2dar1(NAA_devs_s_r,trans_NAA_rho(s,r,1), trans_NAA_rho(s,r,0), log_sigma_s_r,0,ystart,bias_correct_pe);
             }
           } else {
             SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y)).simulate(NAA_devs_s_r); // scaled here
+            for(int y = ystart+1; y < n_years; y++) { 
+              k=0;
+              for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
+                if(bias_correct_pe) NAA_devs_s_r(y-1,k) -= 0.5*pow(marginal_sigma_s_r(k),2);
+                k++;
+              }
+            }
           }
           for(int y = ystart+1; y < n_years; y++) { 
             k=0;
             for(int a = age_start; a< n_ages; a++) if(NAA_where(s,r,a)) {
-              if(bias_correct_pe) NAA_devs_s_r(y-1,k) -= 0.5*pow(marginal_sigma_s_r(k),2);
               NAA_devs_out(s,r,years_use(y),a) = NAA_devs_s_r(y-1,k);
               k++;
             }

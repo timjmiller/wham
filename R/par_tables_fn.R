@@ -168,6 +168,16 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       fe.names = c(fe.names, paste(index.names.tab[i], "logit(q) intercept"))
       fe.vals = c(fe.vals, pars[[parname]][i])
       fe.cis = rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i]))
+      if(mod$input$data$use_q_re[i]){
+        fe.names = c(fe.names, paste(index.names.tab[i], "q RE $\\sigma$"))
+        fe.vals = c(fe.vals, exp(pars$q_repars[i,1]))
+        fe.cis = rbind(fe.cis, ci(pars$q_repars[i,1], sd$q_repars[i,1], type = "exp"))
+        if(mod$input$options$q$re[i] == "ar1"){
+          fe.names = c(fe.names, paste0(index.names.tab[i], "q RE AR1 $\\rho$ (year)"))
+          fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$q_repars[i,2])))
+          fe.cis = rbind(fe.cis, ci(pars$q_repars[i,3], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
+        }
+      }
     }
   }
   block.fleets.indices <- lapply(1:data$n_selblocks, function(x){

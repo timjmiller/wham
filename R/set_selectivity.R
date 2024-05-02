@@ -41,19 +41,19 @@
 #'                blocks (1 fleet, 2 indices) and 6 ages, \code{$map_pars = list(c(1,2,3,NA,NA,4), c(5,6,7,NA,8,8), c(1,2,3,NA,NA,4))}
 #'                will estimate ages 1-3 and 6 in block 1 (fleet), ages 1-3 and 4-5 (shared) in block 2 (index 1), and then set the
 #'                index 2 (block 3) selectivity equal to the fleet.}
-#'     \item{$initial_sigma}{Initial standard deviation values to use for the random effect deviations. Must be a vector with length = number of blocks. 
+#'     \item{$sigma_vals}{Initial standard deviation values to use for the random effect deviations. Must be a vector with length = number of blocks. 
 #'                Use natural (not log) scale, must be positive. \code{par$sel_repars[,1]} will be estimated on log-scale. Not used if \code{re = 'none'} for all blocks.}
 #'     \item{$map_sigma}{Specify which SD parameters to fix for the random effect deviations. Must be a vector with length = number of blocks. 
 #'                Use \code{NA} to fix a parameter and integers to estimate. Use the same integer for multiple blocks to estimate a shared SD parameter.
 #'                Not used if \code{re = 'none'} for all blocks.}
-#'     \item{$initial_cor}{Initial correlation values to use for the random effect deviations. Must be a list with length = number of blocks. If \code{re = 'ar1'} or \code{ar1_y'}
-#'                for a block, list element must be a single value. If \code{re = '2dar1'} for a block, list element must be a vector of length 2 (first is for "age", second is for "year") for each block. 
-#'                Use natural scale, must be between -1 and 1. \code{par$sel_repars[,2:3]} will be estimated on a transform scale,  (2 / (1 + exp(-2x))) - 1. 
+#'     \item{$cor_vals}{Initial correlation values to use for the random effect deviations. Must be a n_selblocks x 2 integer matrix. Columns correspond to correlation by age and year,
+#'                respectively. If \code{re = 'ar1'} or \code{ar1_y'} only the corresponding values are used.
+#'                Values must be between -1 and 1, but parameters are estimated on a logit transformed scale internally. 
 #'                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
-#'     \item{$map_cor}{Specify which correlation parameters to fix for the random effect deviations. Must be a list with length = number of blocks. 
-#'                If \code{re = 'ar1'} or \code{ar1_y'}, each list element (block) must be a single value. If \code{re = '2dar1'}, 
-#'                must be a vector of length 2 (first is for "age", second is for "year"). Use \code{NA} to fix a parameter and integers to estimate. 
-#'                Use the same integer for multiple blocks to estimate a shared correlation parameter. Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
+#'     \item{$map_cor}{Specify which correlation parameters to fix for the random effect deviations. Must be a n_selblocks x 2 matrix. Columns correspond to correlation by age
+#'                and year,respectively. Parameters can be shared by setting corresponding values of \code{map_cor} to the same integer. Use \code{NA} to fix a parameter.
+#'                If \code{re = 'ar1'} or \code{ar1_y'}, only the column for the corresponding correlation are used.
+#'                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
 #'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
 #'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
 #'   }
@@ -377,64 +377,56 @@ set_selectivity = function(input, selectivity)
   map$selpars_re <- factor(map$selpars_re)
   
   # initial and map for parameters controlling selectivity RE
-  trans <- function(x) return((2/(1 + exp(-x))) - 1) # transform for correlation par
   # default initial values: sigma = 0.1, rho = 0
   par$sel_repars <- matrix(0, nrow=data$n_selblocks, ncol=3)
   par$sel_repars[,1] <- log(0.1)
-  for(b in 1:data$n_selblocks){
-    if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 0 # if ar1 over ages only, fix rho_y = 0
-    if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 0 # if ar1 over years only, fix rho = 0
+  # for(b in 1:data$n_selblocks){
+    # if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 0 # if ar1 over ages only, fix rho_y = 0
+    # if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 0 # if ar1 over years only, fix rho = 0
     # check if only 1 estimated sel par (e.g. because all but 1 age is fixed), can't estimate rho
-    if(data$n_selpars_est[b] < 2) par$sel_repars[b,2] <- 0
+    # if(data$n_selpars_est[b] < 2) par$sel_repars[b,2] <- 0
+  # }
+  if(!is.null(selectivity$sigma_vals)){
+    if(any(selectivity$sigma_vals < 0)) stop('Variance controlling selectivity random effects must be positive.') 
+    par$sel_repars[,1] = log(selectivity$sigma_vals) # log scale
   }
-  if(!is.null(selectivity$initial_sigma)){
-    if(any(selectivity$initial_sigma < 0)) stop('Variance controlling selectivity random effects must be positive.') 
-    par$sel_repars[,1] = log(selectivity$initial_sigma) # log scale
-  }
-  if(!is.null(selectivity$initial_cor)){
-    if(any(sapply(selectivity$initial_cor, function(x) any(x < -1)))) stop('Correlation parameters controlling selectivity random effects must be between -1 and 1.')
-    if(any(sapply(selectivity$initial_cor, function(x) any(x > 1)))) stop('Correlation parameters controlling selectivity random effects must be between -1 and 1.')
+  if(!is.null(selectivity$cor_vals)){
+    if(!is.matrix(selectivity$cor_vals)) stop("selectivity$cor_vals must be an n_selbocks x 2 matrix.")
+    if(!all(dim(selectivity$cor_vals) == c(data$n_selblocks,2))) stop("selectivity$cor_vals must be an n_selbocks x 2 matrix.")
+    if(any(abs(selectivity$cor_vals)>=1)) stop('|Correlation parameters|<1 is required.')
     for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] == 3) par$sel_repars[b,2] <- trans(selectivity$initial_cor[[b]]) # if ar1 over ages, use specified initial
-      if(data$selblock_models_re[b] == 4) par$sel_repars[b,3] <- trans(selectivity$initial_cor[[b]]) # if ar1 over years, use specified initial
-      if(data$selblock_models_re[b] == 5) par$sel_repars[b,2:3] <- trans(selectivity$initial_cor[[b]]) # if 2dar1 over years, use both
+      if(data$selblock_models_re[b] == 3) par$sel_repars[b,2] <- gen.logit(selectivity$cor_vals[b,1], -1, 1) # if ar1 over ages, use specified initial
+      if(data$selblock_models_re[b] == 4) par$sel_repars[b,3] <- gen.logit(selectivity$cor_vals[b,2], -1, 1) # if ar1 over years, use specified initial
+      if(data$selblock_models_re[b] == 5) par$sel_repars[b,2:3] <- gen.logit(selectivity$cor_vals[b,1:2], -1, 1) # if 2dar1 over years, use both
     }
   }  
 
   # map selectivity RE
-  tmp.sel.repars <- par$sel_repars
-  for(b in 1:data$n_selblocks){
-    if(data$selblock_models_re[b] == 1) tmp.sel.repars[b,] <- rep(NA,3) # no RE pars to estimate
-    if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2:3] <- rep(NA,2) # estimate sigma
-    if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- NA # estimate sigma, rho
-    if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,2] <- NA # estimate sigma, rho_y
-    if(data$n_selpars_est[b] < 2) tmp.sel.repars[b,2] <- NA # can't estimate rho if only 1 selpar estimated
-  }
+  tmp.sel.repars <- matrix(NA, data$n_selblocks, 3)
   if(!is.null(selectivity$map_sigma)){
     if(length(selectivity$map_sigma) != data$n_selblocks) stop("selectivity$map_sigma must be a vector of length = number of selectivity blocks")
-    tmp.sel.repars[is.na(selectivity$map_sigma),1] = NA
-  }
-  if(!is.null(selectivity$map_cor)){
-    if(length(selectivity$map_cor) != data$n_selblocks) stop("selectivity$map_cor must be a list of length = number of selectivity blocks")
+    for(b in 1:data$n_selblocks) if(data$selblock_models_re[b]>1) tmp.sel.repars[b,1] <- selectivity$map_sigma[b]
+  } else{ #default mapping: unique values for each selblock
     for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] == 3) tmp.sel.repars[is.na(selectivity$map_cor[[b]]),2] = NA
-      if(data$selblock_models_re[b] == 4) tmp.sel.repars[is.na(selectivity$map_cor[[b]]),3] = NA
-      if(data$selblock_models_re[b] == 5) tmp.sel.repars[is.na(selectivity$map_cor[[b]]),2:3] = NA
+      #if(data$selblock_models_re[b] == 1) tmp.sel.repars[b,] <- rep(NA,3) # no RE pars to estimate
+      if(data$selblock_models_re[b] > 1) tmp.sel.repars[b,1] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma
     }
   }
-  ind.notNA <- which(!is.na(tmp.sel.repars))
-  tmp.sel.repars[ind.notNA] <- 1:length(ind.notNA)
-  if(!is.null(selectivity$map_sigma)){
-    tmp.sel.repars[,1] = selectivity$map_sigma
-  }
   if(!is.null(selectivity$map_cor)){
+    if(!is.matrix(selectivity$map_cor)) stop("selectivity$map_cor must be an n_selbocks x 2 matrix.")
+    if(!all(dim(selectivity$map_cor) == c(data$n_selblocks,2))) stop("selectivity$map_cor must be an n_selbocks x 2 matrix.")
+    selectivity$map_cor[] <- as.interger(selectivity$map_cor)
     for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,2] = selectivity$map_cor[[b]]
-      if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,3] = selectivity$map_cor[[b]]
-      if(data$selblock_models_re[b] == 5) tmp.sel.repars[b,2:3] = selectivity$map_cor[[b]]
+      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,2] = selectivity$map_cor[b,1]
+      if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,3] = selectivity$map_cor[b,2] 
+      if(data$selblock_models_re[b] == 5) tmp.sel.repars[b,2:3] = selectivity$map_cor[b,1:2]
     }
-    st <- ifelse(!all(is.na(tmp.sel.repars[,1])), max(tmp.sel.repars[,1], na.rm=T), 0)
-    tmp.sel.repars[,2:3] = tmp.sel.repars[,2:3] + st
+  } else { #default mapping: unique values for each selblock
+    for(b in 1:data$n_selblocks){
+      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,2] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma, rho
+      if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,3] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma, rho_y
+      if(data$selblock_models_re[b] == 5) tmp.sel.repars[b,2:3] <- max(c(0,tmp.sel.repars), na.rm = T) + 1:2 # estimate sigma, rho, rho_y
+    }
   }
   map$sel_repars = factor(tmp.sel.repars)
 

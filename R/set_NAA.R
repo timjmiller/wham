@@ -6,6 +6,11 @@
 #' If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic). Otherwise,
 #' \code{NAA_re} specifies numbers-at-age configuration. It is a list with the following possible entries:
 #'   \describe{
+#'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
+#'        (default = FALSE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+#'        have the correlation structure. If TRUE and NAA_re$cor is "ar1_y" or "2dar1" separate year correlation parameters are estimated for recruitment and older
+#'        ages.
+#'     }
 #'     \item{$sigma}{Which ages allow deviations from the predicted NAA given NAA from previous time step? Must be a single character string described below or a vector
 #'                    of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are specified with the strings:
 #'                    \describe{
@@ -19,17 +24,12 @@
 #'                   All parameters being the same for both stocks and across regions. The user must be sure that a compatible \code{NAA_re$sigma} configuration is defined.
 #'                   Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is not specified.
 #'                  }
-#'     \item{$sigma_vals}{Initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is
-#'                  not specified. Otherwise when \code{NAA_re$sigma} =
-#'                  \describe{
-#'                    \item{"rec"}{must be a list (length = n_stocks) of single values .}
-#'                    \item{"rec+1"}{Either 1) a list (length = n_stocks) of 2 values must be specified. First is for the first age class (recruits), second is for all other ages,
-#'                      or 2) an array (nstocks x nregions x nages)}{only the value for age 1 in the spawning region is used.}
-#'                  }
+#'     \item{$sigma_vals}{Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is
+#'                  not specified. Only those for age 1 in the spawning region are used if \code{NAA_re$sigma} = "rec".
 #'                  If \code{NAA_re$sigma_map} is defined, the user must ensure that the configuration is compatible with \code{NAA_re$sigma_vals}
 #'                }
 #'     \item{$cor}{Correlation structure for the NAA deviations. Must be a single character string described below or a vector
-#'                    of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are:
+#'                  of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are:
 #'                  \describe{
 #'                    \item{"iid"}{NAA deviations vary by year and age, but uncorrelated.}
 #'                    \item{"ar1_a"}{NAA deviations correlated by age (AR1).}
@@ -37,19 +37,12 @@
 #'                    \item{"2dar1"}{NAA deviations correlated by year and age (2D AR1).}
 #'                  }
 #'                }
-#'     \item{$cor_vals}{Initial correlation values to use for the NAA deviations. If unspecified all initial values are 0. When \code{NAA_re$cor} = 
-#'                  \describe{
-#'                    \item{"iid"}{values are not used.}
-#'                    \item{"ar1_a" or "ar1_y"}{must be a list (length = n_stocks) each with a single value.}
-#'                    \item{"2dar1"}{must be a list (length = n_stocks) each with 2 values. First is for "age", second is for "year".}
-#'                  }
+#'     \item{$cor_vals}{Array (n_stocks x n_regions x 3) of initial correlation values to use for the NAA deviations. The first value correspond to correlation across age.
+#'                  The second is for yearly correlation for NAA deviations for all ages if recruitment is not decoupled, or otherwise just ages after recruitemnt. The third correlation is for annual 
+#'                  recruitment deviations and used only when recruitment is decoupled. If unspecified all initial values are 0. If \code{NAA_re$cor} = "iid", values are not used. 
+#'                  If \code{NAA_re$cor} = "ar1_a", those for yearly correlation are not used, and vice versa for "ar1_y". 
 #'                }
-#'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
-#'        (default = FALSE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
-#'        have the correlation structure. If TRUE and NAA_re$cor is "ar1_y" or "2dar1" separate year correlation parameters are estimated for recruitment and older
-#'        ages.
-#'     }
-#'     \item{$N1_model}{Integer vector (n_stocks) determining which way to model the initial numbers at age:
+#'     \item{$N1_model}{Character vector (n_stocks) determining which way to model the initial numbers at age:
 #'       \describe{
 #'          \item{"age-specific-fe"}{(default) age- and region-specific fixed effects parameters}
 #'          \item{"equilibrium"}{2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
@@ -249,14 +242,9 @@ set_NAA = function(input, NAA_re=NULL)
       }
     }
     if(!is.null(NAA_re$sigma_vals)) {
-      if(!is.array(NAA_re$sigma_vals)) {
-        if(length(NAA_re$sigma_vals) != data$n_stocks) stop("NAA_re$sigma_vals must be a list with length = number of stocks")
-        for(s in 1:data$n_stocks) {
-          if(!(length(NAA_re$sigma_vals[[s]]) %in% c(1,data$n_ages))) stop(paste0("length of NAA_re$sigma_vals[[s]] must be 1 or ", data$n_ages, "."))
-          par$log_NAA_sigma[s,,] <- log(NAA_re$sigma_vals[[s]])
-        }
-      } else {
-        if(any(dim(NAA_re$sigma_vals) != c(data$n_stocks, data$n_regions, data$n_ages))) stop("dimensions of NAA_re$sigma_vals array are not c(nstocks,nregions,nages)")
+      if(!is.array(NAA_re$sigma_vals)) stop("NAA_re$sigma_vals must be an array with dimensions: n_stocks x n_regions x n_ages.")
+      else {
+        if(any(dim(NAA_re$sigma_vals) != c(data$n_stocks, data$n_regions, data$n_ages))) stop("NAA_re$sigma_vals must be an array with dimensions: n_stocks x n_regions x n_ages.")
         par$log_NAA_sigma[] <- log(NAA_re$sigma_vals)
       }
     }
@@ -273,53 +261,25 @@ set_NAA = function(input, NAA_re=NULL)
         if(NAA_re$cor[ind] %in% c("ar1_a")) map$trans_NAA_rho[s,,1] <- k+1
         if(NAA_re$cor[ind] %in% c("ar1_y")) {
           map$trans_NAA_rho[s,,2] <- k+1
-          if(data$decouple_rec) map$trans_NAA_rho[s,,3] <- k+2
+          if(data$decouple_recruitment) map$trans_NAA_rho[s,,3] <- k+2
         }
         if(NAA_re$cor[ind] == "2dar1") for(r in 1:data$n_regions) {
           map$trans_NAA_rho[s,r,1:2] <- k + 1:2
-          if(data$decouple_rec) map$trans_NAA_rho[s,3] <- k + 3
+          if(data$decouple_recruitment) map$trans_NAA_rho[s,r,3] <- k + 3
         } else {
           # NAA_re$cor[s] <- 'iid'
         }
       }
     }
-    # k <- 1
-    # if(length(NAA_re$cor) == 1) {
-    #   input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$cor being used for all stocks (",NAA_re$cor[[1]][1],").\n"))
-    #   #NAA_re$cor = rep(list(NAA_re$cor), data$n_stocks)
-    #   if(!NAA_re$cor[[1]][1] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
-    #   if(NAA_re$cor[[1]][1] %in% c("ar1_a","2dar1")) map$trans_NAA_rho[,,1] <- k
-    #   if(NAA_re$cor[[1]][1] == "ar1_y") map$trans_NAA_rho[,,2] <- k
-    #   if(NAA_re$cor[[1]][1] == "2dar1") map$trans_NAA_rho[,,2] <- k + 1
-    #   #if(NAA_re$cor[[1]][1] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE)
-    # } else {
-    #   for(s in 1:data$n_stocks) {
-    #     if(!is.null(NAA_re$cor[[s]])){
-    #       if(!NAA_re$cor[[s]] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor[[s]] must be one of 'iid','ar1_a','ar1_y','2dar1'")
-    #       if(NAA_re$cor[[s]] == "ar1_a") map$trans_NAA_rho[s,,1] <- k
-    #       if(NAA_re$cor[[s]] == "ar1_y") map$trans_NAA_rho[s,,2] <- k
-    #       if(NAA_re$cor[[s]] == "2dar1") for(r in 1:data$n_regions) map$trans_NAA_rho[s,r,1:2] <- k + 0:1
-    #       if(any(!is.na(map$trans_NAA_rho))) k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
-    #       #if(NAA_re$cor[[s]] != "iid") k <- max(map$trans_NAA_rho, na.rm = TRUE) + 1
-    #     } else {
-    #       NAA_re$cor[[s]] <- 'iid'
-    #     }
-    #   }
-    # }
     if(!is.null(NAA_re$cor_vals)) {
-      if(length(NAA_re$cor_vals) != data$n_stocks) stop("NAA_re$cor_vals must be a list with length = number of stocks")
-      for(s in 1:data$n_stocks) {
-        if(!is.null(NAA_re$cor_vals[[s]])) {
-          #FIXME: add in checks for decoupled recruitment, which will be default
-          if(length(NAA_re$cor_vals[[s]]) > 3) stop(paste0("length of NAA_re$cor_vals[[s]] is not consistent with other elements of NAA_re$cor."))
-          if(length(NAA_re$cor_vals[[s]]) == 2)  for(r in 1:data$n_regions) par$trans_NAA_rho[s,r,1:2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-          if(length(NAA_re$cor_vals[[s]]) == 1) {
-            if(NAA_re$cor[[s]] == "ar1_a") {
-              par$trans_NAA_rho[s,,1] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-            }
-            if(NAA_re$cor[[s]] == "ar1_y") {
-              par$trans_NAA_rho[s,,2] <- inv_trans_rho(NAA_re$cor_vals[[s]])
-            }
+      if(!is.array(NAA_re$cor_vals)) stop("NAA_re$cor_vals must be an array with dimensions: n_stocks x n_regions x 3.")
+      else {
+        if(any(dim(NAA_re$cor_vals) != c(data$n_stocks, data$n_regions, 3))) stop("NAA_re$cor_vals must be an array with dimensions: n_stocks x n_regions x 3.")
+        for(s in 1:data$n_stocks) {
+          if(NAA_re$cor[s] %in% c("2dar1","ar1_a")) par$trans_NAA_rho[s,,1] <- inv_trans_rho(NAA_re$cor_vals[s,,1])
+          if(NAA_re$cor[s] %in% c("2dar1","ar1_y")){
+            par$trans_NAA_rho[s,,2] <- inv_trans_rho(NAA_re$cor_vals[s,,2])
+            if(data$decouple_recruitment) par$trans_NAA_rho[s,,3] <- inv_trans_rho(NAA_re$cor_vals[s,,3])
           }
         }
       }

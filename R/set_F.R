@@ -34,7 +34,7 @@ set_F = function(input, F_opts = NULL)
       input$par$F_pars[] = log(F_opts$F[])
     } else { # F_config = 1
       input$par$F_pars[1,] <- log(F_opts$F[1,])
-      for(f in 1:data$n_fleets) input$par$F_pars[-1,f] <- diff(log(F_opts$F[,f]))
+      for(f in 1:input$data$n_fleets) input$par$F_pars[-1,f] <- diff(log(F_opts$F[,f]))
     }
   }
   input$options$F <- F_opts
