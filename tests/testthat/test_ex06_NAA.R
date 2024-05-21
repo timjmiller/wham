@@ -29,7 +29,7 @@ mods_proj <- vector("list",n.mods)
 #fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
 fit.mods <- which(ex6_test_results$is_conv)
 for(m in fit.mods){
-  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
+  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], decouple_recruitment = FALSE)
   if(NAA_list$sigma == '---') NAA_list = NULL
 
   ecov <- list(

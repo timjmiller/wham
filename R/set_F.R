@@ -15,6 +15,7 @@
 #' @export
 set_F = function(input, F_opts = NULL)
 {
+  if(is.null(input$data$n_fleets)) stop("No catch information has been added yet. Run set_catch() first. See ?set_catch")
   asap3 = input$asap3
   input$data$F_config <- 1 #log_F1, F_devs
   input$par$F_pars <- matrix(0,input$data$n_years_model, input$data$n_fleets)

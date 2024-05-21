@@ -159,10 +159,13 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
 
     # PDF reference points -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main, "ref_points.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
-    # below not revised yet
-    # plot.SPR.table(mod, plot=TRUE)
-    # plot.SPR.table(mod, plot=FALSE)
-    # plot.annual.SPR.targets(mod)
+    if(mod$env$data$n_stocks == 1 & mod$env$data$n_regions == 1){
+      plot.SPR.table(mod, plot=TRUE)
+      plot.SPR.table(mod, plot=FALSE)
+      plot.annual.SPR.targets(mod)
+      plot.yield.curves(mod, plot=TRUE)
+      plot.yield.curves(mod, plot=FALSE)
+    }
     if(mod$env$data$do_SPR_BRPs){
       if(mod$is_sdrep) plot.FXSPR.annual(mod)
     }
@@ -171,9 +174,6 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
         plot.MSY.annual(mod)
       }
     }
-    # below not revised yet
-    # plot.yield.curves(mod, plot=TRUE)
-    # plot.yield.curves(mod, plot=FALSE)
     dev.off()
 
     # PDF retrospective -----------------
@@ -369,16 +369,17 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     dir.refpts <- file.path(dir.plots, "ref_points")
     dir.create(dir.refpts, showWarnings = FALSE)
     
-    # below not revised yet
-    # png(file.path(dir.refpts,"SPR_targets_ave_plot.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    # plot.SPR.table(mod, plot=TRUE)
-    # dev.off()
-    # png(file.path(dir.refpts,"SPR_targets_ave_table.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    # plot.SPR.table(mod, plot=FALSE)
-    # dev.off()
-    # plot.annual.SPR.targets(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
-    # plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=TRUE)
-    # plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=FALSE)
+    if(mod$env$data$n_stocks ==1 & mod$env$data$n_regions == 1) {
+      png(file.path(dir.refpts,"SPR_targets_ave_plot.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.SPR.table(mod, plot=TRUE)
+      dev.off()
+      png(file.path(dir.refpts,"SPR_targets_ave_table.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.SPR.table(mod, plot=FALSE)
+      dev.off()
+      plot.annual.SPR.targets(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
+      plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=TRUE)
+      plot.yield.curves(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam, plot=FALSE)
+    }
     if(mod$env$data$do_SPR_BRPs){
       if(mod$is_sdrep) plot.FXSPR.annual(mod, od=dir.refpts, do.png=TRUE, fontfam=fontfam)
     }

@@ -518,6 +518,7 @@ set_move = function(input, move)
 	input$random = NULL
 	input = set_random(input)
   input$options$move <- move
+  if(!is_internal_call()) cat(unlist(input$log$move, recursive=T))
   return(input)
 
 }

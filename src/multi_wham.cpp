@@ -777,6 +777,8 @@ Type objective_function<Type>::operator() ()
   array<Type> all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
    mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
    Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,0); //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
+  array<Type> all_NAA_1 = all_NAA;
+  REPORT(all_NAA_1);
   array<Type> NAA = extract_NAA(all_NAA);
   //This will use get_all_NAA, get_SSB, and get_pred_NAA to form devs and calculate likelihoods
   matrix<Type> R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, log_NAA_sigma);
@@ -809,6 +811,7 @@ Type objective_function<Type>::operator() ()
       all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
         Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, proj_R_opt, R_XSPR, bias_correct_pe, log_NAA_sigma, trace);
+
       NAA = extract_NAA(all_NAA);
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, log_NAA_sigma);
       //There are many options for defining F in projection years so a lot of inputs
@@ -822,12 +825,16 @@ Type objective_function<Type>::operator() ()
       annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
         fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
     }
+    array<Type> all_NAA_2 = all_NAA;
+    REPORT(all_NAA_2);
     //if(trace) std::exit(EXIT_FAILURE);
   }
 
   NAA = extract_NAA(all_NAA);
   array<Type> pred_NAA = extract_pred_NAA(all_NAA);
   array<Type> NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
+  array<Type> NAA_devs_1 = NAA_devs;
+  REPORT(NAA_devs_1);
 
   if(NAA_re_model.sum() > 0){ //at least one stock is not SCAA
     matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe, decouple_recruitment,
@@ -837,6 +844,7 @@ Type objective_function<Type>::operator() ()
     nll += nll_NAA.sum();
     //see(nll);
     REPORT(nll_NAA);
+
     SIMULATE if(do_simulate_N_re){
       int ystart = 0;
       int sim_alt_AR1 = 0;
@@ -846,6 +854,8 @@ Type objective_function<Type>::operator() ()
       }
       array<Type> NAA_devs_sim = simulate_NAA_devs(NAA_devs, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
         bias_correct_pe, decouple_recruitment, sim_alt_AR1, ystart);
+      array<Type> NAA_devs_2 = NAA_devs_sim;
+      REPORT(NAA_devs_2);
       //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
       log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
         log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
@@ -853,6 +863,9 @@ Type objective_function<Type>::operator() ()
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
         Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,trace);
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, log_NAA_sigma);
+      
+      array<Type> all_NAA_3 = all_NAA;
+      REPORT(all_NAA_3);
 
       if(n_years_proj > 0){
 
@@ -874,7 +887,8 @@ Type objective_function<Type>::operator() ()
           annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
             fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
         }
-
+        array<Type> all_NAA_4 = all_NAA;
+        REPORT(all_NAA_4);
       }
 
       NAA = extract_NAA(all_NAA);

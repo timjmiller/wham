@@ -1,6 +1,6 @@
 #' Specify catch selectivity blocks and aggregate and age composition observations for catch
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param catch_info (optional) list specifying various aspects about catch by fleet (see details)
 #' 
 #' \code{catch_info} specifies observations, and various configuration options for fleet-specific catch observations and will overwrite attributes specified in the ASAP data file.
@@ -15,6 +15,7 @@
 #'     \item{$catch_paa}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}
 #'     \item{$use_catch_paa}{matrix (n_years_model x n_fleets) of 0/1 values flagging whether to use proportions at age observations.}
 #'     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
+#'     \item{$waa_pointer_fleets}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
 #'     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
 #'   }
 #'
@@ -36,6 +37,7 @@
 set_catch = function(input, catch_info= NULL) {
   data = input$data
   asap3 = input$asap3
+  input$log$catch <- list()
   if(is.null(asap3)){
     data$n_fleets = 1
   } else {
@@ -106,13 +108,43 @@ set_catch = function(input, catch_info= NULL) {
     input$fleet_names <- paste0("Fleet ", 1:data$n_fleets)
   }
 
-  if(!is.null(catch_info$fleet_regions)) data$fleet_regions[] = catch_info$fleet_regions
   if(!is.null(catch_info$agg_catch)) data$agg_catch[] = catch_info$agg_catch
   if(!is.null(catch_info$catch_paa)) data$catch_paa[] = catch_info$catch_paa
-  if(!is.null(catch_info$catch_cv)) data$agg_catch_sigma[] = sqrt((log(catch_info$catch_cv^2 + 1)))
+  if(!is.null(catch_info$agg_catch_cv)) data$agg_catch_sigma[] = sqrt((log(catch_info$agg_catch_cv^2 + 1)))
   if(!is.null(catch_info$catch_Neff)) data$catch_Neff[] = catch_info$catch_Neff
   if(!is.null(catch_info$use_catch_paa)) data$use_catch_paa[] = catch_info$use_catch_paa
+  if(!is.null(catch_info$waa_pointer_fleets)){
+    if(!is_internal_call()){
+      if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_catch with catch_info$waa_pointer_fleets.")
+      if(any(!(catch_info$waa_pointer_fleets %in% 1:dim(data$waa)[1]))){
+        stop("some catch_info$waa_pointer_fleets are outside the number of waa matrices.\n")
+      }
+    }
+    if(length(catch_info$waa_pointer_fleets) != data$n_fleets){
+      stop("length of catch_info$waa_pointer_fleets is not equal to the number of fleets.\n")
+    }
+    data$waa_pointer_fleets <- catch_info$waa_pointer_fleets
+  } else{
+    if(!is.null(asap3)) {
+      data$waa_pointer_fleets <- integer()
+      #fill with fleet catch waa pointers
+      i <- 1
+      for(k in 1:length(asap3)) {
+        x <- asap3[[k]]
+        for(f in 1:x$n_fleets){
+          data$waa_pointer_fleets[i] <- i
+          i <- i + 1
+        }
+      }
+      input$log$catch <- c(input$log$catch, "waa_pointer_fleets determined from ASAP file(s). \n")
+    } else{ #no asap and no waa_pointer provided
+      input$log$catch <- c(input$log$catch, "catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. \n")
+      data$waa_pointer_fleets <- rep(1,data$n_fleets)
+    }
+  }
   if(!is.null(catch_info$selblock_pointer_fleets)) data$selblock_pointer_fleets[] = catch_info$selblock_pointer_fleets
+  if(!is.null(catch_info$fleet_seasons)) data$fleet_seasons[] = catch_info$fleet_seasons
+  if(!is.null(catch_info$fleet_regions)) data$fleet_regions[] = catch_info$fleet_regions
 
   data$catch_paa[is.na(data$catch_paa)] = 0
 
@@ -121,9 +153,14 @@ set_catch = function(input, catch_info= NULL) {
 
   input$data = data
   input$asap3 <- asap3
+  if(length(input$log$catch))  input$log$catch <- c("Catch: \n", input$log$catch)
   input$options$catch <- catch_info
-  if(!is.null(input$par$logit_selpars)) input <- set_selectivity(input, input$options$selectivity)
-  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
-  
+
+  if(!is_internal_call()) { #check whether called by prepare_wham_input
+    input <- set_selectivity(input, input$options$selectivity)
+    input <- set_age_comp(input, input$options$age_comp)
+    input <- set_osa_obs(input)
+    cat(unlist(input$log$catch, recursive=T))
+  }  
   return(input)
 }

@@ -65,7 +65,7 @@ df.mods
 mods <- vector("list",n.mods)
 #mods_proj <- vector("list",n.mods)
 for(m in 1:n.mods){
-  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"])
+  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], decouple_recruitment = FALSE)
   if(NAA_list$sigma == '---') NAA_list = NULL
 
   ecov <- list(

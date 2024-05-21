@@ -1,6 +1,6 @@
 #' Specify index selectivity blocks and aggregate and age composition observations for indices
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param index_info (optional) list specifying various aspects about catch by indices (see details)
 #' 
 #' \code{index_info} specifies observations, and various configuration options for index-specific catch observations and will overwrite attributes specified in the ASAP data file.
@@ -12,13 +12,14 @@
 #'     \item{$index_seasons}{vector (n_indices) of 0/1 values flagging which seasons each index occurs.}
 #'     \item{$agg_indices}{matrix (n_years_model x n_indices) of annual aggregate index catches.}
 #'     \item{$agg_index_cv}{matrix (n_years_model x n_indices) of CVs for annual aggregate index catches.}
-#'     \item{$fracyy_indices}{matrix (n_years_model x n_indices) of fractions of year at which index occurs within the season (difference between time of survey and time at start of season).}
+#'     \item{$fracyr_indices}{matrix (n_years_model x n_indices) of fractions of year at which index occurs within the season (difference between time of survey and time at start of season).}
 #'     \item{$use_indices}{matrix (n_years_model x n_indices) of 0/1 values flagging whether to use aggregate observations.}
 #'     \item{$units_indices}{matrix (n_years_model x n_indices) of 1/2 values flagging whether aggregate observations are biomass (1) or numbers (2).}
 #'     \item{$index_paa}{array (n_indices x n_years_model x n_ages) of annual catch proportions at age by index.}
 #'     \item{$use_index_paa}{matrix (n_years_model x n_indices) of 0/1 values flagging whether to use proportions at age observations.}
 #'     \item{$units_index_paa}{matrix (n_years_model x n_indices) of 1/2 values flagging whether composition observations are biomass (1) or numbers (2).}
 #'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
+#'     \item{$waa_pointer_indices}{vector (n_indices) of itegers indicated waa to use for each index.}
 #'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
 #'   }
 #'
@@ -26,6 +27,7 @@
 set_indices = function(input, index_info=NULL) {
 	data = input$data
   asap3 = input$asap3
+  input$log$indices <- list()
 	if(is.null(asap3)) {
 	  data$n_indices = 1
 	} else {
@@ -105,16 +107,46 @@ set_indices = function(input, index_info=NULL) {
 		data$selblock_pointer_indices[] = rep(1:data$n_indices, each = data$n_years_model) + max(data$selblock_pointer_fleets)
     input$index_names <- paste0("Index ", 1:data$n_indices)
 	}
-
-	if(!is.null(index_info$use_indices)) data$use_indices[] = index_opts$use_indices
-	if(!is.null(index_info$use_index_paa)) data$use_index_paa[] = index_opts$use_index_paa
+	if(!is.null(index_info$use_indices)) data$use_indices[] = index_info$use_indices
+	if(!is.null(index_info$use_index_paa)) data$use_index_paa[] = index_info$use_index_paa
 	if(!is.null(index_info$units_indices)) data$units_indices[] = index_info$units_indices
 	if(!is.null(index_info$fracyr_indices)) data$fracyr_indices[] = index_info$fracyr_indices
 	if(!is.null(index_info$agg_indices)) data$agg_indices[] = index_info$agg_indices
-	if(!is.null(index_info$index_cv)) data$agg_index_sigma[] = index_info$index_cv
+	if(!is.null(index_info$agg_index_cv)) data$agg_index_sigma[] = index_info$agg_index_cv
 	if(!is.null(index_info$index_paa)) data$index_paa[] = index_info$index_paa
 	if(!is.null(index_info$units_index_paa)) data$units_index_paa[] = index_info$units_index_paa
 	if(!is.null(index_info$index_Neff)) data$index_Neff[] = index_info$index_Neff
+  
+  if(!is.null(index_info$waa_pointer_indices)){
+    if(!is_internal_call()){
+      if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_index with index_info$waa_pointer_indices.")
+      if(any(!(index_info$waa_pointer_indices %in% 1:dim(data$waa)[1]))){
+        stop("some index_info$waa_pointer_indices are outside the number of waa matrices.\n")
+      }
+    }
+    if(length(index_info$waa_pointer_indices) != data$n_indices){
+      stop("length of index_info$waa_pointer_indices is not equal to the number of fleets.\n")
+    }
+    data$waa_pointer_indices <- index_info$waa_pointer_indices
+  } else{
+		if(!is.null(asap3)) {
+			data$waa_pointer_indices <- integer()
+			#fill with index waa pointers
+			i <- 1
+			for(k in 1:length(asap3)) {
+				x <- asap3[[k]]
+				for(f in 1:x$n_indices){
+					data$waa_pointer_indices[i] <- data$n_fleets + i
+					i <- i + 1
+				}
+			}
+      input$log$indices <- c(input$log$indices, "waa_pointer_indices determined from ASAP file(s). \n")
+    } else{ #no asap and no waa_pointer provided
+      input$log$indices <- c(input$log$indices, "index_info$waa_pointer_indices was not provided, so the first waa matrix will be used for all indices. \n")
+      data$waa_pointer_indices <- rep(1,data$n_indices)
+    }
+	}
+
 	if(!is.null(index_info$selblock_pointer_indices)) data$selblock_pointer_indices[] = index_info$selblock_pointer_indices
 	if(!is.null(index_info$index_seasons)) data$index_seasons[] = index_info$index_seasons
 	if(!is.null(index_info$index_regions)) data$index_regions[] = index_info$index_regions
@@ -136,8 +168,13 @@ set_indices = function(input, index_info=NULL) {
   input$asap3 <- asap3
 
   input$data = data
+  if(length(input$log$indices))  input$log$indices <- c("Indices: \n", input$log$indices)
  	input$options$index <- index_info
-  if(!is.null(input$par$logit_selpars)) input <- set_selectivity(input, input$options$selectivity)
-  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
+  if(!is_internal_call()) { #check whether called by prepare_wham_input
+  	input <- set_selectivity(input, input$options$selectivity)
+  	input <- set_age_comp(input, input$options$age_comp)
+  	input <- set_osa_obs(input)
+    cat(unlist(input$log$indices, recursive=T))
+  }
   return(input)
 }

@@ -13,7 +13,7 @@
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
 #'   }
-#' Note: we allow fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
+#' Note: \code{\link{fit_wham}} allows fitting a SCAA model (\code{NAA_re = NULL}), which estimates recruitment in every year as separate fixed effect parameters,
 #' but in that case no stock-recruit function is estimated. A warning message is printed if \code{recruit_model > 2} and \code{NAA_re = NULL}.
 #' If you wish to use a stock-recruit function for expected recruitment, choose recruitment deviations as random effects,
 #' either only age-1 (\code{NAA_re = list(sigma="rec")}) or all ages (\code{NAA_re = list(sigma="rec+1")}, "full state-space" model).
@@ -34,35 +34,11 @@
 #'
 #' \code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
 #'
-#' \code{catch_info} is an optional list of fishery catch information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_catch}} for full details. Particularly useful for setting
+#' \code{catch_info} is an optional list of fishery catch information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_catch}} for full details. Useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
-#' The current options are:
-#'   \describe{
-#'     \item{$n_fleets}{number of fleets.}
-#'     \item{$agg_catch}{matrix (length(years) x n_fleets) of annual aggregate catches (biomass) for each fleet.}
-#'     \item{$catch_paa}{array (n_fleets x length(years) x n_ages) of each fleet's age composition data (numbers).}
-#'     \item{$catch_cv}{matrix (length(years) x n_fleets) of annual CVs for each fleet's aggregate catch observations.}
-#'     \item{$catch_Neff}{matrix (length(years) x n_fleets) of annual effective sample sizes for each fleet's age composition observation.}
-#'     \item{$use_catch_paa}{0/1 matrix (length(years) x n_fleets) indicated whether to use each fleet's age composition observation.}
-#'     \item{$selblock_pointer_fleets}{integer matrix (length(years) x n_fleets) indicated which selectivity model to use for each fleet each year. Must be consistent with options to \code{selectivity} option.}
-#'   }
 #'
-#' \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. Particularly useful for setting
+#' \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. Useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
-#' The current options are:
-#'   \describe{
-#'     \item{$n_indices}{number of indices.}
-#'     \item{$agg_indices}{matrix (length(years) x n_indices) of annual aggregate catches (biomass or number) for each fleet.}
-#'     \item{$index_paa}{array (n_indices x length(years) x n_ages) of each index's age composition data (biomass or number).}
-#'     \item{$index_cv}{matrix (length(years) x n_indices) of annual CVs for each index's aggregate observations.}
-#'     \item{$index_Neff}{matrix (length(years) x n_indices) of annual effective sample sizes for each index's age composition observation.}
-#'     \item{$units_indices}{1/2 matrix (length =  n_indices) indicated whether indices are in biomass or numbers, respectively.}
-#'     \item{$units_index_paa}{1/2 matrix (length = n_indices) indicated whether to use each index's age composition observation are in numbers or biomass.}
-#'     \item{$use_indices}{0/1 matrix (length(years) x n_indices) indicated whether to use each aggregate index observation.}
-#'     \item{$use_index_paa}{0/1 matrix (length(years) x n_indices) indicated whether to use each index's age composition observation.}
-#'     \item{$selblock_pointer_indices}{integer matrix (length(years) x n_indices) indicated which selectivity model to use for each index each year. Must be consistent with options to \code{selectivity} option.}
-#'     \item{$fracyr_indices}{matrix (length(years) x n_indices) of annual proportions of the year elapsed when each index is observing the population.}
-#'   }
 #'
 #' \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
@@ -177,10 +153,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	}
 
 
-	waa_opts = NULL
-	waa_names = c("waa")
-	if(any(names(basic_info) %in% waa_names)) waa_opts = basic_info[waa_names]
-
+	waa_opts <- NULL
+	waa_names <- which(names(basic_info) %in% c("waa", "waa_pointer_M", "waa_pointer_ssb"))
+	waa_opts <- basic_info[waa_names]
+	
 	#catch_info = catch
 	#catch_names = c("n_fleets","agg_catch", "catch_paa", "catch_cv","catch_Neff", "use_catch_paa", "selblock_pointer_fleets")
 	#if(any(names(basic_info) %in% catch_names)) catch_opts = basic_info[catch_names]
@@ -194,9 +170,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#F_names = c("F")
 	#if(any(names(basic_info) %in% F_names)) F_opts = basic_info[F_names]
 	#print("1")
-	input$log$misc <- list("\nNOTE: WHAM version 1.5.0 makes major changes to the structure of some data, parameters, and reported objects. \n") 
+	input$log$misc <- list("\n NOTE: WHAM version 1.2.0 makes major changes to the structure of some data, parameters, and reported objects. \n") 
 	input$log$misc <- c(input$log$misc, 
-	"NOTE: WHAM version 1.5.0 decouples random effects for recruitment and random effects for older ages by default.
+	"NOTE: WHAM version 1.2.0 decouples random effects for recruitment and random effects for older ages by default.
 	To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE. \n") 
 
 	if(!is.null(asap3)) {
@@ -265,7 +241,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
   input$options <- list()
 	 print("start")
 	#some basic input elements see the function code below
-	input = add_basic_info(input, basic_info)
+	input = set_basic_info(input, basic_info)
 	print("basic_info")
 
 	# Catch
@@ -345,8 +321,13 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
+is_internal_call <- function(n_gen = 2, NameSpace = "wham"){
+  te <- topenv(parent.frame(n_gen)) #2 because the call will be made inside of a package function
+	return(isNamespace(te) && getNamespaceName(te) == NameSpace)	
+}
 
-add_basic_info <- function(input, basic_info){
+
+set_basic_info <- function(input, basic_info){
 	#this function adds basic_info to input
 	input$ages.lab = paste0(1:input$data$n_ages, c(rep("",input$data$n_ages-1),"+"))
 	if(!is.null(basic_info$ages)) {
@@ -372,7 +353,7 @@ add_basic_info <- function(input, basic_info){
   input$data$recruit_model[] = basic_info$recruit_model #this is made from argument of the same name to prepare_wham_input
 	if(is.null(basic_info$bias_correct_process) | is.null(basic_info$bias_correct_observation)){
 		input$log$misc <- c(input$log$misc, 
-	"NOTE: WHAM version 1.5.0 forward by default does not bias correct any log-normal process or observation errors. To 
+	"NOTE: WHAM version 1.2.0 forward by default does not bias correct any log-normal process or observation errors. To 
 	configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. \n")
 	}
   input$data$bias_correct_pe = 0 #bias correct log-normal process errors?

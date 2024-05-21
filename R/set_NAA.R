@@ -7,7 +7,7 @@
 #' \code{NAA_re} specifies numbers-at-age configuration. It is a list with the following possible entries:
 #'   \describe{
 #'     \item{$decouple_recruitment}{T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
-#'        (default = FALSE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
+#'        (default = TRUE). Only applicable for \code{NAA_re$sigma = "rec+1"} and correlation across ages is specified. If TRUE and \code{NAA_re$cor = "ar1_a"}, only deviations for ages>1 
 #'        have the correlation structure. If TRUE and NAA_re$cor is "ar1_y" or "2dar1" separate year correlation parameters are estimated for recruitment and older
 #'        ages.
 #'     }
@@ -102,8 +102,8 @@ set_NAA = function(input, NAA_re=NULL)
   #0: just age-specific numbers at age
   data$N1_model = rep(0, data$n_stocks)
   
-  data$decouple_recruitment <- 0 #until all examples, tests, vignettes are changed
-  # data$decouple_recruitment <- 1 #decouple is default now!
+  # data$decouple_recruitment <- 0 #until all examples, tests, vignettes are changed
+  data$decouple_recruitment <- 1 #decouple is default now!
   if(!is.null(NAA_re$decouple_recruitment)) data$decouple_recruitment <- as.integer(NAA_re$decouple_recruitment)
 
   par$log_N1 = array(0,dim = c(data$n_stocks,data$n_regions,data$n_ages))
@@ -337,6 +337,7 @@ set_NAA = function(input, NAA_re=NULL)
 	# projection data will always be modified by 'prepare_projection'
 	#input = wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
+  if(!is_internal_call()) cat(unlist(input$log$NAA, recursive=T))
 	#set any parameters as random effects
   #print(sort(names(input$data)))
 	input$random = NULL

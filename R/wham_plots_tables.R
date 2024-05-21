@@ -542,17 +542,20 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5,paste0("Run directory: ",mod$dir))
   text(5,nl <- nl-0.5,paste0("WHAM version: ",mod$wham_version)) 
   text(5,nl <- nl-0.5,paste0("TMB version: ",mod$TMB_version)) 
-
-  if(mod$is_sdrep){
-    text(5,nl <- nl-0.5,paste0("sdreport() performed",
-      ifelse(mod$na_sdrep, ", but with NAs for some variance estimates.", " with all variance estimates provided.")))
+  if(is.null(mod$opt)){
+      text(5,nl <- nl-0.5,paste0("Model has NOT been fit."))
+  } else {
+    if(mod$is_sdrep){
+      text(5,nl <- nl-0.5,paste0("sdreport() performed",
+        ifelse(mod$na_sdrep, ", but with NAs for some variance estimates.", " with all variance estimates provided.")))
+    }
+    else {
+      text(5,nl <- nl-0.5,"Warning: run did not provide pos-def Hessian or sdreport() not performed", col="red")
+    }
+    mgind = which(abs(mod$final_gradient) == max(abs(mod$final_gradient)))
+    text(5,nl <- nl-0.5,paste0("Maximum absolute gradient: ", names(mod$opt$par)[mgind]," ", format(mod$final_gradient[mgind],digits =4)))
+    text(5,nl <- nl-0.5,paste0("Number of fixed effects = ",length(mod$opt$par),", Number of random effects = ", length(mod$env$random)))
   }
-  else {
-    text(5,nl <- nl-0.5,"Warning: run did not provide pos-def Hessian or sdreport() not performed", col="red")
-  }
-  mgind = which(abs(mod$final_gradient) == max(abs(mod$final_gradient)))
-  text(5,nl <- nl-0.5,paste0("Maximum absolute gradient: ", names(mod$opt$par)[mgind]," ", format(mod$final_gradient[mgind],digits =4)))
-  text(5,nl <- nl-0.5,paste0("Number of fixed effects = ",length(mod$opt$par),", Number of random effects = ", length(mod$env$random)))
 
   return()
 }
@@ -2441,7 +2444,8 @@ get_SPR = function(F, M, sel, mat, waassb, fracyrssb, at.age = FALSE)
   n_ages = length(sel)
   SPR = numeric()
   n = 1
-  F = F * sel
+  F = F * sel #n_fleets x n_ages
+  if(!is.null(dim(sel))) if(dim(sel)[1]>1) F = apply(F,2,sum) # total F
   Z = F + M
   for(a in 1:(n_ages-1))
   {
@@ -2507,11 +2511,11 @@ get_SPR_BRPS_fn <- function(mod, spr_yrs, percent){
   n_years <- length(years)
   n_fleets <- dat$n_fleets
 
-  mat.age <- apply(dat$mature[spr_yrs,],2,mean)
-  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][spr_yrs,],2,mean)
+  mat.age <- apply(dat$mature[1,,][spr_yrs,,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][spr_yrs,,drop = FALSE],2,mean)
   catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,spr_yrs,,drop = FALSE],c(1,3),mean)
-  M.age <- apply(mod$rep$MAA[spr_yrs,],2,mean)
-  FAA <- apply(mod$rep$FAA[spr_yrs,,,drop=FALSE], 2:3, mean) #mean FAA by fleet
+  M.age <- apply(mod$rep$MAA[1,1,,][spr_yrs,,drop = FALSE],2,mean)
+  FAA <- apply(mod$rep$FAA[,spr_yrs,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
   FAAtot = apply(FAA,2,sum) #sum across fleet averages 
   seltot <- FAAtot/max(FAAtot)
   selAA <- FAA/max(FAAtot) 
@@ -2544,17 +2548,24 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 	n_ages<- dat$n_ages
 	years <- mod$years
 	n_years <- length(years)
-  avg.ind = (n_years-nyrs.ave+1):n_years
+  avg.ind <- tail(1:n_years, nyrs.ave)
+  # avg.ind = (n_years-nyrs.ave+1):n_years
 	#fec.age <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
-	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
-  sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
+  mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
+  catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,avg.ind,,drop = FALSE], c(1,3),mean)
+	#catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
+  M.age <- apply(mod$rep$MAA[1,1,,][avg.ind,,drop = FALSE],2,mean)
+  FAA <- apply(mod$rep$FAA[,avg.ind,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
+  FAAtot = apply(FAA,2,sum) #sum across fleet averages 
+  seltot <- FAAtot/max(FAAtot)
+  selAA <- FAA/max(FAAtot) 
+  
+  # sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
-	sel <- sel/max(sel)
-	spawn.time <- mean(dat$fracyr_SSB[avg.ind])
-  spr0 = get_SPR(F=0, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
+	# sel <- sel/max(sel)
+	spawn.time <- mean(dat$fracyr_SSB[avg.ind,1])
+  spr0 = get_SPR(F=0, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 	F.start <- 0.11  # starting guess for optimization routine to find F_SPR%
 
 	f.spr.vals <- rep(NA, n.spr)
@@ -2567,12 +2578,12 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 
 		spr.f <- function(F.start)
 		{
-      spr = get_SPR(F=F.start, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
+      spr = get_SPR(F=F.start, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 			abs(spr/spr0 - t.spr)
 		}
 		yyy <- nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
 		f.spr.vals[i] <- yyy$par
-    ypr.spr.vals[i] = get_YPR(F = f.spr.vals[i], M=M.age, sel = sel, waacatch= catch.waa)
+    ypr.spr.vals[i] = sum(get_YPR_fleets(FAA = f.spr.vals[i]*selAA, M=M.age, waacatch= catch.waa))
 	}  #end i-loop over SPR values
 
 	spr.target.table<- as.data.frame(cbind(spr.targ.values, f.spr.vals, ypr.spr.vals))
@@ -2634,11 +2645,17 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
   years_full = mod$years_full
   n_years_full = length(years_full)
 
-  fec.age <- dat$waa[dat$waa_pointer_ssb,,]
-	mat.age <- dat$mature
-	wgt.age <- dat$waa[dat$waa_pointer_totcatch,,]
-	M.age <- mod$rep$MAA
-	sel.age <- mod$rep$FAA_tot/apply(mod$rep$FAA_tot,1,max)
+  fec.age <- dat$waa[dat$waa_pointer_ssb[1],,]
+	mat.age <- dat$mature[1,,]
+	wgt.age <- dat$waa[dat$waa_pointer_fleets,,,drop = FALSE]
+	M.age <- mod$rep$MAA[1,1,,]
+	# sel.age <- mod$rep$FAA_tot/apply(mod$rep$FAA_tot,1,max)
+  FAA <- mod$rep$FAA[,,,drop=FALSE] #mean FAA by fleet (nf, ny, na)
+  FAAtot = apply(FAA,c(2,3),sum) #annual total FAA (ny x na)
+  Ftot <- apply(FAAtot,1,max)
+  seltot <- FAAtot/max(FAAtot) #by column
+  selAA <- FAA
+  for(f in 1:dat$n_fleets) selAA[f,,] <- selAA[f,,]/Ftot
 
 	spawn.time <- dat$fracyr_SSB #vector length n_years
 
@@ -2651,7 +2668,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 
 	for (j in 1:n_years_full)
 	{
-    spr0[j] = get_SPR(F=0, M=M.age[j,], sel=sel.age[j,], mat=mat.age[j,], waassb=fec.age[j,], fracyrssb = spawn.time[j])
+    spr0[j] = get_SPR(F=0, M=M.age[j,], sel=selAA[,j,], mat=mat.age[j,], waassb=fec.age[j,], fracyrssb = spawn.time[j])
     #spr0.vals[j] <- s.per.recr(n_ages=n_ages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=0, sel.age=sel.age[j,],
     #  spawn.time=spawn.time)
 	  for (i in 1:n.spr)
@@ -2660,14 +2677,14 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 
 			spr.f <- function(F.start)
 			{
-        spr = get_SPR(F=F.start, M=M.age[j,], sel=sel.age[j,], mat=mat.age[j,], waassb=fec.age[j,], fracyrssb = spawn.time[j])
+        spr = get_SPR(F=F.start, M=M.age[j,], sel=selAA[,j,], mat=mat.age[j,], waassb=fec.age[j,], fracyrssb = spawn.time[j])
         abs(spr/spr0[j] - t.spr)
 				#abs(s.per.recr(n_ages=n_ages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=F.start, sel.age=sel.age[j,],
 				#	spawn.time=spawn.time)/spr0.vals[j] - t.spr)
 			}
 			yyy <- nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
 			f.spr[j,i] <- yyy$par
-			ypr.spr[j,i] = get_YPR(F = f.spr[j,i], M=M.age[j,], sel = sel.age[j,], waacatch= wgt.age[j,])
+			ypr.spr[j,i] = sum(get_YPR_fleets(FAA = f.spr[j,i]*rbind(selAA[,j,]), M=M.age[j,], waacatch= rbind(wgt.age[,j,])))
       #ypr(n_ages, wgt.age=wgt.age[j,], M.age=M.age[j,],  F.mult=f.spr.vals[j,i], sel.age=sel.age[j,])
 		}  # end j-loop over n_years
 	}  #end i-loop over SPR values
@@ -3233,22 +3250,26 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 	n_ages = dat$n_ages
   years = mod$years
   n_years = length(years)
-  avg.ind = (n_years-nyrs.ave+1):n_years
-	mat.age <- apply(dat$mature[avg.ind,],2,mean)
-	ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
-	M.age <- apply(mod$rep$MAA[avg.ind,],2,mean)
-  sel = apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
-  #sel = apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
-	sel <- sel/max(sel)
-	spawn.time <- mean(dat$fracyr_SSB[avg.ind])
-  spr0 = get_SPR(F=0, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
+  avg.ind <- tail(1:n_years, nyrs.ave)
+  # avg.ind = (n_years-nyrs.ave+1):n_years
+  mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
+	catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,avg.ind,,drop = FALSE], c(1,3),mean)
+	M.age <- apply(mod$rep$MAA[1,1,,][avg.ind,,drop = FALSE],2,mean)
+  FAA <- apply(mod$rep$FAA[,avg.ind,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
+  FAAtot = apply(FAA,2,sum) #sum across fleet averages 
+  seltot <- FAAtot/max(FAAtot)
+  selAA <- FAA/max(FAAtot) 
+
+
+	spawn.time <- mean(dat$fracyr_SSB[avg.ind,1])
+  spr0 = get_SPR(F=0, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 
 	F.range <- seq(0,2.0, by=0.01)
 	nF <- length(F.range)
 
-  spr = sapply(F.range, function(x) get_SPR(F=x, M=M.age, sel=sel, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time))
-  ypr = sapply(F.range, function(x) get_YPR(F=x, M=M.age, sel=sel, waacatch=catch.waa))
+  spr = sapply(F.range, function(x) get_SPR(F=x, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time))
+  ypr = sapply(F.range, function(x) sum(get_YPR_fleets(F=x*selAA, M=M.age, waacatch=catch.waa)))
   pr = spr/spr0
 
   if(plot){
@@ -3565,7 +3586,7 @@ plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE, mod)
 					my.fit <- lm(yy~xx)
 					if (!is.na(my.fit$coefficients[2])) abline(my.fit,col="red")
 					xrng <- data.frame(xx = seq(min(xx,na.rm=T),max(xx,na.rm=T),length.out=100))
-					zz <- predict(my.fit,xrng,interval="confidence")
+					zz <- suppressWarnings(predict(my.fit,xrng,interval="confidence"))
 					lines(xrng[,1],zz[,2],col="blue")
 					lines(xrng[,1],zz[,3],col="blue")
 				}

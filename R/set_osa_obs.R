@@ -233,10 +233,11 @@ set_osa_obs = function(input)
   data$agesvec <- obs$age #potentially needed for AR1 sigma correlation of logistic-normal paa obs. 
   data$do_osa = 0 #this will be changed when TMB::oneStepPredict is called by fit_wham
   attr(data, "check.passed") <- NULL #if data have been generated from obj$simulate(complete=T), this can be problematic
+  input$data = data
 
   #data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
   if(length(input$log$osa_obs)) input$log$osa_obs <- c("OSA obs: \n", input$log$osa_obs)
-  input$data = data
+  if(!is_internal_call()) cat(unlist(input$log$osa_obs, recursive=T))
   return(input)
 }
 

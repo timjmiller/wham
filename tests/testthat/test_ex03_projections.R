@@ -137,7 +137,7 @@ for(m in 1:length(proj_opts)) {
   temp <- mod_proj[[!!m]]$simulate(complete=TRUE)
 
   # plot results
-  suppressWarnings(plot_wham_output(mod_proj[[m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE)))
+  suppressWarnings(plot_wham_output(mod_proj[[!!m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE)))
 }
 
 })

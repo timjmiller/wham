@@ -136,7 +136,6 @@ matrix<Type> get_avg_SR_ab(matrix<Type> log_a, matrix<Type> log_b, vector<int> y
     }
   }
   
-  //if(trace) see(SR_a_avg);
   return(SR_ab_avg); //n_stocks x 2)
 }
 
@@ -426,33 +425,36 @@ array<Type> r2dar1(array<Type> delta, Type tf_rho_r, Type tf_rho_c, vector<Type>
   // Type res = 0;
   array<Type> delta_out = delta;
   if(use_dns == 0){
+    vector<Type> mu_c(marg_sig.size());
+    mu_c.setZero();
+    if(bias_correct) mu_c = - 0.5 * marg_sig * marg_sig;
     if(ystart == 0){ //first row, no conditioning on previous years
-      delta_out(0,0) = rnorm(Type(0), marg_sig(0)); //marginal across year and age at age 1
-      if(bias_correct) delta_out(0,0) -= 0.5 * pow(marg_sig(0),2);
+      delta_out(0,0) = rnorm(mu_c(0), marg_sig(0)); //marginal across year and age at age 1
+      // if(bias_correct) delta_out(0,0) -= 0.5 * pow(marg_sig(0),2);
       for(int a = 1; a < delta.dim(1); a++){
-        delta_out(0,a) = rnorm(rho_c * delta_out(0,a-1) * sig_c(a) / sig_c(a-1), sig_r1(a)); //marginal across years conditional on age a-1
-        if(bias_correct) delta_out(0,a) -= 0.5 * pow(sig_r1(a),2);
+        delta_out(0,a) = rnorm(mu_c(a) + (delta_out(0,a-1) - mu_c(a-1)) * rho_c * sig_c(a) / sig_c(a-1), sig_r1(a)); //marginal across years conditional on age a-1
+        // if(bias_correct) delta_out(0,a) -= 0.5 * pow(marg_sig(a),2) * (1 - rho_c * sig_c(a-1)/sig_c(a));
       }
       for(int y = 1; y < delta.dim(0); y++){
         delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
-        if(bias_correct) delta_out(y,0) -= 0.5 * pow(sig_c1,2);
-      }
-      for(int y = 1; y < delta.dim(0); y++) {
+        delta_out(y,0) += (1 - rho_r) * mu_c(0);
+        // if(bias_correct) delta_out(y,0) -= 0.5 * pow(marg_sig(0),2) * (1-rho_r);
         for(int a = 1; a < delta.dim(1); a++) {
           delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
-          if(bias_correct) delta_out(y,a) -= 0.5 * pow(sig_c(a),2);
+          delta_out(y,a) += (1 - rho_r) * (mu_c(a) - mu_c(a-1) * rho_c * sig_c(a)/sig_c(a-1));
+          // if(bias_correct) delta_out(y,a) -= 0.5 * pow(marg_sig(a),2) * (1 - rho_r) * (1 - rho_c * sig_c(a-1)/sig_c(a));
         }
       }
     } else {
       //subsequent rows
       for(int y = ystart; y < delta.dim(0); y++){
         delta_out(y,0) = rnorm(rho_r * delta_out(y-1,0), sig_c1); //marginal at age 1 across ages and conditional on year y-1
-        if(bias_correct) delta_out(y,0) -= 0.5 * pow(sig_c1,2);
-      }
-      for(int y = ystart; y < delta.dim(0); y++) {
+        delta_out(y,0) += (1 - rho_r) * mu_c(0);
+        // if(bias_correct) delta_out(y,0) -= 0.5 * pow(marg_sig(0),2) * (1-rho_r);
         for(int a = 1; a < delta.dim(1); a++) {
           delta_out(y,a) = rnorm(rho_r *delta_out(y-1,a) + rho_c * (delta_out(y,a-1) - rho_r * delta_out(y-1,a-1)) * sig_c(a) /sig_c(a-1), sig_c(a)); 
-          if(bias_correct) delta_out(y,a) -= 0.5 * pow(sig_c(a),2);
+          delta_out(y,a) += (1 - rho_r) * (mu_c(a) - mu_c(a-1) * rho_c * sig_c(a)/sig_c(a-1));
+          // if(bias_correct) delta_out(y,a) -= 0.5 * pow(marg_sig(a),2) * (1 - rho_r) * (1 - rho_c * sig_c(a-1)/sig_c(a));
         }
       }
     }
@@ -497,12 +499,12 @@ vector<Type> rar1(vector<Type> delta, Type tf_rho, Type log_sig, int use_dns, in
       if(bias_correct) delta_out(0) -= 0.5*pow(marg_sig,2);
       for(int y = 1; y < delta.size(); y++){
         delta_out(y) = rnorm(rho * delta_out(y-1), sig); //marginal at age 1 and conditional on year y-1
-        if(bias_correct) delta_out(y) -= 0.5*pow(sig,2);
+        if(bias_correct) delta_out(y) -= 0.5*pow(marg_sig,2) * (1-rho);
       }
     } else {
       for(int y = ystart; y < delta.size(); y++) {
         delta_out(y) = rnorm(rho * delta_out(y-1), sig);
-        if(bias_correct) delta_out(y) -= 0.5*pow(sig,2);
+        if(bias_correct) delta_out(y) -= 0.5*pow(marg_sig,2) * (1-rho);
       }
     }
   } else {

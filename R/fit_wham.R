@@ -123,19 +123,20 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep, use.optim=use.optim, opt.control = opt.control)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
     if(do.brps){
-      if(any(mod$input$data$can_move==1) & any(mod$input$data$mig_type == 1)){
-        warning("Cannot currently calculate standard errors of biological reference points internally when survival and movement are simultaneous for any stock.")
-      } else {
-        mod <- check_which_F_age(mod)
-        mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-        if(any(input$data$recruit_model %in% 3:4)) mod$input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
-        mod$rep = mod$report() #par values don't matter because function has not been evaluated
-        mod <- check_FXSPR(mod)
-      }
+      mod <- do_reference_points(mod)
+      # if(any(mod$input$data$can_move==1) & any(mod$input$data$mig_type == 1)){
+      #   warning("Cannot currently calculate standard errors of biological reference points internally when survival and movement are simultaneous for any stock.")
+      # } else {
+      #   mod <- check_which_F_age(mod)
+      #   mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+      #   if(any(input$data$recruit_model %in% 3:4)) mod$input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+      #   mod$rep = mod$report() #par values don't matter because function has not been evaluated
+      #   mod <- check_FXSPR(mod)
+      # }
     }
     
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
-    if(do.sdrep) mod <- do_sdrep(mod, save.sdrep = save.sdrep)
+    if(do.sdrep) mod <- do_sdreport(mod, save.sdrep = save.sdrep)
 
     # retrospective analysis
     if(do.retro){
@@ -158,11 +159,11 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
       "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
     if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
       paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
-  }
-  else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
+  } else { #model not fit, but generate report and parList so project_wham can be used without fitted model.
     if(do.brps){
-      mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-      if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
+      mod <- do_reference_points(mod)
+      # mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
+      # if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
     }
     mod$parList <- mod$env$parList()
     mod <- check_which_F_age(mod)
@@ -201,14 +202,14 @@ check_which_F_age <- function(mod)
   mod$rep <- mod$report()
   return(mod)
 }
-do_sdrep <- function(model, save.sdrep = TRUE)
-{
-  model$sdrep <- try(TMB::sdreport(model))
-  model$is_sdrep <- !is.character(model$sdrep)
-  if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
-  if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
-  return(model)
-}
+
+# do_sdreport <- function(model, save.sdrep = TRUE) {
+#   model$sdrep <- try(TMB::sdreport(model))
+#   model$is_sdrep <- !is.character(model$sdrep)
+#   if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
+#   if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
+#   return(model)
+# }
 
 check_FXSPR <- function(mod)
 {

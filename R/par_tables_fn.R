@@ -570,7 +570,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     colnames(NAA) = mod$ages.lab
     if(!is.null(od)) saveRDS(NAA, file = file.path(od,paste0(stock.names.f[s],"_", region.names.f[r], "_NAA_table.RDS")))
     NAA.cv[] <- NA
-    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+    if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       NAA.cv[] = sd[["log_NAA_rep"]][s,r,,]
       NAA.sd = NAA * NAA.cv
       NAA.lo = exp(log(NAA) - qnorm(0.975) * NAA.cv)
@@ -592,7 +592,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     colnames(FAA_r) = mod$ages.lab
     if(!is.null(od)) saveRDS(FAA_r, file = file.path(od,paste0(region.names.f[r], "_FAA_tot_table.RDS")))
     FAA_r.cv[] <- NA
-    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+    if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA_r.cv = sd[["log_FAA_by_region"]][r,,]
       FAA_r.sd = FAA_r * FAA_r.cv
       FAA_r.lo = FAA_r * exp(- qnorm(0.975) * FAA_r.cv)
@@ -613,7 +613,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     dimnames(FAA) = list(mod$years_full, mod$ages.lab)
     if(!is.null(od)) saveRDS(FAA, file = file.path(od,paste0(fleet.names.f[f], "_FAA_table.RDS")))
     FAA.cv[] <- NA
-    if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
+    if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA.cv[] = sd[["log_FAA"]][f,,]
       FAA.sd = FAA * FAA.cv
       FAA.lo = exp(mod$rep$FAA[f,,] - qnorm(0.975) * FAA.cv)

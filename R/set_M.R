@@ -34,6 +34,7 @@
 #'       region 1. If \code{NULL}, specifies all ages fixed at \code{M$initial_means}.  If \code{$mean_model} is "weight-at-age"
 #'       these are used for all stocks and regions and only the elements for the first age (\code{$M_ages_map[,,1]}) 
 #'       are used (for the intercept of log(M)).}
+#'     \item{$intial_MAA}{array (n_stocks x n_regions x n_years x n_ages) of initial values for M at age. Intended to be uses when nothing pertaining to M estimated.}
 #'     \item{$b_model}{"constant","stock","region", "stock-region" defining whether parameter is constant, stock-specific, region-specific, 
 #'       stock- and region-specific. Only used if \code{M$mean_model} = "weight-at-age".}
 #'     \item{$b_prior}{T/F, should a N(mu, 0.08) prior (where mu = log(0.305) by default) be used on log_b? Based on Fig. 1 and Table 1 
@@ -166,6 +167,16 @@ set_M = function(input, M)
     if(length(dimsM) != 3) stop("dimensions of M$initial_means must be c(n_stocks,n_regions,n_ages)")
     if(!all(dimsM == dim(par$Mpars))) stop("dimensions of M$initial_means must be c(n_stocks,n_regions,n_ages)")  
     par$Mpars[] <- log(M$initial_means)
+  }
+  if(!is.null(M$initial_MAA)){
+    if(!is.array(M$initial_MAA)) stop("M$initial_MAA must now be an array with dimensions = c(n_stocks,n_regions,n_years,n_ages)") 
+    dimsM = dim(M$initial_MAA)
+    if(length(dimsM) != 4) stop("dimensions of M$initial_MAA must be c(n_stocks,n_regions,n_years,n_ages)")
+    if(!all(dimsM == dim(par$M_re))) stop("dimensions of M$initial_MAA must be c(n_stocks,n_regions,n_years,n_ages)")
+    for(i in 1:data$n_stocks) for(r in 1:data$n_regions) {
+      par$Mpars[i,r,] <- apply(log(M$initial_MAA[i,r,,]),2,mean)
+      for(y in 1:data$n_years_model) par$M_re[i,r,y,] <- log(M$initial_MAA[i,r,y,]) - par$Mpars[i,r,]
+    }
   }
 
   if(!is.null(M$re_model)){
@@ -417,6 +428,7 @@ set_M = function(input, M)
 	input$random = NULL
 	input = set_random(input)
   input$options$M <- M
+  if(!is_internal_call()) cat(unlist(input$log$M, recursive=T))
   return(input)
 
 }

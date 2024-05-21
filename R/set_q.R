@@ -52,6 +52,7 @@ set_q = function(input, catchability = NULL){
   data = input$data
   par = input$par
   map = input$map
+  if(is.null(data$n_indices)) stop("No index information has been added yet. Run set_indices() first. See ?set_indices.")
 
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("q_prior_re", "q_re", "q_repars"))]
@@ -59,7 +60,6 @@ set_q = function(input, catchability = NULL){
 	asap3 = input$asap3
 	#if(is.null(input$asap3)) asap3 = NULL
   #else asap3 = input$asap3
-  
   data$q_lower <- rep(0,data$n_indices)
   data$q_upper <- rep(1000,data$n_indices)
   if(!is.null(q_opts$q_lower)) {
@@ -152,5 +152,6 @@ set_q = function(input, catchability = NULL){
   input$random = NULL
   input = set_random(input)
 	input$options$q <- q_opts
+  if(!is_internal_call()) cat(unlist(input$log$q, recursive=T))
 	return(input)
 }

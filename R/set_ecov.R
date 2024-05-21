@@ -730,7 +730,10 @@ set_ecov = function(input, ecov) {
   input$map = map
   if(length(input$log$ecov)) input$log$ecov <- c("Ecov: \n", input$log$ecov)
 	# add vector of all observations for one step ahead residuals ==========================
-  if(!is.null(input$data$obsvec)) input <- set_osa_obs(input)
+  if(!is_internal_call()) { #check whether called by prepare_wham_input
+    input <- set_osa_obs(input)
+    cat(unlist(input$log$ecov, recursive=T))
+  }
 	#print("osa_obs")
 
 	# projection data will always be modified by 'prepare_projection'
