@@ -108,6 +108,30 @@ Otherwise, it must be a named list with the following components:
     \item{$beta_mu_vals}{n_stocks x n_ages x n_seasons x n_regions x n_regions - 1 x n_ecov x max(n_poly_move) array of initial values for effects on movement parameters.}
   }}
 }
+\value{
+a named list with same elements as the input provided with environmental covariate observations, effects, and model options modified.
+}
 \description{
 Specify configuration for environmental covariates, effects on the population, and parameter values
+}
+\examples{
+\dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
+input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+ecov <- list(
+ label = "GSI",
+ mean = as.matrix(env.dat$GSI),
+ logsigma = 'est_1', # estimate obs sigma, 1 value shared across years
+ year = env.dat$year,
+ use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
+ process_model = 'ar1') # "rw" or "ar1"
+input <- set_ecov(input, ecov = ecov) #GSI in the model without any effects
+}
+
+}
+\seealso{
+\code{\link{prepare_wham_input}}
 }

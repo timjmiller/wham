@@ -34,8 +34,8 @@ to modify the selectivity specification.
                  }
                 }
     \item{$initial_pars}{Initial parameter values for each block. List of length = number of selectivity blocks. Each entry must be
-               a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic or \code{c(0.5,0.5,0.5,1,1,0.5)} for
-               age-specific with 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 
+               a vector of length # parameters in the block, i.e. \code{c(2,0.2)} for logistic (a50 and 1/slope) or \code{c(0.5,0.5,0.5,1,1,0.5)} for
+               age-specific parameters when there are 6 ages. Default is to set at middle of parameter range. This is 0.5 for age-specific and n.ages/2 
                or logistic, double-logistic, and decreasing-logistic.}
     \item{$fix_pars}{Alternative to \code{$map_pars} for specifying which selectivity parameters (only fixed effects) to fix at initial values. 
                List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, 
@@ -49,23 +49,42 @@ to modify the selectivity specification.
                blocks (1 fleet, 2 indices) and 6 ages, \code{$map_pars = list(c(1,2,3,NA,NA,4), c(5,6,7,NA,8,8), c(1,2,3,NA,NA,4))}
                will estimate ages 1-3 and 6 in block 1 (fleet), ages 1-3 and 4-5 (shared) in block 2 (index 1), and then set the
                index 2 (block 3) selectivity equal to the fleet.}
-    \item{$initial_sigma}{Initial standard deviation values to use for the random effect deviations. Must be a vector with length = number of blocks. 
+    \item{$sigma_vals}{Initial standard deviation values to use for the random effect deviations. Must be a vector with length = number of blocks. 
                Use natural (not log) scale, must be positive. \code{par$sel_repars[,1]} will be estimated on log-scale. Not used if \code{re = 'none'} for all blocks.}
     \item{$map_sigma}{Specify which SD parameters to fix for the random effect deviations. Must be a vector with length = number of blocks. 
                Use \code{NA} to fix a parameter and integers to estimate. Use the same integer for multiple blocks to estimate a shared SD parameter.
                Not used if \code{re = 'none'} for all blocks.}
-    \item{$initial_cor}{Initial correlation values to use for the random effect deviations. Must be a list with length = number of blocks. If \code{re = 'ar1'} or \code{ar1_y'}
-               for a block, list element must be a single value. If \code{re = '2dar1'} for a block, list element must be a vector of length 2 (first is for "age", second is for "year") for each block. 
-               Use natural scale, must be between -1 and 1. \code{par$sel_repars[,2:3]} will be estimated on a transform scale,  (2 / (1 + exp(-2x))) - 1. 
+    \item{$cor_vals}{Initial correlation values to use for the random effect deviations. Must be a n_selblocks x 2 integer matrix. Columns correspond to correlation by age and year,
+               respectively. If \code{re = 'ar1'} or \code{ar1_y'} only the corresponding values are used.
+               Values must be between -1 and 1, but parameters are estimated on a logit transformed scale internally. 
                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
-    \item{$map_cor}{Specify which correlation parameters to fix for the random effect deviations. Must be a list with length = number of blocks. 
-               If \code{re = 'ar1'} or \code{ar1_y'}, each list element (block) must be a single value. If \code{re = '2dar1'}, 
-               must be a vector of length 2 (first is for "age", second is for "year"). Use \code{NA} to fix a parameter and integers to estimate. 
-               Use the same integer for multiple blocks to estimate a shared correlation parameter. Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
+    \item{$map_cor}{Specify which correlation parameters to fix for the random effect deviations. Must be a n_selblocks x 2 matrix. Columns correspond to correlation by age
+               and year,respectively. Parameters can be shared by setting corresponding values of \code{map_cor} to the same integer. Use \code{NA} to fix a parameter.
+               If \code{re = 'ar1'} or \code{ar1_y'}, only the column for the corresponding correlation are used.
+               Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
   }}
 }
+\value{
+a named list with same elements as the input provided with selectivity options modified.
+}
 \description{
 Specify model and parameter configuration for selectivity
+}
+\examples{
+\dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+sel <- list(model=rep("logistic",input$data$n_selblocks),
+   initial_pars=rep(list(c(3,3)),input$data$n_selblocks),
+   fix_pars=rep(list(NULL),input$data$n_selblocks),
+input <- set_selectivity(input, selectivity = sel) #logistic selectivity for all selectivity blocks
+}
+
+}
+\seealso{
+\code{\link{prepare_wham_input}}
 }

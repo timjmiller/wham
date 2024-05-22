@@ -24,7 +24,8 @@ fit_wham(
     percentFXSPR = 100),
   do.fit = TRUE,
   save.sdrep = TRUE,
-  do.brps = TRUE
+  do.brps = TRUE,
+  fit.tmb.control = NULL
 )
 }
 \arguments{
@@ -89,6 +90,8 @@ Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}.
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
 
 \item{do.brps}{T/F, calculate and report biological reference points. Default = \code{TRUE}.}
+
+\item{fit.tmb.control}{list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.}
 }
 \value{
 a fit TMB model with additional output if specified:

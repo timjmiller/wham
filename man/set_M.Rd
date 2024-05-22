@@ -42,6 +42,7 @@ with the following entries:
       region 1. If \code{NULL}, specifies all ages fixed at \code{M$initial_means}.  If \code{$mean_model} is "weight-at-age"
       these are used for all stocks and regions and only the elements for the first age (\code{$M_ages_map[,,1]}) 
       are used (for the intercept of log(M)).}
+    \item{$intial_MAA}{array (n_stocks x n_regions x n_years x n_ages) of initial values for M at age. Intended to be uses when nothing pertaining to M estimated.}
     \item{$b_model}{"constant","stock","region", "stock-region" defining whether parameter is constant, stock-specific, region-specific, 
       stock- and region-specific. Only used if \code{M$mean_model} = "weight-at-age".}
     \item{$b_prior}{T/F, should a N(mu, 0.08) prior (where mu = log(0.305) by default) be used on log_b? Based on Fig. 1 and Table 1 
@@ -68,7 +69,7 @@ with the following entries:
       2 and 3 are identical as are those for ages 4 and 5 and different from age 6+ for stock 2 and region 1. If \code{NULL}, 
       and \code{$re_model} specifies M random effects at age, at least two ages must be 
       specified for correlation among ages to be estimated.}
-    \item{$sigma_val}{n_stocks x n_regions matrix Initial standard deviation value to use for the M random effects. Values are not used 
+    \item{$sigma_vals}{n_stocks x n_regions matrix Initial standard deviation value to use for the M random effects. Values are not used 
       if \code{M$re_model} = "none". Otherwise, a single value. If unspecified all values are 0.1.}
     \item{$cor_vals}{n_stocks x n_regions x 2 array of initial correlation values to use for the M deviations. If unspecified all initial 
       values are 0. When \code{M$re_model} = 
@@ -86,6 +87,23 @@ with the following entries:
       $re_model is other than "none", "iid_a", "iid_y".}
   }}
 }
+\value{
+a named list with same elements as the input provided with natural mortality options modified.
+}
 \description{
 Specify model and parameter configuration for natural mortality
+}
+\examples{
+\dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3)
+M = list(mean_model = "estimate-M")
+input <- set_q(input, M = M) #estimate a constant M parameters
+}
+
+}
+\seealso{
+\code{\link{prepare_wham_input}}
 }

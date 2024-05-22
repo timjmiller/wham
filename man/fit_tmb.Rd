@@ -9,7 +9,9 @@ fit_tmb(
   n.newton = 3,
   do.sdrep = TRUE,
   do.check = FALSE,
-  save.sdrep = FALSE
+  save.sdrep = FALSE,
+  use.optim = FALSE,
+  opt.control = NULL
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ fit_tmb(
 \item{do.check}{T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
+
+\item{use.optim}{T/F, use \code{\link[stats]{stats::optim}} instead of \code{\link[stats]{stats::nlminb}}? Default = \code{FALSE}.}
+
+\item{opt.control}{list of control parameters to pass to optimizer. For nlminb default = list(iter.max = 1000, eval.max = 1000). For optim default = list(maxit=1000).}
 }
 \value{
 \code{model}, appends the following:

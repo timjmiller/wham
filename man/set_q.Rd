@@ -39,6 +39,23 @@ Otherwise, it is a list with the following optional entries:
                Use the same integer for multiple indices to share the same correlation parameter. Not used if \code{re = 'none'} or \code{re = 'iid'} for all indices.}
   }}
 }
+\value{
+a named list with same elements as the input provided with catchability options modified.
+}
 \description{
 Specify model and parameter configuration for catchability
+}
+\examples{
+\dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3)
+catchability = list(re = c("iid", "none"))
+input <- set_q(input, catchability = catchability) #independent time-varying random effects on q for first survey.
+}
+
+}
+\seealso{
+\code{\link{prepare_wham_input}}
 }

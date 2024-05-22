@@ -7,7 +7,7 @@
 set_catch(input, catch_info = NULL)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{catch_info}{(optional) list specifying various aspects about catch by fleet (see details)
 
@@ -23,9 +23,26 @@ If \code{NULL}, all settings from the ASAP data file or basic_info are used.
     \item{$catch_paa}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}
     \item{$use_catch_paa}{matrix (n_years_model x n_fleets) of 0/1 values flagging whether to use proportions at age observations.}
     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
+    \item{$waa_pointer_fleets}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
   }}
 }
+\value{
+a named list with same elements as the input provided with catch observations and fleet options modified.
+}
 \description{
 Specify catch selectivity blocks and aggregate and age composition observations for catch
+}
+\examples{
+\dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3)
+input <- set_catch(input, catch_info = list(agg_catch = newcatch)) #constant catch of 500 mt
+}
+
+}
+\seealso{
+\code{\link{prepare_wham_input}}
 }

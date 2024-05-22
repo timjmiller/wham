@@ -7,9 +7,11 @@
 set_osa_obs(input)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
-
-This is run after any changes have been made to the data}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+}
+\value{
+the same input list as provided, but with $obs and $obsvec configured.
+This is run after any changes have been made to the data
 }
 \description{
 Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.
