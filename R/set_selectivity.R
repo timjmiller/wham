@@ -33,6 +33,14 @@
 #'                List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, 
 #'                \code{list(4:5, 4, 2:4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.
 #'                Use NULL to not fix any parameters for a block, e.g. list(NULL, 4, 2) does not fix any pars in block 1.}
+#'     \item{$par_min}{The lower bound for selectivity parameters and is used to populate \code{data$selpars_lower}.
+#'                List of length = number of selectivity blocks, where each item is a 
+#'                vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+#'                double-logistic: 4).}
+#'     \item{$par_max}{The upper bound for selectivity parameters and is used to populate \code{data$selpars_upper}.
+#'                List of length = number of selectivity blocks, where each item is a 
+#'                vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+#'                double-logistic: 4).}
 #'     \item{$map_pars}{Alternative to \code{$fix_pars} for specifying how to fix selectivity parameters (only fixed effects), corresponds 
 #'                to \code{map$logit_selpars}. List of length = number of selectivity blocks, where each item is a 
 #'                vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
@@ -324,6 +332,15 @@ set_selectivity = function(input, selectivity)
   selpars_hi[,data$n_ages + 1:6] = data$n_ages
   data$selpars_lower = selpars_lo #only need these for estimated parameters
   data$selpars_upper = selpars_hi
+  
+  #user-specified upper and lower bounds
+  selpar_ind <- list(1:data$n_ages, data$n_ages + 1:2, data$n_ages + 1:4, data$n_ages + 1:2)
+  if(!is.null(selectivity$par_min)){
+    for(b in 1:data$n_selblocks) data$selpars_lower[b, selpar_ind[[data$selblock_models[b]]]] <- selectivity$par_min[[b]]
+  }
+  if(!is.null(selectivity$par_max)){
+    for(b in 1:data$n_selblocks) data$selpars_upper[b, selpar_ind[[data$selblock_models[b]]]] <- selectivity$par_max[[b]]
+  }
 
   selpars_ini[which(selpars_ini > selpars_hi)] <- selpars_hi[which(selpars_ini > selpars_hi)]
   selpars_ini[which(selpars_ini < selpars_lo)] <- selpars_lo[which(selpars_ini < selpars_lo)]

@@ -2645,9 +2645,9 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
   years_full = mod$years_full
   n_years_full = length(years_full)
 
-  fec.age <- dat$waa[dat$waa_pointer_ssb[1],,]
-	mat.age <- dat$mature[1,,]
-	wgt.age <- dat$waa[dat$waa_pointer_fleets,,,drop = FALSE]
+  fec.age <- mod$rep$waa_ssb[1,,]
+	mat.age <- mod$rep$mature_all[1,,]
+	wgt.age <- mod$rep$waa_catch
 	M.age <- mod$rep$MAA[1,1,,]
 	# sel.age <- mod$rep$FAA_tot/apply(mod$rep$FAA_tot,1,max)
   FAA <- mod$rep$FAA[,,,drop=FALSE] #mean FAA by fleet (nf, ny, na)

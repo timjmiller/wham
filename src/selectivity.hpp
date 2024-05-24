@@ -184,7 +184,7 @@ vector<matrix<Type> > get_selpars(vector<int> selblock_models, vector<int> n_sel
   vector<matrix<Type> > selpars(n_selblocks); // selectivity parameter matrices for each block, nyears x npars
   for(int b = 0; b < n_selblocks; b++){
     int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
-    if(selblock_models(b) == 2) jstart = n_ages;
+    if((selblock_models(b) == 2) | (selblock_models(b) == 4)) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2;
 
     // get selpars = mean + deviations

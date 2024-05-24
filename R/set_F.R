@@ -10,6 +10,12 @@
 #'     \item{$F}{matrix (n_years x n_fleets) of (initial) values for fully-selected fishing morality.}
 #'     \item{$F_config}{integer 1: (default) configure F parameters (on log scale) as an F in the initial year and then deviations from one year to the next,
 #'        or 2: configure F parameters as (log) annual values.}
+#'     \item{$F_map}{matrix (n_years x n_fleets) of (initial) values for fully-selected fishing morality.}
+#'     \item{$map_F}{Specify whether to fix any fully-selected F parameters, corresponds 
+#'                to \code{map$F_pars}. integer matrix (n_years x n_fleets). 
+#'                Use NA to fix parameters and common integers will make those parameters equal.
+#'                E.g., for a given column (fleet) values NA,1,2,... will fix the first year and estimate other years. Use unique values for all distinct parameters for each year
+#'                and fleet.}
 #'  }
 #'
 #' @export
@@ -37,6 +43,9 @@ set_F = function(input, F_opts = NULL)
       input$par$F_pars[1,] <- log(F_opts$F[1,])
       for(f in 1:input$data$n_fleets) input$par$F_pars[-1,f] <- diff(log(F_opts$F[,f]))
     }
+  }
+  if(!is.null(F_opts$map_F)) {
+    input$map$F_pars <- factor(F_opts$map_F)
   }
   input$options$F <- F_opts
   return(input)
