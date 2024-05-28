@@ -197,6 +197,10 @@ check_which_F_age <- function(mod)
     temp <- apply(rbind(mod$rep$FAA[,y,]),2,sum)
     mod$env$data$which_F_age[y] <- mod$input$data$which_F_age[y] <- which(temp == max(temp))[1]
   }
+  if(mod$env$data$do_SPR_BRPs == 1){
+    temp <- apply(mod$rep$FAA_static,2,sum)
+    mod$env$data$which_F_age_static <- mod$input$data$which_F_age_static <- as.numeric(which(temp == max(temp))[1])
+  }
   mod$retape()
   mod$fn(mle)
   mod$rep <- mod$report()
