@@ -144,20 +144,23 @@ vector<matrix<Type> > get_selpars_re_mats(vector<int> n_selpars, matrix<int> sel
     tmp2.setZero();
     selpars_re_mats(b) = tmp2;
 
-    int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic) + 4 (double-logistic)
-    if(selblock_models(b) == 2) jstart = n_ages;
+    int jstart = 0; // offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic +/-) + 4 (double-logistic)
+    if((selblock_models(b) == 2) | (selblock_models(b) == 4)) jstart = n_ages;
     if(selblock_models(b) == 3) jstart = n_ages + 2;
 
     if(selblock_models_re(b) > 1){
       // construct deviations array with full dimensions (n_years_model instead of n_years_selblocks, n_selpars instead of n_selpars_est)
+      int jj = 0;
       for(int j=0; j<n_selpars(b); j++){
-        ct = 0;
-        for(int y=0; y<n_years_model; y++){
-          if((selblock_years(y,b) == 1) & (selpars_est(b,j+jstart) > 0)){
-            selpars_re_mats(b)(y,j) = selpars_re(b,ct,j);
-            //selpars_re_mats(b)(y,j) = selpars_re(ct);
-            ct++;
+        if(selpars_est(b,j+jstart) > 0){
+          ct = 0;
+          for(int y=0; y<n_years_model; y++){
+            if(selblock_years(y,b) == 1){
+              selpars_re_mats(b)(y,j) = selpars_re(b,ct,jj);
+              ct++;
+            }
           }
+          jj++;
         }
       }
     }
