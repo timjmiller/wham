@@ -41,6 +41,14 @@ to modify the selectivity specification.
                List of length = number of selectivity blocks. E.g. model with 3 age-specific blocks and 6 ages, 
                \code{list(4:5, 4, 2:4))} will fix ages 4 and 5 in block 1, age 4 in block 2, and ages 2, 3, and 4 in block 3.
                Use NULL to not fix any parameters for a block, e.g. list(NULL, 4, 2) does not fix any pars in block 1.}
+    \item{$par_min}{The lower bound for selectivity parameters and is used to populate \code{data$selpars_lower}.
+               List of length = number of selectivity blocks, where each item is a 
+               vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+               double-logistic: 4).}
+    \item{$par_max}{The upper bound for selectivity parameters and is used to populate \code{data$selpars_upper}.
+               List of length = number of selectivity blocks, where each item is a 
+               vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+               double-logistic: 4).}
     \item{$map_pars}{Alternative to \code{$fix_pars} for specifying how to fix selectivity parameters (only fixed effects), corresponds 
                to \code{map$logit_selpars}. List of length = number of selectivity blocks, where each item is a 
                vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 

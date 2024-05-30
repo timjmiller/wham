@@ -17,7 +17,7 @@ plot_wham_output(
 
 \item{dir.main}{character, directory to save plots to (default = \code{getwd()})}
 
-\item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'png'})}
+\item{out.type}{character, either \code{'html'}, \code{'pdf'}, or \code{'png'} (default = \code{'html'})}
 
 \item{res}{resolution to save .png files (dpi)}
 
@@ -27,9 +27,9 @@ plot_wham_output(
 Generates many output plots and tables for a fit WHAM model.
 }
 \details{
-\code{out.type = 'pdf'} makes one pdf file of all plots. \code{out.type = 'png'} 
-creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
 \code{out.type = 'html'} (default) makes a html file for viewing plot .png files and html tables of parameter estimates in a browser.
+\code{out.type = 'pdf'} makes one pdf file of all plots and tables. 
+\code{out.type = 'png'} creates a subdirectory `plots_png`` in \code{dir.main} and saves .png files within.
 \code{out.type = 'pdf' or 'png'} makes LaTeX and pdf files of tables of parameter estimates.
 (tabs: 'input data', 'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
 

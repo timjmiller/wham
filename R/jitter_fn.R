@@ -23,6 +23,7 @@
 #'  Second element is the matrix of initial values for the jitters.
 #'
 #' @seealso \code{\link{fit_wham}}
+#' @export
 #'
 jitter_fn <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_rows = NULL, do_parallel = TRUE, n_cores  = NULL, res_dir = NULL, wham_location = NULL, test_dir = NULL){
   

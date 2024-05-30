@@ -65,7 +65,7 @@ If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NA
     \item{$recruit_model}{Integer vector (n_stocks) determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
        and \code{ecov} are properly specified.
       \describe{
-          \item{1}{SCAA, estimating annual recruitments as fixed effects or a random walk if NAA_re$sigma specified}
+          \item{1}{SCAA, estimating annual recruitments as fixed effects.}
           \item{2}{estimating a mean recruitment with annual recruitments as random effects}
           \item{3}{Beverton-Holt stock-recruitment with annual recruitments as random effects}
           \item{4}{Ricker stock-recruitment with annual recruitments as random effects}
