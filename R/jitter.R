@@ -25,7 +25,7 @@
 #' @seealso \code{\link{fit_wham}}
 #' @export
 #'
-jitter_fn <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_rows = NULL, do_parallel = TRUE, n_cores  = NULL, res_dir = NULL, wham_location = NULL, test_dir = NULL){
+jitter <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_rows = NULL, do_parallel = TRUE, n_cores  = NULL, res_dir = NULL, wham_location = NULL, test_dir = NULL){
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
@@ -44,14 +44,13 @@ jitter_fn <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_
     chol.L <- t(chol(cov))
     set.seed(8675309)
     initial_vals <- t(sapply(1:n_jitter, function(x) mod$opt$par + chol.L %*% cbind(rnorm(n= NCOL(cov)))))
-    print(dim(initial_vals))
   }
   if(!all(which_rows %in% 1:NROW(initial_vals))) stop("some of which_rows are outside the rows of initial_vals.")
   
   if(do_parallel){
     if(is_snowfall & is_parallel){
       if(is.null(n_cores)) n_cores = parallel::detectCores()/2
-      snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile="test.txt")
+      snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile="jitter_log.txt")
       snowfall::sfExportAll()
       jit_res <- snowfall::sfLapply(which_rows, function(row_i){
         if(is.null(test_dir)) library(wham, lib.loc = wham_location)
