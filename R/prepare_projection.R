@@ -265,6 +265,7 @@ prepare_projection = function(model, proj.opts)
     tmp <- par$log_NAA
     if(data$n_NAA_sigma == 1) tmp[,-1] <- NA # don't estimate NAA_devs for ages > 1 if RE only on recruitment
     ind.notNA <- which(!is.na(tmp))
+
     tmp[ind.notNA] <- 1:length(ind.notNA)
     map$log_NAA = factor(tmp)
   }
@@ -273,7 +274,7 @@ prepare_projection = function(model, proj.opts)
     par$q_re <- rbind(par$q_re[1:data$n_years_model,,drop=F], matrix(0, data$n_years_proj, data$n_indices))
     map$q_re <- rbind(matrix(as.integer(map$q_re), data$n_years_model, data$n_indices), matrix(NA, data$n_years_proj, data$n_indices))
     if(any(data$use_q_re == 1)){
-      ind = which(data$use_q_re)
+      ind = which(data$use_q_re == 1)
       map$q_re[,ind] <- 1:(length(ind) * (data$n_years_model + data$n_years_proj)) #turn on appropriate columns of q_re
     }
     map$q_re <- factor(map$q_re)
@@ -317,6 +318,7 @@ prepare_projection = function(model, proj.opts)
         }
       } 
       ind.notNA <- which(!is.na(tmp.re))
+
       tmp.re[ind.notNA] <- 1:length(ind.notNA)
       data$Ecov_use_re[ind.notNA] <- 1 # don't want to add to NLL in projection years (= 0)
       map$Ecov_re = factor(tmp.re)
