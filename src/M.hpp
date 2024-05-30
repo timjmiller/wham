@@ -116,24 +116,24 @@ matrix<Type> get_nll_log_b(int log_b_model, matrix<Type>log_b, int bias_correct)
   Type mu = log(0.305);
   if(bias_correct) mu -= 0.5*exp(2*log(0.08));
   if(log_b_model == 1){ //constant across stocks, regions
-    nll(0,0) = dnorm(log_b(0,0), mu, Type(0.08),1);
+    nll(0,0) = -dnorm(log_b(0,0), mu, Type(0.08),1);
     //for(int r = 0; r < n_regions; r++) for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
   }
   if(log_b_model == 2){ //constant across regions, differ by stock
     for(int r = 0; r < n_regions; r++) {
-      nll(0,r) = dnorm(log_b(0,r), mu, Type(0.08), 1);
+      nll(0,r) = -dnorm(log_b(0,r), mu, Type(0.08), 1);
       //for(int s = 0; s < n_stocks; s++) sim_log_b(r,s) = sim;
     }
   }
   if(log_b_model == 3){ //constant across stocks, differ by region
     for(int s = 0; s < n_stocks; s++) {
-      nll(s,0) = dnorm(log_b(s,0), mu, Type(0.08), 1);
+      nll(s,0) = -dnorm(log_b(s,0), mu, Type(0.08), 1);
       //for(int r = 0; r < n_regions; r++) sim_log_b(r,s) = sim;
     }
   }
   if(log_b_model == 4){ //differ by stocks and region
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
-      nll(s,r) = dnorm(log_b(s,r), mu, Type(0.08), 1);
+      nll(s,r) = -dnorm(log_b(s,r), mu, Type(0.08), 1);
       //sim_log_b(r,s) = rnorm(mu, Type(0.08));
     }
   }

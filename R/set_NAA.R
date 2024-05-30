@@ -92,7 +92,7 @@ set_NAA = function(input, NAA_re=NULL)
   inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s 
   input$log$NAA <- list()
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
-  map <- map[(!names(map) %in% c("mean_rec_pars", "log_N1", "log_NAA_sigma", "trans_NAA_rho","logR_proj", "log_NAA"))]
+  map <- map[(!names(map) %in% c("mean_rec_pars", "log_N1", "log_NAA_sigma", "trans_NAA_rho", "log_NAA"))]
   
   #if(is.null(input$asap3)) asap3 = NULL
   #else asap3 = input$asap3
@@ -124,7 +124,7 @@ set_NAA = function(input, NAA_re=NULL)
         map$N1_repars[s,,2] = k + 1
         k = k + 2
         if(NAA_re$N1_model[s] == options[4]){ #ar1 with age
-          map$N1_repars[s,,2] = k
+          map$N1_repars[s,,3] = k
           k = k + 1
         }
       }
@@ -260,7 +260,8 @@ set_NAA = function(input, NAA_re=NULL)
         if(!NAA_re$cor[ind] %in% c("iid","ar1_a","ar1_y","2dar1")) stop("NAA_re$cor must be one of 'iid','ar1_a','ar1_y','2dar1'")
         if(NAA_re$cor[ind] %in% c("ar1_a")) map$trans_NAA_rho[s,,1] <- k+1
         if(NAA_re$cor[ind] %in% c("ar1_y")) {
-          map$trans_NAA_rho[s,,2] <- k+1
+          if(data$NAA_re_model[s] == 2) map$trans_NAA_rho[s,,2] <- k+1
+          if(data$NAA_re_model[s] == 1 & !data$decouple_recruitment) map$trans_NAA_rho[s,,2] <- k+1
           if(data$decouple_recruitment) map$trans_NAA_rho[s,,3] <- k+2
         }
         if(NAA_re$cor[ind] == "2dar1") for(r in 1:data$n_regions) {

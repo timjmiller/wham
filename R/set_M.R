@@ -135,7 +135,7 @@ set_M = function(input, M)
  
   if(is.null(M$mean_model)) M$mean_model <- "fixed-M"
   if(is.null(M$re_model)) M$re_model <- matrix("none", data$n_stocks, data$n_regions)
-  if(is.null(M$b_prior)) M$logb_prior = FALSE
+  if(is.null(M$b_prior)) M$b_prior = FALSE
 
   if(is.null(M$intial_b)) M$intial_b = 0.305
   if(is.null(M$initial_mean)) {

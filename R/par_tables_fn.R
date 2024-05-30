@@ -175,7 +175,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         if(mod$input$options$q$re[i] == "ar1"){
           fe.names = c(fe.names, paste0(index.names.tab[i], "q RE AR1 $\\rho$ (year)"))
           fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$q_repars[i,2])))
-          fe.cis = rbind(fe.cis, ci(pars$q_repars[i,3], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
+          fe.cis = rbind(fe.cis, ci(pars$q_repars[i,2], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
         }
       }
     }

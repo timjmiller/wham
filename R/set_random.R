@@ -4,6 +4,7 @@ set_random <- function(input){
   if(any(input$data$Ecov_obs_sigma_opt==4)) random = c(random, "Ecov_obs_logsigma_re")
   if(any(input$data$selblock_models_re > 1)) random = c(random, "selpars_re")
   if(any(input$data$M_re_model > 1)) random = c(random, "M_re")
+  if(any(input$data$use_b_prior>0)) random <- c(random, "log_b")
   if(any(input$data$Ecov_model > 0)) random = c(random, "Ecov_re")
   if(any(input$data$NAA_re_model > 0)) random = c(random, "log_NAA")
   if(any(input$data$N1_model == 2)) random = c(random, "log_N1")
