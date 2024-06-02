@@ -52,13 +52,21 @@ jitter <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_row
       if(is.null(n_cores)) n_cores = parallel::detectCores()/2
       snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile="jitter_log.txt")
       snowfall::sfExportAll()
+      print(ls())
+      print(wham_location)
       jit_res <- snowfall::sfLapply(which_rows, function(row_i){
+        snowfall::sfCat(is.null(test_dir), sep = "\n")
+        snowfall::sfCat(wham_location, sep = "\n")
         if(is.null(test_dir)) library(wham, lib.loc = wham_location)
         else pkgload::load_all(test_dir)
+        snowfall::sfCat(packageDescription("wham")$Version, sep = "\n")
+
+
         jit_mod <- readRDS(fit_RDS)
         jit_mod$env$data$do_SPR_BRPs[] <- 0
         jit_mod$par[] <- initial_vals[row_i,]
-        snowfall::sfCat(system.file(package="wham"), sep = "\n")
+        snowfall::sfCat(names(sessionInfo()$otherPkgs), sep = "\n")
+        snowfall::sfCat(find.package("wham"), sep = "\n")
         x <- try(fit_tmb(jit_mod, n.newton = 3, do.sdrep = FALSE))
     		out <- list(obj = NA, par = rep(NA,length(jit_mod$par)), grad = rep(NA,length(jit_mod$par)))
     		if(!(is.character(x) | is.null(x$opt))){

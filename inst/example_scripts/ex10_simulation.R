@@ -776,7 +776,7 @@ stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 # This same seed is used iteratively in the closed loop to keep the same simulated values throughout the base period and up to each time catch advice is defined. 
 
 assess.interval = 4
-base.years = make_info()$info$years #no feedback period yet
+base.years = make_info()$basic_info$years #no feedback period yet
 first.year = head(base.years,1)
 terminal.year = tail(base.years,1)
 assess.years = seq(terminal.year, tail(stock_om$years,1)-assess.interval,by = assess.interval)
