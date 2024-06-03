@@ -149,7 +149,7 @@ project_wham = function(model,
       proj_mod$sdrep <- try(TMB::sdreport(proj_mod, bias.correct = TMB.bias.correct))
       proj_mod$is_sdrep <- !is.character(proj_mod$sdrep)
       if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
-      if(!save.sdrep) mod$sdrep <- summary(proj_mod$sdrep) # only save summary to reduce model object size
+      if(!save.sdrep) proj_mod$sdrep <- summary(proj_mod$sdrep) # only save summary to reduce model object size
     } else {
       proj_mod$is_sdrep = FALSE
       proj_mod$na_sdrep = NA
