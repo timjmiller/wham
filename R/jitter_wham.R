@@ -25,7 +25,7 @@
 #' @seealso \code{\link{fit_wham}}
 #' @export
 #'
-jitter <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_rows = NULL, do_parallel = TRUE, n_cores  = NULL, res_dir = NULL, wham_location = NULL, test_dir = NULL){
+jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, which_rows = NULL, do_parallel = TRUE, n_cores  = NULL, res_dir = NULL, wham_location = NULL, test_dir = NULL){
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
