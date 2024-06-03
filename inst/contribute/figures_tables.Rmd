@@ -82,7 +82,7 @@ plot_files <- plot_files[grep("png", plot_files)]
 if(length(plot_files)) knitr::include_graphics(plot_files)
 ```
 
-### Miscelaneous
+### Miscellaneous
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/misc", full.names = TRUE)
