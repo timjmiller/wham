@@ -285,8 +285,10 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
         if(NCOL(proj.opts$proj.ecov) != data$n_Ecov) stop("number of columns of proj.opts$proj.ecov is not equal to n_Ecov")
         if(NROW(proj.opts$proj.ecov) != n_years_proj_Ecov) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj_Ecov))
         for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
-          if(data$Ecov_model[i] == 1) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]  # random walk
-          if(data$Ecov_model[i] == 2) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i] - par$Ecov_process_pars[1,i] # AR(1)
+          data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]
+          # doesn't matter. Ecov_use_proj is just used to fill out Ecov_out_R, Ecov_out_M, etc. in projection years
+          # if(data$Ecov_model[i] == 1) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]  # random walk
+          # if(data$Ecov_model[i] == 2) data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i] - par$Ecov_process_pars[1,i] # AR(1)
         }
       }
       for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
