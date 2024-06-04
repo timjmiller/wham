@@ -1019,7 +1019,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   years_full = mod$years_full
   pred_log_catch = mod$rep$pred_log_catch
   pred_catch = mod$rep$pred_catch
-  sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
+  sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale), nrow = length(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
   catch = dat$agg_catch
   log_stdres = (log(catch) - pred_log_catch[1:length(years),])/sigma # cpp already bias-corrects if bias_correct_oe = 1
   if(!missing(use.i)) fleets <- use.i
@@ -1069,7 +1069,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   index = dat$agg_indices
   # index[index < 0] = NA # robustify to missing values entered as negative
   index[dat$use_indices == 0] = NA # don't plot unused values
-  sigma = dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
+  sigma = dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale), nrow = length(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
   log_stdres = (log(index)-log(pred_index))/sigma
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:dat$n_indices
@@ -2526,7 +2526,7 @@ get_SPR_BRPS_fn <- function(mod, spr_yrs, percent){
     spr = get_SPR(F=F.start, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
     abs(100*spr/spr0 - percent)
   }
-  opt <- nlminb(start=F.start, objective=spr.f, lower=0, upper=10)
+  opt <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=10))
   Fxspr <- opt$par
   spr_Fxspr <- get_SPR(Fxspr, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
   FAA_xspr <- Fxspr * selAA
@@ -2581,7 +2581,7 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
       spr = get_SPR(F=F.start, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 			abs(spr/spr0 - t.spr)
 		}
-		yyy <- nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
+		yyy <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
 		f.spr.vals[i] <- yyy$par
     ypr.spr.vals[i] = sum(get_YPR_fleets(FAA = f.spr.vals[i]*selAA, M=M.age, waacatch= catch.waa))
 	}  #end i-loop over SPR values
@@ -2682,7 +2682,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 				#abs(s.per.recr(n_ages=n_ages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=F.start, sel.age=sel.age[j,],
 				#	spawn.time=spawn.time)/spr0.vals[j] - t.spr)
 			}
-			yyy <- nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
+			yyy <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
 			f.spr[j,i] <- yyy$par
 			ypr.spr[j,i] = sum(get_YPR_fleets(FAA = f.spr[j,i]*rbind(selAA[,j,]), M=M.age[j,], waacatch= rbind(wgt.age[,j,])))
       #ypr(n_ages, wgt.age=wgt.age[j,], M.age=M.age[j,],  F.mult=f.spr.vals[j,i], sel.age=sel.age[j,])
@@ -3268,11 +3268,10 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 	F.range <- seq(0,2.0, by=0.01)
 	nF <- length(F.range)
 
-  spr = sapply(F.range, function(x) get_SPR(F=x, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time))
-  ypr = sapply(F.range, function(x) sum(get_YPR_fleets(F=x*selAA, M=M.age, waacatch=catch.waa)))
+  spr = suppressWarnings(sapply(F.range, function(x) get_SPR(F=x, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)))
+  ypr = suppressWarnings(sapply(F.range, function(x) sum(get_YPR_fleets(F=x*selAA, M=M.age, waacatch=catch.waa))))
   pr = spr/spr0
-
-  if(plot){
+  if(plot & all(!is.na(pr))){
     if(do.tex) cairo_pdf(file.path(od, paste0("YPR_F_curve_plot.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("YPR_F_curve_plot.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   	par(mfrow=c(1,1), mar=c(4,4,2,4))
