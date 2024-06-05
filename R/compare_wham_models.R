@@ -125,7 +125,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
           table.opts$calc.aic = FALSE
       }
     }
-
+    tab <- NULL
     if(table.opts$calc.aic){
       aic <- sapply(wham.mods, function(x){
         k = length(x$opt$par)
@@ -164,7 +164,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       daic <- daic[ord]
       aic <- aic[ord]
       rho <- rho[ord,]
-      tab <- tab[ord,]
+      if(!is.null(tab)) tab <- tab[ord,]
     }
     if(!is.null(tab)){ 
       if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
