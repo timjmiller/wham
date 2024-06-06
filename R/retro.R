@@ -6,6 +6,7 @@
 #' @param model Optimized TMB model, output from \code{\link{fit_tmb}}.
 #' @param n.peels Integer, number of peels to use in retrospective analysis. Default = \code{7}.
 #' @param ran Character, specifies which parameters to treat as random effects. Default = \code{"model$input$random"}.
+#' @param use.mle T/F, use MLEs from full model fit as initial values for each peel? If not, the initial values from full model input are used. Default = \code{TRUE}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters for each peel? Default = \code{FALSE}.
 #' @param n.newton integer, number of additional Newton steps after optimization for each peel. Default = \code{0}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
@@ -21,7 +22,7 @@
 #' @seealso \code{\link{fit_wham}}, \code{\link{fit_peel}}
 #'
 #retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
-retro = function(model, n.peels = 7, ran = NULL, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE)
+retro = function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE)
 {
   data <- model$input$data
   par <- model$parList
@@ -42,7 +43,7 @@ retro = function(model, n.peels = 7, ran = NULL, do.sdrep = FALSE, n.newton = 0,
   temp <- model$input
   temp$random <- ran
   temp$data <- data
-  temp$par <- par
+  if(use.mle) temp$par <- par
   peels <- list()
   if(n.peels>0) for(i in 1:n.peels) peels[[i]] = tryCatch(
     fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
