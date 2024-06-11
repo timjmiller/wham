@@ -1145,77 +1145,79 @@ Type objective_function<Type>::operator() ()
     }
   }
   int is_SR = 0;
-  for(int s = 0; s < n_stocks; s++) if((recruit_model(s) == 3) | (recruit_model(s) == 4)) is_SR++;
-  if((is_SR> 0) & do_MSY_BRPs) {
-    // trace = 1;
-    vector< matrix<Type>> static_MSY_res =  get_MSY_res(recruit_model,
-      log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
-      fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age_static, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_static_init, 
-      avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind,
-      bias_correct_brps, log_NAA_sigma, n_regions_is_small, trace, 10);
-      vector<Type> log_SSB_MSY_static = static_MSY_res(0).col(0);
-      REPORT(log_SSB_MSY_static);
-      vector<Type> log_R_MSY_static = static_MSY_res(1).col(0);
-      REPORT(log_R_MSY_static);
-      vector<Type> log_SPR_MSY_static = static_MSY_res(2).col(0);
-      REPORT(log_SPR_MSY_static);
-      matrix<Type> log_FAA_MSY_static = static_MSY_res(3);
-      REPORT(log_FAA_MSY_static);
-      matrix<Type> log_MSY_static = static_MSY_res(4);
-      REPORT(log_MSY_static);
-      matrix<Type> log_YPR_MSY_static = static_MSY_res(5);
-      REPORT(log_YPR_MSY_static);
-      matrix<Type> log_FMSY_iter_static = static_MSY_res(6);
-      REPORT(log_FMSY_iter_static);
-      vector<Type> log_FMSY_static = log_FMSY_iter_static.row(9);
-      REPORT(log_FMSY_static);
-    // trace = 0;
-    vector< array <Type> > annual_MSY_res = get_annual_MSY_res(recruit_model,
-      log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
-      fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_init, 
-      n_regions_is_small, bias_correct_brps, log_NAA_sigma, trace, 10);
-    
-    array<Type> log_SSB_MSY = annual_MSY_res(0);
-    REPORT(log_SSB_MSY);
-    array<Type> log_R_MSY = annual_MSY_res(1);
-    REPORT(log_R_MSY);
-    array<Type> log_SPR_MSY = annual_MSY_res(2);
-    REPORT(log_SPR_MSY);
-    array<Type> log_FAA_MSY = annual_MSY_res(3);
-    REPORT(log_FAA_MSY);
-    array<Type> log_MSY = annual_MSY_res(4);
-    REPORT(log_MSY);
-    array<Type> log_YPR_MSY = annual_MSY_res(5);
-    REPORT(log_YPR_MSY);
-    array<Type> log_FMSY_iter = annual_MSY_res(6);
-    REPORT(log_FMSY_iter);
-    vector<Type> log_FMSY = log_FMSY_iter.matrix().col(9);
-    REPORT(log_FMSY);
-
-    // vector<Type> log_FMSY_alt = get_log_FMSY(FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
-    //   fracyr_seasons, which_F_age, recruit_model, log_SR_a, log_SR_b, fracyr_SSB_all, log_M, mu, L, waa_ssb, waa_catch, mature_all, n_regions_is_small,
-    //   FMSY_init, trace);
-
-
-    if(sum_do_post_samp == 0) if((n_regions == 1) | (mig_type.sum() == 0)) {
-      ADREPORT(log_FMSY);
-      ADREPORT(log_SSB_MSY);
-      ADREPORT(log_R_MSY);
-      ADREPORT(log_MSY);
-      ADREPORT(log_FMSY_static);
-      ADREPORT(log_SSB_MSY_static);
-      ADREPORT(log_R_MSY_static);
-      ADREPORT(log_MSY_static);
-    }
-
+  for(int s = 0; s < n_stocks; s++) if(recruit_model(s) >2) is_SR++;
+  if((is_SR> 0)) {
     REPORT(log_SR_a);
     REPORT(log_SR_b);
     if(sum_do_post_samp == 0){
       ADREPORT(log_SR_a);
       ADREPORT(log_SR_b);
     }  
+
+    if(do_MSY_BRPs) {
+      // trace = 1;
+      vector< matrix<Type>> static_MSY_res =  get_MSY_res(recruit_model,
+        log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
+        fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
+        L, which_F_age_static, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_static_init, 
+        avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind,
+        bias_correct_brps, log_NAA_sigma, n_regions_is_small, trace, 10);
+        vector<Type> log_SSB_MSY_static = static_MSY_res(0).col(0);
+        if(trace) see("end get_MSY_res static");
+        REPORT(log_SSB_MSY_static);
+        vector<Type> log_R_MSY_static = static_MSY_res(1).col(0);
+        REPORT(log_R_MSY_static);
+        vector<Type> log_SPR_MSY_static = static_MSY_res(2).col(0);
+        REPORT(log_SPR_MSY_static);
+        matrix<Type> log_FAA_MSY_static = static_MSY_res(3);
+        REPORT(log_FAA_MSY_static);
+        matrix<Type> log_MSY_static = static_MSY_res(4);
+        REPORT(log_MSY_static);
+        matrix<Type> log_YPR_MSY_static = static_MSY_res(5);
+        REPORT(log_YPR_MSY_static);
+        matrix<Type> log_FMSY_iter_static = static_MSY_res(6);
+        REPORT(log_FMSY_iter_static);
+        vector<Type> log_FMSY_static = log_FMSY_iter_static.row(9);
+        REPORT(log_FMSY_static);
+      // trace = 0;
+      vector< array <Type> > annual_MSY_res = get_annual_MSY_res(recruit_model,
+        log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
+        fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
+        L, which_F_age, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_init, 
+        n_regions_is_small, bias_correct_brps, log_NAA_sigma, trace, 10);
+      // trace = 0;
+      
+      array<Type> log_SSB_MSY = annual_MSY_res(0);
+      REPORT(log_SSB_MSY);
+      array<Type> log_R_MSY = annual_MSY_res(1);
+      REPORT(log_R_MSY);
+      array<Type> log_SPR_MSY = annual_MSY_res(2);
+      REPORT(log_SPR_MSY);
+      array<Type> log_FAA_MSY = annual_MSY_res(3);
+      REPORT(log_FAA_MSY);
+      array<Type> log_MSY = annual_MSY_res(4);
+      REPORT(log_MSY);
+      array<Type> log_YPR_MSY = annual_MSY_res(5);
+      REPORT(log_YPR_MSY);
+      array<Type> log_FMSY_iter = annual_MSY_res(6);
+      REPORT(log_FMSY_iter);
+      vector<Type> log_FMSY = log_FMSY_iter.matrix().col(9);
+      REPORT(log_FMSY);
+      // vector<Type> log_FMSY_alt = get_log_FMSY(FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
+      //   fracyr_seasons, which_F_age, recruit_model, log_SR_a, log_SR_b, fracyr_SSB_all, log_M, mu, L, waa_ssb, waa_catch, mature_all, n_regions_is_small,
+      //   FMSY_init, trace);
+
+      if(sum_do_post_samp == 0) if((n_regions == 1) | (mig_type.sum() == 0)) {
+        ADREPORT(log_FMSY);
+        ADREPORT(log_SSB_MSY);
+        ADREPORT(log_R_MSY);
+        ADREPORT(log_MSY);
+        ADREPORT(log_FMSY_static);
+        ADREPORT(log_SSB_MSY_static);
+        ADREPORT(log_R_MSY_static);
+        ADREPORT(log_MSY_static);
+      }
+    }
   }
   matrix<Type> log_index_resid(n_years_model, n_indices), log_catch_resid(n_years_model, n_fleets);
   log_index_resid.setZero();

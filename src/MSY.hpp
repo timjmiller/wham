@@ -483,7 +483,7 @@ vector< matrix <Type> > get_MSY_res(
     matrix<Type> hess_srY = autodiff::hessian(srY,log_FMSY_i);
     if(trace) see(hess_srY);
     log_FMSY_iter(i+1,0) = log_FMSY_iter(i,0) - grad_srY(0)/hess_srY(0,0);
-    if(trace) see(log_FMSY_iter(i,0));
+    if(trace) see(log_FMSY_iter(i+1,0));
   }
   array<Type> FAA_MSY(n_fleets,n_ages);
   FAA_MSY.setZero();
@@ -576,7 +576,7 @@ vector< array <Type> > get_annual_MSY_res(
   vector<int> which_F_age, array<Type> waa_ssb, array<Type> waa_catch, 
   array<Type> mature, matrix<Type> fracyr_SSB, vector<Type> F_init, 
   int small_dim, int bias_correct, array<Type> log_NAA_sigma, int trace = 0, int n_iter = 10) {
-  
+  if(trace) see("begin get_annual_MSY_res");
   int ny = which_F_age.size();
   int n_fleets = waa_catch.dim(0);
   int n_stocks = waa_ssb.dim(0);
@@ -594,6 +594,8 @@ vector< array <Type> > get_annual_MSY_res(
 
   for(int y = 0; y < ny; y++){
     yvec(0) = y;
+    if(trace) see(y);
+    // trace = 0;
     vector<matrix<Type>> MSY_res_y = get_MSY_res(
       recruit_model, log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions,
       fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type,
@@ -602,26 +604,38 @@ vector< array <Type> > get_annual_MSY_res(
       mature, fracyr_SSB, F_init(y), 
       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec, bias_correct, log_NAA_sigma,
       small_dim, trace, n_iter);
+    // trace = 0;
+    if(trace) see("get_MSY_res for year y is done")
+    if(trace) see(y);
     for(int s = 0; s <= n_stocks; s++) {
       log_SSB_MSY(y,s) = MSY_res_y(0)(s,0);
       log_R_MSY(y,s) = MSY_res_y(1)(s,0);
       log_SPR_MSY(y,s) = MSY_res_y(2)(s,0);
       for(int f = 0; f <= n_fleets; f++) {
-        for(int a = 0; a < n_ages; a++) log_FAA_MSY(f,y,a) = MSY_res_y(3)(f,a);
         log_MSY(f,s,y) = MSY_res_y(4)(f,s);
-        log_YPR_MSY(s,f,y) = MSY_res_y(5)(f,s);
+        log_YPR_MSY(f,s,y) = MSY_res_y(5)(f,s);
       }
     }
+    for(int f = 0; f <= n_fleets; f++) for(int a = 0; a < n_ages; a++) log_FAA_MSY(f,y,a) = MSY_res_y(3)(f,a);
+    if(trace) see("MSY results filled out")
     for(int i = 0; i < n_iter; i++) log_FMSY_iter(y,i) = MSY_res_y(6)(i,0);
+    if(trace) see("log_FMSY_iter filled out")
   }
   vector< array <Type>> res(7);
   res(0) = log_SSB_MSY;
+  if(trace) see("res(0) done");
   res(1) = log_R_MSY;
+  if(trace) see("res(1) done");
   res(2) = log_SPR_MSY; //log SSB/R at FMSY
+  if(trace) see("res(2) done");
   res(3) = log_FAA_MSY; // log_FAA at MSY by fleet and across fleets
+  if(trace) see("res(3) done");
   res(4) = log_MSY; 
+  if(trace) see("res(4) done");
   res(5) = log_YPR_MSY;
+  if(trace) see("res(5) done");
   res(6) = log_FMSY_iter; //last value is Fmsy across ages and fleets
+  if(trace) see("end get_annual_MSY_res");
 
   return res;
 }
