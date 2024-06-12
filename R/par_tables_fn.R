@@ -150,16 +150,17 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od)
         fe.vals = c(fe.vals, exp(pars$log_NAA_sigma[i]))
         fe.cis = rbind(fe.cis, ci(pars$log_NAA_sigma[i], sd$log_NAA_sigma[i], type = "exp"))
       }
-      fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", c("age", "year")))
-      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-2 * pars$trans_NAA_rho[1:2])))
-      fe.cis = rbind(fe.cis, 
-        ci(pars$trans_NAA_rho[1], sd$trans_NAA_rho[1], lo = -1, hi = 1, type = "expit", k = 2), #see trans_rho in helper.cpp
-        ci(pars$trans_NAA_rho[2], sd$trans_NAA_rho[2], lo = -1, hi = 1, type = "expit", k = 2)) #see trans_rho in helper.cpp
-      if(data$decouple_rec){
-        fe.names = c(fe.names, paste("NAA residual AR1 $\\rho$", c("year (recruits)")))
-        fe.vals = c(fe.vals, -1 + 2/(1 + exp(-2 * pars$trans_NAA_rho[3])))
-        fe.cis = rbind(fe.cis, 
-          ci(pars$trans_NAA_rho[3], sd$trans_NAA_rho[3], lo = -1, hi = 1, type = "expit", k = 2)) #see trans_rho in helper.cpp
+      rho.ind <- 1:2
+      rho.names <- paste("NAA residual AR1 $\\rho$", c("age", "year"))
+      if(data$decouple_rec) {
+        rho.ind <- c(1,3,2)
+        rho.names <- paste("NAA residual AR1 $\\rho$", c("age", "year", "year (recruitment)"))
+      }
+      fe.names = c(fe.names, rho.names)
+      fe.vals = c(fe.vals, -1 + 2/(1 + exp(-2 * pars$trans_NAA_rho[rho.ind])))
+      for(i in 1:length(rho.ind)) {
+        fe.cis <- rbind(fe.cis, 
+          ci(pars$trans_NAA_rho[rho.ind[i]], sd$trans_NAA_rho[rho.ind[i]], lo = -1, hi = 1, type = "expit", k = 2)) #see trans_rho in helper.cpp
       }
     }
     else {
