@@ -5,14 +5,16 @@ The Woods Hole Assessment Model (WHAM) is a general state-space age-structured s
 - statistical catch-at-age (SCAA) model with recruitments as fixed effects, 
 - SCAA with recruitments as random effects
 - "full state-space model", abundance at all ages are random effects
+- multi-stock and/or multi-region abundance at age as random effects
 
 WHAM advances fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:
 
 - recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
 - selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
 - natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), 
-- catchability ([Ex 11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)), and
-- environmental covariate effects on recruitment, natural mortality, and catchability.
+- index catchability ([Ex 11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)), 
+- movement between regions, and
+- environmental effects on the above (e.g., [Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
@@ -37,6 +39,8 @@ WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://
 A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, *M*, selectivity, and environment-recruitment: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967).
 
 [Stock et al. (2021)](https://doi.org/10.1016/j.fishres.2021.105873) describes the 2D (year x age) AR(1) correlation structure that can be used on numbers-at-age, *M*, and selectivity in WHAM (as in [Berg and Nielsen 2016](https://doi.org/10.1093/icesjms/fsw046), [Cadigan 2016](https://doi.org/10.1139/cjfas-2015-0047), and [Xu et al. 2019](https://doi.org/10.1139/cjfas-2017-0446)).
+
+As mentioned above, WHAM has also been extended (after release 1.0.9) to allow multiple stocks and/or multiple regions to be modeled with movement between regions. Seasonal changes in fleet fishing effort and movement are also possible. The single stock version of WHAM remains available as the "single_wham" branch, but it will not be developed further.
 
 WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
 
@@ -68,6 +72,16 @@ or for the devel branch:
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
 ```
 
+Also consider using the "pak" package for installation:
+```r
+pak::pkg_install("timjmiller/wham")
+```
+or for the devel branch:
+```r
+pak::pkg_install("timjmiller/wham@devel")
+```
+Using "pak" seems to avoid many installation hurdles.
+
 If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check to make sure no packages are loaded (even by e.g. .Rprofile):
 ```r
 ls() ## no variables
@@ -81,7 +95,8 @@ if(length(new.packages)) install.packages(new.packages)
 ```
 Then use one of the calls above to install wham.
 
-If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:```r
+If you want pdfs of parameter tables that are generted by plot_wham_output you will need a tex installation. If you do not use RStudio, use the tinytex package:
+```r
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
@@ -94,7 +109,7 @@ Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc")
 
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
 
-Clean, runnable `.R` scripts for most of the vignettes are also available in the `example_scripts` folder of the `wham` package install:
+Clean, runnable `.R` scripts for most vignettes are also available in the `example_scripts` folder of the `wham` package install:
 ```r
 library(wham)
 wham.dir <- find.package("wham")
@@ -104,7 +119,7 @@ file.path(wham.dir, "example_scripts")
 You can then run the entire first example script with:
 ```r
 setwd("choose/where/to/save/output")
-source(file.path(wham.dir, "example_scripts", "ex1_SNEMA_yellowtail_flounder.R"))
+source(file.path(wham.dir, "example_scripts", "ex1_basics.R"))
 ```
 
 You can run ALL examples with (takes 1 hour):
@@ -113,6 +128,11 @@ library(wham)
 wham.dir <- find.package("wham")
 source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
 ```
+
+## Short-course materials
+
+A short course was given in Woods Hole in June 2024 on using the WHAM package. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_course_WH_2024)
+
 
 ## Installing vignettes
 
