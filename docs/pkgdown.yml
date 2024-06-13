@@ -4,16 +4,16 @@ pkgdown_sha: ~
 articles:
   ex01_basics: ex01_basics.html
   ex02_CPI_recruitment: ex02_CPI_recruitment.html
+  ex03_projections: ex03_projections.html
+  ex04_selectivity: ex04_selectivity.html
+  ex05_GSI_M: ex05_GSI_M.html
+  ex06_NAA: ex06_NAA.html
+  ex07_debug: ex07_debug.html
+  ex08_compare: ex08_compare.html
+  ex09_retro_pred: ex09_retro_pred.html
   ex10_simulation: ex10_simulation.html
   ex11_catchability: ex11_catchability.html
-  ex3_projections: ex3_projections.html
-  ex4_selectivity: ex4_selectivity.html
-  ex5_GSI_M: ex5_GSI_M.html
-  ex6_NAA: ex6_NAA.html
-  ex7_debug: ex7_debug.html
-  ex8_compare: ex8_compare.html
-  ex9_retro_pred: ex9_retro_pred.html
-last_built: 2024-03-22T01:12Z
+last_built: 2024-06-13T17:57Z
 urls:
   reference: https://timjmiller.github.io/wham/reference
   article: https://timjmiller.github.io/wham/articles

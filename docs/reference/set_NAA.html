@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.7.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
       </span>
     </div>
 
@@ -34,34 +34,34 @@
       <a href="../articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="../articles/ex1_basics.html">Ex 1: The basics</a>
+      <a href="../articles/ex01_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="../articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="../articles/ex02_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
-      <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
+      <a href="../articles/ex03_projections.html">Ex 3: Projecting / forecasting random effects</a>
     </li>
     <li>
       <a href="../articles/ex4_selectivity.html">Ex 4: Selectivity with time- and age-varying random effects</a>
     </li>
     <li>
-      <a href="../articles/ex5_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
+      <a href="../articles/ex05_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
     </li>
     <li>
-      <a href="../articles/ex6_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
+      <a href="../articles/ex06_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
     </li>
     <li>
-      <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+      <a href="../articles/ex07_debug.html">Ex 7: Debugging WHAM models</a>
     </li>
     <li>
-      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+      <a href="../articles/ex08_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
     </li>
     <li>
-      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+      <a href="../articles/ex09_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
     <li>
-      <a href="../articles/ex10_simulation.html">Ex 10: Simulation and MSE</a>
+      <a href="../articles/ex10_simulation.html">Ex 10: Simulations</a>
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
@@ -133,9 +133,15 @@
 <dt>NAA_re</dt>
 <dd><p>(optional) list specifying options for numbers-at-age random effects, initial parameter values, and recruitment model (see details)</p>
 <p>If <code>NAA_re = NULL</code>, a traditional statistical catch-at-age model is fit (NAA = pred_NAA for all ages, deterministic). Otherwise,
-<code>NAA_re</code> specifies numbers-at-age configuration. It is a list with the following possible entries:</p><dl><dt>$sigma</dt>
-<dd><p>Which ages allow deviations from the predicted NAA given NAA from previou time step? Must be a single character string described below or a vector
-                   of length n_stocks. If length = 1, assumptions will be applied to all stocks. Common options are specified with the strings:</p><dl><dt>"rec"</dt>
+<code>NAA_re</code> specifies numbers-at-age configuration. It is a list with the following possible entries:</p><dl><dt>$decouple_recruitment</dt>
+<dd><p>T/F determining whether correlation structure of recruitment is independent of RE deviations for older ages 
+       (default = TRUE). Only applicable for <code>NAA_re$sigma = "rec+1"</code> and correlation across ages is specified. If TRUE and <code>NAA_re$cor = "ar1_a"</code>, only deviations for ages&gt;1 
+       have the correlation structure. If TRUE and NAA_re$cor is "ar1_y" or "2dar1" separate year correlation parameters are estimated for recruitment and older
+       ages.</p></dd>
+
+    <dt>$sigma</dt>
+<dd><p>Which ages allow deviations from the predicted NAA given NAA from previous time step? Must be a single character string described below or a vector
+                   of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are specified with the strings:</p><dl><dt>"rec"</dt>
 <dd><p>Random effects on recruitment (deviations), all other ages deterministic</p></dd>
 
                      <dt>"rec+1"</dt>
@@ -152,19 +158,13 @@
                   Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is not specified.</p></dd>
 
     <dt>$sigma_vals</dt>
-<dd><p>Initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is
-                 not specifed. Otherwise when <code>NAA_re$sigma</code> =</p><dl><dt>"rec"</dt>
-<dd><p>must be a list (length = n_stocks) of single values .</p></dd>
-
-                   <dt>"rec+1"</dt>
-<dd><p>Either 1) a list (length = n_stocks) of 2 values must be specified. First is for the first age class (recruits), second is for all other ages,
-                     or 2) an array (nstocks x nregions x nages)</p></dd>
-only the value for age 1 in the spawning region is used.
-                 
-</dl><p>If <code>NAA_re$sigma_map</code> is defined, the user must ensure that the configuration is compatible with <code>NAA_re$sigma_vals</code></p></dd>
+<dd><p>Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is
+                 not specified. Only those for age 1 in the spawning region are used if <code>NAA_re$sigma</code> = "rec".
+                 If <code>NAA_re$sigma_map</code> is defined, the user must ensure that the configuration is compatible with <code>NAA_re$sigma_vals</code></p></dd>
 
     <dt>$cor</dt>
-<dd><p>Correlation structure for the NAA deviations. Options are:</p><dl><dt>"iid"</dt>
+<dd><p>Correlation structure for the NAA deviations. Must be a single character string described below or a vector
+                 of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are:</p><dl><dt>"iid"</dt>
 <dd><p>NAA deviations vary by year and age, but uncorrelated.</p></dd>
 
                    <dt>"ar1_a"</dt>
@@ -180,20 +180,13 @@ only the value for age 1 in the spawning region is used.
 </dl><p></p></dd>
 
     <dt>$cor_vals</dt>
-<dd><p>Initial correlation values to use for the NAA deviations. If unspecified all initial values are 0. When <code>NAA_re$cor</code> =</p><dl><dt>"iid"</dt>
-<dd><p>values are not used.</p></dd>
-
-                   <dt>"ar1_a" or "ar1_y"</dt>
-<dd><p>cor_vals must be a single value.</p></dd>
-
-                   <dt>"2dar1"</dt>
-<dd><p>2 values must be specified. First is for "age", second is for "year".</p></dd>
-
-                 
-</dl><p></p></dd>
+<dd><p>Array (n_stocks x n_regions x 3) of initial correlation values to use for the NAA deviations. The first value correspond to correlation across age.
+                 The second is for yearly correlation for NAA deviations for all ages if recruitment is not decoupled, or otherwise just ages after recruitemnt. The third correlation is for annual 
+                 recruitment deviations and used only when recruitment is decoupled. If unspecified all initial values are 0. If <code>NAA_re$cor</code> = "iid", values are not used. 
+                 If <code>NAA_re$cor</code> = "ar1_a", those for yearly correlation are not used, and vice versa for "ar1_y".</p></dd>
 
     <dt>$N1_model</dt>
-<dd><p>Integer vector (n_stocks) determining which way to model the initial numbers at age:</p><dl><dt>"age-specific-fe"</dt>
+<dd><p>Character vector (n_stocks) determining which way to model the initial numbers at age:</p><dl><dt>"age-specific-fe"</dt>
 <dd><p>(default) age- and region-specific fixed effects parameters</p></dd>
 
          <dt>"equilibrium"</dt>
@@ -209,35 +202,58 @@ only the value for age 1 in the spawning region is used.
 </dl><p></p></dd>
 
     <dt>$N1_pars</dt>
-<dd><p>if N1_model = 0, then these would be the initial values to use for abundance at age in the first year. If N1_model = 1, This would be the
-       initial numbers in the first age class and the equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.</p></dd>
+<dd><p>An (n_stocks x n_regions x n_ages) array. If N1_model = 0, then this should be filled with the initial values to use for abundance at age by stock and region in the first year. 
+       If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected 
+       equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.</p></dd>
 
     <dt>$recruit_model</dt>
 <dd><p>Integer vector (n_stocks) determining how to model recruitment. Overrides <code>recruit_model</code> argument to <code>prepare_wham_input</code>. Must make sure <code>NAA_re$sigma</code>, <code>NAA_re$cor</code>
        and <code>ecov</code> are properly specified.</p><dl><dt>1</dt>
-<dd><p>SCAA, estimating all recruitements as fixed effects or a random walk if NAA_re$sigma specified</p></dd>
+<dd><p>SCAA, estimating annual recruitments as fixed effects.</p></dd>
 
           <dt>2</dt>
-<dd><p>estimating a mean recruitment with yearly recruitements as random effects</p></dd>
+<dd><p>estimating a mean recruitment with annual recruitments as random effects</p></dd>
 
           <dt>3</dt>
-<dd><p>Beverton-Holt stock-recruitment with yearly recruitements as random effects</p></dd>
+<dd><p>Beverton-Holt stock-recruitment with annual recruitments as random effects</p></dd>
 
           <dt>4</dt>
-<dd><p>Ricker stock-recruitment with yearly recruitements as random effects</p></dd>
+<dd><p>Ricker stock-recruitment with annual recruitments as random effects</p></dd>
 
       
 </dl><p></p></dd>
 
     <dt>$recruit_pars</dt>
-<dd><p>list (length = n_stocks) of vectors of initial parameters for recruitment model. If use_steepness=F, parameters are "alpha" and "beta"
-       otherwise they are steepness and R0.</p></dd>
+<dd><p>list (length = n_stocks) of vectors of initial parameters for recruitment model. If $recruit_model is 3 or 4, parameters are "alpha" and "beta".</p></dd>
 
   
 </dl></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
 
+<p>a named list with same elements as the input provided with abundance modeling options modified.</p>
+    </div>
+    <div id="see-also">
+    <h2>See also</h2>
+    <div class="dont-index"><p><code><a href="prepare_wham_input.html">prepare_wham_input</a></code></p></div>
+    </div>
+
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">wham.dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"wham"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">path_to_examples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">asap3</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path_to_examples</span>,<span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">NAA</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma <span class="op">=</span> <span class="st">"rec"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="set_q.html">set_q</a></span><span class="op">(</span><span class="va">input</span>, NAA_re <span class="op">=</span> <span class="va">NAA</span><span class="op">)</span> <span class="co">#estimate recruitment as random effects</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

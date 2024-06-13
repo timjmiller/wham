@@ -19,7 +19,7 @@ Internal function called by fit_wham."><!-- mathjax --><script src="https://cdnj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
       </span>
     </div>
 
@@ -36,34 +36,34 @@ Internal function called by fit_wham."><!-- mathjax --><script src="https://cdnj
       <a href="../articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="../articles/ex1_basics.html">Ex 1: The basics</a>
+      <a href="../articles/ex01_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="../articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="../articles/ex02_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
-      <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
+      <a href="../articles/ex03_projections.html">Ex 3: Projecting / forecasting random effects</a>
     </li>
     <li>
       <a href="../articles/ex4_selectivity.html">Ex 4: Selectivity with time- and age-varying random effects</a>
     </li>
     <li>
-      <a href="../articles/ex5_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
+      <a href="../articles/ex05_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
     </li>
     <li>
-      <a href="../articles/ex6_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
+      <a href="../articles/ex06_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
     </li>
     <li>
-      <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+      <a href="../articles/ex07_debug.html">Ex 7: Debugging WHAM models</a>
     </li>
     <li>
-      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+      <a href="../articles/ex08_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
     </li>
     <li>
-      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+      <a href="../articles/ex09_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
     <li>
-      <a href="../articles/ex10_simulation.html">Ex 10: Simulation and MSE</a>
+      <a href="../articles/ex10_simulation.html">Ex 10: Simulations</a>
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
@@ -130,7 +130,9 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 <span>  n.newton <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  do.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  do.check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  save.sdrep <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  save.sdrep <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  use.optim <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  opt.control <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -154,6 +156,14 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 
 <dt>save.sdrep</dt>
 <dd><p>T/F, save the full <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href="https://rdrr.io/pkg/TMB/man/summary.sdreport.html" class="external-link">summary.sdreport)</a></code> to reduce model object file size. Default = <code>FALSE</code>.</p></dd>
+
+
+<dt>use.optim</dt>
+<dd><p>T/F, use <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> instead of <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb</a></code>? Default = <code>FALSE</code>.</p></dd>
+
+
+<dt>opt.control</dt>
+<dd><p>list of control parameters to pass to optimizer. For nlminb default = list(iter.max = 1000, eval.max = 1000). For optim default = list(maxit=1000).</p></dd>
 
 </dl></div>
     <div id="value">

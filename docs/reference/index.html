@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
       </span>
     </div>
 
@@ -34,34 +34,34 @@
       <a href="../articles/index.html">Overview</a>
     </li>
     <li>
-      <a href="../articles/ex1_basics.html">Ex 1: The basics</a>
+      <a href="../articles/ex01_basics.html">Ex 1: The basics</a>
     </li>
     <li>
-      <a href="../articles/ex2_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
+      <a href="../articles/ex02_CPI_recruitment.html">Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)</a>
     </li>
     <li>
-      <a href="../articles/ex3_projections.html">Ex 3: Projecting / forecasting random effects</a>
+      <a href="../articles/ex03_projections.html">Ex 3: Projecting / forecasting random effects</a>
     </li>
     <li>
       <a href="../articles/ex4_selectivity.html">Ex 4: Selectivity with time- and age-varying random effects</a>
     </li>
     <li>
-      <a href="../articles/ex5_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
+      <a href="../articles/ex05_GSI_M.html">Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</a>
     </li>
     <li>
-      <a href="../articles/ex6_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
+      <a href="../articles/ex06_NAA.html">Ex 6: Numbers-at-age / survival deviations as random effects</a>
     </li>
     <li>
-      <a href="../articles/ex7_debug.html">Ex 7: Debugging WHAM models</a>
+      <a href="../articles/ex07_debug.html">Ex 7: Debugging WHAM models</a>
     </li>
     <li>
-      <a href="../articles/ex8_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
+      <a href="../articles/ex08_compare.html">Ex 8: Compare ASAP and WHAM model results</a>
     </li>
     <li>
-      <a href="../articles/ex9_retro_pred.html">Ex 9: Retrospective predictions</a>
+      <a href="../articles/ex09_retro_pred.html">Ex 9: Retrospective predictions</a>
     </li>
     <li>
-      <a href="../articles/ex10_simulation.html">Ex 10: Simulation and MSE</a>
+      <a href="../articles/ex10_simulation.html">Ex 10: Simulations</a>
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
@@ -127,13 +127,33 @@
         </td>
         <td><p>Compare multiple WHAM (or ASAP) models</p></td>
       </tr><tr><td>
+          <p><code><a href="do_reference_points.html">do_reference_points()</a></code> </p>
+        </td>
+        <td><p>Add reporting of biological reference points to WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="do_retro_peels.html">do_retro_peels()</a></code> </p>
+        </td>
+        <td><p>Fit retrospective peels and add them to the fitted model object</p></td>
+      </tr><tr><td>
+          <p><code><a href="do_sdreport.html">do_sdreport()</a></code> </p>
+        </td>
+        <td><p>Add TMB sdreport object to WHAM model</p></td>
+      </tr><tr><td>
           <p><code><a href="fit_wham.html">fit_wham()</a></code> </p>
         </td>
         <td><p>Fit WHAM model</p></td>
       </tr><tr><td>
+          <p><code><a href="jitter_wham.html">jitter_wham()</a></code> </p>
+        </td>
+        <td><p>Jitter starting values of a fitted WHAM model</p></td>
+      </tr><tr><td>
           <p><code><a href="make_osa_residuals.html">make_osa_residuals()</a></code> </p>
         </td>
         <td><p>Calculate one-step-ahead residuals</p></td>
+      </tr><tr><td>
+          <p><code><a href="mohns_rho.html">mohns_rho()</a></code> </p>
+        </td>
+        <td><p>Calculate Mohn's rho for a WHAM model with peels</p></td>
       </tr><tr><td>
           <p><code><a href="plot_wham_output.html">plot_wham_output()</a></code> </p>
         </td>
@@ -142,6 +162,10 @@
           <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
         </td>
         <td><p>Prepare input data and parameters for WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
+        </td>
+        <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
       </tr><tr><td>
           <p><code><a href="project_wham.html">project_wham()</a></code> </p>
         </td>
@@ -154,6 +178,14 @@
           <p><code><a href="retro.html">retro()</a></code> </p>
         </td>
         <td><p>Run retrospective analysis</p></td>
+      </tr><tr><td>
+          <p><code><a href="self_test.html">self_test()</a></code> </p>
+        </td>
+        <td><p>Perform self-test simulation and estimation of a fitted WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="set_age_comp.html">set_age_comp()</a></code> </p>
+        </td>
+        <td><p>Specify the age composition models for fleet(s) and indices.</p></td>
       </tr><tr><td>
           <p><code><a href="set_catch.html">set_catch()</a></code> </p>
         </td>
@@ -187,6 +219,10 @@
         </td>
         <td><p>Specify model and parameter configuration for numbers at age</p></td>
       </tr><tr><td>
+          <p><code><a href="set_osa_obs.html">set_osa_obs()</a></code> </p>
+        </td>
+        <td><p>Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.</p></td>
+      </tr><tr><td>
           <p><code><a href="set_q.html">set_q()</a></code> </p>
         </td>
         <td><p>Specify model and parameter configuration for catchability</p></td>
@@ -219,14 +255,6 @@ Internal function called by <code>check_estimability</code>.</p></td>
         </td>
         <td><p>Fit model peeling off <em>i</em> years of data</p></td>
       </tr><tr><td>
-          <p><code><a href="mohns_rho.html">mohns_rho()</a></code> </p>
-        </td>
-        <td><p>Calculate Mohn's rho for a WHAM model with peels</p></td>
-      </tr><tr><td>
-          <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
-      </tr><tr><td>
           <p><code><a href="read_asap3_fit.html">read_asap3_fit()</a></code> </p>
         </td>
         <td><p>Read ASAP3 fit</p></td>
@@ -238,18 +266,6 @@ Internal function called by <code>check_estimability</code>.</p></td>
           <p><code><a href="reduce_input.html">reduce_input()</a></code> </p>
         </td>
         <td><p>Reduce the years of the model</p></td>
-      </tr><tr><td>
-          <p><code><a href="retro_res.html">retro_res()</a></code> </p>
-        </td>
-        <td><p>Extract retrospective results for plotting</p></td>
-      </tr><tr><td>
-          <p><code><a href="set_age_sel0.html">set_age_sel0()</a></code> </p>
-        </td>
-        <td><p>Make one or more selectivity blocks with age-specific parameters</p></td>
-      </tr><tr><td>
-          <p><code><a href="set_osa_obs.html">set_osa_obs()</a></code> </p>
-        </td>
-        <td><p>Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.</p></td>
       </tr><tr><td>
           <p><code><a href="wham_html.html">wham_html()</a></code> </p>
         </td>

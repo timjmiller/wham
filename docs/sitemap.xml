@@ -4,6 +4,33 @@
     <loc>https://timjmiller.github.io/wham/404.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex01_basics.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex03_projections.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex04_selectivity.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex05_GSI_M.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex06_NAA.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex07_debug.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex08_compare.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/articles/ex09_retro_pred.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/articles/ex10_om_mse.html</loc>
   </url>
   <url>
@@ -67,6 +94,15 @@
     <loc>https://timjmiller.github.io/wham/reference/compare_wham_models.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/reference/do_reference_points.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/do_retro_peels.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/do_sdreport.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/reference/extract_fixed.html</loc>
   </url>
   <url>
@@ -80,6 +116,9 @@
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/jitter_wham.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/reference/make_osa_residuals.html</loc>
@@ -112,13 +151,55 @@
     <loc>https://timjmiller.github.io/wham/reference/read_wham_fit.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/reference/reduce_input.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/reference/retro.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/reference/retro_res.html</loc>
   </url>
   <url>
+    <loc>https://timjmiller.github.io/wham/reference/self_test.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_age_comp.html</loc>
+  </url>
+  <url>
     <loc>https://timjmiller.github.io/wham/reference/set_age_sel0.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_catch.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_ecov.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_F.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_indices.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_L.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_M.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_move.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_NAA.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_osa_obs.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_q.html</loc>
+  </url>
+  <url>
+    <loc>https://timjmiller.github.io/wham/reference/set_selectivity.html</loc>
   </url>
   <url>
     <loc>https://timjmiller.github.io/wham/reference/wham_html.html</loc>

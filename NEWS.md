@@ -1,3 +1,22 @@
+wham 1.0.9.9000
+=========================
+
+
+wham 1.0.9 (2024-06-13)
+=========================
+
+### IMPORTANT
+
+* **This will be the last release for models allowing only 1 stock and 1 region.**
+* The single-stock version will live on as the **single_wham** branch of the WHAM repository, but no further development will occur. Only bug fixes will be addressed.
+
+### Bug fixes
+
+* Fix bug in reporting of NAA autocorrelation parameters in parameter table. [ddad93c](https://github.com/timjmiller/wham/commit/ddad93c968c5986ebb2cd7aea089fbc4864fc7b8)
+* Fix bug in projections for models with q random effets. [503fefc](https://github.com/timjmiller/wham/commit/503fefc86d2cb7f50ede53ce89e43c6d02c6b23a)
+* Fix recruitment decoupling configuration bug. [18063fa](https://github.com/timjmiller/wham/commit/18063fad1fdd0d8787970cde9af303e0e24b9b95)
+
+
 wham 1.0.8 (2024-04-24)
 =========================
 

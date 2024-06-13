@@ -78,7 +78,7 @@
 #' input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
 #' sel <- list(model=rep("logistic",input$data$n_selblocks),
 #'    initial_pars=rep(list(c(3,3)),input$data$n_selblocks),
-#'    fix_pars=rep(list(NULL),input$data$n_selblocks),
+#'    fix_pars=rep(list(NULL),input$data$n_selblocks))
 #' input <- set_selectivity(input, selectivity = sel) #logistic selectivity for all selectivity blocks
 #' }
 #'
