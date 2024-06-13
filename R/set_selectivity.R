@@ -55,12 +55,12 @@
 #'                Use \code{NA} to fix a parameter and integers to estimate. Use the same integer for multiple blocks to estimate a shared SD parameter.
 #'                Not used if \code{re = 'none'} for all blocks.}
 #'     \item{$cor_vals}{Initial correlation values to use for the random effect deviations. Must be a n_selblocks x 2 integer matrix. Columns correspond to correlation by age and year,
-#'                respectively. If \code{re = 'ar1'} or \code{ar1_y'} only the corresponding values are used.
+#'                respectively. If \code{re = 'ar1'} or \code{re = 'ar1_y'} only the corresponding values are used.
 #'                Values must be between -1 and 1, but parameters are estimated on a logit transformed scale internally. 
 #'                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
 #'     \item{$map_cor}{Specify which correlation parameters to fix for the random effect deviations. Must be a n_selblocks x 2 matrix. Columns correspond to correlation by age
 #'                and year,respectively. Parameters can be shared by setting corresponding values of \code{map_cor} to the same integer. Use \code{NA} to fix a parameter.
-#'                If \code{re = 'ar1'} or \code{ar1_y'}, only the column for the corresponding correlation are used.
+#'                If \code{re = 'ar1'} or \code{re = 'ar1_y'}, only the column for the corresponding correlation are used.
 #'                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
 #'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
 #'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
