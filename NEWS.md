@@ -4,7 +4,7 @@ wham 1.0.8.9000 (2024-04-24)
 ### IMPORTANT
 
 * **This will be the last release for models allowing only 1 stock and 1 region.**
-* The single-stock version will live on as the **single_stock** branch of the WHAM repository, but no further development will occur. Only bug fixes will be addressed.
+* The single-stock version will live on as the **single_wham** branch of the WHAM repository, but no further development will occur. Only bug fixes will be addressed.
 
 ### Bug fixes
 
