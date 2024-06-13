@@ -1,6 +1,21 @@
 wham 1.0.9.9000
 =========================
 
+### Major improvements
+
+These features have been developed previously on the lab branch and not attributed to a specific commit, but are now included as the main version of WHAM
+* 1 or more stocks and regions can now be modeled with movement among regions
+* User can define seasonal intervals within years (possibly varying in length)
+* Large changes in structure of input data, parameters, and reported output
+* Seasonal operation of fleets
+* movement parameters can incorporate time and age varying random effects and effects of environmental covariates like natural mortality
+* priors for mean movement parameters are allowed because it is currently not possible to include tagging data observations.
+* functions to configure various aspects of an input (e.g., set_NAA) are now exported and can be used to modify existing inputs
+* greatly increased options to functions to allow user to specify initial parameter values and mapping of parameter estimation.
+* random effects options for initial abundance at age
+* functions to perform jittering (jitter_wham) and self tests (self_test) **(considered beta currently)**
+* functions to add reference point estimation, TMB::sdreport objects and retrospective peels to a previously fitted model
+* new Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).
 
 wham 1.0.9 (2024-06-13)
 =========================
