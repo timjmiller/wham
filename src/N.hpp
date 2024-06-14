@@ -1228,11 +1228,14 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
   array<Type> NAA_devs_out = NAA_devs; //(n_stocks, n_regions, n_years_pop, n_ages); //same dims as that provided by get_NAA_devs
   vector<Type> marginal_sigma(n_ages);
 
+  int rho_y_ind = 1;
+  if(decouple_recruitment) rho_y_ind = 2;
+
   //NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0){
     marginal_sigma.setZero();  //clear for each stock
-    int rho_y_ind = 1;
-    if((NAA_re_model(s) == 2) & decouple_recruitment) rho_y_ind = 2; //different rho_y for recruitment and survival
+    // int rho_y_ind = 1;
+    // if((NAA_re_model(s) == 2) & decouple_recruitment) rho_y_ind = 2; //different rho_y for recruitment and survival
 
     // for(int y = 1; y < n_years; y++) see(NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0));
     // for(int y = ystart; y < n_years; y++) see(NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0));
