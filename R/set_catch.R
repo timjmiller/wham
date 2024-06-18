@@ -62,8 +62,10 @@ set_catch = function(input, catch_info= NULL) {
   if(!is.null(asap3)) {
     #data$n_fleets = asap3$n_fleets
     k <- 1
+    cum_n_selblocks <- 0
     for(i in 1:length(asap3)) {
       asap3[[i]]$use_catch_acomp <- rep(1,asap3[[i]]$n_fleets) #default is to use age comp for catch
+      allselblocks_i <- sort(unique(unlist(asap3[[i]]$sel_block_assign)))
       for(j in 1:asap3[[i]]$n_fleets) {
         data$fleet_regions[k] = i #each asap file is a separate region
         data$agg_catch[,k] = asap3[[i]]$CAA_mats[[j]][,data$n_ages + 1]
@@ -85,11 +87,12 @@ set_catch = function(input, catch_info= NULL) {
           } 
         }
         data$catch_Neff[,k] = asap3[[i]]$catch_Neff[,j]
-        temp = asap3[[i]]$sel_block_assign[[j]]
-        temp = match(temp,sort(unique(temp))) #index unique values
-        data$selblock_pointer_fleets[,k] = max(data$selblock_pointer_fleets) + temp #max grows each time
+        temp <- asap3[[i]]$sel_block_assign[[j]]
+        temp <- match(temp,allselblocks_i) #index unique values
+        data$selblock_pointer_fleets[,k] = cum_n_selblocks + temp #max grows each time
         k <- k + 1
       }
+      cum_n_selblocks <- cum_n_selblocks + length(allselblocks_i)
     }
     data$agg_catch_sigma[which(data$agg_catch_sigma < 1e-15)] = 100
     data$agg_catch_sigma = sqrt(log(data$agg_catch_sigma^2 + 1))
