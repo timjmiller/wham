@@ -114,9 +114,10 @@ set_M = function(input, M)
   data$M_model = 1 #Fixed-M
   data$log_b_model = 1 #constant if estimated
   data$use_b_prior = 0
-  data$n_M_re <- matrix(1, data$n_stocks, data$n_regions)
+  # data$n_M_re <- matrix(1, data$n_stocks, data$n_regions)
   data$M_re_index <- array(1, dim = c(data$n_stocks, data$n_regions, data$n_ages))
-  #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) data$M_re_index[s,r,] <- 1:data$n_ages
+  data$n_M_re <- matrix(data$n_ages, data$n_stocks, data$n_regions)
+  for(s in 1:data$n_stocks) for(r in 1:data$n_regions) data$M_re_index[s,r,] <- 1:data$n_ages
   #M_re_model length = n_regions; 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
   data$M_re_model = matrix(1,data$n_stocks,data$n_regions) # default = no RE / 'none'
   
@@ -142,7 +143,7 @@ set_M = function(input, M)
     if(!is.null(asap3)){
       M$initial_means <- array(NA, dim = c(data$n_stocks, data$n_regions, data$n_ages))
       for(i in 1:length(asap3)) for(r in 1:data$n_regions) {
-        M$initial_means[i,r,] <- asap3[[i]]$M[1,]
+        M$initial_means[i,r,] <- exp(apply(log(asap3[[i]]$M),2,mean))
         # print(M$initial_means[i,r,])
         # print(log(asap3[[i]]$M))
         for(y in 1:data$n_years_model) {
