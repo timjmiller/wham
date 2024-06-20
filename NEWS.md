@@ -17,6 +17,11 @@ These features have been developed previously on the lab branch and not attribut
 * functions to add reference point estimation, TMB::sdreport objects and retrospective peels to a previously fitted model
 * new Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).
 
+### Bug fixes
+
+* fix specification of initial/fixed M when input M is both age and time varying. [1d637e3](https://github.com/timjmiller/wham/commit/1d637e39e900e5ac09fae3898ea1f61a0e89c1b0)
+* fix specification of shared fleet selectivity blocks provided by ASAP input. [fcbdfca](https://github.com/timjmiller/wham/commit/fcbdfcacccce103ec1a6c55b000d2ad26a6d073a)
+
 wham 1.0.9 (2024-06-13)
 =========================
 
