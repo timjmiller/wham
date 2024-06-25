@@ -17,6 +17,9 @@
 #'     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
 #'     \item{$waa_pointer_fleets}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
 #'     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
+#'     \item{$initial_catch_sd_scale}{vector (n_fleets) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
+#'     \item{$map_catch_sd_scale}{integer vector (n_fleets) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
+#'         Use the same integer for multiple fleets to estimate a shared scalar parameter.}
 #'   }
 #'
 #' @return a named list with same elements as the input provided with catch observations and fleet options modified.
@@ -152,7 +155,10 @@ set_catch = function(input, catch_info= NULL) {
   data$catch_paa[is.na(data$catch_paa)] = 0
 
   input$par$log_catch_sig_scale = rep(0, data$n_fleets)
-  input$map$log_catch_sig_scale = factor(rep(NA, data$n_fleets))
+  if(!is.null(catch_info$initial_catch_sd_scale)) input$par$log_catch_sig_scale[] <- log(catch_info$initial_catch_sd_scale)
+  input$map$log_catch_sig_scale <-rep(NA, data$n_fleets)
+  if(!is.null(catch_info$map_catch_sd_scale)) input$map$log_catch_sig_scale <- catch_info$map_catch_sd_scale
+  input$map$log_catch_sig_scale = factor(input$map$log_catch_sig_scale)
 
   input$data = data
   input$asap3 <- asap3

@@ -29,6 +29,9 @@ If \code{NULL}, all settings from the ASAP data file or basic_info are used.
     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
     \item{$waa_pointer_indices}{vector (n_indices) of itegers indicated waa to use for each index.}
     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
+    \item{$initial_index_sd_scale}{vector (n_indices) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
+    \item{$map_index_sd_scale}{integer vector (n_indices) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
+        Use the same integer for multiple indices to estimate a shared scalar parameter.}
   }}
 }
 \description{

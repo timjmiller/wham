@@ -25,6 +25,9 @@ If \code{NULL}, all settings from the ASAP data file or basic_info are used.
     \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
     \item{$waa_pointer_fleets}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
     \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
+    \item{$initial_catch_sd_scale}{vector (n_fleets) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
+    \item{$map_catch_sd_scale}{integer vector (n_fleets) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
+        Use the same integer for multiple fleets to estimate a shared scalar parameter.}
   }}
 }
 \value{

@@ -55,9 +55,9 @@
 #'           (2016)}.}
 #'       }
 #'     }
-#'     \item{$re_map}{array (n_stocks x n_regions x n_ages) of integers ( 0 <= max <= n_ages) indicating which ages, for a given 
-#'       stock and region, have random effects and whether to set RE for any ages to be identical. E.g. in a model with 2 stock, 
-#'       2 regions and 6 ages, \code{$re_map[2,1,] = c(0,1,1,2,2,3)} will not estimate RE for age 1, and those for ages 
+#'     \item{$re_map}{array (n_stocks x n_regions x n_ages) of NA and integers (1 <= max <= n_ages) indicating which ages, for a given 
+#'       stock and region, have random effects (not NA) and whether to set RE for any ages to be identical. E.g. in a model with 2 stock, 
+#'       2 regions and 6 ages, \code{$re_map[2,1,] = c(NA,1,1,2,2,3)} will not estimate RE for age 1, and those for ages 
 #'       2 and 3 are identical as are those for ages 4 and 5 and different from age 6+ for stock 2 and region 1. If \code{NULL}, 
 #'       and \code{$re_model} specifies M random effects at age, at least two ages must be 
 #'       specified for correlation among ages to be estimated.}
@@ -202,16 +202,18 @@ set_M = function(input, M)
     dimsM = dim(M$re_map)
     if(length(dimsM) != 3) stop("dimensions of M$re_map must be c(n_stocks,n_regions,n_ages)")
     if(!all(dimsM == dim(par$Mpars))) stop("dimensions of M$re_map must be c(n_stocks,n_regions,n_ages)")
-    if(any(!(M$re_map %in% 0:data$n_ages))) stop("Entries in M$re_map must be between 0 and n_ages.")
+    if(any(!(M$re_map %in% c(NA,1:data$n_ages)))) stop("Entries in M$re_map must be NA or in 1:n_ages.")
     k <- 0
-    if(M$mean_model != "weight-at-age" ) for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
+    if(M$mean_model != "weight-at-age" ) for(s in 1:data$n_stocks) for(r in 1:data$n_regions) if(M$re_model[s,r] != "none"){
+      temp <- M$re_map[s,r,]
+      if(all(is.na(temp))) stop(paste0("Random effects have been specified for stock ", s, " in region ", r, ", but M$re_map[s,r,] are all NA."))
+      ind <- unclass(factor(temp))
       if(M$re_model[s,r] %in% c("ar1_a","iid_a", "iid_ay","ar1_ay")){
-        if(all(M$re_map[s,r,] == 0)) stop("random effects by age have been specified, but M$re_map are all 0.")
-        temp <- M$re_map[s,r,]
-        temp[which(temp==0)] <- NA
         data$n_M_re[s,r] <- length(unique(temp[!is.na(temp)]))
-        data$M_re_index[s,r,] <- unclass(factor(M$re_map[s,r,]))
-        ind <- unclass(factor(temp))
+        temp2 <- temp
+        temp2[which(is.na(temp2))] <-0
+        data$M_re_index[s,r,] <- unclass(factor(temp2))
+        #temp[which(temp==0)] <- NA
         if(M$re_model[s,r] %in% c("ar1_a","iid_a")) {
           for(y in 1:dim(map$M_re)[3]) map$M_re[s,r,y,] <- ind + k 
           k <- k + data$n_M_re[s,r]
@@ -225,7 +227,10 @@ set_M = function(input, M)
       } #for M$mean_model == "weight-at-age" (M = f(WAA)), These should already be set up right.
       if(M$re_model[s,r] %in% c("ar1_y","iid_y")){
         data$n_M_re[s,r] <- 1
-        data$M_re_index[s,r,] <- 1
+        temp2 <- temp
+        temp2[which(is.na(temp))] <- 0
+        temp2[which(!is.na(temp))] <- 1
+        data$M_re_index[s,r,] <- temp2
         for(a in 1:dim(map$M_re)[4]) map$M_re[s,r,,a] <- 1:dim(map$M_re)[3] + k 
         k <- k + dim(map$M_re)[3]
       } #for M$mean_model == "weight-at-age" (M = f(WAA)), These should already be set up right.
@@ -380,7 +385,7 @@ set_M = function(input, M)
   if(!is.null(M$sigma_map)){
     M$sigma_map[which(M$re_model=="none")] <- NA
     M$sigma_map[] <- unclass(factor(M$sigma_map))
-    for(s in 1:data$n_stocks)for(r in 1:data$n_regions) if(M$re_model[s,r] != "none") map$M_repars[s,r,,1] <- M$sigma_map[s,r]
+    for(s in 1:data$n_stocks)for(r in 1:data$n_regions) if(M$re_model[s,r] != "none") map$M_repars[s,r,1] <- M$sigma_map[s,r]
   } else{ #all the same value
     for(s in 1:data$n_stocks)for(r in 1:data$n_regions) if(M$re_model[s,r] != "none") map$M_repars[s,r,1] <- 1
   }

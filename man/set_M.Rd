@@ -63,9 +63,9 @@ with the following entries:
           (2016)}.}
       }
     }
-    \item{$re_map}{array (n_stocks x n_regions x n_ages) of integers ( 0 <= max <= n_ages) indicating which ages, for a given 
-      stock and region, have random effects and whether to set RE for any ages to be identical. E.g. in a model with 2 stock, 
-      2 regions and 6 ages, \code{$re_map[2,1,] = c(0,1,1,2,2,3)} will not estimate RE for age 1, and those for ages 
+    \item{$re_map}{array (n_stocks x n_regions x n_ages) of NA and integers (1 <= max <= n_ages) indicating which ages, for a given 
+      stock and region, have random effects (not NA) and whether to set RE for any ages to be identical. E.g. in a model with 2 stock, 
+      2 regions and 6 ages, \code{$re_map[2,1,] = c(NA,1,1,2,2,3)} will not estimate RE for age 1, and those for ages 
       2 and 3 are identical as are those for ages 4 and 5 and different from age 6+ for stock 2 and region 1. If \code{NULL}, 
       and \code{$re_model} specifies M random effects at age, at least two ages must be 
       specified for correlation among ages to be estimated.}

@@ -21,6 +21,9 @@
 #'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
 #'     \item{$waa_pointer_indices}{vector (n_indices) of itegers indicated waa to use for each index.}
 #'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
+#'     \item{$initial_index_sd_scale}{vector (n_indices) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
+#'     \item{$map_index_sd_scale}{integer vector (n_indices) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
+#'         Use the same integer for multiple indices to estimate a shared scalar parameter.}
 #'   }
 #'
 #' @export
@@ -164,7 +167,11 @@ set_indices = function(input, index_info=NULL) {
   data$agg_index_sigma = sqrt(log(data$agg_index_sigma^2 + 1))
 
   input$par$log_index_sig_scale = rep(0, data$n_indices)
-  input$map$log_index_sig_scale = factor(rep(NA, data$n_indices))
+  if(!is.null(index_info$initial_index_sd_scale)) input$par$log_index_sig_scale[] <- log(index_info$initial_index_sd_scale)
+  input$map$log_index_sig_scale <-rep(NA, data$n_indices)
+  if(!is.null(index_info$map_index_sd_scale)) input$map$log_index_sig_scale <- index_info$map_index_sd_scale
+  input$map$log_index_sig_scale = factor(input$map$log_index_sig_scale)
+  
   input$asap3 <- asap3
 
   input$data = data

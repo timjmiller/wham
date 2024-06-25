@@ -105,7 +105,7 @@ set_selectivity = function(input, selectivity)
       input$log$selectivity <- c(input$log$selectivity, paste0("number of selblocks, ", data$n_selblocks, 
         ", is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).\n"))
       #data$n_selblocks = data$n_fleets + data$n_indices  #1 for fleet, 1 for index
-    } else data$n_selblocks = selectivity$n_selblocks
+    }# else data$n_selblocks = selectivity$n_selblocks
   } else {
     data$n_selblocks = 0
     data$selblock_models = integer(0)
@@ -125,6 +125,9 @@ set_selectivity = function(input, selectivity)
   no_asap = is.null(asap3)
   selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
   
+  if(!is.null(selectivity$n_selblocks)){ #override asap structure
+    data$n_selblocks <- selectivity$n_selblocks
+  }
   if(is.null(selectivity$model)) {
     if(no_asap) data$selblock_models <- rep(2, data$n_selblocks)
   } 

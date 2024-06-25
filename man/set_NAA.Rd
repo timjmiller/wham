@@ -26,16 +26,16 @@ If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NA
                      \item{"rec+1"}{"Full state space" model with 2 estimated \code{sigma_a}, one for recruitment and one shared among other ages}
                    }
                  }
+    \item{$sigma_vals}{Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is
+                 not specified. Only those for age 1 in the spawning region are used if \code{NAA_re$sigma} = "rec".
+                 If \code{NAA_re$sigma_map} is defined, the user must ensure that the configuration is compatible with \code{NAA_re$sigma_vals}
+               }
     \item{$sigma_map}{You can specify a more complex parameter configuration by entering an integer array (nstocks x n_regions x n_ages), where each entry points to the
                   NAA_sigma to use for that stock and age. E.g., for 2 stocks, 2 regions, and 6 ages, array(rep(c(1,2,2,3,3,3), each = 4),c(2,2,6)) will estimate 3 
                   sigmas, with recruitment (age-1) deviations having their own \code{sigma_R}, ages 2-3 sharing \code{sigma_2}, and ages 4-6 sharing \code{sigma_3}. 
                   All parameters being the same for both stocks and across regions. The user must be sure that a compatible \code{NAA_re$sigma} configuration is defined.
                   Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is not specified.
                  }
-    \item{$sigma_vals}{Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and \code{NAA_re$sigma} is
-                 not specified. Only those for age 1 in the spawning region are used if \code{NAA_re$sigma} = "rec".
-                 If \code{NAA_re$sigma_map} is defined, the user must ensure that the configuration is compatible with \code{NAA_re$sigma_vals}
-               }
     \item{$cor}{Correlation structure for the NAA deviations. Must be a single character string described below or a vector
                  of length n_stocks. If length = 1, assumptions will be applied to all stocks. Options are:
                  \describe{
@@ -50,6 +50,14 @@ If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NA
                  recruitment deviations and used only when recruitment is decoupled. If unspecified all initial values are 0. If \code{NAA_re$cor} = "iid", values are not used. 
                  If \code{NAA_re$cor} = "ar1_a", those for yearly correlation are not used, and vice versa for "ar1_y". 
                }
+    \item{$cor_map}{n_stocks x n_region matrix x 3 array of NA or integers indicating which random effects correlation parameters are estimated
+      and whether to set any to be estimated identically. The 3 values for a given stock and region are for age, year ("survival"), and year ("recruitment"). 
+      Both age and years values are used for \code{NAA_re$cor = "2dar1"}, but only the appropriate values are used for \code{NAA_re$cor = "ar1_a"}, or \code{"ar1_y"}.
+      When \code{NAA_re$decouple_recruitment = TRUE}, the third value is used for both \code{NAA_re$sigma = "rec"} or \code{"rec+1"}. For 
+      \code{NAA_re$decouple_recruitment = FALSE}, only the second value is used and applies to both recruitment and "survival" when \code{NAA_re$sigma = "rec+1"}, 
+      and just recruitment when \code{NAA_re$sigma = "rec"}. If not supplied stock-specific values for age and/or year will be estimated for all regions where 
+      \code{NAA_re$cor} is other than "none", "iid".
+    }
     \item{$N1_model}{Character vector (n_stocks) determining which way to model the initial numbers at age:
       \describe{
          \item{"age-specific-fe"}{(default) age- and region-specific fixed effects parameters}
