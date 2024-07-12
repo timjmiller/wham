@@ -1120,7 +1120,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   years_full = mod$years_full
   pred_log_catch = mod$rep$pred_log_catch
   pred_catch = exp(pred_log_catch)
-  sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
+  sigma = dat$agg_catch_sigma %*% diag(exp(mod$parList$log_catch_sig_scale), nrow = length(mod$parList$log_catch_sig_scale)) # dims: [ny,nf] x [nf]
   catch = dat$agg_catch
   log_stdres = (log(catch) - pred_log_catch[1:length(years),])/sigma # cpp already bias-corrects if bias_correct_oe = 1
   if(!missing(use.i)) fleets <- use.i
@@ -1163,7 +1163,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   index = dat$agg_indices
   # index[index < 0] = NA # robustify to missing values entered as negative
   index[dat$use_indices == 0] = NA # don't plot unused values
-  sigma = dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
+  sigma = dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale), nrow = length(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
   log_stdres = (log(index)-log(pred_index))/sigma
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:dat$n_indices
