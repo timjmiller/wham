@@ -55,6 +55,7 @@
 #'     \item{$fracyr_SSB}{matrix (n_years x n_stocks) (1 or length(years)) of yearly proportions (0-1) of the year at which to calculate spawning biomass.}
 #'     \item{$spawn_seasons}{vector (n_stocks) of seasons in which each stock spawns.}
 #'     \item{$spawn_regions}{vector (n_stocks) of regions in which each stock spawns.}
+#'     \item{$NAA_where}{array (n_stocks x n_regions x n_ages) of 0/1 indicating where individuals of each stock may exist on January 1 of each year.}
 #'     \item{$Fbar_ages}{integer vector of ages to use to average total F at age defining fully selected F for reference points. May not be clearly known until a model is fitted.}
 #'     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}

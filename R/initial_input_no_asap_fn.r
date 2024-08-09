@@ -84,8 +84,8 @@ initial_input_no_asap_fn <- function(input, basic_info){
 	for(s in 1:data$n_stocks) data$NAA_where[s,s,] = 1
   
 	if(!is.null(basic_info$NAA_where)) {
-    if(!all(dim(NAA_re$NAA_where) == dim(data$NAA_where))) stop("Dimensions of basic_info$NAA_where are not correct. \n")
-    data$NAA_where[] = NAA_re$NAA_where
+    if(!all(dim(basic_info$NAA_where) == dim(data$NAA_where))) stop("Dimensions of basic_info$NAA_where are not correct. \n")
+    data$NAA_where[] = basic_info$NAA_where
   }
 	for(s in 1:data$n_stocks) {
 		sr = which(data$NAA_where[s,,1] == 1)
@@ -99,8 +99,8 @@ initial_input_no_asap_fn <- function(input, basic_info){
 			data$spawn_regions[s] = sr
 		}
   } else {
-    if(!all(length(NAA_re$spawn_regions) == data$n_stocks)) stop("length of NAA_re$spawn_regions is not equal to data$n_stocks. \n")
-    if(max(NAA_re$spawn_regions) > data$n_regions) stop("maximum value of NAA_re$spawn_regions is greater than data$n_regions. \n")
+    if(!all(length(basic_info$spawn_regions) == data$n_stocks)) stop("length of basic_info$spawn_regions is not equal to data$n_stocks. \n")
+    if(max(basic_info$spawn_regions) > data$n_regions) stop("maximum value of basic_info$spawn_regions is greater than data$n_regions. \n")
 		for(s in 1:data$n_stocks) {
 			sr = which(data$NAA_where[s,,1] == 1)
 			if(sr != basic_info$spawn_regions[s]) stop("basic_info$spawn_regions not consistent with input$dataNAA_where.")

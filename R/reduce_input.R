@@ -6,8 +6,9 @@
 #'
 #' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}}). NOT from prepare_projection or project_wham
 #' @param years_peeled which of input$years to peel from the model input
+#' @param retro (T/F) whether this is for a retro peel (Default = TRUE)
 #'
-reduce_input <- function(input,years_peeled){
+reduce_input <- function(input,years_peeled, retro = TRUE){
 	
 	if(input$data$n_years_proj>0) stop("cannot run wham:::reduce_input on an input for a projection")
 	new <- input
@@ -54,7 +55,7 @@ reduce_input <- function(input,years_peeled){
 	data$fracyr_indices <- data$fracyr_indices[ind,,drop=F]
 	data$waa <- data$waa[,ind,,drop=F]
 	data$selblock_years <- data$selblock_years[ind,,drop=F]
-	data$n_selblock_years <- apply(data$selblock_years,2,sum)
+	data$n_years_selblocks <- apply(data$selblock_years,2,sum)
 
 	data$keep_C <- data$keep_C[ind,,drop=F]
 	data$keep_I <- data$keep_I[ind,,drop=F]
@@ -103,12 +104,9 @@ reduce_input <- function(input,years_peeled){
   }
   par$selpars_re <- par$selpars_re[,ind,,drop=F]
 
-	if(!is.null(map$F_pars)) {
-		tmp <- par$F_pars
-		tmp[] <- as.integer(map$F_pars)
-		map$F_pars <- factor(tmp[ind,])	
-	}
-	par$F_pars <- par$F_pars[ind,,drop=F]
+	map$F_pars <- par$F_pars <- par$F_pars[ind,,drop=F]
+	map$F_pars[] <- 1:(length(ind)*data$n_fleets)
+	map$F_pars <- as.factor(map$F_pars)
 
   dims <- dim(par$q_re)
   dims[2] <- data$n_years_model + data$n_years_proj
@@ -123,13 +121,17 @@ reduce_input <- function(input,years_peeled){
 	#adjust Ecov dimensions
 	if(!is.null(new$options$ecov)){
 		ecov <- new$options$ecov
-		ind_E <- which(!(ecov$year %in% years_peeled))
-		ecov$year <- ecov$year[ind_E]
+		if(retro) ind_E <- which(ecov$year < min(years_peeled))
+		else ind_E <- which(!(ecov$year %in% years_peeled))
+	  ecov$year <- ecov$year[ind_E]
 		ecov$mean <- ecov$mean[ind_E,,drop=F]
 		ecov$use_obs <- ecov$use_obs[ind_E,,drop=F]
-		if(!any(is.character(ecov$logsigma))) ecov$logsigma <- new$par$Ecov_obs_logsigma[ind_E,,drop=F] #this surely will be a matrix
-		#else set_ecov should define the pars correctly
+		if(is.list(ecov$logsigma)) if(is.matrix(ecov$logsigma[[1]])){
+			ecov$logsigma[[1]] <- ecov$logsigma[[1]][ind_E,,drop = FALSE]
+		}
+		if(is.matrix(ecov$logsigma)) ecov$logsigma <- ecov$logsigma[ind_E,,drop = FALSE]
 		new <- set_ecov(new,ecov)
+		#else set_ecov should define the pars correctly
 	}
 
 	#reset the obs_vec

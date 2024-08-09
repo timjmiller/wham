@@ -495,7 +495,7 @@ set_move = function(input, move)
     }
   }
   if(!is.null(move$sigma_vals)){
-    par$mu_repars[,,,1] = log(move$sigma_vals)
+    par$mu_repars[,,,,1] = log(move$sigma_vals)
   }
   if(!is.null(move$cor_vals)){
     par$mu_repars[,,,,2] = inv_trans_rho(move$cor_vals[,,,,1])
