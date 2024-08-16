@@ -4,12 +4,14 @@
 \alias{reduce_input}
 \title{Reduce the years of the model}
 \usage{
-reduce_input(input, years_peeled)
+reduce_input(input, years_peeled, retro = TRUE)
 }
 \arguments{
 \item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}}). NOT from prepare_projection or project_wham}
 
 \item{years_peeled}{which of input$years to peel from the model input}
+
+\item{retro}{(T/F) whether this is for a retro peel (Default = TRUE)}
 }
 \description{
 Internal function called by \code{\link{fit_peel}} for \emph{i} in 1--\code{n.peels}.

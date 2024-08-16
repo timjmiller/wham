@@ -206,7 +206,7 @@ matrix<Type> get_avg_fleet_sel(array<Type> FAA, vector<int> avg_years_ind,
 
 template <class Type>
 array<Type> get_avg_fleet_sel_as_array(array<Type> FAA, vector<int> avg_years_ind,
-  int which_F_age){
+  int which_F_age, int by_fleet = 0){
     /* 
      get average selectivity. Typically to define referene points or for projections
                  FAA:  FAA (n_fleets x n_years x n_ages) array from main code.
@@ -233,7 +233,8 @@ array<Type> get_avg_fleet_sel_as_array(array<Type> FAA, vector<int> avg_years_in
   //fully selected F across regions, seasons, and ages
   for(int f = 0; f < n_fleets; f++){
     for(int a = 0; a < n_ages; a++) {
-      sel(f,a) = FAA_avg(f,a)/F_full;
+      if(by_fleet == 0) sel(f,a) = FAA_avg(f,a)/F_full;
+      else sel(f,a) = FAA_avg(f,a)/ FAA_avg(f,which_F_age-1);
     }
   }
   return sel;

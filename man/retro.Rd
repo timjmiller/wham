@@ -14,7 +14,8 @@ retro(
   MakeADFun.silent = FALSE,
   retro.silent = FALSE,
   save.input = FALSE,
-  do.brps = FALSE
+  do.brps = FALSE,
+  check.version = TRUE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ retro(
 \item{save.input}{T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.}
 
 \item{do.brps}{T/F, calculate and report biological reference points}
+
+\item{check.version}{T/F, whether to verify the wham package commit and version for the fitted model are the same as the currently used package.}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model

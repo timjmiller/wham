@@ -227,7 +227,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 4
   DATA_IVECTOR(avg_years_Ecov); // model year indices (TMB, starts @ 0) to use for averaging ecov for projections if proj_Ecov_opt = 2
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch, 6 = FMSY (if SRR estimated)
-  DATA_VECTOR(proj_Fcatch); // user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5
+  DATA_MATRIX(proj_Fcatch); // (n_proj_years x 1 or n_fleets) user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5, if ncol = 1, total catch or F, else by fleet.
   DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
   DATA_INTEGER(proj_R_opt); // 1 = continue RE model (when recruitment is treated as RE), 2 = "expected" recruitment is the same as that used for SPR BRPs
   DATA_INTEGER(proj_mu_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)

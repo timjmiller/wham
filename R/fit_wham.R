@@ -306,7 +306,9 @@ check_projF <- function(mod)
   if(length(ind))
   {
     y <- mod$env$data$n_years_model + ind
-    bad <- which(round(mod$env$data$proj_Fcatch[ind],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
+    by_fleet <- NCOL(mod$env$data$proj_Fcatch) == mod$env$data$n_fleets
+    if(!by_fleet) bad <- which(round(mod$env$data$proj_Fcatch[ind,1],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
+    else bad <- which(any(round(mod$env$data$proj_Fcatch[ind,],4) != round(mod$rep$pred_catch[y,],4)))
     if(length(bad))
     {
       for(i in 1:2)
@@ -317,7 +319,9 @@ check_projF <- function(mod)
         mod$retape()
         mod$fn(mle)
         mod$rep <- mod$report()
-        bad <- which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
+        if(!by_fleet) bad <- which(round(mod$env$data$proj_Fcatch[ind,1],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
+        else bad <- which(any(round(mod$env$data$proj_Fcatch[ind,],4) != round(mod$rep$pred_catch[y,],4)))
+        # bad <- which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
         if(!length(bad)) break
       }
     }

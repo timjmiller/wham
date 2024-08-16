@@ -11,7 +11,7 @@ set_proj = function(input, proj.opts = NULL)
 	  #data$n_years_proj_Ecov <- 0
   	data$avg_years_Ecov <- data$n_years_model - (5:1) # c++ indices start at 0
 	  data$proj_F_opt <- 1
-	  data$proj_Fcatch <- 0
+	  data$proj_Fcatch <- matrix(0)
 	  data$proj_M_opt <- 1
 	  data$proj_R_opt <- 1
 		data$proj_L_opt <- 1

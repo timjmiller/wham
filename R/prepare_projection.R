@@ -25,7 +25,7 @@
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
-#'     \item \code{$proj_Fcatch} (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.
+#'     \item \code{$proj_Fcatch} (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (\code{n.yrs} x 1 or n_fleets).
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
@@ -114,7 +114,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
       data$proj_F_opt[] = 3
     }
   }
-  data$proj_Fcatch = rep(0,data$n_years_proj)
+  data$proj_Fcatch = cbind(rep(0,data$n_years_proj))
   if(!is.null(proj.opts$proj.F)){
     data$proj_F_opt[] = 4
     if(length(proj.opts$proj.F) != data$n_years_proj) stop("length of proj.F is not = number of projection years")
@@ -130,10 +130,16 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
     data$proj_F_opt = proj.opts$proj_F_opt
   }
   if(!is.null(proj.opts$proj_Fcatch)){
-    if(length(proj.opts$proj_Fcatch) != data$n_years_proj) stop("length of proj_Fcatch is not = number of projection years")
-    data$proj_Fcatch = proj.opts$proj_Fcatch
+    if(!is.matrix(proj.opts$proj_Fcatch)){
+      if(length(proj.opts$proj_Fcatch) != data$n_years_proj) stop("length of proj_Fcatch is not = number of projection years")
+      data$proj_Fcatch[] = proj.opts$proj_Fcatch
+    } else{
+      if(dim(proj.opts$proj_Fcatch)[1] != data$n_years_proj) stop("number of rows for proj_Fcatch is not = number of projection years")
+      if(dim(proj.opts$proj_Fcatch)[2] != data$n_fleets) stop("number of cols for proj_Fcatch is not = number of fleets")
+      data$proj_Fcatch = proj.opts$proj_Fcatch
+    }
   }
-  data$proj_Fcatch[which(!data$proj_F_opt %in% 4:5)] = 0
+  data$proj_Fcatch[which(!data$proj_F_opt %in% 4:5),] = 0
 
   if(any(data$proj_F_opt == 3)) data$percentFXSPR = proj.opts$percentFXSPR
   if(any(data$proj_F_opt == 6)) data$percentFMSY = proj.opts$percentFMSY
