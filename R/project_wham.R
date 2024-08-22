@@ -63,6 +63,7 @@
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+#'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
@@ -115,7 +116,8 @@ project_wham = function(model,
   if("err_proj" %in% names(model)) stop(model$err_proj)
   else{# refit model to estimate derived quantities in projection years
   #if(!exists("err")) 
-    proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent)
+    tryCatch(proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent),
+      error = function(e) {model$err_MakeADFun <<- conditionMessage(e)})
     proj_mod$years <- input2$years
     proj_mod$years_full <- input2$years_full
     proj_mod$ages.lab <- input2$ages.lab
@@ -130,8 +132,6 @@ project_wham = function(model,
     proj_mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
     TMB_version <- packageDescription("TMB")$Version
     proj_mod$TMB_version <- paste0(TMB_version, " / ", proj_mod$TMB_commit, ")")
-
-    proj_mod$marg_nll <- proj_mod$fn() #to make sure it is the same as the base model
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
     is.fit = !is.null(model$opt)
@@ -140,8 +140,8 @@ project_wham = function(model,
       mle = model$opt$par
       proj_mod$fn(mle)
     }
-    
-    proj_mod$rep = proj_mod$report()
+    proj_mod$marg_nll <- proj_mod$fn(mle) #to make sure it is the same as the base model
+    proj_mod$rep = proj_mod$report(proj_mod$env$last.par.best)
     proj_mod$parList <- proj_mod$env$parList(x=mle)
     proj_mod <- check_projF(proj_mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
@@ -151,8 +151,8 @@ project_wham = function(model,
       if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
       if(!save.sdrep) proj_mod$sdrep <- summary(proj_mod$sdrep) # only save summary to reduce model object size
     } else {
-      proj_mod$is_sdrep = FALSE
-      proj_mod$na_sdrep = NA
+      proj_mod$is_sdrep <- FALSE
+      proj_mod$na_sdrep <- NA
     }
   }
 
@@ -161,7 +161,7 @@ project_wham = function(model,
 
   proj_mod[noproj_elements] <- model[noproj_elements]
   proj_mod[c("years","years_full","ages.lab")] <- proj_mod$input[c("years","years_full","ages.lab")]
-  proj_mod$date = Sys.time()
+  proj_mod$date <- Sys.time()
 
   # print error message
   if(!is.null(model$err_proj))

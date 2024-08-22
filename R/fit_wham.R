@@ -311,10 +311,21 @@ check_projF <- function(mod)
     else bad <- which(any(round(mod$env$data$proj_Fcatch[ind,],4) != round(mod$rep$pred_catch[y,],4)))
     if(length(bad))
     {
+      # print(mod$marg_nll)
+      if(is.na(mod$marg_nll)){
+        # print(mod$rep$pred_NAA[1,1,which(!mod$years_full %in% mod$years),])
+        FAA_tot <- exp(mod$rep$log_FAA_tot[which(!mod$years_full %in% mod$years),, drop = FALSE])
+        y_na <- is.na(apply(FAA_tot,1,sum))
+        # print(y_na)
+        #if(any(proj_F_opt[y_na]==5)) 
+        # print(mod$rep$log_FAA_tot[which(!mod$years_full %in% mod$years),])
+        if(any(y_na)) stop("Need to change initial log_NAA parameter values in projection years. See ?project_wham and proj.opts$proj_NAA_init")
+      }
       for(i in 1:2)
       {
         redo_Catch_years <- mod$years_full[y[bad]]
-        warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), , "."))
+
+        warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), "."))
         mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$F_proj_init[ind[bad]]*0.5
         mod$retape()
         mod$fn(mle)
@@ -326,7 +337,7 @@ check_projF <- function(mod)
       }
     }
     y_bad_Fcatch <- mod$years_full[y[bad]]
-    if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), , "."))
+    if(length(bad)) warning(paste0("Still bad initial values for finding F from Catch in projection years ", paste(y_bad_Fcatch, collapse = ","), "."))
   }
   return(mod)
 }

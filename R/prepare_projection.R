@@ -29,6 +29,7 @@
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+#'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
 #'   }
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #'
@@ -228,31 +229,16 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   input_NAA <- set_NAA(input_NAA, input$options$NAA_re) #use same machinery to map NAA and now we have options saved
   map$log_NAA <- input_NAA$map$log_NAA
   dims <- dim(input_NAA$par$log_NAA)
-  #dims[3] <- data$n_years_model + data$n_years_proj
-  tmp <- array(10, dim = dims) #a large number for projections is particularly important when user is specifying catch.
+  log_NAA_init <- 10
+  if(!is.null(proj.opts$proj_NAA_init)){
+    if(length(proj.opts$proj_NAA_init)>1) stop("proj_NAA_init should be a single value")
+    if(proj.opts$proj_NAA_init<0) stop("proj_NAA_init should be >0")
+    log_NAA_init <- log(proj.opts$proj_NAA_init)
+  }
+  tmp <- array(log_NAA_init, dim = dims) #a large number for projections is particularly important when user is specifying catch.
+  #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) tmp[s,r,,] <- par$log_NAA[s,r,data$n_years_model-1,1] #fill in with last recruitment
   tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
   par$log_NAA <- tmp
-
-  # dims = dim(par$log_NAA)
-  # tmp.map.in <- array(as.integer(map$log_NAA), dim = dims)
-  # dims[3] = dims[3] + data$n_years_proj
-  # tmp <- array(10, dim = dims)
-  # tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
-  # tmp.map <- array(NA, dim = dims)
-  # tmp.map[,,1:(data$n_years_model-1),] <- tmp.map.in[,,1:(data$n_years_model-1),]
-  # for(s in 1:dims[1]) {
-  #   for(r in 1:dims[2]){
-  #   # pad log_NAA (even if projection years not used)
-  #     if(data$NAA_re_model[s] == 0) {} #tmp.map already set to NA
-  #     if(data$NAA_re_model[s] > 0 & data$spawn_regions[s] == r) tmp.map[s,r,proj_yrs_ind-1,1] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-  #     if(data$NAA_re_model[s] == 2) for(a in 2:dims[4]) {
-  #       if(data$NAA_where[s,r,a]) tmp.map[s,r,proj_yrs_ind-1,a] <- max(tmp.map,na.rm=T) + 1:data$n_years_proj
-  #     }
-  #   }
-  # }
-  # par$log_NAA <- tmp
-  # map$log_NAA <- factor(tmp.map)
-
 
   # check ecov options are valid, all Ecov will be projected if there observations do not occur in projection years
   # projection options are for how they are used in effects on population and are now done on c++ side
