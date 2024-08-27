@@ -146,6 +146,10 @@ vector<Type> get_F_from_Catch(vector<Type> Catch, array<Type> NAA, array<Type> l
     //log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
     // log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
   }
+  // trace = 1;
+  if(trace) see(Catch);
+  if(trace) see(logcatch_at_F(log_F_i));
+  if(trace) see(waacatch);
   if(trace) see(log_F_iter);
   vector<Type> res = exp(vector<Type> (log_F_iter.row(n-1)));
   return res;

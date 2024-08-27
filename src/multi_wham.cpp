@@ -795,16 +795,26 @@ Type objective_function<Type>::operator() ()
       fracyr_SSB_all.row(y) = fracyr_ssb_y;
       for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) {
 
-        if(mature_proj.size()>1) mature_all(s,y,a) = mature_proj(s,y-n_years_model,a);
-        else mature_all(s,y,a) = mat_y(s,a);
+        if(mature_proj.size()>1) {
+          mat_y(s,a) = mature_proj(s,y-n_years_model,a);
+          // mature_all(s,y,a) = mature_proj(s,y-n_years_model,a);
+        }
+        mature_all(s,y,a) = mat_y(s,a);
 
-        if(waa_proj.size()>1) waa_ssb(s,y,a) = waa_proj(waa_pointer_ssb(s)-1,y-n_years_model,a);
-        else waa_ssb(s,y,a) = waa_ssb_y(s,a);
+        if(waa_proj.size()>1) {
+          waa_ssb_y(s,a) = waa_proj(waa_pointer_ssb(s)-1,y-n_years_model,a);
+        }
+        waa_ssb(s,y,a) = waa_ssb_y(s,a);
       }
+
+      
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
-        if(waa_proj.size()>1) waa_catch(f,y,a) = waa_proj(waa_pointer_fleets(f)-1,y-n_years_model,a);
-        else waa_catch(f,y,a) = waa_catch_y(f,a);
+        if(waa_proj.size()>1) {
+          waa_catch_y(f,a) = waa_proj(waa_pointer_fleets(f)-1,y-n_years_model,a);
+        }
+        waa_catch(f,y,a) = waa_catch_y(f,a);
       }
+      
       // see("yproj");
       // see(y);
       // see(annual_Ps.dim);
