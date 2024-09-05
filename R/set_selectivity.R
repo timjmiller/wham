@@ -363,7 +363,8 @@ set_selectivity = function(input, selectivity)
       if(data$selblock_models_re[b] > 1){
         #tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
         if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
-          map$selpars_re[b,which(data$selblock_years[,b]==1),1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
+          # map$selpars_re[b,which(data$selblock_years[,b]==1),1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
+          map$selpars_re[b,1:data$n_years_selblocks[b],1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
           #tmp[] = 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
         }
         if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)

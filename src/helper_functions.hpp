@@ -4,8 +4,12 @@ template <class Type>
 Type square(Type x){return x*x;}
 
 // general inverse logit fn
-template <class Type>
-Type geninvlogit(Type x, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
+// template <class Type>
+// Type geninvlogit(Type x, Type lo = 0.0, Type hi = 1.0, Type scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
+
+// general inverse logit fn
+template <class T>
+T geninvlogit(T x, T lo = 0.0, T hi = 1.0, T scale = 1.0){return lo + (hi-lo) * invlogit( scale * x);}
 
 //VECTORIZE4_tttt(invlogit)
 

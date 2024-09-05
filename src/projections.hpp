@@ -163,7 +163,10 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
   vector<int> avg_years_ind, int n_years_model, vector<int> which_F_age, vector<Type> fracyr_seasons, int small_dim,
   Type percentSPR, matrix<Type> proj_Fcatch, Type percentFXSPR, Type percentFMSY, matrix<Type> R_XSPR, vector<Type> FXSPR_init, 
   vector<Type> FMSY_init, vector<Type> F_proj_init, matrix<Type> log_a, matrix<Type> log_b, vector<int> spawn_seasons, vector<int> recruit_model, 
-  vector<Type> SPR_weights, int SPR_weight_type, int bias_correct, array<Type> log_NAA_sigma, int trace){
+  vector<Type> SPR_weights, int SPR_weight_type, int bias_correct, 
+  array<Type> marg_NAA_sigma, 
+  // array<Type> log_NAA_sigma, 
+  int trace){
     /* 
      update FAA in projection year y
                    y:  year of projection (>n_years_model)
@@ -264,7 +267,10 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
         if(proj_F_opt_y == 3) {//option 3: use F X%SPR
           vector<Type> FXSPR = get_FXSPR(spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_SSB_proj, sel_proj, 
             log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, fracyr_seasons, vector<Type> (R_XSPR.row(y)), percentSPR, SPR_weights, 
-            SPR_weight_type, bias_correct, log_NAA_sigma, small_dim, FXSPR_init(y), 10, trace);
+            SPR_weight_type, bias_correct, 
+            marg_NAA_sigma, 
+            // log_NAA_sigma, 
+            small_dim, FXSPR_init(y), 10, trace);
           if(trace) see(FXSPR);
           Fproj(0) = FXSPR(0);
           if(trace) see(FXSPR(0));
@@ -300,7 +306,10 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
           vector<Type> b_proj = exp(vector<Type> (log_b.row(y)));
           Type FMSY = get_FMSY(a_proj, b_proj, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
             fracyr_SSB_proj, sel_proj, log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, waa_catch_proj, fracyr_seasons, recruit_model, small_dim, 
-            FMSY_init(y), 10, bias_correct, log_NAA_sigma, trace);
+            FMSY_init(y), 10, bias_correct, 
+            marg_NAA_sigma, 
+            // log_NAA_sigma, 
+            trace);
           if(trace) see(FMSY);
           // FAA_proj = sel_proj * get_FMSY(a_proj, b_proj, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
           //   fracyr_SSB_proj, sel_proj, log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, waa_catch_proj, fracyr_seasons, recruit_model, small_dim, 

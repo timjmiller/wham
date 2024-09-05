@@ -1,3 +1,40 @@
+
+template <class T>
+array<T> get_marginal_NAA_sigma(array<T> log_NAA_sigma, array<T> trans_NAA_rho, vector<int> NAA_re_model, int decouple_recruitment = 0){
+
+  int n_stocks = log_NAA_sigma.dim(0);
+  int n_regions = log_NAA_sigma.dim(1);
+  int n_ages = log_NAA_sigma.dim(2);
+  int n_rho = trans_NAA_rho.dim(2);
+  array<T> NAA_rho = trans_NAA_rho;
+  array<T> NAA_sigma = log_NAA_sigma;
+  array<T> marginal_sigma = log_NAA_sigma;
+  marginal_sigma.setZero();
+  int rho_y_R_ind = 1;
+  if(decouple_recruitment) rho_y_R_ind = 2;
+  T NAA_rho_y = 0, NAA_rho_a = 0;;
+
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
+    for(int k = 0; k < n_rho ; k++) NAA_rho(s,r,k) = geninvlogit(trans_NAA_rho(s,r,k), T(-1), T(1), T(1)); //using scale =1 ,2 is legacy
+    if((NAA_re_model(s) == 1) | ((NAA_re_model(s) == 2) & decouple_recruitment)){ //"rec"
+      NAA_rho_y = NAA_rho(s,r,rho_y_R_ind);
+      marginal_sigma(s,r,0) = NAA_sigma(s,r,0) * pow(1-pow(NAA_rho_y,2),-0.5);
+    }
+    if(NAA_re_model(s) == 2){
+      NAA_rho_y = geninvlogit(trans_NAA_rho(s,r,1), T(-1), T(1), T(1)); //using scale =1 ,2 is legacy        
+      NAA_rho_a = geninvlogit(trans_NAA_rho(s,r,0), T(-1), T(1), T(1)); //using scale =1 ,2 is legacy
+      int age_start = 0;
+      if(decouple_recruitment) age_start = 1;
+      for(int a = age_start; a < n_ages ; a++) {
+        NAA_sigma(s,r,a) = exp(log_NAA_sigma(s,r,a));
+        marginal_sigma(s,r,a) = NAA_sigma(s,r,a) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
+      }
+    }
+  }
+  return(marginal_sigma);
+}
+
+
 template <class Type>
 matrix<Type> get_nll_N1(vector<int> N1_model, array<Type>log_N1, array<Type> N1_repars, array<int> NAA_where) {
   /* 
@@ -744,7 +781,10 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   vector<int> recruit_model, matrix<Type> mean_rec_pars, matrix<Type> log_SR_a, matrix<Type> log_SR_b, 
   matrix<int> Ecov_how_R, array<Type> Ecov_lm_R, 
   vector<int> spawn_regions, array<Type> annual_Ps, array<Type> annual_SAA_spawn, int n_years_model, matrix<Type> logR_proj, int proj_R_opt, matrix<Type> R_XSPR, 
-  int bias_correct_pe, array<Type> log_NAA_sigma, int trace){
+  int bias_correct_pe, 
+  array<Type> marg_NAA_sigma, 
+  // array<Type> log_NAA_sigma, 
+  int trace){
   /* 
     fill out numbers at age and "expected" numbers at age for year y (intended for projection years)
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
@@ -794,7 +834,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
       if((y>= n_years_model) & (proj_R_opt == 2)){ 
         //expected recruitment in projection years = RXSPR so that long term projections at FXSPR and SPR-based RFPs are consistent
         if((a == 0) & (r == spawn_regions(s)-1)) pred_NAA_y(s,r,a) = R_XSPR(y,s);
-        if(bias_correct_pe) pred_NAA_y(s,r,a) *= exp(0.5 * pow(exp(log_NAA_sigma(s,r,a)),2)); //take out bias correction in projections in this option
+        if(bias_correct_pe) pred_NAA_y(s,r,a) *= exp(0.5 * pow(marg_NAA_sigma(s,r,a),2)); //take out bias correction in projections in this option
       }
     }
     updated_all_NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);
