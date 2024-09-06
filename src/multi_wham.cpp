@@ -855,8 +855,22 @@ Type objective_function<Type>::operator() ()
   array<Type> NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
   array<Type> NAA_devs_1 = NAA_devs;
   REPORT(NAA_devs_1);
-
-  if(NAA_re_model.sum() > 0){ //at least one stock is not SCAA
+  
+  // SCAA models
+  // likelihood of NAA deviations
+  if(n_years_proj > 0){ // SCAA treats recruitment in proj years as random effects with fixed mean, SD
+    matrix<Type> nll_Rproj(n_years_proj, n_stocks);
+    nll_Rproj.setZero();
+    for(int y = 0; y < n_years_proj; y++) for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s) == 0){
+      nll_Rproj(y,s) -= dnorm(logR_proj(y,s), logR_mean(s), logR_sd(s), 1);
+      SIMULATE if(do_simulate_N_re) logR_proj(y,s) = rnorm(logR_mean(s), logR_sd(s));
+    }
+    REPORT(nll_Rproj);
+    nll += nll_Rproj.sum();
+    SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
+  }
+ 
+  // if(NAA_re_model.sum() > 0){ //at least one stock is not SCAA
     matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe, decouple_recruitment,
       use_alt_AR1);
     // matrix<Type> nll_NAA = get_NAA_nll(N1, N1_model, N1_repars, NAA_re_model, log_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
@@ -926,20 +940,8 @@ Type objective_function<Type>::operator() ()
       REPORT(NAA_devs_sim);
     }
     if(do_post_samp_N) ADREPORT(log_NAA);
-  } else { // SCAA models
-    // likelihood of NAA deviations
-    if(n_years_proj > 0){ // SCAA treats recruitment in proj years as random effects with fixed mean, SD
-      matrix<Type> nll_Rproj(n_years_proj, n_stocks);
-      nll_Rproj.setZero();
-      for(int y = 0; y < n_years_proj; y++) for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s) == 0){
-        nll_Rproj(y,s) -= dnorm(logR_proj(y,s), logR_mean(s), logR_sd(s), 1);
-        SIMULATE if(do_simulate_N_re) logR_proj(y,s) = rnorm(logR_mean(s), logR_sd(s));
-      }
-      REPORT(nll_Rproj);
-      nll += nll_Rproj.sum();
-      SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
-    }
-  }
+  // }  
+
   //need to do this
   //log_F = update_log_F(log_F, FAA, which_F_age);
   //matrix<Type> F(n_years_pop,n_fleets); //n_years_pop x n_fleets (projection years not yet populated)

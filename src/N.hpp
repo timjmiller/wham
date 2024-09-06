@@ -621,20 +621,15 @@ array<Type> get_pred_NAA(int N1_model, array<Type> N1, array<Type> N1_repars, ar
   array<Type> pred_NAA(n_stocks,n_regions,n_years,n_ages);
   pred_NAA.setZero();
   for(int y = 0; y < n_years; y++){
-    vector<Type> logR_proj_y(n_stocks);
-    int is_projyr = 0;
-    if(y > n_years_model - 1) {
-      logR_proj_y = logR_proj.row(y-n_years_model);
-      is_projyr = 1;
-    }
     array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB, NAA, 
       log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, NAA_re_model);
     for(int a = 0; a < n_ages; a++) for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++){
       //pred_NAA(a) = NAA(y-1,a-1) * exp(-ZAA(y-1,a-1));
       if((a==0) & (NAA_re_model(s)==0)) { //SCAA recruitment is not populated in get_pred_NAA_y
         if(r == spawn_regions(s)-1) {
-          if(is_projyr) {
-            pred_NAA(s,r,y,a) = exp(logR_proj_y(s));
+          if(y > n_years_model - 1){ //projection year
+          // if(is_projyr) {
+            pred_NAA(s,r,y,a) = exp(logR_proj(y - n_years_model,s));
           }
           else pred_NAA(s,r,y,a) = NAA(s,r,y,a);
         }
@@ -821,7 +816,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   if(trace) see(NAA_spawn_last);
   vector<Type> SSB_last = get_SSB_y(y-1, NAA_spawn_last, waa_ssb, mature);
   if(trace) see(SSB_last);
-  vector<Type> logR_proj_y = logR_proj.row(y - n_years_model);
+  // vector<Type> logR_proj_y = logR_proj.row(y - n_years_model);
   // int is_projyr = 1;
 
   array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
@@ -829,7 +824,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   if(trace) see(pred_NAA_y);
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
     if((a==0) & (NAA_re_model(s)==0)) { //SCAA recruitment is not populated in get_pred_NAA_y
-      if(r == spawn_regions(s)-1) pred_NAA_y(s,r,a) = exp(logR_proj_y(s)); // this function is called always in projection years
+      if(r == spawn_regions(s)-1) pred_NAA_y(s,r,a) = exp(logR_proj(y-n_years_model,s)); // this function is called always in projection years
     } else {
       if((y>= n_years_model) & (proj_R_opt == 2)){ 
         //expected recruitment in projection years = RXSPR so that long term projections at FXSPR and SPR-based RFPs are consistent
@@ -854,7 +849,7 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
         updated_all_NAA(0,s,spawn_regions(s)-1,y,0) = exp(log_NAA(s,spawn_regions(s)-1,y-1,0));
       } else { //SCAA
         //age 1 year y realized. SCAA
-        updated_all_NAA(0,s,spawn_regions(s)-1,y,0) = exp(logR_proj_y(s));
+        updated_all_NAA(0,s,spawn_regions(s)-1,y,0) = exp(logR_proj(y-n_years_model,s));
       }
       //for SCAA or rec, age 2+ year y realized is deterministic
       for(int a = 1; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
