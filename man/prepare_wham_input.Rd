@@ -131,13 +131,13 @@ The current options are:
     \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
 	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
-    \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment}
+    \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. For long-term projections, may be important to use certain years for XSPR_R_avg_yrs}
     \item{$simulate_process_error}{T/F vector (length = 9). When simulating from the model, whether to simulate any process errors for 
     (NAA, M, selectivity, q, movement, unidentified mortality, q priors, movement priors, Ecov). Only used for applicable random effects.}
     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}
     \item{$simulate_period}{T/F vector (length = 2). When simulating from the model, whether to simulate base period (model years) and projection period.}
     \item{$bias_correct_process}{T/F. Perform bias correction of log-normal random effects for NAA.}
-    \item{$bias_correct_BRPs}{T/F. Perform bias correction of analytic SSB/R and Y/R when there is bias correction of log-normal NAA.}
+    \item{$bias_correct_BRPs}{T/F. Perform bias correction of analytic SSB/R and Y/R when there is bias correction of log-normal NAA. May want to use XSPR_R_opt = 5 for long-term projections.}
   }
 If other arguments to \code{prepare_wham_input} are provided such as \code{selectivity}, \code{M}, and \code{age_comp}, the information provided there
 must be consistent with \code{basic_info}. For example the dimensions for number of years, ages, fleets, and indices.

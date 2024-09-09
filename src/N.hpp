@@ -364,11 +364,6 @@ vector<Type> get_pred_recruit_y(int y, vector<int> recruit_model, matrix<Type> m
   vector<Type> pred_recruit(n_stocks);
   pred_recruit.setZero();
   for(int s = 0; s < n_stocks; s++){
-    // Do SCAA outside in get_pred_NAA
-    // if(NAA_re_model(s)==0) {
-    //   pred_recruit(s) = NAA(s,spawn_regions(s)-1,,y,0);
-    //   if(is_projyr) pred_recruit(s) = exp(logR_proj_y(s));
-    // } else {
     if(NAA_re_model(s)>0) {//not SCAA
       if(recruit_model(s) == 1) { // random walk
         pred_recruit(s) = NAA(s,spawn_regions(s)-1,y-1,0);
@@ -413,11 +408,6 @@ vector<Type> get_pred_recruit_y(int y, vector<int> recruit_model, matrix<Type> m
   vector<Type> pred_recruit(n_stocks);
   pred_recruit.setZero();
   for(int s = 0; s < n_stocks; s++){
-    // Do SCAA outside in get_pred_NAA
-    // if(NAA_re_model(s)==0) {
-    //   pred_recruit(s) = NAA(s,spawn_regions(s)-1,,y,0);
-    //   if(is_projyr) pred_recruit(s) = exp(logR_proj_y(s));
-    // } else {
     if(NAA_re_model(s)>0) {//not SCAA
       if(recruit_model(s) == 1) { // random walk
         pred_recruit(s) = NAA_y_minus_1(s,spawn_regions(s)-1,0);
@@ -496,7 +486,6 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Ty
   array<Type> pred_NAA_y(n_stocks,n_regions,n_ages);
   pred_NAA_y.setZero();
 
-  //array<Type> N1(n_stocks,n_regions,n_ages);
   if(y==0) { //initial NAA
   //see("y=0");
     pred_NAA_y = get_pred_N1(N1_model, N1, NAA_where, N1_repars);
@@ -507,16 +496,6 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Ty
         log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, NAA_re_model);
       for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0) pred_NAA_y(s,spawn_regions(s)-1,0) = pred_recruit(s);
     }
-    // DO THESE stocks in pred_NAA_y  
-    // } else { //one or more stocks is SCAA
-    //   for(int s = 0; s < n_stocks; s++){
-    //     if(NAA_re_model(s) ==0){ //SCAA
-    //       if(is_projyr) {
-    //         pred_NAA_y(s,spawn_regions(s)-1,0) = logR_proj_y(s);
-    //       } else pred_NAA_y(s,spawn_regions(s)-1,0) = NAA(s,spawn_regions(s)-1,0);
-    //     }
-    //   }
-    // }
     // calculate pred_NAA for ages after recruitment
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++) {
       for(int a = 1; a < n_ages; a++) {
@@ -559,7 +538,6 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Ty
   array<Type> pred_NAA_y(n_stocks,n_regions,n_ages);
   pred_NAA_y.setZero();
 
-  //array<Type> N1(n_stocks,n_regions,n_ages);
   if(y==0) { //initial NAA
     pred_NAA_y = get_pred_N1(N1_model, N1, NAA_where, N1_repars);
   } else {
@@ -569,15 +547,6 @@ array<Type> get_pred_NAA_y(int y, vector<int> N1_model, array<Type> N1, array<Ty
       log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, NAA_re_model);
       for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0) pred_NAA_y(s,spawn_regions(s)-1,0) = pred_recruit(s);
     }
-    // DO THESE stocks in pred_NAA_y  
-    // } else { //one or more stocks is SCAA
-    //   for(int s = 0; s < n_stocks; s++){
-    //     if(NAA_re_model(s) ==0){ //SCAA
-    //       if(is_projyr) {
-    //         pred_NAA_y(s,spawn_regions(s)-1,0) = logR_proj_y(s);
-    //       } else pred_NAA_y(s,spawn_regions(s)-1,0) = NAA(s,spawn_regions(s)-1,0);
-    //     }
-    //   }
     // calculate pred_NAA for ages after recruitment
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions; rr++){
       for(int a = 1; a < n_ages; a++) {
@@ -628,7 +597,6 @@ array<Type> get_pred_NAA(int N1_model, array<Type> N1, array<Type> N1_repars, ar
       if((a==0) & (NAA_re_model(s)==0)) { //SCAA recruitment is not populated in get_pred_NAA_y
         if(r == spawn_regions(s)-1) {
           if(y > n_years_model - 1){ //projection year
-          // if(is_projyr) {
             pred_NAA(s,r,y,a) = exp(logR_proj(y - n_years_model,s));
           }
           else pred_NAA(s,r,y,a) = NAA(s,r,y,a);
@@ -684,7 +652,6 @@ array<Type> get_all_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Ty
   vector<Type> SSB_last = get_SSB_y(0, NAA_spawn_last, waa_ssb, mature);
   if(trace) see("NAA3");
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
-    //NAA(s,r,0,a) = NAA1(s,r,a);
     NAA(0,s,r,0,a) = N1(s,r,a); //year 1 realized
   }
   if(trace){ 
@@ -721,11 +688,6 @@ array<Type> get_all_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Ty
       log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, NAA_re_model);
     for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) {
       if((a==0) & (NAA_re_model(s)==0)) { //SCAA recruitment is not populated in get_pred_NAA_y
-        //No projection years in this loop
-        // if(is_projyr) { 
-        //   NAA(1,s,r,y,a) = exp(logR_proj_y(s);
-        // }
-        // else 
         if(r == spawn_regions(s)-1) NAA(1,s,r,y,a) = exp(log_NAA(s,r,y-1,a));
       } else {
         NAA(1,s,r,y,a) = pred_NAA_y(s,r,a);
@@ -743,10 +705,8 @@ array<Type> get_all_NAA(vector<int> NAA_re_model, vector<int> N1_model, array<Ty
     if(trace) see("0.2");
       if(NAA_re_model(s) < 2) { //rec, Need to populate other ages with pred_NAA.
         //age 1 year y realized. rec
-        //if(NAA_re_model(s) == 1) 
         NAA(0,s,spawn_regions(s)-1,y,0) = exp(log_NAA(s,spawn_regions(s)-1,y-1,0));
         //age 1 year y realized. SCAA
-        //if(NAA_re_model(s) == 0) NAA(0,s,spawn_regions(s)-1,y,0) = pred_NAA_y(s,spawn_regions(s)-1,0);
         //age 2+ year y realized. SCAA or rec
         for(int a = 1; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
           NAA(0,s,r,y,a) = pred_NAA_y(s,r,a);
@@ -816,8 +776,6 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
   if(trace) see(NAA_spawn_last);
   vector<Type> SSB_last = get_SSB_y(y-1, NAA_spawn_last, waa_ssb, mature);
   if(trace) see(SSB_last);
-  // vector<Type> logR_proj_y = logR_proj.row(y - n_years_model);
-  // int is_projyr = 1;
 
   array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_last, NAA_last, 
     log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, NAA_re_model);
@@ -1176,10 +1134,8 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
     if((NAA_re_model(s) == 1) | ((NAA_re_model(s) == 2) & decouple_recruitment)){ //"rec"
       vector<Type> NAA_devs_r_s(n_years-1);
       // for NAA_re_model = 1, must make sure that rho_a = 0 and rho_y is set appropriately (cor = "iid" or "ar1_y") on R side
-      //NAA_rho_a = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,0), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
       NAA_rho_y = geninvlogit(trans_NAA_rho(s,spawn_regions(s)-1,rho_y_ind), Type(-1), Type(1), Type(1)); //using scale =1 ,2 is legacy
       marginal_sigma(0) = exp(log_NAA_sigma(s,spawn_regions(s)-1,0)) * pow(1-pow(NAA_rho_y,2),-0.5);
-      //marginal_sigma.col(s) = exp(vector<Type>(log_NAA_sigma.row(s))) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
       for(int y = 1; y < n_years; y++) NAA_devs_r_s(y-1) = log(NAA(s,spawn_regions(s)-1,years_use(y),0)) - log(pred_NAA(s,spawn_regions(s)-1,years_use(y),0));
       if(bias_correct_pe) NAA_devs_r_s += 0.5*pow(marginal_sigma(0),2); //make sure this is ok when just recruitment is random.
       if(use_alt_AR1==0){
@@ -1198,7 +1154,6 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
         int age_start = 0;
         if(decouple_recruitment) age_start = 1;
         for(int a = age_start; a< n_ages; a++) {
-          //marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
           if(NAA_where(s,r,a)) n_age_s_r++; //start after recruitment when decouple_recruitment= 1
         }
         if(n_age_s_r>0) {// has to be some fish of some age in this region
@@ -1269,12 +1224,6 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
   //NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s)>0){
     marginal_sigma.setZero();  //clear for each stock
-    // int rho_y_ind = 1;
-    // if((NAA_re_model(s) == 2) & decouple_recruitment) rho_y_ind = 2; //different rho_y for recruitment and survival
-
-    // for(int y = 1; y < n_years; y++) see(NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0));
-    // for(int y = ystart; y < n_years; y++) see(NAA_devs_out(s,spawn_regions(s)-1,years_use(y),0));
-
     if((NAA_re_model(s) == 1) | ((NAA_re_model(s) == 2) & decouple_recruitment)){ //"rec"
       // see(decouple_recruitment);
       // see(NAA_re_model(s));
@@ -1305,7 +1254,6 @@ array<Type> simulate_NAA_devs(array<Type> NAA_devs, vector<int> NAA_re_model, ar
         int age_start = 0;
         if(decouple_recruitment) age_start = 1;
         for(int a = age_start; a< n_ages; a++) {
-          //marginal_sigma(a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
           if(NAA_where(s,r,a)) n_age_s_r++; //start after recruitment when decouple_recruitment= 1
         }
         if(n_age_s_r>0) {// has to be some fish of some age in this region
@@ -1387,25 +1335,11 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
   matrix<Type> NAA_spawn_y_minus_1 = get_NAA_spawn_y(0, NAA_y_minus_1,  annual_SAA_spawn, spawn_regions);
   vector<Type> SSB_y_minus_1 = get_SSB_y(0, NAA_spawn_y_minus_1, waa_ssb, mature);
   for(int y = 1; y < n_years_pop; y++) {
-    //for y-1 = 0, it will populate with full initial NAA
-    // vector<Type> logR_proj_y(n_stocks);
-    // //int is_projyr = 0;
-    // if(y > n_years_model - 1) {
-    //   logR_proj_y = logR_proj.row(y-n_years_model);
-    //   //is_projyr = 1;
-    // }
 
     array<Type> pred_NAA_y = get_pred_NAA_y(y, N1_model, N1, N1_repars, NAA_where, recruit_model, mean_rec_pars, SSB_y_minus_1, NAA_y_minus_1, 
       log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, NAA_re_model);
     NAA_y_minus_1.setZero();
     for(int s = 0; s < n_stocks; s++){
-      // NOT NEEDED for SCAA models 
-      // if(NAA_re_models(s) == 0){
-      //   if(y > n_years_model - 1) {
-      //     logR_proj_y = logR_proj.row(y-n_years_model);
-      //     NAA_y_minus_1(s,spawn_regions(s)-1,a)
-      //   }
-      // }
       if(NAA_re_model(s)==1){ //rec
         sim_log_NAA(s,spawn_regions(s)-1,y-1,0) += log(pred_NAA_y(s,spawn_regions(s)-1,0)) + NAA_devs(s,spawn_regions(s)-1,y,0);
         NAA_y_minus_1(s,spawn_regions(s)-1,0) = exp(sim_log_NAA(s,spawn_regions(s)-1,y-1,0));

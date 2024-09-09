@@ -19,11 +19,9 @@ struct sr_yield_spatial {
   array<Type> waa_ssb; 
   array<Type> waa_catch; 
   vector<Type> fracyr_seasons;
-  //vector<Type> SPR_weights; //how to weight stock-specific SSB/R for aggregate SSB/R.
   int age_specific; 
   int bias_correct;
   array<Type> marg_NAA_sigma;
-  // array<Type> log_NAA_sigma;
   vector<int> recruit_model;
   int small_dim;
   int trace=0;
@@ -47,11 +45,9 @@ struct sr_yield_spatial {
   array<Type> waa_ssb_, 
   array<Type> waa_catch_, 
   vector<Type> fracyr_seasons_,
-  //vector<Type> SPR_weights_,
   int age_specific_, 
   int bias_correct_,
   array<Type> marg_NAA_sigma_,
-  // array<Type> log_NAA_sigma_,
   vector<int> recruit_model_,
   int small_dim_,
   int trace_) :
@@ -72,11 +68,9 @@ struct sr_yield_spatial {
     waa_ssb(waa_ssb_),
     waa_catch(waa_catch_),
     fracyr_seasons(fracyr_seasons_),
-    //SPR_weights(SPR_weights_),
     age_specific(age_specific_),
     bias_correct(bias_correct_),
     marg_NAA_sigma(marg_NAA_sigma_),
-    // log_NAA_sigma(log_NAA_sigma_),
     recruit_model(recruit_model_), 
     small_dim(small_dim_),
     trace(trace_) {}
@@ -88,7 +82,6 @@ struct sr_yield_spatial {
     int n_ages = log_M.dim(2);
     int n_fleets = selectivity.rows();
     if(trace) see("in sr_yield_spatial");
-    //int n_seasons = can_move.dim(2);
     array<T> FAA(n_fleets,n_ages);
     FAA.setZero();
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
@@ -97,11 +90,9 @@ struct sr_yield_spatial {
     if(trace) see(FAA);
     vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
     array<T> logMbaseT(n_stocks,n_regions,n_ages), marg_NAA_sigmaT(n_stocks, n_regions, n_ages);
-    // array<T> logMbaseT(n_stocks,n_regions,n_ages), log_NAA_sigmaT(n_stocks, n_regions, n_ages);
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
       logMbaseT(s,r,a) = T(log_M(s,r,a));
       marg_NAA_sigmaT(s,r,a) = T(marg_NAA_sigma(s,r,a));
-      // log_NAA_sigmaT(s,r,a) = T(log_NAA_sigma(s,r,a));
     }
     if(trace) see(logMbaseT);
     array<T> muT(mu.dim(0),mu.dim(1),mu.dim(2),mu.dim(3),mu.dim(4));
@@ -135,7 +126,6 @@ struct sr_yield_spatial {
       0, 
       bias_correct,
       marg_NAA_sigmaT,
-      // log_NAA_sigmaT,
       small_dim, 0, 0);
     if(trace) see("end get_SPR sr_yield_spatial");
     if(trace) see(SPR_sr);
@@ -197,11 +187,9 @@ struct sr_yield_gradient_spatial {
   array<Type> waa_ssb; 
   array<Type> waa_catch; 
   vector<Type> fracyr_seasons;
-  //vector<Type> SPR_weights; //how to weight stock-specific SSB/R for aggregate SSB/R.
   int age_specific; 
   int bias_correct;
   array<Type> marg_NAA_sigma;
-  // array<Type> log_NAA_sigma;
   vector<int> recruit_model;
   int small_dim;
   int trace=0;
@@ -225,11 +213,9 @@ struct sr_yield_gradient_spatial {
   array<Type> waa_ssb_, 
   array<Type> waa_catch_, 
   vector<Type> fracyr_seasons_,
-  //vector<Type> SPR_weights_,
   int age_specific_, 
   int bias_correct_,
   array<Type> marg_NAA_sigma_,
-  // array<Type> log_NAA_sigma_,
   vector<int> recruit_model_,
   int small_dim_,
   int trace_) :
@@ -250,11 +236,9 @@ struct sr_yield_gradient_spatial {
     waa_ssb(waa_ssb_),
     waa_catch(waa_catch_),
     fracyr_seasons(fracyr_seasons_),
-    //SPR_weights(SPR_weights_),
     age_specific(age_specific_),
     bias_correct(bias_correct_),
     marg_NAA_sigma(marg_NAA_sigma_),
-    // log_NAA_sigma(log_NAA_sigma_),
     recruit_model(recruit_model_), 
     small_dim(small_dim_),
     trace(trace_) {}
@@ -266,7 +250,6 @@ struct sr_yield_gradient_spatial {
     int n_ages = log_M.dim(2);
     int n_fleets = selectivity.rows();
     if(trace) see("in sr_yield_gradient_spatial");
-    //int n_seasons = can_move.dim(2);
     array<T> FAA(n_fleets,n_ages);
     FAA.setZero();
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
@@ -276,11 +259,9 @@ struct sr_yield_gradient_spatial {
     vector<T> fracyrssbT = fracyr_SSB.template cast<T>();
     if(trace) see(fracyrssbT);
     array<T> logMbaseT(n_stocks,n_regions,n_ages), marg_NAA_sigmaT(n_stocks, n_regions, n_ages);
-    // array<T> logMbaseT(n_stocks,n_regions,n_ages), log_NAA_sigmaT(n_stocks, n_regions, n_ages);
     for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
       logMbaseT(s,r,a) = T(log_M(s,r,a));
       marg_NAA_sigmaT(s,r,a) = T(marg_NAA_sigma(s,r,a));
-      // log_NAA_sigmaT(s,r,a) = T(log_NAA_sigma(s,r,a));
     }
     if(trace) see(log_M);
     if(trace) see(logMbaseT);
@@ -310,7 +291,6 @@ struct sr_yield_gradient_spatial {
       0, 
       bias_correct,
       marg_NAA_sigmaT,
-      // log_NAA_sigmaT,
       small_dim, trace, 0);
     if(trace) see("end get_SPR sr_yield_gradient_spatial");
     if(trace) see(SPR_sr);
@@ -328,7 +308,6 @@ struct sr_yield_gradient_spatial {
       0, 
       bias_correct,
       marg_NAA_sigmaT,
-      // log_NAA_sigmaT,
       small_dim);
     if(trace) see("end get_YPR_srf sr_yield_gradient_spatial");
     if(trace) see(YPR_srf);
@@ -358,20 +337,14 @@ Type get_FMSY(vector<Type> a, vector<Type> b, vector<int> spawn_seasons, vector<
   matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, vector<Type> ssbfrac, array<Type> sel, array<Type> log_M, array<Type> mu, 
   vector<Type> L, array<Type> mat,  array<Type> waassb, array<Type> waacatch,
   vector<Type> fracyr_seasons, vector<int> recruit_model, int small_dim, Type F_init, int n_iter, int bias_correct, 
-  array<Type> marg_NAA_sigma, 
-  // array<Type> log_NAA_sigma, 
-  int trace = 0) {
+  array<Type> marg_NAA_sigma, int trace = 0) {
   int n = n_iter;
   vector<Type> log_FMSY_i(1);
   vector<Type> log_FMSY_iter(n);
   log_FMSY_iter.fill(log(F_init)); //starting value
-  //vector<Type> a = exp(log_a);
-  //vector<Type> b = exp(log_b);
   sr_yield_spatial<Type> srY(a, b, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
     ssbfrac, sel, log_M, mu, L, mat, waassb, waacatch, fracyr_seasons, 0, bias_correct, 
-    marg_NAA_sigma, 
-    // log_NAA_sigma, 
-    recruit_model, small_dim, trace);
+    marg_NAA_sigma, recruit_model, small_dim, trace);
   for (int i=0; i<n-1; i++) {
     log_FMSY_i(0) = log_FMSY_iter(i);
     vector<Type> grad_sr_yield = autodiff::gradient(srY,log_FMSY_i);
@@ -389,9 +362,7 @@ vector<Type> get_log_FMSY(array<Type> FAA, vector<int> fleet_regions, matrix<int
   vector<int> which_F_age, vector<int> recruit_model, matrix<Type> log_a, matrix<Type> log_b, 
   matrix<Type> fracyr_SSB, array<Type> log_M, array<Type> mu, matrix<Type> L, array<Type> waa_ssb, array<Type> waa_catch, 
   array<Type> mature, int small_dim, vector<Type> FMSY_init, int bias_correct, 
-  array<Type> marg_NAA_sigma, 
-  // array<Type> log_NAA_sigma, 
-  int trace = 0){
+  array<Type> marg_NAA_sigma, int trace = 0){
 
   int n_years_pop = waa_ssb.dim(1);
   vector<int> yvec(1);
@@ -418,9 +389,7 @@ vector<Type> get_log_FMSY(array<Type> FAA, vector<int> fleet_regions, matrix<int
     Type FMSY = get_FMSY(a_y, b_y, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
           vector<Type> (fracyr_SSB.row(y)), sel_y, log_M_y, mu_y, L_y, mature_y,  waa_ssb_y, waa_catch_y, fracyr_seasons, recruit_model, small_dim, 
           FMSY_init(y), 10, bias_correct, 
-          marg_NAA_sigma, 
-          // log_NAA_sigma, 
-          trace);
+          marg_NAA_sigma, trace);
     log_FMSY(y) = log(FMSY);
     if(trace) see(log_FMSY(y));
   }
@@ -449,9 +418,7 @@ vector< matrix <Type> > get_MSY_res(
   array<Type> mature, matrix<Type> fracyr_SSB, Type F_init, 
   vector<int> years_M, vector<int> years_mu, vector<int> years_L, vector<int> years_mat, vector<int> years_sel, 
   vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_SR_ab, int bias_correct, 
-  array<Type> marg_NAA_sigma,
-  // array<Type> log_NAA_sigma,
-  int small_dim, int trace = 0, int n_iter = 10) {
+  array<Type> marg_NAA_sigma, int small_dim, int trace = 0, int n_iter = 10) {
   // if(years_M(0) == 39) trace = 1;
   if(trace) see("inside get_MSY_res");
   int n = n_iter;
@@ -500,9 +467,7 @@ vector< matrix <Type> > get_MSY_res(
   
   sr_yield_spatial<Type> srY(SR_ab_avg.col(0),SR_ab_avg.col(1),spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
     ssbfrac, sel, log_avg_M, mu_avg, L_avg, mat, waa_ssb_avg, waa_catch_avg, fracyr_seasons, 0, bias_correct, 
-    marg_NAA_sigma, 
-    // log_NAA_sigma, 
-    recruit_model, small_dim, 0);
+    marg_NAA_sigma, recruit_model, small_dim, 0);
   if(trace) see("after spr_F_spatial sprF defined");
   for(int i=0; i<n-1; i++) {
     if(trace) see(i);
@@ -533,16 +498,13 @@ vector< matrix <Type> > get_MSY_res(
   if(trace) see(log_FAA_MSY);
   array<Type> SPR_all = get_SPR(spawn_seasons, fleet_regions, fleet_seasons, can_move, mig_type, ssbfrac, FAA_MSY, log_avg_M, mu_avg, L_avg, 
     mat, waa_ssb_avg, fracyr_seasons, 0, bias_correct, 
-    marg_NAA_sigma, 
-    // log_NAA_sigma, 
-    small_dim, 0);
+    marg_NAA_sigma, small_dim, 0);
   if(trace) see(SPR_all);
 
   array<Type> YPR_srf = get_YPR_srf(fleet_regions, fleet_seasons, can_move, mig_type, FAA_MSY, log_avg_M, mu_avg, L_avg, waa_catch_avg, 
     fracyr_seasons, 0, bias_correct, 
-    marg_NAA_sigma, 
-    // log_NAA_sigma, 
-    small_dim); //n_stocks x n_regions x n_fleets (should be 0 for regions not fleet_regions(f)-1)
+    marg_NAA_sigma, small_dim); 
+    //n_stocks x n_regions x n_fleets (should be 0 for regions not fleet_regions(f)-1)
   if(trace) see(YPR_srf);
   
   matrix<Type> log_SPR_MSY(n_stocks+1,1), log_R_MSY(n_stocks+1,1), log_MSY(n_fleets+1,n_stocks+1), log_SSB_MSY(n_stocks+1,1), log_YPR_MSY(n_fleets+1,n_stocks+1); 
@@ -557,7 +519,6 @@ vector< matrix <Type> > get_MSY_res(
     for(int f = 0; f < n_fleets; f++) {
       //NOTE: If stock s cannot ever be in fleet_region(f)-1 then this will give log(0);
       log_YPR_MSY(f,s) = log(YPR_srf(s,spawn_regions(s)-1,f)); //originate in spawning region and end up captured by fleet f
-      //log_YPR_MSY(n_stocks*n_fleets + s) += YPR_srf(s,fleet_regions(f)-1,f); //not logged yet
       log_MSY(f,s) += log_R_MSY(s,0) + log_YPR_MSY(f,s); //not logged yet, can be 0
       log_YPR_MSY(n_fleets,s) += exp(log_YPR_MSY(f,s));//not logged yet
       log_YPR_MSY(f,n_stocks) += exp(log_YPR_MSY(f,s));//not logged yet
@@ -614,7 +575,6 @@ vector< array <Type> > get_annual_MSY_res(
   array<Type> mature, matrix<Type> fracyr_SSB, vector<Type> F_init, 
   int small_dim, int bias_correct, 
   array<Type> marg_NAA_sigma, 
-  // array<Type> log_NAA_sigma, 
   int trace = 0, int n_iter = 10) {
   if(trace) see("begin get_annual_MSY_res");
   int ny = which_F_age.size();
@@ -643,9 +603,7 @@ vector< array <Type> > get_annual_MSY_res(
       waa_ssb, waa_catch,
       mature, fracyr_SSB, F_init(y), 
       yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec, bias_correct, 
-      marg_NAA_sigma,
-      // log_NAA_sigma,
-      small_dim, trace, n_iter);
+      marg_NAA_sigma, small_dim, trace, n_iter);
     // trace = 0;
     if(trace) see("get_MSY_res for year y is done")
     if(trace) see(y);

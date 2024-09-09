@@ -64,8 +64,6 @@ struct log_catch_fleets_F_multi {
     if(trace) see(mu_T);
     vector<T> L_T = L.template cast<T>();
     if(trace) see(L_T);
-    //vector<T> fracyrseason_T = fracyr_season.template cast<T>();
-    //if(trace) see(fracyrseason_T);
 
     matrix<T> catch_stock_fleet(n_stocks,n_fleets);
     catch_stock_fleet.setZero();
@@ -143,8 +141,6 @@ vector<Type> get_F_from_Catch(vector<Type> Catch, array<Type> NAA, array<Type> l
     vector<Type> diff = logcatch_at_F(log_F_i) - log(Catch);
     vector<Type> change = inv_jac * diff; 
     log_F_iter.row(i+1) = vector<Type> (log_F_iter.row(i)) - change; // vector<Type>(grad_spr_F.inverse() * (SPR_i - 0.01*percentSPR * SPR0));
-    //log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
-    // log_F_iter(i+1) = log_F_iter(i) - (logcatch_at_F(log_F_i) - log(Catch))/grad_log_catch_at_F(0); //uses log(catch) for potentially slower changes in derivatives?
   }
   // trace = 1;
   if(trace) see(Catch);
@@ -164,9 +160,7 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
   Type percentSPR, matrix<Type> proj_Fcatch, Type percentFXSPR, Type percentFMSY, matrix<Type> R_XSPR, vector<Type> FXSPR_init, 
   vector<Type> FMSY_init, vector<Type> F_proj_init, matrix<Type> log_a, matrix<Type> log_b, vector<int> spawn_seasons, vector<int> recruit_model, 
   vector<Type> SPR_weights, int SPR_weight_type, int bias_correct, 
-  array<Type> marg_NAA_sigma, 
-  // array<Type> log_NAA_sigma, 
-  int trace){
+  array<Type> marg_NAA_sigma, int trace){
     /* 
      update FAA in projection year y
                    y:  year of projection (>n_years_model)
@@ -198,18 +192,12 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
     */
   int n_fleets = FAA.dim(0);
   int n_ages = FAA.dim(2);
-  //int n_regions = NAA.dim(1);
-  //int n_stocks = NAA.dim(0);
-  //int n_seasons = fracyr_seasons.size();
 
-  //int n_toavg = avg_years_ind.size();
   int proj_F_opt_y = proj_F_opt(y-n_years_model);
   if(trace) see(proj_F_opt_y);
 
   //proj_F_opt == 1, last year F (default)
   array<Type> FAA_proj(n_fleets, n_ages);
-  //matrix<Type> FAA_tot_proj(n_regions, n_ages);
-  // FAA_tot_proj.setZero();
   FAA_proj.setZero();
   if(proj_F_opt_y == 1){ // last year F (default)
     for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
@@ -235,12 +223,8 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
       if(proj_F_opt_y == 4){ // user-specified F
         for(int f = 0; f < proj_Fcatch.cols(); f++){
           if(proj_Fcatch(y-n_years_model,f) < 1e-10){ // if F = 0, sel_proj is NaN
-            // FAA_proj.setZero();
           } else {
             Fproj(f) = Type(proj_Fcatch(y-n_years_model,f));
-            // for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){ 
-            //   FAA_proj(f,a) = sel_proj(f,a) * Type(proj_Fcatch(y-n_years_model));
-            // }
           }
         }
         if(trace) see(proj_Fcatch.row(y-n_years_model));
@@ -269,31 +253,20 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
             log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, fracyr_seasons, vector<Type> (R_XSPR.row(y)), percentSPR, SPR_weights, 
             SPR_weight_type, bias_correct, 
             marg_NAA_sigma, 
-            // log_NAA_sigma, 
             small_dim, FXSPR_init(y), 10, trace);
           if(trace) see(FXSPR);
           Fproj(0) = FXSPR(0);
           if(trace) see(FXSPR(0));
-          // for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){ 
-          //   FAA_proj(f,a) = sel_proj(f,a) * FXSPR(0);
-          // }
-          // if(trace) see(FAA_proj);
         }
         
         if(proj_F_opt_y == 5){ // calculate F from user-specified catch
           vector<Type> thecatch = proj_Fcatch.row(y-n_years_model);
           if(trace) see(thecatch);
           if(thecatch.sum() < 1e-10){ // if catch = 0, F = 0 and sel_proj is NaN
-            // FAA_proj.setZero();
           } else {
             array<Type> NAA_y = get_NAA_y(y, NAA);
             vector<Type> F_from_Catch = get_F_from_Catch(thecatch, NAA_y, log_M_proj, mu_proj, L_proj, sel_proj, fracyr_seasons, fleet_regions, 
             fleet_seasons, can_move, mig_type, waa_catch_proj, trace, F_proj_init(y- n_years_model));
-            // FAA_proj = sel_proj * get_F_from_Catch(thecatch, NAA_y, log_M_proj, mu_proj, L_proj, sel_proj, fracyr_seasons, fleet_regions, 
-            // fleet_seasons, can_move, mig_type, waa_catch_proj, trace, F_proj_init(y- n_years_model));
-            // for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){ 
-            //   FAA_proj(f,a) = sel_proj(f,a) * F_from_Catch;
-            // }
             if(trace) see(F_from_Catch);
             Fproj = F_from_Catch;
           }
@@ -308,16 +281,9 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
             fracyr_SSB_proj, sel_proj, log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, waa_catch_proj, fracyr_seasons, recruit_model, small_dim, 
             FMSY_init(y), 10, bias_correct, 
             marg_NAA_sigma, 
-            // log_NAA_sigma, 
             trace);
           if(trace) see(FMSY);
-          // FAA_proj = sel_proj * get_FMSY(a_proj, b_proj, spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
-          //   fracyr_SSB_proj, sel_proj, log_M_proj, mu_proj, L_proj, mature_proj,  waa_ssb_proj, waa_catch_proj, fracyr_seasons, recruit_model, small_dim, 
-          //   FMSY_init(y), 10, trace);
           Fproj(0) = FMSY;
-            // for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){ 
-            //   FAA_proj(f,a) = sel_proj(f,a) * FMSY;
-            // }
           // if(trace) see(FAA_proj);
         //F_full is the same as that used to generate selectivity to project
         }
