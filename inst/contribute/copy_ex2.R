@@ -25,7 +25,7 @@ path_to_scripts <- system.file("example_scripts", package="wham")
 source(file.path(path_to_scripts, "ex2_CPI_recruitment.R"))
 
 # save results table
-save(df.mods, file=here("data","vign2_res.RData")
+save(df.mods, file=here("data","vign2_res.RData"))
 save(df.mods, file=here("sandbox", "pkg_example_results","ex02", "vign2_res.RData"))
 save(mods, file = here("sandbox", "pkg_example_results","ex02","ex2_models.RData"))
 # write.csv(df.mods, file="vign2_res.csv",row.names=F,quote=F)

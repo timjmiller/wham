@@ -26,7 +26,6 @@ library(tidyr)
 library(dplyr)
 library(knitr)
 library(kableExtra)
-library(here)
 ```
 
 # 1. Background

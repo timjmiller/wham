@@ -27,24 +27,16 @@ Depends:
     R (>= 3.6.0)
 Imports:
     TMB (>= 1.7.20),
-    plotrix (>= 3.7-5),
     ellipse (>= 0.4.1),
     Hmisc (>= 4.4-1),
-    gplots (>= 3.0.1.1),
-    fields (>= 9.6),
-    RColorBrewer (>= 1.1-2),
-    colorspace (>= 1.4-1),
     mnormt (>= 1.5-5),
     Deriv (>= 3.8.5),
     tidyr (>= 1.1.2),
     dplyr (>= 1.0.2),
     ggplot2 (>= 3.3.2),
     viridis (>= 0.5.1),
-    sessioninfo (>= 1.1.1),
-    abind (>= 1.4-5),
     rmarkdown (>= 2.11),
     knitr (>= 1.37),
-    pander (>= 0.6.4),
     kableExtra (>= 1.3.4)
 Remotes:
     kaskr/adcomp/TMB
@@ -59,4 +51,8 @@ VignetteBuilder: knitr
 RoxygenNote: 7.3.0
 Encoding: UTF-8
 Suggests: 
-    testthat
+    testthat,
+    devtools,
+    here,
+    parallel,
+    snowfall

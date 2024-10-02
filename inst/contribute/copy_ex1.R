@@ -98,4 +98,4 @@ file.copy(from=from.files, to=to.files, overwrite = T)
 file.copy(from = here("sandbox", "pkg_example_results", "ex01", "wham_html_diagnostics.png"), 
   to = here("vignettes", "wham_html_diagnostics.png"), overwrite = T)
 file.copy(from = here("sandbox", "pkg_example_results", "ex01", "wham_html_tables.png"), 
-  to = here("vignettes", "wham_html_tables.png"), overwrite = T)devtools::
+  to = here("vignettes", "wham_html_tables.png"), overwrite = T)

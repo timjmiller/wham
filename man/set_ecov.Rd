@@ -31,7 +31,7 @@ Otherwise, it must be a named list with the following components:
       }
     }
     \item{$year}{Years corresponding to observations (vector of same length as \code{$mean} and \code{$logsigma})}
-    \item{$use_obs}{T/F (or 0/1) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
+    \item{$use_obs}{T/F (or 1/0) vector/matrix of the same dimension as \code{$mean} and \code{$logsigma}.
     Use the observation? Can be used to ignore subsets of the ecov without changing data files.}
     \item{$process_model}{Process model for the ecov time-series. \code{"rw"} = random walk, \code{"ar1"} = 1st order autoregressive, 
        \code{NA} = do not fit}

@@ -1,6 +1,6 @@
 par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 {
-  library(rmarkdown)
+  #require(rmarkdown)
 
   ci = function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1){
     ci = par + c(-1,1) * qnorm(0.975) * se
@@ -133,25 +133,13 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     for(r in 1:data$n_regions){
       use.reg.name <- ""
       if(data$n_regions>1) use.reg.name <- paste0(" in ", region.names.tab[r])
-      if(!is.na(map_rho[s,r,1])){
-        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " NAA AR1 $\\rho$", "age"))
-        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,1])))
+      rho.names <- paste0(" ", c("NAA", "NAA","Recruitment"), " AR1 $\\rho$ ", c("age", "year", "year"))
+      for(i in 1:3) if(!is.na(map_rho[s,r,i])){
+        # fe.name <- paste(stock.names.tab[s], use.reg.name, rho.names[i])
+        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, rho.names[i]))
+        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,i])))
         fe.cis = rbind(fe.cis, 
-          ci(pars$trans_NAA_rho[s,r,1], sd$trans_NAA_rho[s,r,1], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
-        )
-      }
-      if(!is.na(map_rho[s,r,2])){
-        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " NAA AR1 $\\rho$", "year"))
-        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,2])))
-        fe.cis = rbind(fe.cis, 
-          ci(pars$trans_NAA_rho[s,r,2], sd$trans_NAA_rho[s,r,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
-        )
-      }
-      if(!is.na(map_rho[s,r,3])){
-        fe.names = c(fe.names, paste(stock.names.tab[s], use.reg.name, " Recruitment AR1 $\\rho$", "year"))
-        fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,2])))
-        fe.cis = rbind(fe.cis, 
-          ci(pars$trans_NAA_rho[s,r,2], sd$trans_NAA_rho[s,r,2], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
+          ci(pars$trans_NAA_rho[s,r,i], sd$trans_NAA_rho[s,r,i], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
         )
       }
     }
