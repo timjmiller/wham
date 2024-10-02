@@ -17,8 +17,17 @@ These features have been developed previously on the lab branch and not attribut
 * functions to add reference point estimation, TMB::sdreport objects and retrospective peels to a previously fitted model
 * new Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).
 
+### Minor improvements
+
+* Can now specify fleet-specific catch or F in projection years. [f2a298e](https://github.com/timjmiller/wham/commit/f2a298e891d1608713115e9e32ff60ce10264433)
+* add some more input options for M, catch, indices. [d50acc7](https://github.com/timjmiller/wham/commit/d50acc7305be99c6c6d5280313b7ad66dd85d48d)
+
 ### Bug fixes
 
+* fix bugs in reporting of NAA re cor parameters in table of estimates and bug in setting covariate effect maps. [0ab78d8](https://github.com/timjmiller/wham/commit/0ab78d863597b3c6380c0c7cf9e199141e07d2a1)
+*  fix mapping of selectivity RE when selectivity block does not span all years, correct marginal variance used for `basic_info$bias_correct_BRPs=TRUE` in the SSB/R and Y/R calculations when there is AR1 correlation of NAA RE, and correct dimension of recruitment random effects for projection of SCAA models. [b031806](https://github.com/timjmiller/wham/commit/b0318061e24b1f5820b8dfc0b369624742a2f69d)
+* fix bug in use of user-defined waa, maturity in projection years. [24dd1ab](https://github.com/timjmiller/wham/commit/24dd1ab92d90aad2d9bb04dcc8e58f1a155def19)
+* fix some indexing errors for retros with Ecovs or selectivity RE, fix some setup problems for movement. [2371fc3](https://github.com/timjmiller/wham/commit/2371fc3d5eb8dfe20b37ba9c9e81a0587aa863cb)
 * fix specification of initial/fixed M when input M is both age and time varying. [1d637e3](https://github.com/timjmiller/wham/commit/1d637e39e900e5ac09fae3898ea1f61a0e89c1b0)
 * fix specification of shared fleet selectivity blocks provided by ASAP input. [fcbdfca](https://github.com/timjmiller/wham/commit/fcbdfcacccce103ec1a6c55b000d2ad26a6d073a)
 
