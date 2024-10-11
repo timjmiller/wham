@@ -59,10 +59,10 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
           sim_input$data[temp] <- lapply(temp, function(x) sim_input$data[[x]][] <- 0)
         }
         if(!is.null(map_change)) sim_input$map[names(map_change)] <- map_change
-        sim_mod <- fit_wham(sim_input, do.fit = FALSE)
+        sim_mod <- fit_wham(sim_input, do.fit = FALSE, do.brps = FALSE)
         set.seed(seeds[i])
         sim_input$data <- sim_mod$simulate(complete=TRUE)
-        x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE))
+        x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE))
         out <- list(obj = NA, 
           par = rep(NA,length(sim_mod$par)), 
           grad = rep(NA, length(sim_mod$par)), 
@@ -102,10 +102,10 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
         sim_input$data[temp] <- lapply(temp, function(x) sim_input$data[[x]][] <- 0)
       }
       if(!is.null(map_change)) sim_input$map[names(map_change)] <- map_change
-      sim_mod <- fit_wham(sim_input, do.fit = FALSE)
+      sim_mod <- fit_wham(sim_input, do.fit = FALSE, do.brps = FALSE)
       set.seed(seeds[i])
       sim_input$data <- sim_mod$simulate(complete=TRUE)
-      x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE))
+      x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE))
       out <- list(obj = NA, 
         par = rep(NA,length(sim_mod$par)), 
         grad = rep(NA, length(sim_mod$par)), 

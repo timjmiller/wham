@@ -1323,17 +1323,37 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 
 #revised
 
-multinomial.pearson.fn = function(mod, ind = 1)
-{
-  dat = mod$env$data
-  rep = mod$rep
-  paahat <- rep$pred_index_paa[ind,1:dat$n_years_model,,drop = FALSE]
-  x = dat$index_paa[ind,,,drop = FALSE] - x
-  temp = dat$index_Neff[,ind]
-  temp = paahat*(1-paahat)/temp
-  x = x/sqrt(temp)
-  x[which(dat$use_index_paa[,ind] == 0),] = NA
-  return(x)
+pearson.fn = function(mod, index = NULL, fleet = NULL, age_comp_mod= 1, sims = NULL) {
+  dat <- mod$env$data
+  rep <- mod$rep
+  if(!is.null(index)) {
+    age_comp_mod <- dat$age_comp_model_indices[index]
+    paa <- dat$index_paa[index,,,drop = FALSE]
+    paa[which(dat$use_index_paa[,index] == 0),] = NA
+    paahat <- rep$pred_index_paa[index,1:dat$n_years_model,,drop = FALSE]
+    paa_pars <- mod$parList$index_paa_pars[index,]
+    N <- dat$index_Neff[,index]
+  } else if(!is.null(fleet)){
+    age_comp_mod <- dat$age_comp_model_fleets[fleet]
+    paa <- dat$catch_paa[fleet,,,drop = FALSE]
+    paa[which(dat$use_catch_paa[,fleet] == 0),] = NA
+    paahat <- rep$pred_catch_paa[fleet,1:dat$n_years_model,,drop = FALSE]
+    paa_pars <- mod$parList$catch_paa_pars[fleet,]
+    N <- dat$catch_Neff[,fleet]
+  }
+  if(age_comp_mod %in% 3:7) paa[which(paa<1e-10)] <- NA #no zeros
+  r <- paa - paahat
+  if(age_comp_mod == 1) var <- paahat*(1-paahat)/N #multinomial
+  if(age_comp_mod == 2) var <- paahat*(1-paahat) * (N + exp(paa_pars[1]))/((1 + exp(paa_pars[1])) * N) #D-M regular
+  if(age_comp_mod %in% 3:4) var <- paahat*(1-paahat) * exp(paa_pars[1])/(1 + exp(paa_pars[1])) #Dirichlet
+  if(age_comp_mod == 11) var <- paahat*(1-paahat) * (1 + exp(paa_pars[1]))/(1 + N * exp(paa_pars[1])) #D-M linear
+  #for age_comp_mod 5:7 (Logistic normal) do simulations to determine variance (and mean?)
+  if(age_comp_mod %in% 5:7) if(!is.null(sims)){
+    if(!is.null(index)) var <- t(sapply(1:length(input$years), \(z) apply(sapply(sims, \(x) x$indx_paa[index,z,]),1,var)))
+    else if(!is.null(fleet)) var <- t(sapply(1:length(input$years), \(z) apply(sapply(sims, \(x) x$catch_paa[fleet,z,]),1,var)))
+  }
+  pearson = r/sqrt(var)
+  return(pearson)
 }
 #mean(x < 0, na.rm = TRUE)
 #revised
