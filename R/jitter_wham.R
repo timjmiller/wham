@@ -31,7 +31,7 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
   if(!is.null(res_dir)) {
     cat("res_dir is provided, so jitter files will be saved to ", res_dir, ". \n")
   }
-  if(is.null(wham_location)) wham_location <- system.file(package="wham")
+  #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_rows)) which_rows <- 1:n_jitter
   is_snowfall <- nchar(system.file(package="snowfall"))>0
   is_parallel <- nchar(system.file(package="parallel"))>0
@@ -50,33 +50,26 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
   if(do_parallel){
     if(is_snowfall & is_parallel){
       if(is.null(n_cores)) n_cores = parallel::detectCores()/2
-      snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile="jitter_log.txt")
+      if(!is.null(res_dir)) snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile=file.path(res_dir,"jitter_log.txt"))
       snowfall::sfExportAll()
-      print(ls())
-      print(wham_location)
       jit_res <- snowfall::sfLapply(which_rows, function(row_i){
-        snowfall::sfCat(is.null(test_dir), sep = "\n")
-        snowfall::sfCat(wham_location, sep = "\n")
         if(is.null(test_dir)) library(wham, lib.loc = wham_location)
         else pkgload::load_all(test_dir)
-        snowfall::sfCat(packageDescription("wham")$Version, sep = "\n")
-
-
         jit_mod <- readRDS(fit_RDS)
         jit_mod$env$data$do_SPR_BRPs[] <- 0
         jit_mod$par[] <- initial_vals[row_i,]
-        snowfall::sfCat(names(sessionInfo()$otherPkgs), sep = "\n")
-        snowfall::sfCat(find.package("wham"), sep = "\n")
         x <- try(fit_tmb(jit_mod, n.newton = 3, do.sdrep = FALSE))
-    		out <- list(obj = NA, par = rep(NA,length(jit_mod$par)), grad = rep(NA,length(jit_mod$par)))
+        # snowfall::sfCat(names(x))
+    		out <- list(obj = NA, 
+          par = rep(NA,length(jit_mod$par)), 
+          grad = rep(NA,length(jit_mod$par)))
     		if(!(is.character(x) | is.null(x$opt))){
     			out$obj <- x$opt$obj
     			out$par <- x$opt$par
     			out$grad <- x$final_gradient
     		}
         if(!is.null(res_dir)){
-          res_file_i <- file.path(res_dir, paste0("jitter_sim_", row_i, ".RDS"))
-      		saveRDS(out, res_file_i)
+      		saveRDS(out, file.path(res_dir, paste0("jitter_sim_", row_i, ".RDS")))
         }
     		return(out)
       })
@@ -91,14 +84,13 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
       jit_mod$par[] <- initial_vals[which_rows[i],]
       jit_fit <- try(fit_tmb(jit_mod, n.newton = 3, do.sdrep = FALSE))
       jit_res[[i]] <- list(obj = NA, par = rep(NA,length(jit_mod$par)), grad = rep(NA,length(jit_mod$par)))
-      if(!is.null(jit_fit$opt)){
+      if(!(is.character(jit_fit) | is.null(jit_fit$opt))){
         jit_res[[i]]$obj <- jit_fit$opt$obj
         jit_res[[i]]$par <- jit_fit$opt$par
         jit_res[[i]]$grad <- jit_fit$final_gradient
       }
       if(!is.null(res_dir)){
-        res_file_i <- file.path(res_dir, paste0("jitter_sim_", which_rows[i], ".RDS"))
-        saveRDS(jit_res[[i]], res_file_i)
+        saveRDS(jit_res[[i]], file.path(res_dir, paste0("jitter_sim_", which_rows[i], ".RDS")))
       }
     }
   }
