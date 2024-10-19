@@ -70,13 +70,13 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
     
     Gr = model$gr(fe)
     if(do.check){
-      if(any(Gr > 0.01)){
+      if(any(abs(Gr) > 0.01)){
         df <- data.frame(param = names(fe),
                          MLE = fe,
                          gr.at.MLE = Gr)
-        ind.hi <- which(Gr > 0.01)
+        ind.hi <- which(abs(Gr) > 0.01)
         model$badpar <- df[ind.hi,]
-        warning(paste("","Some parameter(s) have high gradients at the MLE:","",
+        warning(paste("","Some parameter(s) have high |gradients| at the MLE:","",
           paste(capture.output(print(model$badpar)), collapse = "\n"), sep="\n"))
       } else {
         test <- check_estimability(model)
@@ -163,7 +163,7 @@ check_estimability = function( obj, h ){
 
   # Check for problems
   Gr = obj$gr( ParHat )
-  if( any(Gr>0.01) ) stop("Some gradients are high, please improve optimization and only then use `Check_Identifiable`")
+  if( any(abs(Gr)>0.01) ) stop("Some |gradients| are high, please improve optimization and only then use `check_estimability`")
 
   # Finite-different hessian
   List = NULL
