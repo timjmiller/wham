@@ -419,9 +419,11 @@ matrix<Type> get_RXSPR(array<Type> all_NAA, vector<int> spawn_regions, int n_yea
   int n_stocks = NAA.dim(0);
   matrix<Type> R_XSPR(n_years_model+n_years_proj, n_stocks);
   R_XSPR.setZero();
-  for(int s = 0; s< n_stocks; s++) for(int y = 0; y < n_years_model; y++) {
-    if(XSPR_R_opt == 1) R_XSPR(y,s) = NAA(s,spawn_regions(s)-1,y,0);
-    if(XSPR_R_opt == 3) R_XSPR(y,s) = pred_NAA(s,spawn_regions(s)-1, y,0);
+  if((XSPR_R_opt == 1) | (XSPR_R_opt == 3)){
+    for(int s = 0; s< n_stocks; s++) for(int y = 0; y < n_years_model + n_years_proj; y++) {
+      if(XSPR_R_opt == 1) R_XSPR(y,s) = NAA(s,spawn_regions(s)-1,y,0);
+      if(XSPR_R_opt == 3) R_XSPR(y,s) = pred_NAA(s,spawn_regions(s)-1, y,0);
+    }
   }
   if((XSPR_R_opt == 2) | (XSPR_R_opt == 4) | (XSPR_R_opt == 5)){
     vector<Type> avg_R(n_stocks);

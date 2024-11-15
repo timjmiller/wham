@@ -490,6 +490,7 @@ array<Type> get_trans_mu_base(array<Type> trans_mu, array<Type>mu_re, array<Type
           if(mu_model(r,rr) == 11) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,0,t,y,r,rr); // year random effects
           if(mu_model(r,rr) == 12) trans_mu_base(s,a,t,y,r,rr) += mu_re(0,a,t,y,r,rr); // age,year random effects
           if(use_mu_prior(0,t,r,rr)) trans_mu_base(s,a,t,y,r,rr) += mu_prior_re(0,t,r,rr);
+          else trans_mu_base(s,a,t,y,r,rr) += trans_mu(s,t,r,rr);
         }
         if((mu_model(r,rr) > 12) & (mu_model(r,rr) <= 16)){ //stock,season
           if(mu_model(r,rr) == 14) trans_mu_base(s,a,t,y,r,rr) += mu_re(s,a,t,0,r,rr); // age random effects

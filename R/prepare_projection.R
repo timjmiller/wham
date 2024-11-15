@@ -265,7 +265,8 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       
       n_years_proj_Ecov <- end_model - end_Ecov
-      data$Ecov_use_proj <- matrix(0, nrow = n_years_proj_Ecov, ncol=data$n_Ecov)
+      # data$Ecov_use_proj <- matrix(0, nrow = n_years_proj_Ecov, ncol=data$n_Ecov)
+      data$Ecov_use_proj <- matrix(0, nrow = data$n_years_proj, ncol=data$n_Ecov)
       #data$years_use_Ecov <- 1:(data$n_years_Ecov + n_years_proj_Ecov) - 1
 
       # pad Ecov_re for projections
@@ -275,7 +276,8 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
       tmp.re <- matrix(NA, n_years_proj_Ecov, data$n_Ecov)
       if(!is.null(proj.opts$proj.ecov)){ #projection ecov values are supplied, so use fixed values instead of RE
         if(NCOL(proj.opts$proj.ecov) != data$n_Ecov) stop("number of columns of proj.opts$proj.ecov is not equal to n_Ecov")
-        if(NROW(proj.opts$proj.ecov) != n_years_proj_Ecov) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj_Ecov))
+        # if(NROW(proj.opts$proj.ecov) != n_years_proj_Ecov) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj_Ecov))
+        if(NROW(proj.opts$proj.ecov) != data$n_years_proj) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj))
         for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
           data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]
           # doesn't matter. Ecov_use_proj is just used to fill out Ecov_out_R, Ecov_out_M, etc. in projection years

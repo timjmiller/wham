@@ -26,7 +26,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
-    cat("res_dir is provided, so jitter files will be saved to ", res_dir, ". \n")
+    cat("res_dir is provided, so self test files will be saved to ", res_dir, ". \n")
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_seeds)) which_seeds <- 1:n
