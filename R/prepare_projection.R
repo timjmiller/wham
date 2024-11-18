@@ -277,7 +277,7 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
       if(!is.null(proj.opts$proj.ecov)){ #projection ecov values are supplied, so use fixed values instead of RE
         if(NCOL(proj.opts$proj.ecov) != data$n_Ecov) stop("number of columns of proj.opts$proj.ecov is not equal to n_Ecov")
         # if(NROW(proj.opts$proj.ecov) != n_years_proj_Ecov) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj_Ecov))
-        if(NROW(proj.opts$proj.ecov) != data$n_years_proj) stop(paste0("number of rows of proj.opts$proj.ecov should be ", n_years_proj))
+        if(NROW(proj.opts$proj.ecov) != data$n_years_proj) stop(paste0("number of rows of proj.opts$proj.ecov should be ", data$n_years_proj))
         for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
           data$Ecov_use_proj[,i] <- proj.opts$proj.ecov[,i]
           # doesn't matter. Ecov_use_proj is just used to fill out Ecov_out_R, Ecov_out_M, etc. in projection years
