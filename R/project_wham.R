@@ -158,10 +158,11 @@ project_wham = function(model,
 
   # pass along previously calculated retros, OSA residuals, error messages, and runtime
   noproj_elements <- names(model)[!names(model) %in% names(proj_mod)] #if anything, should just be OSA.aggregate and OSA.agecomp
-
+  
   proj_mod[noproj_elements] <- model[noproj_elements]
   proj_mod[c("years","years_full","ages.lab")] <- proj_mod$input[c("years","years_full","ages.lab")]
   proj_mod$date <- Sys.time()
+  if(!do.sdrep) proj_mod$sdrep <- NULL #remove sdrep of unprojected model
 
   # print error message
   if(!is.null(model$err_proj))
