@@ -783,7 +783,7 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     x_line <- y_line <- 2.5
   }
   SSB <- SSB.lo <- SSB.hi <- R <- R.lo <- R.hi <- matrix(NA, nrow = ny, ncol = ns)
-  Fbar <- Fbar.lo <- Fbar.hi <- matrix(NA, nrow = ny, ncol = nr)
+  Fbar <- Fbar.lo <- Fbar.hi <- matrix(NA, nrow = ny, ncol = nr+nf+1)
   if(class(mod$sdrep)[1] == "sdreport"){
     temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
       TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
@@ -849,7 +849,7 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
     else png(filename = file.path(out.dir, 'Fbar.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
-  max.y <- max(Fbar.hi[,4])
+  max.y <- max(Fbar.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(Fbar)
   plot(years,Fbar[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
@@ -857,8 +857,8 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   axis(2, lwd = 2, cex.axis = 1.5)
   grid(col = gray(0.7))
   for(i in 1:nr){
-    lines(years,Fbar[,i], lwd = 2, col = pal[i])
-    if(!na.se) polygon(c(years,rev(years)), c(Fbar.lo[,3],rev(Fbar.hi[,4])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    lines(years,Fbar[,nf+i], lwd = 2, col = pal[i])
+    if(!na.se) polygon(c(years,rev(years)), c(Fbar.lo[,nf+i],rev(Fbar.hi[,nf+i])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
   }
   box(lwd = 2)
   if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
@@ -3459,12 +3459,10 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 
     # relative retro plot
     if(missing(y.lab)) y.lab = bquote(paste("Mohn's ", rho, "(",.(what),")"))
-    #if(what %in% c("SSB","Fbar")) rel.res = lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),]/res[[1]][1:(n_years - x + 1),] - 1)
     rho.vals = mohns_rho(mod)
 
     if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks){
       regions <- 1:mod$input$data$n_regions
-      #if(sum(mod$input$data$can_move[s,,,])== 0) regions <- mod$input$data$spawn_regions[s]
       for(r in regions) {
         rel.res = lapply(1:length(res), function(x) res[[x]][s,r,1:(n_years - x + 1),]/res[[1]][s,r,1:(n_years - x + 1),] - 1)
         if(what == "NAA") if(sum(mod$input$data$NAA_where[s,r,]) > 0) {
@@ -3479,13 +3477,6 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
               plt.type <- 'n'
               y.range2 <- c(-1,1)
             }
-            # print(r)
-            # print(s)
-            # print(i)
-            # print(y.range2)
-            # print(file.path(od, paste0(what.print.s,"_retro.pdf")))
-            # print(do.tex)
-            # print(do.png)
             plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type=plt.type,xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2)
             grid(col = gray(0.7), lty = 2)
             for (j in 1:npeels) {

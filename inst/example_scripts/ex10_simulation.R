@@ -557,6 +557,16 @@ stock_om_input = prepare_wham_input(
 #or equivalently
 #stock_om_input <- set_ecov(stock_om_input, ecov_om)
 
+c(stock_om_input$par$Ecov_process_pars)
+c(0, log(0.3), wham:::gen.logit(0.5,-1,1)) #mean, log(sd), logit(0.5)
+#size of Ecov_beta
+stock_om_input$par$Ecov_beta_R[1,1,1] #=0.3
+
+stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
+
+set.seed(123)
+sim_Ecov = stock_om$simulate(complete=TRUE)
+
 png("sim_plot_4e_1.png")
 plot(stock_om$years, sim_Ecov$Ecov_x, type = 'l', ylab = "Covariate", xlab = "Year")
 dev.off()
@@ -648,21 +658,30 @@ get_F_from_catch <- function(om, year, catch, Finit = 0.1, maxF = 10){
 }
 
 #A function to modify the population with the F given the catch
-update_om_F = function(om, year, catch){
-    rep = om$rep #generate the reported values given the parameters
-    year_ind = which(om$years == year) #index corresponding to year
-    Fsolve = get_F_from_catch(om, year_ind, catch) #find the F for the catch advice
+update_om_F <- function(om, year, catch){
+    rep <- om$rep #generate the reported values given the parameters
+    year_ind <- which(om$years == year) #index corresponding to year
+    Fsolve <- get_F_from_catch(om, year_ind, catch) #find the F for the catch advice
 
     #have to be careful if more than one fleet
-    FAA = rbind(rep$FAA[,year_ind,]) #n_fleets x n_ages
-    FAA_tot <- apply(FAA,2,sum)
-    age_ind <- which(FAA_tot == max(FAA_tot))[1]
-    selAA = FAA/FAA_tot[age_ind] #sum(sel_all[i,]) = 1
-    FAA_catch = Fsolve * selAA
-    F_fleet = apply(FAA_catch, 1, max) #full F for each fleet
+    FAA <- rbind(rep$FAA[,year_ind,]) #n_fleets x n_ages
+    age_ind <- om$env$data$which_F_age[year_ind] #which age is used by wham to define total "full F"
+    old_max_F <- apply(FAA,2,sum)[age_ind] # n_ages
+    # selAA[[om$env$data$selblock_pointer_fleets[year_ind]]][year_ind,] #this only works when there is a single fleet
+    selAA <- FAA/old_max_F #sum(selAA[i,]) = 1
+    new_FAA <- Fsolve * selAA #updated FAA
+    F_fleet_y <- apply(new_FAA, 1, max) #full F for each fleet
     if(om$input$data$F_config==1) {
-      if(year_ind>1) om$input$par$F_pars[year_ind-1,] <- log(F_fleet) - log(apply(rbind(rep$FAA[,year_ind-1,]),1,max)) #change the F_dev to produce the right full F
-      else om$input$par$log_F1[] <- log(F_fleet) #if year is the first year of the model, change F in year 1
+      if(year_ind>1) {
+        FAA_ym1 <- rbind(rep$FAA[,year_ind-1,]) #n_fleets x n_ages
+        F_fleet_ym1 <- apply(rbind(FAA_ym1),1,max) #Full F for each fleet in previous year
+        om$input$par$F_pars[year_ind,] <- log(F_fleet_y) - log(F_fleet_ym1) #change the F_dev to produce the right full F
+        if(year_ind< NROW(om$input$par$F_pars)){ #change F devs in later years to retain F in those years. Not really necessary for closed loop sims
+          FAA_yp1 <- rbind(rep$FAA[,year_ind+1,]) #n_fleets x n_ages
+          F_fleet_yp1 <- apply(rbind(FAA_yp1),1,max) #Full F for each fleet in previous year
+          om$input$par$F_pars[year_ind+1,] <- log(F_fleet_yp1) - log(F_fleet_y) #change the F_dev to produce the right full F
+        }
+      } else om$input$par$F_pars[year_ind,] <- log(F_fleet_y) #if year is the first year of the model, change F in year 1
     } else{ #alternative configuration of F_pars
       om$input$par$F_pars[year_ind,] <- log(F_fleet)
     }
@@ -785,11 +804,12 @@ stock_om = update_om_fn(stock_om)
 
 # Running the `loop_through_fn` function will take a little while.
 
-looped_res = loop_through_fn(stock_om, M_em = M_em, selectivity_em = selectivity_om, NAA_re_em = NAA_re, assess_years = assess.years, base_years = base.years)
+looped_res = loop_through_fn(stock_om, M_em = M_om, selectivity_em = selectivity_om, NAA_re_em = NAA_re_om, assess_years = assess.years, base_years = base.years)
 looped_rep <- looped_res$om$rep
 
 png("looped_rep_5_1.png")
 res <- cbind(stock_om$rep$SSB, looped_rep$SSB)
+plot(stock_om$years, res[,1], type = "l", ylab = "SSB", xlab = "Year")
 plot(stock_om$years, res[,1], type = "l", ylim = c(0,max(res)), ylab = "SSB", xlab = "Year")
 lines(stock_om$years, res[,2], col = "red")
 dev.off()

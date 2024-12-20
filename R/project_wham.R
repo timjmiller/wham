@@ -71,6 +71,7 @@
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #' @param TMB.bias.correct T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.
+#' @param TMB.jointPrecision T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = \code{FALSE}.
 #'
 #' @return a projected WHAM model with additional output if specified:
 #'   \describe{
@@ -106,7 +107,7 @@
 project_wham = function(model, 
   proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100),
-  n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE, check.version = TRUE, TMB.bias.correct=FALSE)
+  n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE, check.version = TRUE, TMB.bias.correct=FALSE, TMB.jointPrecision = FALSE)
 {
   if(check.version) verify_version(model)
   # modify wham input (fix parameters at previously estimated values, pad with NAs)
@@ -118,6 +119,7 @@ project_wham = function(model,
   #if(!exists("err")) 
     tryCatch(proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent),
       error = function(e) {model$err_MakeADFun <<- conditionMessage(e)})
+    if(!is.null(proj_mod$err_MakeADFun)) stop(model$err_proj)
     proj_mod$years <- input2$years
     proj_mod$years_full <- input2$years_full
     proj_mod$ages.lab <- input2$ages.lab
@@ -135,20 +137,26 @@ project_wham = function(model,
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
     is.fit = !is.null(model$opt)
-    if(!is.fit) mle = model$par
+    if(!is.fit) mle <- model$par
     else {
       mle = model$opt$par
       proj_mod$fn(mle)
     }
     proj_mod$marg_nll <- proj_mod$fn(mle) #to make sure it is the same as the base model
-    proj_mod$rep = proj_mod$report(proj_mod$env$last.par.best)
+    if(is.fit) if(abs(proj_mod$marg_nll - model$opt$obj)>1e-6) stop("Difference between projection model nll and base model nll > 1e-6")
+    proj_mod$rep <- proj_mod$report(proj_mod$env$last.par.best)
     proj_mod$parList <- proj_mod$env$parList(x=mle)
     proj_mod <- check_projF(proj_mod) #projections added.
     if(is.fit & do.sdrep) # only do sdrep if no error and the model has been previously fitted.
     {
-      proj_mod$sdrep <- try(TMB::sdreport(proj_mod, bias.correct = TMB.bias.correct))
+      if(model$is_sdrep){ #much faster than old way below
+        proj_mod$sdrep <- try(TMB::sdreport(proj_mod, par.fixed = mle, hessian.fixed = solve(model$sdrep$cov.fixed), bias.correct = TMB.bias.correct, getJointPrecision = TMB.jointPrecision))
+      } else {
+        proj_mod$sdrep <- try(TMB::sdreport(proj_mod, bias.correct = TMB.bias.correct, getJointPrecision = TMB.jointPrecision))
+      }
       proj_mod$is_sdrep <- !is.character(proj_mod$sdrep)
-      if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
+      proj_mod$na_sdrep <- ifelse(proj_mod$is_sdrep, any(is.na(summary(proj_mod$sdrep,"fixed")[,2])), NA)
+      # if(proj_mod$is_sdrep) proj_mod$na_sdrep <- any(is.na(summary(proj_mod$sdrep,"fixed")[,2])) else proj_mod$na_sdrep = NA
       if(!save.sdrep) proj_mod$sdrep <- summary(proj_mod$sdrep) # only save summary to reduce model object size
     } else {
       proj_mod$is_sdrep <- FALSE

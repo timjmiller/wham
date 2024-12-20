@@ -56,6 +56,8 @@
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' @param do.brps T/F, calculate and report biological reference points. Default = \code{TRUE}.
 #' @param fit.tmb.control list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.
+#' @param TMB.bias.correct T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.
+#' @param TMB.jointPrecision T/F whether TMB::sdreport should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -87,7 +89,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
                     proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, proj.F=NULL, 
                       proj.catch=NULL, avg.yrs=NULL, cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, 
                       proj.ecov=NULL, cont.Mre=NULL, avg.rec.yrs=NULL, percentFXSPR=100),
-                    do.fit = TRUE, save.sdrep=TRUE, do.brps = TRUE, fit.tmb.control = NULL)
+                    do.fit = TRUE, save.sdrep=TRUE, do.brps = TRUE, fit.tmb.control = NULL, TMB.bias.correct = FALSE, TMB.jointPrecision = FALSE)
 {
 
   # fit model
@@ -136,7 +138,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     }
     
     if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
-    if(do.sdrep) mod <- do_sdreport(mod, save.sdrep = save.sdrep)
+    if(do.sdrep) mod <- do_sdreport(mod, save.sdrep = save.sdrep, TMB.bias.correct = TMB.bias.correct, TMB.jointPrecision = TMB.jointPrecision)
 
     # retrospective analysis
     if(do.retro){

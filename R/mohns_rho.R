@@ -19,23 +19,23 @@ mohns_rho = function(model)
   npeels = length(model$peels)
   data <- model$env$data
   ny = data$n_years_model
+  nr = data$n_regions
+  ns = data$n_stocks
+  nf = data$n_fleets
   na = data$n_ages
   if(npeels)
   {
     rho  = list()
     rho$SSB <- rho$Fbar <- numeric()
-    for(i in 1:data$n_stocks) rho$SSB[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$SSB[ny-x, i]/model$rep$SSB[ny-x, i] - 1))
-    for(i in 1:data$n_regions) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) {
-      mean(model$peels[[x]]$rep$Fbar[ny-x,i])/mean(model$rep$Fbar[ny-x,i]) - 1
+    for(i in 1:ns) rho$SSB[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$SSB[ny-x, i]/model$rep$SSB[ny-x, i] - 1))
+    for(i in 1:nr) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) {
+      mean(model$peels[[x]]$rep$Fbar[ny-x,nf + i])/mean(model$rep$Fbar[ny-x,nf + i]) - 1
     }))
-    #for(i in 1:data$n_regions) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$Fbar[ny-x,i]/model$rep$Fbar[ny-x,i] - 1))
-    #names(rho) = c("SSB","Fbar")#,"R")
-    rho$naa <- array(NA, c(data$n_stocks, data$n_regions, data$n_ages))
-    for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]) {
+    rho$naa <- array(NA, c(ns, nf, na))
+    for(s in 1:ns) for(r in 1:nr) for(a in 1:na) if(data$NAA_where[s,r,a]) {
       rho$naa[s,r,a] = mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$NAA[s,r,ny-x,a]/model$rep$NAA[s,r,ny-x,a] - 1))
     }
     dimnames(rho$naa)[[3]] = c("R", paste0("N", model$ages.lab[2:na]))
-    #rho = c(rho, rho.naa)
     return(rho)
   }
   else stop("There are no peels in this model")

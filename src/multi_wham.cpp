@@ -1,7 +1,7 @@
 #define TMB_LIB_INIT R_init_wham
 #include <TMB.hpp>
 #include "all.hpp"
-
+#include <Eigen/Eigenvalues>
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -1026,7 +1026,7 @@ Type objective_function<Type>::operator() ()
     vector< array<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
-      avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, 
+      avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, Fbar_ages, 
       vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
       n_regions_is_small, SPR_weight_type, bias_correct_brps, 
       marg_NAA_sigma, trace, 10);
@@ -1044,6 +1044,8 @@ Type objective_function<Type>::operator() ()
     array<Type> log_YPR_FXSPR_static = static_SPR_res(5);
     if(trace) see(log_YPR_FXSPR_static);
     vector<Type> log_FXSPR_iter_static = static_SPR_res(6).matrix().row(0);
+    if(trace) see(log_FXSPR_iter_static);
+    vector<Type> log_Fbar_XSPR_static = static_SPR_res(17).matrix().row(0);
     if(trace) see(log_FXSPR_iter_static);
     array<Type> NAAPR0_static = static_SPR_res(7);
     if(trace) see(NAAPR0_static.dim);
@@ -1068,6 +1070,7 @@ Type objective_function<Type>::operator() ()
 
     Type log_FXSPR_static = log_FXSPR_iter_static(log_FXSPR_iter_static.size()-1);
     REPORT(log_FAA_XSPR_static);
+    REPORT(log_Fbar_XSPR_static);
     REPORT(log_SSB_FXSPR_static);
     REPORT(log_Y_FXSPR_static);
     REPORT(log_SPR_FXSPR_static);
@@ -1089,7 +1092,7 @@ Type objective_function<Type>::operator() ()
 
     vector< array<Type>> annual_SPR_res = get_annual_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
-      L, which_F_age, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_init, 
+      L, which_F_age, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_init, Fbar_ages,
       R_XSPR, n_regions_is_small, SPR_weight_type, bias_correct_brps, 
       marg_NAA_sigma, trace, 10);
     
@@ -1109,6 +1112,8 @@ Type objective_function<Type>::operator() ()
     REPORT(log_FXSPR_iter);
     vector<Type> log_FXSPR = log_FXSPR_iter.matrix().col(9);
     REPORT(log_FXSPR);
+    array<Type> log_Fbar_XSPR = annual_SPR_res(7);
+    REPORT(log_Fbar_XSPR);
 
 
     array<Type> annual_SPR0AA = get_annual_SPR0_at_age(log_M, spawn_seasons, fracyr_seasons, can_move, must_move,
@@ -1118,10 +1123,12 @@ Type objective_function<Type>::operator() ()
 
     if((sum_do_post_samp == 0) & (mig_type.sum() == 0)) {
       ADREPORT(log_FXSPR);
+      ADREPORT(log_Fbar_XSPR);
       ADREPORT(log_SSB_FXSPR);
       ADREPORT(log_Y_FXSPR);
       ADREPORT(log_SPR0);
       ADREPORT(log_FAA_XSPR_static);
+      ADREPORT(log_Fbar_XSPR_static);
       ADREPORT(log_FXSPR_static);
       ADREPORT(log_SSB_FXSPR_static);
       ADREPORT(log_SPR0_static);
@@ -1221,7 +1228,7 @@ Type objective_function<Type>::operator() ()
   REPORT(FAA_by_region);
   array<Type> log_FAA_by_region = get_log_FAA(FAA_by_region); //FAA_by_region is also a 3-d array (region,year,age)
   array<Type> log_NAA_rep = get_log_NAA_rep(NAA, NAA_where);
-  matrix<Type> Fbar(FAA_by_region.dim(1),FAA_by_region.dim(0));
+  matrix<Type> Fbar(FAA_by_region.dim(1),n_fleets  + n_regions + 1);
   Fbar.setZero();
   int n_Fbar_ages = Fbar_ages.size();
   matrix<Type> log_FAA_tot(FAA_by_region.dim(1),FAA_by_region.dim(2));
@@ -1231,8 +1238,12 @@ Type objective_function<Type>::operator() ()
   log_FAA_tot.setZero(); log_F_tot.setZero();
   for(int y = 0; y < log_SSB_all.size(); y++) log_SSB_all(y) = log(SSB.row(y).sum());
   for(int y = 0; y < FAA_by_region.dim(1); y++) {
+    for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_Fbar_ages; a++) {
+      Fbar(y,f) += FAA(f,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
+      Fbar(y,n_fleets + n_regions) += FAA(f,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
+    }
     for(int r = 0; r < FAA_by_region.dim(0); r++) for(int a = 0; a < n_Fbar_ages; a++) {
-      Fbar(y,r) += FAA_by_region(r,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
+      Fbar(y,n_fleets + r) += FAA_by_region(r,y,Fbar_ages(a)-1)/Type(n_Fbar_ages);
     }
     for(int a = 0; a < FAA_by_region.dim(2); a++){
       for(int r = 0; r < FAA_by_region.dim(0); r++) log_FAA_tot(y,a) += FAA_by_region(r,y,a);

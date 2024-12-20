@@ -1,3 +1,37 @@
+//Experimental: try different calculations of the matrix exponential that might be fine for infinitesimal generator matrices
+template <class T>
+matrix<T> expm_more(matrix<T> A, int type = 0, int n_step = 5, int small_dim = 1, int trace = 0) {
+  int dim = A.cols();
+  matrix<T> P(dim,dim);
+
+  if(type == 0) {//use TMB expm
+    P = expm(A);
+  }
+
+  if(type == 1) if(n_step>0) {//truncate power series at n_step, this one ok for these types of matrices?
+    P.setZero();
+    for(int i = 0; i < dim; i++) P(i,i) = 1.0;
+    matrix<T> Ak = A;
+    for(int k = 1; k <= n_step; k++){
+      P = P + Ak * exp(-lfactorial(T(k)));
+      Ak = Ak * A;
+    }
+  }
+  if(type == 2){ //use eigen decomp
+    using namespace Eigen;
+    Matrix<T,Dynamic,Dynamic> A_eig = A;
+    A_eig.setZero();
+    SelfAdjointEigenSolver<Matrix<T,Dynamic,Dynamic> > es(A_eig);  
+    matrix<T> D(dim,dim), V_inv(dim,dim); 
+    D.setZero();
+    for(int i = 0; i < dim; i++) D(i,i) = exp(es.eigenvalues()(i));
+    matrix<T> V = es.eigenvectors();
+    if(small_dim) V_inv = V.inverse(); else V_inv = atomic::matinv(V);
+    P = V * D * V_inv;  
+  }
+  return(P);
+}
+
 //NOTE get_P_t_base here is defined as class T instead of Type, but is currently used interchangeably.
 // Not sure if this affects expected model performance.
 template <class T>
@@ -89,7 +123,8 @@ matrix<T> get_P_t_base(vector<int> fleet_regions, matrix<int> can_move, int mig_
           }
           for(int i = 0; i < n_regions; i++) A(i,i) = -(A.row(i)).sum(); //hazard
           A = A * time;
-          P = expm(A);
+          // P = expm(A);
+          P = expm_more(A);
         }
       }
     }

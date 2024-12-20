@@ -239,6 +239,12 @@ prepare_projection = function(model, proj.opts, check.version=FALSE) {
   #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) tmp[s,r,,] <- par$log_NAA[s,r,data$n_years_model-1,1] #fill in with last recruitment
   tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
   par$log_NAA <- tmp
+  if(any(data$NAA_re_model == 0)) { #call to set_NAA will make recruitment estimated FE in projection years
+    temp <- par$log_NAA
+    temp[] <- as.integer(map$log_NAA)
+    temp[,,data$n_years_model + 1:data$n_years_proj - 1,1] <- NA
+    map$log_NAA <- factor(temp)
+  }
 
   # check ecov options are valid, all Ecov will be projected if there observations do not occur in projection years
   # projection options are for how they are used in effects on population and are now done on c++ side

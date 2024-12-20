@@ -788,7 +788,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   int which_F_age, array<Type> waa_ssb, array<Type> waa_catch, 
   array<Type> mature, Type percentSPR, array<Type> NAA, matrix<Type> fracyr_SSB, Type F_init, 
   vector<int> years_M, vector<int> years_mu, vector<int> years_L, vector<int> years_mat, vector<int> years_sel, 
-  vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<Type> R_XSPR,
+  vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> Fbar_ages, vector<Type> R_XSPR,
   int small_dim, int SPR_weight_type, int bias_correct, 
   array<Type> marg_NAA_sigma, 
   int trace = 0, int n_iter = 10) {
@@ -882,8 +882,8 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
     log_FXSPR_iter(i+1) = log_FXSPR_iter(i) - (SPR_i - 0.01*percentSPR * SPR0)/grad_spr_F(0,0);
   }
   array<Type> FAA_XSPR(n_fleets, n_ages);
-  array<Type> log_FAA_XSPR(n_fleets+n_regions+1, n_ages);
-  log_FAA_XSPR.setZero();
+  array<Type> log_FAA_XSPR(n_fleets+n_regions+1, n_ages), log_Fbar_XSPR(1,n_fleets+n_regions+1);
+  log_FAA_XSPR.setZero(); log_Fbar_XSPR.setZero();
   for(int f = 0; f < n_fleets; f++) {
     for(int a = 0; a < n_ages; a++){
       FAA_XSPR(f,a) = sel(f,a) * exp(log_FXSPR_iter(n_iter-1));
@@ -891,7 +891,14 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
       log_FAA_XSPR(n_fleets+fleet_regions(f)-1, a) += FAA_XSPR(f,a); //summing, not log yet
       log_FAA_XSPR(n_fleets+n_regions, a) += FAA_XSPR(f,a); //summing, not log yet
     }
+    for(int a = 0; a < Fbar_ages.size(); a++) {
+      log_Fbar_XSPR(0,f) += FAA_XSPR(f,Fbar_ages(a)-1)/Type(Fbar_ages.size());
+      log_Fbar_XSPR(0,n_fleets+fleet_regions(f)-1) += FAA_XSPR(f,Fbar_ages(a)-1)/Type(Fbar_ages.size());
+      log_Fbar_XSPR(0,n_fleets+n_regions) += FAA_XSPR(f,Fbar_ages(a)-1)/Type(Fbar_ages.size());
+    }
+    log_Fbar_XSPR(0,f) = log(log_Fbar_XSPR(0,f));
   }
+  for(int r = 0; r <=n_regions; r++) log_Fbar_XSPR(0,n_fleets+r) = log(log_Fbar_XSPR(0,n_fleets+r));
   if(trace) see(FAA_XSPR);
   for(int a = 0; a < n_ages; a++) for(int r = 0; r <=n_regions; r++) {
     log_FAA_XSPR(n_fleets+r, a) = log(log_FAA_XSPR(n_fleets+r,a)); //log it
@@ -946,7 +953,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   log_SSB_XSPR(0,n_stocks) = log(log_SSB_XSPR(0,n_stocks));
   //see(log_SPR);
   //see(log_SPR0);
-  vector< array<Type> > res(17); 
+  vector< array<Type> > res(18); 
   res(0) = log_FAA_XSPR; // log_FAA at FXSPR by fleet and across fleets
   res(1) = log_SSB_XSPR; //log_SSB_FXSPR
   res(2) = log_Y_XSPR; //log_Y_FXSPR
@@ -978,6 +985,8 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   res(15) = log_M_avg;
   if(trace) see(mu_avg.dim);
   res(16) = mu_avg;
+  if(trace) see(log_Fbar_XSPR);
+  res(17) = log_Fbar_XSPR;
   if(trace) see("end get_SPR_res")
   return res;
 }
@@ -994,7 +1003,7 @@ vector< array <Type> > get_annual_SPR_res(vector<Type> SPR_weights, array<Type> 
   array<Type> trans_mu_base, 
   matrix<Type> L,
   vector<int> which_F_age, array<Type> waa_ssb, array<Type> waa_catch,
-  array<Type> mature, Type percentSPR, array<Type> NAA, matrix<Type> fracyr_SSB, vector<Type> F_init,  
+  array<Type> mature, Type percentSPR, array<Type> NAA, matrix<Type> fracyr_SSB, vector<Type> F_init, vector<int> Fbar_ages,
   matrix<Type> R_XSPR,
   int small_dim, int SPR_weight_type, 
   int bias_correct,
@@ -1005,8 +1014,9 @@ vector< array <Type> > get_annual_SPR_res(vector<Type> SPR_weights, array<Type> 
   int n_regions = can_move.dim(2);
   int n_stocks = waa_ssb.dim(0);
   int n_ages = mature.dim(2);
-  vector< array <Type>> all_res(7);
+  vector< array <Type>> all_res(8);
   array<Type> log_FAA_XSPR(n_fleets+n_regions+1,ny,n_ages); //log FAA_XSPR, FAA_XSPR_tot
+  array<Type> log_Fbar_XSPR(ny,n_fleets+n_regions+1); //log FAA_XSPR, FAA_XSPR_tot
   array<Type> log_SSB_XSPR(ny,n_stocks+1); //log SSB_XSPR, SSB_XSPR_tot
   array<Type> log_Y_XSPR(ny, n_fleets+n_regions+1); //log Y_XSPR, Y_XSPR_r, Y_XSPR_tot
   array<Type> log_SPR_XSPR(ny,n_stocks+1); //log SPR_XSPR
@@ -1020,13 +1030,14 @@ vector< array <Type> > get_annual_SPR_res(vector<Type> SPR_weights, array<Type> 
     yvec(0) = y;
     vector< array<Type>> SPR_res_y = get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  spawn_regions, fleet_regions, 
       fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, L, which_F_age(y), 
-      waa_ssb, waa_catch, mature, percentSPR, NAA, fracyr_SSB, F_init(y), yvec, yvec, yvec, yvec, yvec, yvec, yvec, 
+      waa_ssb, waa_catch, mature, percentSPR, NAA, fracyr_SSB, F_init(y), yvec, yvec, yvec, yvec, yvec, yvec, yvec, Fbar_ages,
       vector<Type> (R_XSPR.row(y)), small_dim, SPR_weight_type, bias_correct, 
       marg_NAA_sigma, 
       trace = trace, n_iter = n_iter);
     for(int f = 0; f <= n_fleets+n_regions; f++) for(int a = 0; a < n_ages; a++){
       log_FAA_XSPR(f,y,a) = SPR_res_y(0)(f,a);
     }
+    for(int f = 0; f <= n_fleets+n_regions; f++) log_Fbar_XSPR(y,f) = SPR_res_y(17)(0,f);
     for(int s = 0; s <= n_stocks; s++) {
       log_SSB_XSPR(y,s) = SPR_res_y(1)(0,s);
       log_SPR_XSPR(y,s) = SPR_res_y(3)(0,s);
@@ -1046,6 +1057,7 @@ vector< array <Type> > get_annual_SPR_res(vector<Type> SPR_weights, array<Type> 
   all_res(4) = log_SPR0;
   all_res(5) = log_YPR_XSPR;
   all_res(6) = log_FXSPR_iter; 
+  all_res(7) = log_Fbar_XSPR; 
   return all_res;
 }
 
