@@ -26,6 +26,7 @@ fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silen
   temp$data$which_F_age = temp$data$which_F_age[1:n_years]
   temp$data$avg_years_ind = temp$data$avg_years_ind - peel
   temp$data$avg_years_ind <- temp$data$avg_years_ind[which(temp$data$avg_years_ind>0)] #in case peels going all the way back near initial year.
+  temp$data$avg_years_ind_static <- temp$data$avg_years_ind
   peel_R_avg_yrs <- which((temp$data$XSPR_R_avg_yrs+1) %in% (1:n_years))
   if(length(peel_R_avg_yrs)) {
     temp$data$XSPR_R_avg_yrs <- temp$data$XSPR_R_avg_yrs[peel_R_avg_yrs]

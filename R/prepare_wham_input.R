@@ -468,7 +468,7 @@ initial_input_fn = function(input, basic_info){
   input$data$XSPR_R_opt = 2 # default = use average R estimates
   input$data$XSPR_R_avg_yrs = 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
 	input$data$static_FXSPR_init = 0.1 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind)
-  input$data$avg_years_ind <- tail(1:length(input$years),5) - 1 #shifted to start @ 0
+  input$data$avg_years_ind <- input$data$avg_years_ind_static <-tail(1:length(input$years),5) - 1 #shifted to start @ 0
   
   if(!is.null(basic_info$bias_correct_process)) input$data$bias_correct_pe = as.integer(basic_info$bias_correct_process)
   if(!is.null(basic_info$bias_correct_observation)) input$data$bias_correct_oe = as.integer(basic_info$bias_correct_observation)
@@ -480,7 +480,10 @@ initial_input_fn = function(input, basic_info){
   if(!is.null(basic_info$percentSPR)) input$data$percentSPR = basic_info$percentSPR
   if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR = basic_info$percentFXSPR
   if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY = basic_info$percentFMSY
-  if(!is.null(basic_info$XSPR_input_average_years)) input$data$avg_years_ind = basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0 
+  if(!is.null(basic_info$XSPR_input_average_years)) {
+  	input$data$avg_years_ind = basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0 
+  	input$data$avg_years_ind_static <- input$data$avg_years_ind
+  }
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt = basic_info$XSPR_R_opt
   if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs = basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0 
 

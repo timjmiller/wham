@@ -133,6 +133,7 @@ prepare_projection = function(model, proj.opts)
   data$n_years_proj_Ecov = max(proj.opts$n.yrs-end.beyond)
   avg.yrs.ind <- match(proj.opts$avg.yrs, input1$years)
   data$avg_years_ind = avg.yrs.ind - 1 # c++ indices start at 0
+  #data$avg_years_ind_static <- data$avg_years_ind
   data$proj_F_opt = rep(0,data$n_years_proj) 
   if(!is.null(proj.opts$use.last.F)) if(proj.opts$use.last.F) data$proj_F_opt[] = 1
   if(!is.null(proj.opts$use.avg.F)) if(proj.opts$use.avg.F) data$proj_F_opt[] = 2

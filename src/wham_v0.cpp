@@ -134,6 +134,7 @@ Type objective_function<Type>::operator() ()
   //static brp info
   DATA_INTEGER(which_F_age_static); //which age of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
   DATA_SCALAR(static_FXSPR_init); // initial value to use for newton steps to find FXSPR_static
+  DATA_IVECTOR(avg_years_ind_static); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
   //DATA_IVECTOR(static_brp_years_sel); // model year indices (TMB, starts @ 0) to use for averaging selectivity for static biological reference points
   //DATA_IVECTOR(static_brp_years_mat); // model year indices (TMB, starts @ 0) to use for averaging maturity for static biological reference points
   //DATA_IVECTOR(static_brp_years_waa_ssb); // model year indices (TMB, starts @ 0) to use for averaging SSB weight at age for static biological reference points
@@ -1293,7 +1294,7 @@ Type objective_function<Type>::operator() ()
 
   //static/avg year results
   vector<Type> SPR_res_static = get_static_SPR_res(MAA, FAA, which_F_age_static, waa, waa_pointer_ssb, waa_pointer_fleets, mature, percentSPR, R_XSPR, 
-    fracyr_SSB, static_FXSPR_init, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, XSPR_R_avg_yrs, sigma_a_sig_brps);
+    fracyr_SSB, static_FXSPR_init, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, XSPR_R_avg_yrs, sigma_a_sig_brps);
   Type log_FXSPR_static = SPR_res_static(0);
   Type log_SSB_FXSPR_static = SPR_res_static(1);
   Type log_Y_FXSPR_static = SPR_res_static(2);
