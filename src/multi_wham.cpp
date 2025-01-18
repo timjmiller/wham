@@ -190,6 +190,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(FXSPR_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_SCALAR(FMSY_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_INTEGER(which_F_age_static); // which age,fleet of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
+  DATA_IVECTOR(avg_years_ind_static); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (selectivity), for static BRPs
   
   DATA_INTEGER(use_alt_AR1) //0: use density namespace, 1: use ar1 or 2dar1 calculated by "hand" for nll and simulation.
   
@@ -1026,7 +1027,7 @@ Type objective_function<Type>::operator() ()
     vector< array<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
-      avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, Fbar_ages, 
+      avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, Fbar_ages, 
       vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
       n_regions_is_small, SPR_weight_type, bias_correct_brps, 
       marg_NAA_sigma, trace, 10);
@@ -1151,7 +1152,7 @@ Type objective_function<Type>::operator() ()
         log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
         fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
         L, which_F_age_static, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_static_init, 
-        avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind, avg_years_ind,
+        avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static,
         bias_correct_brps, marg_NAA_sigma, n_regions_is_small, trace, 10);
         vector<Type> log_SSB_MSY_static = static_MSY_res(0).col(0);
         if(trace) see("end get_MSY_res static");
