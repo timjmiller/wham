@@ -36,11 +36,11 @@ Some further developments are covered here (Jan 25 2022):
 
 WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
 
-A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, *M*, selectivity, and environment-recruitment: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967).
+A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, *M*, selectivity, and environment-recruitment: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967). A paper describing generalizations to multiple stocks and regions and movement is forthcoming.
 
 [Stock et al. (2021)](https://doi.org/10.1016/j.fishres.2021.105873) describes the 2D (year x age) AR(1) correlation structure that can be used on numbers-at-age, *M*, and selectivity in WHAM (as in [Berg and Nielsen 2016](https://doi.org/10.1093/icesjms/fsw046), [Cadigan 2016](https://doi.org/10.1139/cjfas-2015-0047), and [Xu et al. 2019](https://doi.org/10.1139/cjfas-2017-0446)).
 
-As mentioned above, WHAM has also been extended (after release 1.0.9) to allow multiple stocks and/or multiple regions to be modeled with movement between regions. Seasonal changes in fleet fishing effort and movement are also possible. The single stock version of WHAM remains available as the "single_wham" branch, but it will not be developed further.
+As mentioned above, WHAM has also been extended (from release 2.0.0) to allow multiple stocks and/or multiple regions to be modeled with movement between regions. Seasonal changes in fleet fishing effort and movement are also possible. The single stock version of WHAM remains available as the "single_wham" branch, but it will not be developed further.
 
 WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
 
@@ -61,9 +61,35 @@ For the development version with recent bug fixes and features (potentially unte
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
 ```
 
+For the single stock version:
+```r
+devtools::install_github("timjmiller/wham@single_wham")
+```
+
+You can even install a specific release or commit. E.g.,
+```r
+devtools::install_github("timjmiller/wham@v1.0.9")
+#or equivalently the associated commit
+devtools::install_github("timjmiller/wham@40cc14b")
+```
+
 ### ON WINDOWS
 
-If you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
+The least frustrating installation of WHAM is via the "pak" package:
+```r
+pak::pkg_install("timjmiller/wham")
+```
+or for the devel branch:
+```r
+pak::pkg_install("timjmiller/wham@devel")
+```
+or for single stock wham:
+```r
+pak::pkg_install("timjmiller/wham@single_wham")
+```
+Using "pak" seems to avoid many installation hurdles.
+
+You may still try to install with devtools, but if you get an error about cc1plus.exe running out of memory during installation, try installing only 64bit:
 ```r
 devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
 ```
@@ -72,17 +98,7 @@ or for the devel branch:
 devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
 ```
 
-Also consider using the "pak" package for installation:
-```r
-pak::pkg_install("timjmiller/wham")
-```
-or for the devel branch:
-```r
-pak::pkg_install("timjmiller/wham@devel")
-```
-Using "pak" seems to avoid many installation hurdles.
-
-If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check to make sure no packages are loaded (even by e.g. .Rprofile):
+If you're having problems with dependencies not installing. It is probably because some are being used in one or more R sessions. After closing all R sessions and restarting R without any packages first check make sure no packages are loaded (even by e.g. .Rprofile):
 ```r
 ls() ## no variables
 search() ## no packages other than Base
@@ -105,6 +121,13 @@ and add the path to pandoc in your .Rprofile so Rmarkdown can find your pandoc
 Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc") 
 ```
 
+NOTE: If you specify `pak::pkg_install` to install wham to library directory that is not in your `.libPaths()`. It is best to add the directory because `pak` installs all dependencies to the same directory and may not be found for example when creating model output with `prepare_wham_input`. E.g.,
+```r
+pak::pkg_install("timjmiller/wham@single_wham", lib = "single_wham")
+library(wham, lib.loc = "single_wham")
+.libPaths("single_wham")
+```
+
 ## Tutorial
 
 We suggest walking through the vignettes to familiarize yourself with WHAM: https://timjmiller.github.io/wham/articles.
@@ -122,7 +145,7 @@ setwd("choose/where/to/save/output")
 source(file.path(wham.dir, "example_scripts", "ex1_basics.R"))
 ```
 
-You can run ALL examples with (takes 1 hour):
+You can run ALL examples with (this is not quick):
 ```r
 library(wham)
 wham.dir <- find.package("wham")
@@ -131,8 +154,9 @@ source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
 
 ## Short-course materials
 
-A short course was given in Woods Hole in June 2024 on using the WHAM package. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_course_WH_2024)
+A short course was given in Woods Hole in June 2024 on using the WHAM package. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_course_WH_2024).
 
+A workshop was given at Memorial University in September 2024 on using the WHAM package, that expanded on the previous short course and included making inputs without ASAP dat files and fitting multi-stock models. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_workshop_MUN_2024).
 
 ## Installing vignettes
 

@@ -1,0 +1,356 @@
+---
+title: "Ex 13: Using WHAM without ASAP"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 1: The basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+#wham.dir <- find.package("wham")
+#knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+```
+In this vignette we show how to create input objects with prepare_wham_input, but without an ASAP .dat file. However, we will work from ASAP files and extract the necessary components. We compare models fit with asap inputs and those built without calling an asap object. This exercise is peformed for 1 and 2 stocks.
+
+1. Load wham library and set up a directory for work
+
+2. Create inputs for single stock model
+    - Load asap file
+    - create arguments to `prepare_wham_input` and functions specific to different model components (e.g., `set_M`)
+    - create input by passing all arguments to `prepare_wham_input`
+    - create input by passing arguments to specific functions sequentially
+    - create input from asap object
+    - show that model fit is identical for all three inputs
+
+3. Create inputs for 2 stock, 2 region model
+    - Load asap files
+    - create arguments to `prepare_wham_input` and functions specific to different model components (e.g., `set_M`)
+    - create input by passing all arguments to `prepare_wham_input`
+    - create input by passing arguments to specific functions sequentially
+    - create input from asap object
+    - show that model fit is identical for all three inputs
+
+
+## 1. Getting started
+
+If you have not already installed `wham`, see the [Introduction](https://timjmiller.github.io/wham/) for instructions.
+
+Open R and load the `wham` package:
+```{r, eval = FALSE}
+library(wham)
+```
+```{r, include = FALSE}
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
+wham.dir <- find.package("wham")
+```
+
+Create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output, otherwise will be saved in working directory
+write.dir <- "choose/where/to/save/output" #e.g., tempdir(check=TRUE)
+dir.create(write.dir)
+setwd(write.dir)
+```
+```{r, eval = TRUE, include=FALSE}
+write.dir <- tempdir(check=TRUE)
+setwd(write.dir)
+```
+For a clean, runnable `.R` script, look at `ex13_no_ASAP.R` in the `example_scripts` folder of the `wham` package.
+You can run this entire example script with:
+```{r, eval=FALSE}
+wham.dir <- find.package("wham")
+source(file.path(wham.dir, "example_scripts", "ex13_no_ASAP.R"))
+```
+
+## 2. Creating inputs to fit a single stock model
+
+Read the ASAP3 .dat file into R and create an input from it:
+```{r eval=FALSE}
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3) 
+```
+
+We will extract all of the elements of the `input` needed to create a wham input object without using to the `asap3` object in `prepare_wham_input`. To adapt this for an analysis without an asap dat file, we only need to supply each of the element to prepare_wham_input structured correctly.
+
+There is a `basic_info` argument to `prepare_wham_input` that provides a list of various "basic" model structure information:
+```{r eval=FALSE}
+basic_info <- list(
+    n_stocks = 1L,
+    n_seasons = 1L,
+    n_fleets = 1L,
+    ages = 1:input$data$n_ages,
+    n_fleets = input$data$n_fleets,
+    fracyr_SSB = cbind(input$data$fracyr_SSB), #(n_years x n_stocks)
+    maturity = input$data$mature, #(n_stocks x n_years x n_ages)
+    years = as.integer(input$years), #(n_years)
+    waa = input$data$waa, #(any no. x n_years x n_ages)
+    waa_pointer_ssb = input$data$waa_pointer_ssb, #(n_stocks)
+    spawn_regions = 1, #(n_stocks)
+    spawn_seasons = 1 #(n_stocks)
+)
+```
+
+There is a `catch_info` argument to `prepare_wham_input` that provides a list of various catch data and fleet information:
+```{r eval=FALSE}
+catch_info <- list(
+    n_fleets = NCOL(input$data$agg_catch), #(n_fleets)
+    agg_catch = cbind(input$data$agg_catch), #(n_years x n_fleets)
+    agg_catch_cv = cbind(sqrt(exp(input$data$agg_catch_sigma^2) - 1)), #(n_years x n_fleets)
+    catch_paa = input$data$catch_paa, #(n_fleets x n_years x n_ages)
+    use_catch_paa = cbind(input$data$use_catch_paa), #(n_years x n_fleets), 0: don't use, 1: use
+    catch_Neff = cbind(input$data$catch_Neff), #(n_years x n_fleets)
+    selblock_pointer_fleets = cbind(input$data$selblock_pointer_fleets), #(n_years x n_fleets)
+    waa_pointer_fleets = input$data$waa_pointer_fleets, #(n_fleets)
+    fleet_regions = rep(1,input$data$n_fleets) #(n_fleets)
+)
+```
+
+Similarly, there is an `index_info` argument to `prepare_wham_input` that provides a list of various index data and information:
+```{r eval=FALSE}
+index_info <- list(
+    n_indices = NCOL(input$data$agg_indices),
+    agg_indices = cbind(input$data$agg_indices), #(n_years x n_indices)
+    units_indices = input$data$units_indices, #(n_indices) 1: biomass 2: numbers
+    units_index_paa = input$data$units_index_paa, #(n_indices) 1: biomass 2: numbers
+    agg_index_cv = cbind(sqrt(exp(input$data$agg_index_sigma^2) - 1)), #(n_years x n_indices)
+    index_Neff = cbind(input$data$index_Neff), #(n_years x n_indices)
+    fracyr_indices = cbind(input$data$fracyr_indices), #(n_years x n_indices)
+    use_indices = cbind(input$data$use_indices), #(n_years x n_indices)
+    use_index_paa = cbind(input$data$use_index_paa),  #(n_years x n_indices)
+    index_paa = input$data$index_paa,  #(n_indices x n_years x n_ages)
+    selblock_pointer_indices = cbind(input$data$selblock_pointer_indices), #(n_years x n_indices)
+    waa_pointer_indices = input$data$waa_pointer_indices, #(n_indices)
+    index_regions = rep(1,input$data$n_indices)) #(n_indices)
+```
+
+Other arguments to `prepare_wham_input` have elements that deal with parameters of the model that may or may not be estimated and may configure process errors. First, the `selectivity` argument (see `?set_selectivity`):
+```{r eval=FALSE}
+sel_info <- list(model = rep("logistic",6), n_selblocks = 6,
+    fix_pars = list(NULL,NULL,NULL,NULL, 1:2, 1:2),
+    initial_pars = list(c(2,0.2),c(2,0.2),c(2,0.2),c(2,0.2),c(1.5,0.1),c(1.5,0.1)))
+```
+
+Then the `M` argument (see `?set_M`). Here we are specifying the initial values to use for annual natural mortalty at age (by stock and region), but, by default it will not be estimated:
+```{r eval=FALSE}
+MAA <- exp(matrix(c(input$par$Mpars), length(basic_info$years), length(basic_info$ages), byrow = TRUE) + 
+    c(input$par$M_re[1,1,,])) #(nstocks x n_regions x n_years x n_ages)
+M_info <- list(initial_MAA = array(MAA, dim = c(1,1,length(basic_info$years), length(basic_info$ages))))
+```
+
+The `F` argument (see `?set_F`). Here we are specifying the initial values to use for the annual fully-selected fishing mortality parameters for each fleet:
+```{r eval=FALSE}
+#initial values for annual fully-selected fishing mortality
+F_info <- list(F = matrix(0.3, length(basic_info$years), catch_info$n_fleets)) #(n_years x n_fleets)
+```
+
+The `q` argument (see `?set_q`). Here we are specifying the initial values to use for the catchability of the indices:
+```{r eval=FALSE}
+#initial values for fully-selected catchability
+q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
+```
+
+Finally the `NAA_re` argument (see `?set_NAA`). Here we are specifying the initial values to use for the parameters for initial abundance at age:
+```{r eval=FALSE}
+NAA_info <- list(N1_pars = exp(input$par$log_N1))
+```
+
+Now, we can either create the input using all information at once:
+```{r eval=FALSE}
+#all at once 
+input_all <- prepare_wham_input(
+    basic_info = basic_info,
+    selectivity = sel_info, 
+    catch_info = catch_info, 
+    index_info = index_info, 
+    NAA_re = NAA_info,
+    M = M_info, 
+    F = F_info, 
+    catchability = q_info)
+```
+
+Or we can create the input sequentially:
+```{r eval=FALSE}
+#piece by piece
+input_seq <- prepare_wham_input(basic_info = basic_info)
+input_seq <- set_NAA(input_seq, NAA_re = NAA_info)
+input_seq <- set_M(input_seq, M = M_info)
+input_seq <- set_catch(input_seq, catch_info = catch_info)
+input_seq <- set_F(input_seq, F = F_info)
+input_seq <- set_indices(input_seq, index_info = index_info)
+input_seq <- set_q(input_seq, catchability = q_info)
+input_seq <- set_selectivity(input_seq, selectivity = sel_info)
+```
+The functions for each component of the input allow the user to quickly change just one aspect of the model and leave everything else the same.
+
+And the traditional use of the ASAP object to make the input:
+```{r eval=FALSE}
+input_asap <- prepare_wham_input(asap3, F = F_in, catchability = q_in, selectivity = sel_info) 
+```
+
+First, let's create the wham models without fitting them so the objective function is evaluated at the intial parameters. Note there are no process errors/random effects specified in these inputs.
+```{r eval=FALSE}
+#compare 
+nofit_all <- fit_wham(input_all, do.fit = FALSE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE)
+```
+
+Now evaluating the objective function (by default at the initial values), shows that the log-likelihoods are the same for each of the models from inputs created different ways:
+```{r eval=FALSE}
+c(nofit_all$fn(), nofit_seq$fn(),nofit_asap$fn()) #equal
+c(sum(nofit_asap$par-nofit_all$par), sum(nofit_asap$par-nofit_seq$par) #all equal
+```
+```{r echo=FALSE}
+vign13_res$single_nofit$obj
+vign13_res$single_nofit$par_diff
+```
+
+Also if we fit the models, we see that the maximized log-likelhoods are also identical:
+```{r eval=FALSE}
+fit_seq <- fit_wham(input_seq, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+fit_asap <- fit_wham(input_asap, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
+c(fit_seq$opt$obj, fit_all$opt$obj, fit_asap$opt$obj)
+c(sum(fit_asap$opt$par-fit_all$opt$par), sum(fit_asap$opt$par-fit_seq$opt$par)) #all equal
+```
+```{r echo=FALSE}
+vign13_res$single_fit$obj
+vign13_res$single_fit$par_diff
+```
+
+## 3. 2 stocks and 2 regions, no movement
+
+Read in the ASAP3 .dat files into R and create an input from it. WHAM will by default specify each ASAP dat file to represent a different stock in a separate region without movement:
+```{r eval=FALSE}
+diff_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("north.dat","south.dat")))
+selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selblocks = 12,
+    fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
+    initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))
+input <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity)
+```
+
+As for the single stock example, we will extract all of the elements of the `input` needed to create a wham input object without using to the `asap3` object in `prepare_wham_input`.
+
+The various list arguments to prepare_wham_input or model component functions are filled out with 2 stock and 2 region structure:
+```{r eval=FALSE}
+basic_info <- list(
+    n_stocks = 2L,
+    n_regions = 2L,
+    region_names <- c("North_r", "South_r"),
+    stock_names <- c("North_s", "South_s"),
+    ages = 1:input$data$n_ages,
+    n_seasons = 1L,
+    n_fleets = input$data$n_fleets,
+    fracyr_SSB = cbind(input$data$fracyr_SSB), #(n_years x n_stocks)
+    maturity = input$data$mature, #(n_stocks x n_years x n_ages)
+    years = as.integer(input$years),
+    waa = input$data$waa, #(any no. x n_years x n_ages)
+    waa_pointer_ssb = input$data$waa_pointer_ssb, #(n_stocks)
+    spawn_regions = 1:2, #(n_stocks)
+    spawn_seasons = c(1,1) #(n_stocks)
+)
+
+catch_info <- list(
+    n_fleets = NCOL(input$data$agg_catch), #(n_fleets)
+    agg_catch = cbind(input$data$agg_catch), #(n_years x n_fleets)
+    agg_catch_cv = cbind(sqrt(exp(input$data$agg_catch_sigma^2) - 1)), #(n_years x n_fleets)
+    catch_paa = input$data$catch_paa, #(n_fleets x n_years x n_ages)
+    use_catch_paa = cbind(input$data$use_catch_paa), #(n_years x n_fleets), 0: don't use, 1: use
+    catch_Neff = cbind(input$data$catch_Neff), #(n_years x n_fleets)
+    selblock_pointer_fleets = cbind(input$data$selblock_pointer_fleets), #(n_years x n_fleets)
+    waa_pointer_fleets = input$data$waa_pointer_fleets, #(n_fleets)
+    fleet_regions = rep(c(1:2),c(2,2)) #(n_fleets)
+)
+
+index_info <- list(
+    n_indices = NCOL(input$data$agg_indices),
+    agg_indices = cbind(input$data$agg_indices), #(n_years x n_indices)
+    units_indices = input$data$units_indices, #(n_indices) 1: biomass 2: numbers
+    units_index_paa = input$data$units_index_paa, #(n_indices) 1: biomass 2: numbers
+    agg_index_cv = cbind(sqrt(exp(input$data$agg_index_sigma^2) - 1)), #(n_years x n_indices)
+    index_Neff = cbind(input$data$index_Neff), #(n_years x n_indices)
+    fracyr_indices = cbind(input$data$fracyr_indices), #(n_years x n_indices)
+    use_indices = cbind(input$data$use_indices), #(n_years x n_indices)
+    use_index_paa = cbind(input$data$use_index_paa),  #(n_years x n_indices)
+    index_paa = input$data$index_paa,  #(n_indices x n_years x n_ages)
+    selblock_pointer_indices = cbind(input$data$selblock_pointer_indices), #(n_years x n_indices)
+    waa_pointer_indices = input$data$waa_pointer_indices, #(n_indices)
+    index_regions = rep(c(1:2),c(2,2))) #(n_indices)
+
+#initial values for natural mortality, will not be estimated
+MAA <- exp(input$par$M_re) #(nstocks x n_regions x n_years x n_ages)
+for(i in 1:2) for(j in 1:2) MAA[i,j,,] <- MAA[i,j,,]*exp(matrix(input$par$Mpars[i,j,], length(basic_info$years), length(basic_info$ages), byrow = TRUE))
+M_info <- list(initial_MAA = MAA)
+
+#initial values for annual fully-selected fishing mortality
+F_info <- list(F = matrix(0.3, length(basic_info$years), catch_info$n_fleets)) #(n_years x n_fleets)
+
+#initial values for fully-selected catchability
+q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
+
+#recruitment and "survival" random effects, initial N configuration is equilibrium (estimate initial recruitment and equilibrium fully-selected F), and inital median recruitment parameters
+NAA_list <- list(sigma = "rec+1", N1_model = rep("equilibrium",2), recruit_pars = list(exp(10),exp(10)))
+```
+
+Then create the inputs 3 different ways as above:
+```{r eval=FALSE}
+#all at once 
+input_all <- prepare_wham_input(
+    basic_info = basic_info,
+    NAA_re = NAA_list,
+    selectivity = selectivity, 
+    catch_info = catch_info, 
+    index_info = index_info, 
+    M = M_info, 
+    F = F_info, 
+    catchability = q_info)
+
+#piece by piece
+input_seq <- prepare_wham_input(basic_info = basic_info)
+input_seq <- set_NAA(input_seq, NAA_re = NAA_list)
+input_seq <- set_M(input_seq, M = M_info)
+input_seq <- set_catch(input_seq, catch_info = catch_info)
+input_seq <- set_F(input_seq, F_info)
+input_seq <- set_indices(input_seq, index_info = index_info)
+input_seq <- set_q(input_seq, q_info)
+input_seq <- set_selectivity(input_seq, selectivity = selectivity)
+
+input_asap <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity, NAA_re = NAA_list)
+```
+
+And the unfit models are equivalent:
+```{r eval=FALSE}
+#compare 
+nofit_all <- fit_wham(input_all, do.fit = FALSE, do.brps = FALSE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE, do.brps = FALSE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE, do.brps = FALSE)
+
+c(nofit_all$fn(), nofit_seq$fn(),nofit_asap$fn()) #equal
+c(sum(nofit_asap$par-nofit_all$par), sum(nofit_asap$par-nofit_seq$par)) #all equal
+```
+```{r echo=FALSE}
+vign13_res$multi_nofit$obj
+vign13_res$multi_nofit$par_diff
+```
+
+As are the fitted models:
+```{r eval=FALSE}
+fit_seq <- fit_wham(input_seq, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+fit_asap <- fit_wham(input_asap, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+
+c(fit_seq$opt$obj, fit_all$opt$obj, fit_asap$opt$obj) # equal
+c(sum(fit_asap$opt$par-fit_all$opt$par), sum(fit_asap$opt$par-fit_seq$opt$par)) #all equal
+```
+```{r echo=FALSE}
+vign13_res$multi_fit$obj
+vign13_res$multi_fit$par_diff
+```

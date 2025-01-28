@@ -32,6 +32,10 @@ navbar:
          href: articles/ex10_simulation.html
       -  text: "Ex 11: Catchability configurations"
          href: articles/ex11_catchability.html
+      -  text: "Ex 12: Multiple stocks, regions"
+         href: articles/ex12_multistock.html
+      -  text: "Ex 13: WHAM without ASAP"
+         href: articles/ex13_no_ASAP.html
 
     - text: "Functions"
       icon: far fa-file-code fa-lg
@@ -75,6 +79,8 @@ articles:
       - ex09_retro_pred
       - ex10_simulation
       - ex11_catchability
+      - ex12_multistock
+      - ex13_no_ASAP
 
 reference:
   - title: Exported functions that user can call directly
