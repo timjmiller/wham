@@ -2,7 +2,7 @@
 title: "Ex 13: Using WHAM without ASAP"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Ex 1: The basics}
+  %\VignetteIndexEntry{Ex 13: Using WHAM without ASAP}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

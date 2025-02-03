@@ -10,6 +10,7 @@
 #'     \item{$n_indices}{number of indices}
 #'     \item{$index_regions}{vector (n_indices) of regions where each fleet operates.}
 #'     \item{$index_seasons}{vector (n_indices) of 0/1 values flagging which seasons each index occurs.}
+#'     \item{$index_names}{character vector (n_indices) of names for indices Used for naming results in plots and tables.}
 #'     \item{$agg_indices}{matrix (n_years_model x n_indices) of annual aggregate index catches.}
 #'     \item{$agg_index_cv}{matrix (n_years_model x n_indices) of CVs for annual aggregate index catches.}
 #'     \item{$fracyr_indices}{matrix (n_years_model x n_indices) of fractions of year at which index occurs within the season (difference between time of survey and time at start of season).}
@@ -34,7 +35,6 @@ set_indices = function(input, index_info=NULL) {
 	if(is.null(asap3)) {
 	  data$n_indices = 1
 	} else {
-		input$index_names <- NULL
     for(i in 1:length(asap3)) {
 			which_indices <- which(asap3[[i]]$use_index ==1)
 			asap3[[i]]$n_indices = length(which_indices)
@@ -53,6 +53,11 @@ set_indices = function(input, index_info=NULL) {
     data$n_indices = sum(n_indices_per_region)
 	} 
 	if(!is.null(index_info$n_indices)) data$n_indices = index_info$n_indices
+  if(!is.null(index_info$index_names)) {
+    if(is.character(index_info$index_names) & length(index_info$index_names)== data$n_indices) input$index_names <- index_info$index_names
+    else stop("index_info$index_names is either not a character vector or its length is not equal to the number of indices.")
+    # if(length(unique(input$index_names)) != data$n_indices) stop("Some index_info$index_names are repeated. Provide unique names.")
+  }
 	if(is.null(input$index_names)) input$index_names <- paste0("index_", 1:data$n_indices)
 
   data$index_regions = rep(1, data$n_indices)
@@ -121,7 +126,7 @@ set_indices = function(input, index_info=NULL) {
 	if(!is.null(index_info$index_Neff)) data$index_Neff[] = index_info$index_Neff
   
   if(!is.null(index_info$waa_pointer_indices)){
-    if(!is_internal_call()){
+    if(is.null(input$by_pwi)){
       if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_index with index_info$waa_pointer_indices.")
       if(any(!(index_info$waa_pointer_indices %in% 1:dim(data$waa)[1]))){
         stop("some index_info$waa_pointer_indices are outside the number of waa matrices.\n")
@@ -177,7 +182,7 @@ set_indices = function(input, index_info=NULL) {
   input$data = data
   if(length(input$log$indices))  input$log$indices <- c("Indices: \n", input$log$indices)
  	input$options$index <- index_info
-  if(!is_internal_call()) { #check whether called by prepare_wham_input
+  if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
   	input <- set_selectivity(input, input$options$selectivity)
   	input <- set_age_comp(input, input$options$age_comp)
   	input <- set_osa_obs(input)

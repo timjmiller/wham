@@ -434,7 +434,7 @@ set_M = function(input, M)
 	input$random = NULL
 	input = set_random(input)
   input$options$M <- M
-  if(!is_internal_call()) cat(unlist(input$log$M, recursive=T))
+  if(is.null(input$by_pwi)) cat(unlist(input$log$M, recursive=T))
   return(input)
 
 }

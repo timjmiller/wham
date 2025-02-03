@@ -1,0 +1,468 @@
+---
+title: "Ex 12: Multiple stocks and region and movement"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ex 12: Multiple stocks and region and movement}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+#wham.dir <- find.package("wham")
+#knitr::opts_knit$set(root.dir = file.path(wham.dir,"extdata"))
+```
+In this vignette we show how to create inputs for 2 stocks and 2 regions with 5 seasons within the year and configure movement that is constant or with age or annual random effects. 
+
+1. Load wham library and set up a directory for work
+
+2. Create inputs and fitting model for a two stock model without movement
+    - Load asap files
+    - create arguments to `prepare_wham_input` and model component functions (e.g., `set_move`)
+    - examine components of unfitted and fitted model
+
+3. Create inputs and fitting model with movement of 1 stock
+    - Load asap files
+    - create arguments to `prepare_wham_input` and model component functions
+    - examine components of unfitted and fitted model
+
+4. Create inputs and fitting model with age-varying movement
+    - Load asap files
+    - create arguments to `prepare_wham_input` and model component functions
+    - examine components of unfitted and fitted model
+
+5. Create inputs and fitting model with time-varying movement
+    - Load asap files
+    - create arguments to `prepare_wham_input` and model component functions
+    - examine components of unfitted and fitted model
+
+6. Create inputs and fitting model with a prior distribution on movement 
+    - create arguments to `prepare_wham_input` and model component functions
+    - examine components of input and fitted model
+
+
+## 1. Getting started
+
+If you have not already installed `wham`, see the [Introduction](https://timjmiller.github.io/wham/) for instructions.
+
+Open R and load the `wham` package:
+```{r, eval = FALSE}
+library(wham)
+```
+```{r, include = FALSE}
+is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to build the vignettes without the new version of wham installed.
+if(is.character(is.repo)) library(wham) #not building webpage
+#note that if plots are not yet pushed to the repo, they will not show up in the html.
+wham.dir <- find.package("wham")
+```
+
+Create a directory for this analysis:
+```{r, eval=FALSE}
+# choose a location to save output, otherwise will be saved in working directory
+write.dir <- "choose/where/to/save/output" #e.g., tempdir(check=TRUE)
+dir.create(write.dir)
+setwd(write.dir)
+```
+```{r, eval = TRUE, include=FALSE}
+write.dir <- tempdir(check=TRUE)
+setwd(write.dir)
+```
+For a clean, runnable `.R` script, look at `ex12_multistock.R` in the `example_scripts` folder of the `wham` package.
+You can run this entire example script with:
+```{r, eval=FALSE}
+wham.dir <- find.package("wham")
+source(file.path(wham.dir, "example_scripts", "ex13_multistock.R"))
+```
+
+## 2. Creating inputs to fit a two stock model without movement
+
+Read the ASAP3 .dat files into R and create an input. Note any number of asap dat files can be read in and by default a model will be created with a stock and its own region for each .dat file and no connectivity. So, one could fit the same single stock model a number times simultaneously by reading in the same dat file multiple times.
+```{r eval=FALSE}
+path_to_examples <- system.file("extdata", package="wham")
+diff_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("north.dat","south.dat")))
+selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selblocks = 12,
+    fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
+    initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))
+diff_stocks_input <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity)
+fit_diff_stocks <- fit_wham(diff_stocks_input, do.osa = FALSE, do.retro= FALSE, do.sdrep = FALSE)
+```
+We will use `diff_stocks_asap` throughout this vignette, but changing movement and parameter assumptions along the way.
+
+## 3. Creating inputs to fit a two stock model with movement for 1 stock
+
+We will use the asap inputs, but we will also specify some elements of the `basic_info` argument to `prepare_wham_input` that provides a list of various "basic" model structure information:
+```{r eval=FALSE}
+input <- diff_stocks_input
+basic_info <- list(
+    n_stocks = input$data$n_stocks,
+    n_regions = input$data$n_regions,
+    region_names <- c("North_r", "South_r"), #n_regions
+    stock_names <- c("North_s", "South_s"), #n_stocks
+    ages = 1:input$data$n_ages,
+    n_fleets = input$data$n_fleets,
+    maturity = input$data$mature, #n_stocks x n_years x n_ages
+    years = as.integer(input$years),
+    waa = input$data$waa, #any no. x n_years x n_ages
+    waa_pointer_ssb = input$data$waa_pointer_ssb, #n_stocks
+    spawn_regions = input$data$spawn_regions #n_stocks
+)
+```
+We define the first stock to be a northern stock and stock 2 to be a southern stock. The spatial regions have the same name and order.
+Note we can supply names for regions, stocks, fleets (in `catch_info$fleet_names`), and indices (in `index_info$index_names`) that are used in generating more descriptive model output.
+
+Below we specify the seasonal information: number, what fraction of the year for each season, which season spawning occurs, and the fraction of the year where spawning occurs.
+```{r eval=FALSE}
+basic_info$n_seasons <- 5L
+basic_info$fracyr_seasons <- rep(1/5,5) #does not have to be equal lengths.
+basic_info$spawn_seasons <- c(3,3)
+basic_info$fracyr_SSB <- input$data$fracyr_SSB#-2/5 # this should be fixed in prepare_wham_input
+```
+
+Below we specify which ages can be where on January 1 of each year. Currently, WHAM only models spawning and recruitment for each stock in only 1 region (natal homing). So that the northern stock only spawns in the northern region. Spawning age fish may occur in other regions during the spawning season, but are assumed to not be part of the spawning population. We are going to assume movement only for the northern stock.
+```{r eval=FALSE}
+n_ages <- length(basic_info$ages)
+#each age other than 1 (recruitment) for north stock can be in either region on Jan 1 
+basic_info$NAA_where <- array(1, dim = c(2,2,n_ages)) #n_stocks x n_regions x n_ages
+basic_info$NAA_where[1,2,1] <- 0 #stock 1, age 1 can't be in region 2 on Jan 1
+basic_info$NAA_where[2,1,] <- 0 #stock 2, any age can't be in region 1 2 on Jan 1 (stock 2 doesn't move) 
+```
+
+Next, we configure 5 equal length seasons and define movement only for the northern stock (`stock_move`) to be separable (and sequential to) from mortality (`separable = TRUE`). We use `must_move` and `can_move` (0s and 1s) to constrain movement between regions each season. When values of `must_move = 1` fish must move from the region, so must_move[1,3,2] = 1 would mean that the northern stock must move from the south at the end of the 3rd season. `can_move=1` defines that movement is possible to a particular region from another, so can_move[1,4,2]=0 would mean that the northern stock cannot move to the south at the end of the 4th season. Note that the when the last two indices are the same e.g., `can_move[1,2,r,r]` where `r` is any region is not used because the probability of staying in each region is calculated as 1 - the sum of the probabilities of movement out of the region.
+
+We will define that north stock fish must move back to region 1 at the end of the second season before spawning in the third season and that fish can only move out of the north in the other seasons.
+```{r eval=FALSE}
+n_seasons <- basic_info$n_seasons
+move = list(stock_move = c(TRUE,FALSE), #n_stocks
+    separable = TRUE) #north moves, south doesn't
+move$must_move <- array(0,dim = c(2,n_seasons,2))   #n_stocks x n_seasons x n_regions
+#if north stock in region 2 (south) must move back to region 1 (north) at the end of interval 2 before spawning
+move$must_move[1,2,2] <- 1 #stock 1 must move at the end of season 2 from region 2
+move$can_move <- array(0, dim = c(2,n_seasons,2,2))
+move$can_move[1,c(1,4:5),1,2] <- 1 #only north stock can move in seasons outside of spawning and only from north to south (except at the end of season 2)
+move$can_move[1,2,2,] <- 1 #north stock can (and must) move in second/last season prior to spawning back to north
+```
+
+We also can provide initial (or fixed) values for movement parameters. Below we initialize the mean or constant movement probabilities/proportions to all be 0.3 and `mean_model = "stock_constant"` defines constant movement parameters between each region, but that they differ by stock. This difference between stocks is necessary here because we want to define no movement at all for the southern stock.
+```{r eval=FALSE}
+mus <- array(0, dim = c(2,n_seasons,2,1))
+mus[1,1:n_seasons,1,1] <- 0.3 #initial value proportion moving to south = 0.3 (mean of prior)
+mus[1,1:n_seasons,2,1] <- 0.3 #initial value proportion north to south = 0.3 (will not be used)
+move$mean_vals <- mus 
+move$mean_model <- matrix("stock_constant", 2,1)
+```
+
+Although not necessary because we are using `diff_stocks_asap`, below we define the fixed natural mortality for each stock and intiial values for fully selected fishing mortality for the fleets and catchability for the indices. We define process errrors on both recruitment and annual transitions of older ages and we specify an equilibrium assumption for the initial numbers at age. This simplyfing equilibrium assumption (rather than estimating each initial abundance at age as a separate parameter) may often be necessary because of the lack of information on abundance of individuals in each region for each stock.
+```{r eval=FALSE}
+MAA <- exp(input$par$M_re)
+for(i in 1:2) for(j in 1:2) MAA[i,j,,] <- MAA[i,j,,]*exp(matrix(input$par$Mpars[i,j,], length(basic_info$years), length(basic_info$ages), byrow = TRUE))
+M_in <- list(initial_MAA = MAA)
+
+F_in <- list(F = matrix(0.3, length(basic_info$years), input$data$n_fleets))
+q_in <- list(initial_q = rep(1e-6, input$data$n_indices))
+
+NAA_list <- list(sigma = "rec+1", N1_model = rep("equilibrium",2))
+
+input_move <- prepare_wham_input(diff_stocks_asap,
+    basic_info = basic_info,
+    NAA_re = NAA_list,
+    selectivity = selectivity, 
+    M = M_in, 
+    F = F_in, 
+    catchability = q_in,
+    move = move)
+```
+
+Now we create an unfit model just to examine how the individuals for the northern stock are moving and surviving each season.
+```{r eval=FALSE}
+nofit_move <- fit_wham(input_move, do.fit = FALSE, do.brps = FALSE)
+```
+
+WHAM calculates and reports various items in the `$rep` element of the model, including the probability transition matrices for each season in the terminal year (`$rep$seasonal_Ps_terminal`, an array with dimensions: n_stocks x n_seasons x n_ages x n_states x n_states). When there are two stocks, 2 regions and 4 fleets, there will be 7 possible states in this order:
+    - alive in each region (2)
+    - dead due to fishing by each fleet (4)
+    - dead due to natural mortality (1)
+The rows correspond to the state at the beginning of the season and the columns correspond to the state at the end of the season.
+So for the first season for the northern stock (stock 1):
+```{r eval=FALSE}
+#first season
+nofit_move$rep$seasonal_Ps_terminal[1,1,8,,]
+```
+```{r echo=FALSE}
+vign_12_info$move$nofit_seasonal_Ps_terminal[1,1,8,,]
+```
+
+Note we have specifed the PTM for first season and age 8, but the PTMs are the same across ages because as we configured in the input. There is a probability of surviving and occuring in the same region at the end of the season = 0.573 and a probability of being in the south = 0.246. There are only non-zero probabilities of capture in the northern fleets (row 1) because movement is sequential to survival and occurs at the end of the season. Starting the season in the south, there is no probabilty of surviving and being in the north because movement to the north is not allowed.
+
+For season 2 we can see that all fish in the south must move back to the north as we specified.
+```{r eval=FALSE}
+#second season
+nofit_move$rep$seasonal_Ps_terminal[1,2,8,,]
+```
+```{r echo=FALSE}
+vign_12_info$move$nofit_seasonal_Ps_terminal[1,2,8,,]
+```
+We can also see that there is no movement for the southern stock. They probabilities proportions in each state are always defined by the second row of the matrix because they never move from the south:
+```{r eval=FALSE}
+#1st season, southern stock
+nofit_move$rep$seasonal_Ps_terminal[2,1,8,,]
+```
+```{r echo=FALSE}
+vign_12_info$move$nofit_seasonal_Ps_terminal[2,1,8,,]
+```
+
+WHAM also calculates and reports the annual probability transition matrices (`$rep$annual_Ps`, an array with dimensions: n_stocks x n_years x n_ages x n_states x n_states) that are used to define the numbers at age on January 1 each year and we can see that indeed they are equal to the product of the seasonal matrices:
+```{r eval=FALSE}
+P <- diag(7)
+for(i in 1:5) P <- P %*% nofit_move$rep$seasonal_Ps_terminal[1,i,8,,]
+P
+```
+```{r echo=FALSE}
+P <- diag(7)
+for(i in 1:5) P <- P %*% vign_12_info$move$nofit_seasonal_Ps_terminal[1,i,8,,]
+P
+```
+```{r eval=FALSE}
+nofit_move$rep$annual_Ps[1,33,8,,]
+```
+```{r echo=FALSE}
+vign_12_info$move$nofit_annual_Ps[1,33,8,,]
+```
+
+```{r eval=FALSE}
+#for the southern stock
+P <- diag(7)
+for(i in 1:5) P <- P %*% nofit_move$rep$seasonal_Ps_terminal[2,i,8,,]
+P
+```
+```{r echo=FALSE}
+P <- diag(7)
+for(i in 1:5) P <- P %*% vign_12_info$move$nofit_seasonal_Ps_terminal[2,i,8,,]
+P
+```
+```{r eval=FALSE}
+nofit_move$rep$annual_Ps[2,33,8,,]
+```
+```{r echo=FALSE}
+vign_12_info$move$nofit_annual_Ps[2,33,8,,]
+```
+
+To fit the model, first we will fix the movement parameter from south to north for the northern stock because it is never used. No movement is allowed by `$can_move` except the complete movement of any fish in the south back to the north at the end of the second season is forced by `$must_move`. Unfortunately, `prepare_wham_input` and `set_move` are not clever enough to figure this out yet so, we must manually edit the `$map` that is used for the `map` argument to `TMB::MakeADFun` (see help file for `TMB::MakeADFun` for more details of the map argument). `input$par$trans_mu` is the array (n_stocks x n_seasons x n_regions x n_regions-1) of movement parameters estimated on a transformed (dependent on the whether movement is sequential or simultaneous to mortality) scale that does not require bounds. So `trans_mu[1,,2,1]` is the movement parameters for stock 1 (northern) across all seasons (blank index is equal to specifying all seasons 1:5) moving from region 2 (south) to region 1 (north).
+```{r eval=FALSE}
+x <- input_move$par$trans_mu #n_stocks x n_seasons x n_regions x n_regions - 1
+x[] <- as.integer(input_move$map$trans_mu)
+x[1,,2,1] <- NA
+input_move$map$trans_mu <- factor(x)
+```
+There are only n_regions - 1 estimated parameters for movement for each stock, season, and starting region because the probabity of being in a given region is 1 - the sum of the probabilities of being in each of the other regions. 
+
+
+Now, we can fit the model and WHAM reports the movement rates estimates as probabilities/proportions (conditional on surviving the seasonal interval) in `$rep$mu`, an array (n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions). The single estimated seasonal movement parameter is from north to south for the northern stock and is the estimate is very small (0.0093).
+```{r eval=FALSE}
+fit_move <- fit_wham(input_move, do.osa = FALSE, do.retro = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+#estimated movement
+fit_move$rep$mu[1,8,1,1,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move$mu[1,8,1,1,1,2]
+```
+
+## 4. Fitting a model with age-varying movement
+
+Next we will demonstrate estimation of age-varying movement as random effects. We configure random effects across age using the `age_re` element of the `move` argument to `prepare_wham_input` and `set_move`. `age_re` is a character matrix (n_regions x n_regions - 1) defining whether to model age-varying random effects for each movement parameter. There is an interaction with `$can_move` and `$mean_model` to define whether random effects (like the mean fixed effects) are common across stocks, seasons, etc, and are excluded for regions where movement is not allowed. We will specify uncorrelated randome effects (`iid`) for the movement from north to south:
+```{r eval=FALSE}
+#age-specific RE
+move_age <- move
+move_age$age_re <- matrix("none",2,1)
+move_age$age_re[1,1] <- "iid"
+
+input_move_age <- prepare_wham_input(diff_stocks_asap,
+    basic_info = basic_info,
+    NAA_re = NAA_list,
+    selectivity = selectivity, 
+    M = M_in, 
+    F = F_in, 
+    catchability = q_in,
+    move = move_age)
+
+length(unique(input_move_age$map$mu_re)) #+1 for NAs
+```
+```{r echo=FALSE}
+vign_12_info$move_age$n_unique_mu_re
+```
+In our model only movement from the north to the south for the northern stock is allowed and it is constant across seasons so there will only be 8 random effects estimated and applied to all seasons (other map values are NA hence 9 unique values).
+
+Creating the unfit model still performs the inner optimization of the random effects given the initial values of the fixed effects, so we can see that in fact there are different movement rates by age
+```{r eval=FALSE}
+nofit_move_age <- fit_wham(input_move_age, do.fit = FALSE, do.brps = FALSE)
+
+#age-specific movement rates assuming initial values for fixed effects
+nofit_move_age$rep$mu[1,1:8,1,1,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move_age$nofit_mu[1,1:8,1,1,1,2]
+```
+
+Fitting the model, again we must fix the movement rate parameters from south to north, and we can see that the minimized negative log-likelihood is lower allowing the age-varying random effects:
+```{r eval=FALSE}
+x <- input_move_age$par$trans_mu
+x[] <- as.integer(input_move_age$map$trans_mu)
+x[1,,2,1] <- NA
+input_move_age$map$trans_mu <- factor(x)
+
+input_move_age$par <- fit_move$parList
+fit_move_age <- fit_wham(input_move_age, do.osa = FALSE, do.retro = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+
+c(fit_move$opt$obj,fit_move_age$opt$obj)
+#different
+```
+```{r echo=FALSE}
+c(vign_12_info$move$obj,vign_12_info$move_age$obj)
+```
+
+And the estimated movement rates for each age are all very small like the mean in the constant model except that age 8+ jumps up to almost 0.02:
+```{r eval=FALSE}
+#age-specific movement rates
+fit_move_age$rep$mu[1,,1,1,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move_age$mu[1,,1,1,1,2]
+```
+
+## 5. Fitting a model with time-varying movement
+
+Next we will demonstrate estimation of year-varying movement as random effects. Configuring random effects across year is similar to age. Like `$age_re`, `$year_re` is a character matrix (n_regions x n_regions - 1) defining whether to model year-varying random effects for each movement parameter. There is an interaction with `$can_move` and `$mean_model` to define whether random effects (like the mean fixed effects) are common across stocks, seasons, etc, and are excluded for regions where movement is not allowed. We will specify uncorrelated randome effects (`iid`) for the movement from north to south:
+
+```{r eval=FALSE}
+#year-specific RE
+move_year <- move
+move_year$year_re <- matrix("none",2,1)
+move_year$year_re[1,1] <- "iid"
+
+input_move_year <- prepare_wham_input(diff_stocks_asap,
+    basic_info = basic_info,
+    NAA_re = NAA_list,
+    selectivity = selectivity, 
+    M = M_in, 
+    F = F_in, 
+    catchability = q_in,
+    move = move_year)
+
+length(unique(input_move_year$map$mu_re)) #+1 for NAs
+```
+```{r echo=FALSE}
+vign_12_info$move_year$n_unique_mu_re
+```
+There will be n_years = 33 random effects estimated and applied to all seasons (other map values are NA hence 34 unique values).
+
+Creating the unfit model still performs the inner optimization of the random effects given the initial values of the fixed effects, so we can see that in fact there are different movement rates by year
+```{r eval=FALSE}
+nofit_move_year <- fit_wham(input_move_year, do.fit = FALSE, do.brps = FALSE)
+#year-specific movement rates assuming initial values for fixed effects
+nofit_move_year$rep$mu[1,8,1,,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move_year$nofit_mu[1,8,1,,1,2]
+```
+
+Fitting the model (again we must fix the movement rate parameters from south to north), we can see that the minimized negative log-likelihood allowing the year-varying random effects is the same as that when movement is constant:
+```{r eval=FALSE}
+x <- input_move_year$par$trans_mu
+x[] <- as.integer(input_move_year$map$trans_mu)
+x[1,,2,1] <- NA
+input_move_year$map$trans_mu <- factor(x)
+
+input_move_year$par <- fit_move$parList
+fit_move_year <- fit_wham(input_move_year, do.osa = FALSE, do.retro = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+
+c(fit_move$opt$obj, fit_move_year$opt$obj)
+#the same
+```
+```{r echo=FALSE}
+c(vign_12_info$move$obj,vign_12_info$move_year$obj)
+```
+
+The random effects collapse to annual movement rates to the constant value and there estimated variance approaches 0 (`mu_repars` is an array holding variance and correlation parameters for movement random effects):
+```{r eval=FALSE}
+fit_move_year$rep$mu[1,8,1,,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move_year$mu[1,8,1,,1,2]
+```
+```{r eval=FALSE}
+#the log(sd) of the RE
+fit_move_year$parList$mu_repars[1,1,1,1,1]
+```
+```{r echo=FALSE}
+vign_12_info$move_year$mu_repars[1,1,1,1,1]
+```
+
+## 6. Fitting a model with prior distribution for movement
+
+Because WHAM currently has no ability to include tagging data to inform movement and mortality rates, options to configure prior distributions for mean movement rates are provided. The prior distributions ideally would be based on results from external analyses of tagging data, but here we just assume a distribution to demonstrate the option. Prior distributions are all normal distributions on the transformed scale of the movement paramters We specify the central tendency using the `$mean_vals` of the `move` argument and `$prior_sigma` is the standard devation. The `mean_vals` are not transformed but the normal distribution will have a mean assumed with the appropriate transformation. For example, here with the sequential assumption for movement the parameters are all additive logit transformed so the movement rates have a logistic normal distribution (like the age composition likelihood option) where the same logit transformation is applied to the mean for the expectation of the normal distribution. The estimated movement rate will be a random effect with this distribution and used to define the estimated mean (transformed) movement.
+
+Different prior distributions could be used for each stock, season and region to region parameter (`$use_prior` is a n_stocks x n_seasons x n_regions x n_regions-1 array). Because our model assumed movement is constant across seasons, we need to make sure there is only one random effect applied to all seasons. We wil assume the prior mean is defined by the starting value already provided above (0.3) and standard deviation of the normal prior is 0.2.
+```{r eval=FALSE}
+#just use prior once because it is constant over all seasons.
+move_prior <- move
+move_prior$use_prior <- array(0, dim = c(2,n_seasons,2,1))
+#movement is not used in first season, but the parameter is constant across seasons. Could use it in any (single) season
+move_prior$use_prior[1,1,1,1] <- 1
+# sd on logit scale
+move_prior$prior_sigma <- array(0, dim = c(2,n_seasons,2,1))
+move_prior$prior_sigma[1,1,1,1] <- 0.2
+move_prior$mean_vals[1,1,1,1] #transform (inverse logit here) of mean of the prior distribution 
+```
+```{r echo=FALSE}
+vign_12_info$move_prior$mean_vals[1,1,1,1]
+```
+
+```{r eval=FALSE}
+input_move_prior <- prepare_wham_input(diff_stocks_asap,
+    basic_info = basic_info,
+    NAA_re = NAA_list,
+    selectivity = selectivity, 
+    M = M_in, 
+    F = F_in, 
+    catchability = q_in,
+    move = move_prior)
+
+c(length(unique(input_move_prior$map$mu_re)), #+1 for NAs
+length(unique(input_move_prior$map$mu_prior_re))) #+1 for NAs
+```
+```{r echo=FALSE}
+c(vign_12_info$move_prior$n_mu_re,vign_12_info$move_prior$n_mu_prior_re)
+```
+We can see there are no age- or time-varying random effects for movement and there is a single random effect for mean movement (`mu_prior_re`)
+
+
+Again we must fix the movement rate parameters from south to north:
+```{r eval=FALSE}
+x <- input_move_prior$par$trans_mu
+x[] <- as.integer(input_move_prior$map$trans_mu)
+x[1,,2,1] <- NA
+input_move_prior$map$trans_mu <- factor(x)
+```
+
+To expedite the fit, we can start at the parameters estimated by the model with movement estimated without the prior.
+```{r eval=FALSE}
+#fixed effect estimated in fit_move, use all estimates except the estimated mean movement parameter.
+ind <- names(fit_move$parList)[!names(fit_move$parList) %in% "trans_mu"]
+input_move_prior$par[ind] <- fit_move$parList[ind]
+fit_move_prior <- fit_wham(input_move_prior, do.osa = FALSE, do.retro = FALSE, do.sdrep = FALSE, do.brps = FALSE)
+
+#estimated movement
+fit_move$rep$mu[1,1,1,1,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move$mu[1,1,1,1,1,2]
+```
+```{r eval=FALSE}
+fit_move_prior$rep$mu[1,1,1,1,1,2]
+```
+```{r echo=FALSE}
+vign_12_info$move_prior$mu[1,1,1,1,1,2]
+```
+When using the prior, the estimated movement rate is much greater because of the 0.3 used to parameterize the mean of the prior and the small standard deviation assumed.

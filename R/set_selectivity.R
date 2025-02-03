@@ -460,7 +460,7 @@ set_selectivity = function(input, selectivity)
   input$random = NULL
   input = set_random(input)
   input$options$selectivity <- selectivity
-  if(!is_internal_call()) cat(unlist(input$log$selectivity, recursive=T))
+  if(is.null(input$by_pwi)) cat(unlist(input$log$selectivity, recursive=T))
   return(input)
 
 }

@@ -108,7 +108,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     for(r in 1:data$n_regions){
       ind = unique(map_sig[s,r,])
       use.reg.name <- ""
-      if(data$n_regions>1) use.reg.name <- paste0(" in ", region.names.tab[r])
+      if(data$n_regions>1) use.reg.name <- paste0(", ", region.names.tab[r])
       #npar = length(ind)
       #al = ah = integer()
       for(i in ind) {
@@ -132,7 +132,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     # if(is.null(mod$input$map$trans_NAA_rho)) mod$input$map$trans_NAA_rho <- 1:length(mod$input$par$trans_NAA_rho)
     for(r in 1:data$n_regions){
       use.reg.name <- ""
-      if(data$n_regions>1) use.reg.name <- paste0(" in ", region.names.tab[r])
+      if(data$n_regions>1) use.reg.name <- paste0(", ", region.names.tab[r])
       rho.names <- paste0(" ", c("NAA", "NAA","Recruitment"), " AR1 $\\rho$ ", c("age", "year", "year"))
       for(i in 1:3) if(!is.na(map_rho[s,r,i])){
         # fe.name <- paste(stock.names.tab[s], use.reg.name, rho.names[i])
@@ -148,20 +148,22 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   for(i in 1:data$n_indices) {
     tvar_q = length(unique(mod$rep$logit_q_mat[,i])) != 1  #see if anything is causing q to vary over time
     parname = ifelse(data$use_q_prior[i]== 0, "logit_q", "q_prior_re")
-    if(!tvar_q){
-      fe.names = c(fe.names, paste(index.names.tab[i], "fully selected q"))
+    use.reg.name <- ""
+    if(data$n_regions>1) use.reg.name <- paste0(" (in ", region.names.tab[data$index_regions[i]],")")
+    if(!tvar_q){      
+      fe.names = c(fe.names, paste0(index.names.tab[i], " fully selected q", use.reg.name))
       fe.vals = c(fe.vals, data$q_lower[i] + (data$q_upper[i]-data$q_lower[i])/(1 + exp( - pars[[parname]][i])))
       fe.cis = rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i], lo = data$q_lower[i],hi = data$q_upper[i], type = "expit"))
     } else {
-      fe.names = c(fe.names, paste(index.names.tab[i], "logit(q) intercept"))
+      fe.names = c(fe.names, paste0(index.names.tab[i], " logit(q) intercept", use.reg.name))
       fe.vals = c(fe.vals, pars[[parname]][i])
       fe.cis = rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i]))
       if(mod$input$data$use_q_re[i]){
-        fe.names = c(fe.names, paste(index.names.tab[i], "q RE $\\sigma$"))
+        fe.names = c(fe.names, paste0(index.names.tab[i], " q RE $\\sigma$", use.reg.name))
         fe.vals = c(fe.vals, exp(pars$q_repars[i,1]))
         fe.cis = rbind(fe.cis, ci(pars$q_repars[i,1], sd$q_repars[i,1], type = "exp"))
         if(mod$input$options$q$re[i] == "ar1"){
-          fe.names = c(fe.names, paste0(index.names.tab[i], "q RE AR1 $\\rho$ (year)"))
+          fe.names = c(fe.names, paste0(index.names.tab[i], " q RE AR1 $\\rho$ (year)", use.reg.name))
           fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$q_repars[i,2])))
           fe.cis = rbind(fe.cis, ci(pars$q_repars[i,2], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
         }
@@ -190,19 +192,19 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
 
     if(data$selblock_models[i] == 1) {
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], "Selectivity for age ", mod$ages.lab))
+      fe.names = c(fe.names, paste0(extra.names.mean[i], "Selectivity for age ", mod$ages.lab, " (Block ", i, ")"))
       ind = 1:data$n_ages
     }
     if(data$selblock_models[i] == 2){ #increasing logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$", "1/slope (increasing)")))
+      fe.names = c(fe.names, paste0(extra.names.mean[i], c("$a_{50}$", "1/slope (increasing)"), " (Block ", i, ")"))
       ind = data$n_ages + 1:2
     }
     if(data$selblock_models[i] == 3){ #double logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)")))
+      fe.names = c(fe.names, paste0(extra.names.mean[i], c("$a_{50}$ (1)", "1/slope (1)","$a_{50}$ (2)", "1/slope (2)"), " (Block ", i, ")"))
       ind = data$n_ages + 3:6
     }
     if(data$selblock_models[i] == 4){ #increasing logistic
-      fe.names = c(fe.names, paste0("Block ", i, ": ", extra.names.mean[i], c("$a_{50}$", "-1/slope (decreasing)")))
+      fe.names = c(fe.names, paste0(extra.names.mean[i], c("$a_{50}$", "-1/slope (decreasing)"), " (Block ", i, ")"))
       ind = data$n_ages + 1:2
     }
     fe.vals = c(fe.vals, ((data$selpars_lower + data$selpars_upper-data$selpars_lower)/(1 + exp(-pars$logit_selpars)))[i,ind])
@@ -211,7 +213,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
   for(i in 1:data$n_selblocks) if(data$selblock_models_re[i]>1){
-    fe.names = c(fe.names, paste0("Block ", i , ": ", extra.names[i], "Selectivity RE $\\sigma$"))
+    fe.names = c(fe.names, paste0(extra.names[i], "Selectivity RE $\\sigma$", " (Block ", i, ")"))
     fe.vals = c(fe.vals, exp(pars$sel_repars[i,1]))
     fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,1], sd$sel_repars[i,1], type = "exp"))
     if(data$selblock_models_re[i] %in% c(3,5)) {
@@ -219,12 +221,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(data$selblock_models[i] == 1) modify = " AR1 $\\rho$ (age)"
       if(data$selblock_models[i] %in% c(2,4)) modify = " $\\rho$ for $a_{50}$ and 1/slope" 
       if(data$selblock_models[i] == 3) modify = " AR1 $\\rho$ for double-logistic pars"
-      fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE", modify))
+      fe.names = c(fe.names, paste0(extra.names[i], "Selectivity RE", modify, " (Block ", i, ")"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
     }
     if(data$selblock_models_re[i] %in% c(4,5)) {
-      fe.names = c(fe.names, paste0("Block ", i ,": ", extra.names[i], "Selectivity RE AR1 $\\rho$ (year)"))
+      fe.names = c(fe.names, paste0(extra.names[i], "Selectivity RE AR1 $\\rho$ (year)", " (Block ", i, ")"))
       fe.vals = c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
       fe.cis = rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
     }
@@ -232,8 +234,14 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   #acomp_par_count = 0
   add_age_comp_pars = function(age_comp_models, use_paa, pars, pars_sd, is_fleet = TRUE, fe.names, fe.vals, fe.cis) {
     n_mods = length(age_comp_models)
-    if(is_fleet) startnames <- paste0(fleet.names.tab, " in ", region.names.tab[mod$input$data$fleet_regions])
-    else startnames <- paste0(index.names.tab, " in ", region.names.tab[mod$input$data$index_regions])
+    use.reg.name <- ""
+    if(is_fleet) {
+      if(data$n_regions>1) use.reg.name <- paste0(" (", region.names.tab[data$fleet_regions],") ")
+      startnames <- paste0(fleet.names.tab, use.reg.name)
+    } else {
+      if(data$n_regions>1) use.reg.name <- paste0(" (", region.names.tab[data$index_regions],") ")
+      startnames <- paste0(index.names.tab, use.reg.name)
+    }
     for(i in 1:n_mods){
       if(sum(use_paa[,i]) > 0){
         if(age_comp_models[i] %in% c(2:5,7,11)){
@@ -321,7 +329,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         if(data$M_re_model[s,r] >1){
           if(data$M_model == 1) modify = "mean log(M) intercept for age " #whether Ecov or not
         }
-        modify <- paste(stock.names.tab[s], region.names.tab[r], modify)
+        if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ", modify)
+        else modify <- paste0(stock.names.tab[s], " ", modify)
+
         if(data$M_model == 1) modify <- paste0(modify, mod$ages.lab[a])
         fe.names = c(fe.names, modify)
         if(data$M_re_model[s,r]>1 | data$M_model == 2 | sum(data$Ecov_how_M[,s,a,r]) >0){
@@ -335,7 +345,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
-    modify <- paste(stock.names.tab[s], region.names.tab[r])
+    if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ")
+    else modify <- paste0(stock.names.tab[s], " ")
+
     if(!is.na(sd$log_b[s,r])){
       fe.names = c(fe.names, paste0(modify, "log(M) slope for log(WAA) effect"))
       fe.vals = c(fe.vals, exp(pars$log_b[s,r]))
@@ -343,7 +355,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
-    modify <- paste(stock.names.tab[s], region.names.tab[r])
+    if(data$n_regions>1) modify <- paste(stock.names.tab[s], " (", region.names.tab[r], ") ")
+    else modify <- paste(stock.names.tab[s], " ")
+
     if(!is.na(sd$M_repars[s,r,1])) {
       fe.names = c(fe.names, paste0(modify, "M RE $\\sigma$"))
       fe.vals = c(fe.vals, exp(pars$M_repars[s,r,1]))
@@ -367,11 +381,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   if(data$n_regions>1) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
     k <- rr
     if(rr>=r) k <- k + 1
-    if(data$mu_model[r,rr] %in% 1:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-    if(data$mu_model[r,rr] %in% 5:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-    if(data$mu_model[r,rr] %in% 9:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+    mu_name <- paste0("$\\mu$ (",  region.names.tab[r], " to ", region.names.tab[k], ") ")
+    if(data$mu_model[r,rr] %in% 1:4) modify <- mu_name
+    if(data$mu_model[r,rr] %in% 5:8) modify <- paste("stock", stock.names.tab, mu_name)
+    if(data$mu_model[r,rr] %in% 9:12) modify <- paste("season", 1:data$n_seasons, mu_name)
     if(data$mu_model[r,rr] %in% 13:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
-      "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      mu_name)
     if(data$mu_model[r,rr] %in% c(1:4,9:12)) ns <- 1
     else ns <- data$n_stocks
     if(data$mu_model[r,rr] %in% c(1:4,5:8)) nt <- 1
@@ -398,12 +413,12 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   if(data$n_regions>1) for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
     k <- rr
     if(rr>=r) k <- k + 1
+    mu_name <- paste0("$\\mu$ (",  region.names.tab[r], " to ", region.names.tab[k], ") ")
     if(data$mu_model[r,rr] %in% c(2:4,6:8,10:12,14:16)){ #some movement random effects
-      if(data$mu_model[r,rr] %in% 2:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 6:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 10:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 14:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
-        "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+      if(data$mu_model[r,rr] %in% 2:4) modify <- mu_name
+      if(data$mu_model[r,rr] %in% 6:8) modify <- paste("stock", stock.names.tab, mu_name)
+      if(data$mu_model[r,rr] %in% 10:12) modify <- paste("season", 1:data$n_seasons, mu_name)
+      if(data$mu_model[r,rr] %in% 14:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, mu_name)
       if(data$mu_model[r,rr] %in% c(2:4,10:12)) ns <- 1
       else ns <- data$n_stocks
       if(data$mu_model[r,rr] %in% c(2:4,6:8)) nt <- 1
@@ -485,7 +500,9 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
           }
           if(et==2) for(a in 1:data$n_ages) for(r in 1:data$n_regions) if(any(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))){ #M
             ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,a,r,i,]))
-            modify <- paste(stock.names.tab[s], region.names.tab[r], "M at age", mod$ages.lab[a])
+            if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") M at age ", mod$ages.lab[a])
+            else modify <- paste0(stock.names.tab[s], " M at age ", mod$ages.lab[a])
+
             for(k in ind) {
               fe.vals = c(fe.vals, pars[[ecov_beta_names[et]]][s,a,r,i,k])
               fe.cis = rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd[[ecov_beta_names[et]]][s,a,r,i,k]))
@@ -538,7 +555,7 @@ par_tables_fn = function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
 
-  fe = cbind(fe.vals, fe.cis)
+  fe = cbind.data.frame(fe.vals, fe.cis)
   rownames(fe) = fe.names
   colnames(fe) = c("Estimate", "Std. Error", "95\\% CI lower", "95\\% CI upper")
   if(!is.null(od)) {

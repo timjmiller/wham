@@ -9,7 +9,7 @@ output:
     includes:
     keep_tex: yes
     number_sections: no
-title: "WHAM figures and tables"
+title: "WHAM Figures and Tables"
 header-includes:
   - \usepackage{longtable}
   - \usepackage{booktabs}
@@ -94,8 +94,7 @@ if(length(plot_files)) knitr::include_graphics(plot_files)
 ### Parameter estimates
 
 ```{r par-table, echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
-out = as.data.frame(readRDS("res_tables/parameter_estimates_table.RDS"))
-#out = round(out, 3)
+out = readRDS("res_tables/parameter_estimates_table.RDS")
 out <- sci_note(out,cols=1:4)
 
 out <- out %>% knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T,label = "par-table",

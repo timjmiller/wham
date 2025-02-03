@@ -152,6 +152,6 @@ set_q = function(input, catchability = NULL){
   input$random = NULL
   input = set_random(input)
 	input$options$q <- q_opts
-  if(!is_internal_call()) cat(unlist(input$log$q, recursive=T))
+  if(is.null(input$by_pwi)) cat(unlist(input$log$q, recursive=T))
 	return(input)
 }

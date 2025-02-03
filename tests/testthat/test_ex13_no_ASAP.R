@@ -17,9 +17,9 @@
 #     - create input from asap object
 #     - show that unfit model is identical for all three inputs
 
-# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
+# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all(compile = FALSE)
 # btime <- Sys.time(); devtools::test(filter = "ex13_no_ASAP"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~7 min
+# ~30 sec
 
 context("Ex 13: WHAM without ASAP")
 
@@ -91,7 +91,7 @@ q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
 NAA_info <- list(N1_pars = exp(input$par$log_N1))
 
 #all at once 
-input_all <- prepare_wham_input(
+input_all <- suppressWarnings(prepare_wham_input(
     basic_info = basic_info,
     selectivity = sel_info, 
     catch_info = catch_info, 
@@ -99,10 +99,11 @@ input_all <- prepare_wham_input(
     NAA_re = NAA_info,
     M = M_info, 
     F = F_info, 
-    catchability = q_info)
+    catchability = q_info))
 
 #piece by piece
-input_seq <- prepare_wham_input(basic_info = basic_info)
+# testthat::testthat_print("piece by piece")
+input_seq <- suppressWarnings(prepare_wham_input(basic_info = basic_info))
 input_seq <- set_NAA(input_seq, NAA_re = NAA_info)
 input_seq <- set_M(input_seq, M = M_info)
 input_seq <- set_catch(input_seq, catch_info = catch_info)
@@ -110,53 +111,18 @@ input_seq <- set_F(input_seq, F = F_info)
 input_seq <- set_indices(input_seq, index_info = index_info)
 input_seq <- set_q(input_seq, catchability = q_info)
 input_seq <- set_selectivity(input_seq, selectivity = sel_info)
-input_seq <- set_ecov(input_seq, ecov = NULL)
 
-input_asap <- prepare_wham_input(asap3, F = F_info, catchability = q_info, selectivity = sel_info) 
-
-# sapply(input_all$map)
-# sort(names(input_all$map)) == sort(names(input_seq$map))
-# pnms <- names(input_all$par)
-# sum(sapply(input_all$par[pnms], length) != sapply(input_seq$par[pnms], length))
-
-# mnms <- names(input_all$map)
-# sum(sort(mnms) != sort(names(input_seq$map)))
-# sum(sapply(input_all$map[mnms], length) != sapply(input_seq$map[mnms], length))
-
-# dnms <- names(input_all$data)
-# sum(sort(dnms) != sort(names(input_seq$data)))
-# sum(sapply(input_all$data[dnms], length) != sapply(input_seq$dat[dnms], length))
-# (sapply(dnms, function(x) sum(input_all$data[[x]] != input_seq$data[[x]],na.rm = TRUE)))
-
-# sum(sapply(dnms, function(x) sum(input_all$data[[x]] != input_seq$data[[x]], na.rm = TRUE)))
-
-# sum(sapply(dnms, function(x) {
-#     res <- 1 
-    
-#     if(is.null(dim(input_all$data[[x]])) & is.null(dim(input_seq$data[[x]]))) res <- 0
-#     else if(all(dim(input_all$data[[x]]) == dim(input_seq$data[[x]]))) res <- 0
-    
-#     return(res)
-# }))
-
-# sum(sapply(pnms, function(x) {
-#     res <- 1 
-    
-#     if(is.null(dim(input_all$par[[x]])) & is.null(dim(input_seq$par[[x]]))) res <- 0
-#     else if(all(dim(input_all$par[[x]]) == dim(input_seq$par[[x]]))) res <- 0
-    
-#     return(res)
-# }))
+input_asap <- suppressWarnings(prepare_wham_input(asap3, F = F_info, catchability = q_info, selectivity = sel_info))
 
 #compare 
-# nofit_all <- fit_wham(input_all, do.fit = FALSE)
-# nofit_asap <- fit_wham(input_asap, do.fit = FALSE)
-nofit_seq <- fit_wham(input_seq, do.fit = FALSE)
+nofit_all <- suppressWarnings(fit_wham(input_all, do.fit = FALSE, MakeADFun.silent = TRUE))
+nofit_asap <- suppressWarnings(fit_wham(input_asap, do.fit = FALSE, MakeADFun.silent = TRUE))
+nofit_seq <- suppressWarnings(fit_wham(input_seq, do.fit = FALSE, MakeADFun.silent = TRUE))
 
 expect_equal(as.numeric(nofit_all$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
-# expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
-# expect_equal(sum(nofit_asap$par-nofit_all$par), 0.0, tolerance=1e-4)
-# expect_equal(sum(nofit_asap$par-nofit_seq$par), 0.0, tolerance=1e-4)
+expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
+expect_equal(sum(nofit_asap$par-nofit_all$par), 0.0, tolerance=1e-4)
+expect_equal(sum(nofit_asap$par-nofit_seq$par), 0.0, tolerance=1e-4)
 
 # fit_seq <- fit_wham(input_seq, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
 # fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE)
@@ -238,7 +204,7 @@ q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
 NAA_list <- list(sigma = "rec+1", N1_model = rep("equilibrium",2), recruit_pars = list(exp(10),exp(10)))
 
 #all at once 
-input_all <- prepare_wham_input(
+input_all <- suppressWarnings(prepare_wham_input(
     basic_info = basic_info,
     NAA_re = NAA_list,
     selectivity = selectivity, 
@@ -246,10 +212,10 @@ input_all <- prepare_wham_input(
     index_info = index_info, 
     M = M_info, 
     F = F_info, 
-    catchability = q_info)
+    catchability = q_info))
 
 #piece by piece
-input_seq <- prepare_wham_input(basic_info = basic_info)
+input_seq <- suppressWarnings(prepare_wham_input(basic_info = basic_info))
 input_seq <- set_NAA(input_seq, NAA_re = NAA_list)
 input_seq <- set_M(input_seq, M = M_info)
 input_seq <- set_catch(input_seq, catch_info = catch_info)
@@ -257,19 +223,18 @@ input_seq <- set_F(input_seq, F_info)
 input_seq <- set_indices(input_seq, index_info = index_info)
 input_seq <- set_q(input_seq, q_info)
 input_seq <- set_selectivity(input_seq, selectivity = selectivity)
-input_seq <- set_ecov(input_seq, ecov = NULL)
 
-input_asap <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity, NAA_re = NAA_list)
+input_asap <- suppressWarnings(prepare_wham_input(diff_stocks_asap, selectivity = selectivity, NAA_re = NAA_list))
 
 #compare 
-# nofit_all <- fit_wham(input_all, do.fit = FALSE, do.brps = FALSE)
-# nofit_seq <- fit_wham(input_seq, do.fit = FALSE, do.brps = FALSE)
-# nofit_asap <- fit_wham(input_asap, do.fit = FALSE, do.brps = FALSE)
+nofit_all <- suppressWarnings(fit_wham(input_all, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
+nofit_seq <- suppressWarnings(fit_wham(input_seq, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
+nofit_asap <- suppressWarnings(fit_wham(input_asap, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
 
-# expect_equal(as.numeric(nofit_all$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
-# expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
-# expect_equal(sum(nofit_asap$par-nofit_all$par), 0.0, tolerance=1e-4)
-# expect_equal(sum(nofit_asap$par-nofit_seq$par), 0.0, tolerance=1e-4)
+expect_equal(as.numeric(nofit_all$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
+expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
+expect_equal(sum(nofit_asap$par-nofit_all$par), 0.0, tolerance=1e-4)
+expect_equal(sum(nofit_asap$par-nofit_seq$par), 0.0, tolerance=1e-4)
 
 # fit_seq <- fit_wham(input_seq, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE, do.brps = FALSE)
 # fit_all <- fit_wham(input_all, do.retro = FALSE, do.osa = FALSE, do.sdrep = FALSE, do.brps = FALSE)

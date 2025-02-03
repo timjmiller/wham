@@ -245,6 +245,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	input = set_basic_info(input, basic_info)
 	print("basic_info")
 
+	input$by_pwi <- TRUE
 	# Catch
 	#input$data$n_seasons first defined here
 	input = set_catch(input, catch_info)
@@ -313,7 +314,7 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	cat(unlist(input$log, recursive=T))
 
 	input$call <- match.call()
-
+	input$by_pwi <- NULL
 	return(input)
 }
 
@@ -322,10 +323,17 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 
 gen.logit <- function(x, low, upp, s=1) (log((x-low)/(upp-x)))/s
 
-is_internal_call <- function(n_gen = 2, NameSpace = "wham"){
-  te <- topenv(parent.frame(n_gen)) #2 because the call will be made inside of a package function
-	return(isNamespace(te) && getNamespaceName(te) == NameSpace)	
-}
+# is_internal_call <- function(n_gen = 2, NameSpace = "wham"){
+# is_internal_call <- function(){
+# 	# below doesn't work inside devtools::test
+#  	# te <- topenv(parent.frame(n_gen)) #2 because the call will be made inside of a package function
+# 	# return(isNamespace(te) && getNamespaceName(te) == NameSpace)
+# 	# this will work except when someone creates their own prepare_wham_input that calls one of the component functions
+# 	call_fn <- deparse(sys.call(-1)[[1]])
+# 	loc_fn <- find(call_fn)
+# 	id <- paste0(call_fn, ":", loc_fn)
+# 	return(deparse(sys.call(-1)[[1]])=="prepare_wham_input")
+# }
 
 
 set_basic_info <- function(input, basic_info){

@@ -237,7 +237,7 @@ set_osa_obs = function(input)
 
   #data$do_post_samp = rep(0,5) #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
   if(length(input$log$osa_obs)) input$log$osa_obs <- c("OSA obs: \n", input$log$osa_obs)
-  if(!is_internal_call()) cat(unlist(input$log$osa_obs, recursive=T))
+  if(is.null(input$by_pwi)) cat(unlist(input$log$osa_obs, recursive=T))
   return(input)
 }
 

@@ -515,12 +515,14 @@ fit.summary.text.plot.fn <- function(mod){
         for(i in 1:dat$n_stocks){
           if(dat$Ecov_how_R[ec,i]>0) out = paste0(out, paste0(" Effects on recruitment for stock ", i, " assumed. \n"))
           for(a in 1:dat$n_ages) for(r in 1:dat$n_regions) if(dat$Ecov_how_M[ec,i,a,r]>0){
-            out = paste0(out, paste0(" Effects on M for stock ", i, "at age ", a, "in region ", r, " assumed. \n"))
+            reg.use <- ""
+            if(dat$n_regions>1) reg.use <- paste0("in ", mod$input$region_names[r], " ")
+            out = paste0(out, paste0(" Effects on M for stock ", i, "at age ", a, reg.use, "assumed. \n"))
           }
           if(dat$n_regions>1) for(a in 1:dat$n_ages) for(s in 1:dat$n_seasons) for(r in 1:dat$n_regions) for(rr in 1:(dat$n_regions-1)){
             if(dat$Ecov_how_mu[ec,i,a,s,r,rr]>0) {
-              out = paste0(out, paste0(" Effects on movement for stock ", i, "at age ", a, "in season ", s, " from region ", r, "to region ",
-              ifelse(rr>=r, rr+1, rr), "  assumed. \n"))
+              out = paste0(out, paste0(" Effects on movement for stock ", i, "at age ", a, "in season ", s, " from ", mod$input$region_names[r], "to ",
+              ifelse(rr>=r, mod$input$region_names[rrr+1], mod$input$region_names[rr]), "  assumed. \n"))
             }
           }
         }
@@ -1825,7 +1827,9 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
     axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
     box()
 	}
-  title(paste(mod$input$stock_names[stock],mod$input$region_names[region]), line = 1)
+  use.reg <-""
+  if(mod$input$data$n_regions>1) use.reg <- paste0(" in ", mod$input$region_names[region])
+  title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
   par(origpar)
 } # end function
 #plot.NAA(ssm)
@@ -1953,7 +1957,7 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
       text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
     }
 	}
-  title(paste0(mod$input$stock_names[stock], " recruitment in region ", mod$input$region_names[dat$spawn_regions[stock]]), line = 1)
+  title(paste0(mod$input$stock_names[stock], " recruitment in ", mod$input$region_names[dat$spawn_regions[stock]]), line = 1)
   par(origpar)
 }  #end function
 
@@ -2132,7 +2136,9 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors, stock = 1, re
 		segments(x-0.2, y, x+0.2, y, lwd = 2,col = plot.colors[1:length(y)])
 		text(x+0.2, y, paste('n =', table(mod$rep$MAA[stock,region,,x])), pos = 4)
 	})
-  title(paste0(mod$input$stock_names[stock], " in ", mod$input$region_names[region]), line = 1)
+  use.reg <-""
+  if(mod$input$data$n_regions>1) use.reg <- paste0(" in ", mod$input$region_names[region])
+  title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
 }
 
 # revised
@@ -4383,18 +4389,19 @@ plot_mu = function(mod, do.tex = F, do.png = F, fontfam = '', od){
 }
 
 sci_note <- function(x, cols=1:4){
+  if(!is.data.frame(x)) x <- as.data.frame(x)
   for(i in cols){
-    temp <- formatC(x[,i], format = "e")
+    temp <- formatC(x[[i]], format = "e")
     temp <- strsplit(temp, "e")
     exps <- suppressWarnings(as.integer(sapply(temp, function(x) x[2])))
     coefs <- suppressWarnings(as.numeric(sapply(temp, function(x) x[1])))
     coefs <- formatC(coefs, format = "f", digits = 3)
     do.notation <- which(exps < -3)
-    NA.ind <- which(is.na(x[,i]))
-    x[,i] <- formatC(round(x[,i],3), format = "f", digits = 3)
-    x[do.notation,i] <- paste0(coefs[do.notation], "\\times 10^{", exps[do.notation], "}") 
-    x[,i] <- paste0("$", x[,i], "$")
-    x[NA.ind,i] <- NA
+    NA.ind <- which(is.na(x[[i]]))
+    x[[i]] <- formatC(round(x[[i]],3), format = "f", digits = 3)
+    x[[i]][do.notation] <- paste0(coefs[do.notation], "\\times 10^{", exps[do.notation], "}") 
+    x[[i]] <- paste0("$", x[[i]], "$")
+    x[[i]][NA.ind] <- NA
   }
   return(x)
 }

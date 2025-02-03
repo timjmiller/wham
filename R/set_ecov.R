@@ -730,7 +730,7 @@ set_ecov = function(input, ecov) {
   input$map = map
   if(length(input$log$ecov)) input$log$ecov <- c("Ecov: \n", input$log$ecov)
 	# add vector of all observations for one step ahead residuals ==========================
-  if(!is_internal_call()) { #check whether called by prepare_wham_input
+  if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
     input <- set_osa_obs(input)
     cat(unlist(input$log$ecov, recursive=T))
   }

@@ -140,7 +140,7 @@ set_age_comp = function(input, age_comp)
 	if(length(input$log$age_comp))	input$log$age_comp <- c("Age composition: \n", input$log$age_comp)
   input$options$age_comp <- age_comp
   
-  if(!is_internal_call()) { #check whether called by prepare_wham_input
+  if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
     input <- set_osa_obs(input)
     cat(unlist(input$log$age_comp, recursive=T))
   }

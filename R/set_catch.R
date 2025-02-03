@@ -10,6 +10,7 @@
 #'     \item{$n_fleets}{number of fleets}
 #'     \item{$fleet_regions}{vector (n_fleets) of regions where each fleet operates.}
 #'     \item{$fleet_seasons}{matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.}
+#'     \item{$fleet_names}{character vector (n_fleets) of names for fleets. Used for naming results in plots and tables.}
 #'     \item{$agg_catch}{matrix (n_years_model x n_fleets) of annual aggregate catches by fleet.}
 #'     \item{$agg_catch_cv}{matrix (n_years_model x n_fleets) of CVs for annual aggregate catches by fleet.}
 #'     \item{$catch_paa}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}
@@ -44,13 +45,17 @@ set_catch = function(input, catch_info= NULL) {
   if(is.null(asap3)){
     data$n_fleets = 1
   } else {
-    input$fleet_names <- NULL
     for(i in 1:length(asap3)) asap3[[i]]$use_catch_acomp <- rep(1,asap3[[i]]$n_fleets) #default is to use age comp for catch
     n_fleets_per_region = sapply(asap3, function(x) x$n_fleets)
     data$n_fleets = sum(n_fleets_per_region)
 		for(i in 1:length(asap3)) if(!is.null(asap3[[i]]$fleet.names)) input$fleet_names <- c(input$fleet_names, asap3[[i]]$fleet.names)
   }
   if(!is.null(catch_info$n_fleets)) data$n_fleets = catch_info$n_fleets 
+  if(!is.null(catch_info$fleet_names)) {
+    if(is.character(catch_info$fleet_names) & length(catch_info$fleet_names)== data$n_fleets) input$fleet_names <- catch_info$fleet_names
+    else stop("catch_info$fleet_names is either not a character vector or its length is not equal to the number of fleets.")
+    # if(length(unique(input$fleet_names)) != data$n_fleets) stop("Some catch_info$fleet_names are repeated. Provide unique names.")
+  }
   if(is.null(input$fleet_names)) input$fleet_names <- paste0("fleet_", 1:data$n_fleets)
 
   data$fleet_regions = rep(1, data$n_fleets)
@@ -120,7 +125,7 @@ set_catch = function(input, catch_info= NULL) {
   if(!is.null(catch_info$catch_Neff)) data$catch_Neff[] = catch_info$catch_Neff
   if(!is.null(catch_info$use_catch_paa)) data$use_catch_paa[] = catch_info$use_catch_paa
   if(!is.null(catch_info$waa_pointer_fleets)){
-    if(!is_internal_call()){
+    if(is.null(input$by_pwi)){
       if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_catch with catch_info$waa_pointer_fleets.")
       if(any(!(catch_info$waa_pointer_fleets %in% 1:dim(data$waa)[1]))){
         stop("some catch_info$waa_pointer_fleets are outside the number of waa matrices.\n")
@@ -165,7 +170,7 @@ set_catch = function(input, catch_info= NULL) {
   if(length(input$log$catch))  input$log$catch <- c("Catch: \n", input$log$catch)
   input$options$catch <- catch_info
 
-  if(!is_internal_call()) { #check whether called by prepare_wham_input
+  if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
     input <- set_selectivity(input, input$options$selectivity)
     input <- set_age_comp(input, input$options$age_comp)
     input <- set_osa_obs(input)

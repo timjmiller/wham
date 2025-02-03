@@ -102,6 +102,6 @@ set_WAA <- function(input, waa_info = NULL) {
 
   input$data = data
   input$options$waa <- waa_info
-  if(!is_internal_call()) cat(unlist(input$log$waa, recursive=T))
+  if(is.null(input$by_pwi)) cat(unlist(input$log$waa, recursive=T))
  	return(input)
 }
