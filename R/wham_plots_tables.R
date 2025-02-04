@@ -4388,6 +4388,7 @@ plot_mu = function(mod, do.tex = F, do.png = F, fontfam = '', od){
   # legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
 }
 
+
 sci_note <- function(x, cols=1:4){
   if(!is.data.frame(x)) x <- as.data.frame(x)
   for(i in cols){
