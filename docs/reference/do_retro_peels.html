@@ -19,7 +19,7 @@ This is just a wrapper for retro that instead of returning just the list of peel
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -67,6 +67,12 @@ This is just a wrapper for retro that instead of returning just the list of peel
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -135,7 +141,8 @@ This is just a wrapper for retro that instead of returning just the list of peel
 <span>  MakeADFun.silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  retro.silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  save.input <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  do.brps <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  do.brps <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  check.version <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -179,6 +186,10 @@ This is just a wrapper for retro that instead of returning just the list of peel
 
 <dt>do.brps</dt>
 <dd><p>T/F, calculate and report biological reference points</p></dd>
+
+
+<dt>check.version</dt>
+<dd><p>T/F, whether to verify the wham package commit and version for the fitted model are the same as the currently used package.</p></dd>
 
 </dl></div>
     <div id="value">

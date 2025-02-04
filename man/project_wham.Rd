@@ -14,7 +14,8 @@ project_wham(
   MakeADFun.silent = FALSE,
   save.sdrep = TRUE,
   check.version = TRUE,
-  TMB.bias.correct = FALSE
+  TMB.bias.correct = FALSE,
+  TMB.jointPrecision = FALSE
 )
 }
 \arguments{
@@ -59,6 +60,8 @@ project_wham(
 \item{check.version}{T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.}
 
 \item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
+
+\item{TMB.jointPrecision}{T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = \code{FALSE}.}
 }
 \value{
 a projected WHAM model with additional output if specified:

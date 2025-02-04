@@ -4,12 +4,21 @@
 \alias{do_sdreport}
 \title{Add TMB sdreport object to WHAM model}
 \usage{
-do_sdreport(model, save.sdrep = TRUE)
+do_sdreport(
+  model,
+  save.sdrep = TRUE,
+  TMB.bias.correct = FALSE,
+  TMB.jointPrecision = FALSE
+)
 }
 \arguments{
 \item{model}{a fitted WHAM model object returned by fit_wham or project_wham.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
+
+\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
+
+\item{TMB.jointPrecision}{T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = \code{FALSE}.}
 }
 \description{
 Runs \code{\link[TMB:sdreport]{TMB::sdreport}} and adds the object to the fitted (and projected) model list. E.g., fit$sdrep.

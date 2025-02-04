@@ -18,7 +18,7 @@ stats::nlminb. Runs retrospective analysis if specified."><!-- mathjax --><scrip
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -66,6 +66,12 @@ stats::nlminb. Runs retrospective analysis if specified."><!-- mathjax --><scrip
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -144,7 +150,9 @@ stats::nlminb. Runs retrospective analysis if specified."><!-- mathjax --><scrip
 <span>  do.fit <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  save.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  do.brps <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  fit.tmb.control <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  fit.tmb.control <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  TMB.bias.correct <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  TMB.jointPrecision <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -259,6 +267,14 @@ Default: <code>osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)</
 
 <dt>fit.tmb.control</dt>
 <dd><p>list of optimizer controlling attributes passed to <code><a href="fit_tmb.html">fit_tmb</a></code>. Default is <code>list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))</code>, so stats::nlminb is used to opitmize.</p></dd>
+
+
+<dt>TMB.bias.correct</dt>
+<dd><p>T/F whether to use the bias.correct feature of TMB::sdreport. Default = <code>FALSE</code>.</p></dd>
+
+
+<dt>TMB.jointPrecision</dt>
+<dd><p>T/F whether TMB::sdreport should return the joint precision matrix for the fixed and random effects. Default = <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div id="value">

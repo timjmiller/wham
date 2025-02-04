@@ -18,6 +18,7 @@ If \code{NULL}, all settings from the ASAP data file or basic_info are used.
     \item{$n_fleets}{number of fleets}
     \item{$fleet_regions}{vector (n_fleets) of regions where each fleet operates.}
     \item{$fleet_seasons}{matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.}
+    \item{$fleet_names}{character vector (n_fleets) of names for fleets. Used for naming results in plots and tables.}
     \item{$agg_catch}{matrix (n_years_model x n_fleets) of annual aggregate catches by fleet.}
     \item{$agg_catch_cv}{matrix (n_years_model x n_fleets) of CVs for annual aggregate catches by fleet.}
     \item{$catch_paa}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}

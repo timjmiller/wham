@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -150,17 +156,17 @@
                    
 </dl><p></p></dd>
 
+    <dt>$sigma_vals</dt>
+<dd><p>Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is
+                 not specified. Only those for age 1 in the spawning region are used if <code>NAA_re$sigma</code> = "rec".
+                 If <code>NAA_re$sigma_map</code> is defined, the user must ensure that the configuration is compatible with <code>NAA_re$sigma_vals</code></p></dd>
+
     <dt>$sigma_map</dt>
 <dd><p>You can specify a more complex parameter configuration by entering an integer array (nstocks x n_regions x n_ages), where each entry points to the
                   NAA_sigma to use for that stock and age. E.g., for 2 stocks, 2 regions, and 6 ages, array(rep(c(1,2,2,3,3,3), each = 4),c(2,2,6)) will estimate 3 
                   sigmas, with recruitment (age-1) deviations having their own <code>sigma_R</code>, ages 2-3 sharing <code>sigma_2</code>, and ages 4-6 sharing <code>sigma_3</code>. 
                   All parameters being the same for both stocks and across regions. The user must be sure that a compatible <code>NAA_re$sigma</code> configuration is defined.
                   Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is not specified.</p></dd>
-
-    <dt>$sigma_vals</dt>
-<dd><p>Array (n_stocks x n_regions x n_ages) of initial standard deviation values to use for the NAA deviations. Values are not used if recruit_model = 1 and <code>NAA_re$sigma</code> is
-                 not specified. Only those for age 1 in the spawning region are used if <code>NAA_re$sigma</code> = "rec".
-                 If <code>NAA_re$sigma_map</code> is defined, the user must ensure that the configuration is compatible with <code>NAA_re$sigma_vals</code></p></dd>
 
     <dt>$cor</dt>
 <dd><p>Correlation structure for the NAA deviations. Must be a single character string described below or a vector
@@ -184,6 +190,15 @@
                  The second is for yearly correlation for NAA deviations for all ages if recruitment is not decoupled, or otherwise just ages after recruitemnt. The third correlation is for annual 
                  recruitment deviations and used only when recruitment is decoupled. If unspecified all initial values are 0. If <code>NAA_re$cor</code> = "iid", values are not used. 
                  If <code>NAA_re$cor</code> = "ar1_a", those for yearly correlation are not used, and vice versa for "ar1_y".</p></dd>
+
+    <dt>$cor_map</dt>
+<dd><p>n_stocks x n_region matrix x 3 array of NA or integers indicating which random effects correlation parameters are estimated
+      and whether to set any to be estimated identically. The 3 values for a given stock and region are for age, year ("survival"), and year ("recruitment"). 
+      Both age and years values are used for <code>NAA_re$cor = "2dar1"</code>, but only the appropriate values are used for <code>NAA_re$cor = "ar1_a"</code>, or <code>"ar1_y"</code>.
+      When <code>NAA_re$decouple_recruitment = TRUE</code>, the third value is used for both <code>NAA_re$sigma = "rec"</code> or <code>"rec+1"</code>. For 
+      <code>NAA_re$decouple_recruitment = FALSE</code>, only the second value is used and applies to both recruitment and "survival" when <code>NAA_re$sigma = "rec+1"</code>, 
+      and just recruitment when <code>NAA_re$sigma = "rec"</code>. If not supplied stock-specific values for age and/or year will be estimated for all regions where 
+      <code>NAA_re$cor</code> is other than "none", "iid".</p></dd>
 
     <dt>$N1_model</dt>
 <dd><p>Character vector (n_stocks) determining which way to model the initial numbers at age:</p><dl><dt>"age-specific-fe"</dt>

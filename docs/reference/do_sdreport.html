@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -121,7 +127,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">do_sdreport</span><span class="op">(</span><span class="va">model</span>, save.sdrep <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">do_sdreport</span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  save.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  TMB.bias.correct <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  TMB.jointPrecision <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -132,6 +143,14 @@
 
 <dt>save.sdrep</dt>
 <dd><p>T/F, save the full <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> object? If <code>FALSE</code>, only save <code><a href="https://rdrr.io/pkg/TMB/man/summary.sdreport.html" class="external-link">summary.sdreport</a></code> to reduce model object file size. Default = <code>TRUE</code>.</p></dd>
+
+
+<dt>TMB.bias.correct</dt>
+<dd><p>T/F whether to use the bias.correct feature of TMB::sdreport. Default = <code>FALSE</code>.</p></dd>
+
+
+<dt>TMB.jointPrecision</dt>
+<dd><p>T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div id="see-also">

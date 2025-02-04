@@ -18,6 +18,7 @@ If \code{NULL}, all settings from the ASAP data file or basic_info are used.
     \item{$n_indices}{number of indices}
     \item{$index_regions}{vector (n_indices) of regions where each fleet operates.}
     \item{$index_seasons}{vector (n_indices) of 0/1 values flagging which seasons each index occurs.}
+    \item{$index_names}{character vector (n_indices) of names for indices Used for naming results in plots and tables.}
     \item{$agg_indices}{matrix (n_years_model x n_indices) of annual aggregate index catches.}
     \item{$agg_index_cv}{matrix (n_years_model x n_indices) of CVs for annual aggregate index catches.}
     \item{$fracyr_indices}{matrix (n_years_model x n_indices) of fractions of year at which index occurs within the season (difference between time of survey and time at start of season).}

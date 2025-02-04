@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -131,7 +137,8 @@
 <span>  MakeADFun.silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  save.sdrep <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  check.version <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  TMB.bias.correct <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  TMB.bias.correct <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  TMB.jointPrecision <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -161,10 +168,11 @@
 <li><p><code>$percentFXSPR</code> (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75% F_40%SPR, so <code>proj.opts$percentFXSPR = 75</code>. Default = 100.</p></li>
 <li><p><code>$percentFMSY</code> (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.</p></li>
 <li><p><code>$proj_F_opt</code> (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.</p></li>
-<li><p><code>$proj_Fcatch</code> (vector), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch.</p></li>
+<li><p><code>$proj_Fcatch</code> (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (<code>n.yrs</code> x 1 or n_fleets).</p></li>
 <li><p><code>$proj_mature</code> (array), user-supplied maturity values for the projection years with dimensions (n_stocks x <code>n.yrs</code> x n_ages).</p></li>
 <li><p><code>$proj_waa</code> (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of <code>model$input$data$waa</code> (waa source x <code>n.yrs</code> x n_ages).</p></li>
 <li><p><code>$proj_R_opt</code> (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.</p></li>
+<li><p><code>$proj_NAA_init</code> (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.</p></li>
 </ul></dd>
 
 
@@ -190,6 +198,10 @@
 
 <dt>TMB.bias.correct</dt>
 <dd><p>T/F whether to use the bias.correct feature of TMB::sdreport. Default = <code>FALSE</code>.</p></dd>
+
+
+<dt>TMB.jointPrecision</dt>
+<dd><p>T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div id="value">

@@ -19,7 +19,7 @@ Reduces the year dimension of all data, parameters, maps, so that one can projec
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -67,6 +67,12 @@ Reduces the year dimension of all data, parameters, maps, so that one can projec
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -125,7 +131,7 @@ Reduces the year dimension of all data, parameters, maps, so that one can projec
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">reduce_input</span><span class="op">(</span><span class="va">input</span>, <span class="va">years_peeled</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">reduce_input</span><span class="op">(</span><span class="va">input</span>, <span class="va">years_peeled</span>, retro <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -136,6 +142,10 @@ Reduces the year dimension of all data, parameters, maps, so that one can projec
 
 <dt>years_peeled</dt>
 <dd><p>which of input$years to peel from the model input</p></dd>
+
+
+<dt>retro</dt>
+<dd><p>(T/F) whether this is for a retro peel (Default = TRUE)</p></dd>
 
 </dl></div>
 

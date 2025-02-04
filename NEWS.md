@@ -1,21 +1,23 @@
-wham 1.0.9.9000
+wham 2.0.0 (2025-02-04)
 =========================
 
 ### Major improvements
 
-These features have been developed previously on the lab branch and not attributed to a specific commit, but are now included as the main version of WHAM
-* 1 or more stocks and regions can now be modeled with movement among regions
-* User can define seasonal intervals within years (possibly varying in length)
-* Large changes in structure of input data, parameters, and reported output
-* Seasonal operation of fleets
-* movement parameters can incorporate time and age varying random effects and effects of environmental covariates like natural mortality
-* priors for mean movement parameters are allowed because it is currently not possible to include tagging data observations.
-* functions to configure various aspects of an input (e.g., set_NAA) are now exported and can be used to modify existing inputs
-* greatly increased options to functions to allow user to specify initial parameter values and mapping of parameter estimation.
-* random effects options for initial abundance at age
-* functions to perform jittering (jitter_wham) and self tests (self_test) **(considered beta currently)**
-* functions to add reference point estimation, TMB::sdreport objects and retrospective peels to a previously fitted model
-* new Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).
+Many new features have been developed previously on the **lab** and **devel** branch and not attributed to a specific commit, but are now included as the main version of WHAM
+
+* **Large changes in structure of input data, parameters, and reported output** may require editing workflows for previous versions.
+* 1 or more stocks and regions can now be modeled with movement among regions.
+* User can define seasonal intervals within years (possibly varying in length).
+* Seasonal operation of fleets.
+* Movement parameters are stock, season, and region-to-region specific.
+* Movement parameters can incorporate time and age varying random effects and effects of environmental covariates much like natural mortality.
+* Priors for mean movement parameters are allowed because it is currently not possible to include tagging data observations.
+* Exported functions for components of model (e.g., set_NAA, set_catch, set_M, set_move) can be used build model input sequentially or to modify a previously created input.
+* Greatly increased options to functions to allow user to specify initial parameter values and mapping of parameter estimation.
+* Random effects options for initial abundance at age.
+* Functions to perform jittering (jitter_wham) and self tests (self_test).
+* Functions to add reference point estimation (do_reference_points), TMB::sdreport objects (do_sdrep), and retrospective peels (do_retro_peels), and OSA residuals (make_osa_residuals) to a previously fitted model.
+* New Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).
 
 ### Minor improvements
 

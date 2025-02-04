@@ -13,7 +13,9 @@ articles:
   ex09_retro_pred: ex09_retro_pred.html
   ex10_simulation: ex10_simulation.html
   ex11_catchability: ex11_catchability.html
-last_built: 2024-06-13T17:57Z
+  ex12_multistock: ex12_multistock.html
+  ex13_no_ASAP: ex13_no_ASAP.html
+last_built: 2025-02-04T18:20Z
 urls:
   reference: https://timjmiller.github.io/wham/reference
   article: https://timjmiller.github.io/wham/articles

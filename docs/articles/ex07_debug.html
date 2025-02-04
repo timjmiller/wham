@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -84,6 +84,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul>
 </li>
@@ -177,10 +183,10 @@ flag to debug a WHAM model.</p>
 <span><span class="co">#&gt; [1] "ecov"</span></span>
 <span><span class="co">#&gt; [1] "osa_obs"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 1.2.0 makes major changes to the structure of some data, parameters, and reported objects. </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 1.2.0 decouples random effects for recruitment and random effects for older ages by default.</span></span>
+<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward makes major changes to the structure of some data, parameters, and reported objects. </span></span>
+<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward decouples random effects for recruitment and random effects for older ages by default.</span></span>
 <span><span class="co">#&gt;  To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE. </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 1.2.0 forward by default does not bias correct any log-normal process or observation errors. To </span></span>
+<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward by default does not bias correct any log-normal process or observation errors. To </span></span>
 <span><span class="co">#&gt;  configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. </span></span>
 <span><span class="co">#&gt;  For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
 <span><span class="co">#&gt;  1 asap3 dat file was processed. A single stock and region will be assumed. </span></span>
@@ -245,10 +251,8 @@ flag to debug a WHAM model.</p>
 <span><span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span></span>
 <span><span class="co">#&gt; Error in ff(x, order = 1) : </span></span>
 <span><span class="co">#&gt;   inner newton optimization failed during gradient calculation</span></span>
-<span><span class="co">#&gt; outer mgc:  NaN </span></span>
-<span><span class="co">#&gt; Error in model$opt$par : $ operator is invalid for atomic vectors</span></span>
-<span><span class="co">#&gt; Warning in model$gr(model$opt$par): restarting interrupted promise evaluation</span></span>
-<span><span class="co">#&gt; Error in model$opt$par: $ operator is invalid for atomic vectors</span></span></code></pre></div>
+<span><span class="co">#&gt; outer mgc:  NaN</span></span>
+<span><span class="co">#&gt; Error in mod$opt$par: $ operator is invalid for atomic vectors</span></span></code></pre></div>
 <p>What’s wrong? It looks like the likelihood function is returning
 <code>NaN</code>. It is often easier to diagnose problems like this
 using the <em>unoptimized</em> model, i.e. look at everything using the
@@ -319,43 +323,44 @@ can use the <code>$report()</code> function from TMB.</p>
 <span><span class="co">#&gt; [11] "log_FXSPR_static"          "NAA"                      </span></span>
 <span><span class="co">#&gt; [13] "log_FXSPR"                 "pred_CAA"                 </span></span>
 <span><span class="co">#&gt; [15] "Ecov_x"                    "Ecov_obs_sigma"           </span></span>
-<span><span class="co">#&gt; [17] "log_SSB_FXSPR_static"      "fracyr_SSB_all"           </span></span>
-<span><span class="co">#&gt; [19] "selAA"                     "all_NAA_1"                </span></span>
-<span><span class="co">#&gt; [21] "pred_log_indices"          "pred_catch_paa"           </span></span>
-<span><span class="co">#&gt; [23] "annual_SAA_spawn"          "seasonal_Ps_terminal_year"</span></span>
-<span><span class="co">#&gt; [25] "mature_static"             "log_YPR_FXSPR_static"     </span></span>
-<span><span class="co">#&gt; [27] "log_SPR0_static"           "nll_sel"                  </span></span>
-<span><span class="co">#&gt; [29] "nll"                       "pred_stock_CAA"           </span></span>
-<span><span class="co">#&gt; [31] "log_M_static"              "log_FAA_XSPR"             </span></span>
-<span><span class="co">#&gt; [33] "pred_log_catch"            "log_FAA_XSPR_static"      </span></span>
-<span><span class="co">#&gt; [35] "q"                         "pred_N1"                  </span></span>
-<span><span class="co">#&gt; [37] "logit_q_mat"               "annual_Ps"                </span></span>
-<span><span class="co">#&gt; [39] "nll_index_acomp"           "selpars"                  </span></span>
-<span><span class="co">#&gt; [41] "pred_stock_catch"          "log_FXSPR_iter"           </span></span>
-<span><span class="co">#&gt; [43] "NAAPR_FXSPR_static"        "all_NAA"                  </span></span>
-<span><span class="co">#&gt; [45] "nll_Ecov_obs_sig"          "SSB"                      </span></span>
-<span><span class="co">#&gt; [47] "pred_index_paa"            "log_FAA_tot"              </span></span>
-<span><span class="co">#&gt; [49] "pred_NAA"                  "log_Y_FXSPR_static"       </span></span>
-<span><span class="co">#&gt; [51] "log_SSB_FXSPR"             "log_index_resid"          </span></span>
-<span><span class="co">#&gt; [53] "nll_agg_indices"           "log_F_tot"                </span></span>
-<span><span class="co">#&gt; [55] "log_M"                     "log_Y_FXSPR"              </span></span>
-<span><span class="co">#&gt; [57] "nll_agg_catch"             "QAA"                      </span></span>
-<span><span class="co">#&gt; [59] "mature_all"                "waa_ssb"                  </span></span>
-<span><span class="co">#&gt; [61] "pred_catch"                "log_catch_resid"          </span></span>
-<span><span class="co">#&gt; [63] "trans_mu_base"             "R_XSPR"                   </span></span>
-<span><span class="co">#&gt; [65] "log_FXSPR_iter_static"     "nll_Ecov_obs"             </span></span>
-<span><span class="co">#&gt; [67] "waa_ssb_static"            "selpars_re_mats"          </span></span>
-<span><span class="co">#&gt; [69] "index_Neff_out"            "pred_IAA"                 </span></span>
-<span><span class="co">#&gt; [71] "sel_static"                "NAA_devs"                 </span></span>
-<span><span class="co">#&gt; [73] "NAAPR0_static"             "FAA"                      </span></span>
-<span><span class="co">#&gt; [75] "log_SPR_FXSPR_static"      "nll_M"                    </span></span>
-<span><span class="co">#&gt; [77] "NAA_index"                 "annual_SPR0AA"            </span></span>
-<span><span class="co">#&gt; [79] "nll_catch_acomp"           "log_YPR_FXSPR"            </span></span>
-<span><span class="co">#&gt; [81] "FAA_static"                "waa_catch_static"         </span></span>
-<span><span class="co">#&gt; [83] "L"                         "nll_NAA"                  </span></span>
-<span><span class="co">#&gt; [85] "log_SPR_FXSPR"             "mu"                       </span></span>
-<span><span class="co">#&gt; [87] "log_SPR0"                  "NAA_devs_1"               </span></span>
-<span><span class="co">#&gt; [89] "catch_Neff_out"</span></span></code></pre></div>
+<span><span class="co">#&gt; [17] "log_SSB_FXSPR_static"      "marg_NAA_sigma"           </span></span>
+<span><span class="co">#&gt; [19] "fracyr_SSB_all"            "selAA"                    </span></span>
+<span><span class="co">#&gt; [21] "all_NAA_1"                 "pred_log_indices"         </span></span>
+<span><span class="co">#&gt; [23] "pred_catch_paa"            "annual_SAA_spawn"         </span></span>
+<span><span class="co">#&gt; [25] "seasonal_Ps_terminal_year" "mature_static"            </span></span>
+<span><span class="co">#&gt; [27] "log_YPR_FXSPR_static"      "log_SPR0_static"          </span></span>
+<span><span class="co">#&gt; [29] "nll_sel"                   "nll"                      </span></span>
+<span><span class="co">#&gt; [31] "pred_stock_CAA"            "log_Fbar_XSPR_static"     </span></span>
+<span><span class="co">#&gt; [33] "log_M_static"              "log_FAA_XSPR"             </span></span>
+<span><span class="co">#&gt; [35] "pred_log_catch"            "log_FAA_XSPR_static"      </span></span>
+<span><span class="co">#&gt; [37] "q"                         "pred_N1"                  </span></span>
+<span><span class="co">#&gt; [39] "logit_q_mat"               "annual_Ps"                </span></span>
+<span><span class="co">#&gt; [41] "nll_index_acomp"           "selpars"                  </span></span>
+<span><span class="co">#&gt; [43] "pred_stock_catch"          "log_FXSPR_iter"           </span></span>
+<span><span class="co">#&gt; [45] "NAAPR_FXSPR_static"        "all_NAA"                  </span></span>
+<span><span class="co">#&gt; [47] "nll_Ecov_obs_sig"          "SSB"                      </span></span>
+<span><span class="co">#&gt; [49] "pred_index_paa"            "log_FAA_tot"              </span></span>
+<span><span class="co">#&gt; [51] "pred_NAA"                  "log_Y_FXSPR_static"       </span></span>
+<span><span class="co">#&gt; [53] "log_SSB_FXSPR"             "log_index_resid"          </span></span>
+<span><span class="co">#&gt; [55] "nll_agg_indices"           "log_F_tot"                </span></span>
+<span><span class="co">#&gt; [57] "log_M"                     "log_Y_FXSPR"              </span></span>
+<span><span class="co">#&gt; [59] "nll_agg_catch"             "QAA"                      </span></span>
+<span><span class="co">#&gt; [61] "mature_all"                "waa_ssb"                  </span></span>
+<span><span class="co">#&gt; [63] "pred_catch"                "log_catch_resid"          </span></span>
+<span><span class="co">#&gt; [65] "trans_mu_base"             "R_XSPR"                   </span></span>
+<span><span class="co">#&gt; [67] "log_FXSPR_iter_static"     "nll_Ecov_obs"             </span></span>
+<span><span class="co">#&gt; [69] "waa_ssb_static"            "selpars_re_mats"          </span></span>
+<span><span class="co">#&gt; [71] "index_Neff_out"            "pred_IAA"                 </span></span>
+<span><span class="co">#&gt; [73] "sel_static"                "NAA_devs"                 </span></span>
+<span><span class="co">#&gt; [75] "NAAPR0_static"             "log_Fbar_XSPR"            </span></span>
+<span><span class="co">#&gt; [77] "FAA"                       "log_SPR_FXSPR_static"     </span></span>
+<span><span class="co">#&gt; [79] "nll_M"                     "NAA_index"                </span></span>
+<span><span class="co">#&gt; [81] "annual_SPR0AA"             "log_YPR_FXSPR"            </span></span>
+<span><span class="co">#&gt; [83] "nll_catch_acomp"           "FAA_static"               </span></span>
+<span><span class="co">#&gt; [85] "waa_catch_static"          "L"                        </span></span>
+<span><span class="co">#&gt; [87] "nll_NAA"                   "log_SPR_FXSPR"            </span></span>
+<span><span class="co">#&gt; [89] "mu"                        "log_SPR0"                 </span></span>
+<span><span class="co">#&gt; [91] "NAA_devs_1"                "catch_Neff_out"</span></span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and
 sum over all individual values.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">

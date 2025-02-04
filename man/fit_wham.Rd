@@ -25,7 +25,9 @@ fit_wham(
   do.fit = TRUE,
   save.sdrep = TRUE,
   do.brps = TRUE,
-  fit.tmb.control = NULL
+  fit.tmb.control = NULL,
+  TMB.bias.correct = FALSE,
+  TMB.jointPrecision = FALSE
 )
 }
 \arguments{
@@ -92,6 +94,10 @@ Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}.
 \item{do.brps}{T/F, calculate and report biological reference points. Default = \code{TRUE}.}
 
 \item{fit.tmb.control}{list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.}
+
+\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
+
+\item{TMB.jointPrecision}{T/F whether TMB::sdreport should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.}
 }
 \value{
 a fit TMB model with additional output if specified:

@@ -1,6 +1,6 @@
 Package: wham
 Title: Woods Hole Assessment Model (WHAM)
-Version: 1.0.9.9000
+Version: 2.0.0
 Authors@R: c(
     person("Tim", "Miller", role = c("aut", "cre"),
            email = "timothy.j.miller@noaa.gov",
@@ -13,16 +13,7 @@ Authors@R: c(
            email = "chris.legault@noaa.gov"),
     person("Jim", "Thorson", role = c("ctb"),
            email = "james.thorson@noaa.gov"))
-Description: The Woods Hole Assessment Model (WHAM) is a state-space age-structured 
-  stock assessment model that can include environmental effects on population processes.
-  WHAM can be configured to estimate a range of assessment models: a traditional 
-  statistical catch-at-age (SCAA) model with recruitments as fixed effects, SCAA with 
-  recruitments as random effects, or a "full state-space" model with abundance at all ages treated 
-  as random effects. WHAM is a generalization of the R and TMB code from Miller et al. 
-  (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM also has many similarities of 
-  input data sources with ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file 
-  from an ASAP3 dat file. Many of the plotting functions for input data, results, and 
-  diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks.
+Description: The Woods Hole Assessment Model (WHAM) is a general age-structured stock assessment framework that can be configured to estimate assessment models that range in complexity from statistical catch-at-age (SCAA) model with annual recruitments as fixed effects, to state-space, multi-stock, multi-region, age-structured models where many parameters can be treated as time- and age-varying process errors and/or allowing effects of environmental covariates. WHAM is a generalization of code from Miller et al. (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM also has many similarities of input data sources with ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file from an ASAP3 dat file, although this is not a requirement. Many of the plotting functions for input data, results, and diagnostics have modified from code written by Chris Legault and Liz Brooks.
 Depends:
     R (>= 3.6.0)
 Imports:

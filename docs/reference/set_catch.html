@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -143,6 +149,9 @@ If <code>NULL</code>, all settings from the ASAP data file or basic_info are use
     <dt>$fleet_seasons</dt>
 <dd><p>matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.</p></dd>
 
+    <dt>$fleet_names</dt>
+<dd><p>character vector (n_fleets) of names for fleets. Used for naming results in plots and tables.</p></dd>
+
     <dt>$agg_catch</dt>
 <dd><p>matrix (n_years_model x n_fleets) of annual aggregate catches by fleet.</p></dd>
 
@@ -163,6 +172,13 @@ If <code>NULL</code>, all settings from the ASAP data file or basic_info are use
 
     <dt>$selblock_pointer_fleets</dt>
 <dd><p>matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.</p></dd>
+
+    <dt>$initial_catch_sd_scale</dt>
+<dd><p>vector (n_fleets) of scalar multipliers of annual log-observation standard deviation. Default = 1.</p></dd>
+
+    <dt>$map_catch_sd_scale</dt>
+<dd><p>integer vector (n_fleets) specifying which sd scalar parameters to fix. Use <code>NA</code> to fix a parameter and integers to estimate. 
+        Use the same integer for multiple fleets to estimate a shared scalar parameter.</p></dd>
 
   
 </dl></dd>

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -116,7 +122,47 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="1.0.9.9000" id="wham-1099000">wham 1.0.9.9000<a class="anchor" aria-label="anchor" href="#wham-1099000"></a></h2>
+<h2 class="page-header" data-toc-text="2.0.0" id="wham-200-2025-02-04">wham 2.0.0 (2025-02-04)<a class="anchor" aria-label="anchor" href="#wham-200-2025-02-04"></a></h2>
+<div class="section level4">
+<h4 id="major-improvements-2-0-0">Major improvements<a class="anchor" aria-label="anchor" href="#major-improvements-2-0-0"></a></h4>
+<p>Many new features have been developed previously on the <strong>lab</strong> and <strong>devel</strong> branch and not attributed to a specific commit, but are now included as the main version of WHAM</p>
+<ul><li>
+<strong>Large changes in structure of input data, parameters, and reported output</strong> may require editing workflows for previous versions.</li>
+<li>1 or more stocks and regions can now be modeled with movement among regions.</li>
+<li>User can define seasonal intervals within years (possibly varying in length).</li>
+<li>Seasonal operation of fleets.</li>
+<li>Movement parameters are stock, season, and region-to-region specific.</li>
+<li>Movement parameters can incorporate time and age varying random effects and effects of environmental covariates much like natural mortality.</li>
+<li>Priors for mean movement parameters are allowed because it is currently not possible to include tagging data observations.</li>
+<li>Exported functions for components of model (e.g., set_NAA, set_catch, set_M, set_move) can be used build model input sequentially or to modify a previously created input.</li>
+<li>Greatly increased options to functions to allow user to specify initial parameter values and mapping of parameter estimation.</li>
+<li>Random effects options for initial abundance at age.</li>
+<li>Functions to perform jittering (jitter_wham) and self tests (self_test).</li>
+<li>Functions to add reference point estimation (do_reference_points), TMB::sdreport objects (do_sdrep), and retrospective peels (do_retro_peels), and OSA residuals (make_osa_residuals) to a previously fitted model.</li>
+<li>New Rmarkdown based generation of html by plot_wham_output that is self-contained (can be opened from any location).</li>
+</ul></div>
+<div class="section level4">
+<h4 id="minor-improvements-2-0-0">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-2-0-0"></a></h4>
+<ul><li>Can now specify fleet-specific catch or F in projection years. <a href="https://github.com/timjmiller/wham/commit/f2a298e891d1608713115e9e32ff60ce10264433" class="external-link">f2a298e</a>
+</li>
+<li>add some more input options for M, catch, indices. <a href="https://github.com/timjmiller/wham/commit/d50acc7305be99c6c6d5280313b7ad66dd85d48d" class="external-link">d50acc7</a>
+</li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-2-0-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-0-0"></a></h4>
+<ul><li>fix bugs in reporting of NAA re cor parameters in table of estimates and bug in setting covariate effect maps. <a href="https://github.com/timjmiller/wham/commit/0ab78d863597b3c6380c0c7cf9e199141e07d2a1" class="external-link">0ab78d8</a>
+</li>
+<li>fix mapping of selectivity RE when selectivity block does not span all years, correct marginal variance used for <code>basic_info$bias_correct_BRPs=TRUE</code> in the SSB/R and Y/R calculations when there is AR1 correlation of NAA RE, and correct dimension of recruitment random effects for projection of SCAA models. <a href="https://github.com/timjmiller/wham/commit/b0318061e24b1f5820b8dfc0b369624742a2f69d" class="external-link">b031806</a>
+</li>
+<li>fix bug in use of user-defined waa, maturity in projection years. <a href="https://github.com/timjmiller/wham/commit/24dd1ab92d90aad2d9bb04dcc8e58f1a155def19" class="external-link">24dd1ab</a>
+</li>
+<li>fix some indexing errors for retros with Ecovs or selectivity RE, fix some setup problems for movement. <a href="https://github.com/timjmiller/wham/commit/2371fc3d5eb8dfe20b37ba9c9e81a0587aa863cb" class="external-link">2371fc3</a>
+</li>
+<li>fix specification of initial/fixed M when input M is both age and time varying. <a href="https://github.com/timjmiller/wham/commit/1d637e39e900e5ac09fae3898ea1f61a0e89c1b0" class="external-link">1d637e3</a>
+</li>
+<li>fix specification of shared fleet selectivity blocks provided by ASAP input. <a href="https://github.com/timjmiller/wham/commit/fcbdfcacccce103ec1a6c55b000d2ad26a6d073a" class="external-link">fcbdfca</a>
+</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.0.9" id="wham-109-2024-06-13">wham 1.0.9 (2024-06-13)<a class="anchor" aria-label="anchor" href="#wham-109-2024-06-13"></a></h2>

@@ -1,64 +1,54 @@
 # WHAM: a state-space age-structured assessment model
 
-The Woods Hole Assessment Model (WHAM) is a general state-space age-structured stock assessment framework designed to include environmental effects on population processes. The state-space framework is attractive because it can estimate observation and process error, as well as naturally propagate random effect parameters in stock projections. WHAM can be configured to estimate a range of assessment models (see [Ex 1](https://timjmiller.github.io/wham/articles/ex1_basics.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)):
+The Woods Hole Assessment Model (WHAM) is a general age-structured stock assessment framework that can be configured to estimate assessment models that range in complexity from statistical catch-at-age (SCAA) model with annual recruitments as fixed effects, to state-space, multi-stock, multi-region, age-structured models where many parameters can be treated as time- and age-varying process errors and/or allowing effects of environmental covariates. 
 
-- statistical catch-at-age (SCAA) model with recruitments as fixed effects, 
-- SCAA with recruitments as random effects
-- "full state-space model", abundance at all ages are random effects
-- multi-stock and/or multi-region abundance at age as random effects
+The default configuration of WHAM will estimate a traditional SCAA model with no random effects (see [Example 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html), [Example 8](https://timjmiller.github.io/wham/articles/ex8_compare.html), and [Example 13](https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html))
 
-WHAM advances fisheries assessment because it can estimate constrained random deviations, i.e. random effects, on parameters such as:
+WHAM can estimate process errors as random effects on:
 
-- recruitment / numbers-at-age ([Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html)),
-- selectivity ([Ex 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
-- natural mortality ([Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), 
-- index catchability ([Ex 11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)), 
-- movement between regions, and
-- environmental effects on the above (e.g., [Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
+- recruitment ([Example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html), [Example 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html), and [Example 8](https://timjmiller.github.io/wham/articles/ex8_compare.html))
+- transitions in numbers-at-age over time ([Example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html), [Example 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html), [Example 8](https://timjmiller.github.io/wham/articles/ex8_compare.html), and [Example 13](https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html),
+- selectivity ([Example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
+- natural mortality ([Example 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)), 
+- index catchability ([Example 11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)), and
+- movement of stocks between regions ([Example 12](https://timjmiller.github.io/wham/articles/ex12_multistock.html))
 
-A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Ex 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+WHAM can also include explicit environmental effects on all parameters above (except selectivity) and uses a state-space treatment of the covariates so that observation error of the covariates is considered (e.g., [Example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) and [Example 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
 
-Overview of WHAM presentation (Jan 8 2021): 
+A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Example 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+
+A presentation providing an overview of an early version of WHAM (Jan 8 2021):
 
 <figure class="video_container">
   <iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
-<!--- 
-Some further developments are covered here (Jan 25 2022): 
-
-<figure class="video_container">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/qDg2NKTbMR4?controls=0&amp;start=87" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
---->
 
 ## Background
 
-WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from ASAP code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
+WHAM generalizes and extends R and TMB code from [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339), [Miller and Hyun 2018](https://doi.org/10.1139/cjfas-2017-0035), and [Miller et al. 2018](https://doi.org/10.1139/cjfas-2017-0124). WHAM has many similarities to ASAP ([code](https://www.nefsc.noaa.gov/nft/ASAP.html), [Legault and Restrepo 1998](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/acom/2007/WGMHSA/Annex%203%20-%20ICCAT%20Working%20Document.pdf)), including the input data file structure. Many of the plotting functions for input data, results, and diagnostics are modified from code written by Chris Legault and Liz Brooks ([ASAPplots](https://github.com/cmlegault/ASAPplots)).
 
-A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, *M*, selectivity, and environment-recruitment: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967). A paper describing generalizations to multiple stocks and regions and movement is forthcoming.
+A paper describing WHAM has been published, which includes the model equations, simulation tests, and demos of random effects options for numbers-at-age, *M*, selectivity, and environment-recruitment: [https://doi.org/10.1016/j.fishres.2021.105967](https://doi.org/10.1016/j.fishres.2021.105967). Stay tuned for a paper describing generalizations to multiple stocks and regions and movement.
 
 [Stock et al. (2021)](https://doi.org/10.1016/j.fishres.2021.105873) describes the 2D (year x age) AR(1) correlation structure that can be used on numbers-at-age, *M*, and selectivity in WHAM (as in [Berg and Nielsen 2016](https://doi.org/10.1093/icesjms/fsw046), [Cadigan 2016](https://doi.org/10.1139/cjfas-2015-0047), and [Xu et al. 2019](https://doi.org/10.1139/cjfas-2017-0446)).
 
-As mentioned above, WHAM has also been extended (from release 2.0.0) to allow multiple stocks and/or multiple regions to be modeled with movement between regions. Seasonal changes in fleet fishing effort and movement are also possible. The single stock version of WHAM remains available as the "single_wham" branch, but it will not be developed further.
+As mentioned above, WHAM has also been extended (from release 2.0.0) to allow multiple stocks and/or multiple regions to be modeled with movement between regions. Seasonal changes in fleet fishing effort and movement are also possible. The version of WHAM that only allows a single stock and region remains available as the "single_wham" branch, but it will not be developed further.
 
-WHAM is written in R and TMB, and would not be possible without these superb open-source tools. For more information, see:
+WHAM is an R package with computation and estimation based on the TMB package [Kristensen et al. 2016](https://doi.org/10.18637/jss.v070.i05), and would not be possible without these superb open-source tools. For more information, see:
 
 - R: https://www.r-project.org/
 - TMB: https://kaskr.github.io/adcomp/_book/Introduction.html
 
 ## Installation
 
-For the latest stable, tested release:
-
+For the latest stable, tested release, with any bug fixes:
 ```r
 devtools::install_github("timjmiller/wham", dependencies=TRUE)
 ```
 
-For the development version with recent bug fixes and features (potentially untested):
-
+For the development version with recent extensions that passes all existing tests, but with potentially untested new features:
 ```r
-devtools::install_github("timjmiller/wham", dependencies=TRUE, ref="devel")
+devtools::install_github("timjmiller/wham@devel", dependencies=TRUE)
 ```
 
 For the single stock version:
@@ -127,6 +117,14 @@ pak::pkg_install("timjmiller/wham@single_wham", lib = "single_wham")
 library(wham, lib.loc = "single_wham")
 .libPaths("single_wham")
 ```
+
+## Releases and Versions
+
+WHAM is now used for management for several stocks and to reduce confusion during the assessment process the latest commit pushed to the master and devel branch will get a unique version number from release v2.0.0 forward.
+
+All releases of the package have versions denoted as (v)a.b.0. (e.g., the first release is v1.0.0). Releases that have lesser changes will increment the second number (e.g., v2.1.0) and releases with large changes will increment the first number (e.g. v3.0.0). When there are commits for bug fixes to the latest release in the master branch of the repo they will increment the third number (e.g., v2.0.1). 
+
+The devel branch will always be up-to-date with the master branch and versioned initially as (v)a.b.c.9000. For example, when the released version is changed from v2.0.0 to v2.0.1, devel branch would also go from v2.0.0.9xxx to v2.0.1.9000. The latest pushed commits to devel branch between fixes to the released version will also have a unique version. For example, the next pushed change to devel branch would be v2.0.1.9001.
 
 ## Tutorial
 

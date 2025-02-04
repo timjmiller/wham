@@ -74,7 +74,7 @@ For a clean, runnable `.R` script, look at `ex12_multistock.R` in the `example_s
 You can run this entire example script with:
 ```{r, eval=FALSE}
 wham.dir <- find.package("wham")
-source(file.path(wham.dir, "example_scripts", "ex13_multistock.R"))
+source(file.path(wham.dir, "example_scripts", "ex12_multistock.R"))
 ```
 
 ## 2. Creating inputs to fit a two stock model without movement

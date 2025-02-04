@@ -27,8 +27,9 @@ vign_12_info <- list()
 
 vign_12_info$move <- list(
 	nofit_seasonal_Ps_terminal = nofit_move$rep$seasonal_Ps_terminal, 	
-	nofit_annual_Ps = nofit_move$rep$annual_Ps
-	obj = fit_move$opt$obj
+	nofit_annual_Ps = nofit_move$rep$annual_Ps,
+	obj = fit_move$opt$obj,
+	mu = fit_move$rep$mu
 )
 vign_12_info$move_age <- list(
 	n_unique_mu_re = length(unique(input_move_age$map$mu_re)),

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.9.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -65,6 +65,12 @@
     </li>
     <li>
       <a href="../articles/ex11_catchability.html">Ex 11: Catchability configurations</a>
+    </li>
+    <li>
+      <a href="../articles/ex12_multistock.html">Ex 12: Multiple stocks, regions</a>
+    </li>
+    <li>
+      <a href="../articles/ex13_no_ASAP.html">Ex 13: WHAM without ASAP</a>
     </li>
   </ul></li>
 <li>
@@ -132,7 +138,8 @@
 <span>  n_cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  res_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  wham_location <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  test_dir <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  test_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  save_inputs <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -180,6 +187,10 @@
 
 <dt>test_dir</dt>
 <dd><p>(optional) directory for package repository. To be used when the function is being called during package testing rather than an installed version of WHAM.</p></dd>
+
+
+<dt>save_inputs</dt>
+<dd><p>T/F whether to save the simulated inputs in res_dir. Default = FALSE.</p></dd>
 
 </dl></div>
     <div id="value">
