@@ -89,7 +89,6 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
   asap.mods <- mods[asap.mods.ind] # get asap models only
   all.wham <- ifelse(length(wham.mods.ind)==length(mods), TRUE, FALSE)
   no.wham <- ifelse(length(wham.mods.ind)==0, TRUE, FALSE)
-
   if(is.null(compare.opts)) compare.opts <- list(stock = 1, region = 1)
   if(is.null(compare.opts$stock)) compare.opts$stock = 1
   if(is.null(compare.opts$region)) compare.opts$region = 1
@@ -173,7 +172,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     out[c("daic","aic","rho","best","tab")] <- list(daic,aic,rho,best,tab)
   }
   if(do.plot){
-    if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE)
+  if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE)
     if(is.null(plot.opts$out.type)) plot.opts$out.type <- 'png'
     if(!plot.opts$out.type %in% c("pdf","png")) stop("plot.opts$out.type must be 'pdf' or 'png' (default)")
     if(is.null(plot.opts$ci)) plot.opts$ci <- TRUE
@@ -192,6 +191,8 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(is.null(plot.opts[["kobe.prob"]])) plot.opts$kobe.prob <- TRUE
     if(is.null(plot.opts[["refpt"]])) plot.opts$refpt <- "XSPR"
     if(!plot.opts$refpt %in% c("XSPR","MSY")) stop("plot.opts$refpt must be either 'XSPR' or 'MSY'.")
+    if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
+    if(any(sapply(mods[wham.mods.ind], function(x) x$env$data$do_SPR_BRPs == 0))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
 
     x <- list()
     for(i in 1:length(mods)){
@@ -203,6 +204,8 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         x[[i]]$is.wham <- FALSE
       }
     }
+    if(any(sapply(x, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
+
     names(x) <- names(mods)
     if(is.null(plot.opts$ages.lab)){
       if(!no.wham) plot.opts$ages.lab <- wham.mods[[1]]$ages.lab
@@ -359,45 +362,68 @@ plot.SSB.F.R.compare <- function(x, compare.opts, plot.opts){
   region <- compare.opts$region
   df <- data.frame(matrix(NA, nrow=0, ncol=6))
   colnames(df) <- c("Year","var","val","lo","hi","Model")
+  for(i in 1:length(x)) if(x[[i]]$is.wham) {
+    if(is.null(x[[i]]$log_SSB_all)) x[[i]]$log_SSB_all <- list(est = log(apply(cbind(x[[i]]$SSB$est),1,sum)))
+    if(is.null(x[[i]]$log_NAA_rep)) x[[i]]$log_NAA_rep <- list(est = log(x[[i]]$NAA$est))
+  }
   if(!is.null(plot.opts$relative.to)){
     base.i <- which(names(x) == plot.opts$relative.to)
-    plot.opts$ci <- rep(FALSE, length(x)) #no confidence intervals
-    for(i in 1:length(x)){
-      if(x[[i]]$is.wham){
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB_all$est)
-        else ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB[,1])
-      } else {
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
-        else ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB[,1])
+    do.plot <- TRUE
+    if(x[[base.i]]$is.wham & is.null(x[[base.i]]$SSB & is.null(x[[base.i]]$log_SSB_all))) {
+      do.plot <- FALSE
+      warning(paste0(base.i, " is a wham model and does not have log_SSB_all sdreported or SSB reported. Cannot plot relative SSB."))
+    }
+    if(x[[base.i]]$is.wham & is.null(x[[base.i]]$NAA & is.null(x[[base.i]]$log_NAA_rep))) {
+      do.plot <- FALSE
+      warning(paste0(base.i, " is a wham model and does not have log_NAA_rep sdreported or NAA reported. Cannot plot relative SSB."))
+    }
+    if(do.plot){
+      plot.opts$ci <- rep(FALSE, length(x)) #no confidence intervals
+      for(i in 1:length(x)){
+        if(x[[i]]$is.wham) {
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB_all$est)
+          else ratio <- exp(x[[i]]$log_SSB_all$est)/exp(x[[base.i]]$log_SSB[,1])
+        } else {
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
+          else ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB[,1])
+        }
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("SSB relative to ",plot.opts$relative.to),
+          val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
+        if(x[[i]]$is.wham){
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F_tot$est)
+          else ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F[,1])
+        } else {
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
+          else ratio <- exp(x[[i]]$log_F[,1])/exp(x[[base.i]]$log_F[,1])
+        }
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("F relative to ",plot.opts$relative.to),
+          val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
+        if(x[[i]]$is.wham){
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
+          else ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA[,1])
+        } else {
+          if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
+          else ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA[,1])
+        }
+        df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("Recruitment relative to ",plot.opts$relative.to),
+          val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
       }
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("SSB relative to ",plot.opts$relative.to),
-        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
-      if(x[[i]]$is.wham){
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F_tot$est)
-        else ratio <- exp(x[[i]]$log_F_tot$est)/exp(x[[base.i]]$log_F[,1])
-      } else {
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_SSB[,1])/exp(x[[base.i]]$log_SSB_all$est)
-        else ratio <- exp(x[[i]]$log_F[,1])/exp(x[[base.i]]$log_F[,1])
-      }
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("F relative to ",plot.opts$relative.to),
-        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
-      if(x[[i]]$is.wham){
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
-        else ratio <- exp(x[[i]]$log_NAA_rep$est[stock,region,,1])/exp(x[[base.i]]$log_NAA[,1])
-      } else {
-        if(x[[base.i]]$is.wham) ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA_rep$est[stock,region,,1])
-        else ratio <- exp(x[[i]]$log_NAA[,1])/exp(x[[base.i]]$log_NAA[,1])
-      }
-      df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=paste0("Recruitment relative to ",plot.opts$relative.to),
-        val=ratio, lo=ratio, hi=ratio, Model=names(x)[i]))
     }
   } else {
     for(i in 1:length(x)){
       if(x[[i]]$is.wham){
+        if(is.null(x[[i]]$log_SSB_all$ci)) x[[i]]$log_SSB_all$ci <- list(lo = rep(0, length(x[[i]]$log_SSB_all$est)), hi = rep(0, length(x[[i]]$log_SSB_all$est)))
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="SSB", val=exp(x[[i]]$log_SSB_all$est), lo=x[[i]]$log_SSB_all$ci$lo, 
           hi=x[[i]]$log_SSB_all$ci$hi, Model=names(x)[i]))
+        if(is.null(x[[i]]$log_F_tot$ci)) x[[i]]$log_F_tot$ci <- list(lo = rep(0, length(x[[i]]$log_F_tot$est)), hi = rep(0, length(x[[i]]$log_F_tot$est)))
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="F", val=exp(x[[i]]$log_F_tot$est), lo=x[[i]]$log_F_tot$ci$lo, 
           hi=x[[i]]$log_F_tot$ci$hi, Model=names(x)[i]))
+        if(is.null(x[[i]]$log_NAA_rep$ci)) {
+          temp <- x[[i]]$log_NAA_rep$est
+          temp[] <- 0
+          x[[i]]$log_NAA_rep$se <- temp
+          x[[i]]$log_NAA_rep$ci <- list(lo = temp, hi = temp)
+        }
         df <- rbind(df, data.frame(Year=x[[i]]$years_full, var="Recruitment", val=exp(x[[i]]$log_NAA_rep$est[stock,region,,1]), 
           lo=x[[i]]$log_NAA_rep$ci$lo[stock,region,,1], hi=x[[i]]$log_NAA_rep$ci$hi[stock,region,,1], Model=names(x)[i]))
       } else{
@@ -833,7 +859,9 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
   colnames(df) <- c("Age","Selectivity","Block","Model")
   for(i in 1:length(x)){
     for(j in selblocks){
-      sel <- apply(x[[i]][["selAA"]][[j]][yrs[[which(selblocks==j)]],], 2, mean, na.rm=T)
+      #if(!is.null(x[[i]][["selAA"]]$est)) sel <- apply(x[[i]][["selAA"]]$est[[j]][yrs[[which(selblocks==j)]],,drop = FALSE], 2, mean, na.rm=T)
+      #else 
+      sel <- apply(x[[i]][["selAA"]][[j]][yrs[[which(selblocks==j)]],,drop = FALSE], 2, mean, na.rm=T)
       df <- rbind(df, data.frame(Age=1:n_ages, Selectivity=sel, Block=paste0("Block ",j), Model=names(x)[i]))
     }
   }
