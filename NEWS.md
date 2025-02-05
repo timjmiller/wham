@@ -3,7 +3,7 @@ wham 2.0.0.9001
 
 ### Bug fixes
 
-* (2.0.0.9001) fix bug in compare_wham_models() when applied to fitted models without $sdrep.
+* (2.0.0.9001) fix bug in compare_wham_models() when applied to fitted models without $sdrep. [281a136](https://github.com/timjmiller/wham/commit/281a136928bbd495fffc9bb10cdfdb841c6a0e68)
 
 wham 2.0.0 (2025-02-04)
 =========================
