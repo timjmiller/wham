@@ -3,7 +3,7 @@ wham 2.0.0.9002 (2025-03-12)
 
 ### Minor improvements
 
-* (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. 
+* (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. [d3dd9e9](https://github.com/timjmiller/wham/commit/d3dd9e9f8bcfff37252618c32c689f901cdab5b9)
 
 ### Bug fixes
 
