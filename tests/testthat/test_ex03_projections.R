@@ -121,8 +121,9 @@ proj_opts[[11]] <- list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
 
 for(m in 1:length(proj_opts)) {
   print(m)
-  if(m == 1) mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], MakeADFun.silent = TRUE)
-  else mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = TRUE)
+  # if(m == 1) mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], MakeADFun.silent = TRUE)
+  # else 
+  mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = TRUE)
   
   # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
   #  check length of fixed effects

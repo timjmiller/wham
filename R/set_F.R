@@ -19,26 +19,31 @@
 #'  }
 #'
 #' @export
-set_F = function(input, F_opts = NULL)
+set_F <- function(input, F_opts = NULL)
 {
+  if(is.null(input[["use_asap3"]])){
+    input[["use_asap3"]] <- TRUE
+    if(is.null(input[["asap3"]])) input[["use_asap3"]] <- FALSE
+  }
+  if(is.null(data)) data <- list()
   if(is.null(input$data$n_fleets)) stop("No catch information has been added yet. Run set_catch() first. See ?set_catch")
-  asap3 = input$asap3
+  asap3 <- input$asap3
   input$data$F_config <- 1 #log_F1, F_devs
   input$par$F_pars <- matrix(0,input$data$n_years_model, input$data$n_fleets)
-  #F_devs = matrix(0, input$data$n_years_model-1, input$data$n_fleets)
-	if(!is.null(asap3)) {
-    k = 1
+  #F_devs <- matrix(0, input$data$n_years_model-1, input$data$n_fleets)
+	if(input[["use_asap3"]]) {
+    k <- 1
     for(i in 1:length(asap3))for(j in 1:length(asap3[[i]]$F1_ini)){
-      input$par$F_pars[1,k] = log(asap3[[i]]$F1_ini[j]) # use F1_ini values from asap3 file  
-      k = k + 1
+      input$par$F_pars[1,k] <- log(asap3[[i]]$F1_ini[j]) # use F1_ini values from asap3 file  
+      k <- k + 1
     }
 	} else {
-  	input$par$F_pars[1,] = log(0.2) # old
+  	input$par$F_pars[1,] <- log(0.2) # old
   }
   if(!is.null(F_opts$F_config)) input$data$F_config <- F_opts$F_config
   if(!is.null(F_opts$F)) {
     if(input$data$F_config == 2) {
-      input$par$F_pars[] = log(F_opts$F[])
+      input$par$F_pars[] <- log(F_opts$F[])
     } else { # F_config = 1
       input$par$F_pars[1,] <- log(F_opts$F[1,])
       for(f in 1:input$data$n_fleets) input$par$F_pars[-1,f] <- diff(log(F_opts$F[,f]))

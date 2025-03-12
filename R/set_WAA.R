@@ -1,14 +1,19 @@
 set_WAA <- function(input, waa_info = NULL) {
-	data <- input$data
+  if(is.null(input[["use_asap3"]])){
+    input[["use_asap3"]] <- TRUE
+    if(is.null(input[["asap3"]])) input[["use_asap3"]] <- FALSE
+  }
+  data <- input[["data"]]
+  if(is.null(data)) data <- list()
   asap3 <- input$asap3
 	# Weight-at-age
 
   if(!is.null(waa_info$waa)){
-		data$waa = waa_info$waa
-		dim_waa = dim(data$waa)
+		data$waa <- waa_info$waa
+		dim_waa <- dim(data$waa)
 		if(length(dim_waa) != 3) stop("basic_info$waa must be a 3d array. second index is number of years, third is number of ages.")
 	} else {
-		if(!is.null(asap3)) {
+		if(input[["use_asap3"]]) {
 			# data$waa <- array(NA,dim = c(data$n_fleets + data$n_regions + data$n_indices + data$n_stocks, data$n_years_model, data$n_ages))
 			data$waa <- array(NA,dim = c(data$n_fleets + data$n_indices + data$n_stocks, data$n_years_model, data$n_ages))
 			data$waa_pointer_ssb <- integer()
@@ -51,9 +56,9 @@ set_WAA <- function(input, waa_info = NULL) {
 				data$waa_pointer_ssb[k] <- data$n_fleets + data$n_indices + k
 			}
 		} else { #no asap and no waa provided
-			L = 100*(1-exp(-0.3*(1:data$n_ages - 0)))
-	    W = rep(exp(-11)*L^3, each = data$n_years_model)
-			data$waa = array(W, dim = c(1, data$n_years_model, data$n_ages))
+			L <- 100*(1-exp(-0.3*(1:data$n_ages - 0)))
+	    W <- rep(exp(-11)*L^3, each = data$n_years_model)
+			data$waa <- array(W, dim = c(1, data$n_years_model, data$n_ages))
 			input$log$waa <- c(input$log$waa, "input$data$waa filled with fake data. \n")
 		}
 	}
@@ -67,16 +72,16 @@ set_WAA <- function(input, waa_info = NULL) {
 		if(length(waa_info$waa_pointer_ssb) != data$n_stocks){
 			stop("length of basic_info$waa_pointer_ssb is not equal to the number of stocks.\n")
 		}
-		data$waa_pointer_ssb = waa_info$waa_pointer_ssb
+		data$waa_pointer_ssb <- waa_info$waa_pointer_ssb
 	} else{
-		if(is.null(asap3)) {
-			data$waa_pointer_ssb = rep(1,data$n_stocks)
+		if(!input[["use_asap3"]]) {
+			data$waa_pointer_ssb <- rep(1,data$n_stocks)
 			input$log$waa <- c(input$log$waa, "basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. \n")
 		}
 	}
 	if(is.null(waa_info$waa_pointer_M)){
 		input$log$waa <- c(input$log$waa, "basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. \n")
-		data$waa_pointer_M = rep(data$waa_pointer_ssb,data$n_stocks)
+		data$waa_pointer_M <- rep(data$waa_pointer_ssb,data$n_stocks)
 	} else{
 		if(any(!(waa_info$waa_pointer_M %in% 1:dim(data$waa)[1]))){
 			stop("some basic_info$waa_pointer_M are outside the number of waa matrices.\n")
@@ -84,7 +89,7 @@ set_WAA <- function(input, waa_info = NULL) {
 		if(length(waa_info$waa_pointer_M) != data$n_stocks){
 			stop("length of basic_info$waa_pointer_M is not equal to the number of regions.\n")
 		}
-		data$waa_pointer_M[] = waa_info$waa_pointer_M
+		data$waa_pointer_M[] <- waa_info$waa_pointer_M
 	}
 	if(!is.null(data$waa_pointer_fleets)){
     if(any(!(data$waa_pointer_fleets %in% 1:dim(data$waa)[1]))){
@@ -100,7 +105,7 @@ set_WAA <- function(input, waa_info = NULL) {
 	}
 	if(length(input$log$waa))	input$log$waa <- c("WAA: \n", input$log$waa)
 
-  input$data = data
+  input$data <- data
   input$options$waa <- waa_info
   if(is.null(input$by_pwi)) cat(unlist(input$log$waa, recursive=T))
  	return(input)

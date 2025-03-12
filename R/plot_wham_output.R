@@ -42,24 +42,24 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     mod$sdrep <- TMB::sdreport(mod)
   }  
   fslash <- function(fp) chartr('\\','/',fp)
-  dir.main = fslash(dir.main)
+  dir.main <- fslash(dir.main)
 
 # allow overwrite of default ages.lab = 1:n.ages
-  fontfam = ""
-  browse = TRUE
+  fontfam <- ""
+  browse <- TRUE
   if(!is.null(plot.opts)){
-    if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab = plot.opts$ages.lab
-    if(!is.null(plot.opts[["font.family"]])) fontfam = plot.opts$font.family
-    if(!is.null(plot.opts[["browse"]])) browse = plot.opts$browse
+    if(!is.null(plot.opts[["ages.lab"]])) mod$ages.lab <- plot.opts$ages.lab
+    if(!is.null(plot.opts[["font.family"]])) fontfam <- plot.opts$font.family
+    if(!is.null(plot.opts[["browse"]])) browse <- plot.opts$browse
   }
 
   if(!out.type %in% c('html', 'pdf', 'png')){
     stop("out.type must be one of 'html', 'pdf', or 'png'. See ?plot_wham_output")
   }
   if(out.type %in% c("png", "pdf")) {
-    table.type = "pdf"
+    table.type <- "pdf"
   } else {
-    table.type = "html"
+    table.type <- "html"
   }
 
   # if(dir.exists(dir.main)){

@@ -27,7 +27,7 @@
 #'
 #'
 #' @export
-fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE, use.optim=FALSE, opt.control = NULL)
+fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE, use.optim=FALSE, opt.control = NULL)
 {
   if(use.optim){
     if(is.null(opt.control)) opt.control <- list(maxit = 1000)
@@ -61,14 +61,14 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
     #  rm("err")
     #}  
     #model$env$parList() gives error when there are no random effects
-    is.re = length(model$env$random)>0
-    fe = model$opt$par
-    if(is.re) model$env$last.par.best[-c(model$env$random)] = fe
-    else  model$env$last.par.best = fe
-    #fe = model$env$last.par.best
-    #if(is.re) fe = fe[-c(model$env$random)]
+    is.re <- length(model$env$random)>0
+    fe <- model$opt$par
+    if(is.re) model$env$last.par.best[-c(model$env$random)] <- fe
+    else  model$env$last.par.best <- fe
+    #fe <- model$env$last.par.best
+    #if(is.re) fe <- fe[-c(model$env$random)]
     
-    Gr = model$gr(fe)
+    Gr <- model$gr(fe)
     if(do.check){
       if(any(abs(Gr) > 0.01)){
         df <- data.frame(param = names(fe),
@@ -91,13 +91,13 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
         }
       }
     }
-    model$parList = model$env$parList(x = fe)
-    model$final_gradient = Gr
+    model$parList <- model$env$parList(x = fe)
+    model$final_gradient <- Gr
   }
 
 
-  model$date = Sys.time()
-  model$dir = getwd()
+  model$date <- Sys.time()
+  model$dir <- getwd()
   model$rep <- model$report()
   TMB_commit <- packageDescription("TMB")$GithubSHA1
   model$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
@@ -109,12 +109,12 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
   if(do.sdrep) # only do sdrep if no error
   {
     model$sdrep <- try(TMB::sdreport(model))
-    model$is_sdrep = !is.character(model$sdrep)
-    if(model$is_sdrep) model$na_sdrep = any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
+    model$is_sdrep <- !is.character(model$sdrep)
+    if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep <- NA
     if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
   } else {
-    model$is_sdrep = FALSE
-    model$na_sdrep = NA
+    model$is_sdrep <- FALSE
+    model$na_sdrep <- NA
   }
 
   return(model)
@@ -131,11 +131,11 @@ fit_tmb = function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=
 #'
 #' @return A vector of fixed-effect estimates
 
-extract_fixed = function( obj ){
+extract_fixed <- function( obj ){
   if( length(obj$env$random)==0 ){
-    Return = obj$env$last.par.best
+    Return <- obj$env$last.par.best
   }else{
-    Return = obj$env$last.par.best[-c(obj$env$random)]
+    Return <- obj$env$last.par.best[-c(obj$env$random)]
   }
   return( Return )
 }
@@ -156,26 +156,26 @@ extract_fixed = function( obj ){
 #' @return A tagged list of the hessian and the message
 
 #' @export
-check_estimability = function( obj, h ){
+check_estimability <- function( obj, h ){
 
   # Extract fixed effects
-  ParHat = extract_fixed( obj )
+  ParHat <- extract_fixed( obj )
 
   # Check for problems
-  Gr = obj$gr( ParHat )
+  Gr <- obj$gr( ParHat )
   if( any(abs(Gr)>0.01) ) stop("Some |gradients| are high, please improve optimization and only then use `check_estimability`")
 
   # Finite-different hessian
-  List = NULL
+  List <- NULL
   if(missing(h)){
-    List[["Hess"]] = optimHess( par=ParHat, fn=obj$fn, gr=obj$gr )
+    List[["Hess"]] <- optimHess( par=ParHat, fn=obj$fn, gr=obj$gr )
   }else{
-    List[["Hess"]] = h
+    List[["Hess"]] <- h
   }
 
   # Check eigendecomposition
-  List[["Eigen"]] = eigen( List[["Hess"]] )
-  List[["WhichBad"]] = which( List[["Eigen"]]$values < sqrt(.Machine$double.eps) )
+  List[["Eigen"]] <- eigen( List[["Hess"]] )
+  List[["WhichBad"]] <- which( List[["Eigen"]]$values < sqrt(.Machine$double.eps) )
 
   # Check result
   if( length(List[["WhichBad"]])==0 ){
@@ -183,8 +183,8 @@ check_estimability = function( obj, h ){
     message( "All parameters are estimable" )
   }else{
     # Check for parameters
-    RowMax = apply( List[["Eigen"]]$vectors[,List[["WhichBad"]],drop=FALSE], MARGIN=1, FUN=function(vec){max(abs(vec))} )
-    List[["BadParams"]] = data.frame("Param"=names(obj$par), "MLE"=ParHat, "Param_check"=ifelse(RowMax>0.1, "Bad","OK"))
+    RowMax <- apply( List[["Eigen"]]$vectors[,List[["WhichBad"]],drop=FALSE], MARGIN=1, FUN=function(vec){max(abs(vec))} )
+    List[["BadParams"]] <- data.frame("Param"=names(obj$par), "MLE"=ParHat, "Param_check"=ifelse(RowMax>0.1, "Bad","OK"))
     # print message
     print( List[["BadParams"]] )
   }

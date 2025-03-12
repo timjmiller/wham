@@ -34,7 +34,7 @@
 #' plot_wham_output(mod)
 #' }
 #' 
-make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), sdrep_required = TRUE){
+make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), sdrep_required = TRUE){
   verify_version(model)
   orig_vals <- c(model$env$data$do_SPR_BRPs,model$env$data$do_MSY_BRPs)
   model$env$data$do_SPR_BRPs <- model$env$data$do_MSY_BRPs <- 0
@@ -50,18 +50,18 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   
   cat("Doing OSA residuals...\n");
-  input = model$input
+  input <- model$input
   if(any(class(input$data$obs) == "list")) input$data$obs <- as.data.frame(input$data$obs) #simulated data$obs will be a list
-  model$osa = input$data$obs
-  model$osa$residual = NA
+  model$osa <- input$data$obs
+  model$osa$residual <- NA
   #first do continuous obs, condition on obs without osa (probably none)
-  subset.agecomp = which(model$osa$type %in% c("indexpaa", "catchpaa"))
-  subset.ecov = which(model$osa$type %in% c("Ecov"))
-  subset.aggregate = which(model$osa$type %in% c("logindex", "logcatch"))
-  conditional. = NULL
+  subset.agecomp <- which(model$osa$type %in% c("indexpaa", "catchpaa"))
+  subset.ecov <- which(model$osa$type %in% c("Ecov"))
+  subset.aggregate <- which(model$osa$type %in% c("logindex", "logcatch"))
+  conditional. <- NULL
   if(length(subset.ecov)){ #do Ecov first
     cat("Doing OSA for Ecov observations...\n")
-    model$OSA.Ecov = suppressWarnings(TMB::oneStepPredict(
+    model$OSA.Ecov <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,
       subset = subset.ecov,
@@ -71,11 +71,11 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
       discrete = FALSE,
       parallel = osa.opts$parallel))
     model$osa$residual[subset.ecov] <- model$OSA.Ecov$residual
-    conditional. = c(conditional., subset.ecov)
+    conditional. <- c(conditional., subset.ecov)
   }
   if(length(subset.aggregate)){
     cat("Doing OSA for aggregate catch and index observations...\n")
-    model$OSA.aggregate = suppressWarnings(TMB::oneStepPredict(
+    model$OSA.aggregate <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,
       subset = subset.aggregate,
@@ -85,14 +85,14 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
       discrete = FALSE,
       parallel = osa.opts$parallel))
     model$osa$residual[subset.aggregate] <- model$OSA.aggregate$residual
-    conditional. = c(conditional., subset.aggregate)
+    conditional. <- c(conditional., subset.aggregate)
   }
   if(length(subset.agecomp)){
     cat("Doing OSA for catch and index age comp observations...\n")
     if(!is.null(input$data$condition_no_osa)) cat("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
     conditional. = c(conditional., input$data$condition_no_osa)
     cat("Doing OSA for age comp observations...\n")
-    model$OSA.agecomp = suppressWarnings(TMB::oneStepPredict(
+    model$OSA.agecomp <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,
       subset = subset.agecomp,
@@ -103,7 +103,7 @@ make_osa_residuals = function(model,osa.opts = list(method="oneStepGaussianOffMo
       parallel = osa.opts$parallel))
     #remove any 0 residuals associated with last ages of multinomial and D-M
     model$osa$residual[subset.agecomp] <- model$OSA.agecomp$residual
-    conditional. = c(conditional., subset.agecomp)
+    conditional. <- c(conditional., subset.agecomp)
     ind <- which(input$data$age_comp_model_fleets %in% c(1:2,11))
     if(length(ind)) {
       for(i in ind) {

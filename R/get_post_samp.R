@@ -1,17 +1,17 @@
 #adapted from stockassessment::procres
 get_post_samp <- function(fit){
   
-  input = fit$input
-  input$par = fit$parList
-  re_names = c("log_NAA", "M_re", "mu_re", "selpars_re", "Ecov_re", "q_re")
+  input <- fit$input
+  input$par <- fit$parList
+  re_names <- c("log_NAA", "M_re", "mu_re", "selpars_re", "Ecov_re", "q_re")
   post_samp_names <- paste0("do_post_samp_", c("N", "M","mu", "sel", "Ecov", "q"))
   ind <- which(re_names %in% input$random)
-  for(i in ind) input$data[[post_samp_names[i]]] = 1
-  res = list()
+  for(i in ind) input$data[[post_samp_names[i]]] <- 1
+  res <- list()
   if(length(ind)){
     if(fit$is_sdrep) if(!fit$na_sdrep){
-      # tfit = fit_wham(input, do.fit = FALSE)
-      # sdrep = TMB::sdreport(tfit)
+      # tfit <- fit_wham(input, do.fit = FALSE)
+      # sdrep <- TMB::sdreport(tfit)
       for(i in re_names[ind]){
         if(i %in% input$random) {
           idx <- which(names(sdrep$value)==i)

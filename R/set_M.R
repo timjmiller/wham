@@ -94,12 +94,19 @@
 #' }
 #'
 #' @export
-set_M = function(input, M)
+set_M <- function(input, M)
 {
-  data = input$data
-  par = input$par
-  map = input$map
-  asap3 = input$asap3
+  if(is.null(input[["use_asap3"]])){
+    input[["use_asap3"]] <- TRUE
+    if(is.null(input[["asap3"]])) input[["use_asap3"]] <- FALSE
+  }
+  data <- input[["data"]]
+  if(is.null(data)) data <- list()
+  par <- input$par
+  if(is.null(par)) par <- list()
+  map <- input$map
+  if(is.null(map)) map <- list()
+  asap3 <- input$asap3
   input$log$M <- list()
 
   # elements of M: model, initial_means, means_map, logb_prior, intial_b, re_model, re_map, sigma_vals, cor_vals
@@ -111,15 +118,15 @@ set_M = function(input, M)
   map <- map[(!names(map) %in% c("log_b", "M_repars", "Mpars","M_re"))]
 
   #M_model length is n_regions; 1: Estimate-M, 2: f(WAA), 3: f(WAA) by stock
-  data$M_model = 1 #Fixed-M
-  data$log_b_model = 1 #constant if estimated
-  data$use_b_prior = 0
+  data$M_model <- 1 #Fixed-M
+  data$log_b_model <- 1 #constant if estimated
+  data$use_b_prior <- 0
   # data$n_M_re <- matrix(1, data$n_stocks, data$n_regions)
   data$M_re_index <- array(1, dim = c(data$n_stocks, data$n_regions, data$n_ages))
   data$n_M_re <- matrix(data$n_ages, data$n_stocks, data$n_regions)
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions) data$M_re_index[s,r,] <- 1:data$n_ages
   #M_re_model length = n_regions; 1 = none, 2 = IID, 3 = ar1_a, 4 = ar1_y, 5 = 2dar1
-  data$M_re_model = matrix(1,data$n_stocks,data$n_regions) # default = no RE / 'none'
+  data$M_re_model <- matrix(1,data$n_stocks,data$n_regions) # default = no RE / 'none'
   
   par$Mpars <- array(NA, dim = c(data$n_stocks, data$n_regions, data$n_ages))
   map$Mpars <- par$Mpars
@@ -136,11 +143,11 @@ set_M = function(input, M)
  
   if(is.null(M$mean_model)) M$mean_model <- "fixed-M"
   if(is.null(M$re_model)) M$re_model <- matrix("none", data$n_stocks, data$n_regions)
-  if(is.null(M$b_prior)) M$b_prior = FALSE
+  if(is.null(M$b_prior)) M$b_prior <- FALSE
 
-  if(is.null(M$intial_b)) M$intial_b = 0.305
+  if(is.null(M$intial_b)) M$intial_b <- 0.305
   if(is.null(M$initial_mean)) {
-    if(!is.null(asap3)){
+    if(input[["use_asap3"]]){
       M$initial_means <- array(NA, dim = c(data$n_stocks, data$n_regions, data$n_ages))
       for(i in 1:length(asap3)) for(r in 1:data$n_regions) {
         M$initial_means[i,r,] <- exp(apply(log(asap3[[i]]$M),2,mean))
@@ -158,20 +165,20 @@ set_M = function(input, M)
   map$log_b <- matrix(NA, data$n_stocks, data$n_regions)
  
   if(length(M$mean_model) != 1 & !is.character(M$mean_model)) stop("M$mean_model must be 'fixed-M', 'estimate-M', or 'weight-at-age'")
-  M_mods = c("fixed-M", "estimate-M", "weight-at-age")
+  M_mods <- c("fixed-M", "estimate-M", "weight-at-age")
   if(!(M$mean_model %in% M_mods)) stop(paste0("M$mean_model must be one of these: ", paste0(M_mods, collapse=",")))
   data$M_model[] <- ifelse(M$mean_model %in% M_mods[1:2], 1, 2) #only needs to know f(age) or f(waa)
 
   if(!is.null(M$initial_means)){
     if(!is.array(M$initial_means)) stop("M$initial_means must now be an array with dimensions = c(n_stocks,n_regions,n_ages)") 
-    dimsM = dim(M$initial_means)
+    dimsM <- dim(M$initial_means)
     if(length(dimsM) != 3) stop("dimensions of M$initial_means must be c(n_stocks,n_regions,n_ages)")
     if(!all(dimsM == dim(par$Mpars))) stop("dimensions of M$initial_means must be c(n_stocks,n_regions,n_ages)")  
     par$Mpars[] <- log(M$initial_means)
   }
   if(!is.null(M$initial_MAA)){
     if(!is.array(M$initial_MAA)) stop("M$initial_MAA must now be an array with dimensions = c(n_stocks,n_regions,n_years,n_ages)") 
-    dimsM = dim(M$initial_MAA)
+    dimsM <- dim(M$initial_MAA)
     if(length(dimsM) != 4) stop("dimensions of M$initial_MAA must be c(n_stocks,n_regions,n_years,n_ages)")
     if(!all(dimsM == dim(par$M_re))) stop("dimensions of M$initial_MAA must be c(n_stocks,n_regions,n_years,n_ages)")
     for(i in 1:data$n_stocks) for(r in 1:data$n_regions) {
@@ -182,7 +189,7 @@ set_M = function(input, M)
 
   if(!is.null(M$re_model)){
     if(!is.matrix(M$re_model)) stop("M$re_model must be a character n_stocks x n_regions matrix.")
-    dimsM = dim(M$re_model)
+    dimsM <- dim(M$re_model)
     if(length(dimsM) != 2) stop("dimensions of M$re_model must be n_stocks x n_regions.")
     if(!all(dimsM == dim(par$Mpars)[1:2])) stop("dimensions of M$re_model must be n_stocks x n_regions.")  
     if(any(!(M$re_model %in% re_mods))) {
@@ -192,14 +199,14 @@ set_M = function(input, M)
 
   if(!is.null(M$means_map)){
     if(!is.array(M$means_map)) stop("M$means_map must be an array with dimensions = c(n_stocks,n_regions,n_ages)")
-    dimsM = dim(M$means_map)
+    dimsM <- dim(M$means_map)
     if(length(dimsM) != 3) stop("dimensions of M$means_map must be c(n_stocks,n_regions,n_ages)")
     if(!all(dimsM == dim(par$Mpars))) stop("dimensions of M$means_map must be c(n_stocks,n_regions,n_ages)")
   }
 
   if(!is.null(M$re_map)){
     if(!is.array(M$re_map)) stop("M$re_map must be an array with dimensions = c(n_stocks,n_regions,n_ages)")
-    dimsM = dim(M$re_map)
+    dimsM <- dim(M$re_map)
     if(length(dimsM) != 3) stop("dimensions of M$re_map must be c(n_stocks,n_regions,n_ages)")
     if(!all(dimsM == dim(par$Mpars))) stop("dimensions of M$re_map must be c(n_stocks,n_regions,n_ages)")
     if(any(!(M$re_map %in% c(NA,1:data$n_ages)))) stop("Entries in M$re_map must be NA or in 1:n_ages.")
@@ -263,7 +270,7 @@ set_M = function(input, M)
 
   if(is.null(M$means_map)){ #constant M or weight at age being used.
     if(M$mean_model != "fixed-M") { #Estimating constant M or WAA intercept
-      map$Mpars[] = 1
+      map$Mpars[] <- 1
       #only use first value of M from asap files if estimating M for constant or f(WAA)
       for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
         if(length(unique(par$Mpars[s,r,])) > 1) {
@@ -272,7 +279,7 @@ set_M = function(input, M)
           Initializing M at M$initial_means[1,1,1]. To avoid this warning without changing ASAP file, specify M$initial_means appropriately.\n")
         }
       }
-      par$Mpars[] = par$Mpars[1,1,1]
+      par$Mpars[] <- par$Mpars[1,1,1]
     }
   }
 
@@ -325,16 +332,16 @@ set_M = function(input, M)
       }
     }
     if(is.null(M$b_prior)){
-      M$b_prior = FALSE
+      M$b_prior <- FALSE
       input$log$M <- c(input$log$M, "M$b_prior was not specified, so prior for the b parameter of M_a = aW_a^b will not be used.\n")
     }
     if(length(M$b_prior) != 1 | !is.logical(M$b_prior)) stop("M$b_prior must be single value: TRUE or FALSE")
-    if(M$b_prior) data$use_b_prior = 1
+    if(M$b_prior) data$use_b_prior <- 1
   }
 
   if(!is.null(M$sigma_vals)){
     if(!is.matrix(M$sigma_vals)) stop("M$sigma_vals must be a n_stocks x n_regions matrix.")
-    dimsM = dim(M$sigma_vals)
+    dimsM <- dim(M$sigma_vals)
     if(length(dimsM) != 2) stop("dimensions of M$sigma_vals must be n_stocks x n_regions.")
     if(!all(dimsM == dim(par$Mpars)[1:2])) stop("dimensions of M$sigma_vals must be n_stocks x n_regions.")
     if(any(M$sigma_vals<0)) stop("M$sigma_vals must be > 0.")
@@ -342,7 +349,7 @@ set_M = function(input, M)
   }
   if(!is.null(M$sigma_map)){
     if(!is.matrix(M$sigma_map)) stop("M$sigma_map must be a n_stocks x n_regions matrix.")
-    dimsM = dim(M$sigma_map)
+    dimsM <- dim(M$sigma_map)
     if(length(dimsM) != 2) stop("dimensions of M$sigma_map must be n_stocks x n_regions.")
     if(!all(dimsM == dim(par$Mpars)[1:2])) stop("dimensions of M$sigma_map must be n_stocks x n_regions.")
   }
@@ -351,7 +358,7 @@ set_M = function(input, M)
   inv_trans_rho <- function(rho) (log(rho+1) - log(1-rho)) # 0.5 because needed transformation on cpp side is unusual.
   if(!is.null(M$cor_vals)){
     if(!is.array(M$cor_vals)) stop("M$cor_vals must be an array with dimensions = c(n_stocks,n_regions,2)")
-    dimsM = dim(M$cor_vals)
+    dimsM <- dim(M$cor_vals)
     if(length(dimsM) != 3) stop("dimensions of M$cor_vals must be c(n_stocks,n_regions,2)")
     if(!all(dimsM == c(data$n_stocks,data$n_regions,2))) stop("dimensions of M$cor_vals must be c(n_stocks,n_regions,2)")
     if(any(abs(M$cor_vals) > 1)) stop("M$cor_vals must be > -1 and < 1.")
@@ -362,7 +369,7 @@ set_M = function(input, M)
   }
   if(!is.null(M$cor_map)){
     if(!is.array(M$cor_map)) stop("M$cor_map must be an array with dimensions = c(n_stocks,n_regions,2)")
-    dimsM = dim(M$cor_map)
+    dimsM <- dim(M$cor_map)
     if(length(dimsM) != 3) stop("dimensions of M$cor_map must be c(n_stocks,n_regions,2)")
     if(!all(dimsM == c(data$n_stocks,data$n_regions,2))) stop("dimensions of M$cor_map must be c(n_stocks,n_regions,2)")
   }
@@ -370,7 +377,7 @@ set_M = function(input, M)
   # map mean M 
   if(is.null(M$means_map)){
     #estimate a single M for all ages or a single intercept for M = f(WAA) 
-    if(M$mean_model != "fixed-M") map$Mpars[] = 1
+    if(M$mean_model != "fixed-M") map$Mpars[] <- 1
   } else{ #use M$means_map
     if(M$mean_model == "weight-at-age"){ #only use the first age for the intercept
       map$Mpars[,,1] <- unclass(factor(M$means_map[,,1]))
@@ -417,22 +424,26 @@ set_M = function(input, M)
   #print(map$M_repars[1,1,])
   #############
 
-  map$M_repars = factor(map$M_repars)
+  map$M_repars <- factor(map$M_repars)
   map$M_re <- factor(map$M_re)
-  map$Mpars = factor(map$Mpars)
-  map$log_b = factor(map$log_b)
+  map$Mpars <- factor(map$Mpars)
+  map$log_b <- factor(map$log_b)
 
-  input$data = data
-  input$par = par
-  input$map = map
+  input$data <- data
+  input$par <- par
+  input$map <- map
   if(length(input$log$M)) input$log$M <- c("Natural Mortality: \n", input$log$M)
+
+  if(is.null(input[["by_pwi"]])) { #check whether called by prepare_wham_input
+    input <- set_ecov(input, input[["options"]][["ecov"]]) #may need to resize dimensions if dimensions of M change
+  }
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
-	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	input <- set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
 	#set any parameters as random effects
-	input$random = NULL
-	input = set_random(input)
+	input$random <- NULL
+	input <- set_random(input)
   input$options$M <- M
   if(is.null(input$by_pwi)) cat(unlist(input$log$M, recursive=T))
   return(input)

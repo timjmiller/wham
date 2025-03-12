@@ -1,5 +1,9 @@
-wham 2.0.0.9001
+wham 2.0.0.9002 (2025-03-12)
 =========================
+
+### Minor improvements
+
+* (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. 
 
 ### Bug fixes
 

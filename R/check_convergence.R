@@ -22,11 +22,11 @@
 #' @examples
 #' \dontrun{
 #' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit_wham(input4_SNEMAYT) # using default values
+#' mod <- fit_wham(input4_SNEMAYT) # using default values
 #' check_convergence(mod)
 #' }
 check_convergence <- function(mod, ret=FALSE, f = ""){
-  app = f != ""
+  app <- f != ""
   res <- list()
   res$convergence <- mod$opt$convergence
   res$maxgr <- max(abs(mod$final_gradient))
@@ -40,9 +40,9 @@ check_convergence <- function(mod, ret=FALSE, f = ""){
   cat("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n", file = f, append = app)
   cat("Max gradient parameter:",res$maxgr_par,"\n", file = f, append = app)
   if("sdrep" %in% names(mod)){
-    res$is_sdrep = mod$is_sdrep
+    res$is_sdrep <- mod$is_sdrep
     if(res$is_sdrep){
-      res$na_sdrep = mod$na_sdrep
+      res$na_sdrep <- mod$na_sdrep
       if(!(res$na_sdrep)) cat("TMB:sdreport() was performed successfully for this model\n", file = f, append = app)
       else cat("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n", file = f, append = app)
     }

@@ -85,105 +85,108 @@
 #' path_to_examples <- system.file("extdata", package="wham")
 #' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 #' input <- prepare_wham_input(asap3)
-#' NAA = list(sigma = "rec")
+#' NAA <- list(sigma = "rec")
 #' input <- set_q(input, NAA_re = NAA) #estimate recruitment as random effects
 #' }
 #'
 #' @export
-set_NAA = function(input, NAA_re=NULL)
+set_NAA <- function(input, NAA_re=NULL)
 {
 
-  data = input$data
-  par = input$par
-  map = input$map
-  asap3 = input$asap3
+  if(is.null(input$use_asap3)){
+    input$use_asap3 <- TRUE
+    if(is.null(input$asap3)) input$use_asap3 <- FALSE
+  }
+  data <- input[["data"]]
+  if(is.null(data)) data <- list()
+  par <- input$par
+  if(is.null(par)) par <- list()
+  map <- input$map
+  if(is.null(map)) map <- list()
+  asap3 <- input$asap3
   inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s 
   input$log$NAA <- list()
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mean_rec_pars", "log_N1", "log_NAA_sigma", "trans_NAA_rho", "log_NAA"))]
   
-  #if(is.null(input$asap3)) asap3 = NULL
-  #else asap3 = input$asap3
-
-
   #set up initial NAA
   #0: just age-specific numbers at age
-  data$N1_model = rep(0, data$n_stocks)
+  data$N1_model <- rep(0, data$n_stocks)
   
   # data$decouple_recruitment <- 0 #until all examples, tests, vignettes are changed
   data$decouple_recruitment <- 1 #decouple is default now!
   if(!is.null(NAA_re$decouple_recruitment)) data$decouple_recruitment <- as.integer(NAA_re$decouple_recruitment)
 
-  par$log_N1 = array(0,dim = c(data$n_stocks,data$n_regions,data$n_ages))
-  map$log_N1 = array(NA,dim = c(data$n_stocks,data$n_regions,data$n_ages))
-  par$N1_repars = array(0,dim = c(data$n_stocks,data$n_regions,3))
-  map$N1_repars = array(NA,dim = c(data$n_stocks,data$n_regions,3))
-  init_NAA = log(exp(10)*exp(-(0:(data$n_ages-1))*0.2))
+  par$log_N1 <- array(0,dim = c(data$n_stocks,data$n_regions,data$n_ages))
+  map$log_N1 <- array(NA,dim = c(data$n_stocks,data$n_regions,data$n_ages))
+  par$N1_repars <- array(0,dim = c(data$n_stocks,data$n_regions,3))
+  map$N1_repars <- array(NA,dim = c(data$n_stocks,data$n_regions,3))
+  init_NAA <- log(exp(10)*exp(-(0:(data$n_ages-1))*0.2))
   if(!is.null(NAA_re$N1_model)) {
-    options = c("age-specific-fe", "equilibrium","iid-re", "ar1-re")
-    k = 1
+    options <- c("age-specific-fe", "equilibrium","iid-re", "ar1-re")
+    k <- 1
     for(s in 1:data$n_stocks) {
       if(!(NAA_re$N1_model[s] %in% options)) stop("NAA_re$N1_model must all be 'age-specific-fe', 'equilibrium', 'iid-re' or 'ar1-re'.")
-      if(NAA_re$N1_model[s] == options[1]) data$N1_model[s] = 0
-      if(NAA_re$N1_model[s] == options[2]) data$N1_model[s] = 1
+      if(NAA_re$N1_model[s] == options[1]) data$N1_model[s] <- 0
+      if(NAA_re$N1_model[s] == options[2]) data$N1_model[s] <- 1
       if(NAA_re$N1_model[s] %in% options[3:4]) {
-        data$N1_model[s] = 2
-        map$N1_repars[s,,1] = k
-        map$N1_repars[s,,2] = k + 1
-        k = k + 2
+        data$N1_model[s] <- 2
+        map$N1_repars[s,,1] <- k
+        map$N1_repars[s,,2] <- k + 1
+        k <- k + 2
         if(NAA_re$N1_model[s] == options[4]){ #ar1 with age
-          map$N1_repars[s,,3] = k
-          k = k + 1
+          map$N1_repars[s,,3] <- k
+          k <- k + 1
         }
       }
     }
   }
-  map$N1_repars = factor(map$N1_repars)
-  k = 1
+  map$N1_repars <- factor(map$N1_repars)
+  k <- 1
   if(any(data$N1_model == 2) & any(data$N1_model != 2)) stop("If any initial numbers at age are treated as RE, then all must.")
   for(s in 1:data$n_stocks) {
     if(data$N1_model[s] == 0){
       for(r in 1:data$n_regions) for(a in 1:data$n_ages) {
         if(data$NAA_where[s,r,a] == 1) {
-          if(!is.null(asap3)) {
-            par$log_N1[s,r,a] = log(asap3[[s]]$N1_ini[a]) # use N1_ini values from asap3 file
+          if(input$use_asap3) {
+            par$log_N1[s,r,a] <- log(asap3[[s]]$N1_ini[a]) # use N1_ini values from asap3 file
           } else{
-            par$log_N1[s,r,a] = init_NAA[a]
+            par$log_N1[s,r,a] <- init_NAA[a]
           }
-          map$log_N1[s,r,a] = k
+          map$log_N1[s,r,a] <- k
           k <- k + 1
         }
       }
     }
     if(data$N1_model[s] == 1) { #equilibrium assumption, 2 pars per stock
-      par$log_N1[s,data$spawn_regions[s],1:2] = c(10,log(0.1)) # allowed in wham.cpp but no option to set here (must be hard-coded after calling prepare_wham_input)
-      map$log_N1[s,data$spawn_regions[s],1:2] = k + 0:1
-      k = k + 2
+      par$log_N1[s,data$spawn_regions[s],1:2] <- c(10,log(0.1)) # allowed in wham.cpp but no option to set here (must be hard-coded after calling prepare_wham_input)
+      map$log_N1[s,data$spawn_regions[s],1:2] <- k + 0:1
+      k <- k + 2
     }
     if(data$N1_model[s] == 2) { #RE
       for(r in 1:data$n_regions) for(a in 1:data$n_ages) {
         if(data$NAA_where[s,r,a] ==1) {
-          par$log_N1[s,r,a] = init_NAA[a]
-          map$log_N1[s,r,a] = k
+          par$log_N1[s,r,a] <- init_NAA[a]
+          map$log_N1[s,r,a] <- k
           k <- k + 1
         }
       }
     }
   }
   if(!is.null(NAA_re[["N1_pars"]])){
-    par$log_N1[] = log(NAA_re$N1_pars)
+    par$log_N1[] <- log(NAA_re$N1_pars)
   }
-  map$log_N1 = factor(map$log_N1)
+  map$log_N1 <- factor(map$log_N1)
 
   # NAA_re options for beyond year 1
   # default = SCAA for each stock
-  data$NAA_re_model = rep(0, data$n_stocks)
-  par$log_NAA_sigma = array(0, c(data$n_stocks, data$n_regions, data$n_ages))
-  map$log_NAA_sigma = array(NA, c(data$n_stocks, data$n_regions, data$n_ages))
-  par$trans_NAA_rho = array(0,c(data$n_stocks, data$n_regions, 3))
-  map$trans_NAA_rho = array(NA,c(data$n_stocks, data$n_regions, 3))
-  par$log_NAA = array(10,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
-  map$log_NAA = array(NA,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
+  data$NAA_re_model <- rep(0, data$n_stocks)
+  par$log_NAA_sigma <- array(0, c(data$n_stocks, data$n_regions, data$n_ages))
+  map$log_NAA_sigma <- array(NA, c(data$n_stocks, data$n_regions, data$n_ages))
+  par$trans_NAA_rho <- array(0,c(data$n_stocks, data$n_regions, 3))
+  map$trans_NAA_rho <- array(NA,c(data$n_stocks, data$n_regions, 3))
+  par$log_NAA <- array(10,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
+  map$log_NAA <- array(NA,dim = c(data$n_stocks, data$n_regions, data$n_years_model-1, data$n_ages))
   for(s in 1:data$n_stocks){
     map$log_NAA[s,data$spawn_regions[s],,1] <- 1 #change to unique values later
   }
@@ -197,7 +200,7 @@ set_NAA = function(input, NAA_re=NULL)
     if(!length(NAA_re$sigma) %in% c(1,data$n_stocks)) stop("NAA_re$sigma length must be 1 or equal to the number of stocks.")
     if(length(NAA_re$sigma) == 1) {
       input$log$NAA <- c(input$log$NAA, paste0("\n Same NAA_re$sigma being used for all stocks (", NAA_re$sigma[[1]][1], ").\n"))
-      #NAA_re$sigma = rep(list(NAA_re$sigma), data$n_stocks)
+      #NAA_re$sigma <- rep(list(NAA_re$sigma), data$n_stocks)
       map$log_NAA_sigma[,,1] <- k
       data$NAA_re_model[] <- 1
       #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) if(data$NAA_where[s,r,1]==1) map$log_NAA[s,r,,1] <- 1 #change to unique values later
@@ -213,7 +216,7 @@ set_NAA = function(input, NAA_re=NULL)
           data$NAA_re_model[s] <- 1
           map$log_NAA_sigma[s,,1] <- k
           #below is already done above for SCAA
-          #map$log_NAA[s,data$spawn_regions[s],,1] = 1 #change to unique values later
+          #map$log_NAA[s,data$spawn_regions[s],,1] <- 1 #change to unique values later
           k <- k + 1
           #data$n_NAA_sigma <- 1
           #data$NAA_sigma_pointers <- rep(1,data$n_ages)
@@ -315,47 +318,47 @@ set_NAA = function(input, NAA_re=NULL)
 
   #set up recruitment
   if(!is.null(NAA_re$recruit_model)) {
-    data$recruit_model[] = NAA_re$recruit_model #overrides recruit_model argument to wham::prepare_wham_input
+    data$recruit_model[] <- NAA_re$recruit_model #overrides recruit_model argument to wham::prepare_wham_input
     for(s in 1:data$n_stocks) if(data$recruit_model[s] > 1 & data$NAA_re_model[s] == 0) {
       stop("NAA_re$recruit_model[s] > 1 has been specified, but NAA_re$sigma[[s]] must either be 'rec' (random effects on recruitment only), 
       'rec+1' (random effects on all NAA with ages > 1 sharing sigma_a,
       or a vector with length == n.ages specifying which sigma_a to use for each age.")
     }
   }
-  par$mean_rec_pars = matrix(0, data$n_stocks, 2)
-  map$mean_rec_pars = matrix(NA, data$n_stocks, 2)
+  par$mean_rec_pars <- matrix(0, data$n_stocks, 2)
+  map$mean_rec_pars <- matrix(NA, data$n_stocks, 2)
   
   for(s in 1:data$n_stocks) {
     if(!is.null(NAA_re$recruit_pars[[s]])){
-      if(data$recruit_model[s] == 2) par$mean_rec_pars[s,1] = log(NAA_re$recruit_pars[[s]][1])
-      if(data$recruit_model[s] %in% 3:4) par$mean_rec_pars[s,1:2] = log(NAA_re$recruit_pars[[s]][1:2])
+      if(data$recruit_model[s] == 2) par$mean_rec_pars[s,1] <- log(NAA_re$recruit_pars[[s]][1])
+      if(data$recruit_model[s] %in% 3:4) par$mean_rec_pars[s,1:2] <- log(NAA_re$recruit_pars[[s]][1:2])
     } else{
       if(data$recruit_model[s]==2) {
-        if(!is.null(asap3)) par$mean_rec_pars[s,1] = log(asap3[[s]]$N1_ini[1]) # initialize R0 at initial age-1
-        else par$mean_rec_pars[s,1] = 10
+        if(input$use_asap3) par$mean_rec_pars[s,1] <- log(asap3[[s]]$N1_ini[1]) # initialize R0 at initial age-1
+        else par$mean_rec_pars[s,1] <- 10
       }  
-      if(data$recruit_model[s]==4) par$mean_rec_pars[s,2] = -10
+      if(data$recruit_model[s]==4) par$mean_rec_pars[s,2] <- -10
     }
     if(data$NAA_re_model[s] > 0){
-      if(data$recruit_model[s]==2) map$mean_rec_pars[s,1] = s
-      if(data$recruit_model[s]>2) map$mean_rec_pars[s,] = 1:2 + (s-1) * 2
+      if(data$recruit_model[s]==2) map$mean_rec_pars[s,1] <- s
+      if(data$recruit_model[s]>2) map$mean_rec_pars[s,] <- 1:2 + (s-1) * 2
     }
   }
-  map$mean_rec_pars = factor(map$mean_rec_pars)
+  map$mean_rec_pars <- factor(map$mean_rec_pars)
 
-  input$data = data
-  input$par = par
-  input$map = map
+  input$data <- data
+  input$par <- par
+  input$map <- map
 	if(length(input$log$NAA))	input$log$NAA <- c("NAA: \n", input$log$NAA)
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
-	#input = wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	#input <- wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
   if(is.null(input$by_pwi)) cat(unlist(input$log$NAA, recursive=T))
 	#set any parameters as random effects
   #print(sort(names(input$data)))
-	input$random = NULL
-	input = set_random(input)
+	input$random <- NULL
+	input <- set_random(input)
   input$options$NAA_re <- NAA_re
   return(input)
 }

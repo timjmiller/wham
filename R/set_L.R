@@ -21,39 +21,38 @@
 #'   }
 #'
 #' @export
-set_L = function(input, L)
+set_L <- function(input, L)
 {
-  data = input$data
-  par = input$par
-  map = input$map
-  #asap3 = input$asap3
+  data <- input$data
+  par <- input$par
+  map <- input$map
   
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("L_repars", "L_re"))]
   
   #L$model length is n_regions
-  data$L_model = rep(0, data$n_regions)
-  par$L_re = matrix(0, data$n_years_model, data$n_regions)
-  par$L_repars = matrix(0,data$n_regions, 3) #mean, sig, rho
-  map$L_re = matrix(NA, data$n_years_model, data$n_regions)
-  map$L_repars = matrix(NA,data$n_regions, 3) #mean, sig, rho
+  data$L_model <- rep(0, data$n_regions)
+  par$L_re <- matrix(0, data$n_years_model, data$n_regions)
+  par$L_repars <- matrix(0,data$n_regions, 3) #mean, sig, rho
+  map$L_re <- matrix(NA, data$n_years_model, data$n_regions)
+  map$L_repars <- matrix(NA,data$n_regions, 3) #mean, sig, rho
 
   # natural mortality options, default = use values from ASAP file, no estimation
   if(!is.null(L)){
     if(!is.null(L$model)){ # L model options
-      L_mods = c("none","constant","iid_re","ar1_re")
+      L_mods <- c("none","constant","iid_re","ar1_re")
       if(!(L$model %in% L_mods)) stop(paste0("L$model must be one of these: ", paste0(L_mods, collapse=",")))
-      data$L_model[] = match(L$model, L_mods) - 1
+      data$L_model[] <- match(L$model, L_mods) - 1
     }
   }
   inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s
-  k = 1
+  k <- 1
   for(r in 1:data$n_regions) {
     if(data$L_model[r] >0) {
       map$L_repars[r,1] <- k
       k <- k + 1
       if(!is.null(L$initial_means)){
-        par$L_repars[r,1] = log(L$initial_means[r])
+        par$L_repars[r,1] <- log(L$initial_means[r])
       }
     }
     if(data$L_model[r] > 1){
@@ -61,32 +60,32 @@ set_L = function(input, L)
       k <- k + 1
       map$L_re[,r] <- 1
       if(!is.null(L$sigma_vals)){
-        par$L_repars[r,2] = log(L$sigma_vals[r])
+        par$L_repars[r,2] <- log(L$sigma_vals[r])
       }
     }
     if(data$L_model[r] > 2){
       map$L_repars[r,3] <- k
       k <- k + 1
       if(!is.null(L$cor_vals)){
-        par$L_repars[r,3] = inv_trans_rho(L$cor_vals[r])
+        par$L_repars[r,3] <- inv_trans_rho(L$cor_vals[r])
       }
     }
   }
   map$L_re[which(map$L_re==1)] <- 1:sum(map$L_re==1, na.rm = TRUE)
-  map$L_re = factor(map$L_re)
-  map$L_repars = factor(map$L_repars)
+  map$L_re <- factor(map$L_re)
+  map$L_repars <- factor(map$L_repars)
 
-  input$data = data
-  input$par = par
-  input$map = map
+  input$data <- data
+  input$par <- par
+  input$map <- map
   
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
-	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	input <- set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
 	#set any parameters as random effects
-	input$random = NULL
-	input = set_random(input)
+	input$random <- NULL
+	input <- set_random(input)
   input$options$L <- L
   return(input)
 

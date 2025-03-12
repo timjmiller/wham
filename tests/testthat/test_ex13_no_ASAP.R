@@ -111,7 +111,7 @@ input_seq <- set_F(input_seq, F = F_info)
 input_seq <- set_indices(input_seq, index_info = index_info)
 input_seq <- set_q(input_seq, catchability = q_info)
 input_seq <- set_selectivity(input_seq, selectivity = sel_info)
-
+# wham:::check_dims(input_seq)
 input_asap <- suppressWarnings(prepare_wham_input(asap3, F = F_info, catchability = q_info, selectivity = sel_info))
 
 #compare 

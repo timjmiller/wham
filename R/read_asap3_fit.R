@@ -155,32 +155,32 @@ read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
 
 # helper functions from ASAPplots: https://github.com/cmlegault/ASAPplots
 ypr <- function(nages, wgt.age, M.age, F.mult, sel.age ) {
-  yield=0.0
-  cum.survive=1.0
-  z=0.0
+  yield <- 0.0
+  cum.survive <- 1.0
+  z <- 0.0
   for (i in 1:(nages-1)  ) {
-    z=M.age[i] + F.mult*sel.age[i]
-    yield=yield + wgt.age[i]*F.mult*sel.age[i]*(1-exp(-z) )*cum.survive/z
-    cum.survive=cum.survive*exp(-z)
+    z <- M.age[i] + F.mult*sel.age[i]
+    yield <- yield + wgt.age[i]*F.mult*sel.age[i]*(1-exp(-z) )*cum.survive/z
+    cum.survive <- cum.survive*exp(-z)
   }
-  z= M.age[nages] + F.mult*sel.age[nages]
-  yield=yield + wgt.age[nages]*F.mult*sel.age[nages]*cum.survive/z
+  z <- M.age[nages] + F.mult*sel.age[nages]
+  yield <- yield + wgt.age[nages]*F.mult*sel.age[nages]*cum.survive/z
   return(yield)
 }
 
-s.per.recr<-function(nages,fec.age,mat.age,M.age, F.mult, sel.age, spawn.time ) {
-  spr=0.0
-  cum.survive=1.0
-  z=0.0
+s.per.recr <- function(nages,fec.age,mat.age,M.age, F.mult, sel.age, spawn.time ) {
+  spr <- 0.0
+  cum.survive <- 1.0
+  z <- 0.0
   for (i in 1:(nages-1)  ) {
-    z=M.age[i] + F.mult*sel.age[i]
-    z.ts=(M.age[i]+F.mult*sel.age[i])*spawn.time
-    spr=spr+cum.survive*fec.age[i]*mat.age[i]*exp(-z.ts)
-    cum.survive=cum.survive*exp(-z )
+    z <- M.age[i] + F.mult*sel.age[i]
+    z.ts <- (M.age[i]+F.mult*sel.age[i])*spawn.time
+    spr <- spr+cum.survive*fec.age[i]*mat.age[i]*exp(-z.ts)
+    cum.survive <- cum.survive*exp(-z )
   }
-  z= M.age[nages] + F.mult*sel.age[nages]
-  z.ts=(M.age[nages]+F.mult*sel.age[nages])*spawn.time
-  spr=spr + fec.age[nages]*mat.age[nages]*cum.survive*exp(-z.ts)/( 1- exp(-z ) )
+  z <- M.age[nages] + F.mult*sel.age[nages]
+  z.ts <- (M.age[nages]+F.mult*sel.age[nages])*spawn.time
+  spr <- spr + fec.age[nages]*mat.age[nages]*cum.survive*exp(-z.ts)/( 1- exp(-z ) )
   return(spr)
 }
 
@@ -197,7 +197,7 @@ asap_get_SPR <- function(asap, pspr){
   sel.age <- asap$F.age/apply(asap$F.age,1,max)
   spawn.time <- asap$options$frac.yr.spawn
   spr0.vals<- asap$SR.annual.parms$s.per.r.vec
-  F.start <-0.11  # starting guess for optimization routine to find F_SPR%
+  F.start <- 0.11  # starting guess for optimization routine to find F_SPR%
 
   f.spr.vals <- matrix(NA, nyears, n.spr)
   ypr.spr.vals <- matrix(NA, nyears, n.spr)

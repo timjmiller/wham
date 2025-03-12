@@ -28,7 +28,7 @@
 #' @export
 read_asap3_dat <- function(filename){
 
-  single_stock_fun = function(filename){
+  single_stock_fun <- function(filename){
     char.lines <- readLines(filename)
     com.ind <- which(substring(char.lines,1,1) == "#")
     #print(com.ind)

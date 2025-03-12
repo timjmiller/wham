@@ -23,8 +23,7 @@
 #' 
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_peel}}
 #'
-#retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
-do_retro_peels = function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE) {
+do_retro_peels <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE) {
   model$peels <- retro(model, n.peels, ran, use.mle, do.sdrep, n.newton, MakeADFun.silent, retro.silent, save.input, do.brps, check.version)
   return(model)
 }

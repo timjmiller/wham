@@ -44,7 +44,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(age_comp_model_fleets); //length = n_fleets
   DATA_INTEGER(F_config); //1: F_pars is log_F1, F_devs, 2: F_pars is log_F.
   DATA_IVECTOR(index_regions); //length = n_indices
-  DATA_IVECTOR(index_seasons); //n_indices x n_seasons. indicator must only be for one season
+  DATA_IVECTOR(index_seasons); //n_indices. indicator must only be for one season
   DATA_IVECTOR(units_indices); //length = n_indices
   DATA_MATRIX(fracyr_indices); //n_years x n_indices: size of interval from beginning of season to time of surve within that season
   DATA_MATRIX(agg_indices); //n_years x n_indices

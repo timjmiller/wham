@@ -22,8 +22,7 @@
 #' 
 #' @seealso \code{\link{fit_wham}}, \code{\link{fit_peel}}
 #'
-#retro = function(model, n.peels = 7, ran = "log_NAA", do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
-retro = function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE)
+retro <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE)
 {
   data <- model$input$data
   par <- model$parList
@@ -49,9 +48,5 @@ retro = function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALS
   if(n.peels>0) for(i in 1:n.peels) tryCatch(peels[[i]] <- 
     fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
       save.input = save.input), error = function(e) {peels[[i]]$err <<- conditionMessage(e)})
-  # if(n.peels>0) for(i in 1:n.peels) peels[[i]] <- fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, 
-  #   MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input)
-  #if(n.peels>0) peels = list(fit_peel(1, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input))
-  #if(n.peels>1) for(i in 2:n.peels) peels[[i]] = fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, save.input = save.input)
   return(peels)
 }

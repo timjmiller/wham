@@ -318,8 +318,8 @@ make_info <- function(base_years = 1982:2021, ages = 1:10, Fhist = "updown", n_f
     index_info$index_cv <- matrix(0.3, ny, index_info$n_indices)
     index_info$index_Neff <- matrix(100, ny, index_info$n_indices)
     index_info$fracyr_indices <- matrix(0.5, ny, index_info$n_indices)
-    index_info$index_units <- rep(1, length(index_info$n_indices)) #biomass
-    index_info$index_paa_units <- rep(2, length(index_info$n_indices)) #abundance
+    index_info$units_index <- rep(2, length(index_info$n_indices)) #abundance
+    index_info$units_index_paa <- rep(2, length(index_info$n_indices)) #abundance
     index_info$q <- rep(0.3, index_info$n_indices)
     
     info$maturity <- array(t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny)), dim = c(1, ny, na))

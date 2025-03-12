@@ -95,7 +95,7 @@ wham.dir <- find.package("wham")
 path_to_examples <- system.file("extdata", package="wham")
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 input <- prepare_wham_input(asap3)
-NAA = list(sigma = "rec")
+NAA <- list(sigma = "rec")
 input <- set_q(input, NAA_re = NAA) #estimate recruitment as random effects
 }
 

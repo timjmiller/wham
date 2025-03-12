@@ -20,19 +20,19 @@ tmp.dir <- tempdir(check=TRUE)
 # 3. A simple operating model
 
 make_digifish <- function(years = 1975:2014) {
-    digifish = list()
+    digifish <- list()
     digifish$ages <- 1:10
     digifish$years <- years
     digifish$n_fleets <- 1
-    na = length(digifish$ages)
-    ny = length(digifish$years)
+    na <- length(digifish$ages)
+    ny <- length(digifish$years)
 
-    digifish$maturity = array(t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny)), c(1,ny,na))
+    digifish$maturity <- array(t(matrix(1/(1 + exp(-1*(1:na - na/2))), na, ny)), c(1,ny,na))
 
-    L = 100*(1-exp(-0.3*(1:na - 0)))
-    W = exp(-11)*L^3
-    nwaa = 1
-    digifish$waa = array(t(matrix(W, na, ny)), dim = c(1, ny, na))
+    L <- 100*(1-exp(-0.3*(1:na - 0)))
+    W <- exp(-11)*L^3
+    nwaa <- 1
+    digifish$waa <- array(t(matrix(W, na, ny)), dim = c(1, ny, na))
 
     digifish$fracyr_SSB <- cbind(rep(0.25,ny))
 
@@ -40,58 +40,58 @@ make_digifish <- function(years = 1975:2014) {
     digifish$bias_correct_observation <- TRUE
     return(digifish)
 }
-digifish = make_digifish()
+digifish <- make_digifish()
 
 catch_info <- list()
-catch_info$n_fleets = 1
-catch_info$catch_cv = matrix(0.1, length(digifish$years), digifish$n_fleets)
-catch_info$catch_Neff = matrix(200, length(digifish$years), digifish$n_fleets)
-catch_info$selblock_pointer_fleets = t(matrix(1:digifish$n_fleets, digifish$n_fleets, length(digifish$years)))
+catch_info$n_fleets <- 1
+catch_info$catch_cv <- matrix(0.1, length(digifish$years), digifish$n_fleets)
+catch_info$catch_Neff <- matrix(200, length(digifish$years), digifish$n_fleets)
+catch_info$selblock_pointer_fleets <- t(matrix(1:digifish$n_fleets, digifish$n_fleets, length(digifish$years)))
 index_info <- list()
 index_info$n_indices <- 2
-index_info$index_cv = matrix(0.3, length(digifish$years), index_info$n_indices)
-index_info$index_Neff = matrix(100, length(digifish$years), index_info$n_indices)
-index_info$fracyr_indices = matrix(0.5, length(digifish$years), index_info$n_indices)
-index_info$index_units = rep(1, length(index_info$n_indices)) #biomass
-index_info$index_paa_units = rep(2, length(index_info$n_indices)) #abundance
-index_info$selblock_pointer_indices = t(matrix(digifish$n_fleets + 1:index_info$n_indices, index_info$n_indices, length(digifish$years)))
+index_info$index_cv <- matrix(0.3, length(digifish$years), index_info$n_indices)
+index_info$index_Neff <- matrix(100, length(digifish$years), index_info$n_indices)
+index_info$fracyr_indices <- matrix(0.5, length(digifish$years), index_info$n_indices)
+index_info$units_indices <- rep(2, index_info$n_indices) #abundance
+index_info$units_index_paa <- rep(2, index_info$n_indices) #abundance
+index_info$selblock_pointer_indices <- t(matrix(digifish$n_fleets + 1:index_info$n_indices, index_info$n_indices, length(digifish$years)))
 F_info <- list(F = matrix(0.2,length(digifish$years), catch_info$n_fleets))
 
-selectivity = list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", index_info$n_indices)),
+selectivity <- list(model = c(rep("logistic", digifish$n_fleets),rep("logistic", index_info$n_indices)),
     initial_pars = rep(list(c(5,1)), digifish$n_fleets + index_info$n_indices)) #fleet, index
 
-M = list(initial_means = array(0.2, c(1,1,length(digifish$ages))))
+M <- list(initial_means = array(0.2, c(1,1,length(digifish$ages))))
 
-NAA_re = list(
+NAA_re <- list(
   N1_model = "age-specific-fe", 
   N1_pars = array(exp(10)*exp(-(0:(length(digifish$ages)-1))*M$initial_means[1]), c(1,1,length(digifish$ages))))
-NAA_re$sigma = "rec" #random about mean
-#NAA_re$use_steepness = 0
-NAA_re$recruit_model = 2 #random effects with a constant mean
-NAA_re$recruit_pars = list(exp(10))
+NAA_re$sigma <- "rec" #random about mean
+#NAA_re$use_steepness <- 0
+NAA_re$recruit_model <- 2 #random effects with a constant mean
+NAA_re$recruit_pars <- list(exp(10))
 
 ##########################################################################################
 # 4. Setting up the q parameter for the second index to have a prior distribution.
-catchability = list(initial_q = rep(0.3, index_info$n_indices), prior_sd = c(NA, 0.3))
+catchability <- list(initial_q = rep(0.3, index_info$n_indices), prior_sd = c(NA, 0.3))
 
 #make input and operating model
-input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
   index_info = index_info, catch_info = catch_info, F = F_info))
 om_input <- input
 om_input$random <- NULL
-om = suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
 
 #simulate data from operating model
 set.seed(0101010)
-newdata = om$simulate(complete=TRUE)
+newdata <- om$simulate(complete=TRUE)
 #attr(newdata,"check.passed") <- NULL
 
 #put the simulated data in an input file with all the same configuration as the operating model
-temp = input
-temp$data = newdata
+temp <- input
+temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
 
 #This is provided in plot_wham_output(). The true simulated q is shown as the solid vertical line.
@@ -102,35 +102,35 @@ dev.off()
 
 ##########################################################################################
 # 5. Add random effects on q for first index
-catchability = list(prior_sd = c(NA, 0.3), initial_q = rep(0.3, index_info$n_indices), re = c("iid", "none"), sigma_val = c(0.3,0.3))
+catchability <- list(prior_sd = c(NA, 0.3), initial_q = rep(0.3, index_info$n_indices), re = c("iid", "none"), sigma_val = c(0.3,0.3))
 #time varying catchability on the first index, prior on the second.
 #set value to simulate variation in q to 0.2, only first sigma_val is used.
 
-input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
   index_info = index_info, catch_info = catch_info, F = F_info))
 om_input <- input
 om_input$random <- NULL
-om = suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
 
 #simulate data from operating model
 set.seed(0101010)
-newdata = om$simulate(complete=TRUE)
+newdata <- om$simulate(complete=TRUE)
 
 #put the simulated data in an input file with all the same configuration as the operating model
-temp = input
-temp$data = newdata
+temp <- input
+temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
 
-pal = viridisLite::viridis(n=2)
+pal <- viridisLite::viridis(n=2)
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
-se = summary(fit$sdrep)
-se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
+se <- summary(fit$sdrep)
+se <- matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 for( i in 1:input$data$n_indices){
     lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
-  polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
+  polyy <- c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
     polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
@@ -141,7 +141,7 @@ dev.off()
 ##########################################################################################
 # 6. Add Environmental covariates to the model
 # First fit ecov but no effects of population
-ecov = list(
+ecov <- list(
         label = c("Climate variable 1", "Climate variable 2"),
         process_model = c("ar1","ar1"),
         mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
@@ -152,39 +152,39 @@ ecov = list(
         #q_how = matrix(c("lag-0-linear",rep("none",3)),1,2))
 
 #set mean, sd, and rho of ecov processes
-ecov$process_mean_vals = c(0,0) #mean
-ecov$process_sig_vals = c(0.1,0.2) #sd
+ecov$process_mean_vals <- c(0,0) #mean
+ecov$process_sig_vals <- c(0.1,0.2) #sd
 ecov$process_cor_vals <- c(0.4,-0.3)  #cor
 
 #get rid of prior on second index. add AR1 random effects on q for first index
-catchability = list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
+catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
 #time varying catchability on the first index, prior on the second.
 #set value to simulate variation in q to 0.2, only first sigma_val is used.
 
-input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
   index_info = index_info, catch_info = catch_info, F = F_info))
 om_input <- input
 om_input$random <- NULL
-om = suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
-newdata = om$simulate(complete=TRUE)
+newdata <- om$simulate(complete=TRUE)
 
 #put the simulated data in an input file with all the same configuration as the operating model
-temp = input
-temp$data = newdata
+temp <- input
+temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE))
+fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE))
 
 suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
 
-pal = viridisLite::viridis(n=2)
-se = summary(fit$sdrep)
-se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
+pal <- viridisLite::viridis(n=2)
+se <- summary(fit$sdrep)
+se <- matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
     lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
-  polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
+  polyy <- c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
     polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
@@ -207,7 +207,7 @@ as.list(fit$sdrep, "Std")$q_repars
 # 7. Environmental effects on catchability
 # add some Ecovs to the model and allow effects of first Ecov on q for second index
 ecov$q_how <- matrix(c("none", "none","lag-0-linear","none"),2,2)
-# ecov = list(
+# ecov <- list(
 #         label = c("Climate variable 1", "Climate variable 2"),
 #         process_model = c("ar1","ar1"),
 #         mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
@@ -227,25 +227,25 @@ ecov$beta_q_vals <- array(0, dim = c(index_info$n_indices, length(ecov$label), 1
 ecov$beta_q_vals[2,1,1] <- 0.5
 
 #add AR1 random effects on q for first index
-#catchability = list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
+#catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
 
-input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
   index_info = index_info, catch_info = catch_info, F = F_info))
 
 
 #check value for Ecov_beta effect on q (dims are n_effects (n_indices, n_Ecov, max_n_poly)
 input$par$Ecov_beta_q
 
-om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
-newdata = om$simulate(complete=TRUE)
+newdata <- om$simulate(complete=TRUE)
 
 #put the simulated data in an input file with all the same configuration as the operating model
-temp = input
-temp$data = newdata
+temp <- input
+temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 
 # expect_equal(fit$opt$obj, ex11_tests$fit4$nll, tolerance=1e-6, scale=1)
 # expect_equal(fit$opt$par, ex11_tests$fit4$par, tolerance=1e-6, scale=1)
@@ -268,13 +268,13 @@ fit$parList$q_repars
 #estimated variability in q is lower than truth, but estimate has large SE
 as.list(fit$sdrep, "Std")$q_repars
 
-pal = viridisLite::viridis(n=2)
-se = summary(fit$sdrep)
-se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
+pal <- viridisLite::viridis(n=2)
+se <- summary(fit$sdrep)
+se <- matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
     lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
-  polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
+  polyy <- c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
     polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }
@@ -285,7 +285,7 @@ dev.off()
 ##########################################################################################
 #5. add some Ecovs to the model and allow effects of first Ecov on q for second index AND recruitment
 ecov$recruitment_how <- matrix(c("controlling-lag-0-linear","none"),2,1)
-# ecov = list(
+# ecov <- list(
 #         label = c("Climate variable 1", "Climate variable 2"),
 #         process_model = c("ar1","ar1"),
 #         mean = cbind(rnorm(length(digifish$years)),rnorm(length(digifish$years))), 
@@ -297,8 +297,8 @@ ecov$recruitment_how <- matrix(c("controlling-lag-0-linear","none"),2,1)
 #         recruitment_how = matrix(c("controlling-lag-0-linear","none"),2,1)) #n_Ecov x n_stocks
 
 #set mean, sd, and rho of ecov processes
-# ecov$process_mean_vals = c(0,0) #mean
-# ecov$process_sig_vals = c(0.1,0.2) #sd
+# ecov$process_mean_vals <- c(0,0) #mean
+# ecov$process_sig_vals <- c(0.1,0.2) #sd
 # ecov$process_cor_vals <- c(0.4,-0.3)  #cor
 
 #set value for Ecov_beta effect on q (dims are (n_indices, n_Ecov, max_n_poly)
@@ -310,21 +310,21 @@ ecov$beta_R_vals <- array(0, dim = c(1, length(ecov$label), 1))
 ecov$beta_R_vals[1,1,1] <- -0.5
 
 #add AR1 random effects on q for first index
-# catchability = list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
+# catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
 
-input = suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
   index_info = index_info, catch_info = catch_info, F = F_info))
 
-om = suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
 set.seed(0101010)
-newdata = om$simulate(complete=TRUE)
+newdata <- om$simulate(complete=TRUE)
 
 #put the simulated data in an input file with all the same configuration as the operating model
-temp = input
-temp$data = newdata
+temp <- input
+temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit = suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
 
 # expect_equal(fit$opt$obj, ex11_tests$fit5$nll, tolerance=1e-6, scale=1)
 # expect_equal(fit$opt$par, ex11_tests$fit5$par, tolerance=1e-6, scale=1)
@@ -356,13 +356,13 @@ fit$parList$q_repars
 #estimated variability in q is lower than truth, but estimate has large SE
 as.list(fit$sdrep, "Std")$q_repars
 
-pal = viridisLite::viridis(n=2)
-se = summary(fit$sdrep)
-se = matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
+pal <- viridisLite::viridis(n=2)
+se <- summary(fit$sdrep)
+se <- matrix(se[rownames(se) == "logit_q_mat",2], length(fit$years))
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,0.6), ylab = "q", xlab = "Year")
 for( i in 1:input$data$n_indices){
     lines(fit$years, fit$rep$q[,i], lwd = 2, col = pal[i])
-  polyy = c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
+  polyy <- c(fit$rep$q[,i]*exp(-1.96*se[,i]),rev(fit$rep$q[,i]*exp(1.96*se[,i])))
     polygon(c(fit$years,rev(fit$years)), polyy, col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     lines(fit$years, newdata$q[,i], lwd = 2, col = pal[i], lty = 2)
 }

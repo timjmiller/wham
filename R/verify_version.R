@@ -1,4 +1,4 @@
-verify_version = function(model){
+verify_version <- function(model){
   if(!"wham" %in% .packages()) stop("wham library is not loaded")
   wham_commit <- packageDescription("wham")$GithubSHA1
   wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 

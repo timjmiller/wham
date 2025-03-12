@@ -90,19 +90,19 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
   all.wham <- ifelse(length(wham.mods.ind)==length(mods), TRUE, FALSE)
   no.wham <- ifelse(length(wham.mods.ind)==0, TRUE, FALSE)
   if(is.null(compare.opts)) compare.opts <- list(stock = 1, region = 1)
-  if(is.null(compare.opts$stock)) compare.opts$stock = 1
-  if(is.null(compare.opts$region)) compare.opts$region = 1
+  if(is.null(compare.opts$stock)) compare.opts$stock <- 1
+  if(is.null(compare.opts$region)) compare.opts$region <- 1
   stock <- compare.opts$stock
   region <- compare.opts$region
 
   if(do.table){
     if(is.null(table.opts)) table.opts=list(fname = "model_comparison", sort = TRUE, calc.rho = TRUE, calc.aic = TRUE, print=TRUE, save.csv=TRUE)
-    if(is.null(table.opts$fname)) table.opts$fname = "model_comparison"
-    if(is.null(table.opts$sort)) table.opts$sort = TRUE
-    if(is.null(table.opts$calc.rho)) table.opts$calc.rho = TRUE
-    if(is.null(table.opts$calc.aic)) table.opts$calc.aic = TRUE
-    if(is.null(table.opts$print)) table.opts$print = TRUE
-    if(is.null(table.opts$save.csv)) table.opts$save.csv = FALSE
+    if(is.null(table.opts$fname)) table.opts$fname <- "model_comparison"
+    if(is.null(table.opts$sort)) table.opts$sort <- TRUE
+    if(is.null(table.opts$calc.rho)) table.opts$calc.rho <- TRUE
+    if(is.null(table.opts$calc.aic)) table.opts$calc.aic <- TRUE
+    if(is.null(table.opts$print)) table.opts$print <- TRUE
+    if(is.null(table.opts$save.csv)) table.opts$save.csv <- FALSE
     aic.tab <- aic <- daic <- NULL
     if(no.wham) warning("No WHAM models. Consider setting do.table = FALSE.\n")
     if(!all.wham){
@@ -116,18 +116,18 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         if(!all.identical(ecov.obs)){ #covariate obs in each model, but not the same covariates.
           warning("Inclusion of environmental covariate observations differs among models, cannot compare models' AIC. \n
             Setting 'calc.aic = FALSE' to make other comparisons. \n\n")
-          table.opts$calc.aic = FALSE
+          table.opts$calc.aic <- FALSE
         }
       } else { 
         warning("Inclusion of environmental covariate observations differs among models, cannot compare models' AIC. \n
           Setting 'calc.aic = FALSE' to make other comparisons. \n\n")
-          table.opts$calc.aic = FALSE
+          table.opts$calc.aic <- FALSE
       }
     }
     tab <- NULL
     if(table.opts$calc.aic){
       aic <- sapply(wham.mods, function(x){
-        k = length(x$opt$par)
+        k <- length(x$opt$par)
         2*(x$opt$obj + k) # AIC
         # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
       })
@@ -142,7 +142,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       if(any(mapply(function(x) is.null(x$peels), wham.mods))){
         warning("Not all models have peels --> Cannot compare Mohn's rho. \n
              Setting 'calc.rho = FALSE' to make other comparisons. \n")
-        table.opts$calc.rho = FALSE
+        table.opts$calc.rho <- FALSE
       } else{
         rho <- t(sapply(wham.mods, function(x){
           rho <- mohns_rho(x)
@@ -198,7 +198,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     for(i in 1:length(mods)){
       if(i %in% wham.mods.ind){
         x[[i]] <- read_wham_fit(mods[[i]])
-        x[[i]]$is.wham = TRUE
+        x[[i]]$is.wham <- TRUE
       } else {
         x[[i]] <- mods[[i]] # already processed by read_asap3_fit
         x[[i]]$is.wham <- FALSE
@@ -297,11 +297,11 @@ fancy_scientific <- function(l) {
 # get.ci <- function(x, alpha=0.05, getci=TRUE){
 #   if(!getci) x[,2] <- 0
 #   ci <- exp(x[,1] + cbind(0, -qnorm(1-alpha/2)*x[,2], qnorm(1-alpha/2)*x[,2]))
-#   ci[is.nan(ci[,2]),2] = ci[is.nan(ci[,2]),1]
-#   ci[is.nan(ci[,3]),3] = ci[is.nan(ci[,3]),1]
+#   ci[is.nan(ci[,2]),2] <- ci[is.nan(ci[,2]),1]
+#   ci[is.nan(ci[,3]),3] <- ci[is.nan(ci[,3]),1]
 #   return(ci)
 # }
-get.ci = function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1, alpha.ci=0.05, getci=TRUE, asap = FALSE){
+get.ci <- function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1, alpha.ci=0.05, getci=TRUE, asap = FALSE){
   if(!getci) {
     ci <- list(lo = par, hi = par)
     ci$lo[] <- 0

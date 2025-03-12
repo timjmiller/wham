@@ -17,9 +17,9 @@
 #' 
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}
 #'
-fit_peel = function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
+fit_peel <- function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 {
-  out = list()
+  out <- list()
   if(!retro.silent) print(paste0("Retro Peel: ", peel))
   temp <- reduce_input(input, tail(input$years,peel))
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)

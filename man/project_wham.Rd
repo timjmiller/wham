@@ -122,10 +122,10 @@ mod_proj <- project_wham(mod2) # add projections to previously fit model, using 
 names(mod_proj$rep) # list of derived quantities
 tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
 
-x = summary(mod_proj$sdrep)
+x <- summary(mod_proj$sdrep)
 unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-x = x[rownames(x) == "log_SSB",] # SSB estimates with SE
-ssb.mat = exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95\% CI
+x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
+ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95\% CI
 colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
 tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95\% CI
 }

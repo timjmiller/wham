@@ -52,8 +52,8 @@ index_info$n_indices <- 2
 index_info$index_cv = matrix(0.3, length(digifish$years), index_info$n_indices)
 index_info$index_Neff = matrix(100, length(digifish$years), index_info$n_indices)
 index_info$fracyr_indices = matrix(0.5, length(digifish$years), index_info$n_indices)
-index_info$index_units = rep(1, length(index_info$n_indices)) #biomass
-index_info$index_paa_units = rep(2, length(index_info$n_indices)) #abundance
+index_info$units_indices <- rep(2, index_info$n_indices) #abundance
+index_info$units_index_paa <- rep(2, index_info$n_indices) #abundance
 index_info$selblock_pointer_indices = t(matrix(digifish$n_fleets + 1:index_info$n_indices, index_info$n_indices, length(digifish$years)))
 F_info <- list(F = matrix(0.2,length(digifish$years), catch_info$n_fleets))
 

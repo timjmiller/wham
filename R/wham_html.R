@@ -19,12 +19,12 @@ wham_html <- function(dir.main=NULL,
   # get tabs (= subdirs) and tab labels
   tabs <- list.files(file.path(dir.main, "plots_png"))
   tab.labels <- tabs
-  tab.labels[tabs=="diagnostics"] = "Diagnostics"
-  tab.labels[tabs=="input_data"] = "Input Data"
-  tab.labels[tabs=="misc"] = "Misc"
-  tab.labels[tabs=="ref_points"] = "Reference Points"
-  tab.labels[tabs=="results"] = "Results"
-  tab.labels[tabs=="retro"] = "Retrospective"
+  tab.labels[tabs=="diagnostics"] <- "Diagnostics"
+  tab.labels[tabs=="input_data"] <- "Input Data"
+  tab.labels[tabs=="misc"] <- "Misc"
+  tab.labels[tabs=="ref_points"] <- "Reference Points"
+  tab.labels[tabs=="results"] <- "Results"
+  tab.labels[tabs=="retro"] <- "Retrospective"
 
   htmlhome <- file.path(dir.main, "wham_output.html")
   htmldir <- file.path(dir.main, "html")

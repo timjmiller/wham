@@ -43,51 +43,51 @@
 #'   }
 #'
 #' @export
-set_move = function(input, move)
+set_move <- function(input, move)
 {
-  data = input$data
-  par = input$par
-  map = input$map
+  data <- input$data
+  par <- input$par
+  map <- input$map
   input$log$move <- list()
 
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mu_repars", "mu_re"))]
 
-  data$can_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions))
+  data$can_move <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions))
   if(!is.null(move$can_move)) {
-    data$can_move[] = move$can_move
+    data$can_move[] <- move$can_move
     if(sum(data$can_move) == 0) input$log$move <- c(input$log$move, "All of move$can_move = 0, so model assumes no movement for any stocks.\n")
   }
 
-  data$use_mu_prior = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
-  data$mig_type = rep(0,data$n_stocks)
+  data$use_mu_prior <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
+  data$mig_type <- rep(0,data$n_stocks)
   data$mu_model <- matrix(1, data$n_regions, data$n_regions-1)
-  data$trans_mu_prior_sigma = array(0.1, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
-  data$must_move = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions))
-  par$mu_prior_re = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
-  par$trans_mu = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
-  par$mu_re = array(0, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_years_model, data$n_regions, data$n_regions-1))
-  par$mu_repars = array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1, 3))
-  map$mu_prior_re = array(NA, dim = dim(par$mu_prior_re))
-  map$trans_mu = array(NA, dim = dim(par$trans_mu))
-  map$mu_re = array(NA, dim = dim(par$mu_re))
-  map$mu_repars = array(NA, dim = dim(par$mu_repars))
+  data$trans_mu_prior_sigma <- array(0.1, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
+  data$must_move <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions))
+  par$mu_prior_re <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
+  par$trans_mu <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1))
+  par$mu_re <- array(0, dim = c(data$n_stocks, data$n_ages, data$n_seasons, data$n_years_model, data$n_regions, data$n_regions-1))
+  par$mu_repars <- array(0, dim = c(data$n_stocks, data$n_seasons, data$n_regions, data$n_regions-1, 3))
+  map$mu_prior_re <- array(NA, dim = dim(par$mu_prior_re))
+  map$trans_mu <- array(NA, dim = dim(par$trans_mu))
+  map$mu_re <- array(NA, dim = dim(par$mu_re))
+  map$mu_repars <- array(NA, dim = dim(par$mu_repars))
 
-  if(!is.null(move$must_move)) data$must_move[] = move$must_move
+  if(!is.null(move$must_move)) data$must_move[] <- move$must_move
   if(data$n_stocks>1) for(s in 1:data$n_stocks) if(sum(data$can_move[s,,,]) == 0) input$log$move <- c(input$log$move, paste0("Model assumes no movement for stock ", s, ".\n"))
 
   if(data$n_regions ==1 | sum(data$can_move)==0){
-    map$trans_mu = factor(map$trans_mu)
-    map$mu_repars = factor(map$mu_repars)
-    map$mu_prior_re = factor(map$mu_prior_re)
-    map$mu_re = factor(map$mu_re)
-    input$data = data
-    input$par = par
-    input$map = map
+    map$trans_mu <- factor(map$trans_mu)
+    map$mu_repars <- factor(map$mu_repars)
+    map$mu_prior_re <- factor(map$mu_prior_re)
+    map$mu_re <- factor(map$mu_re)
+    input$data <- data
+    input$par <- par
+    input$map <- map
     return(input)
   }
 
-  if(!is.null(move$use_prior)) data$use_mu_prior[] = move$use_prior
+  if(!is.null(move$use_prior)) data$use_mu_prior[] <- move$use_prior
   mean_mods <- c("none","constant", "season")
   mean_mods <- c(mean_mods, paste0("stock_", mean_mods[2:3]))
   if(is.null(move$mean_model)){
@@ -107,40 +107,40 @@ set_move = function(input, move)
   if(all(move$mean_model == "none")) {
     if(data$n_regions>1) input$log$move <- c(input$log$move, "all move$mean_model = 'none', so model assumes no movement for any stocks.\n")
     data$can_move[] <- 0
-    map$trans_mu = factor(map$trans_mu)
-    map$mu_repars = factor(map$mu_repars)
-    map$mu_prior_re = factor(map$mu_prior_re)
-    map$mu_re = factor(map$mu_re)
-    input$data = data
-    input$par = par
-    input$map = map
+    map$trans_mu <- factor(map$trans_mu)
+    map$mu_repars <- factor(map$mu_repars)
+    map$mu_prior_re <- factor(map$mu_prior_re)
+    map$mu_re <- factor(map$mu_re)
+    input$data <- data
+    input$par <- par
+    input$map <- map
     return(input)
   } else {
     if(sum(data$can_move)==0){ 
       input$log$move <- c(input$log$move, "move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
-      map$trans_mu = factor(map$trans_mu)
-      map$mu_repars = factor(map$mu_repars)
-      map$mu_prior_re = factor(map$mu_prior_re)
-      map$mu_re = factor(map$mu_re)
-      input$data = data
-      input$par = par
-      input$map = map
+      map$trans_mu <- factor(map$trans_mu)
+      map$mu_repars <- factor(map$mu_repars)
+      map$mu_prior_re <- factor(map$mu_prior_re)
+      map$mu_re <- factor(map$mu_re)
+      input$data <- data
+      input$par <- par
+      input$map <- map
       return(input)
     }
   }
   
   #if we've gotten this far then some parameters will be estimated
   #define data$mu_model and map for mu_re and mu_repars
-  data$mu_model[] = 1 #this value needs to be between 1-8 after below
-  data$mu_model[which(move$mean_model == "constant")] = 1 #already defined
-  data$mu_model[which(move$mean_model == "stock_constant")] = 5 #already defined
-  data$mu_model[which(move$mean_model == "season")] = 9 #already defined
-  data$mu_model[which(move$mean_model == "stock_season")] = 13 #already defined
+  data$mu_model[] <- 1 #this value needs to be between 1-8 after below
+  data$mu_model[which(move$mean_model == "constant")] <- 1 #already defined
+  data$mu_model[which(move$mean_model == "stock_constant")] <- 5 #already defined
+  data$mu_model[which(move$mean_model == "season")] <- 9 #already defined
+  data$mu_model[which(move$mean_model == "stock_season")] <- 13 #already defined
   re_mods <- c("none","iid", "ar1")
   if(is.null(move$age_re)) move$age_re <- matrix("none", data$n_regions, data$n_regions -1)
   if(!is.matrix(move$age_re)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
   if(!all(dim(move$age_re) == data$n_regions - 0:1)) stop(paste0("move$age_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
-  if(is.null(move$year_re)) move$year_re = matrix("none", data$n_regions, data$n_regions -1)
+  if(is.null(move$year_re)) move$year_re <- matrix("none", data$n_regions, data$n_regions -1)
   if(!is.matrix(move$year_re)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
   if(!all(dim(move$year_re) == data$n_regions - 0:1)) stop(paste0("move$year_re must be a n_regions x n_region-1 matrix filled with one of ", paste0(re_mods, collapse = ", "), " when provided."))
   ind <- which(move$age_re != "none" & move$year_re == "none")
@@ -160,10 +160,10 @@ set_move = function(input, move)
   }
 
   use_mu_prior <- data$use_mu_prior
-  map$trans_mu = array(NA, dim = dim(par$trans_mu)) 
+  map$trans_mu <- array(NA, dim = dim(par$trans_mu)) 
   if(any(data$use_mu_prior>0)) {
     map$mu_prior_re <- array(NA, dim = dim(par$mu_prior_re))
-    use_mu_prior[] = 0 #need to set use_mu_prior based on mean_model
+    use_mu_prior[] <- 0 #need to set use_mu_prior based on mean_model
   }
   
   #define map for mu_re and mu_repars
@@ -459,7 +459,7 @@ set_move = function(input, move)
       input$log$move <- c(input$log$move, "NOTE: movement and mortality must be assumed to occur seequentially for now.")
       move$separable[] <- TRUE
     }
-    data$mig_type[] = as.integer(!move$separable)
+    data$mig_type[] <- as.integer(!move$separable)
   }
   if(data$n_regions>1) {
     if(length(unique(move$separable))==1) {
@@ -473,7 +473,7 @@ set_move = function(input, move)
       }
     }
   }
-  if(!is.null(move$prior_sigma)) data$trans_mu_prior_sigma[] = move$prior_sigma
+  if(!is.null(move$prior_sigma)) data$trans_mu_prior_sigma[] <- move$prior_sigma
 
   inv_trans_rho <- function(rho, s = 1) (log(rho+1) - log(1-rho))/s
   k <- 1
@@ -495,28 +495,32 @@ set_move = function(input, move)
     }
   }
   if(!is.null(move$sigma_vals)){
-    par$mu_repars[,,,,1] = log(move$sigma_vals)
+    par$mu_repars[,,,,1] <- log(move$sigma_vals)
   }
   if(!is.null(move$cor_vals)){
-    par$mu_repars[,,,,2] = inv_trans_rho(move$cor_vals[,,,,1])
-    par$mu_repars[,,,,3] = inv_trans_rho(move$cor_vals[,,,,2])
+    par$mu_repars[,,,,2] <- inv_trans_rho(move$cor_vals[,,,,1])
+    par$mu_repars[,,,,3] <- inv_trans_rho(move$cor_vals[,,,,2])
   }
-  map$trans_mu = factor(map$trans_mu)
-  map$mu_repars = factor(map$mu_repars)
-  map$mu_prior_re = factor(map$mu_prior_re)
-  map$mu_re = factor(map$mu_re)
+  map$trans_mu <- factor(map$trans_mu)
+  map$mu_repars <- factor(map$mu_repars)
+  map$mu_prior_re <- factor(map$mu_prior_re)
+  map$mu_re <- factor(map$mu_re)
 
-  input$data = data
-  input$par = par
-  input$map = map
+  input$data <- data
+  input$par <- par
+  input$map <- map
   if(length(input$log$move)) input$log$move <- c("Movement: \n", input$log$move)
+ 
+  if(is.null(input[["by_pwi"]])) { #check whether called by prepare_wham_input
+    input <- set_ecov(input, input[["options"]][["ecov"]]) #may need to resize dimensions if dimensions of mu change
+  }
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
-	input = set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
+	input <- set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
 	#set any parameters as random effects
-	input$random = NULL
-	input = set_random(input)
+	input$random <- NULL
+	input <- set_random(input)
   input$options$move <- move
   if(is.null(input$by_pwi)) cat(unlist(input$log$move, recursive=T))
   return(input)

@@ -97,14 +97,14 @@
 #' names(mod_proj$rep) # list of derived quantities
 #' tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
 #'
-#' x = summary(mod_proj$sdrep)
+#' x <- summary(mod_proj$sdrep)
 #' unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-#' x = x[rownames(x) == "log_SSB",] # SSB estimates with SE
-#' ssb.mat = exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
+#' x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
+#' ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
 #' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
 #' tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
 #' }
-project_wham = function(model, 
+project_wham <- function(model, 
   proj.opts=list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100),
   n.newton=3, do.sdrep=TRUE, MakeADFun.silent=FALSE, save.sdrep=TRUE, check.version = TRUE, TMB.bias.correct=FALSE, TMB.jointPrecision = FALSE)
@@ -136,10 +136,10 @@ project_wham = function(model,
     proj_mod$TMB_version <- paste0(TMB_version, " / ", proj_mod$TMB_commit, ")")
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
-    is.fit = !is.null(model$opt)
+    is.fit <- !is.null(model$opt)
     if(!is.fit) mle <- model$par
     else {
-      mle = model$opt$par
+      mle <- model$opt$par
       proj_mod$fn(mle)
     }
     proj_mod$marg_nll <- proj_mod$fn(mle) #to make sure it is the same as the base model
