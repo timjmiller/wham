@@ -26,7 +26,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
-    cat("res_dir is provided, so self test files will be saved to ", res_dir, ". \n")
+    message("res_dir is provided, so self test files will be saved to ", res_dir, ". \n")
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_seeds)) which_seeds <- 1:n
@@ -93,7 +93,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
       snowfall::sfStop()
     } else stop("To do self test fits in parallel, install the snowfall and parallel packages. Otherwise, set do_parallel = FALSE.")
   } else{
-    if(!(is_snowfall & is_parallel)) cat("If snowfall and parallel packages are installed, self test can be fit in parallel. \n")
+    if(!(is_snowfall & is_parallel)) message("If snowfall and parallel packages are installed, self test can be fit in parallel. \n")
     sim_res <- list()
     for(i in 1:length(which_seeds)){
       fit <- readRDS(fit_RDS)

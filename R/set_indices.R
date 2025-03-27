@@ -244,7 +244,13 @@ set_indices <- function(input, index_info=NULL) {
   )
 
  	input$options$index <- index_info
-  if(length(input$log$indices))  input$log$indices <- c("Indices: \n", input$log$indices)
-  if(is.null(input$by_pwi)) cat(unlist(input$log$indices, recursive=T))
+  if(length(input$log$indices))  input$log$indices <- c(
+    "--Indices----------------------------------------------------------------------------------------------------------------------------",
+  	"\n", 
+  	input$log$indices,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
+
+  if(is.null(input$by_pwi)) message(unlist(input$log$indices, recursive=T))
  return(input)
 }

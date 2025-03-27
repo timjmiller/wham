@@ -7,6 +7,9 @@
 context("Ex 5: Natural mortality")
 
 test_that("Ex 5 works",{
+
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 ex5_test_results <- readRDS(file.path(path_to_examples,"ex5_test_results.rds"))
 
@@ -64,7 +67,7 @@ if(length(tofit)) for(m in tofit){
   if(df.mods$mean_model[m] == "estimate-M" & !df.mods$age_specific[m]) M$initial_means = array(0.28, c(1,1,asap3[[1]]$dat$n_ages)) #n_stocks x n_regions x n_ages
 
   # Generate wham input from ASAP3 and Ecov data
-  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 2,
+  input <- prepare_wham_input(asap3, recruit_model = 2,
     model_name = paste0("m",m,": ", df.mods$mean_model[m]," + GSI link: ",df.mods$Ecov_how[m]," + M RE: ", df.mods$M_re[m]),
     ecov = ecov,
     selectivity=list(model=rep("logistic",6),
@@ -73,18 +76,19 @@ if(length(tofit)) for(m in tofit){
     NAA_re = list(sigma='rec+1',cor='iid'),
     M=M,
     age_comp = "logistic-normal-pool0",
-    basic_info = basic_info))
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
+    basic_info = basic_info)
+  mods[[m]] <- fit_wham(input, do.fit=F, MakeADFun.silent = TRUE)
   # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
   expect_equal(length(mods[[!!m]]$par), length(ex5_test_results$pars[[!!m]]), tolerance=1e-6) # nll
   expect_equal(as.numeric(mods[[!!m]]$fn(ex5_test_results$pars[[m]])), ex5_test_results$nll[!!m], tolerance=1e-6) # nll
-  #mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
+  #mods[[m]] <- fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE)
   # for(p in 1:length(mods[[!!m]]$opt$par)) expect_equal(as.numeric(mods[[!!m]]$opt$par[!!p]), ex5_test_results$pars[[!!m]][!!p], tolerance=1e-1) # parameter values
   # expect_equal(as.numeric(mods[[!!m]]$opt$obj), !!ex5_test_results$nll[m], tolerance=1e-6) # nll
 
-  mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], do.sdrep = F, MakeADFun.silent = TRUE))
+  mods_proj[[m]] <- project_wham(mods[[m]], do.sdrep = F, MakeADFun.silent = TRUE)
   expect_equal(length(mods_proj[[!!m]]$par), length(ex5_test_results$pars[[!!m]]), tolerance=1e-6) # nll
   expect_equal(as.numeric(mods_proj[[!!m]]$fn(ex5_test_results$pars[[m]])), ex5_test_results$nll[!!m], tolerance=1e-6) # nll
 }
 
+}))
 })

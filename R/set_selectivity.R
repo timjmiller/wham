@@ -89,7 +89,6 @@ set_selectivity <- function(input, selectivity)
     input$use_asap3 <- TRUE
     if(is.null(input$asap3)) input$use_asap3 <- FALSE
   }
-  print(input$use_asap3)
   data <- input[["data"]]
   if(is.null(data)) data <- list()
   par <- input$par
@@ -114,7 +113,6 @@ set_selectivity <- function(input, selectivity)
       #data$n_selblocks <- data$n_fleets + data$n_indices  #1 for fleet, 1 for index
     }# else data$n_selblocks <- selectivity$n_selblocks
   } else {
-    print("here")
     data$selblock_models <- integer(0)
     data$n_selblocks <- 0
     for(i in 1:length(asap3)){ #have to do all fleets first, then indices
@@ -321,9 +319,9 @@ set_selectivity <- function(input, selectivity)
       bl <- temp[b, par_index[[data$selblock_models[b]]]]
       if(sum(!is.na(bl)) < 3) {
         #data$selblock_models_re[b] <- 1 #no RE for this block
-        stop(paste0("'ar1' (AR1(age)) selectivity random effects specified for block ",b,", but number of free mean parameters is <= 2, 
+        stop("'ar1' (AR1(age)) selectivity random effects specified for block ",b,", but number of free mean parameters is <= 2, 
         which will not be identifiable. Use age-specific selectivity with more free mean selectivity parameters (par$logit_selpars) or use 
-        a different random effects specification."))
+        a different random effects specification.")
       } else {
       # if re='ar1' (by age) with age-specific selectivity, warning that only estimate one mean shared across ages
       # but don't overwrite fixed pars (likely will be fixing one age at 1)
@@ -345,7 +343,6 @@ set_selectivity <- function(input, selectivity)
   #data$selpars_est[data$selpars_est == -1] <- 0
   data$selpars_est <- matrix(0, data$n_selblocks, data$n_ages + 6)
   data$selpars_est[which(!is.na(temp))] <- 1
-  # print(data$selpars_est)
   data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   map$logit_selpars <- factor(temp)
 
@@ -474,7 +471,11 @@ set_selectivity <- function(input, selectivity)
   input$data <- data
   input$par <- par
   input$map <- map
-	if(length(input$log$selectivity))	input$log$selectivity <- c("Selectivity: \n", input$log$selectivity)
+	if(length(input$log$selectivity))	input$log$selectivity <- c(
+    "--Selectivity------------------------------------------------------------------------------------------------------------------------",
+    "\n", input$log$selectivity, 
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+    "\n\n")
  
   if(!is.null(input$options$catch) & !is.null(input$data$selblock_pointer_fleets)) {
     if(any(!input$data$selblock_pointer_fleets %in% 1:input$data$n_selblocks)){
@@ -498,7 +499,7 @@ set_selectivity <- function(input, selectivity)
   if(is.null(input[["by_pwi"]])) { #check whether called by prepare_wham_input
     input <- set_age_comp(input, input[["options"]][["age_comp"]])
     input <- set_osa_obs(input) #check for ages to omit due to any selectivity = 0
-    cat(unlist(input[["log"]][["selectivity"]], recursive=T))
+    message(unlist(input[["log"]][["selectivity"]], recursive=T))
   }
   return(input)
 

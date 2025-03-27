@@ -20,7 +20,7 @@
 fit_peel <- function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE)
 {
   out <- list()
-  if(!retro.silent) print(paste0("Retro Peel: ", peel))
+  if(!retro.silent) message(paste0("Retro Peel: ", peel))
   temp <- reduce_input(input, tail(input$years,peel))
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)
 

@@ -151,12 +151,17 @@ set_q <- function(input, catchability = NULL){
   input$data <- data
   input$par <- par
   input$map <- map
-	if(length(input$log$q))	input$log$q <- c("Catchability: \n", input$log$q)
+  if(length(input$log$q))  input$log$q <- c(
+    "--Catchability-----------------------------------------------------------------------------------------------------------------------",
+  	"\n", 
+  	input$log$q,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
 
   #set any parameters as random effects
   input$random <- NULL
   input <- set_random(input)
 	input$options$q <- q_opts
-  if(is.null(input$by_pwi)) cat(unlist(input$log$q, recursive=T))
+  if(is.null(input$by_pwi)) message(unlist(input$log$q, recursive=T))
 	return(input)
 }

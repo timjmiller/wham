@@ -196,7 +196,7 @@ Type objective_function<Type>::operator() ()
   
   // data for projections
   DATA_INTEGER(n_years_proj); // number of years to project  
-  DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (if use.avgF = TRUE)
+  DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F for projections (if use.avgF = TRUE)
   DATA_IVECTOR(proj_Ecov_opt); // if any, how to use each ecov in pop projections: 1 = continue Ecov_re, 2 = average Ecov (over avg_years_ind), 3 = terminal year Ecov, 4 = user-specified
   DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 4
   DATA_IVECTOR(avg_years_Ecov); // model year indices (TMB, starts @ 0) to use for averaging ecov for projections if proj_Ecov_opt = 2
@@ -717,10 +717,10 @@ Type objective_function<Type>::operator() ()
   //n_stocks x n_regions x n_ages
   array<Type> N1 = get_NAA_1(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, 
    spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, mu, L, fracyr_seasons, 
-   avg_years_ind, n_regions_is_small);
+   n_regions_is_small);
   REPORT(N1);
   // vector<array<Type>> N1_components = get_eq_NAA_components(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, spawn_regions, fleet_regions, fleet_seasons, 
-  //     can_move, mig_type, mu, L, fracyr_seasons, avg_years_ind, n_regions_is_small);
+  //     can_move, mig_type, mu, L, fracyr_seasons, n_regions_is_small);
   // // see(N1_components.size());
   // array<Type> FAA11 = N1_components(0);
   // // see(FAA11);

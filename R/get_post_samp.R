@@ -33,6 +33,6 @@ get_post_samp <- function(fit){
       warning("sdreport did not complete successfully. Therefore sample of posterior for random effects not possible.")
     }
   } else {
-    cat("No process errors specified in model. Therefore no posterior to sample.\n")
+    message("No process errors specified in model. Therefore no posterior to sample.\n")
   }
 }

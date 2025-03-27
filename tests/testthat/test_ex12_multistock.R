@@ -33,18 +33,20 @@ context("Ex 12: Multiple stocks")
 
 test_that("Ex 12 works",{
 
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 two_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("ex1_SNEMAYT.dat","ex1_SNEMAYT.dat")))
-ini_2_stocks <- suppressWarnings(prepare_wham_input(two_stocks_asap))
+ini_2_stocks <- prepare_wham_input(two_stocks_asap)
 
-nofit_2_stock <- fit_wham(ini_2_stocks, do.fit = FALSE, do.brps = FALSE)
+nofit_2_stock <- fit_wham(ini_2_stocks, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 diff_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("north.dat","south.dat")))
 selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selblocks = 12,
     fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
     initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))
-diff_stocks_input <- suppressWarnings(prepare_wham_input(diff_stocks_asap, selectivity = selectivity))
-nofit_2_diff_stock <- fit_wham(diff_stocks_input, do.fit = FALSE, do.brps = FALSE)
+diff_stocks_input <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity)
+nofit_2_diff_stock <- fit_wham(diff_stocks_input, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 
 ###################
@@ -111,7 +113,7 @@ input_move <- prepare_wham_input(diff_stocks_asap,
     catchability = q_in,
     move = move)
 
-nofit_move <- fit_wham(input_move, do.fit = FALSE, do.brps = FALSE)
+nofit_move <- fit_wham(input_move, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 
 #first season
@@ -146,7 +148,7 @@ input_move_age <- prepare_wham_input(diff_stocks_asap,
 # length(unique(input_move_age$map$mu_re))
 expect_equal(length(unique(input_move_age$map$mu_re)), input_move_age$data$n_ages+1)
 
-nofit_move_age <- fit_wham(input_move_age, do.fit = FALSE, do.brps = FALSE)
+nofit_move_age <- fit_wham(input_move_age, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 #age-specific movement rates assuming initial values for fixed effects
 nofit_move_age$rep$mu[1,1:8,1,1,1,2]
@@ -173,7 +175,7 @@ length(unique(input_move_year$map$mu_re)) #+1 for NAs
 
 expect_equal(length(unique(input_move_year$map$mu_re)), input_move_year$data$n_years_model+1) 
 
-nofit_move_year <- fit_wham(input_move_year, do.fit = FALSE, do.brps = FALSE)
+nofit_move_year <- fit_wham(input_move_year, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 nofit_move_year$rep$mu[1,8,1,,1,2]
 
@@ -203,7 +205,8 @@ input_move_prior <- prepare_wham_input(diff_stocks_asap,
 expect_equal(length(unique(input_move_prior$map$mu_re)), 1) 
 expect_equal(length(unique(input_move_prior$map$mu_prior_re)), 2) #+1 for NAs
 
-nofit_move_prior <- fit_wham(input_move_prior, do.fit = FALSE, do.brps = FALSE)
+nofit_move_prior <- fit_wham(input_move_prior, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
+}))
 })
 

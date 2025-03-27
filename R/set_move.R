@@ -49,6 +49,9 @@ set_move <- function(input, move)
   par <- input$par
   map <- input$map
   input$log$move <- list()
+  if(data$n_regions > 1 & is.null(input$options$basic_info$NAA_where)){
+    input$log$move <- c(input$log$move, "There is more than 1 region and basic_info$NAA_where is not specified so assuming each stock only exists in spawning region in first year.\n")
+  }
 
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("mu_repars", "mu_re"))]
@@ -75,7 +78,7 @@ set_move <- function(input, move)
 
   if(!is.null(move$must_move)) data$must_move[] <- move$must_move
   if(data$n_stocks>1) for(s in 1:data$n_stocks) if(sum(data$can_move[s,,,]) == 0) input$log$move <- c(input$log$move, paste0("Model assumes no movement for stock ", s, ".\n"))
-
+  
   if(data$n_regions ==1 | sum(data$can_move)==0){
     map$trans_mu <- factor(map$trans_mu)
     map$mu_repars <- factor(map$mu_repars)
@@ -84,7 +87,7 @@ set_move <- function(input, move)
     input$data <- data
     input$par <- par
     input$map <- map
-    return(input)
+ #   return(input)
   }
 
   if(!is.null(move$use_prior)) data$use_mu_prior[] <- move$use_prior
@@ -100,12 +103,15 @@ set_move <- function(input, move)
         else move$mean_model <- matrix("constant", data$n_regions, data$n_regions-1)
       }
     }
-    input$log$move <- c(input$log$move, paste0("\n move$mean_model was not specified and set to ", move$mean_model[1], " for all movement parameters based on data$n_regions and move$can_move if provided. \n"))
+    if(data$n_regions>1) if(sum(data$can_move)>0){
+      input$log$move <- c(input$log$move, paste0('\n move$mean_model was not specified and set to "', move$mean_model[1], 
+        '" for all movement parameters based on data$n_regions and move$can_move if provided. \n'))
+    }
   }
   if(!is.matrix(move$mean_model)) stop(paste0("move$mean_model must be a n_regions x n_region-1 matrix filled with one of ", paste0(mean_mods, collapse = ", "), " when provided."))
   if(any(!move$mean_model %in% mean_mods)) stop(paste0("elements of move$mean_model must each be one of ", paste0(mean_mods, collapse = ", "), " when provided."))
   if(all(move$mean_model == "none")) {
-    if(data$n_regions>1) input$log$move <- c(input$log$move, "all move$mean_model = 'none', so model assumes no movement for any stocks.\n")
+    #if(data$n_regions>1) input$log$move <- c(input$log$move, "all move$mean_model = 'none', so model assumes no movement for any stocks.\n")
     data$can_move[] <- 0
     map$trans_mu <- factor(map$trans_mu)
     map$mu_repars <- factor(map$mu_repars)
@@ -114,10 +120,10 @@ set_move <- function(input, move)
     input$data <- data
     input$par <- par
     input$map <- map
-    return(input)
+#    return(input)
   } else {
     if(sum(data$can_move)==0){ 
-      input$log$move <- c(input$log$move, "move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
+      #if(data$n_regions>1) input$log$move <- c(input$log$move, "move$model is not 'none', but all data$can_move = 0, so model assumes no movement for any stock.\n")
       map$trans_mu <- factor(map$trans_mu)
       map$mu_repars <- factor(map$mu_repars)
       map$mu_prior_re <- factor(map$mu_prior_re)
@@ -125,10 +131,18 @@ set_move <- function(input, move)
       input$data <- data
       input$par <- par
       input$map <- map
-      return(input)
+ #     return(input)
     }
   }
-  
+  if(all(move$mean_model == "none") | sum(data$can_move)==0 | data$n_regions ==1){
+    if(length(input$log$move))  input$log$move <- c(
+      "--Movement---------------------------------------------------------------------------------------------------------------------------",
+      "\n", 
+      input$log$move,
+      "-------------------------------------------------------------------------------------------------------------------------------------",
+      "\n\n")
+    return(input)
+  }
   #if we've gotten this far then some parameters will be estimated
   #define data$mu_model and map for mu_re and mu_repars
   data$mu_model[] <- 1 #this value needs to be between 1-8 after below
@@ -456,7 +470,7 @@ set_move <- function(input, move)
 
   if(!is.null(move$separable)) {
     if(any(!move$separable)) {
-      input$log$move <- c(input$log$move, "NOTE: movement and mortality must be assumed to occur seequentially for now.")
+      input$log$move <- c(input$log$move, "NOTE: movement and mortality must be assumed to occur seequentially for now.\n")
       move$separable[] <- TRUE
     }
     data$mig_type[] <- as.integer(!move$separable)
@@ -486,7 +500,6 @@ set_move <- function(input, move)
         }
       } else { #separable
         for(t in 1:data$n_seasons) for(r in 1:data$n_regions) {
-          #print(data$can_move[s,t,r,-r])
           #ind <- which(data$can_move[s,t,r,-r]==1) #not necessary because trans_mu only used if can_move == 1
           p <- move$mean_vals[s,t,r,] #n_r - 1 long!
           par$trans_mu[s,t,r,] <- log(p) - log(1-sum(p)) #additive
@@ -509,7 +522,12 @@ set_move <- function(input, move)
   input$data <- data
   input$par <- par
   input$map <- map
-  if(length(input$log$move)) input$log$move <- c("Movement: \n", input$log$move)
+  if(length(input$log$move))  input$log$move <- c(
+    "--Movement---------------------------------------------------------------------------------------------------------------------------",
+    "\n", 
+    input$log$move,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+    "\n\n")
  
   if(is.null(input[["by_pwi"]])) { #check whether called by prepare_wham_input
     input <- set_ecov(input, input[["options"]][["ecov"]]) #may need to resize dimensions if dimensions of mu change
@@ -522,7 +540,7 @@ set_move <- function(input, move)
 	input$random <- NULL
 	input <- set_random(input)
   input$options$move <- move
-  if(is.null(input$by_pwi)) cat(unlist(input$log$move, recursive=T))
+  if(is.null(input$by_pwi)) message(unlist(input$log$move, recursive=T))
   return(input)
 
 }

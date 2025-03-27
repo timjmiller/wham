@@ -109,7 +109,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for aggregate catch in fleet ", f, ", so using +/-10 for range of y axis \n")
+        message("Infinite osa residuals for aggregate catch in fleet ", f, ", so using +/-10 for range of y axis \n")
         ylim.max <- 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -180,7 +180,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for catch proportions at age in fleet ", mod$input$fleet_names[f], ", so using +/-10 for range \n")
+        message("Infinite osa residuals for catch proportions at age in fleet ", mod$input$fleet_names[f], ", so using +/-10 for range \n")
         ylim.max <- 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -260,7 +260,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for aggregate indices in  index ", mod$input$index_names[f], ", so using +/-10 for range of y axis \n")
+        message("Infinite osa residuals for aggregate indices in  index ", mod$input$index_names[f], ", so using +/-10 for range of y axis \n")
         ylim.max <- 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -339,7 +339,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(resids, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for proportions at age in  index ", mod$input$index_names[i], ", so using +/-10 for range \n")
+        message("Infinite osa residuals for proportions at age in  index ", mod$input$index_names[i], ", so using +/-10 for range \n")
         ylim.max <- 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -424,7 +424,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
       if(is.infinite(ylim.max)) {
-        cat("Infinite osa residuals for Environmental observations in series ", mod$input$Ecov_names[f], ", so using +/-10 for range of y axis \n")
+        message("Infinite osa residuals for Environmental observations in series ", mod$input$Ecov_names[f], ", so using +/-10 for range of y axis \n")
         ylim.max <- 10
       }
       ylims <- c(-ylim.max, ylim.max)
@@ -690,7 +690,7 @@ hi.cor.fn <- function(mod, out.dir = "", do.tex = FALSE, do.csv = FALSE, cor.lim
     if(do.csv) write.csv(out, file = paste0(out.dir,"hi_cor.csv"))
     return(out)
   }
-  else cat(paste0("No fixed effects had correlations estimated greater than ", cor.limit, " \n"))
+  else message(paste0("No fixed effects had correlations estimated greater than ", cor.limit, " \n"))
 }
 
 get.RMSEs.fn <- function(model)

@@ -7,6 +7,9 @@
 context("Ex 9: Retro predictions")
 
 test_that("Ex 9 works",{
+
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
@@ -45,27 +48,27 @@ env <- list(
 mods <- list()
 for(m in 1:n.mods){
 	env$recruitment_how = matrix(df.mods$R_how[m],1,1)
-	input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3,
+	input <- prepare_wham_input(asap3, recruit_model = 3,
 	                            model_name = df.mods$Model[m],
 	                            ecov = env,
 	                            NAA_re = list(sigma="rec+1", cor="iid"),
-	                            age_comp = "logistic-normal-pool0")) # logistic normal pool 0 obs
+	                            age_comp = "logistic-normal-pool0") # logistic normal pool 0 obs
 	input$par$logit_selpars[1:4,7:8] <- 0
 
 	# fit model
-	mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent=TRUE))
+	mods[[m]] <- fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent=TRUE)
 }
 
 names(mods) <- c("m1 (no CPI)","m2 (CPI)")[1:length(mods)]
 tmp.dir <- tempdir(check=TRUE)
-res <- suppressWarnings(compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE)))
+res <- compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE))
 
 n.yrs.peel <- 5
 n.yrs.proj <- 3
 for(m in 1:n.mods){
-	mods[[m]]$peels <- suppressWarnings(retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = T, MakeADFun.silent=TRUE))
+	mods[[m]]$peels <- retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = T, MakeADFun.silent=TRUE)
 	for(p in 3:n.yrs.peel) {
-		mods[[m]]$peels[[p]] <- suppressWarnings(project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE))
+		mods[[m]]$peels[[p]] <- project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE)
 	}
 }
 # plot retrospective predictions of recruitment
@@ -74,7 +77,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	colnames(df) <- c("Year","Model","Peel","Recruitment","termyr")
 	for(m in 1:length(mods)){
 		for(p in peels){
-			tmp <- suppressWarnings(read_wham_fit(mods[[m]]$peels[[p]]))
+			tmp <- read_wham_fit(mods[[m]]$peels[[p]])
 			df <- rbind(df, data.frame(Year=tail(tmp$years_full, n.yrs.proj+1),
 										Model=names(mods)[m],
 										Peel=p,
@@ -82,7 +85,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 										termyr=c(1,rep(0,n.yrs.proj))))
 		}
 		# get full model fit, "peel 0"
-		tmp <- suppressWarnings(read_wham_fit(mods[[m]]))
+		tmp <- read_wham_fit(mods[[m]])
 		df <- rbind(df, data.frame(Year=tmp$years,
 									Model=names(mods)[m],
 									Peel=0,
@@ -110,6 +113,8 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	return(g)
 }
 
-suppressWarnings(plot_retro_pred_R(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj))
+plot_retro_pred_R(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj)
+
+}))
 
 })

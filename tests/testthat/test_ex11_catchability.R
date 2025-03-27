@@ -11,6 +11,9 @@
 context("Ex 11: Priors and time-varying and environmental effects on catchability")
 
 test_that("Ex 11 works",{
+
+suppressWarnings(suppressMessages({
+
 # get results to check NLL and par estimates
 path_to_examples <- system.file("extdata", package="wham")
 tmp.dir <- tempdir(check=TRUE)
@@ -75,11 +78,11 @@ NAA_re$recruit_pars <- list(exp(10))
 catchability <- list(initial_q = rep(0.3, index_info$n_indices), prior_sd = c(NA, 0.3))
 
 #make input and operating model
-input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
-  index_info = index_info, catch_info = catch_info, F = F_info))
+input <- prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 om_input <- input
 om_input$random <- NULL
-om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 #simulate data from operating model
 set.seed(0101010)
@@ -91,8 +94,8 @@ temp <- input
 temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
-suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
+fit <- fit_wham(temp, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
+plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE))
 
 #This is provided in plot_wham_output(). The true simulated q is shown as the solid vertical line.
 wham:::plot_q_prior_post(fit)
@@ -106,11 +109,11 @@ catchability <- list(prior_sd = c(NA, 0.3), initial_q = rep(0.3, index_info$n_in
 #time varying catchability on the first index, prior on the second.
 #set value to simulate variation in q to 0.2, only first sigma_val is used.
 
-input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
-  index_info = index_info, catch_info = catch_info, F = F_info))
+input <- prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 om_input <- input
 om_input$random <- NULL
-om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 #simulate data from operating model
 set.seed(0101010)
@@ -121,8 +124,8 @@ temp <- input
 temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
-suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
+fit <- fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
+plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE))
 
 pal <- viridisLite::viridis(n=2)
 plot(fit$years, fit$rep$q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,1), ylab = "q", xlab = "Year")
@@ -161,11 +164,11 @@ catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0
 #time varying catchability on the first index, prior on the second.
 #set value to simulate variation in q to 0.2, only first sigma_val is used.
 
-input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
-  index_info = index_info, catch_info = catch_info, F = F_info))
+input <- prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 om_input <- input
 om_input$random <- NULL
-om <- suppressWarnings(fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- fit_wham(om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata <- om$simulate(complete=TRUE)
 
@@ -174,9 +177,9 @@ temp <- input
 temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE))
+fit <- fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE)
 
-suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
+plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE))
 
 pal <- viridisLite::viridis(n=2)
 se <- summary(fit$sdrep)
@@ -229,14 +232,14 @@ ecov$beta_q_vals[2,1,1] <- 0.5
 #add AR1 random effects on q for first index
 #catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
 
-input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
-  index_info = index_info, catch_info = catch_info, F = F_info))
+input <- prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 
 
 #check value for Ecov_beta effect on q (dims are n_effects (n_indices, n_Ecov, max_n_poly)
 input$par$Ecov_beta_q
 
-om <- suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata <- om$simulate(complete=TRUE)
 
@@ -245,13 +248,13 @@ temp <- input
 temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
 
 # expect_equal(fit$opt$obj, ex11_tests$fit4$nll, tolerance=1e-6, scale=1)
 # expect_equal(fit$opt$par, ex11_tests$fit4$par, tolerance=1e-6, scale=1)
 # expect_equal(fit$mohns_rho, ex11_tests$fit4$mohns_rho, tolerance=1e-4, scale=1)
 
-suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
+plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE))
 
 #compare assumed and estimated ecov effect on q
 input$par$Ecov_beta_q[2,1,1]
@@ -312,10 +315,10 @@ ecov$beta_R_vals[1,1,1] <- -0.5
 #add AR1 random effects on q for first index
 # catchability <- list(initial_q = rep(0.3, index_info$n_indices), sigma_val = c(0.4,0.4), re = c("iid", "none"))
 
-input <- suppressWarnings(prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
-  index_info = index_info, catch_info = catch_info, F = F_info))
+input <- prepare_wham_input(basic_info = digifish, selectivity = selectivity, NAA_re = NAA_re, M = M, catchability = catchability, ecov = ecov,
+  index_info = index_info, catch_info = catch_info, F = F_info)
 
-om <- suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE))
+om <- fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE)
 set.seed(0101010)
 newdata <- om$simulate(complete=TRUE)
 
@@ -324,13 +327,13 @@ temp <- input
 temp$data <- newdata
 
 #fit estimating model that is the same as the operating model
-fit <- suppressWarnings(fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+fit <- fit_wham(temp, do.osa = FALSE, do.retro = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
 
 # expect_equal(fit$opt$obj, ex11_tests$fit5$nll, tolerance=1e-6, scale=1)
 # expect_equal(fit$opt$par, ex11_tests$fit5$par, tolerance=1e-6, scale=1)
 # expect_equal(fit$mohns_rho, ex11_tests$fit5$mohns_rho, tolerance=1e-4, scale=1)
 
-suppressWarnings(plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE)))
+plot_wham_output(fit, dir.main=tmp.dir, plot.opts = list(browse = FALSE))
 
 #compare assumed and estimated ecov effect on q for second index
 input$par$Ecov_beta_q[2,1,1]
@@ -378,6 +381,7 @@ dev.off()
 #  c(mr$SSB, mr$Fbar, mr$naa)
 # saveRDS(ex11_test_results, file.path(path_to_examples,"ex11_test_results.RDS"))
 
+}))
 })
 
 # # remove files created during testing

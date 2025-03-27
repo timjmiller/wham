@@ -13,6 +13,9 @@
 context("Ex 10: Simulations")
 
 test_that("Ex 10 works",{
+
+suppressWarnings(suppressMessages({
+
 # get results to check NLL and par estimates
 path_to_examples <- system.file("extdata", package="wham")
 # ex11_tests <- readRDS(file.path(path_to_examples,"ex11_tests.rds"))
@@ -42,7 +45,7 @@ input <- prepare_wham_input(
   asap3, 
   selectivity = selectivity,
   NAA_re = NAA_re,
-  model_name="Ex 1: SNEMA Yellowtail Flounder") 
+  model_name="Ex 1: SNEMA Yellowtail Flounder")
 
 mod_1 <- fit_wham(input, do.fit = FALSE, do.osa = FALSE, do.retro=FALSE, MakeADFun.silent = TRUE) # don't do retro peels and OSA residuals, don't show output during optimization
 
@@ -64,7 +67,7 @@ input <- prepare_wham_input(
   selectivity = selectivity,
   NAA_re = NAA_re,
   basic_info = basic_info,
-  model_name="Ex 1: SNEMA Yellowtail Flounder") 
+  model_name="Ex 1: SNEMA Yellowtail Flounder")
 names(input)
 vign_10_3_input <- input #for vignette
 
@@ -169,7 +172,7 @@ input_em <- prepare_wham_input(
     asap3, 
     selectivity = selectivity_em,
     NAA_re = NAA_re,
-    model_name="Ex 1: SNEMA Yellowtail Flounder") 
+    model_name="Ex 1: SNEMA Yellowtail Flounder")
 
 sim_fn = function(om, input, do.fit = FALSE){
   obs_names = c("agg_indices","agg_catch","catch_paa","index_paa", "Ecov_obs", "obsvec")
@@ -641,6 +644,7 @@ stock_om = update_om_fn(stock_om)
 # looped_res = loop_through_fn(stock_om, M_em = M_em, selectivity_em = selectivity_om, NAA_re_em = NAA_re, assess_years = assess.years, base_years = base.years)
 # looped_rep <- looped_res$om$rep
 
+}))
 
 })
 

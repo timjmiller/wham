@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9003</span>
       </span>
     </div>
 
@@ -167,53 +167,72 @@ flag to debug a WHAM model.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model<span class="op">=</span><span class="fl">2</span>, model_name<span class="op">=</span><span class="st">"Ex 1: SNEMA Yellowtail Flounder"</span>,</span>
 <span>                              NAA_re <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma<span class="op">=</span><span class="st">"rec+1"</span>, cor<span class="op">=</span><span class="st">"iid"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "basic_info done"</span></span>
-<span><span class="co">#&gt; [1] "catch done"</span></span>
-<span><span class="co">#&gt; [1] "indices done"</span></span>
-<span><span class="co">#&gt; [1] "WAA done"</span></span>
-<span><span class="co">#&gt; [1] "NAA done"</span></span>
-<span><span class="co">#&gt; [1] "q done"</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span>
-<span><span class="co">#&gt; [1] "here"</span></span>
-<span><span class="co">#&gt; [1] "selectivity done"</span></span>
-<span><span class="co">#&gt; [1] "age_comp done"</span></span>
-<span><span class="co">#&gt; [1] "F done"</span></span>
-<span><span class="co">#&gt; [1] "M done"</span></span>
-<span><span class="co">#&gt; [1] "osa_obs done"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward makes major changes to the structure of some data, parameters, and reported objects. </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward decouples random effects for recruitment and random effects for older ages by default.</span></span>
-<span><span class="co">#&gt;  To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE. </span></span>
-<span><span class="co">#&gt;  NOTE: WHAM version 2.0.0 and forward by default does not bias correct any log-normal process or observation errors. To </span></span>
-<span><span class="co">#&gt;  configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE. </span></span>
-<span><span class="co">#&gt;  For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
-<span><span class="co">#&gt;  1 asap3 dat file was processed. A single stock and region will be assumed. </span></span>
-<span><span class="co">#&gt;  Catch: </span></span>
-<span><span class="co">#&gt;  waa_pointer_fleets determined from ASAP file(s). </span></span>
-<span><span class="co">#&gt;  Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --USING ASAP3 Inputs-----------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 1 asap3 dat file was processed. A single stock and region will be assumed. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; waa_pointer_fleets determined from ASAP file(s). </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
 <span><span class="co">#&gt; fleet_1: 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Indices: </span></span>
-<span><span class="co">#&gt;  waa_pointer_indices determined from ASAP file(s). </span></span>
-<span><span class="co">#&gt;  Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; waa_pointer_indices determined from ASAP file(s). </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
 <span><span class="co">#&gt; index_1: 2</span></span>
 <span><span class="co">#&gt; index_2: 3</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  WAA: </span></span>
-<span><span class="co">#&gt;  basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
-<span><span class="co">#&gt;  NAA: </span></span>
-<span><span class="co">#&gt;  </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec+1).</span></span>
-<span><span class="co">#&gt;  Selectivity: </span></span>
-<span><span class="co">#&gt;  (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
 <span><span class="co">#&gt; Block 1: logistic</span></span>
 <span><span class="co">#&gt; Block 2: logistic</span></span>
 <span><span class="co">#&gt; Block 3: logistic</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
 <span><span class="co">#&gt; Block 1: none</span></span>
 <span><span class="co">#&gt; Block 2: none</span></span>
-<span><span class="co">#&gt; Block 3: none</span></span></code></pre></div>
+<span><span class="co">#&gt; Block 3: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span></code></pre></div>
 <p>Try to fit the model… uh oh.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">F</span>, do.retro <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
@@ -251,13 +270,9 @@ flag to debug a WHAM model.</p>
 <span><span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span></span>
 <span><span class="co">#&gt; iter: 1  Error in iterate(par) : </span></span>
 <span><span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span></span>
-<span><span class="co">#&gt; [1] "Using stats::nlminb for optimization with these control parameters:"</span></span>
-<span><span class="co">#&gt; $iter.max</span></span>
-<span><span class="co">#&gt; [1] 1000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $eval.max</span></span>
-<span><span class="co">#&gt; [1] 1000</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Using stats::nlminb for optimization with these control parameters:</span></span>
+<span><span class="co">#&gt; iter.max: 1000</span></span>
+<span><span class="co">#&gt; eval.max: 1000</span></span>
 <span><span class="co">#&gt; iter: 1  Error in iterate(par) : </span></span>
 <span><span class="co">#&gt;   Newton dropout because inner gradient had non-finite components.</span></span>
 <span><span class="co">#&gt; Warning in stats::nlminb(model$par, model$fn, model$gr, control = opt.control):</span></span>

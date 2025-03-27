@@ -29,7 +29,7 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
-    cat("res_dir is provided, so jitter files will be saved to ", res_dir, ". \n")
+    message("res_dir is provided, so jitter files will be saved to ", res_dir, ". \n")
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_rows)) which_rows <- 1:n_jitter
@@ -52,23 +52,23 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
       if(is.null(n_cores)) n_cores = parallel::detectCores()/2
       if(!is.null(res_dir)) snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile=file.path(res_dir,"jitter_log.txt"))
       snowfall::sfExportAll()
-      jit_res <- snowfall::sfLapply(which_rows, function(row_i){
+      jit_res <- snowfall::sfLapply(which_rows, function(i){
         if(is.null(test_dir)) library(wham, lib.loc = wham_location)
         else pkgload::load_all(test_dir)
         jit_mod <- readRDS(fit_RDS)
         jit_mod$env$data$do_SPR_BRPs[] <-  0
         jit_mod$env$data$do_MSY_BRPs[] <- 0
         jit_mod$env$inner.control$trace <- FALSE #to silence inner optimization in log file
-        jit_mod$par[] <- initial_vals[row_i,]
-        # x <- try(nlminb(initial_vals[row_i,], jit_mod$fn, jit_mod$gr))
+        jit_mod$par[] <- initial_vals[i,]
+        # x <- try(nlminb(initial_vals[i,], jit_mod$fn, jit_mod$gr))
         x <- try(fit_tmb(jit_mod, n.newton = 0, do.sdrep = FALSE))
         # snowfall::sfCat(names(x))
         # print(x)
     		out <- list(obj = NA, 
           par = rep(NA,length(jit_mod$par)), 
           grad = rep(NA,length(jit_mod$par)))
-        out$initial_vals_row <- row_i
-        out$initial_vals <- initial_vals[row_i,]
+        out$initial_vals_row <- i
+        out$initial_vals <- initial_vals[i,]
         out$rep <- NULL
         out$parList <- NULL
         out$opt <- NULL
@@ -84,24 +84,24 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
           out$grad <- x$gr(x$opt$par)
     		}
         if(!is.null(res_dir)){
-      		saveRDS(out, file.path(res_dir, paste0("jitter_sim_", row_i, ".RDS")))
+      		saveRDS(out, file.path(res_dir, paste0("jitter_sim_", i, ".RDS")))
         }
     		return(out)
       })
       snowfall::sfStop()
     } else stop("To do jitter fits in parallel, install the snowfall and parallel packages. Otherwise, set do_parallel = FALSE.")
   } else{
-    if(!(is_snowfall & is_parallel)) cat("If snowfall and parallel packages are installed, jitters can be fit in parallel. \n")
+    if(!(is_snowfall & is_parallel)) message("If snowfall and parallel packages are installed, jitters can be fit in parallel. \n")
     jit_res <- list()
     for(i in 1:length(which_rows)){
       jit_mod <- readRDS(fit_RDS)
       jit_mod$env$data$do_SPR_BRPs[] <- 0
       jit_mod$par[] <- initial_vals[which_rows[i],]
-      # jit_fit <- try(nlminb(initial_vals[row_i,], jit_mod$fn, jit_mod$gr))
+      # jit_fit <- try(nlminb(initial_vals[i,], jit_mod$fn, jit_mod$gr))
       x <- try(fit_tmb(jit_mod, n.newton = 0, do.sdrep = FALSE))
       jit_res[[i]] <- list(obj = NA, par = rep(NA,length(jit_mod$par)), grad = rep(NA,length(jit_mod$par)))
-      jit_res[[i]]$initial_vals_row <- row_i
-      jit_res[[i]]$initial_vals <- initial_vals[row_i,]
+      jit_res[[i]]$initial_vals_row <- i
+      jit_res[[i]]$initial_vals <- initial_vals[i,]
       jit_res[[i]]$rep <- NULL
       jit_res[[i]]$parList <- NULL
       jit_res[[i]]$opt <- NULL

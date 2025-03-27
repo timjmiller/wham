@@ -191,7 +191,13 @@ set_catch <- function(input, catch_info= NULL) {
     paste0(input$fleet_names, ": ", apply(data$selblock_pointer_fleets, 2, function(x) paste0(sort(unique(x)), collapse = ", ")), collapse ="\n"), "\n\n")
   )
   input$options$catch <- catch_info
-  if(length(input$log$catch))  input$log$catch <- c("Catch: \n", input$log$catch)
-  if(is.null(input$by_pwi)) cat(unlist(input$log$catch, recursive=T))
+  if(length(input$log$catch))  input$log$catch <- c(
+    "--Catch------------------------------------------------------------------------------------------------------------------------------",
+    " \n", 
+    input$log$catch,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
+ 
+  if(is.null(input$by_pwi)) message(unlist(input$log$catch, recursive=T))
   return(input)
 }

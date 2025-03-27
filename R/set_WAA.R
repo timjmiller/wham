@@ -7,6 +7,7 @@ set_WAA <- function(input, waa_info = NULL) {
   if(is.null(data)) data <- list()
   asap3 <- input$asap3
 	# Weight-at-age
+	input$log$waa <- list()
 
   if(!is.null(waa_info$waa)){
 		data$waa <- waa_info$waa
@@ -64,7 +65,6 @@ set_WAA <- function(input, waa_info = NULL) {
 	}
 	
 
-	input$log$waa <- list()
 	if(!is.null(waa_info$waa_pointer_ssb)){
 		if(any(!(waa_info$waa_pointer_ssb %in% 1:dim(data$waa)[1]))){
 			stop("some basic_info$waa_pointer_ssb are outside the number of waa matrices.\n")
@@ -103,10 +103,15 @@ set_WAA <- function(input, waa_info = NULL) {
       stop("some data$waa_pointer_indices are outside the number of waa matrices.\n")
     }
 	}
-	if(length(input$log$waa))	input$log$waa <- c("WAA: \n", input$log$waa)
+	if(length(input$log$waa))	input$log$waa <- c(
+		"--WAA--------------------------------------------------------------------------------------------------------------------------------",
+		"\n", 
+		input$log$waa, 
+		"-------------------------------------------------------------------------------------------------------------------------------------",
+		"\n\n")
 
   input$data <- data
   input$options$waa <- waa_info
-  if(is.null(input$by_pwi)) cat(unlist(input$log$waa, recursive=T))
+  if(is.null(input$by_pwi)) message(unlist(input$log$waa, recursive=T))
  	return(input)
 }

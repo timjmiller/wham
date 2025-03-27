@@ -127,11 +127,11 @@ The current options are:
     \item{$Fbar_ages}{integer vector of ages to use to average F at age for reported "Fbar" across all fleets, by regions and by fleet.}
     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
-    \item{$percentFXSPR}{(0-100) percentage of SPR-based F to use in projections.}
-    \item{$percentFMSY}{(0-100) percentage of Fmsy to use in projections.}
-	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. For long-term projections, may be important to use certain years for XSPR_R_avg_yrs}
+	 \item{$FXSPR_init}{which F to initialize internal newton search for annual and static F at X percent SPR. Default is 0.5}
+	 \item{$FMSY_init}{which F to initialize internal newton search for annual and static Fmsy (if a stock-recruit model is assumed). Default is 0.5}
     \item{$simulate_process_error}{T/F vector (length = 9). When simulating from the model, whether to simulate any process errors for 
     (NAA, M, selectivity, q, movement, unidentified mortality, q priors, movement priors, Ecov). Only used for applicable random effects.}
     \item{$simulate_observation_error}{T/F vector (length = 3). When simulating from the model, whether to simulate  catch, index, and ecov observations.}

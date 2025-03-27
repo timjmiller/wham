@@ -31,16 +31,16 @@ fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep
 {
   if(use.optim){
     if(is.null(opt.control)) opt.control <- list(maxit = 1000)
-    print("Using stats::optim for optimization rather than stats::nlminb with these control parameters:")
-    print(opt.control)
+    message("Using stats::optim for optimization rather than stats::nlminb with these control parameters:")
+    message(paste0(names(opt.control), ": ", opt.control, "\n"))
     tryCatch(model$opt <- stats::optim(model$par, model$fn, model$gr, control = opt.control), 
     error = function(e) {model$opt_err <<- conditionMessage(e)})
     model$opt$objective <- model$opt$value #try to make sure calls to get nll will work for both optimizers
   }
   else {
     if(is.null(opt.control)) opt.control <- list(iter.max = 1000, eval.max = 1000)
-    print("Using stats::nlminb for optimization with these control parameters:")
-    print(opt.control)
+    message("Using stats::nlminb for optimization with these control parameters:")
+    message(paste0(names(opt.control), ": ", opt.control, "\n"))
     tryCatch(model$opt <- stats::nlminb(model$par, model$fn, model$gr, control = opt.control), 
     error = function(e) {model$opt_err <<- conditionMessage(e)})
   }

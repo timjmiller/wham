@@ -25,9 +25,11 @@ context("Ex 13: WHAM without ASAP")
 
 test_that("Ex 13 works",{
 
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
-input <- suppressWarnings(prepare_wham_input(asap3))
+input <- prepare_wham_input(asap3)
 
 basic_info <- list(
     n_stocks = 1L,
@@ -91,7 +93,7 @@ q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
 NAA_info <- list(N1_pars = exp(input$par$log_N1))
 
 #all at once 
-input_all <- suppressWarnings(prepare_wham_input(
+input_all <- prepare_wham_input(
     basic_info = basic_info,
     selectivity = sel_info, 
     catch_info = catch_info, 
@@ -99,11 +101,11 @@ input_all <- suppressWarnings(prepare_wham_input(
     NAA_re = NAA_info,
     M = M_info, 
     F = F_info, 
-    catchability = q_info))
+    catchability = q_info)
 
 #piece by piece
 # testthat::testthat_print("piece by piece")
-input_seq <- suppressWarnings(prepare_wham_input(basic_info = basic_info))
+input_seq <- prepare_wham_input(basic_info = basic_info)
 input_seq <- set_NAA(input_seq, NAA_re = NAA_info)
 input_seq <- set_M(input_seq, M = M_info)
 input_seq <- set_catch(input_seq, catch_info = catch_info)
@@ -112,12 +114,12 @@ input_seq <- set_indices(input_seq, index_info = index_info)
 input_seq <- set_q(input_seq, catchability = q_info)
 input_seq <- set_selectivity(input_seq, selectivity = sel_info)
 # wham:::check_dims(input_seq)
-input_asap <- suppressWarnings(prepare_wham_input(asap3, F = F_info, catchability = q_info, selectivity = sel_info))
+input_asap <- prepare_wham_input(asap3, F = F_info, catchability = q_info, selectivity = sel_info)
 
 #compare 
-nofit_all <- suppressWarnings(fit_wham(input_all, do.fit = FALSE, MakeADFun.silent = TRUE))
-nofit_asap <- suppressWarnings(fit_wham(input_asap, do.fit = FALSE, MakeADFun.silent = TRUE))
-nofit_seq <- suppressWarnings(fit_wham(input_seq, do.fit = FALSE, MakeADFun.silent = TRUE))
+nofit_all <- fit_wham(input_all, do.fit = FALSE, MakeADFun.silent = TRUE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE, MakeADFun.silent = TRUE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 expect_equal(as.numeric(nofit_all$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
 expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
@@ -204,7 +206,7 @@ q_info <- list(initial_q = rep(1e-6, index_info$n_indices))
 NAA_list <- list(sigma = "rec+1", N1_model = rep("equilibrium",2), recruit_pars = list(exp(10),exp(10)))
 
 #all at once 
-input_all <- suppressWarnings(prepare_wham_input(
+input_all <- prepare_wham_input(
     basic_info = basic_info,
     NAA_re = NAA_list,
     selectivity = selectivity, 
@@ -212,10 +214,10 @@ input_all <- suppressWarnings(prepare_wham_input(
     index_info = index_info, 
     M = M_info, 
     F = F_info, 
-    catchability = q_info))
+    catchability = q_info)
 
 #piece by piece
-input_seq <- suppressWarnings(prepare_wham_input(basic_info = basic_info))
+input_seq <- prepare_wham_input(basic_info = basic_info)
 input_seq <- set_NAA(input_seq, NAA_re = NAA_list)
 input_seq <- set_M(input_seq, M = M_info)
 input_seq <- set_catch(input_seq, catch_info = catch_info)
@@ -224,12 +226,12 @@ input_seq <- set_indices(input_seq, index_info = index_info)
 input_seq <- set_q(input_seq, q_info)
 input_seq <- set_selectivity(input_seq, selectivity = selectivity)
 
-input_asap <- suppressWarnings(prepare_wham_input(diff_stocks_asap, selectivity = selectivity, NAA_re = NAA_list))
+input_asap <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity, NAA_re = NAA_list)
 
 #compare 
-nofit_all <- suppressWarnings(fit_wham(input_all, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
-nofit_seq <- suppressWarnings(fit_wham(input_seq, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
-nofit_asap <- suppressWarnings(fit_wham(input_asap, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
+nofit_all <- fit_wham(input_all, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
+nofit_seq <- fit_wham(input_seq, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
+nofit_asap <- fit_wham(input_asap, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 expect_equal(as.numeric(nofit_all$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
 expect_equal(as.numeric(nofit_seq$fn()), as.numeric(nofit_asap$fn()), tolerance=1e-4)
@@ -245,6 +247,6 @@ expect_equal(sum(nofit_asap$par-nofit_seq$par), 0.0, tolerance=1e-4)
 # expect_equal(sum(fit_asap$opt$par-fit_all$opt$par), 0.0, tolerance=1e-4)
 # expect_equal(sum(fit_asap$opt$par-fit_seq$opt$par), 0.0, tolerance=1e-4)
 
-
+}))
 })
 

@@ -49,7 +49,7 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
   if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   
-  cat("Doing OSA residuals...\n");
+  message("Doing OSA residuals...\n");
   input <- model$input
   if(any(class(input$data$obs) == "list")) input$data$obs <- as.data.frame(input$data$obs) #simulated data$obs will be a list
   model$osa <- input$data$obs
@@ -60,7 +60,7 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
   subset.aggregate <- which(model$osa$type %in% c("logindex", "logcatch"))
   conditional. <- NULL
   if(length(subset.ecov)){ #do Ecov first
-    cat("Doing OSA for Ecov observations...\n")
+    message("Doing OSA for Ecov observations...\n")
     model$OSA.Ecov <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,
@@ -74,7 +74,7 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
     conditional. <- c(conditional., subset.ecov)
   }
   if(length(subset.aggregate)){
-    cat("Doing OSA for aggregate catch and index observations...\n")
+    message("Doing OSA for aggregate catch and index observations...\n")
     model$OSA.aggregate <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,
@@ -88,10 +88,10 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
     conditional. <- c(conditional., subset.aggregate)
   }
   if(length(subset.agecomp)){
-    cat("Doing OSA for catch and index age comp observations...\n")
-    if(!is.null(input$data$condition_no_osa)) cat("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
+    message("Doing OSA for catch and index age comp observations...\n")
+    if(!is.null(input$data$condition_no_osa)) message("OSA not available for logistic-normal-01-infl, logistic-normal-01-infl-2par, or mvtweedie age comp likelihoods...\n")
     conditional. = c(conditional., input$data$condition_no_osa)
-    cat("Doing OSA for age comp observations...\n")
+    message("Doing OSA for age comp observations...\n")
     model$OSA.agecomp <- suppressWarnings(TMB::oneStepPredict(
       obj = model,
       method = osa.opts$method,

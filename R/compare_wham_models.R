@@ -106,7 +106,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     aic.tab <- aic <- daic <- NULL
     if(no.wham) warning("No WHAM models. Consider setting do.table = FALSE.\n")
     if(!all.wham){
-      cat("Cannot calculate AIC or Mohn's rho for ASAP3 models.\n
+      message("Cannot calculate AIC or Mohn's rho for ASAP3 models.\n
         Returning AIC/rho table for WHAM models only.\n")
     }
     if(table.opts$calc.aic & !no.wham) if(length(wham.mods)>1) {
@@ -835,7 +835,7 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
   allSame <- function(x) length(unique(x)) == 1
   if(type == 'fleet'){
     if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) {
-      cat("Fleet selectivity blocks not identical, cannot produce comparison plot.")
+      message("Fleet selectivity blocks not identical, cannot produce comparison plot.")
       return(NULL)
     } else {
       selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))

@@ -22,10 +22,11 @@ set_proj <- function(input, proj.opts = NULL)
 			data$proj_Ecov_opt <- rep(1, data$n_Ecov)
 			data$Ecov_use_proj <- matrix(0, 1, data$n_Ecov)
 		}
+		data$avg_years_ind <- tail(1:input$data$n_years_model,5) - 1 #default values to average FAA, M, movement, WAA, and maturity for projections (need to separate these)
 	  data$logR_mean <- 0 # only used for SCAA projections
 	  data$logR_sd <- 0 # only used for SCAA projections
-	  data$FXSPR_init <- rep(0.5, data$n_years_model + data$n_years_proj)
-	  data$FMSY_init <- rep(0.5, data$n_years_model + data$n_years_proj)
+	  data$FXSPR_init <- c(data$FXSPR_init, rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
+	  data$FMSY_init <- c(data$FMSY_init, rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
 	  data$F_proj_init <- 0.1
 		data$percentFMSY <- 100
 		data$percentFXSPR <- 100

@@ -137,12 +137,17 @@ set_age_comp <- function(input, age_comp)
 	input$data <- data
 	input$par <- par
   input$map <- map
-	if(length(input$log$age_comp))	input$log$age_comp <- c("Age composition: \n", input$log$age_comp)
+  if(length(input$log$age_comp))  input$log$age_comp <- c(
+    "--Age Composition--------------------------------------------------------------------------------------------------------------------",
+    "\n", 
+    input$log$age_comp,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
   input$options$age_comp <- age_comp
   
   if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
     input <- set_osa_obs(input)
-    cat(unlist(input$log$age_comp, recursive=T))
+    message(unlist(input$log$age_comp, recursive=T))
   }
  
 	return(input)

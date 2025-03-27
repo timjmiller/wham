@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9002</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9003</span>
       </span>
     </div>
 
@@ -319,8 +319,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;     ans</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x000001b1406afd58&gt;</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000001b140397990&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x0000028a061429c0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000028a06023f10&gt;</span></span></code></pre></div>
 <p>As we can see it is a function, but less apparent is that it will
 report anything using the <code>REPORT</code> calls, and most
 importantly, those within SIMULATE statements in the compiled cpp code.
@@ -828,6 +828,66 @@ rather than estimated.</p>
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span><span class="co">#stock_om &lt;- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)</span></span></code></pre></div>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -875,6 +935,66 @@ can be set using the <code>NAA_re</code> argument to
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec+1).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_NAA(stock_om_input, NAA_re_om)</span></span></code></pre></div>
@@ -938,6 +1058,66 @@ configurations. See the help file for <code>set_M</code>.</p>
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>
@@ -999,6 +1179,66 @@ certain age classes to be the same, one can configure
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>
@@ -1041,6 +1281,66 @@ help file for <code>set_selectivity</code>.</p>
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: 2dar1</span></span>
+<span><span class="co">#&gt; Block 2: 2dar1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>
@@ -1097,6 +1397,66 @@ and autocorrelation = 0.5.</p>
 <span>  M <span class="op">=</span> <span class="va">M_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>
@@ -1186,6 +1546,85 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <span>    ecov <span class="op">=</span> <span class="va">ecov_om</span>,</span>
 <span>    F <span class="op">=</span> <span class="va">F_info</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Creating input---------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info done</span></span>
+<span><span class="co">#&gt; catch done</span></span>
+<span><span class="co">#&gt; indices done</span></span>
+<span><span class="co">#&gt; WAA done</span></span>
+<span><span class="co">#&gt; NAA done</span></span>
+<span><span class="co">#&gt; q done</span></span>
+<span><span class="co">#&gt; selectivity done</span></span>
+<span><span class="co">#&gt; age_comp done</span></span>
+<span><span class="co">#&gt; F done</span></span>
+<span><span class="co">#&gt; M done</span></span>
+<span><span class="co">#&gt; move done</span></span>
+<span><span class="co">#&gt; ecov done</span></span>
+<span><span class="co">#&gt; osa_obs done</span></span>
+<span><span class="co">#&gt; --Input Complete--------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; WHAM version 2.0.0 and forward: </span></span>
+<span><span class="co">#&gt; 1) makes major changes to the structure of some data, parameters, and reported objects.</span></span>
+<span><span class="co">#&gt; 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span></span>
+<span><span class="co">#&gt; 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; input$data$spawn_regions will be defined from input$data$NAA_where for age 1.</span></span>
+<span><span class="co">#&gt; --Catch------------------------------------------------------------------------------------------------------------------------------ </span></span>
+<span><span class="co">#&gt; catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span></span>
+<span><span class="co">#&gt; Selectivity blocks for each fleet:</span></span>
+<span><span class="co">#&gt; Fleet 1: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Indices----------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; Selectivity blocks for each index:</span></span>
+<span><span class="co">#&gt; index_1: 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --WAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. </span></span>
+<span><span class="co">#&gt; basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --NAA--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Same NAA_re$sigma being used for all stocks (rec).</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Selectivity------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).</span></span>
+<span><span class="co">#&gt; (Mean) selectivity block models are:</span></span>
+<span><span class="co">#&gt; Block 1: logistic</span></span>
+<span><span class="co">#&gt; Block 2: logistic</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Random effects options for each selectivity block are:</span></span>
+<span><span class="co">#&gt; Block 1: none</span></span>
+<span><span class="co">#&gt; Block 2: none</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Ecov--------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; ecov$logsigma is numeric. Coercing to a matrix... </span></span>
+<span><span class="co">#&gt; Please check that the environmental covariates have been loaded and interpreted correctly.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;       Model years: 1982 to 2021</span></span>
+<span><span class="co">#&gt;       Ecov years: 1982 to 2021</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     Ecov 1: Climate variable 1</span></span>
+<span><span class="co">#&gt;           Controlling (linear) effect on: recruitment for stock 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;           Model years:</span></span>
+<span><span class="co">#&gt;         1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021Lag: 0</span></span>
+<span><span class="co">#&gt;         Ex: Climate variable 1 in 1982 affects recruitment in 1982</span></span>
+<span><span class="co">#&gt;             Climate variable 1 in 2021 affects recruitment in 2021</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;         </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; --Reference points-------------------------------------------------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span></span>
 <span><span class="co">#or equivalently</span></span>

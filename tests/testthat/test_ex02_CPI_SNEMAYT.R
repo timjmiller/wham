@@ -15,6 +15,9 @@
 context("Ex 2: CPI on yellowtail recruitment")
 
 test_that("Ex 2 works",{
+
+suppressWarnings(suppressMessages({
+
 # get results to check NLL and par estimates
 path_to_examples <- system.file("extdata", package="wham")
 ex2_test_results <- readRDS(file.path(path_to_examples,"ex2_test_results.rds"))
@@ -65,8 +68,8 @@ for(m in 1:n.mods){
   input$par$logit_selpars[1:4,7:8] <- 0 # last 2 rows will not be estimated (mapped to NA)
 
   # Fit model
-  #mods[[m]] <- suppressWarnings(fit_wham(input, do.sdrep = F, do.retro=F, do.osa=F, MakeADFun.silent = TRUE, retro.silent = TRUE))
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE))
+  #mods[[m]] <- fit_wham(input, do.sdrep = F, do.retro=F, do.osa=F, MakeADFun.silent = TRUE, retro.silent = TRUE)
+  mods[[m]] <- fit_wham(input, do.fit = FALSE, MakeADFun.silent = TRUE, retro.silent = TRUE)
   
   # mcheck[[m]] <- check_convergence(mods[[m]], ret=TRUE)
   # expect_equal(mcheck$convergence, 0) # opt$convergence should be 0
@@ -78,7 +81,7 @@ for(m in 1:n.mods){
   # expect_equal(mods[[!!m]]$opt$par, ex2_test_results$par[[!!m]], tolerance=1e-3) # parameter values
   # expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex2_test_results$nll[!!m], tolerance=1e-6) # nll
 
-  # suppressWarnings(plot_wham_output(mod=mods[[m]], dir.main=tmp.dir, plot.opts = list(browse=FALSE)))
+  # plot_wham_output(mod=mods[[m]], dir.main=tmp.dir, plot.opts = list(browse=FALSE))
 }
 # ex2_test_results <- list()
 # ex2_test_results$nll <- sapply(mods, function(x) x$opt$obj)
@@ -135,6 +138,8 @@ for(m in 1:n.mods){
 # expect_lt(mcheck$maxgr, 1e-5) # maximum gradient should be < 1e-06
 # expect_equal(mods[[7]]$opt$par, ex2_test_results$par[[7]], tolerance=1e-3) # parameter values
 # expect_equal(as.numeric(mods[[7]]$opt$obj), ex2_test_results$nll[7], tolerance=1e-6) # nll
+
+}))
 })
 
 # # remove files created during testing

@@ -171,7 +171,7 @@ wham_html <- function(dir.main=NULL,
 
   # open HTML file automatically
   if(openfile){
-    cat("Opening HTML file in your default web-browser.\n")
+    message("Opening HTML file in your default web-browser.\n")
     browseURL(htmlhome)
   }
 }

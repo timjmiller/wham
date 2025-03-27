@@ -166,7 +166,7 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
   vector<int> which_F_age, vector<int> spawn_regions, 
   vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, array<Type> mu, 
   matrix<Type> L, vector<Type> fracyr_seasons, 
-  vector<int> avg_years_ind, int small_dim) {
+  int small_dim) {
   /* 
     get population age structure for the first year
              N1_model: (n_stocks) 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
@@ -226,7 +226,7 @@ vector< array<Type>> get_eq_NAA_components(vector<int> N1_model, array<Type> log
   vector<int> which_F_age, vector<int> spawn_regions, 
   vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, array<Type> mu, 
   matrix<Type> L, vector<Type> fracyr_seasons, 
-  vector<int> avg_years_ind, int small_dim) {
+  int small_dim) {
 
   int n_stocks = log_N1.dim(0);
   int n_fleets = FAA.dim(0);
@@ -264,8 +264,7 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
   array<Type> FAA, vector<int> which_F_age, 
   vector<int> spawn_regions,
   vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, vector<int> mig_type, array<Type> mu, 
-  array<Type> L, vector<Type> fracyr_seasons, 
-  vector<int> avg_years_ind, int small_dim){
+  array<Type> L, vector<Type> fracyr_seasons, int small_dim){
   /*
             NAA_re_model: 0 SCAA, 1 "rec", 2 "rec+1"
   */
@@ -288,7 +287,6 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
                    mu: n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions; movement rates
                     L: n_years_model x n_regions; "extra" mortality rate
        fracyr_seasons: n_seasons: length of intervals for each season
-       avg_years_ind:
             small_dim: 0/1 telling whether the n_regions is "small." Different methods of inverting matrices.
   */
   int n_stocks = log_N1.dim(0);
@@ -299,7 +297,7 @@ array<Type> get_NAA_y(int y, vector<int> NAA_re_model, array<Type> log_NAA, vect
   NAA_y.setZero();
   if(y==0) {
     NAA_y = get_NAA_1(N1_model,log_N1, NAA_where, log_M, FAA, which_F_age, spawn_regions, fleet_regions, fleet_seasons, 
-      can_move, mig_type, mu, L, fracyr_seasons, avg_years_ind, small_dim);
+      can_move, mig_type, mu, L, fracyr_seasons, small_dim);
   } else{ 
     for(int s = 0; s < n_stocks; s++) {
       if(NAA_re_model(s) == 2){ //rec+1
@@ -1183,7 +1181,7 @@ matrix<Type> get_NAA_nll(vector<int> NAA_re_model, array<Type> all_NAA, array<Ty
           if(use_alt_AR1==0){
             nll_NAA(s,r) += SEPARABLE(VECSCALE(AR1(NAA_rho_a), marginal_sigma_s_r),AR1(NAA_rho_y))(NAA_devs_s_r);
           } else {
-            see("using alt2dar1");
+            // see("using alt2dar1");
             nll_NAA(s,r) += d2dar1(NAA_devs_s_r, trans_NAA_rho(s,r,1), trans_NAA_rho(s,r,0), log_sigma_s_r, 0);
           }
           // see(nll_NAA(s,r));

@@ -13,23 +13,24 @@
 #'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections. Default = \code{FALSE}.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
-#'     \item \code{$avg.yrs} (vector), specify which years to average over for calculating reference points. Default = last 5 model years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs} (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, \code{tail(model$years, 5)}.
 #'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
 #'     \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$cont.L.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.L.re} (T/F), continue any L ("extra mortality rate") random effects for projections. Default = \code{FALSE}. If \code{FALSE}, L parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
-#'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for calculating catch in projections, only used if $use.FXSPR = TRUE. For example, GOM cod uses F = 75\% F_40\%SPR, so \code{proj.opts$percentFXSPR = 75}. Default = 100.
-#'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
+#'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for projections, only used if $use.FXSPR = TRUE. For example, to project with F = 75\% F_40\%SPR, \code{proj.opts$percentFXSPR = 75}. Default = 100.
+#'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for projections, only used if $use.FMSY = TRUE and a stock-recruit relationship is assumed. Default = 100.
 #'     \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
 #'     \item \code{$proj_Fcatch} (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (\code{n.yrs} x 1 or n_fleets).
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
 #'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
+#'     \item \code{$proj_F_init} which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1
 #'   }
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #'
@@ -148,6 +149,8 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   data$FXSPR_init <- c(data$FXSPR_init,rep(data$FXSPR_init[data$n_years_model], data$n_years_proj))
   data$FMSY_init <- c(data$FMSY_init,rep(data$FMSY_init[data$n_years_model], data$n_years_proj))
   data$F_proj_init <- rep(0.1, data$n_years_proj)
+  if(!is.null(proj.opts$proj_F_init)) data$F_proj_init[] <- proj.opts$proj_F_init
+
   data$F_proj_init[which(data$proj_F_opt == 3)] <- data$FXSPR_init[proj_yrs_ind][which(data$proj_F_opt == 3)]
   data$F_proj_init[which(data$proj_F_opt == 6)] <- data$FMSY_init[proj_yrs_ind][which(data$proj_F_opt == 6)]
   #define age for full F in projections
@@ -159,7 +162,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   avg_cols <- function(x) apply(x, 2, mean, na.rm=TRUE)
   if(!is.null(proj.opts$proj_mature)){
     dims.check <- c(data$n_stocks, proj.opts$n.yrs, dim(data$mature)[2])
-    cat("\nUsing user-suplied maturity values for projected maturity.\n")
+    message("\nUsing user-suplied maturity values for projected maturity.\n")
     if(length(dim(proj.opts$proj_mature)) != length(dims.check)) {
       stop(paste0("\n** Error setting up projections: **\n",
                  "proj.opts$proj_mature must be an array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
@@ -176,7 +179,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   # proj_waa dims are (dim(input$data$waa)[1] x n.yrs x n_age)
   if(!is.null(proj.opts$proj_waa)){
     dims.check <- c(dim(data$waa)[1],proj.opts$n.yrs, dim(data$waa)[3])
-    cat("\nUsing user-suplied WAA values for projected WAA.\n")
+    message("\nUsing user-suplied WAA values for projected WAA.\n")
     if(length(dim(proj.opts$proj_waa)) != length(dims.check)) {
       stop(paste0("\n** Error setting up projections: **\n",
                  "proj.opts$proj_waa must be a 3d-array with dimensions: ", paste(dims.check,collapse = ','), ".\n"))      
@@ -263,7 +266,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
     end_model <- tail(input$years_full,1) #now need to go to the end of projection years
     end_Ecov <- tail(input$years_Ecov, 1)
     if(end_Ecov < end_model){
-      print("prepare_projection: Ecov last year is before model last projection year. Padding Ecov...")
+      message("prepare_projection: Ecov last year is before model last projection year. Padding Ecov...")
       map$Ecov_obs_logsigma <- matrix(as.integer(map$Ecov_obs_logsigma), ncol = data$n_Ecov)
       data$Ecov_obs <- rbind(data$Ecov_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       par$Ecov_obs_logsigma <- rbind(par$Ecov_obs_logsigma, matrix(par$Ecov_obs_logsigma[NROW(par$Ecov_obs_logsigma),], nrow = end_model-end_Ecov, ncol = data$n_Ecov, byrow=T))
@@ -323,7 +326,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
       if(proj.opts$cont.ecov) data$proj_Ecov_opt <- rep(1, data$n_Ecov)
 
     } else{
-      print(paste0("Ecovs are already fit through projection years."))
+      message(paste0("Ecovs are already fit through projection years."))
     }
   }
     # n.beyond <- end.beyond <- integer()
@@ -332,7 +335,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
     #     data$ind_Ecov_out_end_M[i,,,],data$ind_Ecov_out_end_q[i,])
     #   end.beyond[i] <- min(n.beyond[i], data$n_years_proj)
     #   stop()
-    #   if(end.beyond[i] == data$n_years_proj) print(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
+    #   if(end.beyond[i] == data$n_years_proj) message(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
     # }
 
   #   if(all(end.beyond < data$n_years_proj)){ # if Ecov proj options ARE necessary, check they are valid

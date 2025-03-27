@@ -15,6 +15,9 @@
 context("Ex 3: Projections")
 
 test_that("Ex 3 works",{
+
+suppressWarnings(suppressMessages({
+
 # get results to check NLL and par estimates
 tmp.dir <- tempdir(check=TRUE)
 path_to_examples <- system.file("extdata", package="wham")
@@ -49,7 +52,7 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 
 # ---------------------------------------------------------
 ## Fit model without projections
-mod <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
+mod <- fit_wham(input, do.fit=F, MakeADFun.silent = TRUE)
 expect_equal(length(mod$par), length(ex3_test_results$par), tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mod$fn(ex3_test_results$par)), ex3_test_results$nll, tolerance=1e-6) # nll
 mod$par <- ex3_test_results$par
@@ -57,7 +60,7 @@ mod$fn(mod$par)
 input$par <- mod$env$parList(mod$par)
 
 #mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F)
-mod <- suppressWarnings(fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE))
+mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F, MakeADFun.silent = TRUE)
 
 # Add projections to previously fit model
 proj_opts <- list()
@@ -120,7 +123,7 @@ proj_opts[[11]] <- list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL)
 
 for(m in 1:length(proj_opts)) {
-  print(m)
+#  print(m)
   # if(m == 1) mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], MakeADFun.silent = TRUE)
   # else 
   mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = TRUE)
@@ -138,9 +141,10 @@ for(m in 1:length(proj_opts)) {
   temp <- mod_proj[[!!m]]$simulate(complete=TRUE)
 
   # plot results
-  suppressWarnings(plot_wham_output(mod_proj[[!!m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE)))
+  plot_wham_output(mod_proj[[!!m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE))
 }
 
+}))
 })
 
 # # remove files created during testing

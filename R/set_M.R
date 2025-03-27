@@ -432,7 +432,12 @@ set_M <- function(input, M)
   input$data <- data
   input$par <- par
   input$map <- map
-  if(length(input$log$M)) input$log$M <- c("Natural Mortality: \n", input$log$M)
+  if(length(input$log$M))  input$log$M <- c(
+    "--Natural Mortality------------------------------------------------------------------------------------------------------------------",
+    " \n", 
+    input$log$M,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
 
   if(is.null(input[["by_pwi"]])) { #check whether called by prepare_wham_input
     input <- set_ecov(input, input[["options"]][["ecov"]]) #may need to resize dimensions if dimensions of M change
@@ -445,7 +450,7 @@ set_M <- function(input, M)
 	input$random <- NULL
 	input <- set_random(input)
   input$options$M <- M
-  if(is.null(input$by_pwi)) cat(unlist(input$log$M, recursive=T))
+  if(is.null(input$by_pwi)) message(unlist(input$log$M, recursive=T))
   return(input)
 
 }

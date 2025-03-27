@@ -21,6 +21,9 @@
 context("Ex 4: Selectivity")
 
 test_that("Ex 4 works",{
+
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 ex4_test_results <- readRDS(file.path(path_to_examples,"ex4_test_results.rds"))
 
@@ -60,8 +63,8 @@ for(m in 1:n.mods){
 	#     #           age_comp = "logistic-normal-miss0", # logistic normal, treat 0 obs as missing
 	#		#				basic_info = basic_info)
 	# fit model
-	#mods[[m]] <- suppressWarnings(fit_wham(input, do.osa=F, do.proj=F, do.retro=F, do.sdrep=F, MakeADFun.silent = TRUE)) 
-	mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=FALSE, MakeADFun.silent = TRUE))
+	#mods[[m]] <- fit_wham(input, do.osa=F, do.proj=F, do.retro=F, do.sdrep=F, MakeADFun.silent = TRUE)
+	mods[[m]] <- fit_wham(input, do.fit=FALSE, MakeADFun.silent = TRUE)
 	if(exists("err")) rm("err") # need to clean this up
   # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
   expect_equal(length(mods[[!!m]]$par), length(ex4_test_results$par[[!!m]]), tolerance=1e-6) # nll
@@ -95,4 +98,5 @@ for(m in 1:n.mods){
 # 	expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex4_test_results$nll[!!m], tolerance=1e-6) # nll	
 # }
 
+}))
 })

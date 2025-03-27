@@ -7,6 +7,9 @@
 context("Ex 6: Numbers-at-age")
 
 test_that("Ex 6 works",{
+
+suppressWarnings(suppressMessages({
+
 path_to_examples <- system.file("extdata", package="wham")
 ex6_test_results <- readRDS(file.path(path_to_examples,"ex6_test_results.rds"))
 
@@ -41,7 +44,7 @@ for(m in fit.mods){
     process_model = 'ar1', # "rw" or "ar1"
     recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
-  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
@@ -49,20 +52,24 @@ for(m in fit.mods){
                               NAA_re = NAA_list,
                               ecov=ecov,
                               basic_info = basic_info,
-                              age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing
+                              age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
   # Fit model
-  print(m)
-  # temp <- suppressWarnings(fit_wham(input, do.fit=F))
-  # mods[[m]] <- suppressWarnings(fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE))
-  mods[[m]] <- suppressWarnings(fit_wham(input, do.fit=F, MakeADFun.silent = TRUE))
+  #print(m)
+  # temp <- fit_wham(input, do.fit=F)
+  # mods[[m]] <- fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE)
+  mods[[m]] <- fit_wham(input, do.fit=FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
+
   expect_equal(length(mods[[!!m]]$par), length(ex6_test_results$par[[!!m]]), tolerance=1e-3)
   expect_equal(as.numeric(mods[[!!m]]$fn(ex6_test_results$par[[!!m]])), as.numeric(ex6_test_results$nll[!!m]), tolerance=1e-3)
+
   # if fitting the models...
   # expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex6_test_results$nll[!!m], tolerance=1e-3)
   # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values
   # print(c(mods[[m]]$opt$obj, ex6_test_results$nll[m]))
-  # mods_proj[[m]] <- suppressWarnings(project_wham(mods[[m]], MakeADFun.silent = TRUE))
+  # mods_proj[[m]] <- suppressMessages(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 }
+
+}))
 
 })

@@ -75,8 +75,8 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   }
   dir.create(dir.res.tables, showWarnings = FALSE)
 
-  cat("Generating plot files... Please wait ~30 seconds...\n")
-  if(out.type == "html") cat("html output works best with Google Chrome browser\n")
+  message("Generating plot files... Please wait ~30 seconds...\n")
+  if(out.type == "html") message("html output works best with Google Chrome browser\n")
   graphics.off() # close any open windows
 
   if(out.type == 'pdf'){
@@ -411,32 +411,32 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
 
   if(rmarkdown::pandoc_available()){
     if(table.type == "pdf"){
-      cat(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
+      message(paste0("Making LaTeX/pdf tables: ", file.path(dir.res.tables, "wham_par_tables.pdf"), "\n"))
       par_tables_fn(mod, od = dir.res.tables, do.tex = T)
     }
     # if(table.type == "html"){
-    #   cat("Making HTML tables.\n")
+    #   message("Making HTML tables.\n")
     #   par_tables_fn(mod, od = dir.res.tables, do.html = T)
-    #   cat("Opening HTML tables in your default web-browser.\n")
+    #   message("Opening HTML tables in your default web-browser.\n")
     #   browseURL(file.path(dir.res.tables, "wham_par_tables.html"))
     # }
     if(out.type == "html"){
-      cat("Making HTML document.\n")
+      message("Making HTML document.\n")
       par_tables_fn(mod, od = dir.res.tables)
       make_html_figs_tables_fn(od = dir.main, do.html = T)
       html_file <- file.path(dir.main, "wham_figures_tables.html")
       if(browse) {
-        cat("Opening HTML document in your default web-browser.\n")
+        message("Opening HTML document in your default web-browser.\n")
         browseURL(html_file)
       }
-      else cat(paste0("HTML document is \n", html_file, "\n"))
+      else message(paste0("HTML document is \n", html_file, "\n"))
     }
   } else {
     #uses png output, and old html product that automatically opens in browser
     if(out.type == 'html'){
       if(browse) wham_html(dir.main = dir.main)
     }
-    cat("document of parameter tables was not generated because rmarkdown could not find pandoc. Try plot_wham_output() from Rstudio.\n")
+    message("document of parameter tables was not generated because rmarkdown could not find pandoc. Try plot_wham_output() from Rstudio.\n")
   }
 }
 

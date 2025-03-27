@@ -349,12 +349,17 @@ set_NAA <- function(input, NAA_re=NULL)
   input$data <- data
   input$par <- par
   input$map <- map
-	if(length(input$log$NAA))	input$log$NAA <- c("NAA: \n", input$log$NAA)
+  if(length(input$log$NAA))  input$log$NAA <- c(
+    "--NAA--------------------------------------------------------------------------------------------------------------------------------",
+    "\n", 
+    input$log$NAA,
+    "-------------------------------------------------------------------------------------------------------------------------------------",
+  "\n\n")
   #may need to update these 
 	# projection data will always be modified by 'prepare_projection'
 	#input <- wham:::set_proj(input, proj.opts = NULL) #proj options are used later after model fit, right?
 
-  if(is.null(input$by_pwi)) cat(unlist(input$log$NAA, recursive=T))
+  if(is.null(input$by_pwi)) message(unlist(input$log$NAA, recursive=T))
 	#set any parameters as random effects
   #print(sort(names(input$data)))
 	input$random <- NULL
