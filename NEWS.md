@@ -3,12 +3,12 @@ wham 2.0.0.9003 (2025-03-26)
 
 ### Minor improvements
 
-* (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in project_wham() and in prepare_projection() for search of F at specified catch in projection year. Tidied up screen printing and tests. [](https://github.com/timjmiller/wham/commit/)
+* (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in project_wham() and in prepare_projection() for search of F at specified catch in projection year. Tidied up screen printing and tests. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. [d3dd9e9](https://github.com/timjmiller/wham/commit/d3dd9e9f8bcfff37252618c32c689f901cdab5b9)
 
 ### Bug fixes
 
-* (2.0.0.9003) fix bug in jitter_wham() with do_parallel = FALSE. [](https://github.com/timjmiller/wham/commit/)
+* (2.0.0.9003) fix bug in jitter_wham() with do_parallel = FALSE. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9001) fix bug in compare_wham_models() when applied to fitted models without $sdrep. [281a136](https://github.com/timjmiller/wham/commit/281a136928bbd495fffc9bb10cdfdb841c6a0e68)
 
 wham 2.0.0 (2025-02-04)
