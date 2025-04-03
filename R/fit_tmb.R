@@ -186,7 +186,7 @@ check_estimability <- function( obj, h ){
     RowMax <- apply( List[["Eigen"]]$vectors[,List[["WhichBad"]],drop=FALSE], MARGIN=1, FUN=function(vec){max(abs(vec))} )
     List[["BadParams"]] <- data.frame("Param"=names(obj$par), "MLE"=ParHat, "Param_check"=ifelse(RowMax>0.1, "Bad","OK"))
     # print message
-    print( List[["BadParams"]] )
+    message( List[["BadParams"]] )
   }
 
   # Return

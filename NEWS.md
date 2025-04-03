@@ -1,8 +1,9 @@
-wham 2.0.0.9003 (2025-03-26)
+wham 2.0.0.9004 (2025-04-03)
 =========================
 
 ### Minor improvements
 
+* (2.0.0.9004) add standard error estimation of catch projections. [](https://github.com/timjmiller/wham/commit/)
 * (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in project_wham() and in prepare_projection() for search of F at specified catch in projection year. Tidied up screen printing and tests. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. [d3dd9e9](https://github.com/timjmiller/wham/commit/d3dd9e9f8bcfff37252618c32c689f901cdab5b9)
 

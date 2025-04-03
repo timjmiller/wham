@@ -2874,7 +2874,7 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, msy = FALSE, singl
   do.kobe <- which(sapply(log.rel.ssb.rel.F.cov, function(x) !all(!is.finite(x)))) # only if some non-infinite values for at least some status years 
   if(length(do.kobe)<length(status.years)){
     no.kobe <- which(!status.years %in% do.kobe)
-    print(paste0("status confidence region not available for years: ", mod$years_full[status.years[no.kobe]]))
+    message(paste0("status confidence region not available for years: ", mod$years_full[status.years[no.kobe]]))
     if(length(do.kobe)==0) return()
   } 
   log.rel.ssb.rel.F.cr <- lapply(1:length(status.years), function(x){

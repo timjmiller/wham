@@ -148,6 +148,26 @@ matrix<Type> get_pred_log_catch(matrix<Type> pred_catch, matrix<Type> agg_catch_
 }
 
 template <class Type>
+matrix<Type> get_pred_log_catch_proj(matrix<Type> pred_catch, matrix<Type> agg_catch){
+  int n_y_m = agg_catch.rows();
+  int n_y_all = pred_catch.rows();
+  int n_y_proj = n_y_all - n_y_m;
+  int n_fleets = pred_catch.cols();
+  int n_cols = n_fleets;
+  if(n_fleets>1) n_cols += 1;
+  matrix<Type> pred_log_catch_proj(n_y_proj,n_cols); //last column is the total
+  pred_log_catch_proj.setZero();
+
+  for(int y = 0; y < n_y_proj; y++) {
+    for(int f = 0; f < n_fleets; f++) {
+      pred_log_catch_proj(y,f) = log(pred_catch(n_y_m + y,f));
+    }
+    if(n_fleets > 1) pred_log_catch_proj(y,n_fleets) = log(sum(vector<Type> (pred_catch.row(n_y_m + y))));
+  }
+  return pred_log_catch_proj;
+}
+
+template <class Type>
 matrix<Type> get_nll_agg_catch(matrix<Type> pred_log_catch, matrix<Type> agg_catch_sigma, vector<Type> log_catch_sig_scale,
   vector<Type> obsvec, matrix<int> use_agg_catch, matrix<int> keep_C, data_indicator<vector<Type>, Type> keep){
   int n_y = agg_catch_sigma.rows();

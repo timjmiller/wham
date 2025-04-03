@@ -167,7 +167,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     }
     if(!is.null(tab)){ 
       if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
-      if(table.opts$print) print(tab) # print to console
+      if(table.opts$print) message(paste(capture.output(print(as.data.frame(tab))), collapse = "\n")) # print to console
     }
     out[c("daic","aic","rho","best","tab")] <- list(daic,aic,rho,best,tab)
   }

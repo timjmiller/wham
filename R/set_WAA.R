@@ -98,8 +98,6 @@ set_WAA <- function(input, waa_info = NULL) {
 	}
 	if(!is.null(data$waa_pointer_indices)){
     if(any(!(data$waa_pointer_indices %in% 1:dim(data$waa)[1]))){
-    	print(data$waa_pointer_indices)
-    	print(dim(data$waa))
       stop("some data$waa_pointer_indices are outside the number of waa matrices.\n")
     }
 	}

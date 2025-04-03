@@ -15,6 +15,7 @@
 #' @param save.input T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.
 #' @param do.brps T/F, calculate and report biological reference points
 #' @param check.version T/F, whether to verify the wham package commit and version for the fitted model are the same as the currently used package.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{FALSE}.
 #' 
 #' @return \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model
 #' fit by peeling off \emph{i} years of data.
@@ -23,7 +24,7 @@
 #' 
 #' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_peel}}
 #'
-do_retro_peels <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE) {
-  model$peels <- retro(model, n.peels, ran, use.mle, do.sdrep, n.newton, MakeADFun.silent, retro.silent, save.input, do.brps, check.version)
+do_retro_peels <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FALSE, n.newton = 0, MakeADFun.silent = FALSE, retro.silent = FALSE, save.input = FALSE, do.brps = FALSE, check.version = TRUE, save.sdrep = FALSE) {
+  model$peels <- retro(model, n.peels, ran, use.mle, do.sdrep, n.newton, MakeADFun.silent, retro.silent, save.input, do.brps, check.version, save.sdrep)
   return(model)
 }

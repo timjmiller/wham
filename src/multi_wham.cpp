@@ -938,6 +938,11 @@ Type objective_function<Type>::operator() ()
   matrix<Type> pred_log_catch = get_pred_log_catch(pred_catch, agg_catch_sigma, log_catch_sig_scale, bias_correct_oe);
   REPORT(pred_log_catch);
   
+  if(n_years_proj >0){
+    matrix<Type> pred_log_catch_proj = get_pred_log_catch_proj(pred_catch, agg_catch);
+    REPORT(pred_log_catch_proj);
+    if((sum_do_post_samp == 0)) ADREPORT(pred_log_catch_proj);
+  }
   matrix<Type> nll_agg_catch = get_nll_agg_catch(pred_log_catch, agg_catch_sigma, log_catch_sig_scale, obsvec,
     use_agg_catch, keep_C, keep);
   nll += nll_agg_catch.sum();

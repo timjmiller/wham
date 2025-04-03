@@ -31,7 +31,7 @@ input_dr <- prepare_wham_input(asap3, recruit_model = 2,
 input_dr$par$logit_selpars[2,5] <- input$par$logit_selpars[2,5] <- 0 # original code started selpars at 0 (last 2 rows are fixed)
 
 input_alt <- input 
-input_alt_dr <- input_alt_dr
+input_alt_dr <- input_dr
 input_alt$data$use_alt_AR1 <- input_alt_dr$data$use_alt_AR1 <- 1
 
 mod <- fit_wham(input, do.fit = FALSE, MakeADFun.silent=TRUE)

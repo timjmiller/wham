@@ -152,26 +152,15 @@ check_dims <- function(input){
 
 	should_data_dims <- should_dims
 	# name <- "keep_Cpaa"
-	# print(input_data_dims[[name]])
-	# print(should_dims[[name]])
-	# print(class(input_data_dims[[name]]))
-	# print(class(should_dims[[name]]))
-	# print(identical(should_dims[[name]], input_data_dims[[name]]))
-	# stop()
 	bad_data_dims <- sapply(names(should_data_dims), function(x) !identical(should_data_dims[[x]],input_data_dims[[x]]))
 	bad_data_dims <- bad_data_dims[which(bad_data_dims)]
-	# print(bad_data_dims)
-	# stop()
 	bad_data_dims <- bad_data_dims[which(!names(bad_data_dims) %in% data_not_checked)]
-	print(bad_data_dims)
 	#################################################
  
  	#pars
 	input_par_dims <- lapply(input$par, dim)
 	vecs <- which(sapply(input_par_dims, is.null))
 	input_par_dims[vecs] <- lapply(input$par[vecs], length)
-	# print(input_par_dims)
-	# stop()
 
 	#################################################
 
@@ -244,13 +233,6 @@ check_dims <- function(input){
 	for(i in n_stocks_n_ages_n_seasons_n_regions_n_reg_m1_n_E_np) should_dims[[i]] <- c(n_stocks, n_ages, n_seasons, n_regions, n_regions-1L, n_Ecov, as.integer(max(c(0,input$data[["n_poly_Ecov_mu"]]))))
 	n_indices_n_E_np <- "Ecov_beta_q"
 	for(i in n_indices_n_E_np) should_dims[[i]] <- c(n_indices, n_Ecov, as.integer(max(input$data[["n_poly_Ecov_q"]])))
-
-	# name <- "Ecov_beta_mu"
-	# print(input_par_dims[[name]])
-	# print(should_dims[[name]])
-	# print(class(input_par_dims[[name]]))
-	# print(class(should_dims[[name]]))
-	# print(identical(should_dims[[name]], input_par_dims[[name]]))
 
 	should_par_dims <- should_dims
 	bad_par_dims <- sapply(names(should_par_dims), function(x) !identical(should_par_dims[[x]],input_par_dims[[x]]))
