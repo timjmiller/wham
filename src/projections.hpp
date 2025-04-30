@@ -255,7 +255,7 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
             marg_NAA_sigma, 
             small_dim, FXSPR_init(y), 10, trace);
           if(trace) see(FXSPR);
-          Fproj(0) = FXSPR(0);
+          Fproj(0) = FXSPR(0) * percentFXSPR * 0.01;
           if(trace) see(FXSPR(0));
         }
         
@@ -283,7 +283,7 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
             marg_NAA_sigma, 
             trace);
           if(trace) see(FMSY);
-          Fproj(0) = FMSY;
+          Fproj(0) = FMSY * percentFMSY * 0.01;
           // if(trace) see(FAA_proj);
         //F_full is the same as that used to generate selectivity to project
         }
