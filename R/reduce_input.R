@@ -136,7 +136,9 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 	}
 
 	#reset the obs_vec
+	new$by_pwi <- TRUE #needed to check age ranges of age comp
 	new <- set_osa_obs(new)
+	new$by_pwi <- NULL
 	return(new)
 
 }
