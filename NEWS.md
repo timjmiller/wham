@@ -9,7 +9,7 @@ wham 2.0.0.9006 (2025-05-23)
 
 ### Bug fixes
 
-* (2.0.0.9006) fix bug where retros do not evaluate correctly with truncated ages in age comp (bluefish). [](https://github.com/timjmiller/wham/commit/)
+* (2.0.0.9006) fix bug where retros do not evaluate correctly with truncated ages in age comp (bluefish). [655a9f1](https://github.com/timjmiller/wham/commit/655a9f110e1622a0d38c1ee12e6a9ae4042ae7c6)
 * (2.0.0.9005) fix bug where percentFXSPR and percentFMSY were not being used in projections. [1219efc](https://github.com/timjmiller/wham/commit/1219efc003e09337d5256552e7cbb95ccfffdd7a)
 * (2.0.0.9003) fix bug in jitter_wham() with do_parallel = FALSE. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9001) fix bug in compare_wham_models() when applied to fitted models without $sdrep. [281a136](https://github.com/timjmiller/wham/commit/281a136928bbd495fffc9bb10cdfdb841c6a0e68)
