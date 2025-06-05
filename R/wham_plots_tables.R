@@ -3359,7 +3359,7 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 #------------------------------------
 #------------------------------------
 
-plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", age=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od) {
+plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, what = "SSB", age=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od) {
   
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
@@ -3441,22 +3441,26 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
       }
     }
     if(what %in% c("SSB","Fbar")) {
+      ns <-0
       if(what == "SSB") names.plot <- mod$input$stock_names
-      if(what == "Fbar") names.plot <- mod$input$region_names
+      if(what == "Fbar") {
+        names.plot <- mod$input$region_names
+        ns <- mod$input$data$n_fleets #Fbar has columns for fleets,regions, and total
+      }
       n <- length(names.plot)
-
       for(p in 1:n){
         what.print.p <- paste0(names.plot[p], "_", what.print)
         if(do.tex) cairo_pdf(file.path(od, paste0(what.print.p,"_retro.pdf")), family = fontfam, height = 10, width = 10)
         if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        if(missing(y.range1)) y.range1 <- range(sapply(res, function(x) range(x[,p])))
+        range.y <- y.range1
+        if(is.null(y.range1)) range.y <- range(sapply(res, function(x) range(x[,ns + p])))
         par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
-        plot(years,res[[1]][1:n_years,p],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=y.range1)
+        plot(years,res[[1]][1:n_years,ns + p],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=range.y)
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels)
         {
-          lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
-          points(years[n_years-i],res[[i+1]][n_years-i,p],pch=16,col=plot.colors[i+1])
+          lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
+          points(years[n_years-i],res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
         title(names.plot[p], line = 1, outer = TRUE)
         if(do.tex | do.png) dev.off() else par(origpar)
@@ -3517,21 +3521,26 @@ plot.retro <- function(mod,y.lab,y.range1,y.range2, alpha = 0.05, what = "SSB", 
 
     if(what %in% c("SSB","Fbar")) {
       rel.res <- lapply(1:length(res), function(x) res[[x]][1:(n_years - x + 1),,drop=FALSE]/res[[1]][1:(n_years - x + 1),,drop=FALSE] - 1)
+      ns <-0
       if(what == "SSB") names.plot <- mod$input$stock_names
-      if(what == "Fbar") names.plot <- mod$input$region_names
+      if(what == "Fbar") {
+        names.plot <- mod$input$region_names
+        ns <- mod$input$data$n_fleets #Fbar has columns for fleets,regions, and total
+      }
       n <- length(names.plot)
 
       for(p in 1:n) {
         what.print.p <- paste0(names.plot[p], "_", what.print)
         if(do.tex) cairo_pdf(file.path(od, paste0(what.print.p,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
         if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        if(missing(y.range2)) y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,p]))))
+        range.y <- y.range2
+        if(is.null(y.range2)) range.y <- c(-1,max(sapply(rel.res, function(x) range(x[,ns + p]))))
         par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
-        plot(years,rel.res[[1]][1:n_years,p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=y.range2)
+        plot(years,rel.res[[1]][1:n_years,ns + p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=range.y)
         grid(col = gray(0.7), lty = 2)
         for (i in 1:npeels) {
-          lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),p], col = tcol[i+1])
-          points(years[n_years-i],rel.res[[i+1]][n_years-i,p],pch=16,col=plot.colors[i+1])
+          lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
+          points(years[n_years-i],rel.res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
         rho.plot <- round(rho.vals[[what]][p],3)
         legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")

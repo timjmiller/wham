@@ -1,4 +1,4 @@
-wham 2.0.0.9006 (2025-05-23)
+wham 2.0.0.9007 (2025-06-05)
 =========================
 
 ### Minor improvements
@@ -9,6 +9,7 @@ wham 2.0.0.9006 (2025-05-23)
 
 ### Bug fixes
 
+* (2.0.0.9007) fix bug in plotting F retrospective runs when there are multiple fleets. [](https://github.com/timjmiller/wham/commit/)
 * (2.0.0.9006) fix bug where retros do not evaluate correctly with truncated ages in age comp (bluefish). [655a9f1](https://github.com/timjmiller/wham/commit/655a9f110e1622a0d38c1ee12e6a9ae4042ae7c6)
 * (2.0.0.9005) fix bug where percentFXSPR and percentFMSY were not being used in projections. [1219efc](https://github.com/timjmiller/wham/commit/1219efc003e09337d5256552e7cbb95ccfffdd7a)
 * (2.0.0.9003) fix bug in jitter_wham() with do_parallel = FALSE. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)

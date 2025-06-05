@@ -29,7 +29,7 @@ mohns_rho <- function(model)
     rho$SSB <- rho$Fbar <- numeric()
     for(i in 1:ns) rho$SSB[i] <- mean(sapply(1:npeels, function(x) model$peels[[x]]$rep$SSB[ny-x, i]/model$rep$SSB[ny-x, i] - 1))
     for(i in 1:nr) rho$Fbar[i] <- mean(sapply(1:npeels, function(x) {
-      mean(model$peels[[x]]$rep$Fbar[ny-x,nf + i])/mean(model$rep$Fbar[ny-x,nf + i]) - 1
+      model$peels[[x]]$rep$Fbar[ny-x,nf + i]/model$rep$Fbar[ny-x,nf + i] - 1
     }))
     rho$naa <- array(NA, c(ns, nf, na))
     for(s in 1:ns) for(r in 1:nr) for(a in 1:na) if(data$NAA_where[s,r,a]) {
