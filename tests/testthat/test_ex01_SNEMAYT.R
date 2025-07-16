@@ -10,7 +10,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex01_SNEMAYT"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~7 min
+# ~3.5 min
 
 context("Ex 1: SNEMA yellowtail")
 
@@ -78,7 +78,7 @@ for(m in 1:length(mods)) expect_equal(as.numeric(nll[!!m]), as.numeric(ex1_test_
 
 # Compare models by AIC and Mohn's rho
 tmp.dir <- tempdir(check=TRUE)
-res <- compare_wham_models(mods, fdir=tmp.dir, table.opts=list(fname="ex1_table", sort=TRUE, print=FALSE))
+res <- compare_wham_models(mods, fdir=tmp.dir, table.opts=list(fname="ex1_table", sort=TRUE, print=FALSE), plot.opts = list(browse=FALSE))
 
 # WHAM output plots for best model with projections
 m4_proj <- suppressMessages(project_wham(model=mods$m4, MakeADFun.silent=TRUE))

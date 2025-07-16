@@ -1,6 +1,6 @@
 Package: wham
 Title: Woods Hole Assessment Model (WHAM)
-Version: 2.0.0.9007
+Version: 2.1.0
 Authors@R: c(
     person("Tim", "Miller", role = c("aut", "cre"),
            email = "timothy.j.miller@noaa.gov",
@@ -15,20 +15,20 @@ Authors@R: c(
            email = "james.thorson@noaa.gov"))
 Description: The Woods Hole Assessment Model (WHAM) is a general age-structured stock assessment framework that can be configured to estimate assessment models that range in complexity from statistical catch-at-age (SCAA) model with annual recruitments as fixed effects, to state-space, multi-stock, multi-region, age-structured models where many parameters can be treated as time- and age-varying process errors and/or allowing effects of environmental covariates. WHAM is a generalization of code from Miller et al. (2016), Miller and Hyun (2018), and Miller et al. (2018). WHAM also has many similarities of input data sources with ASAP (Legault and Restrepo 1999) and provides functions to generate a WHAM input file from an ASAP3 dat file, although this is not a requirement. Many of the plotting functions for input data, results, and diagnostics have modified from code written by Chris Legault and Liz Brooks.
 Depends:
-    R (>= 3.6.0)
+    R (>= 4.2.2)
 Imports:
-    TMB (>= 1.7.20),
-    ellipse (>= 0.4.1),
-    Hmisc (>= 4.4-1),
-    mnormt (>= 1.5-5),
-    Deriv (>= 3.8.5),
-    tidyr (>= 1.1.2),
-    dplyr (>= 1.0.2),
-    ggplot2 (>= 3.3.2),
-    viridis (>= 0.5.1),
-    rmarkdown (>= 2.11),
-    knitr (>= 1.37),
-    kableExtra (>= 1.3.4)
+    Deriv (>= 4.1.6),
+    dplyr (>= 1.1.4),
+    ellipse (>= 0.5.0),
+    ggplot2 (>= 3.5.1),
+    kableExtra (>= 1.4.0),
+    knitr (>= 1.48),
+    mnormt (>= 2.1.1),
+    rmarkdown (>= 2.28),
+    tidyr (>= 1.3.1),
+    TMB (>= 1.9.17),
+    viridis (>= 0.6.5),
+    viridisLite (>= 0.4.2)
 Remotes:
     kaskr/adcomp/TMB
 LinkingTo:

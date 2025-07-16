@@ -33,11 +33,11 @@ if(knitr::is_html_output()) type = "html"
 if(type == "latex") knitr::opts_chunk$set(out.width="100%")
 options(knitr.kable.NA = "--")
 #library(knitr)
-library(magrittr)
+#library(magrittr)
 #library(pander)
 #library(kableExtra)
-library(tidyverse)
-library(tinytex)
+#library(tidyverse)
+#library(tinytex)
 ```
 
 
@@ -77,9 +77,9 @@ head(out)
 # out <- sci_note(out,cols=1:4)
 # out = readRDS("parameter_estimates_table.RDS")
 # out = round(out, 3)
-out <- out %>% knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T,label = "par-table",
-    caption="Parameter estimates, standard errors, and confidence intervals. Rounded to 3 decimal places.", align = c(rep("r",4))) %>%
-    kableExtra::kable_styling(latex_options=c("basic", "repeat_header")) %>% kableExtra::landscape()
+out <- out |> knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T,label = "par-table",
+    caption="Parameter estimates, standard errors, and confidence intervals. Rounded to 3 decimal places.", align = c(rep("r",4))) |>
+    kableExtra::kable_styling(latex_options=c("basic", "repeat_header")) |> kableExtra::landscape()
 cat(knitr::knit_print(out))
 
 input <- readRDS("fit_input.RDS")
@@ -104,10 +104,10 @@ dat <- input$data
 for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
   out = readRDS(paste0(stock.names.f[s], "_", region.names.f[r], "_NAA_table.RDS"))
   out = round(out, 0)
-  out <- out %>% knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, 
+  out <- out |> knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, 
     label = paste0(stock.names.l[s], "-", region.names.l[r], "-NAA-table"), 
-      caption=paste0("Abundance at age (1000s) for ", stock.names.tab[s], " in ", region.names.tab[r],".")) %>%
-      kableExtra::kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+      caption=paste0("Abundance at age (1000s) for ", stock.names.tab[s], " in ", region.names.tab[r],".")) |>
+      kableExtra::kable_styling(latex_options=c("basic", "repeat_header"))
   cat(knitr::knit_print(out))
 }
 ```
@@ -118,9 +118,9 @@ for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
 for(r in 1:dat$n_regions){
   out = readRDS(paste0(region.names.f[r], "_FAA_tot_table.RDS"))
   out = round(out, 3)
-  out <- out %>% knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(region.names.l[r], "-region-FAA-table"),
-      caption=paste0("Total fishing mortality at age in ", region.names.tab[r], ".")) %>%
-      kableExtra::kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+  out <- out |> knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(region.names.l[r], "-region-FAA-table"),
+      caption=paste0("Total fishing mortality at age in ", region.names.tab[r], ".")) |>
+      kableExtra::kable_styling(latex_options=c("basic", "repeat_header"))
   cat(knitr::knit_print(out))
 }
 ```
@@ -131,9 +131,9 @@ for(r in 1:dat$n_regions){
 for(r in 1:dat$n_fleets){
   out = readRDS(paste0(fleet.names.f[r], "_FAA_table.RDS"))
   out = round(out, 3)
-  out <- out %>% knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(fleet.names.l[r], "-fleet-FAA-table"),
-      caption=paste0("Total fishing mortality at age in ", fleet.names.tab[r], ".")) %>%
-      kableExtra::kable_styling(latex_options=c("basic", "repeat_header")) #%>%
+  out <- out |> knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = paste0(fleet.names.l[r], "-fleet-FAA-table"),
+      caption=paste0("Total fishing mortality at age in ", fleet.names.tab[r], ".")) |>
+      kableExtra::kable_styling(latex_options=c("basic", "repeat_header"))
   cat(knitr::knit_print(out))
 }
 ```

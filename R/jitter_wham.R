@@ -33,8 +33,8 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_rows)) which_rows <- 1:n_jitter
-  is_snowfall <- nchar(system.file(package="snowfall"))>0
-  is_parallel <- nchar(system.file(package="parallel"))>0
+  is_snowfall <- require("snowfall")
+  is_parallel <- require("parallel")
   
   mod <- readRDS(fit_RDS)
 

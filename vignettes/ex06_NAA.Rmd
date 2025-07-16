@@ -103,7 +103,7 @@ df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2da
                       R_how = paste0(c(rep("none",7),rep("limiting-lag-1-linear",6))), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 ```
 
 Look at the model table:
@@ -292,12 +292,11 @@ AIC for model `m1` is not comparable with other models because comparing models 
 thebest = c(11,13)
 vign6_res[1,"dAIC"] = '---'
 vign6_res[1,"AIC"] = '---'
-vign6_res %>%
+vign6_res |>
   dplyr::rename("Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime", "$\\Delta AIC$"="dAIC",
-         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") %>%
-  kable(escape = F) %>%
-  kable_styling(bootstrap_options = c("condensed","responsive")) %>%
-  # row_spec(posdef, background = gray.colors(10,end=0.95)[10]) %>%
+         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
+  kable(escape = F) |>
+  kable_styling(bootstrap_options = c("condensed","responsive")) |>
   row_spec(thebest, bold=TRUE)
 ```
 

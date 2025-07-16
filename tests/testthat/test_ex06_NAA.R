@@ -2,7 +2,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex06_NAA"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~30 sec
+# ~15 sec
 
 context("Ex 6: Numbers-at-age")
 
@@ -21,7 +21,6 @@ df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2da
                       R_how = paste0(c(rep("none",7),rep("limiting-lag-1-linear",6))), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-# df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
 
 #no more bias correction
 # basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions

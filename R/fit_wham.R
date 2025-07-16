@@ -167,7 +167,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
       # mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
       # if(any(input$data$recruit_model %in% 3:4)) input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
     }
-    mod$parList <- mod$env$parList()
+    mod$parList <- mod$env$parList(x = mod$par, par = mod$env$last.par.best)
     mod <- check_which_F_age(mod)
     #mod$rep <- mod$report() #not needed because check_which_F_age calls mod$report()
     if(is.null(mod$TMB_commit)){
@@ -194,7 +194,7 @@ check_which_F_age <- function(mod)
     mle <- mod$opt$par
   }
   mod$fn(mle)
-  mod$rep <- mod$report()
+  mod$rep <- mod$report(mod$env$last.par.best)
   for(y in 1:dim(mod$rep$FAA)[2]){
     temp <- apply(rbind(mod$rep$FAA[,y,]),2,sum)
     mod$env$data$which_F_age[y] <- mod$input$data$which_F_age[y] <- which(temp == max(temp))[1]
@@ -203,9 +203,9 @@ check_which_F_age <- function(mod)
     temp <- apply(mod$rep$FAA_static,2,sum)
     mod$env$data$which_F_age_static <- mod$input$data$which_F_age_static <- as.numeric(which(temp == max(temp))[1])
   }
-  mod$retape()
+  mod$retape(set.defaults = FALSE)
   mod$fn(mle)
-  mod$rep <- mod$report()
+  mod$rep <- mod$report(mod$env$last.par.best)
   return(mod)
 }
 
@@ -227,9 +227,9 @@ check_FXSPR <- function(mod)
   #allow calculation of X%SPR BRPs
   if(mod$env$data$do_SPR_BRPs != 1) stop("in check_FXSPR: model$env$data$do_SPR_BRPs is not equal to 1")
   #mod$env$data$do_SPR_BRPs <- mod$input$data$do_SPR_BRPs <- 1
-  mod$retape()
+  mod$retape(set.defaults = FALSE)
   mod$fn(mle)
-  mod$rep <- mod$report()
+  mod$rep <- mod$report(mod$env$last.par.best)
 
 
   percentSPR_out <- exp(cbind(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$input$data$n_stocks+1])
@@ -242,9 +242,9 @@ check_FXSPR <- function(mod)
       redo_SPR_years <- years[ind]
       warning(paste0("Changing initial values for estimating FXSPR for years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$FXSPR_init[ind] <- mod$input$data$FXSPR_init[ind] <- mod$env$data$FXSPR_init[ind]*2
-      mod$retape()
+      mod$retape(set.defaults = FALSE)
       mod$fn(mle)
-      mod$rep <- mod$report()
+      mod$rep <- mod$report(mod$env$last.par.best)
       percentSPR_out <- exp(cbind(mod$rep$log_SPR_FXSPR - mod$rep$log_SPR0)[,mod$input$data$n_stocks+1])
       ind <- which(round(percentSPR_out,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
@@ -260,9 +260,9 @@ check_FXSPR <- function(mod)
     {
       warning(paste0("Changing initial values for estimating static FXSPR."))
       mod$env$data$FXSPR_static_init <- mod$input$data$FXSPR_static_init <- mod$env$data$FXSPR_static_init*0.5
-      mod$retape()
+      mod$retape(set.defaults = FALSE)
       mod$fn(mle)
-      mod$rep <- mod$report()
+      mod$rep <- mod$report(mod$env$last.par.best)
       percentSPR_out_static <- exp(mod$rep$log_SPR_FXSPR_static - mod$rep$log_SPR0_static)[mod$input$data$n_stocks+1]
       ind = which(round(percentSPR_out_static,4) != round(mod$env$data$percentSPR/100,4))
       if(!length(ind)) break
@@ -287,16 +287,15 @@ check_projF <- function(mod)
     correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 2)
     FAA_tot <- apply(mod$rep$FAA,2:3, sum)
     used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],2)
-    # print(used_F)
     bad <- which(correct_F != used_F)
     if(length(bad))
     {
       redo_SPR_years <- mod$years_full[y[bad]]
       warning(paste0("Changing initial values for estimating FXSPR used to define F in projection years ", paste(redo_SPR_years, collapse = ","), "."))
       mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$FXSPR_init[y[bad]]
-      mod$retape()
+      mod$retape(set.defaults = FALSE)
       mod$fn(mle)
-      mod$rep <- mod$report()
+      mod$rep <- mod$report(mod$env$last.par.best)
       correct_F <- round(mod$env$data$percentFXSPR * exp(mod$rep$log_FXSPR[y])/100, 2)
       used_F <- round(FAA_tot[cbind(y,mod$env$data$which_F_age[y])],2)
       bad <- which(correct_F != used_F)
@@ -313,14 +312,9 @@ check_projF <- function(mod)
     else bad <- which(any(round(mod$env$data$proj_Fcatch[ind,],4) != round(mod$rep$pred_catch[y,],4)))
     if(length(bad))
     {
-      # print(mod$marg_nll)
       if(is.na(mod$marg_nll)){
-        # print(mod$rep$pred_NAA[1,1,which(!mod$years_full %in% mod$years),])
         FAA_tot <- exp(mod$rep$log_FAA_tot[which(!mod$years_full %in% mod$years),, drop = FALSE])
         y_na <- is.na(apply(FAA_tot,1,sum))
-        # print(y_na)
-        #if(any(proj_F_opt[y_na]==5)) 
-        # print(mod$rep$log_FAA_tot[which(!mod$years_full %in% mod$years),])
         if(any(y_na)) stop("Need to change initial log_NAA parameter values in projection years. See ?project_wham and proj.opts$proj_NAA_init")
       }
       for(i in 1:2)
@@ -329,12 +323,11 @@ check_projF <- function(mod)
 
         warning(paste0("Changing initial values for finding F from Catch in projection years ", paste(redo_Catch_years, collapse = ","), "."))
         mod$env$data$F_proj_init[ind[bad]] <- mod$input$data$F_proj_init[ind[bad]] <- mod$env$data$F_proj_init[ind[bad]]*0.5
-        mod$retape()
+        mod$retape(set.defaults = FALSE)
         mod$fn(mle)
-        mod$rep <- mod$report()
+        mod$rep <- mod$report(mod$env$last.par.best)
         if(!by_fleet) bad <- which(round(mod$env$data$proj_Fcatch[ind,1],4) != round(rowSums(mod$rep$pred_catch[y,,drop=F]),4))
         else bad <- which(any(round(mod$env$data$proj_Fcatch[ind,],4) != round(mod$rep$pred_catch[y,],4)))
-        # bad <- which(round(mod$env$data$proj_Fcatch[ind],4) != round(sum(mod$rep$pred_catch[y,,drop=F]),4))
         if(!length(bad)) break
       }
     }

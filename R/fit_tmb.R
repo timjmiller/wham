@@ -16,10 +16,10 @@
 #'     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
 #'     \item{\code{model$date}}{System date}
 #'     \item{\code{model$dir}}{Current working directory}
-#'     \item{\code{model$rep}}{model$report()}
+#'     \item{\code{model$rep}}{model$report(model$env$last.par.best)}
 #'     \item{\code{model$TMB_version}}{Version of TMB installed}
-#'     \item{\code{model$parList}}{List of parameters, \code{model$env$parList()}}
-#'     \item{\code{model$final_gradient}}{Final gradient, \code{model$gr()}}
+#'     \item{\code{model$parList}}{List of parameters, \code{model$env$parList(x = model$opt$par, par = model$env$last.par.best)}}
+#'     \item{\code{model$final_gradient}}{Final gradient, \code{model$gr(model$opt$par)}}
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
 #'   }
 #'
@@ -46,29 +46,28 @@ fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep
   }
   if(is.null(model$opt_err)){
     Gr <- model$gr(model$opt$par)
+    opt_before <- model$opt
     if(n.newton) if(!any(is.na(Gr))) if(max(abs(Gr))<1){ # Take a few extra newton steps when useful
-      # print("is n.newton")
       tryCatch(for(i in 1:n.newton) { 
         g <- as.numeric(model$gr(model$opt$par))
         h <- stats::optimHess(model$opt$par, model$fn, model$gr)
         model$opt$par <- model$opt$par - solve(h, g)
         model$opt$objective <- model$fn(model$opt$par)
       }, error = function(e) {model$err <<- conditionMessage(e)}) # still want fit_tmb to return model if newton steps error out
+      model$newton_info <- list()
+      model$newton_info$nll_diff <- model$opt$obj - opt_before$obj
+      model$newton_info$par_diff <- model$opt$par - opt_before$par
+      model$newton_info$grad_diff <- model$gr(model$opt$par) - Gr
+      if(model$newton_info$nll_diff > 0) message(paste0("Note: Newton steps resulted in an increase in the NLL of ", model$newton_info$nll_diff,"."))
     }
-    #assigning model$err already does the below if statement.
-    #if(exists("err", inherits = FALSE)){
-    #  model$err <- err # store error message to print out in fit_wham
-    #  rm("err")
-    #}  
-    #model$env$parList() gives error when there are no random effects
     is.re <- length(model$env$random)>0
     fe <- model$opt$par
     if(is.re) model$env$last.par.best[-c(model$env$random)] <- fe
     else  model$env$last.par.best <- fe
-    #fe <- model$env$last.par.best
-    #if(is.re) fe <- fe[-c(model$env$random)]
     
     Gr <- model$gr(fe)
+    model$parList <- model$env$parList(x = fe, par = model$env$last.par.best)
+    model$final_gradient <- Gr
     if(do.check){
       if(any(abs(Gr) > 0.01)){
         df <- data.frame(param = names(fe),
@@ -91,27 +90,21 @@ fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep
         }
       }
     }
-    model$parList <- model$env$parList(x = fe)
-    model$final_gradient <- Gr
   }
 
 
   model$date <- Sys.time()
   model$dir <- getwd()
-  model$rep <- model$report()
+  model$rep <- model$report(model$env$last.par.best)
   TMB_commit <- packageDescription("TMB")$GithubSHA1
   model$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
   TMB_version <- packageDescription("TMB")$Version
   model$TMB_version <- paste0(TMB_version, " / ", model$TMB_commit, ")")
 
 
-  # if(do.sdrep & !exists("err")) # only do sdrep if no error
   if(do.sdrep) # only do sdrep if no error
   {
-    model$sdrep <- try(TMB::sdreport(model))
-    model$is_sdrep <- !is.character(model$sdrep)
-    if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep <- NA
-    if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
+    model <- do_sdreport(model, save.sdrep = save.sdrep, TMB.bias.correct = FALSE, TMB.jointPrecision = FALSE)
   } else {
     model$is_sdrep <- FALSE
     model$na_sdrep <- NA
@@ -179,16 +172,13 @@ check_estimability <- function( obj, h ){
 
   # Check result
   if( length(List[["WhichBad"]])==0 ){
-    # print message
     message( "All parameters are estimable" )
   }else{
     # Check for parameters
     RowMax <- apply( List[["Eigen"]]$vectors[,List[["WhichBad"]],drop=FALSE], MARGIN=1, FUN=function(vec){max(abs(vec))} )
     List[["BadParams"]] <- data.frame("Param"=names(obj$par), "MLE"=ParHat, "Param_check"=ifelse(RowMax>0.1, "Bad","OK"))
-    # print message
     message( List[["BadParams"]] )
   }
 
-  # Return
   return( invisible(List) )
 }

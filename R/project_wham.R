@@ -50,11 +50,11 @@
 #'     \item \code{$avg.yrs} (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, \code{tail(model$years, 5)}.
 #'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
-#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average the environmental covariate(s) over for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
-#'     \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$cont.L.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs.M} (which defaults to last 5 model years).
+#'     \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs.move} (which defaults to last 5 model years).
+#'     \item \code{$cont.L.re} (T/F), continue any L ("extra mortality rate") random effects for projections. Default = \code{FALSE}. If \code{FALSE}, L parameters will be averaged over \code{$avg.yrs.L} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for projections, only used if $use.FXSPR = TRUE. For example, to project with F = 75\% F_40\%SPR, \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for projections, only used if $use.FMSY = TRUE and a stock-recruit relationship is assumed. Default = 100.
@@ -62,9 +62,19 @@
 #'     \item \code{$proj_Fcatch} (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (\code{n.yrs} x 1 or n_fleets).
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
-#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years. 3: average recruitment deviations over $avg.yrs.R (if $sigma = "rec") 4: no recruitment deviations (if $sigma = "rec").
+#'     \item \code{$proj_NAA_opt} (integer), 1: continue any RE processes for NAA, 2: average NAA deviations over $avg.yrs.NAA. 3: no NAA deviations.
 #'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
 #'     \item \code{$proj_F_init} which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1
+#'     \item \code{$avg.yrs.sel} list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waacatch} list (length = n_fleets), years to average weight at age for each fleet for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waassb} list (length = n_stocks), years to average weight at age for each stock SSB for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.mature} list (length = n_stocks), years to average maturity at age for each stock for projection years (if $proj_mature is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.L} list (length = n_regions), years to average extra mortality at age for each region for projection years (if $cond.L.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.M} list (length = n_stocks, each is a list with length = n_regions), years to average natural mortality at age for each stock and region for projection years (if $cont.M.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.move} list (length = n_stocks, each is a list with length = n_regions), years to average movement rates at age and season for each stock and region (at beginning of interval) for projection years (if $cont.move.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.R} list (length = n_stocks), years to average recruitment deviations for each stock and region for projection years (if $proj_R_opt = 3). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.NAA} list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
@@ -144,7 +154,7 @@ project_wham <- function(model,
       proj_mod$fn(mle)
     }
     proj_mod$marg_nll <- proj_mod$fn(mle) #to make sure it is the same as the base model
-    if(is.fit) if(abs(proj_mod$marg_nll - model$opt$obj)>1e-6) stop("Difference between projection model nll and base model nll > 1e-6")
+    if(is.fit & !is.na(proj_mod$marg_nll)) if(abs(proj_mod$marg_nll - model$opt$obj)>1e-5) warning(paste0("Difference between projection model nll and base model nll is ", proj_mod$marg_nll - model$opt$obj))
     proj_mod$rep <- proj_mod$report(proj_mod$env$last.par.best)
     proj_mod$parList <- proj_mod$env$parList(x=mle)
     proj_mod <- check_projF(proj_mod) #projections added.

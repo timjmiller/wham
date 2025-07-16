@@ -9,7 +9,7 @@
 #' \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
 #'   \describe{
 #'     \item{= 1}{SCAA (without NAA_re option specified) or Random walk (if NAA_re$sigma specified), i.e. predicted recruitment in year i = recruitment in year i-1}
-#'     \item{= 2}{(default) Random about mean, i.e. steepness = 1}
+#'     \item{= 2}{(default) Random effects about constant mean}
 #'     \item{= 3}{Beverton-Holt}
 #'     \item{= 4}{Ricker}
 #'   }
@@ -59,7 +59,15 @@
 #'     \item{$Fbar_ages}{integer vector of ages to use to average F at age for reported "Fbar" across all fleets, by regions and by fleet.}
 #'     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
-#'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.}
+#'		 \item{$average_years_L}{list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_M}{list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_move}{list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_mat}{list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_waassb}{list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_sel}{list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_waacatch}{list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+#'		 \item{$average_years_SRR}{list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (tail(1:length(years),5))}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
 #'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. For long-term projections, may be important to use certain years for XSPR_R_avg_yrs}
 #'		 \item{$FXSPR_init}{which F to initialize internal newton search for annual and static F at X percent SPR. Default is 0.5}
@@ -297,6 +305,9 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	#set up ecov data and parameters. Probably want to make sure to do this after set_NAA.
 	input <- set_ecov(input, ecov)
 	if(!is.null(ecov)) message("ecov done")
+
+	input <- set_brp_static(input, basic_info) #have to do this after n_fleets, etc. defined
+
 	# add vector of all observations for one step ahead residuals ==========================
 	input <- set_osa_obs(input)
 	message("osa_obs done\n")
@@ -410,8 +421,16 @@ set_basic_info <- function(input, basic_info){
 	input$data$do_post_samp_q <- 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 	input$data$do_post_samp_sel <- 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
 	input$data$do_post_samp_Ecov <- 0 #this will be changed in fit_wham when a sample of posterior process residuals are to be calculated
+	input$data$use_alt_AR1 <- 0
 
-  #input$data$simulate_period <- rep(1,2) #simulate above items for (model years, projection years)
+	input$options$basic_info <- basic_info
+  return(input)
+
+}
+
+
+set_brp_static <- function(input, basic_info){
+
 	input$data$do_SPR_BRPs <- 0 #this will be changed when after model fit
 	input$data$do_MSY_BRPs <- 0 #this will be changed when after model fit
 	input$data$SPR_weight_type <- 0
@@ -420,18 +439,78 @@ set_basic_info <- function(input, basic_info){
 	input$data$use_alt_AR1 <- 0
 
   input$data$percentSPR <- 40 #percentage of unfished SSB/R to use for SPR-based reference points
-  # input$data$percentFXSPR <- 100 # percent of F_XSPR to use for calculating catch in projections
-  # input$data$percentFMSY <- 100 # percent of F_XSPR to use for calculating catch in projections
-  # data$XSPR_R_opt = 3 #1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). See next line for years to average over.
   input$data$XSPR_R_opt <- 2 # default = use average R estimates
+  
   input$data$XSPR_R_avg_yrs <- 1:input$data$n_years_model-1 #model year indices to use for averaging recruitment when defining SSB_XSPR (if XSPR_R_opt = 2,4)
+  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs <- basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0
+	
 	input$data$FXSPR_init <- rep(0.5, input$data$n_years_model) #initial value for Newton search of F (spr-based) reference point 
 	input$data$FMSY_init <- rep(0.5, input$data$n_years_model)  #initial value for Newton search of Fmsy (if a SRR is used)
 	input$data$FXSPR_static_init <- 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind_static)
 	input$data$FMSY_static_init <- 0.5 #initial value for Newton search of static Fmsy (if a SRR is used)
 
-	# input$data$avg_years_ind <- tail(1:input$data$n_years_model,5) - 1 #default values to average FAA, M, movement, WAA, and maturity for projections (need to separate these)
-	input$data$avg_years_ind_static <- tail(1:input$data$n_years_model,5) - 1 ##default values to average FAA, M, movement, WAA, and maturity to average for static brps
+	avg_years_ind <- tail(1:input$data$n_years_model,5) - 1
+	if(!is.null(basic_info$XSPR_input_average_years)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+	}
+  
+	# input$data$avg_years_ind_static <- avg_years_ind ##default values to average FAA, M, movement, WAA, and maturity to average for static brps
+	
+	if(!is.null(basic_info$average_years_L)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_L <- basic_info$average_years_L #user input shifted to start @ 0  
+	} else avg_years_ind_L <- rep(list(avg_years_ind), input$data$n_regions)
+	input$data$avg_years_ind_static_L <- matrix(0, input$data$n_years_model+1, input$data$n_regions) 
+	for(i in 1:input$data$n_regions) input$data$avg_years_ind_static_L[1:(length(avg_years_ind_L[[i]]) +1),i] <- c(length(avg_years_ind_L[[i]]),avg_years_ind_L[[i]]) #default values to average L for projections
+	
+	if(!is.null(basic_info$average_years_waacatch)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_waacatch <- basic_info$average_years_waacatch #user input shifted to start @ 0  
+	} else avg_years_ind_waacatch <- rep(list(avg_years_ind), input$data$n_fleets)
+	tmat <- matrix(0, input$data$n_years_model+1, input$data$n_fleets) 
+	for(i in 1:input$data$n_fleets) tmat[1:(length(avg_years_ind_waacatch[[i]]) +1),i] <- c(length(avg_years_ind_waacatch[[i]]),avg_years_ind_waacatch[[i]]) #default values to average L for projections
+	input$data$avg_years_ind_static_waacatch <- tmat
+
+	if(!is.null(basic_info$average_years_sel)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_sel <- basic_info$average_years_sel #user input shifted to start @ 0  
+	} else avg_years_ind_sel <- rep(list(avg_years_ind), input$data$n_fleets)
+	tmat <- matrix(0, input$data$n_years_model+1, input$data$n_fleets) 
+	for(i in 1:input$data$n_fleets) tmat[1:(length(avg_years_ind_sel[[i]]) +1),i] <- c(length(avg_years_ind_sel[[i]]),avg_years_ind_sel[[i]]) #default values to average L for projections
+	input$data$avg_years_ind_static_sel <- tmat
+
+	if(!is.null(basic_info$average_years_waassb)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_waassb <- basic_info$average_years_waassb #user input shifted to start @ 0  
+	} else avg_years_ind_waassb <-  rep(list(avg_years_ind), input$data$n_stocks)
+	tarray <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_years_model+1)) 
+	for(i in 1:input$data$n_stocks) for(j in 1:input$data$n_regions) tarray[i,j,1:(length(avg_years_ind_waassb[[i]]) +1)] <- c(length(avg_years_ind_waassb[[i]]),avg_years_ind_waassb[[i]])
+	input$data$avg_years_ind_static_waassb <- tarray
+
+	if(!is.null(basic_info$average_years_mat)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_mat <- basic_info$average_years_mat #user input shifted to start @ 0  
+	} else avg_years_ind_mat <-  rep(list(avg_years_ind), input$data$n_stocks)
+	tarray <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_years_model+1)) 
+	for(i in 1:input$data$n_stocks) for(j in 1:input$data$n_regions) tarray[i,j,1:(length(avg_years_ind_mat[[i]]) +1)] <- c(length(avg_years_ind_mat[[i]]),avg_years_ind_mat[[i]])
+	input$data$avg_years_ind_static_mat <- tarray
+
+	if(!is.null(basic_info$average_years_SRR)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_SRR <- basic_info$average_years_SRR #user input shifted to start @ 0  
+	} else avg_years_ind_SRR <-  rep(list(avg_years_ind), input$data$n_stocks)
+	tarray <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_years_model+1)) 
+	for(i in 1:input$data$n_stocks) for(j in 1:input$data$n_regions) tarray[i,j,1:(length(avg_years_ind_SRR[[i]]) +1)] <- c(length(avg_years_ind_SRR[[i]]),avg_years_ind_SRR[[i]])
+	input$data$avg_years_ind_static_SRR <- tarray
+
+	if(!is.null(basic_info$average_years_M)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_M <- basic_info$average_years_M #user input shifted to start @ 0  
+	} else avg_years_ind_M <- rep(list(rep(list(avg_years_ind), input$data$n_regions)),input$data$n_stocks)
+	tarray <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_years_model+1)) 
+	for(i in 1:input$data$n_stocks) for(j in 1:input$data$n_regions) tarray[i,j,1:(length(avg_years_ind_M[[i]][[j]]) +1)] <- c(length(avg_years_ind_M[[i]][[j]]),avg_years_ind_M[[i]][[j]])
+	input$data$avg_years_ind_static_M <- tarray
+
+	if(!is.null(basic_info$average_years_move)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
+		avg_years_ind_move <- basic_info$average_years_move #user input shifted to start @ 0  
+	} else avg_years_ind_move <- rep(list(rep(list(avg_years_ind), input$data$n_regions)),input$data$n_stocks)
+	tarray <- array(0, dim = c(input$data$n_stocks,input$data$n_regions,input$data$n_years_model+1)) 
+	for(i in 1:input$data$n_stocks) for(j in 1:input$data$n_regions) tarray[i,j,1:(length(avg_years_ind_move[[i]][[j]]) +1)] <- c(length(avg_years_ind_move[[i]][[j]]),avg_years_ind_move[[i]][[j]])
+	input$data$avg_years_ind_static_move <- tarray
+
   input$data$which_F_age <- rep(input$data$n_ages,input$data$n_years_model) #plus group by default used to define full F (total) IN annual reference points for projections, only. prepare_projection changes it to properly define selectivity for projections.
   input$data$which_F_age_static <- input$data$n_ages #plus group, fleet 1 by default used to define full F (total) for static SPR-based ref points.
 
@@ -441,16 +520,10 @@ set_basic_info <- function(input, basic_info){
   if(!is.null(basic_info$FXSPR_static_init)) input$data$FXSPR_static_init <- basic_info$FXSPR_init[1]
 
   if(!is.null(basic_info$percentSPR)) input$data$percentSPR <- basic_info$percentSPR
-  # if(!is.null(basic_info$percentFXSPR)) input$data$percentFXSPR <- basic_info$percentFXSPR
-  # if(!is.null(basic_info$percentFMSY)) input$data$percentFMSY <- basic_info$percentFMSY
   if(!is.null(basic_info$XSPR_R_opt)) input$data$XSPR_R_opt <- basic_info$XSPR_R_opt
-	if(!is.null(basic_info$XSPR_input_average_years)) {
-		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
-		input$data$avg_years_ind_static <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
-	}
-  if(!is.null(basic_info$XSPR_R_avg_yrs)) input$data$XSPR_R_avg_yrs <- basic_info$XSPR_R_avg_yrs - 1 #user input shifted to start @ 0
 
 	input$options$basic_info <- basic_info
   return(input)
 
 }
+

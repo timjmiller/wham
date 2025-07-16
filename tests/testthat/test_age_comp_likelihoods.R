@@ -6,7 +6,7 @@
 # pkgload::load_all("c:/work/wham/wham")
 # library(wham)
 # btime <- Sys.time(); devtools::test(filter = "age_comp"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~19.6 sec
+# ~35 sec
 
 context("Test evaluation of various age composition likelihoods")
 

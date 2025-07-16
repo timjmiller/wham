@@ -260,7 +260,7 @@ for(m in 1:n.mods){
 	df$sel_cor = sel_cor[m]
 	df.selAA <- rbind(df.selAA, df)
 }
-df <- df.selAA %>% pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
+df <- df.selAA |> pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
 				names_to = "Age",
 				names_prefix = "Age_",
 				names_transform = list(Age = as.integer),

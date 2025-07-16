@@ -34,7 +34,7 @@ df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
 
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 
 # look at model table
 df.mods

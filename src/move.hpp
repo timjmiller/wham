@@ -554,7 +554,7 @@ matrix<Type> get_mu_matrix(int stock, int age, int season, int year, vector<int>
 //done
 
 template <class Type>
-array<Type> get_avg_mu(array<Type> trans_mu_base, vector<int> years, vector<int> mig_type, array<int> can_move,
+array<Type> get_avg_mu(array<Type> trans_mu_base, array<int> years, vector<int> mig_type, array<int> can_move,
  array<int> must_move){
   /* 
     Construct n_stocks x n_ages x n_seasons x n_regions x n_regions array of "averaged" movement parameters over years
@@ -570,7 +570,7 @@ array<Type> get_avg_mu(array<Type> trans_mu_base, vector<int> years, vector<int>
 
   int n_stocks =  trans_mu_base.dim(0);
   int n_ages = trans_mu_base.dim(1);
-  int n_y = years.size();
+  // int n_y = years.size();
   int n_seasons = trans_mu_base.dim(2);
   int n_regions = trans_mu_base.dim(4);
   array<Type> avg_mu(n_stocks, n_ages,n_seasons,n_regions,n_regions);
@@ -581,33 +581,37 @@ array<Type> get_avg_mu(array<Type> trans_mu_base, vector<int> years, vector<int>
     if(mig_type(s) == 0) { //migration is instantaneous after survival and mortality, so P is easy.
       // from each region, average the probabilities of movement and then rescale. 
       for(int r = 0; r < n_regions; r++) {
+        int n_y = years(s,r,0);
         vector<Type> trans_par(n_regions-1);
         trans_par.setZero();
         vector<int> can_move_r(n_regions); //can_move_r(r) is ignored because dictated by must_move?
         can_move_r.setZero();
         vector<Type> pmove(n_regions);
         pmove.setZero();
-        for(int j = 0; j < n_regions; j++) can_move_r(j) = can_move(s,t,r,j);
+        for(int rr = 0; rr < n_regions; rr++) can_move_r(rr) = can_move(s,t,r,rr);
         for(int y = 0; y < n_y; y++) {
-          for(int rr = 0; rr < n_regions-1; rr++) trans_par(rr) = trans_mu_base(s,a,t,years(y),r,rr);
+          for(int rr = 0; rr < n_regions-1; rr++) {
+            trans_par(rr) = trans_mu_base(s,a,t,years(s,r,y+1),r,rr);
+          }
           pmove += additive_ln_transform(trans_par, r, can_move_r, must_move(s,t,r))/Type(n_y);
         }
         //pmove /= sum(pmove); //NOT needed to ensure averaged values sum to 1
-        for(int j = 0; j < n_regions; j++) avg_mu(s,a,t,r,j) = pmove(j);
+        for(int rr = 0; rr < n_regions; rr++) avg_mu(s,a,t,r,rr) = pmove(rr);
       }
     }
     if(mig_type(s) == 1) { //migration occurs continuously during interval, return infinitesimal generator.
       //for each region, average the yearly instantaneous movement rates to other regions (analogous to M and F)
       for(int r = 0; r < n_regions; r++) {
-        int k = 0;
-        for(int j = 0; j < n_regions; j++){ 
-          if(j!=r) {
-            if(can_move(s,t,r,j)) for(int y = 0; y < n_y; y++) {
-              avg_mu(s,a,t,r,j) = exp(trans_mu_base(s,a,t,years(y),r,k))/Type(n_y); //log of transition intensities
-              
+        int n_y = years(s,r,0);
+        for(int rr = 0; rr < n_regions-1; rr++){ 
+          int k = 0;
+          if(rr < r) k = rr;
+          if(rr>r) k = rr+1;
+          if(k != r) if(can_move(s,t,r,k)) {
+            for(int y = 0; y < n_y; y++) {
+              avg_mu(s,a,t,r,k) = exp(trans_mu_base(s,a,t,years(s,r,y+1),r,rr))/Type(n_y); //log of transition intensities
             }
-            avg_mu(s,a,t,r,r) -= avg_mu(s,a,t,r,j); //-sum = hazard
-            k++; //max k = n_regions -1 (-1)
+            // avg_mu(s,a,t,r,r) -= avg_mu(s,a,t,r,k); //-sum = hazard
           }
         }
       }
@@ -616,10 +620,64 @@ array<Type> get_avg_mu(array<Type> trans_mu_base, vector<int> years, vector<int>
   return avg_mu;
 }
 
+template <class Type>
+array<Type> get_mu_y(array<Type> trans_mu_base, int y, vector<int> mig_type, array<int> can_move,
+ array<int> must_move){
+  /* 
+    Construct n_stocks x n_ages x n_seasons x n_regions x n_regions array of movement parameters for year y
+      stock: which stock
+      age: which age
+      season: which season
+      y: which year
+      mig_type: n_stocks. 0 = migration after survival, 1 = movement and mortality simultaneous
+      can_move: n_stocks x n_seasons x n_regions x n_regions: 0/1 determining whether movement can occur from one region to another
+      must_move: n_stocks x n_seasons x n_regions: 0/1 determining if it must leave the region
+      trans_mu_base: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions-1. array retruned by get_trans_mu_base
+  */
+
+  int n_stocks =  trans_mu_base.dim(0);
+  int n_ages = trans_mu_base.dim(1);
+  int n_seasons = trans_mu_base.dim(2);
+  int n_regions = trans_mu_base.dim(4);
+  array<Type> mu_y(n_stocks, n_ages,n_seasons,n_regions,n_regions);
+  mu_y.setZero();
+  for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a ++) for(int t = 0; t < n_seasons; t++){
+    if(mig_type(s) == 0) { //migration is instantaneous after survival and mortality, so P is easy.
+      // from each region, average the probabilities of movement and then rescale. 
+      for(int r = 0; r < n_regions; r++) {
+        vector<Type> trans_par(n_regions-1);
+        trans_par.setZero();
+        vector<int> can_move_r(n_regions); //can_move_r(r) is ignored because dictated by must_move?
+        can_move_r.setZero();
+        vector<Type> pmove(n_regions);
+        pmove.setZero();
+        for(int rr = 0; rr < n_regions; rr++) can_move_r(rr) = can_move(s,t,r,rr);
+        for(int rr = 0; rr < n_regions-1; rr++) {
+          trans_par(rr) = trans_mu_base(s,a,t,y,r,rr);
+        }
+        pmove += additive_ln_transform(trans_par, r, can_move_r, must_move(s,t,r));
+        for(int rr = 0; rr < n_regions; rr++) mu_y(s,a,t,r,rr) = pmove(rr);
+      }
+    }
+    if(mig_type(s) == 1) { //migration occurs continuously during interval, return infinitesimal generator.
+      //for each region, average the yearly instantaneous movement rates to other regions (analogous to M and F)
+      for(int r = 0; r < n_regions; r++) for(int rr = 0; rr < n_regions-1; rr++){ 
+        int k = 0;
+        if(rr < r) k = rr;
+        if(rr>r) k = rr+1;
+        if(k != r) if(can_move(s,t,r,k)) {
+          mu_y(s,a,t,r,k) = exp(trans_mu_base(s,a,t,y,r,rr)); //log of transition intensities
+        }
+      }
+    }
+  }
+  return mu_y;
+}
+
 //all movement matrices
 template <class Type>
 array<Type> get_mu(array<Type> trans_mu_base, array<int> can_move,  array<int> must_move, vector<int> mig_type, 
-  int n_years_proj, int n_years_model, int proj_mu_opt, vector<int> avg_years){
+  int n_years_proj, int n_years_model, int proj_mu_opt, array<int> avg_years){
   /* 
     Construct n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions array of movement matrices
       trans_mu_base: n_stocks x n_ages x n_seasons x n_years x n_regions x n_regions-1. array retruned by get_trans_mu_base

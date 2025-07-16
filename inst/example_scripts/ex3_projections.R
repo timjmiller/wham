@@ -111,6 +111,15 @@ mod_proj[[11]] <- project_wham(mod, proj.opts=list(n.yrs=5, use.last.F=FALSE, us
               use.FMSY=TRUE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL), save.sdrep=FALSE)
 
+# default settings: 3 years, use last F, continue ecov, but projected recruitment deviations=0 and average NAA deviations (1992-1996) projected
+proj_opts[[12]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 4, proj_NAA_opt = 2, avg.yrs.NAA = list(list(1992:1996)))
+
+# default settings: 3 years, use last F, continue ecov, but projected recruitment deviations are averged over 1992-1996 and no NAA deviations projected
+proj_opts[[13]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 3, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
 
 saveRDS(mod_proj, file="m5_proj.rds")
 # mod_proj <- readRDS("m5_proj.rds")

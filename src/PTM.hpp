@@ -1,13 +1,19 @@
 //Experimental: try different calculations of the matrix exponential that might be fine for infinitesimal generator matrices
 template <class T>
-matrix<T> expm_more(matrix<T> A, int type = 0, int n_step = 5, int small_dim = 1, int trace = 0) {
+vector<T> texpAN(Eigen::SparseMatrix<T> A, vector<T> N) {
+    sparse_matrix_exponential::expm_generator<T> P(A);
+    N = P(N);
+    return(N);
+}
+
+template <class T>
+matrix<T> expm_more(matrix<T> A, int type = 0, int n_step = 5, int small_dim = 1, int trace = 0){
   int dim = A.cols();
   matrix<T> P(dim,dim);
 
   if(type == 0) {//use TMB expm
     P = expm(A);
   }
-
   if(type == 1) if(n_step>0) {//truncate power series at n_step, this one ok for these types of matrices?
     P.setZero();
     for(int i = 0; i < dim; i++) P(i,i) = 1.0;

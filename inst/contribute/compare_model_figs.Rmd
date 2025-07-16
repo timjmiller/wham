@@ -1,0 +1,79 @@
+---
+output:
+  html_document:
+    df_print: paged
+    keep_md: yes
+  word_document: default
+  pdf_document:
+    fig_caption: yes
+    includes:
+    keep_tex: yes
+    number_sections: no
+title: "WHAM Model Comparison Figures"
+header-includes:
+  - \usepackage{longtable}
+  - \usepackage{booktabs}
+  - \usepackage{caption,graphics}
+  - \usepackage{makecell}
+  - \usepackage{lscape}
+  - \renewcommand\figurename{Fig.}
+  - \captionsetup{labelsep=period, singlelinecheck=false}
+  - \newcommand{\changesize}[1]{\fontsize{#1pt}{#1pt}\selectfont}
+  - \renewcommand{\arraystretch}{1.5}
+  - \renewcommand\theadfont{}
+---
+
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60), warning = FALSE, message = FALSE, fig.align = "center")
+type = "latex"
+if(knitr::is_latex_output()) type = "latex"
+if(knitr::is_html_output()) type = "html"
+if(type == "latex") knitr::opts_chunk$set(out.width="100%")
+options(knitr.kable.NA = "--")
+#library(knitr)
+#library(magrittr)
+#library(pander)
+#library(kableExtra)
+#library(tinytex)
+```
+##  {.tabset}
+
+```{r echo = FALSE, results='asis'}
+possible_tabs <- c("SSB, F, R", "CV", "Selectivity", "M", "Reference Points")
+possible_files_search_by_tab <- c("SSB_F_R", "CV", "sel", "M", "ref_pts")#, "ref_points")
+names(possible_files_search_by_tab) <- possible_tabs
+
+plot_files <- list.files(full.names = TRUE)
+files_by_tab <- lapply(possible_files_search_by_tab, \(x) {
+  if(x!="ref_pts") return(grep(x, plot_files, value = TRUE))
+  if(x=="ref_pts") return(c(grep(x, plot_files, value = TRUE),grep("rel_status", plot_files, value = TRUE)))
+})
+
+for(i in names(files_by_tab)) if(length(files_by_tab[[i]]) == 0) files_by_tab[[i]] <- NULL
+
+res <- lapply(names(files_by_tab) , function(i) {
+  knitr::knit_child( text=c(
+    '### `r i`',
+    '',
+    '```{r echo = FALSE}',
+    'knitr::include_graphics(files_by_tab[[i]])',
+    '# print( matrix(i*(1:6),nrow=2) )',
+    '```',
+    ''
+  ) , envir=environment() , quiet=TRUE )
+})
+cat( unlist(res) , sep='\n' )
+
+```
+
+<!-- ##  Real tabs {.tabset}
+
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+plot_files <- list.files(full.names = TRUE)
+# plot_files <- list.files("compare_png", full.names = TRUE)
+plot_files <- plot_files[grep("png", plot_files)]
+if(length(plot_files)) knitr::include_graphics(plot_files)
+```
+ -->

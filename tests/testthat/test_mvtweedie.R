@@ -1,4 +1,7 @@
 # Test mvtweedie distribution
+# pkgbuild::compile_dll(debug = FALSE); pkgload::load_all(compile = FALSE)
+# btime <- Sys.time(); devtools::test(filter = "mvtweedie"); etime <- Sys.time(); runtime = etime - btime; runtime;
+# ~15 sec
 
 context("mvtweedie with SNEMAYT")
 

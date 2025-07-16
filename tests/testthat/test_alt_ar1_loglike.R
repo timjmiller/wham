@@ -2,7 +2,7 @@
 # To create test results see file.path(system.file("contribute", package="wham"), "copy_ex5.R")
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "alt_ar1_loglike"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~20 sec
+# ~23 sec
 
 context("Alt. AR1 likelihoods")
 

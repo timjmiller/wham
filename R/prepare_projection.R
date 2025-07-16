@@ -16,11 +16,11 @@
 #'     \item \code{$avg.yrs} (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, \code{tail(model$years, 5)}.
 #'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
-#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average over the environmental covariate(s) for projections.
+#'     \item \code{$avg.ecov.yrs} (vector), specify which years to average the environmental covariate(s) over for projections.
 #'     \item \code{$proj.ecov} (matrix), user-specified environmental covariate(s) for projections. \code{n.yrs x n.ecov}.
-#'     \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
-#'     \item \code{$cont.L.re} (T/F), continue any L ("extra mortality rate") random effects for projections. Default = \code{FALSE}. If \code{FALSE}, L parameters will be averaged over \code{$avg.yrs} (which defaults to last 5 model years).
+#'     \item \code{$cont.M.re} (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = \code{FALSE}. If \code{FALSE}, M will be averaged over \code{$avg.yrs.M} (which defaults to last 5 model years).
+#'     \item \code{$cont.move.re} (T/F), continue any movement random effects for projections. Default = \code{FALSE}. If \code{FALSE}, movement parameters will be averaged over \code{$avg.yrs.move} (which defaults to last 5 model years).
+#'     \item \code{$cont.L.re} (T/F), continue any L ("extra mortality rate") random effects for projections. Default = \code{FALSE}. If \code{FALSE}, L parameters will be averaged over \code{$avg.yrs.L} (which defaults to last 5 model years).
 #'     \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
 #'     \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for projections, only used if $use.FXSPR = TRUE. For example, to project with F = 75\% F_40\%SPR, \code{proj.opts$percentFXSPR = 75}. Default = 100.
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for projections, only used if $use.FMSY = TRUE and a stock-recruit relationship is assumed. Default = 100.
@@ -28,9 +28,19 @@
 #'     \item \code{$proj_Fcatch} (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (\code{n.yrs} x 1 or n_fleets).
 #'     \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
 #'     \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
-#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+#'     \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years. 3: average recruitment deviations over $avg.yrs.R (if $sigma = "rec") 4: no recruitment deviations (if $sigma = "rec").
+#'     \item \code{$proj_NAA_opt} (integer), 1: continue any RE processes for NAA, 2: average NAA deviations over $avg.yrs.NAA. 3: no NAA deviations.
 #'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
 #'     \item \code{$proj_F_init} which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1
+#'     \item \code{$avg.yrs.sel} list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waacatch} list (length = n_fleets), years to average weight at age for each fleet for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waassb} list (length = n_stocks), years to average weight at age for each stock SSB for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.mature} list (length = n_stocks), years to average maturity at age for each stock for projection years (if $proj_mature is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.L} list (length = n_regions), years to average extra mortality at age for each region for projection years (if $cond.L.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.M} list (length = n_stocks, each is a list with length = n_regions), years to average natural mortality at age for each stock and region for projection years (if $cont.M.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.move} list (length = n_stocks, each is a list with length = n_regions), years to average movement rates at age and season for each stock and region (at beginning of interval) for projection years (if $cont.move.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.R} list (length = n_stocks), years to average recruitment deviations for each stock and region for projection years (if $proj_R_opt = 3). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.NAA} list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
 #'   }
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #'
@@ -64,14 +74,13 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   input$by_pwi <- TRUE
   if(is.null(proj.opts$n.yrs)) proj.opts$n.yrs <- 3
   # default: use average M, selectivity, etc. over last 5 model years to calculate ref points
-  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- input$years[model$env$data$avg_years_ind+1] #tail(model$years, 5)  
+  if(is.null(proj.opts$avg.yrs)) proj.opts$avg.yrs <- tail(model$years, 5)  # input$years[model$env$data$avg_years_ind+1] #
   if(any(proj.opts$avg.yrs<0)) stop("negative years are specified in proj.opts$avg.yrs to average projection inputs")
   if(all(is.null(proj.opts$use.last.F), is.null(proj.opts$use.avg.F), is.null(proj.opts$use.FXSPR), is.null(proj.opts$use.FMSY), is.null(proj.opts$proj.F), is.null(proj.opts$proj.catch))){
     proj.opts$use.last.F=TRUE; proj.opts$use.avg.F=FALSE; proj.opts$use.FXSPR=FALSE; proj.opts$use.FMSY=FALSE; proj.opts$proj.F=NULL; proj.opts$proj.catch=NULL
   }
   if(is.null(proj.opts$percentFXSPR)) proj.opts$percentFXSPR <- 100
   if(is.null(proj.opts$percentFMSY)) proj.opts$percentFMSY <- 100
-
   data <- input$data
   # check options for F/catch are valid
   if(any(!(proj.opts$avg.yrs %in% input$years))) stop(paste("","** Error setting up projections: **",
@@ -97,14 +106,90 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   #input$years_full <- c(input$years, tail(input$years,1) +1:proj.opts$n.yrs)
   proj_yrs_ind <- data$n_years_model + 1:data$n_years_proj
   avg.yrs.ind <- match(proj.opts$avg.yrs, input$years)
-  data$avg_years_ind <- avg.yrs.ind - 1 # c++ indices start at 0
-  
-  #new option for making long term projections consistent with prevailing spr-based reference points.
-  if(!is.null(proj.opts$proj_R_opt)){
-    if(length(proj.opts$proj_R_opt)!= 1 | !(proj.opts$proj_R_opt %in% 1:2)) stop("proj.opts$proj_R_opt must be either 1 or 2.\n")
-    data$proj_R_opt <- proj.opts$proj_R_opt
-  } else data$proj_R_opt <- 1 #continue using mean of RE process for predicted R by default
+  # data$avg_years_ind <- avg.yrs.ind - 1 # c++ indices start at 0
 
+  data$avg_years_ind_L <- matrix(0, data$n_years_model+1,data$n_regions)
+  for(r in 1:data$n_regions) {
+    if(!is.null(proj.opts$avg.yrs.L)) {
+      if(is.list(proj.opts$avg.yrs.L) & is.integer(proj.opts$avg.yrs.L[[r]])) yrs <- proj.opts$avg.yrs.L[[r]]
+      else stop("proj.opts$avg.yrs.L must be a list (length = n_regions) of years to average L for catch for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_L[1,r] <- n_y
+    data$avg_years_ind_L[2:(n_y+1),r] <- match(yrs, input$years) - 1
+  }
+  
+  data$avg_years_ind_sel <- data$avg_years_ind_waacatch <- matrix(0, data$n_years_model+1,data$n_fleets)
+  for(f in 1:data$n_fleets) {
+    if(!is.null(proj.opts$avg.yrs.sel)) {
+      if(is.list(proj.opts$avg.yrs.sel) & is.integer(proj.opts$avg.yrs.sel[[f]])) yrs <- proj.opts$avg.yrs.sel[[f]]
+      else stop("proj.opts$avg.yrs.sel must be a list (length = n_fleets) of years to average F/selectivity for catch for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_sel[1,f] <- n_y
+    data$avg_years_ind_sel[2:(n_y+1),f] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.waacatch)) {
+      if(is.list(proj.opts$avg.yrs.waacatch) & is.integer(proj.opts$avg.yrs.waacatch[[f]])) yrs <- proj.opts$avg.yrs.waacatch[[f]]
+      else stop("proj.opts$avg.yrs.waacatch must be a list (length = n_fleets) of years to average waa for catch for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_waacatch[1,f] <- n_y
+    data$avg_years_ind_waacatch[2:(n_y+1),f] <- match(yrs, input$years) - 1
+  }
+  
+  data$avg_years_ind_waassb <- data$avg_years_ind_mat <- data$avg_years_ind_M <- data$avg_years_ind_move <- array(0, dim = c(data$n_stocks, data$n_regions, data$n_years_model+1))
+  data$avg_years_ind_NAA <- array(0, dim = c(data$n_stocks, data$n_regions, data$n_ages, data$n_years_model+1))
+  for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
+    if(!is.null(proj.opts$avg.yrs.waassb)) {
+      if(is.list(proj.opts$avg.yrs.waassb) & is.integer(proj.opts$avg.yrs.waassb[[s]])) yrs <- proj.opts$avg.yrs.waassb[[s]]#[[r]]
+      else stop("proj.opts$avg.yrs.waassb must be a list (length = n_stocks) of years to average waa for ssb for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_waassb[s,r,1] <- n_y
+    data$avg_years_ind_waassb[s,r,2:(n_y+1)] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.mat)) {
+      if(is.list(proj.opts$avg.yrs.mat) & is.integer(proj.opts$avg.yrs.mat[[s]])) yrs <- proj.opts$avg.yrs.mat[[s]]#[[r]]
+      else stop("proj.opts$avg.yrs.mat must be a list (length = n_stocks) of years to average maturity for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_mat[s,r,1] <- n_y
+    data$avg_years_ind_mat[s,r,2:(n_y+1)] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.M)) {
+      if(is.list(proj.opts$avg.yrs.M) & is.list(proj.opts$avg.yrs.M[[s]]) & is.integer(proj.opts$avg.yrs.M[[s]][[r]])) yrs <- yrs <- proj.opts$avg.yrs.M[[s]][[r]]
+      else stop("proj.opts$avg.yrs.M must be a list (length = n_stocks) of lists (each length = n_regions) of years to average M for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_M[s,r,1] <- n_y
+    data$avg_years_ind_M[s,r,2:(n_y+1)] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.move)) {
+      if(is.list(proj.opts$avg.yrs.move) & is.list(proj.opts$avg.yrs.move[[s]]) & is.integer(proj.opts$avg.yrs.move[[s]][[r]])) yrs <- proj.opts$avg.yrs.move[[s]][[r]]
+      else stop("proj.opts$avg.yrs.move must be a list (length = n_stocks) of lists (each length = n_regions) of years to average movement parameters for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_move[s,r,1] <- n_y
+    data$avg_years_ind_move[s,r,2:(n_y+1)] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.NAA)) {
+      if(is.list(proj.opts$avg.yrs.NAA) & is.list(proj.opts$avg.yrs.NAA[[s]]) & is.integer(proj.opts$avg.yrs.NAA[[s]][[r]])) yrs <- proj.opts$avg.yrs.NAA[[s]][[r]]
+      else stop("proj.opts$avg.yrs.NAA must be a list (length = n_stocks) of lists (each length = n_regions) of years to average NAA deviations for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_NAA[s,r,2:data$n_ages,1] <- n_y
+    data$avg_years_ind_NAA[s,r,2:data$n_ages,2:(n_y+1)] <- match(yrs, input$years) - 1
+    
+    if(!is.null(proj.opts$avg.yrs.R)) {
+      if(is.list(proj.opts$avg.yrs.R) & is.integer(proj.opts$avg.yrs.R[[s]])) yrs <- proj.opts$avg.yrs.R[[s]]
+      else stop("proj.opts$avg.yrs.R must be a list (length = n_stocks) of years to average recruitment for projection years.")
+    } else yrs <- proj.opts$avg.yrs
+    n_y <- length(yrs)
+    data$avg_years_ind_NAA[s,r,1,1] <- n_y
+    data$avg_years_ind_NAA[s,r,1,2:(n_y+1)] <- match(yrs, input$years) - 1
+  }
+  
   data$proj_F_opt <- rep(0,data$n_years_proj) 
   if(!is.null(proj.opts$use.last.F)) if(proj.opts$use.last.F) data$proj_F_opt[] <- 1
   if(!is.null(proj.opts$use.avg.F)) if(proj.opts$use.avg.F) data$proj_F_opt[] <- 2
@@ -225,6 +310,31 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   # data$use_indices <- cbind(data$use_indices[1:data$n_years_model,])
   # data$use_index_paa <- cbind(data$use_index_paa[1:data$n_years_model,])
 
+  #NAA
+  # options for NAA in projections, data$proj_NAA_opt:
+  #   1 = continue random effects (if they exist) - need to pad NAA_re
+  #   2 = use average deviations
+  #   3 = use no deviations
+  if(!is.null(proj.opts$proj_NAA_opt)){
+    if((proj.opts$proj_NAA_opt %in% (1:3)) & !"log_NAA" %in% input$random){
+      stop(paste("","** Error setting up projections **",
+        "proj.opts$proj_NAA_opt is specified for NAA random effects, but NAA is not specified as random"))
+    }
+    data$proj_NAA_opt <- proj.opts$proj_NAA_opt # 1 = continue NAA_re, 2 = average devs, 3 = no devs
+  } else { # if NULL, default is to continue NAA random effects (if they exist!)
+    data$proj_NAA_opt <- 1 #default is to continue NAA RE
+  }
+
+  #new options for making long term projections. 2: consistent with prevailing spr-based reference points.
+  if(!is.null(proj.opts$proj_R_opt)){
+    if(length(proj.opts$proj_R_opt)!= 1 | !(proj.opts$proj_R_opt %in% 1:4)) stop("proj.opts$proj_R_opt must be either 1,2,3, or 4.\n")
+    if((proj.opts$proj_R_opt %in% c(1,3:4)) & !"log_NAA" %in% input$random){
+      stop(paste("","** Error setting up projections **",
+        "proj.opts$proj_R_opt is specified for NAA random effects, but NAA/R is not specified as random. \n"))
+    }
+    data$proj_R_opt <- proj.opts$proj_R_opt # 1 = continue NAA_re, 2 = average devs, 3 = no devs
+  } else data$proj_R_opt <- 1 #continue using mean of RE process for predicted R by default
+
   # expand NAA_re
   input_NAA <- input
   input_NAA$asap3 <- NULL
@@ -242,10 +352,27 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   #for(s in 1:data$n_stocks) for(r in 1:data$n_regions) tmp[s,r,,] <- par$log_NAA[s,r,data$n_years_model-1,1] #fill in with last recruitment
   tmp[,,1:(data$n_years_model-1),] <- par$log_NAA[,,1:(data$n_years_model-1),]
   par$log_NAA <- tmp
+   
+  temp <- par$log_NAA
+  temp[] <- as.integer(map$log_NAA)
   if(any(data$NAA_re_model == 0)) { #call to set_NAA will make recruitment estimated FE in projection years
-    temp <- par$log_NAA
-    temp[] <- as.integer(map$log_NAA)
     temp[,,data$n_years_model + 1:data$n_years_proj - 1,1] <- NA
+    map$log_NAA <- factor(temp)
+  } else {
+     for(s in 1:data$n_stocks) {
+       if(data$proj_NAA_opt > 1){ #log_NAA RE are turned off in projection years
+        if(data$NAA_re_model[s] == 2) {
+          if(data$decouple_recruitment) temp[s,,data$n_years_model + 1:data$n_years_proj - 1,2:data$n_ages] <- NA
+          else temp[s,,data$n_years_model + 1:data$n_years_proj - 1,] <- NA 
+        }
+      }
+      if(data$proj_R_opt > 2){
+        if(data$NAA_re_model[s] == 2) {
+          if(data$decouple_recruitment) temp[s,,data$n_years_model + 1:data$n_years_proj - 1,1] <- NA
+        }
+        if(data$NAA_re_model[s] == 1) temp[s,,data$n_years_model + 1:data$n_years_proj - 1,1] <- NA
+      }
+    }
     map$log_NAA <- factor(temp)
   }
 
@@ -318,7 +445,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
         "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
 
       if(!is.null(proj.opts$avg.ecov.yrs)) {
-        data$avg_years_Ecov <- match(proj.opts$avg.ecov.yrs, model$years) - 1
+        data$avg_years_Ecov <- match(proj.opts$avg.ecov.yrs, input$years_Ecov) - 1
         data$proj_Ecov_opt <- rep(2, data$n_Ecov)
       }
       if(!is.null(proj.opts$proj.ecov)) data$proj_Ecov_opt <- rep(4, data$n_Ecov)

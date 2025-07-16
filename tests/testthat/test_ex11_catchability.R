@@ -6,7 +6,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all(compile=FALSE)
 # btime <- Sys.time(); devtools::test(filter = "ex11_catchability"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~11 min
+# ~4 min
 
 context("Ex 11: Priors and time-varying and environmental effects on catchability")
 

@@ -10,7 +10,7 @@
 # pkgbuild::compile_dll(debug = FALSE)
 # pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex03_projections"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~6 min
+# ~4 min
 
 context("Ex 3: Projections")
 
@@ -37,6 +37,7 @@ env <- list(
   recruitment_how = matrix("limiting-lag-1-linear",1,1)) # limiting (carrying capacity)
 
 basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
+#basic_info <- list() #compare to previous versions
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
@@ -56,7 +57,7 @@ mod <- fit_wham(input, do.fit=F, MakeADFun.silent = TRUE)
 expect_equal(length(mod$par), length(ex3_test_results$par), tolerance=1e-3) # parameter values
 expect_equal(as.numeric(mod$fn(ex3_test_results$par)), ex3_test_results$nll, tolerance=1e-6) # nll
 mod$par <- ex3_test_results$par
-mod$fn(mod$par)
+# mod$fn(mod$par)
 input$par <- mod$env$parList(mod$par)
 
 #mod <- fit_wham(input, do.proj=F, do.osa=F, do.retro=F)
@@ -122,26 +123,70 @@ proj_opts[[11]] <- list(n.yrs=5, use.last.F=FALSE, use.avg.F=FALSE,
               use.FMSY=TRUE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL)
 
+# default settings: 3 years, use last F, continue ecov, but projected recruitment deviations=0 and average NAA deviations (1992-1996) projected
+proj_opts[[12]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 4, proj_NAA_opt = 2, avg.yrs.NAA = list(list(1992:1996)))
+
+# default settings: 3 years, use last F, continue ecov, but projected recruitment deviations are averged over 1992-1996 and no NAA deviations projected
+proj_opts[[13]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 3, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
+
+# saveRDS(proj_opts, "c:/work/wham/wham/sandbox/proj_opts.RDS")
+# saveRDS(mod, "c:/work/wham/wham/sandbox/ex3_mod.RDS")
+# proj_opts <- readRDS("c:/work/wham/wham/sandbox/proj_opts.RDS")
+# mod <- readRDS("c:/work/wham/wham/sandbox/ex3_mod.RDS")
+
+# proj_opts[[13]]$avg.yrs.R[[1]]
+# temp <- prepare_projection(mod,proj.opts = proj_opts[[12]])
+# temp$data$proj_NAA_opt
+# temp$data$proj_R_opt
+# temp$data$NAA_re_model
+# x <- temp$par$log_NAA
+# x[] <- as.integer(temp$map$log_NAA)
+# x[1,1,,]
+#   x <- project_wham(mod, proj.opts=proj_opts[[1]], do.sdrep= F, MakeADFun.silent = FALSE)
+# x$rep$NAA_devs[1,1,,]
+# x$rep$NAA_devs[1,1,,]
+
+###########################
+# pkgbuild::compile_dll(debug = FALSE)
+# pkgload::load_all()
+# proj_opts <- readRDS("c:/work/wham/wham/sandbox/proj_opts.RDS")
+# mod <- readRDS("c:/work/wham/wham/sandbox/ex3_mod.RDS")
+#   m = 7
+# mod_proj <- list()
+#   # temp <- prepare_projection(mod, proj.opts=proj_opts[[m]])
+#   mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = FALSE)
+#   mod_proj[[m]]$input$data$proj_F_opt
+#   # temp <- mod$simulate(complete = TRUE)
+#   #test simulation works with projections included.
+#   temp <- mod_proj[[m]]$simulate(complete=TRUE)
+
+#   mod_proj[[m]]$rep$log_F_tot
+#####################################
+
 for(m in 1:length(proj_opts)) {
-#  print(m)
-  # if(m == 1) mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], MakeADFun.silent = TRUE)
-  # else 
+
   mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = TRUE)
   
   # The !! allows the individual elements in the report to be be seen if there is an error. See ?testthat::quasi_label and example
   #  check length of fixed effects
-  expect_equal(length(mod_proj[[!!m]]$par), length(mod$opt$par), tolerance=1e-6)
-  #  check fixed effects are the same
-  for(p in 1:length(mod_proj[[!!m]]$par)) expect_equal(mod_proj[[!!m]]$par[!!p], mod$opt$par[!!p], tolerance=1e-3) # parameter values
-  #  check marginal nll is the same
-  nll_proj[m] <-  mod_proj[[m]]$fn()
-  expect_equal(as.numeric(nll_proj[!!m]), as.numeric(mod$opt$obj), tolerance=1e-6)
+  if(m<12){
+    expect_equal(length(mod_proj[[!!m]]$par), length(mod$opt$par), tolerance=1e-6)
+    #  check fixed effects are the same
+    for(p in 1:length(mod_proj[[!!m]]$par)) expect_equal(mod_proj[[!!m]]$par[!!p], mod$opt$par[!!p], tolerance=1e-3) # parameter values
+    #  check marginal nll is the same
+    nll_proj[m] <-  mod_proj[[m]]$fn()
+    expect_equal(as.numeric(nll_proj[!!m]), as.numeric(mod$opt$obj), tolerance=1e-6)
+  }
   
   #test simulation works with projections included.
-  temp <- mod_proj[[!!m]]$simulate(complete=TRUE)
+  temp <- mod_proj[[m]]$simulate(complete=TRUE)
 
   # plot results
-  plot_wham_output(mod_proj[[!!m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE))
+  plot_wham_output(mod_proj[[m]], dir.main=file.path(tmp.dir,paste0("proj_",m)), plot.opts = list(browse=FALSE))
 }
 
 }))

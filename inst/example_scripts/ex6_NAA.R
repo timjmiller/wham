@@ -57,7 +57,7 @@ df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2da
 
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 
 # look at model table
 df.mods
@@ -169,7 +169,7 @@ for(i in 1:length(plot.mods)){
   tmp$NAA_lab = NAA_lab[i]
   df.NAA <- rbind(df.NAA, tmp)
 }
-df.plot <- df.NAA %>% tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
+df.plot <- df.NAA |> tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
           names_to = "Age",
           names_prefix = "Age_",
           names_transform = list(Age = as.integer),

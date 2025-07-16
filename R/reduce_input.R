@@ -28,10 +28,109 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 		warning("Years specified to use for average recruitment in SPR-based reference points are not included in years of reduced input so all years will be used.")
 		data$XSPR_R_avg_yrs <- 1:n_years - 1
 	}
-	data$avg_years_ind <- data$n_years_model - input$data$n_years_model + data$avg_years_ind#shift which years to average back given the number of years to peel.
-	if(all(data$avg_years_ind<0)) data$avg_years_ind <- 1:data$n_years_model - 1 #shouldn't really ever happen
-	data$avg_years_ind <- data$avg_years_ind[which(data$avg_years_ind>=0)] #reduce if number of years used is more than the number available in the peel.
-	data$avg_years_ind_static <- data$avg_years_ind
+	# data$avg_years_ind <- data$n_years_model - input$data$n_years_model + data$avg_years_ind#shift which years to average back given the number of years to peel.
+	# if(all(data$avg_years_ind<0)) data$avg_years_ind <- 1:data$n_years_model - 1 #shouldn't really ever happen
+	# data$avg_years_ind <- data$avg_years_ind[which(data$avg_years_ind>=0)] #reduce if number of years used is more than the number available in the peel.
+
+	avg_years_ind_L <- avg_years_ind_static_L <- matrix(0, data$n_years_model+1, data$n_regions) 
+	for(r in 1:data$n_regions){
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_L[2:(input$data$n_years_model+1),r] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_L[1:(sum(temp>=0)+1),r] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_L[2:(input$data$n_years_model+1),r] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_L[1:(sum(temp>=0)+1),r] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+	}
+	data$avg_years_ind_L <- avg_years_ind_L
+	data$avg_years_ind_static_L <- avg_years_ind_static_L
+
+	avg_years_ind_sel <- avg_years_ind_waacatch <- avg_years_ind_static_sel <- avg_years_ind_static_waacatch <- matrix(0, data$n_years_model+1, data$n_fleets) 
+	for(f in 1:data$n_fleets){
+		
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_sel[2:(input$data$n_years_model+1),f] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_sel[1:(sum(temp>=0)+1),f] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+		
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_waacatch[2:(input$data$n_years_model+1),f] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_waacatch[1:(sum(temp>=0)+1),f] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_sel[2:(input$data$n_years_model+1),f] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_sel[1:(sum(temp>=0)+1),f] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+		
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_waacatch[2:(input$data$n_years_model+1),f] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_waacatch[1:(sum(temp>=0)+1),f] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+	}
+	data$avg_years_ind_sel <- avg_years_ind_sel
+	data$avg_years_ind_waacatch <- avg_years_ind_waacatch
+	data$avg_years_ind_static_sel <- avg_years_ind_static_sel
+	data$avg_years_ind_static_waacatch <- avg_years_ind_static_waacatch
+
+	avg_years_ind_waassb <- avg_years_ind_mat <- avg_years_ind_move <- avg_years_ind_M <- array(0, dim = c(data$n_stocks, data$n_regions, data$n_years_model+1)) 
+	avg_years_ind_static_waassb <- avg_years_ind_static_mat <- avg_years_ind_static_move <- avg_years_ind_static_M <- avg_years_ind_static_SRR <- avg_years_ind_waassb
+	avg_years_ind_NAA <- array(0, dim = c(data$n_stocks, data$n_regions, data$n_ages, data$n_years_model+1)) 
+	for(s in 1:data$n_stocks) for(r in 1:data$n_regions){
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_waassb[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_waassb[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+		
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_mat[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_mat[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_move[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_move[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_M[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_M[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		for(a in 1:data$n_ages){
+			temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_NAA[s,r,a,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+			if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+			avg_years_ind_NAA[s,r,a,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+		}
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_waassb[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_waassb[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+		
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_mat[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_mat[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_move[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_move[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_M[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_M[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+
+		temp <- data$n_years_model - input$data$n_years_model + data$avg_years_ind_static_SRR[s,r,2:(input$data$n_years_model+1)] #shift which years to average back given the number of years to peel.
+		if(all(temp<0)) temp <- 1:data$n_years_model - 1 #shouldn't really ever happen
+		avg_years_ind_static_SRR[s,r,1:(sum(temp>=0)+1)] <- c(sum(temp>=0),temp[which(temp>=0)]) #reduce if number of years used is more than the number available in the peel.
+	}
+	data$avg_years_ind_waassb <- avg_years_ind_waassb
+	data$avg_years_ind_mat <- avg_years_ind_mat
+	data$avg_years_ind_M <- avg_years_ind_M
+	data$avg_years_ind_move <- avg_years_ind_move
+	data$avg_years_ind_NAA <- avg_years_ind_NAA
+
+	data$avg_years_ind_static_waassb <- avg_years_ind_static_waassb
+	data$avg_years_ind_static_mat <- avg_years_ind_static_mat
+	data$avg_years_ind_static_M <- avg_years_ind_static_M
+	data$avg_years_ind_static_move <- avg_years_ind_static_move
+	data$avg_years_ind_static_SRR <- avg_years_ind_static_SRR
+
+
+	# data$avg_years_ind_static <- data$avg_years_ind
 
 	data$which_F_age <- data$which_F_age[ind]
 	data$FXSPR_init <- data$FXSPR_init[ind]

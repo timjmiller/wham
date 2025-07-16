@@ -46,8 +46,9 @@ retro <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FAL
   temp$data <- data
   if(use.mle) temp$par <- par
   peels <- list()
-  if(n.peels>0) for(i in 1:n.peels) tryCatch(peels[[i]] <- 
-    fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
+  if(n.peels>0) for(i in 1:n.peels) {
+    tryCatch(peels[[i]] <- fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent, 
       save.input = save.input), error = function(e) {peels[[i]]$err <<- conditionMessage(e)})
+  }
   return(peels)
 }

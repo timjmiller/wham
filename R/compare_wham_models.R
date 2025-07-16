@@ -47,11 +47,12 @@
 #'     \item{\code{$relative.to}}{character, name of "base" model to plot differences relative to.}
 #'     \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
 #'     \item{\code{$ages.lab}}{vector, overwrite model age labels.}
-#'     \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
+#'     \item{\code{$kobe.yr}}{integer vector (length = 1 (applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).}
 #'     \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
 #'     \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
 #'     \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
 #'     \item{\code{$refpt}}{"XSPR" or "MSY", which reference point to use. Default = "XSPR".}
+#'     \item{\code{$browse}}{Open html document in web browser (if $out.type = \code{'png'}) (default = TRUE).}
 #'   }
 #'
 #' @return a list with the following components:
@@ -172,25 +173,27 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     out[c("daic","aic","rho","best","tab")] <- list(daic,aic,rho,best,tab)
   }
   if(do.plot){
-  if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE)
+  if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE, browse = TRUE)
     if(is.null(plot.opts$out.type)) plot.opts$out.type <- 'png'
     if(!plot.opts$out.type %in% c("pdf","png")) stop("plot.opts$out.type must be 'pdf' or 'png' (default)")
     if(is.null(plot.opts$ci)) plot.opts$ci <- TRUE
     if(!length(plot.opts$ci) %in% c(1,length(mods))) stop("plot.opts$ci must have length = 1 or n.models")
     if(length(plot.opts$ci) == 1) plot.opts$ci <- rep(plot.opts$ci, length(mods))
     all.yrs <- unique(unlist(lapply(mods, function(x) x$years_full)))
-    if(is.null(plot.opts$years)) plot.opts$years <- all.yrs
+    if(is.null(plot.opts$years)) plot.opts$years <- min(all.yrs):max(all.yrs)
     if(!all(plot.opts$years %in% all.yrs)) stop("plot.opts$years must be a subset of $years_full in model fits")
     if(!is.null(plot.opts$relative.to)) if(!plot.opts$relative.to %in% names(mods)) stop("plot.opts$relative.to must match a model name, e.g. 'm1'.")
     if(is.null(plot.opts$which)) plot.opts$which <- 1:10
     if(!all(plot.opts$which %in% 1:10)) stop("All elements of plot.opts$which must be in 1:10. See ?compare_wham_models for available plots.")
     if(is.null(plot.opts$alpha)) plot.opts$alpha <- 0.05
-    if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- tail(mods[[1]]$years, 1)
-    if(!(plot.opts$kobe.yr %in% all.yrs)) stop("plot.opts$kobe.yr must be a year in $years_full from model fits.")
+    if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- sapply(mods, \(x) tail(x$years_full, 1))
+    if(length(plot.opts$kobe.yr)==1) plot.opts$kobe.yr <- rep(plot.opts$kobe.yr,length(mods))
+    if(!all(sapply(1:length(mods), \(x) plot.opts$kobe.yr[x] %in% mods[[x]]$years))) stop("plot.opts$kobe.yr must be a year from the corresponding model fit.")
     if(is.null(plot.opts[["return.ggplot"]])) plot.opts$return.ggplot <- TRUE
     if(is.null(plot.opts[["kobe.prob"]])) plot.opts$kobe.prob <- TRUE
     if(is.null(plot.opts[["refpt"]])) plot.opts$refpt <- "XSPR"
     if(!plot.opts$refpt %in% c("XSPR","MSY")) stop("plot.opts$refpt must be either 'XSPR' or 'MSY'.")
+    if(is.null(plot.opts[["browse"]])) plot.opts$browse <- TRUE
     if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
     if(any(sapply(mods[wham.mods.ind], function(x) x$env$data$do_SPR_BRPs == 0))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
 
@@ -204,7 +207,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         x[[i]]$is.wham <- FALSE
       }
     }
-    if(any(sapply(x, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
+    if(any(sapply(mods, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
 
     names(x) <- names(mods)
     if(is.null(plot.opts$ages.lab)){
@@ -218,23 +221,30 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
 
     gg_facet_dims <- function(p){
       if(!is.null(p)){
-        nrows <- p %>%
-         ggplot2::ggplot_build() %>%
-         magrittr::extract2('layout') %>%
-         magrittr::extract2('layout') %>%
-         magrittr::extract2('ROW') %>%
-         unique() %>%
-         length()
-        ncols <- p %>%
-         ggplot2::ggplot_build() %>%
-         magrittr::extract2('layout') %>%
-         magrittr::extract2('layout') %>%
-         magrittr::extract2('COL') %>%
-         unique() %>%
-         length()
+        nrows <- length(unique(ggplot2::ggplot_build(p)$layout$layout$ROW))
+        ncols <- length(unique(ggplot2::ggplot_build(p)$layout$layout$COL))
         return(c(2*nrows+2, 3*ncols+2))
       } else return(NULL)
     }
+    # gg_facet_dims <- function(p){
+    #   if(!is.null(p)){
+    #     nrows <- p %>%
+    #      ggplot2::ggplot_build() %>%
+    #      magrittr::extract2('layout') %>%
+    #      magrittr::extract2('layout') %>%
+    #      magrittr::extract2('ROW') %>%
+    #      unique() %>%
+    #      length()
+    #     ncols <- p %>%
+    #      ggplot2::ggplot_build() %>%
+    #      magrittr::extract2('layout') %>%
+    #      magrittr::extract2('layout') %>%
+    #      magrittr::extract2('COL') %>%
+    #      unique() %>%
+    #      length()
+    #     return(c(2*nrows+2, 3*ncols+2))
+    #   } else return(NULL)
+    # }
     g <-  vector("list", 10)
     no.SPR <- sapply(x, function(x) !("log_FXSPR" %in% names(x)))
     no.MSY <- sapply(x, function(x) !("log_FMSY" %in% names(x)))
@@ -247,10 +257,12 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       }
       plot.opts$which <- plot.opts$which[which(!(plot.opts$which %in% 8:10))]
     }
+    
     for(i in plot.opts$which){
+
       if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, compare.opts, plot.opts))
       if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(x, compare.opts, plot.opts))
-      if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="fleet"))
+      if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="fleets"))
       if(i==4) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="indices"))
       if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(x, compare.opts, plot.opts, type="selAA"))
       if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(x, compare.opts, plot.opts))
@@ -258,25 +270,45 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       if(i==8) g[[i]] <- suppressWarnings(plot.refpt.compare(x, plot.opts))
       if(i==9) g[[i]] <- suppressWarnings(plot.rel.compare(x, plot.opts))
     }
-    pdims <- lapply(g, gg_facet_dims)
+    pdims <- lapply(1:length(g), \(x) {
+      gg_facet_dims(g[[x]])
+    })
     pdims[[10]] <- c(7,7)
     plabs <- c("SSB_F_R","CV","sel_fleets","sel_indices","sel_tile",paste0("M_age",plot.opts$M.age),"M_tile","ref_pts","rel_status_timeseries","rel_status_kobe")
-    if(plot.opts$out.type == 'pdf'){
-      pnames <- file.path(fdir,"compare_pdf",paste0("compare_",plabs,".pdf"))
-      if(!dir.exists(file.path(fdir,"compare_pdf"))) dir.create(file.path(fdir,"compare_pdf"))
-    }
-    if(plot.opts$out.type == 'png'){
-      pnames <- file.path(fdir,"compare_png",paste0("compare_",plabs,".png"))
-      if(!dir.exists(file.path(fdir,"compare_png"))) dir.create(file.path(fdir,"compare_png"))
-    }
+    pdir <- file.path(fdir,paste0("compare_",plot.opts$out.type))
+    if(dir.exists(pdir)) file.remove(file.path(pdir, list.files(pdir, recursive = TRUE)))
+    dir.create(pdir, showWarnings = FALSE)
+    pnames <- file.path(pdir,paste0("compare_",plabs,".",plot.opts$out.type))
+    
     for(i in plot.opts$which){
       if(plot.opts$out.type == 'pdf') grDevices::cairo_pdf(filename=pnames[i], height = pdims[[i]][1], width = pdims[[i]][2])
-      if(plot.opts$out.type == 'png') png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
+      if(plot.opts$out.type == 'png') {
+        if(require(ragg)) {
+          ragg::agg_png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
+        } else {
+          message('Installing "ragg" package will provide nicer png files.')
+          png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
+        }
+
+      }
       if(i < 10) suppressWarnings(print(g[[i]]))
       if(i == 10) g[[i]] <- suppressWarnings(plot.kobe.compare(x, plot.opts))
       dev.off()
     }
     if(plot.opts$return.ggplot) out$g <- g
+
+    if(rmarkdown::pandoc_available()){
+      if(plot.opts$out.type == "png"){
+        message("Making HTML document.\n")
+        make_html_compare_model_figs_fn(od = pdir, do.html = TRUE)
+        html_file <- file.path(pdir, "compare_model_figs.html")
+        message("Opening HTML document in your default web-browser.\n")
+        if(plot.opts$browse) browseURL(html_file)
+        message(paste0("HTML document is \n", html_file, "\n"))
+      }
+    } else {
+      message("document of parameter tables was not generated because rmarkdown could not find pandoc. Try compare_wham_models() from Rstudio.\n")
+    }
   }
 
   return(out)
@@ -325,11 +357,10 @@ plot.timeseries.compare <- function(df, x, plot.opts){
   df$Model <- factor(df$Model, levels=names(x), labels=names(x))
   df$Year <- as.integer(df$Year)
   if(any(plot.opts$ci)){
-    df <- df %>% dplyr::group_by(var) %>% dplyr::mutate(y_max = 1.2*max(val)) %>% as.data.frame   # trim large CIs to zoom to 120% of max MLE
+    df <- df |> dplyr::group_by(var) |> dplyr::mutate(y_max = 1.2*max(val)) |> as.data.frame()   # trim large CIs to zoom to 120% of max MLE
     ind <- which(df$hi > df$y_max)
     df$hi[ind] = df$y_max[ind]
   }
-
   g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=val, color=Model, group=Model))
   if(any(plot.opts$ci)){
     g <- g + ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lo, ymax=hi, fill=Model), color=NA, alpha=.15) +
@@ -354,7 +385,6 @@ plot.timeseries.compare <- function(df, x, plot.opts){
   last_mod <- sapply(x, function(x) tail(x$years,1))
   v.yr <- unique(last_mod[last_proj > last_mod])
   g <- g + ggplot2::geom_vline(xintercept = v.yr, linetype=2, size=.4)
-
   return(g)
 }
 plot.SSB.F.R.compare <- function(x, compare.opts, plot.opts){
@@ -652,13 +682,13 @@ plot.rel.compare <- function(x, plot.opts){
   g <- g + ggplot2::facet_wrap(ggplot2::vars(var), scales="free_y", ncol=1, strip.position = "left", labeller = ggplot2::label_parsed)
   if(is.null(plot.opts$relative.to)){
     g <- g + ggplot2::geom_hline(yintercept = 1, linetype=2, size=.4) +
-           ggplot2::geom_hline(data = df %>% dplyr::filter(var == levels(df$var)[2]) %>% dplyr::mutate(half=0.5), mapping=ggplot2::aes(yintercept = half), color="red", linetype=2, size=.4)
+           ggplot2::geom_hline(data = df |> dplyr::filter(var == levels(df$var)[2]) |> dplyr::mutate(half=0.5), mapping=ggplot2::aes(yintercept = half), color="red", linetype=2, size=.4)
   }
   return(g)
 }
 #-------------------------------------------------------------------------------
 # 2D tile plot by age and year (e.g. selAA, MAA)
-plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
+plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA", all.years){
   n_ages = length(plot.opts$ages.lab)
   stock <- compare.opts$stock
   region <- compare.opts$region  
@@ -675,8 +705,8 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
       selblocks_f <- as.numeric(unique(x[[j]]$selblock_pointer_fleets))
       selAA.byfleet <- vector("list", n_f+n_i)
       for(i in 1:(n_f+n_i)){
-        selAA.byfleet[[i]] <- matrix(NA, nrow=n_years, ncol=n_ages)
-        for(y in 1:n_years){
+        selAA.byfleet[[i]] <- matrix(NA, nrow=length(x[[j]]$years_full), ncol=n_ages)
+        for(y in 1:length(x[[j]]$years_full)){
           selAA.byfleet[[i]][y,] <- x[[j]]$selAA[[selblock_pointer_all[y,i]]][y,]
         }
       }
@@ -686,16 +716,16 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
       colnames(df.selAA) <- c(paste0("Age_",1:n_ages),"Year","Fleet")
       for(i in 1:(n_f+n_i)){
         tmp = as.data.frame(selAA.byfleet[[i]])
-        tmp$Year <- x[[j]]$years
+        tmp$Year <- x[[j]]$years_full
         colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
         tmp$Fleet = names(selAA.byfleet)[i]
         df.selAA <- rbind(df.selAA, tmp)
       }
-      df <- rbind(df, df.selAA %>% tidyr::pivot_longer(-c(Year,Fleet),
+      df <- rbind(df, df.selAA |> tidyr::pivot_longer(-c(Year,Fleet),
                                     names_to = "Age",
                                     names_prefix = "Age_",
                                     names_ptypes = list(Age = character()),
-                                    values_to = "Selectivity") %>%
+                                    values_to = "Selectivity") |>
                                   dplyr::mutate(Model = names(x)[j]))
     }
     df$Age <- as.integer(df$Age)
@@ -716,11 +746,11 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
       }
       MAA$Year <- x[[j]]$years_full
       colnames(MAA) <- c(paste0("Age_",1:n_ages),"Year")
-      df <- rbind(df, MAA %>% tidyr::pivot_longer(-Year,
+      df <- rbind(df, MAA |> tidyr::pivot_longer(-Year,
                 names_to = "Age",
                 names_prefix = "Age_",
                 names_ptypes = list(Age = character()),
-                values_to = "M") %>%
+                values_to = "M") |>
             dplyr::mutate(Model = names(x)[j]))
     }
     df$Age <- as.integer(df$Age)
@@ -735,24 +765,28 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA"){
   return(g)
 }
 plot.kobe.compare <- function(x, plot.opts){
-  status.year.ind <- sapply(x, function(x) which(x$years_full == plot.opts$kobe.yr))
+  status.year.ind <- sapply(1:length(x), function(i) which(x[[i]]$years_full == plot.opts$kobe.yr[i]))
   #if any of the models have non-finite values for cov, then don't do that status years
-  do.kobe <- sapply(status.year.ind, function(y) !any(sapply(x, function(z) any(!is.finite(z$log_rel_ssb_F_cov[[y]][[2]])))))
+
+  do.kobe <- sapply(1:length(x), function(i) !any(sapply(x[[i]], function(z) any(!is.finite(x[[i]]$log_rel_ssb_F_cov[[status.year.ind[i]]][[2]])))))
   #do.kobe <- unlist(sapply(mapply(function(x,i) x$log_rel_ssb_F_cov[i], x, status.year.ind), function(y) !all(!is.finite(y)))) # only if some non-infinite values for at least some status years
   if(any(do.kobe)){ #length(do.kobe) == length(x)
     #fxn <- function(y,i) y[["log_F"]][i,1]-y[["log_FXSPR"]][i,1]
-    fxn <- function(y,i,j) y$log_rel_ssb_F_cov[[i]][[1]][j] #i: yr, j: rel ssb or f 
-    rel.f.vals <- mapply(fxn, x, status.year.ind, 2)
-    rel.ssb.vals <- mapply(fxn, x, status.year.ind, 1)
-    fxn <- function(y,i) y$log_rel_ssb_F_cov[[i]][[2]] #i: yr
-    log.rel.ssb.rel.F.cov <- mapply(fxn, x, status.year.ind, SIMPLIFY=F)
+    # fxn <- function(y,i,j) y$log_rel_ssb_F_cov[[i]][[1]][j] #i: yr, j: rel ssb or f 
+    rel.f.vals <- sapply(1:length(x), \(i) x[[i]]$log_rel_ssb_F_cov[[status.year.ind[i]]][[1]][2])
+    rel.ssb.vals <- sapply(1:length(x), \(i) x[[i]]$log_rel_ssb_F_cov[[status.year.ind[i]]][[1]][1])
+    log.rel.ssb.rel.F.cov <- lapply(1:length(x), \(i) x[[i]]$log_rel_ssb_F_cov[[status.year.ind[i]]][[2]])
+    # rel.f.vals <- mapply(fxn, x, status.year.ind, 2)
+    # rel.ssb.vals <- mapply(fxn, x, status.year.ind, 1)
+    # fxn <- function(y,i) y$log_rel_ssb_F_cov[[i]][[2]] #i: yr
+    # log.rel.ssb.rel.F.cov <- mapply(fxn, x, status.year.ind, SIMPLIFY=F)
 
     log.rel.ssb.rel.F.ci.regs <- lapply(1:length(x), function(x){
       if(is.na(rel.f.vals[x]) | any(diag(log.rel.ssb.rel.F.cov[[x]])<0)) return(matrix(NA,100,2))
       else return(exp(ellipse::ellipse(log.rel.ssb.rel.F.cov[[x]], centre = c(rel.ssb.vals[x],rel.f.vals[x]), level = 1-plot.opts$alpha)))
       })
-    p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(status.year.ind))
-    for(i in 1:length(status.year.ind)){
+    p.ssb.lo.f.lo <- p.ssb.lo.f.hi <- p.ssb.hi.f.lo <- p.ssb.hi.f.hi <- rep(NA,length(x))
+    for(i in 1:length(x)){
       check.zero.sd <- diag(log.rel.ssb.rel.F.cov[[i]])==0 | diag(log.rel.ssb.rel.F.cov[[i]]) < 0
       if(!any(is.na(check.zero.sd))) if(!any(check.zero.sd)){
         p.ssb.lo.f.lo[i] <- mnormt::sadmvn(lower = c(-Inf,-Inf), upper = c(-log(2), 0), mean = c(rel.ssb.vals[i],rel.f.vals[i]), varcov = log.rel.ssb.rel.F.cov[[i]])
@@ -761,11 +795,9 @@ plot.kobe.compare <- function(x, plot.opts){
         p.ssb.hi.f.hi[i] <- mnormt::sadmvn(lower = c(-log(2),0), upper = c(Inf, Inf), mean = c(rel.ssb.vals[i],rel.f.vals[i]), varcov = log.rel.ssb.rel.F.cov[[i]])
       }
     }
-
     vals <- exp(cbind(rel.ssb.vals, rel.f.vals))
     max.x <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,1],na.rm = TRUE)),1.25, vals[,1])
     max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.25, vals[,2])
-
     plot(vals[,1],vals[,2], ylim = c(0,1.05*max.y), xlim = c(0,1.05*max.x), xlab = bquote(paste("SSB / ", SSB[paste(.(x[[1]]$percentSPR),"%")])),
       ylab = bquote(paste(italic(F)," / ", italic(F)[paste(.(x[[1]]$percentSPR),"%")])),type = 'n')
     lims = par("usr")
@@ -786,8 +818,8 @@ plot.kobe.compare <- function(x, plot.opts){
       legend("bottomright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
     }
     text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"), cex=0.7)
-    for(i in 1:length(status.year.ind)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
-    return(list(rel.status = vals, p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
+    for(i in 1:length(x)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
+    #return(list(rel.status = vals, p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
   } else {
     return(NULL)
   }
@@ -829,47 +861,77 @@ plot.M.compare <- function(x, compare.opts, plot.opts){
   g <- plot.timeseries.compare(df, x, plot.opts)
   return(g)
 }
-plot.selectivity.compare <- function(x, plot.opts, type="fleet"){
+plot.selectivity.compare <- function(x, plot.opts, type="fleets"){
   plot.opts$ci <- rep(FALSE, length(x))
   n_ages = length(plot.opts$ages.lab)
-  allSame <- function(x) length(unique(x)) == 1
-  if(type == 'fleet'){
-    if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) {
-      message("Fleet selectivity blocks not identical, cannot produce comparison plot.")
+  # allSame <- function(x) length(unique(x)) == 1
+
+  if(type == 'fleets') {ptr_name <- "selblock_pointer_fleets"; one <- "fleet"; onename <- "Fleet"}
+  if(type == 'indices') {ptr_name <- "selblock_pointer_indices"; one <- "index"; onename <- "Index"}
+  nfleets <- sapply(x, \(y) NCOL(y[[ptr_name]]))
+  if(length(unique(nfleets)) != 1) {
+    message(paste0("Number of ", type, " differ for some models, cannot produce ", one, " selectivity comparison plot."))
+    return(NULL)
+  }
+  nblocks <- list()
+  for(f in 1:nfleets[1]){
+    nblocks[[f]] <- sapply(x, \(y) length(unique(y[[ptr_name]][,f])))
+    if(length(unique(nblocks[[f]])) != 1) {
+      message(paste0("Number of selectivity blocks for ", one, " ", f, " is not the same for each model, cannot produce ", one, " selectivity comparison plot."))
       return(NULL)
-    } else {
-      selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))
-      yrs <- lapply(selblocks, function(y){
-                                  tmp <- which(x[[1]]$selblock_pointer_fleets == y);
-                                  tmp <- tmp %% length(x[[1]]$years);
-                                  tmp[tmp == 0] = length(x[[1]]$years);
-                                  return(tmp)})
     }
   }
-  if(type == 'indices'){
-    if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_indices)))) stop("Index selectivity blocks not identical, cannot produce comparison plot")
-    selblocks <- unique(as.integer(x[[1]]$selblock_pointer_indices))
-    yrs <- lapply(selblocks, function(y){
-                                tmp <- which(x[[1]]$selblock_pointer_indices == y);
-                                tmp <- tmp %% length(x[[1]]$years);
-                                tmp[tmp == 0] = length(x[[1]]$years);
-                                return(tmp)})
+  yrs <- list()
+  for(f in 1:nfleets[1]){
+    # selblocks <- 1:nblocks[1] #unique(as.integer(x[[1]]$selblock_pointer_fleets))
+    yrs[[f]] <- lapply(x, \(y){
+                  these_selblocks <- sort(unique(y[[ptr_name]][,f]))
+                  lapply(these_selblocks, \(s) which(y[[ptr_name]][,f] == s))
+                })
   }
-  df <- data.frame(matrix(NA, nrow=0, ncol=6))
-  colnames(df) <- c("Age","Selectivity","Block","Model")
-  for(i in 1:length(x)){
-    for(j in selblocks){
-      #if(!is.null(x[[i]][["selAA"]]$est)) sel <- apply(x[[i]][["selAA"]]$est[[j]][yrs[[which(selblocks==j)]],,drop = FALSE], 2, mean, na.rm=T)
-      #else 
-      sel <- apply(x[[i]][["selAA"]][[j]][yrs[[which(selblocks==j)]],,drop = FALSE], 2, mean, na.rm=T)
-      df <- rbind(df, data.frame(Age=1:n_ages, Selectivity=sel, Block=paste0("Block ",j), Model=names(x)[i]))
+    # stop()
+    # if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) {
+    #   message("Fleet selectivity blocks not identical, cannot produce comparison plot.")
+    #   return(NULL)
+    # } else {
+  #     selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))
+  #     yrs <- lapply(selblocks, function(y){
+  #                                 tmp <- which(x[[1]]$selblock_pointer_fleets == y);
+  #                                 tmp <- tmp %% length(x[[1]]$years);
+  #                                 tmp[tmp == 0] = length(x[[1]]$years);
+  #                                 return(tmp)})
+  #   }
+  # }
+  # if(type == 'indices'){
+  #   if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_indices)))) {
+  #     message("Index selectivity blocks not identical, cannot produce comparison plot.")
+  #     return(NULL)
+  #   } else {
+  #     selblocks <- unique(as.integer(x[[1]]$selblock_pointer_indices))
+  #     yrs <- lapply(selblocks, function(y){
+  #                                 tmp <- which(x[[1]]$selblock_pointer_indices == y);
+  #                                 tmp <- tmp %% length(x[[1]]$years);
+  #                                 tmp[tmp == 0] = length(x[[1]]$years);
+  #                                 return(tmp)})
+  #   }
+  # }
+  df <- data.frame(matrix(NA, nrow=0, ncol=5))
+  colnames(df) <- c("Age","Selectivity","Block","Fleet","Model")
+  for(f in 1:nfleets[1]){
+    for(i in 1:length(x)){
+      selblocks <- sort(unique(x[[i]][[ptr_name]][,f]))
+      for(j in 1:length(selblocks)){
+        sel <- apply(x[[i]][["selAA"]][[j]][yrs[[f]][[i]][[j]],,drop = FALSE], 2, mean, na.rm=T)
+        df <- rbind(df, data.frame(Age=1:n_ages, Selectivity=sel, Block=paste0("Block ",j), Fleet = paste0(onename, " ", f), Model=names(x)[i]))
+      }
     }
   }
   df$Model <- factor(df$Model, levels=names(x), labels=names(x))
   df$Block <- as.factor(df$Block)
+  df$Fleet <- as.factor(df$Fleet)
   g <- ggplot2::ggplot(df, ggplot2::aes(x=Age, y=Selectivity, color=Model, group=Model)) +
           ggplot2::geom_line(size=.8) +
-          ggplot2::facet_wrap(ggplot2::vars(Block), ncol=1, strip.position = 'right') +
+          ggplot2::facet_wrap(ggplot2::vars(Fleet,Block), ncol=1, strip.position = 'right') +
           ggplot2::ylab("Selectivity") +
           ggplot2::scale_y_continuous(limits=c(0,1),expand=c(0.01,0.01), labels=scales::number_format(accuracy=0.1)) +
           ggplot2::scale_x_continuous(expand=c(0.01,0.01), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +

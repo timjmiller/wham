@@ -117,7 +117,7 @@ df.mods <- data.frame(M_model = c(rep("---",6),"age-specific","weight-at-age",re
                       Ecov_how = Ecov_how, stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 ```
 
 Look at the model table:
@@ -315,15 +315,14 @@ library(kableExtra)
 # vign5_res[,12:14] = round(vign5_res[,12:14], 3)
 posdef <- which(vign5_res$pdHess == TRUE)
 thebest <- c(12)
-vign5_res %>%
-  # mutate(na_sdrep = cell_spec(na_sdrep, "html", bold = ifelse(na_sdrep == TRUE,TRUE,FALSE))) %>%
-  select(!(c(age_specific,mean_model))) %>%
+vign5_res |>
+  select(!(c(age_specific,mean_model))) |>
   dplyr::rename("M mean model"="M_model", "M RE model" = "M_re", "GSI model"="Ecov_process", "GSI link"="Ecov_how",
          "Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime",
-         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") %>%
-  kable(escape = F) %>%
-  kable_styling(bootstrap_options = c("condensed","responsive")) %>%
-  row_spec(posdef, background = gray.colors(10,end=0.95)[10]) %>%
+         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
+  kable(escape = F) |>
+  kable_styling(bootstrap_options = c("condensed","responsive")) |>
+  row_spec(posdef, background = gray.colors(10,end=0.95)[10]) |>
   row_spec(thebest, bold=TRUE)
 ```
 

@@ -17,11 +17,15 @@ do_sdreport <- function(model, save.sdrep = TRUE, TMB.bias.correct = FALSE, TMB.
     model$sdrep <- try(TMB::sdreport(model, par.fixed = model$opt$par, hessian.fixed = solve(model$sdrep$cov.fixed), bias.correct = TMB.bias.correct, getJointPrecision = TMB.jointPrecision))
   } else {
     model$sdrep <- try(TMB::sdreport(model, bias.correct = TMB.bias.correct, getJointPrecision = TMB.jointPrecision))
+    model$fn(model$opt$par)
+    is.re <- length(model$env$random)>0
+    fe <- model$opt$par
+    if(is.re) model$env$last.par.best[-c(model$env$random)] <- fe
+    else  model$env$last.par.best <- fe
   }
-  # model$sdrep <- try(TMB::sdreport(model))
   model$is_sdrep <- !is.character(model$sdrep)
   model$na_sdrep <- ifelse(model$is_sdrep, any(is.na(summary(model$sdrep,"fixed")[,2])), NA)
-  # if(model$is_sdrep) model$na_sdrep <- any(is.na(summary(model$sdrep,"fixed")[,2])) else model$na_sdrep = NA
+
   if(!save.sdrep) model$sdrep <- summary(model$sdrep) # only save summary to reduce model object size
   return(model)
 }

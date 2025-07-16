@@ -72,10 +72,10 @@ check_dims <- function(input){
 	n_Fbar_ages_vecs <- "Fbar_ages"
 	n_obs_vecs <- c("obsvec", "agesvec")
 	n_XSPR_R_avg_yrs_vecs <- "XSPR_R_avg_yrs"
-	n_avg_years_ind_static_vecs <- "avg_years_ind_static"
-	n_avg_years_ind_vecs <- "avg_years_ind"
+	# n_avg_years_ind_static_vecs <- "avg_years_ind_static"
+	# n_avg_years_ind_vecs <- "avg_years_ind"
 	n_avg_years_Ecov_vecs <- "avg_years_Ecov"
-	data_not_checked <- c(n_obs_vecs, n_Fbar_ages_vecs, n_XSPR_R_avg_yrs_vecs, n_avg_years_ind_static_vecs, n_avg_years_ind_vecs,n_avg_years_Ecov_vecs,n_y_p_vecs)
+	data_not_checked <- c(n_obs_vecs, n_Fbar_ages_vecs, n_XSPR_R_avg_yrs_vecs, n_avg_years_Ecov_vecs,n_y_p_vecs)
 
 	#################################################
  	#matrices
@@ -91,7 +91,9 @@ check_dims <- function(input){
  	n_blocks_n_pars <- c("selpars_est", "selpars_lower", "selpars_upper")
  	n_stocks_n_regions <- c("n_M_re", "M_re_model")
  	n_regions_n_reg_m1 <- c("mu_model")
- 	
+ 	n_years_p1_n_fleets <- c("avg_years_ind_sel","avg_years_ind_waacatch","avg_years_ind_static_sel","avg_years_ind_static_waacatch")
+ 	n_years_p1_n_regions <- c("avg_years_ind_L","avg_years_ind_static_L")
+
 	for(i in n_years_n_stocks) should_dims[[i]] <- c(n_years_model, n_stocks)
 	for(i in n_fleets_n_seasons) should_dims[[i]] <- c(n_fleets, n_seasons)
 	for(i in n_years_n_fleets) should_dims[[i]] <- c(n_years_model, n_fleets)
@@ -103,6 +105,8 @@ check_dims <- function(input){
 	for(i in n_blocks_n_pars) should_dims[[i]] <- c(n_selblocks, n_ages + 6L)
 	for(i in n_stocks_n_regions) should_dims[[i]] <- c(n_stocks, n_regions)
 	for(i in n_regions_n_reg_m1) should_dims[[i]] <- c(n_regions, n_regions - 1L)
+	for(i in n_years_p1_n_fleets) should_dims[[i]] <- c(n_years_model + 1, n_fleets)
+	for(i in n_years_p1_n_regions) should_dims[[i]] <- c(n_years_model + 1, n_regions)
 	# for(i in n_proj_n_Ecov) should_dims[[i]] <- c(n_years_proj, n_Ecov)
 	# for(i in n_proj_1) should_dims[[i]] <- c(n_years_proj, 1)
 
@@ -147,6 +151,14 @@ check_dims <- function(input){
 
 	n_stocks_n_proj_n_ages <- c("mature_proj", "waa_proj")
 	for(i in n_stocks_n_proj_n_ages) should_dims[[i]] <- c(n_stocks, n_years_proj,n_ages)
+
+	n_stocks_n_regions_n_years_p1 <- c("avg_years_ind_waassb","avg_years_ind_mat","avg_years_ind_M","avg_years_ind_move",
+			"avg_years_ind_static_waassb","avg_years_ind_static_mat","avg_years_ind_static_M","avg_years_ind_static_move","avg_years_ind_static_SRR")
+	for(i in n_stocks_n_regions_n_years_p1) should_dims[[i]] <- c(n_stocks,n_regions, n_years_model+1)
+	
+	n_stocks_n_regions_n_ages_n_years_p1 <- "avg_years_ind_NAA"
+	for(i in n_stocks_n_regions_n_ages_n_years_p1) should_dims[[i]] <- c(n_stocks,n_regions, n_ages, n_years_model+1)
+	
 
 	data_not_checked <- c(data_not_checked, n_stocks_n_proj_n_ages)
 

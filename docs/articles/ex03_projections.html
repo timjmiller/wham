@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9006</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
       </span>
     </div>
 
@@ -428,8 +428,26 @@ model is assumed and, if not, F at X% SPR is used instead.</p></li>
 <span><span class="va">mod_proj</span><span class="op">[[</span><span class="fl">11</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.last.F<span class="op">=</span><span class="cn">FALSE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>              use.FMSY<span class="op">=</span><span class="cn">TRUE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,</span>
 <span>              cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Save projected models</p>
+<p>WHAM can also use average “apparent survival” deviations and/or
+recruitment deviations or no apparent survival or recruitment deviations
+in projections and allows the user to specify which years to average the
+different inputs. The <code>proj.opts$proj_NAA_opt</code> can be
+specified to tell how to treat the apparent survival deviations. and
+<code>proj.opts$proj_R_opt</code> can specify how to treat recruitment
+deviations. <code>avg.yrs.R</code> and <code>avg.yrs.NAA</code> specify
+which years to average the deviations when using that option.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># default settings: 3 years, use last F, continue ecov, but projected recruitment deviations=0 and average NAA deviations (1992-1996) projected</span></span>
+<span><span class="va">mod_proj</span><span class="op">[[</span><span class="fl">12</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>              cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span>, proj_R_opt <span class="op">=</span> <span class="fl">4</span>, proj_NAA_opt <span class="op">=</span> <span class="fl">2</span>, avg.yrs.NAA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1992</span><span class="op">:</span><span class="fl">1996</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># default settings: 3 years, use last F, continue ecov, but projected recruitment deviations are averged over 1992-1996 and no NAA deviations projected</span></span>
+<span><span class="va">mod_proj</span><span class="op">[[</span><span class="fl">13</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/project_wham.html">project_wham</a></span><span class="op">(</span><span class="va">mod</span>, proj.opts<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">3</span>, use.last.F<span class="op">=</span><span class="cn">TRUE</span>, use.avg.F<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>              use.FXSPR<span class="op">=</span><span class="cn">FALSE</span>, proj.F<span class="op">=</span><span class="cn">NULL</span>, proj.catch<span class="op">=</span><span class="cn">NULL</span>, avg.yrs<span class="op">=</span><span class="cn">NULL</span>,</span>
+<span>              cont.ecov<span class="op">=</span><span class="cn">TRUE</span>, use.last.ecov<span class="op">=</span><span class="cn">FALSE</span>, avg.ecov.yrs<span class="op">=</span><span class="cn">NULL</span>, proj.ecov<span class="op">=</span><span class="cn">NULL</span>, proj_R_opt <span class="op">=</span> <span class="fl">3</span>, proj_NAA_opt <span class="op">=</span> <span class="fl">3</span>, avg.yrs.R <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1992</span><span class="op">:</span><span class="fl">1996</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Save projected models</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">mod_proj</span>, file<span class="op">=</span><span class="st">"m5_proj.rds"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -440,12 +458,12 @@ effects but they do not need to be refitted with projections added
 because the observations and marginal likelihood do not change. However,
 we can confirm that the NLL is the same for all projected models (within
 some tolerance).</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># original model NLL</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] -824.2718</span></span>
 <span><span class="co">#&gt; attr(,"logarithm")</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nll_proj</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mod_proj</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="fu">fn</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># projected models marginal NLL</span></span>
 <span><span class="co">#round(nll_proj - mod$opt$obj, 6) # difference between original and projected models' NLL</span></span>
 <span><span class="va">nll_proj</span> <span class="op">-</span> <span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># difference between original and projected models' NLL</span></span></code></pre></div>
@@ -453,7 +471,7 @@ some tolerance).</p>
 <span><span class="co">#&gt;  [6] 4.228787e-06 4.228424e-06 4.228425e-06 4.228421e-06 4.229045e-06</span></span>
 <span><span class="co">#&gt; [11] 4.228427e-06</span></span></code></pre>
 <p>Now let’s plot results from each of the projected models.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">write.dir</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"proj_"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>

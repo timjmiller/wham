@@ -156,7 +156,7 @@ template <class Type>
 array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, array<Type> NAA, array<Type> log_M, array<Type> mu,
   matrix<Type> L, array<Type> mature_proj, array<Type> waa_ssb_proj, array<Type> waa_catch_proj, vector<int> fleet_regions, matrix<int> fleet_seasons, 
   vector<Type> fracyr_SSB_proj, vector<int> spawn_regions, array<int> can_move, array<int> must_move, vector<int> mig_type, 
-  vector<int> avg_years_ind, int n_years_model, vector<int> which_F_age, vector<Type> fracyr_seasons, int small_dim,
+  matrix<int> avg_years_ind, int n_years_model, vector<int> which_F_age, vector<Type> fracyr_seasons, int small_dim,
   Type percentSPR, matrix<Type> proj_Fcatch, Type percentFXSPR, Type percentFMSY, matrix<Type> R_XSPR, vector<Type> FXSPR_init, 
   vector<Type> FMSY_init, vector<Type> F_proj_init, matrix<Type> log_a, matrix<Type> log_b, vector<int> spawn_seasons, vector<int> recruit_model, 
   vector<Type> SPR_weights, int SPR_weight_type, int bias_correct, 
@@ -215,6 +215,7 @@ array<Type> update_FAA_proj(int y, vector<int> proj_F_opt, array<Type> FAA, arra
       //need selectivity for projections for rest of options
       int by_fleet = 0;
       if((proj_Fcatch.cols()>1) & ((proj_F_opt_y == 4) | (proj_F_opt_y == 5))) by_fleet = 1; //find FAA by fleet from fleet-full F or from catch by fleet
+      if(trace) see(by_fleet);
       array<Type> sel_proj = get_avg_fleet_sel_as_array(FAA, avg_years_ind, which_F_age(y), by_fleet);
       if(trace) see(sel_proj);
       vector<Type> Fproj(proj_Fcatch.cols());

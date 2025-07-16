@@ -182,7 +182,7 @@ matrix<Type> simulate_log_b(int log_b_model, matrix<Type>log_b, int bias_correct
 
 template<class Type>
 array<Type> get_log_M(array<Type>M_re, array<int> M_re_index, int M_model, int n_years_model, array<Type> Mpars, matrix<Type> log_b, array<Type> waa, 
-  vector<int> waa_pointer, array<Type> Ecov_lm, array<int> Ecov_how, int n_years_proj, int proj_M_opt, vector<int> avg_years_ind){
+  vector<int> waa_pointer, array<Type> Ecov_lm, array<int> Ecov_how, int n_years_proj, int proj_M_opt, array<int> avg_years_ind){
   /* 
     provides log_M (base) components that are density-independent.
     (log) mortality-at-age (MAA)
@@ -223,12 +223,13 @@ array<Type> get_log_M(array<Type>M_re, array<int> M_re_index, int M_model, int n
     
     // add to MAA in projection years
     if(n_years_proj>0){ 
-      int n_toavg = avg_years_ind.size();
+      // int n_toavg = avg_years_ind.size();
+      int n_toavg = avg_years_ind(s,r,0);
       if(proj_M_opt == 2){ // use average MAA over avg.yrs 
         matrix<Type> MAA_toavg(n_toavg,n_ages);
         for(int a = 0; a < n_ages; a++){
           for(int i = 0; i < n_toavg; i++){
-            MAA_toavg(i,a) = exp(log_M(s,r,avg_years_ind(i),a));
+            MAA_toavg(i,a) = exp(log_M(s,r,avg_years_ind(s,r,i+1),a));
           }
         }
         vector<Type> MAA_proj = MAA_toavg.colwise().mean();

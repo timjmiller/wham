@@ -123,4 +123,3 @@ reference:
       - '`read_wham_fit`'
       - '`reduce_input`'
       - '`wham_html`'
-      - '`%>%`'

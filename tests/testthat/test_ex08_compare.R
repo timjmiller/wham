@@ -26,7 +26,8 @@ mods <- list(base, mod)
 names(mods) <- c("ASAP","WHAM-m1")
 
 tmp.dir <- tempdir(check=TRUE)
-res <- compare_wham_models(mods, fdir=tmp.dir, do.table=T, table.opts = list(print = FALSE), plot.opts=list(kobe.prob=FALSE))
+
+res <- compare_wham_models(mods, fdir=tmp.dir, do.table=T, table.opts = list(print = FALSE), plot.opts=list(kobe.prob=FALSE, browse = FALSE))
 
 }))
 

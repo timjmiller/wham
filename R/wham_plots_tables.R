@@ -1164,45 +1164,45 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
 
 #revised
 
-plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, plot.colors, od)
-{
-  origpar <- par(no.readonly = TRUE)
-  #ages <- mod$ages.lab
-  dat <- mod$env$data
-  ages <- 1:dat$n_ages
-	n.ages <- length(ages)
-  stocks <- 1:dat$n_stocks
-  regions <- 1:dat$n_regions
+# plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, plot.colors, od)
+# {
+#   origpar <- par(no.readonly = TRUE)
+#   #ages <- mod$ages.lab
+#   dat <- mod$env$data
+#   ages <- 1:dat$n_ages
+# 	n.ages <- length(ages)
+#   stocks <- 1:dat$n_stocks
+#   regions <- 1:dat$n_regions
 
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(ages)) #mypalette(n.ages)
-  years <- mod$years_full
-	n.yrs <- length(years)
-  pred_NAA <- mod$rep$pred_NAA
-  NAA <- mod$rep$NAA
-  sigma_all <- exp(mod$parList$log_NAA_sigma) #n_stocks x n_regions x n_ages
-  x.at <- seq(1,n.yrs,5)
-  x.lab <- years[x.at]
-  sfns <- chartr(" ", "_", mod$input$stock_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
-  for(s in stocks) for(r in regions){
-    sigma <- matrix(sigma_all[s,r,], length(years), length(ages), byrow = TRUE)
-    log_stdres <- (log(NAA[s,r,,])-log(pred_NAA[s,r,,]))/sigma
-    ymin <- min(apply(log_stdres,1, function(x) sum(x[which(x<0)])))
-    ymax <- max(apply(log_stdres,1, function(x) sum(x[which(x>0)])))
-    dat <- as.data.frame.table(log_stdres)
-    if(do.tex) cairo_pdf(file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".pdf")), 
-      family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".png")), 
-      width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
-    naa_res_plot <- lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
-      scales = list(x=list(at = x.at, labels = x.lab), alternating = FALSE),
-      key = list(text = list(lab = mod$ages.lab), rectangles = list(col = plot.colors), columns = n.ages, title = "Age"))
-    print(naa_res_plot)
-    if(do.tex | do.png) dev.off() else par(origpar)
-  }
-  # par(origpar)
-}
+#   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(ages)) #mypalette(n.ages)
+#   years <- mod$years_full
+# 	n.yrs <- length(years)
+#   pred_NAA <- mod$rep$pred_NAA
+#   NAA <- mod$rep$NAA
+#   sigma_all <- exp(mod$parList$log_NAA_sigma) #n_stocks x n_regions x n_ages
+#   x.at <- seq(1,n.yrs,5)
+#   x.lab <- years[x.at]
+#   sfns <- chartr(" ", "_", mod$input$stock_names)
+#   rfns <- chartr(" ", "_", mod$input$region_names)
+#   for(s in stocks) for(r in regions){
+#     sigma <- matrix(sigma_all[s,r,], length(years), length(ages), byrow = TRUE)
+#     log_stdres <- (log(NAA[s,r,,])-log(pred_NAA[s,r,,]))/sigma
+#     ymin <- min(apply(log_stdres,1, function(x) sum(x[which(x<0)])))
+#     ymax <- max(apply(log_stdres,1, function(x) sum(x[which(x>0)])))
+#     dat <- as.data.frame.table(log_stdres)
+#     if(do.tex) cairo_pdf(file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".pdf")), 
+#       family = fontfam, height = 10, width = 10)
+#     if(do.png) png(filename = file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".png")), 
+#       width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+#     par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
+#     naa_res_plot <- lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
+#       scales = list(x=list(at = x.at, labels = x.lab), alternating = FALSE),
+#       key = list(text = list(lab = mod$ages.lab), rectangles = list(col = plot.colors), columns = n.ages, title = "Age"))
+#     print(naa_res_plot)
+#     if(do.tex | do.png) dev.off() else par(origpar)
+#   }
+#   # par(origpar)
+# }
 
 #revised
 
@@ -2524,10 +2524,16 @@ get_YPR_fleets <- function(FAA,M, waacatch, at.age = FALSE)
   else return(apply(YPR,1,sum)) #by fleet
 }
 
-get_SPR_BRPS_fn <- function(mod, spr_yrs, percent){
+get_SPR_BRPS_fn <- function(mod, spr_yrs_waassb,spr_yrs_mat,spr_yrs_M, spr_yrs_L,spr_yrs_move,spr_yrs_waacatch,spr_yrs_sel, percent){
   dat <- mod$env$data
   if(missing(percent)) percent <- dat$percentSPR
-  if(missing(spr_yrs)) spr_yrs <- dat$avg_years_ind+1 #c++
+  if(missing(spr_yrs_sel)) spr_yrs_sel <- dat$avg_years_ind_static_sel[2:(dat$avg_years_ind_static_sel[1,1]+1),1]+1 #c++
+  if(missing(spr_yrs_waacatch)) spr_yrs_waacatch <- dat$avg_years_ind_static_waacatch[2:(dat$avg_years_ind_static_waacatch[1,1]+1),1] + 1 #c++
+  if(missing(spr_yrs_waassb)) spr_yrs_waassb <- dat$avg_years_ind_static_waassb[1,1,2:(dat$avg_years_ind_static_waassb[1,1,1]+1)]+1 #c++
+  if(missing(spr_yrs_M)) spr_yrs_M <- dat$avg_years_ind_static_M[1,1,2:(dat$avg_years_ind_static_M[1,1,1]+1)]+1 #c++
+  if(missing(spr_yrs_move)) spr_yrs_move <- dat$avg_years_ind_static_move[1,1,2:(dat$avg_years_ind_static_move[1,1,1]+1)]+1 #c++
+  if(missing(spr_yrs_L)) spr_yrs_L <- dat$avg_years_ind_static_L[2:(dat$avg_years_ind_static_L[1,1]+1),1]+1 #c++
+  if(missing(spr_yrs_mat)) spr_yrs_mat <- dat$avg_years_ind_static_mat[1,1,2:(dat$avg_years_ind_static_mat[1,1]+1)]+1 #c++
   R_yrs <- dat$XSPR_R_avg_yrs+1
   R_type <- dat$XSPR_R_opt
   if(R_type %in% c(1,3)) Rxspr <- mean(mod$rep$NAA[Ryrs,1])
@@ -3915,7 +3921,9 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-		Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
+    plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+    arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3)
+		# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 		if(do.tex | do.png) dev.off()
 
@@ -3929,7 +3937,9 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-		Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
+    plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+    arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3)
+		# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 		if(do.tex | do.png) dev.off()
 
@@ -4019,7 +4029,10 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-				Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
+        plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+        arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3)
+
+				# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
 				if(do.tex | do.png) dev.off()
 
@@ -4033,7 +4046,9 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-				Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
+        plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+        arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3)
+				# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
 				if(do.tex | do.png) dev.off()
 			}
@@ -4163,7 +4178,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       tmp$Block <- block.names[i]
       df.selAA <- rbind(df.selAA, tmp)
     }
-    df.plot <- df.selAA %>% tidyr::pivot_longer(-c(Year,Block),
+    df.plot <- df.selAA |> tidyr::pivot_longer(-c(Year,Block),
               names_to = "Age", 
               names_prefix = "Age_",
               names_ptypes = list(Age = character()),
@@ -4199,11 +4214,11 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       df.MAA <- as.data.frame(rep$MAA[s,r,,])
       colnames(df.MAA) <- paste0("Age_",1:n_ages)
       df.MAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.MAA)
-      temp <- df.MAA %>% tidyr::pivot_longer(tidyr::starts_with("Age"),
+      temp <- df.MAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
                 names_to = "Age", 
                 names_prefix = "Age_",
                 names_ptypes = list(Age = character()),
-                values_to = "M") %>% as.data.frame()
+                values_to = "M") |> as.data.frame()
       df.plot <- rbind(df.plot, temp)
     }
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
@@ -4237,11 +4252,11 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       df.NAA <- as.data.frame(rep$NAA_devs[s,r,,])
       colnames(df.NAA) <- paste0("Age_",1:n_ages)
       df.NAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.NAA)
-      temp <- df.NAA %>% tidyr::pivot_longer(tidyr::starts_with("Age"),
+      temp <- df.NAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
                 names_to = "Age", 
                 names_prefix = "Age_",
                 names_ptypes = list(Age = character()),
-                values_to = "Deviation") %>% as.data.frame()
+                values_to = "Deviation") |> as.data.frame()
       df.plot <- rbind(df.plot, temp)
     }
     df.plot$Age <- as.factor(as.integer(df.plot$Age))

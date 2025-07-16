@@ -77,7 +77,7 @@ can still be used without the asap3 object.
 \code{recruit_model} specifies the stock-recruit model. See \code{wham.cpp} for implementation.
   \describe{
     \item{= 1}{SCAA (without NAA_re option specified) or Random walk (if NAA_re$sigma specified), i.e. predicted recruitment in year i = recruitment in year i-1}
-    \item{= 2}{(default) Random about mean, i.e. steepness = 1}
+    \item{= 2}{(default) Random effects about constant mean}
     \item{= 3}{Beverton-Holt}
     \item{= 4}{Ricker}
   }
@@ -127,7 +127,15 @@ The current options are:
     \item{$Fbar_ages}{integer vector of ages to use to average F at age for reported "Fbar" across all fleets, by regions and by fleet.}
     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
-	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.}
+	 \item{$average_years_L}{list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_M}{list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_move}{list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_mat}{list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_waassb}{list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_sel}{list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_waacatch}{list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
+	 \item{$average_years_SRR}{list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (tail(1:length(years),5))}
     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. For long-term projections, may be important to use certain years for XSPR_R_avg_yrs}
 	 \item{$FXSPR_init}{which F to initialize internal newton search for annual and static F at X percent SPR. Default is 0.5}

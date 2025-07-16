@@ -24,14 +24,15 @@ fit_peel <- function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.sile
   temp <- reduce_input(input, tail(input$years,peel))
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)
 
-   out <- fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
-   out$peel <- peel
-   if(save.input){
-     out$input <- temp
-     out$input$model_name <- paste0(input$model_name, " peel ",peel)
-     out$ages.lab <- input$ages.lab
-     out$model_name <- paste0(input$model_name, " peel ",peel)
-   }
+  out <- fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)
+  out$peel <- peel
+  out$ages.lab <- input$ages.lab
+  out$model_name <- paste0(input$model_name, " peel ",peel)
+  out$years <- temp$years
+  if(save.input){
+    out$input <- temp
+    out$input$model_name <- paste0(input$model_name, " peel ",peel)
+  }
 
   return(out)
 }

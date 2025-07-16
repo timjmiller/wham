@@ -416,8 +416,8 @@ vector< matrix <Type> > get_MSY_res(
   matrix<Type> L,
   int which_F_age, array<Type> waa_ssb, array<Type> waa_catch, 
   array<Type> mature, matrix<Type> fracyr_SSB, Type F_init, 
-  vector<int> years_M, vector<int> years_mu, vector<int> years_L, vector<int> years_mat, vector<int> years_sel, 
-  vector<int> years_waa_ssb, vector<int> years_waa_catch, vector<int> years_SR_ab, int bias_correct, 
+  array<int> years_M, array<int> years_mu, matrix<int> years_L, array<int> years_mat, matrix<int> years_sel, 
+  array<int> years_waa_ssb, matrix<int> years_waa_catch, array<int> years_SRR, int bias_correct, 
   array<Type> marg_NAA_sigma, int small_dim, int trace = 0, int n_iter = 10) {
   // if(years_M(0) == 39) trace = 1;
   if(trace) see("inside get_MSY_res");
@@ -430,15 +430,17 @@ vector< matrix <Type> > get_MSY_res(
   if(trace) see(n_ages);
   //get average inputs over specified years
 
-  vector<Type> ssbfrac = get_avg_ssbfrac(fracyr_SSB,years_waa_ssb);
+  vector<Type> ssbfrac = get_avg_ssbfrac(fracyr_SSB, spawn_regions, years_waa_ssb);
   if(trace) see(ssbfrac);
-  array<Type> waa_ssb_avg = get_avg_mat_as_array(waa_ssb, years_waa_ssb); //matrix
+  array<Type> waa_ssb_avg = get_avg_waassb(waa_ssb, spawn_regions, years_waa_ssb); //matrix
   if(trace) see(waa_ssb_avg);
-  array<Type> waa_catch_avg = get_avg_mat_as_array(waa_catch, years_waa_catch);//matrix
+  if(trace) see(waa_catch.dim);
+  if(trace) see(years_waa_catch);
+  array<Type> waa_catch_avg = get_avg_waacatch(waa_catch, years_waa_catch);//matrix
   if(trace) see(waa_catch_avg);
   vector<Type> L_avg = get_avg_L(L, years_L, 0);
   if(trace) see(L_avg);
-  array<Type> mat = get_avg_mat_as_array(mature,years_mat);
+  array<Type> mat = get_avg_mat_as_array(mature, spawn_regions, years_mat);
   if(trace) see(mat);
   array<Type> log_avg_M = get_avg_M(log_M, years_M, 1);
   if(trace) see(log_avg_M);
@@ -450,7 +452,7 @@ vector< matrix <Type> > get_MSY_res(
   if(trace) see(FAA_avg);
   vector<Type> FAA_avg_tot = FAA_avg.matrix().colwise().sum();
   if(trace) see(FAA_avg_tot);  
-  matrix<Type> SR_ab_avg = get_avg_SR_ab(log_SR_a, log_SR_b, years_SR_ab, 0); //nstocks x 2
+  matrix<Type> SR_ab_avg = get_avg_SR_ab(log_SR_a, log_SR_b, spawn_regions, years_SRR, 0); //nstocks x 2
   if(trace) see(SR_ab_avg);
 
   //which_F_age needs to be set appropriately by user or by wham:::check_which_F_age.
@@ -464,11 +466,13 @@ vector< matrix <Type> > get_MSY_res(
   log_FMSY_iter(0,0) = log(F_init);
 
   if(trace) see(log_FMSY_iter(0,0));
-  
+  // trace = 0;
   sr_yield_spatial<Type> srY(SR_ab_avg.col(0),SR_ab_avg.col(1),spawn_seasons, spawn_regions, fleet_regions, fleet_seasons, can_move, mig_type, 
     ssbfrac, sel, log_avg_M, mu_avg, L_avg, mat, waa_ssb_avg, waa_catch_avg, fracyr_seasons, 0, bias_correct, 
     marg_NAA_sigma, recruit_model, small_dim, 0);
+  // trace = 1;
   if(trace) see("after spr_F_spatial sprF defined");
+  // trace = 0;
   for(int i=0; i<n-1; i++) {
     if(trace) see(i);
     log_FMSY_i(0) = log_FMSY_iter(i,0);
@@ -481,6 +485,7 @@ vector< matrix <Type> > get_MSY_res(
     log_FMSY_iter(i+1,0) = log_FMSY_iter(i,0) - grad_srY(0)/hess_srY(0,0);
     if(trace) see(log_FMSY_iter(i+1,0));
   }
+  // trace = 1;
   array<Type> FAA_MSY(n_fleets,n_ages);
   FAA_MSY.setZero();
   // array<Type> FAA_MSY = exp(log_FMSY_iter(n-1,0)) * sel;
@@ -550,7 +555,7 @@ vector< matrix <Type> > get_MSY_res(
   res(4) = log_MSY; 
   res(5) = log_YPR_MSY;
   res(6) = log_FMSY_iter; //last value is Fmsy across ages and fleets
-  if(trace) see("end get_MSY_res")
+  if(trace) see("end inside get_MSY_res")
   return res;
 }
 
@@ -576,11 +581,12 @@ vector< array <Type> > get_annual_MSY_res(
   int small_dim, int bias_correct, 
   array<Type> marg_NAA_sigma, 
   int trace = 0, int n_iter = 10) {
-  if(trace) see("begin get_annual_MSY_res");
+  if(trace) see("begin inside get_annual_MSY_res");
   int ny = which_F_age.size();
   int n_fleets = waa_catch.dim(0);
   int n_stocks = waa_ssb.dim(0);
   int n_ages = mature.dim(2);
+  int n_regions = can_move.dim(2);
 
   array<Type> log_SSB_MSY(ny,n_stocks+1); 
   array<Type> log_R_MSY(ny,n_stocks+1); 
@@ -591,22 +597,36 @@ vector< array <Type> > get_annual_MSY_res(
   array<Type> log_FMSY_iter(ny,n_iter);
 
   vector<int> yvec(1);
+  // array<int> years_M, array<int> years_mu, matrix<int> years_L, array<int> years_mat, matrix<int> years_sel, 
+  // array<int> years_waa_ssb, matrix<int> years_waa_catch, array<int> years_SRR,   
+  array<int> year_array(n_stocks,n_regions,2);
+  matrix<int> year_L(2,n_regions), year_fleet(2,n_fleets);
+  for(int r = 0; r < n_regions; r++){
+    year_L(0,r) = 1;
+    for(int s = 0; s < n_stocks; s++) year_array(s,r,0) = 1;
+  }
+  for(int f = 0; f < n_fleets; f++) year_fleet(0,f) = 1;
 
   for(int y = 0; y < ny; y++){
     yvec(0) = y;
     if(trace) see(y);
-    // trace = 0;
+    for(int r = 0; r < n_regions; r++){
+      year_L(1,r) = 1;
+      for(int s = 0; s < n_stocks; s++) year_array(s,r,1) = y;
+    }
+    for(int f = 0; f < n_fleets; f++) year_fleet(1,f) = y;
+    if(trace) see("begin get_MSY_res for year y")
+    if(trace) see(y);
     vector<matrix<Type>> MSY_res_y = get_MSY_res(
       recruit_model, log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions,
       fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type,
       trans_mu_base, L, which_F_age(y), 
       waa_ssb, waa_catch,
       mature, fracyr_SSB, F_init(y), 
-      yvec, yvec, yvec, yvec, yvec, yvec, yvec, yvec, bias_correct, 
+      year_array, year_array, year_L, year_array, year_fleet, year_array, year_fleet, year_array, bias_correct, 
       marg_NAA_sigma, small_dim, trace, n_iter);
     // trace = 0;
-    if(trace) see("get_MSY_res for year y is done")
-    if(trace) see(y);
+    if(trace) see("end get_MSY_res for year y")
     for(int s = 0; s <= n_stocks; s++) {
       log_SSB_MSY(y,s) = MSY_res_y(0)(s,0);
       log_R_MSY(y,s) = MSY_res_y(1)(s,0);

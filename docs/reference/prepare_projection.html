@@ -18,7 +18,7 @@ which in turn is called by fit_wham if do.proj = TRUE."><!-- mathjax --><script 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9006</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
       </span>
     </div>
 
@@ -149,11 +149,11 @@ which in turn is called by <code><a href="fit_wham.html">fit_wham</a></code> if 
 <li><p><code>$avg.yrs</code> (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
 <li><p><code>$cont.ecov</code> (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = <code>TRUE</code>.</p></li>
 <li><p><code>$use.last.ecov</code> (T/F), use terminal year ecov for projections.</p></li>
-<li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average over the environmental covariate(s) for projections.</p></li>
+<li><p><code>$avg.ecov.yrs</code> (vector), specify which years to average the environmental covariate(s) over for projections.</p></li>
 <li><p><code>$proj.ecov</code> (matrix), user-specified environmental covariate(s) for projections. <code>n.yrs x n.ecov</code>.</p></li>
-<li><p><code>$cont.M.re</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
-<li><p><code>$cont.move.re</code> (T/F), continue any movement random effects for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, movement parameters will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
-<li><p><code>$cont.L.re</code> (T/F), continue any L ("extra mortality rate") random effects for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, L parameters will be averaged over <code>$avg.yrs</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$cont.M.re</code> (T/F), continue M random effects (i.e. AR1_y or 2D AR1) for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, M will be averaged over <code>$avg.yrs.M</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$cont.move.re</code> (T/F), continue any movement random effects for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, movement parameters will be averaged over <code>$avg.yrs.move</code> (which defaults to last 5 model years).</p></li>
+<li><p><code>$cont.L.re</code> (T/F), continue any L ("extra mortality rate") random effects for projections. Default = <code>FALSE</code>. If <code>FALSE</code>, L parameters will be averaged over <code>$avg.yrs.L</code> (which defaults to last 5 model years).</p></li>
 <li><p><code>$avg.rec.yrs</code> (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).</p></li>
 <li><p><code>$percentFXSPR</code> (scalar), percent of F_XSPR to use for projections, only used if $use.FXSPR = TRUE. For example, to project with F = 75% F_40%SPR, <code>proj.opts$percentFXSPR = 75</code>. Default = 100.</p></li>
 <li><p><code>$percentFMSY</code> (scalar), percent of F_MSY to use for projections, only used if $use.FMSY = TRUE and a stock-recruit relationship is assumed. Default = 100.</p></li>
@@ -161,9 +161,19 @@ which in turn is called by <code><a href="fit_wham.html">fit_wham</a></code> if 
 <li><p><code>$proj_Fcatch</code> (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (<code>n.yrs</code> x 1 or n_fleets).</p></li>
 <li><p><code>$proj_mature</code> (array), user-supplied maturity values for the projection years with dimensions (n_stocks x <code>n.yrs</code> x n_ages).</p></li>
 <li><p><code>$proj_waa</code> (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of <code>model$input$data$waa</code> (waa source x <code>n.yrs</code> x n_ages).</p></li>
-<li><p><code>$proj_R_opt</code> (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.</p></li>
+<li><p><code>$proj_R_opt</code> (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years. 3: average recruitment deviations over $avg.yrs.R (if $sigma = "rec") 4: no recruitment deviations (if $sigma = "rec").</p></li>
+<li><p><code>$proj_NAA_opt</code> (integer), 1: continue any RE processes for NAA, 2: average NAA deviations over $avg.yrs.NAA. 3: no NAA deviations.</p></li>
 <li><p><code>$proj_NAA_init</code> (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.</p></li>
 <li><p><code>$proj_F_init</code> which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1</p></li>
+<li><p><code>$avg.yrs.sel</code> list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.waacatch</code> list (length = n_fleets), years to average weight at age for each fleet for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.waassb</code> list (length = n_stocks), years to average weight at age for each stock SSB for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.mature</code> list (length = n_stocks), years to average maturity at age for each stock for projection years (if $proj_mature is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.L</code> list (length = n_regions), years to average extra mortality at age for each region for projection years (if $cond.L.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.M</code> list (length = n_stocks, each is a list with length = n_regions), years to average natural mortality at age for each stock and region for projection years (if $cont.M.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.move</code> list (length = n_stocks, each is a list with length = n_regions), years to average movement rates at age and season for each stock and region (at beginning of interval) for projection years (if $cont.move.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.R</code> list (length = n_stocks), years to average recruitment deviations for each stock and region for projection years (if $proj_R_opt = 3). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
+<li><p><code>$avg.yrs.NAA</code> list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, <code>tail(model$years, 5)</code>.</p></li>
 </ul></dd>
 
 

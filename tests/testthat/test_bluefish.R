@@ -5,7 +5,7 @@
 # pkgload::load_all("c:/work/wham/wham")
 # library(wham)
 # btime <- Sys.time(); devtools::test(filter = "bluefish"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~3 min
+# ~1.5 min
 
 context("Test Bluefish")
 

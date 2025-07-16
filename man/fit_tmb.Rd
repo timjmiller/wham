@@ -35,10 +35,10 @@ fit_tmb(
     \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
     \item{\code{model$date}}{System date}
     \item{\code{model$dir}}{Current working directory}
-    \item{\code{model$rep}}{model$report()}
+    \item{\code{model$rep}}{model$report(model$env$last.par.best)}
     \item{\code{model$TMB_version}}{Version of TMB installed}
-    \item{\code{model$parList}}{List of parameters, \code{model$env$parList()}}
-    \item{\code{model$final_gradient}}{Final gradient, \code{model$gr()}}
+    \item{\code{model$parList}}{List of parameters, \code{model$env$parList(x = model$opt$par, par = model$env$last.par.best)}}
+    \item{\code{model$final_gradient}}{Final gradient, \code{model$gr(model$opt$par)}}
     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
   }
 }

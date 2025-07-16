@@ -52,7 +52,7 @@ df.mods <- data.frame(M_model = c(rep("---",6),"age-specific","weight-at-age",re
                       Ecov_how = Ecov_how, stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 
 # look at model table
 df.mods
@@ -182,7 +182,7 @@ for(i in 1:n.mods){
   tmp$pdHess <- df.mods$pdHess[i]
   df.MAA <- rbind(df.MAA, tmp)
 }
-df.plot <- df.MAA %>% tidyr::pivot_longer(-c(Year,Model,pdHess),
+df.plot <- df.MAA |> tidyr::pivot_longer(-c(Year,Model,pdHess),
           names_to = "Age",
           names_prefix = "Age_",
           names_transform = list(Age = as.integer),

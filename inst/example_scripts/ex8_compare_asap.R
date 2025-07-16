@@ -27,7 +27,7 @@ asap3 <- read_asap3_dat(file.path(path_to_examples,"BASE_3", "BASE_3.DAT"))
 df.mods <- data.frame(naa_sig=c('none','rec','rec+1'), naa_cor=c('none','iid','iid'))
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods %>% select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
 
 # look at model table
 df.mods

@@ -102,7 +102,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(selpars_lower);
   DATA_MATRIX(selpars_upper);
   
-  DATA_IVECTOR(recruit_model); //length = n_stocks
+  DATA_IVECTOR(recruit_model); //1: SCAA or RW, 2: RE with constant mean, 3: RE with Beverton Holt mean, 4: RE with Ricker mean 
   DATA_INTEGER(decouple_recruitment); //0: keep recruitment and abundance at age correlation, 1: recruitment is independent of RE for older NAA
   DATA_IVECTOR(N1_model); //n_stocks, 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
   DATA_IVECTOR(NAA_re_model); //n_stocks, 0 SCAA, 1 "rec", 2 "rec+1"
@@ -190,22 +190,40 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(FXSPR_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_SCALAR(FMSY_static_init); // initial value to use for newton steps to find FXSPR_static
   DATA_INTEGER(which_F_age_static); // which age,fleet of F to use for full total F for static brps (max of average FAA_tot over avg_years_ind)
-  DATA_IVECTOR(avg_years_ind_static); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (selectivity), for static BRPs
+  // DATA_IVECTOR(avg_years_ind_static); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F (selectivity), for static BRPs
+  DATA_IMATRIX(avg_years_ind_static_sel); // (n_years + 1 x nfleets) model year indices (TMB, starts @ 0) to use for averaging F and(or) selectivity for static BRPS 
+  DATA_IARRAY(avg_years_ind_static_M); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging natural mortality for static BRPS 
+  DATA_IARRAY(avg_years_ind_static_waassb); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging waassb (and fraction of year for spawning) for static BRPS
+  DATA_IARRAY(avg_years_ind_static_mat); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging waassb for static BRPS (if use.avgmat = TRUE)
+  DATA_IMATRIX(avg_years_ind_static_waacatch); // (n_years + 1 x n_fleets) model year indices (TMB, starts @ 0) to use for averaging waacatch for static BRPS
+  DATA_IARRAY(avg_years_ind_static_move); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging_movement for static BRPS (if use.avgmove = TRUE)
+  DATA_IMATRIX(avg_years_ind_static_L); // (n_years + 1 x n_regions) model year indices (TMB, starts @ 0) to use for averaging L (extra mortality rate) for static BRPS (if use.avgL = TRUE)
+  DATA_IARRAY(avg_years_ind_static_SRR); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging SRR parameters for static BRPS (if use.avgSRR = TRUE)
   
   DATA_INTEGER(use_alt_AR1) //0: use density namespace, 1: use ar1 or 2dar1 calculated by "hand" for nll and simulation.
   
   // data for projections
-  DATA_INTEGER(n_years_proj); // number of years to project  
-  DATA_IVECTOR(avg_years_ind); // model year indices (TMB, starts @ 0) to use for averaging MAA, waa, maturity, and F for projections (if use.avgF = TRUE)
+  DATA_INTEGER(n_years_proj); // number of years to project
+  // DATA_IVECTOR(avg_years_ind);
+  DATA_IMATRIX(avg_years_ind_sel); // (n_years + 1 x nfleets) model year indices (TMB, starts @ 0) to use for averaging F and(or) selectivity for projections (if use.avgF = TRUE)
+  DATA_IARRAY(avg_years_ind_M); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging natural mortality for projections (if proj_M_opt = 2)
+  DATA_IARRAY(avg_years_ind_waassb); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging waassb (and fraction of year for spawning) for projections (if use.avgwaassb = TRUE)
+  DATA_IARRAY(avg_years_ind_mat); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging waassb for projections
+  DATA_IMATRIX(avg_years_ind_waacatch); // (n_years + 1 x n_fleets) model year indices (TMB, starts @ 0) to use for averaging waacatch for projections
+  DATA_IARRAY(avg_years_ind_move); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging_movement for projections (if proj_mu_opt == 1)
+  DATA_IMATRIX(avg_years_ind_L); // (n_years + 1 x n_regions) model year indices (TMB, starts @ 0) to use for averaging L (extra mortality rate) for projections (if proj_L_opt = 1)
+  // DATA_IAARAY(avg_years_ind_R); // (n_stocks x n_regions x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging recruitment for projections (if proj_R_opt = 3)
+  DATA_IARRAY(avg_years_ind_NAA); // (n_stocks x n_regions x n_ages x n_years + 1) model year indices (TMB, starts @ 0) to use for averaging NAA deviations for projections (if proj_NAA_opt = 2 or proj_R_opt = 3 (for age 1))
   DATA_IVECTOR(proj_Ecov_opt); // if any, how to use each ecov in pop projections: 1 = continue Ecov_re, 2 = average Ecov (over avg_years_ind), 3 = terminal year Ecov, 4 = user-specified
   DATA_MATRIX(Ecov_use_proj); // n_years_proj x n_Ecov matrix of fixed user-supplied values to use in projections if proj_Ecov_opt = 4
   DATA_IVECTOR(avg_years_Ecov); // model year indices (TMB, starts @ 0) to use for averaging ecov for projections if proj_Ecov_opt = 2
   DATA_IVECTOR(proj_F_opt); // for each projection year, 1 = last year F (default), 2 = average F, 3 = F at X% SPR, 4 = user-specified F, 5 = calculate F from user-specified catch, 6 = FMSY (if SRR estimated)
   DATA_MATRIX(proj_Fcatch); // (n_proj_years x 1 or n_fleets) user-specified F or catch in projection years, only used if proj_F_opt = 4 or 5, if ncol = 1, total catch or F, else by fleet.
-  DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind)
-  DATA_INTEGER(proj_R_opt); // 1 = continue RE model (when recruitment is treated as RE), 2 = "expected" recruitment is the same as that used for SPR BRPs
-  DATA_INTEGER(proj_mu_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)
-  DATA_INTEGER(proj_L_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind)
+  DATA_INTEGER(proj_M_opt); // 1 = continue M_re (check for time-varying M_re on R side), 2 = average M (over avg_years_ind_M)
+  DATA_INTEGER(proj_R_opt); // 1 = continue RE model (when recruitment is treated as RE), 2 = "expected" recruitment is the same as that used for SPR BRPs, 3 = average recruitment deviations over age 1 entry of avg_years_ind_NAA, 4 = no recruitment deviations
+  DATA_INTEGER(proj_NAA_opt); // 1 = continue RE model (when NAA(2+) is treated as RE), 2 = average NAA deviations over avg_years_ind_NAA, 3 = no NAA deviations
+  DATA_INTEGER(proj_mu_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind_move)
+  DATA_INTEGER(proj_L_opt); // 1 = continue mu_re (check for time-varying M_re on R side), 2 = average mu (over avg_years_ind_L)
   DATA_ARRAY(mature_proj); // if used, an n_stocks x n_years_proj x n_ages_model matrix for maturity to use in projections
   DATA_ARRAY(waa_proj); // if used, an ? x n_years_proj x n_ages_model array for waa to use in projections. first dimension of array has to match waa for model years
   DATA_VECTOR(logR_mean); // (n_stocks) empirical mean recruitment in model years, used for SCAA recruit projections
@@ -261,7 +279,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(Ecov_obs_logsigma_re); // N_Ecov_years x n_Ecov. columns of random effects used if Ecov_obs_sigma_opt = 4 
   PARAMETER_MATRIX(Ecov_obs_sigma_par); // ncol = N_Ecov, nrows = 2 (mean, sigma of random effects)
   Type nll = 0.0; //negative log-likelihood
-  int trace = 0;
+  // int trace = 0;
+  vector<int> trace(3);
+  trace.setZero();
   int n_years_pop = n_years_model + n_years_proj;
 
   //make expanded (or not) fracyr_SSB, waa, maturity
@@ -292,9 +312,12 @@ Type objective_function<Type>::operator() ()
     nll += nll_Ecov.sum();
     REPORT(nll_Ecov);
     SIMULATE if(do_simulate_Ecov_re == 1){
+      // trace(0) = 1;
+      if(trace(0)) see("begin simulating Ecov_re");
       Ecov_re = simulate_Ecov_re(Ecov_model, Ecov_process_pars, Ecov_re, Ecov_use_re, years_use_Ecov);
       Ecov_x = get_Ecov(Ecov_model, Ecov_process_pars, Ecov_re, Ecov_use_re);
       REPORT(Ecov_re);
+      if(trace(0)) see("finished simulating Ecov_re");
     }
     if(do_post_samp_Ecov == 1) ADREPORT(Ecov_re);
   }
@@ -329,8 +352,10 @@ Type objective_function<Type>::operator() ()
         nll_Ecov_obs(y,i) -= keep.cdf_lower(keep_E(y,i)) * log(squeeze(pnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i))));
         nll_Ecov_obs(y,i) -= keep.cdf_upper(keep_E(y,i)) * log(1.0 - squeeze(pnorm(obsvec(keep_E(y,i)), Ecov_x(y,i), Ecov_obs_sigma(y,i))));
         SIMULATE if(do_simulate_data(2)) {
+          if(trace(0)) see("begin simulating Ecov_obs");
           Ecov_obs(y,i) = rnorm(Ecov_x(y,i), Ecov_obs_sigma(y,i));
           obsvec(keep_E(y,i)) = Ecov_obs(y,i);
+          if(trace(0)) see("finished simulating Ecov_obs");
         }
       }
     }
@@ -549,7 +574,7 @@ Type objective_function<Type>::operator() ()
     }
   }
   //n_years_model x n_regions
-  matrix<Type> L = get_L(L_model, L_repars, L_re, n_years_model, n_years_proj, proj_L_opt, avg_years_ind);
+  matrix<Type> L = get_L(L_model, L_repars, L_re, n_years_model, n_years_proj, proj_L_opt, avg_years_ind_L);
   REPORT(L);
   /////////////////////////////////////////
 
@@ -614,7 +639,7 @@ Type objective_function<Type>::operator() ()
   
   //n_stocks x n_regions x n_years x n_ages
   array<Type> log_M = get_log_M(M_re, M_re_index, M_model, n_years_model, Mpars, log_b, waa, waa_pointer_M, Ecov_lm_M, Ecov_how_M, n_years_proj, 
-    proj_M_opt, avg_years_ind);
+    proj_M_opt, avg_years_ind_M);
   array<Type> MAA = get_MAA(log_M);
   REPORT(log_M);
   REPORT(MAA);
@@ -668,7 +693,7 @@ Type objective_function<Type>::operator() ()
   REPORT(trans_mu_base);
   //n_stocks x n_ages x n_seasons x n_years_pop x n_regions x n_regions - 1
   //rows sum to 1 for mig_type = 0 (prob move), rows sum to 0 for mig_type 1 (instantaneous)
-  array<Type> mu = get_mu(trans_mu_base, can_move, must_move, mig_type, n_years_proj, n_years_model, proj_mu_opt, avg_years_ind);
+  array<Type> mu = get_mu(trans_mu_base, can_move, must_move, mig_type, n_years_proj, n_years_model, proj_mu_opt, avg_years_ind_move);
   REPORT(mu);
   /////////////////////////////////////////
 
@@ -746,8 +771,8 @@ Type objective_function<Type>::operator() ()
   array<Type> all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
    mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
    Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,0); //log_NAA should be mapped accordingly to exclude NAA=0 e.g., recruitment by region.
-  array<Type> all_NAA_1 = all_NAA;
-  REPORT(all_NAA_1);
+  // array<Type> all_NAA_1 = all_NAA;
+  // REPORT(all_NAA_1);
   array<Type> NAA = extract_NAA(all_NAA);
   //This will use get_all_NAA, get_SSB, and get_pred_NAA to form devs and calculate likelihoods
   array<Type> marg_NAA_sigma = get_marginal_NAA_sigma(log_NAA_sigma, trans_NAA_rho, NAA_re_model, decouple_recruitment);
@@ -756,12 +781,15 @@ Type objective_function<Type>::operator() ()
   
 
   //need to do projections before evaluating nll component for NAA
-  vector<Type> fracyr_ssb_y = get_avg_ssbfrac(fracyr_SSB,avg_years_ind); 
-  array<Type> mat_y = get_avg_mat_as_array(mature,avg_years_ind);
-  array<Type> waa_ssb_y = get_avg_waa_as_array(waa,avg_years_ind,waa_pointer_ssb);
-  array<Type> waa_catch_y = get_avg_waa_as_array(waa,avg_years_ind,waa_pointer_fleets);
-  if(n_years_proj > 0){
+  vector<Type> fracyr_ssb_y = get_avg_ssbfrac(fracyr_SSB,spawn_regions,avg_years_ind_waassb); 
+  array<Type> mat_y = get_avg_mat_as_array(mature,spawn_regions, avg_years_ind_mat);
+  array<Type> waa_ssb_y = get_avg_waassb_as_array(waa, spawn_regions, avg_years_ind_waassb,waa_pointer_ssb);
+  array<Type> waa_catch_y = get_avg_waacatch_as_array(waa,avg_years_ind_waacatch,waa_pointer_fleets);
 
+  if(n_years_proj > 0){
+    
+    array<Type> NAA_devs_y = get_avg_NAA_devs(all_NAA, NAA_where, NAA_re_model, avg_years_ind_NAA);
+    
     for(int y = n_years_model; y < n_years_pop; y++){
       fracyr_SSB_all.row(y) = fracyr_ssb_y;
       for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) {
@@ -791,32 +819,32 @@ Type objective_function<Type>::operator() ()
       all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
         mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
         Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, proj_R_opt, R_XSPR, bias_correct_pe, 
-        marg_NAA_sigma, trace);
+        marg_NAA_sigma, NAA_devs_y, proj_NAA_opt, decouple_recruitment, trace(1));
 
       NAA = extract_NAA(all_NAA);
       R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, marg_NAA_sigma);
       //There are many options for defining F in projection years so a lot of inputs
       FAA = update_FAA_proj(y, proj_F_opt, FAA, NAA, log_M, mu, L, mat_y, waa_ssb_y, waa_catch_y, fleet_regions, fleet_seasons, 
-        fracyr_ssb_y, spawn_regions, can_move, must_move, mig_type, avg_years_ind, n_years_model, which_F_age, fracyr_seasons, 
+        fracyr_ssb_y, spawn_regions, can_move, must_move, mig_type, avg_years_ind_sel, n_years_model, which_F_age, fracyr_seasons, 
             n_regions_is_small, percentSPR, proj_Fcatch, percentFXSPR, percentFMSY, R_XSPR,
         FXSPR_init, FMSY_init, F_proj_init, log_SR_a, log_SR_b, spawn_seasons, recruit_model, SPR_weights, SPR_weight_type, bias_correct_brps, 
-        marg_NAA_sigma, trace);
-        // if(trace) see(y);
-        // if(trace) for(int a = 0; a < n_ages; a++) see(FAA(0,y,a));
+        marg_NAA_sigma, trace(1));
+        // if(trace(0)) see(y);
+        // if(trace(0)) for(int a = 0; a < n_ages; a++) see(FAA(0,y,a));
       annual_Ps = update_annual_Ps(y, annual_Ps, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, FAA, log_M, mu, L);
       annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
         fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
     }
-    array<Type> all_NAA_2 = all_NAA;
-    REPORT(all_NAA_2);
-    //if(trace) std::exit(EXIT_FAILURE);
+    // array<Type> all_NAA_2 = all_NAA;
+    // REPORT(all_NAA_2);
+    //if(trace(0)) std::exit(EXIT_FAILURE);
   }
 
   NAA = extract_NAA(all_NAA);
   array<Type> pred_NAA = extract_pred_NAA(all_NAA);
   array<Type> NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
-  array<Type> NAA_devs_1 = NAA_devs;
-  REPORT(NAA_devs_1);
+  // array<Type> NAA_devs_1 = NAA_devs;
+  // REPORT(NAA_devs_1);
   
   // SCAA models
   // likelihood of NAA deviations
@@ -831,9 +859,8 @@ Type objective_function<Type>::operator() ()
     nll += nll_Rproj.sum();
     SIMULATE if(do_simulate_N_re) REPORT(logR_proj);
   }
- 
   matrix<Type> nll_NAA = get_NAA_nll(NAA_re_model, all_NAA, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, bias_correct_pe, decouple_recruitment,
-    use_alt_AR1);
+    use_alt_AR1, n_years_proj, proj_R_opt, proj_NAA_opt);
   nll += nll_NAA.sum();
   //see(nll);
   REPORT(nll_NAA);
@@ -845,50 +872,71 @@ Type objective_function<Type>::operator() ()
       ystart = n_years_model-1; //only does anything if use_alt_AR1 = 1
       sim_alt_AR1 = 1;
     }
+    if(trace(0)) see("begin simulating NAA_devs");
     array<Type> NAA_devs_sim = simulate_NAA_devs(NAA_devs, NAA_re_model, log_NAA_sigma, trans_NAA_rho, NAA_where, spawn_regions, years_use, 
       bias_correct_pe, decouple_recruitment, sim_alt_AR1, ystart);
-    array<Type> NAA_devs_2 = NAA_devs_sim;
-    REPORT(NAA_devs_2);
+    if(trace(0)) see("finished simulating NAA_devs");
+    // array<Type> NAA_devs_2 = NAA_devs_sim;
+    // REPORT(NAA_devs_2);
     //repopulate log_NAA, NAA, pred_NAA, SSB,etc.
+    if(trace(0)) see("begin getting simulated log_NAA");
     log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
       log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
+    if(trace(0)) see("finished getting simulated log_NAA");
+    if(trace(0)) see("begin getting simulated all_NAA");
     all_NAA = get_all_NAA(NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
       mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
-      Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,trace);
+      Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model,trace(1));
+    if(trace(0)) see("finished getting simulated all_NAA");
     R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, marg_NAA_sigma);
     
-    array<Type> all_NAA_3 = all_NAA;
-    REPORT(all_NAA_3);
+    // array<Type> all_NAA_3 = all_NAA;
+    // REPORT(all_NAA_3);
 
     if(n_years_proj > 0){
 
+      array<Type> NAA_devs_y = get_avg_NAA_devs(all_NAA, NAA_where, NAA_re_model, avg_years_ind_NAA);
+    if(trace(0)) see("finished getting avg_NAA_devs");
+
       for(int y = n_years_model; y < n_years_pop; y++){
+    if(trace(0)) see(y);
         log_NAA = get_simulated_log_NAA(N1_model, N1, N1_repars, NAA_re_model, NAA_devs_sim, log_NAA, NAA_where, recruit_model, mean_rec_pars,
           log_SR_a, log_SR_b, Ecov_how_R, Ecov_lm_R, spawn_regions, annual_Ps, annual_SAA_spawn, waa_ssb, mature_all, n_years_model, logR_proj);
+    if(trace(0)) see("finished getting simulated log_NAA (proj years)");
         all_NAA = update_all_NAA(y, all_NAA, NAA_re_model, N1_model, N1, N1_repars, log_NAA, NAA_where, 
           mature_all, waa_ssb, recruit_model, mean_rec_pars, log_SR_a, log_SR_b, 
           Ecov_how_R, Ecov_lm_R, spawn_regions,  annual_Ps, annual_SAA_spawn, n_years_model, logR_proj, proj_R_opt, R_XSPR, bias_correct_pe, 
-          marg_NAA_sigma, trace);
+          marg_NAA_sigma, NAA_devs_y, proj_NAA_opt, decouple_recruitment, trace(1));
+    if(trace(0)) see("finished updating simulated all_NAA (proj years)");
           
         R_XSPR = get_RXSPR(all_NAA, spawn_regions, n_years_model, n_years_proj, XSPR_R_opt, XSPR_R_avg_yrs, marg_NAA_sigma);
         NAA = extract_NAA(all_NAA);
+    if(trace(0)) see("finished extracting simulated NAA (proj years)");
         //There are many options for defining F in projection years so a lot of inputs
+    // trace(1) = 1;
         FAA = update_FAA_proj(y, proj_F_opt, FAA, NAA, log_M, mu, L, mat_y, waa_ssb_y, waa_catch_y, fleet_regions, fleet_seasons, 
-          fracyr_ssb_y, spawn_regions, can_move, must_move, mig_type, avg_years_ind, n_years_model, which_F_age, fracyr_seasons, 
+          fracyr_ssb_y, spawn_regions, can_move, must_move, mig_type, avg_years_ind_sel, n_years_model, which_F_age, fracyr_seasons, 
           n_regions_is_small, percentSPR, proj_Fcatch, percentFXSPR, percentFMSY, R_XSPR, FXSPR_init, FMSY_init, F_proj_init, 
           log_SR_a, log_SR_b, spawn_seasons, recruit_model, SPR_weights, SPR_weight_type, bias_correct_brps, 
-          marg_NAA_sigma, trace);
+          marg_NAA_sigma, trace(1));
+    // trace(1) = 0;
+    if(trace(0)) see("finished updating FAA (proj years)");
         annual_Ps = update_annual_Ps(y, annual_Ps, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, FAA, log_M, mu, L);
+    if(trace(0)) see("finished updating annual_Ps (proj years)");
         annual_SAA_spawn = update_annual_SAA_spawn(y, annual_SAA_spawn, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons, 
           fracyr_SSB_all, spawn_seasons, FAA, log_M, mu, L);
+    if(trace(0)) see("finished updating annual_SAA_spawn (proj years)");
       }
-      array<Type> all_NAA_4 = all_NAA;
-      REPORT(all_NAA_4);
+      // array<Type> all_NAA_4 = all_NAA;
+      // REPORT(all_NAA_4);
     }
 
     NAA = extract_NAA(all_NAA);
+    if(trace(0)) see("finished extracting NAA (proj years)");
     pred_NAA = extract_pred_NAA(all_NAA);
+    if(trace(0)) see("finished extracting pred_NAA (proj years)");
     NAA_devs = get_NAA_devs(all_NAA, NAA_where, NAA_re_model);
+    if(trace(0)) see("finished extracting NAA_devs (proj years)");
     REPORT(log_NAA);
     REPORT(NAA_devs_sim);
   }
@@ -949,9 +997,11 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   REPORT(nll_agg_catch);
   SIMULATE if(do_simulate_data(0)){
+    if(trace(0)) see("begin getting simulated agg_catch");
     agg_catch = simulate_agg_catch(pred_log_catch, agg_catch, agg_catch_sigma, log_catch_sig_scale, use_agg_catch);
     REPORT(agg_catch);
     obsvec = sim_agg_catch_in_obsvec(obsvec,keep_C,agg_catch, use_agg_catch);
+    if(trace(0)) see("finished getting simulated agg_catch");
   }
 
   matrix<Type> nll_catch_acomp = get_nll_catch_acomp(pred_catch_paa, use_catch_paa, catch_paa,
@@ -962,9 +1012,11 @@ Type objective_function<Type>::operator() ()
   REPORT(catch_Neff_out);
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
+    if(trace(0)) see("begin getting simulated catch_paa");
     obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
-      age_comp_model_fleets, catch_paa_pars, trace);
-    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, trace);
+      age_comp_model_fleets, catch_paa_pars, trace(1));
+    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, trace(1));
+    if(trace(0)) see("finished getting simulated catch_paa");
     REPORT(catch_paa);
   }
   /////////////////////////////////////////
@@ -991,9 +1043,11 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   REPORT(nll_agg_indices);
   SIMULATE if(do_simulate_data(1)){
+    if(trace(0)) see("begin getting simulated agg_indices");
     agg_indices = simulate_agg_indices(pred_log_indices, agg_indices, agg_index_sigma, log_index_sig_scale, use_indices);
     REPORT(agg_indices);
     obsvec = sim_agg_indices_in_obsvec(obsvec,keep_I,agg_indices, use_indices);
+    if(trace(0)) see("finished getting simulated agg_indices");
   }
 
   matrix<Type> nll_index_acomp = get_nll_index_acomp(pred_index_paa, use_index_paa, index_paa,
@@ -1004,9 +1058,12 @@ Type objective_function<Type>::operator() ()
   REPORT(index_Neff_out);
   //see(nll);
   SIMULATE if(do_simulate_data(1)){
+    if(trace(0)) see("begin getting simulated index_paa");
     obsvec = simulate_index_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
       age_comp_model_indices, index_paa_pars);
     index_paa = sim_obsvec_in_index_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
+    if(trace(0)) see("finished getting simulated index_paa");
+    // trace(0) = 0;
     REPORT(index_paa);
     // vector<Type> tf_paa_check = obsvec.segment(keep_Ipaa(0,5,0),keep_Ipaa(0,5,1));
     // REPORT(tf_paa_check);
@@ -1028,51 +1085,53 @@ Type objective_function<Type>::operator() ()
 
 
   if(do_SPR_BRPs){
-    //trace = 1;
+    // trace(1) = 0;
+    if(trace(0)) see("begin get_SPR_res static")
     vector< array<Type>> static_SPR_res =  get_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age_static, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_static_init, 
-      avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, Fbar_ages, 
-      vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
+      avg_years_ind_static_M, avg_years_ind_static_move, avg_years_ind_static_L, avg_years_ind_static_mat, avg_years_ind_static_sel, avg_years_ind_static_waassb, avg_years_ind_static_waacatch, 
+      Fbar_ages, vector<Type> (R_XSPR.row(n_years_model-1)), //This will be constant across years if XSPR_R_opt = 2 or 4
       n_regions_is_small, SPR_weight_type, bias_correct_brps, 
-      marg_NAA_sigma, trace, 10);
-    
+      marg_NAA_sigma, trace(1), 10);
+    if(trace(0)) see("end get_SPR_res static")
+    // trace(1) = 0;
     array<Type> log_FAA_XSPR_static = static_SPR_res(0); //(n_fleets + n_regions + 1) x n_ages
-    if(trace) see(log_FAA_XSPR_static);
+    if(trace(0)) see(log_FAA_XSPR_static);
     vector<Type> log_SSB_FXSPR_static = static_SPR_res(1).matrix().row(0);
-    if(trace) see(log_SSB_FXSPR_static);
+    if(trace(0)) see(log_SSB_FXSPR_static);
     vector<Type> log_Y_FXSPR_static = static_SPR_res(2).matrix().row(0);
-    if(trace) see(log_Y_FXSPR_static);
+    if(trace(0)) see(log_Y_FXSPR_static);
     vector<Type> log_SPR_FXSPR_static = static_SPR_res(3).matrix().row(0);
-    if(trace) see(log_SPR_FXSPR_static);
+    if(trace(0)) see(log_SPR_FXSPR_static);
     vector<Type> log_SPR0_static = static_SPR_res(4).matrix().row(0);
-    if(trace) see(log_SPR0_static);
+    if(trace(0)) see(log_SPR0_static);
     array<Type> log_YPR_FXSPR_static = static_SPR_res(5);
-    if(trace) see(log_YPR_FXSPR_static);
+    if(trace(0)) see(log_YPR_FXSPR_static);
     vector<Type> log_FXSPR_iter_static = static_SPR_res(6).matrix().row(0);
-    if(trace) see(log_FXSPR_iter_static);
+    if(trace(0)) see(log_FXSPR_iter_static);
     vector<Type> log_Fbar_XSPR_static = static_SPR_res(17).matrix().row(0);
-    if(trace) see(log_FXSPR_iter_static);
+    if(trace(0)) see(log_FXSPR_iter_static);
     array<Type> NAAPR0_static = static_SPR_res(7);
-    if(trace) see(NAAPR0_static.dim);
+    if(trace(0)) see(NAAPR0_static.dim);
     array<Type> NAAPR_FXSPR_static = static_SPR_res(8);
-    if(trace) see(NAAPR_FXSPR_static.dim);
+    if(trace(0)) see(NAAPR_FXSPR_static.dim);
     array<Type> YPR_srf_FXSPR_static = static_SPR_res(9);
-    if(trace) see(YPR_srf_FXSPR_static.dim);
+    if(trace(0)) see(YPR_srf_FXSPR_static.dim);
     array<Type> waa_ssb_static = static_SPR_res(10);
-    if(trace) see(waa_ssb_static.dim);
+    if(trace(0)) see(waa_ssb_static.dim);
     array<Type> waa_catch_static = static_SPR_res(11);
-    if(trace) see(waa_catch_static.dim);
+    if(trace(0)) see(waa_catch_static.dim);
     array<Type> mature_static = static_SPR_res(12);
-    if(trace) see(mature_static.dim);
+    if(trace(0)) see(mature_static.dim);
     array<Type> sel_static = static_SPR_res(13);
-    if(trace) see(sel_static.dim);
+    if(trace(0)) see(sel_static.dim);
     array<Type> FAA_static = static_SPR_res(14);
-    if(trace) see(FAA_static.dim);
+    if(trace(0)) see(FAA_static.dim);
     array<Type> log_M_static = static_SPR_res(15);
-    if(trace) see(log_M_static.dim);
+    if(trace(0)) see(log_M_static.dim);
     array<Type> mu_static = static_SPR_res(16);
-    if(trace) see(mu_static.dim);
+    if(trace(0)) see(mu_static.dim);
 
     Type log_FXSPR_static = log_FXSPR_iter_static(log_FXSPR_iter_static.size()-1);
     REPORT(log_FAA_XSPR_static);
@@ -1094,13 +1153,18 @@ Type objective_function<Type>::operator() ()
     REPORT(FAA_static);
     REPORT(log_M_static);
     REPORT(mu_static);
-    //trace = 0;
-
+    // trace(1) = 1;
+    // trace(0) = 1;
+    if(trace(0)) see("begin get_annual_SPR_res")
     vector< array<Type>> annual_SPR_res = get_annual_SPR_res(SPR_weights, log_M, FAA, spawn_seasons,  
       spawn_regions, fleet_regions, fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
       L, which_F_age, waa_ssb, waa_catch, mature_all, percentSPR, NAA, fracyr_SSB_all, FXSPR_init, Fbar_ages,
       R_XSPR, n_regions_is_small, SPR_weight_type, bias_correct_brps, 
-      marg_NAA_sigma, trace, 10);
+      marg_NAA_sigma, trace(1), 10);
+    if(trace(0)) see("end get_annual_SPR_res")
+    // trace(1) = 0;
+    // trace(0) = 0;
+    // see("end get_annual_SPR_res")
     
     array<Type> log_FAA_XSPR = annual_SPR_res(0);
     REPORT(log_FAA_XSPR);
@@ -1152,37 +1216,44 @@ Type objective_function<Type>::operator() ()
     }  
 
     if(do_MSY_BRPs) {
-      // trace = 1;
+
+      if(trace(0)) see("begin get_MSY_res static");
       vector< matrix<Type>> static_MSY_res =  get_MSY_res(recruit_model,
         log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
         fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
         L, which_F_age_static, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_static_init, 
-        avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static, avg_years_ind_static,
-        bias_correct_brps, marg_NAA_sigma, n_regions_is_small, trace, 10);
+        avg_years_ind_static_M, avg_years_ind_static_move, avg_years_ind_static_L, avg_years_ind_static_mat, avg_years_ind_static_sel, avg_years_ind_static_waassb, avg_years_ind_static_waacatch, avg_years_ind_static_SRR,
+        bias_correct_brps, marg_NAA_sigma, n_regions_is_small, trace(1), 10);
         vector<Type> log_SSB_MSY_static = static_MSY_res(0).col(0);
-        if(trace) see("end get_MSY_res static");
-        REPORT(log_SSB_MSY_static);
-        vector<Type> log_R_MSY_static = static_MSY_res(1).col(0);
-        REPORT(log_R_MSY_static);
-        vector<Type> log_SPR_MSY_static = static_MSY_res(2).col(0);
-        REPORT(log_SPR_MSY_static);
-        matrix<Type> log_FAA_MSY_static = static_MSY_res(3);
-        REPORT(log_FAA_MSY_static);
-        matrix<Type> log_MSY_static = static_MSY_res(4);
-        REPORT(log_MSY_static);
-        matrix<Type> log_YPR_MSY_static = static_MSY_res(5);
-        REPORT(log_YPR_MSY_static);
-        matrix<Type> log_FMSY_iter_static = static_MSY_res(6);
-        REPORT(log_FMSY_iter_static);
-        vector<Type> log_FMSY_static = log_FMSY_iter_static.row(9);
-        REPORT(log_FMSY_static);
-      // trace = 0;
+      if(trace(0)) see("end get_MSY_res static");
+
+      REPORT(log_SSB_MSY_static);
+      vector<Type> log_R_MSY_static = static_MSY_res(1).col(0);
+      REPORT(log_R_MSY_static);
+      vector<Type> log_SPR_MSY_static = static_MSY_res(2).col(0);
+      REPORT(log_SPR_MSY_static);
+      matrix<Type> log_FAA_MSY_static = static_MSY_res(3);
+      REPORT(log_FAA_MSY_static);
+      matrix<Type> log_MSY_static = static_MSY_res(4);
+      REPORT(log_MSY_static);
+      matrix<Type> log_YPR_MSY_static = static_MSY_res(5);
+      REPORT(log_YPR_MSY_static);
+      matrix<Type> log_FMSY_iter_static = static_MSY_res(6);
+      REPORT(log_FMSY_iter_static);
+      vector<Type> log_FMSY_static = log_FMSY_iter_static.row(9);
+      REPORT(log_FMSY_static);
+
+      // trace(1) = 1;
+      // trace(0) = 1;
+      if(trace(0)) see("begin annual_MSY_res");
       vector< array <Type> > annual_MSY_res = get_annual_MSY_res(recruit_model,
         log_SR_a, log_SR_b, log_M, FAA, spawn_seasons, spawn_regions, fleet_regions,
         fleet_seasons, fracyr_seasons, can_move, must_move, mig_type, trans_mu_base, 
         L, which_F_age, waa_ssb, waa_catch, mature_all, fracyr_SSB_all, FMSY_init, 
-        n_regions_is_small, bias_correct_brps, marg_NAA_sigma, trace, 10);
-      // trace = 0;
+        n_regions_is_small, bias_correct_brps, marg_NAA_sigma, trace(1), 10);
+      if(trace(0)) see("end annual_MSY_res");
+      // trace(0) = 0;
+      // trace(1) = 0;
       
       array<Type> log_SSB_MSY = annual_MSY_res(0);
       REPORT(log_SSB_MSY);
@@ -1202,7 +1273,7 @@ Type objective_function<Type>::operator() ()
       REPORT(log_FMSY);
       // vector<Type> log_FMSY_alt = get_log_FMSY(FAA, fleet_regions, fleet_seasons, spawn_seasons, spawn_regions, can_move, mig_type, 
       //   fracyr_seasons, which_F_age, recruit_model, log_SR_a, log_SR_b, fracyr_SSB_all, log_M, mu, L, waa_ssb, waa_catch, mature_all, n_regions_is_small,
-      //   FMSY_init, trace);
+      //   FMSY_init, trace(1));
 
       if(sum_do_post_samp == 0) if((n_regions == 1) | (mig_type.sum() == 0)) {
         ADREPORT(log_FMSY);

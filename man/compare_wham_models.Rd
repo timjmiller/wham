@@ -54,11 +54,12 @@ will be used.}
   \item{\code{$relative.to}}{character, name of "base" model to plot differences relative to.}
   \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
   \item{\code{$ages.lab}}{vector, overwrite model age labels.}
-  \item{\code{$kobe.yr}}{integer, which year to use in Kobe plot (relative status). Default = terminal model year.}
+  \item{\code{$kobe.yr}}{integer vector (length = 1 (applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).}
   \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
   \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
   \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
   \item{\code{$refpt}}{"XSPR" or "MSY", which reference point to use. Default = "XSPR".}
+  \item{\code{$browse}}{Open html document in web browser (if $out.type = \code{'png'}) (default = TRUE).}
 }}
 }
 \value{

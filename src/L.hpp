@@ -1,6 +1,6 @@
 template <class Type>
 matrix<Type> get_L(vector<int> L_model, matrix<Type> L_pars, matrix<Type> re, int n_years_model, int n_years_proj, 
-    int proj_L_opt, vector<int> avg_years_ind) {
+    int proj_L_opt, matrix<int> avg_years_ind) {
   /* 
      get "extra" mortality rate (n_years x n_regions)
        L_model: 0 = not used, 1 = constant (no RE), 2 = iid RE, 3 = AR1 RE (last two are distinquished on R side)

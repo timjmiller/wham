@@ -2,7 +2,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all()
 # btime <- Sys.time(); devtools::test(filter = "ex09_retro_pred"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~4.4 min
+# ~1.5 min
 
 context("Ex 9: Retro predictions")
 
@@ -61,12 +61,13 @@ for(m in 1:n.mods){
 
 names(mods) <- c("m1 (no CPI)","m2 (CPI)")[1:length(mods)]
 tmp.dir <- tempdir(check=TRUE)
-res <- compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE))
+res <- compare_wham_models(mods, fdir=tmp.dir, do.table=F, plot.opts=list(kobe.prob=FALSE, browse=FALSE))
 
 n.yrs.peel <- 5
 n.yrs.proj <- 3
 for(m in 1:n.mods){
-	mods[[m]]$peels <- retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = T, MakeADFun.silent=TRUE)
+	mods[[m]] <- do_retro_peels(mods[[m]], n.peels=n.yrs.peel, save.input = TRUE, MakeADFun.silent=TRUE)
+	# mods[[m]]$peels <- retro(mods[[m]], ran = unique(names(mods[[m]]$env$par[mods[[m]]$env$random])), n.peels=n.yrs.peel, save.input = TRUE, MakeADFun.silent=TRUE)
 	for(p in 3:n.yrs.peel) {
 		mods[[m]]$peels[[p]] <- project_wham(mods[[m]]$peels[[p]], proj.opts = list(n.yrs = n.yrs.proj, proj.F=rep(0.001,n.yrs.proj)), MakeADFun.silent=TRUE, check.version = FALSE)
 	}

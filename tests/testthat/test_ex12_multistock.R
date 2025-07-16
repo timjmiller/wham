@@ -27,7 +27,7 @@
 
 # pkgbuild::compile_dll(debug = FALSE); pkgload::load_all(compile = FALSE)
 # btime <- Sys.time(); devtools::test(filter = "ex12_multistock"); etime <- Sys.time(); runtime = etime - btime; runtime;
-# ~1.5 min
+# ~30 sec
 
 context("Ex 12: Multiple stocks")
 

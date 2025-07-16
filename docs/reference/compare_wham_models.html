@@ -18,7 +18,7 @@ and a table of AIC and Mohn's rho to aid model comparison."><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0.9006</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
       </span>
     </div>
 
@@ -221,7 +221,7 @@ will be used.</p></dd>
 <dd><p>vector, overwrite model age labels.</p></dd>
 
   <dt><code>$kobe.yr</code></dt>
-<dd><p>integer, which year to use in Kobe plot (relative status). Default = terminal model year.</p></dd>
+<dd><p>integer vector (length = 1 (applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).</p></dd>
 
   <dt><code>$M.age</code></dt>
 <dd><p>integer, which age to use in M time-series plot. Default = <code>max(data$which_F_age)</code> (max age of F to use for full total F).</p></dd>
@@ -234,6 +234,9 @@ will be used.</p></dd>
 
   <dt><code>$refpt</code></dt>
 <dd><p>"XSPR" or "MSY", which reference point to use. Default = "XSPR".</p></dd>
+
+  <dt><code>$browse</code></dt>
+<dd><p>Open html document in web browser (if $out.type = <code>'png'</code>) (default = TRUE).</p></dd>
 
 
 </dl></dd>
