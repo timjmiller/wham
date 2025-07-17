@@ -3,20 +3,20 @@ wham 2.1.0 (2025-07-17)
 
 ### Major improvements
 
-* (2.1.0) Change compilation of WHAM model to use [TMBad framework](https://github.com/kaskr/adcomp/issues/374). Runtimes should be reduced to between 1/3 and 1/2 of that using previous versions, and size of saved models should be significantly smaller. []()
+* (2.1.0) Change compilation of WHAM model to use [TMBad framework](https://github.com/kaskr/adcomp/issues/374). Runtimes should be reduced to between 1/3 and 1/2 of that using previous versions, and size of saved models should be significantly smaller. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
 
 ### Minor improvements
 
-* (2.1.0) `compare_wham_output` now produces an html plot browser like `plot_wham_output` by default. []()
-* (2.1.0) allow greater control of how inputs are averaged for projections, including apparent survival deviations. []()
-* (2.1.0) allow models with different length of data series to be plotted with `compare_wham_output`. []()
+* (2.1.0) `compare_wham_output` now produces an html plot browser like `plot_wham_output` by default. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
+* (2.1.0) allow greater control of how inputs are averaged for projections, including apparent survival deviations. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
+* (2.1.0) allow models with different length of data series to be plotted with `compare_wham_output`. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
 * (2.0.0.9004) add standard error estimation of catch projections. [980b02e](https://github.com/timjmiller/wham/commit/980b02e90a57037b56833e0985b7ea6f28274133)
 * (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in project_wham() and in prepare_projection() for search of F at specified catch in projection year. Tidied up screen printing and tests. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. [d3dd9e9](https://github.com/timjmiller/wham/commit/d3dd9e9f8bcfff37252618c32c689f901cdab5b9)
 
 ### Bug fixes
 
-* (2.1.0) fix years for averaging covariates for projections to use the years of the covariate rather than the years of the population(s). []()
+* (2.1.0) fix years for averaging covariates for projections to use the years of the covariate rather than the years of the population(s). [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
 * (2.0.0.9007) fix bug in plotting F retrospective runs when there are multiple fleets. [7c16651](https://github.com/timjmiller/wham/commit/7c166517d315665871d76ffef550d58c6ec7f9df)
 * (2.0.0.9006) fix bug where retros do not evaluate correctly with truncated ages in age comp (bluefish). [655a9f1](https://github.com/timjmiller/wham/commit/655a9f110e1622a0d38c1ee12e6a9ae4042ae7c6)
 * (2.0.0.9005) fix bug where percentFXSPR and percentFMSY were not being used in projections. [1219efc](https://github.com/timjmiller/wham/commit/1219efc003e09337d5256552e7cbb95ccfffdd7a)
