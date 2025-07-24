@@ -1,9 +1,9 @@
-wham 2.1.0.9001 (2025-07-22)
+wham 2.1.0.9001 (2025-07-24)
 =========================
 
 ### Bug fixes
-* (2.1.0.9001) fix bug in project_wham() for certain combinations of proj.opts$proj_R_opt and proj.opts$proj_NAA_opt. []()
-* (2.1.0.9001) Remove special characters from index,fleet,stock, and region names for permissable plot file names produced by `plot_wham_output`. []()
+* (2.1.0.9001) fix bug in `project_wham` for certain combinations of `proj.opts$proj_R_opt` and `proj.opts$proj_NAA_opt`. [4ce030e](https://github.com/timjmiller/wham/commit/4ce030e5616d4a15cf4adfe701301f679cd51bd4)
+* (2.1.0.9001) Remove special characters from index, fleet, stock, and region names for permissable plot file names produced by `plot_wham_output`. [4ce030e](https://github.com/timjmiller/wham/commit/4ce030e5616d4a15cf4adfe701301f679cd51bd4)
 
 wham 2.1.0 (2025-07-17)
 =========================
@@ -18,7 +18,7 @@ wham 2.1.0 (2025-07-17)
 * (2.1.0) allow greater control of how inputs are averaged for projections, including apparent survival deviations. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
 * (2.1.0) allow models with different length of data series to be plotted with `compare_wham_output`. [598e7bd](https://github.com/timjmiller/wham/commit/598e7bd7361d617c815efd4f0adb9b8b990dd206)
 * (2.0.0.9004) add standard error estimation of catch projections. [980b02e](https://github.com/timjmiller/wham/commit/980b02e90a57037b56833e0985b7ea6f28274133)
-* (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in project_wham() and in prepare_projection() for search of F at specified catch in projection year. Tidied up screen printing and tests. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
+* (2.0.0.9003) add options to set initial values in basic_info argument of prepare_wham_input for searches FXSPR, FMSY, and in `project_wham` and in `prepare_projection` for search of F at specified catch in projection year. Tidied up screen printing and tests. [cf87740](https://github.com/timjmiller/wham/commit/cf877405f65a3ef3e22ff4b5f27764b8ba0eaebc)
 * (2.0.0.9002) Improve robustness of component set_* functions and add some screen output for index and fleet selectivity block information. [d3dd9e9](https://github.com/timjmiller/wham/commit/d3dd9e9f8bcfff37252618c32c689f901cdab5b9)
 
 ### Bug fixes
