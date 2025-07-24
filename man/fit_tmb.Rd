@@ -21,7 +21,7 @@ fit_tmb(
 
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.}
 
-\item{do.check}{T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.}
+\item{do.check}{T/F, check if model parameters are identifiable? Runs internal \code{\link{check_estimability}}, originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package. Default = \code{TRUE}.}
 
 \item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
 
@@ -31,16 +31,16 @@ fit_tmb(
 }
 \value{
 \code{model}, appends the following:
-  \describe{
-    \item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
-    \item{\code{model$date}}{System date}
-    \item{\code{model$dir}}{Current working directory}
-    \item{\code{model$rep}}{model$report(model$env$last.par.best)}
-    \item{\code{model$TMB_version}}{Version of TMB installed}
-    \item{\code{model$parList}}{List of parameters, \code{model$env$parList(x = model$opt$par, par = model$env$last.par.best)}}
-    \item{\code{model$final_gradient}}{Final gradient, \code{model$gr(model$opt$par)}}
-    \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
-  }
+\describe{
+\item{\code{model$opt}}{Output from \code{\link[stats:nlminb]{stats::nlminb}}}
+\item{\code{model$date}}{System date}
+\item{\code{model$dir}}{Current working directory}
+\item{\code{model$rep}}{model$report(model$env$last.par.best)}
+\item{\code{model$TMB_version}}{Version of TMB installed}
+\item{\code{model$parList}}{List of parameters, \code{model$env$parList(x = model$opt$par, par = model$env$last.par.best)}}
+\item{\code{model$final_gradient}}{Final gradient, \code{model$gr(model$opt$par)}}
+\item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
+}
 }
 \description{
 Runs optimization on the TMB model using \code{\link[stats:nlminb]{stats::nlminb}}.
@@ -48,5 +48,5 @@ If specified, takes additional Newton steps and calculates standard deviations.
 Internal function called by \code{\link{fit_wham}}.
 }
 \seealso{
-\code{\link{fit_wham}}, \code{\link{retro}}, \code{TMBhelper::check_estimability}
+\code{\link{fit_wham}}, \code{\link{retro}}, \code{check_estimability}
 }

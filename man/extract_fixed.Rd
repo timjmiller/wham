@@ -3,7 +3,7 @@
 \name{extract_fixed}
 \alias{extract_fixed}
 \title{Extract fixed effects
-Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
 Internal function called by \code{\link{check_estimability}}.}
 \usage{
 extract_fixed(obj)

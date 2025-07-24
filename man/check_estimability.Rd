@@ -3,7 +3,7 @@
 \name{check_estimability}
 \alias{check_estimability}
 \title{Check for identifiability of fixed effects
-Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
 Internal function called by \code{\link{fit_tmb}}.}
 \usage{
 check_estimability(obj, h)

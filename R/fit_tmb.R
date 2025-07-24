@@ -7,7 +7,7 @@
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after optimization. Default = \code{3}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.
-#' @param do.check T/F, check if model parameters are identifiable? Runs internal \code{check_estimability}, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = \code{TRUE}.
+#' @param do.check T/F, check if model parameters are identifiable? Runs internal \code{\link{check_estimability}}, originally provided by the [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper) package. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.
 #' @param use.optim T/F, use \code{\link[stats]{stats::optim}} instead of \code{\link[stats]{stats::nlminb}}? Default = \code{FALSE}.
 #' @param opt.control list of control parameters to pass to optimizer. For nlminb default = list(iter.max = 1000, eval.max = 1000). For optim default = list(maxit=1000).
@@ -23,10 +23,11 @@
 #'     \item{\code{model$sdrep}}{Estimated standard deviations for model parameters, \code{\link[TMB:sdreport]{TMB::sdreport}} or \code{\link[TMB:summary.sdreport]{summary.sdreport)}}}
 #'   }
 #'
-#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{TMBhelper::check_estimability}
+#' @seealso \code{\link{fit_wham}}, \code{\link{retro}}, \code{check_estimability}
 #'
 #'
 #' @export
+#' @md
 fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep=FALSE, use.optim=FALSE, opt.control = NULL)
 {
   if(use.optim){
@@ -115,7 +116,7 @@ fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep
 
 
 #' Extract fixed effects
-#' Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+#' Originally provided by the [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper) package.
 #' Internal function called by \code{\link{check_estimability}}.
 #'
 #' \code{extract_fixed} extracts the best previous value of fixed effects, in a way that works for both mixed and fixed effect models
@@ -123,7 +124,7 @@ fit_tmb <- function(model, n.newton=3, do.sdrep=TRUE, do.check=FALSE, save.sdrep
 #' @param obj, The compiled object
 #'
 #' @return A vector of fixed-effect estimates
-
+#' @md
 extract_fixed <- function( obj ){
   if( length(obj$env$random)==0 ){
     Return <- obj$env$last.par.best
@@ -135,7 +136,7 @@ extract_fixed <- function( obj ){
 
 
 #' Check for identifiability of fixed effects
-#' Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+#' Originally provided by the [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper) package.
 #' Internal function called by \code{\link{fit_tmb}}.
 #'
 #' \code{check_estimability} calculates the matrix of second-derivatives of the marginal likelihood
@@ -149,6 +150,7 @@ extract_fixed <- function( obj ){
 #' @return A tagged list of the hessian and the message
 
 #' @export
+#' @md
 check_estimability <- function( obj, h ){
 
   # Extract fixed effects

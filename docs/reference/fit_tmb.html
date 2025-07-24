@@ -19,7 +19,7 @@ Internal function called by fit_wham."><!-- mathjax --><script src="https://cdnj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9001</span>
       </span>
     </div>
 
@@ -157,7 +157,7 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
 
 
 <dt>do.check</dt>
-<dd><p>T/F, check if model parameters are identifiable? Runs internal <code>check_estimability</code>, originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper. Default = <code>TRUE</code>.</p></dd>
+<dd><p>T/F, check if model parameters are identifiable? Runs internal <code><a href="check_estimability.html">check_estimability</a></code>, originally provided by the <a href="https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper" class="external-link">TMBhelper</a> package. Default = <code>TRUE</code>.</p></dd>
 
 
 <dt>save.sdrep</dt>
@@ -176,37 +176,35 @@ Internal function called by <code><a href="fit_wham.html">fit_wham</a></code>.</
     <h2>Value</h2>
     
 
-<p><code>model</code>, appends the following:</p>
-<p></p>
-<dl><dt><code>model$opt</code></dt>
+<p><code>model</code>, appends the following:</p><dl><dt><code>model$opt</code></dt>
 <dd><p>Output from <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb</a></code></p></dd>
 
-    <dt><code>model$date</code></dt>
+<dt><code>model$date</code></dt>
 <dd><p>System date</p></dd>
 
-    <dt><code>model$dir</code></dt>
+<dt><code>model$dir</code></dt>
 <dd><p>Current working directory</p></dd>
 
-    <dt><code>model$rep</code></dt>
+<dt><code>model$rep</code></dt>
 <dd><p>model$report(model$env$last.par.best)</p></dd>
 
-    <dt><code>model$TMB_version</code></dt>
+<dt><code>model$TMB_version</code></dt>
 <dd><p>Version of TMB installed</p></dd>
 
-    <dt><code>model$parList</code></dt>
+<dt><code>model$parList</code></dt>
 <dd><p>List of parameters, <code>model$env$parList(x = model$opt$par, par = model$env$last.par.best)</code></p></dd>
 
-    <dt><code>model$final_gradient</code></dt>
+<dt><code>model$final_gradient</code></dt>
 <dd><p>Final gradient, <code>model$gr(model$opt$par)</code></p></dd>
 
-    <dt><code>model$sdrep</code></dt>
+<dt><code>model$sdrep</code></dt>
 <dd><p>Estimated standard deviations for model parameters, <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> or <code><a href="https://rdrr.io/pkg/TMB/man/summary.sdreport.html" class="external-link">summary.sdreport)</a></code></p></dd>
 
-  
+
 </dl></div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code>TMBhelper::check_estimability</code></p></div>
+    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="retro.html">retro</a></code>, <code>check_estimability</code></p></div>
     </div>
 
   </div>

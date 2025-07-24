@@ -121,6 +121,11 @@ proj_opts[[13]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 3, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
 
+# default settings: 3 years, use last F, continue ecov, but projected recruitment converges to that used for 40%SPR BRPS and no NAA deviations projected
+proj_opts[[14]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 2, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
+
 saveRDS(mod_proj, file="m5_proj.rds")
 # mod_proj <- readRDS("m5_proj.rds")
 

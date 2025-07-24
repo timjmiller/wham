@@ -195,10 +195,15 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
 
   } # end PDF section =============================================================
   #take out any spaces
-  sfns <- chartr(" ", "_", mod$input$stock_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
-  ffns <- chartr(" ", "_", mod$input$fleet_names)
-  ifns <- chartr(" ", "_", mod$input$index_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  sfns <- gsub(pattern, "_", mod$input$stock_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
+  # sfns <- chartr(" ", "_", mod$input$stock_names)
+  # rfns <- chartr(" ", "_", mod$input$region_names)
+  # ffns <- chartr(" ", "_", mod$input$fleet_names)
+  # ifns <- chartr(" ", "_", mod$input$index_names)
 
   if(out.type %in% c('png','html')){
     dir.plots <- file.path(dir.main, "plots_png")

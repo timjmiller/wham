@@ -806,12 +806,19 @@ array<Type> update_all_NAA(int y, array<Type> all_NAA, vector<int> NAA_re_model,
 
   for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++) if(NAA_where(s,r,a)){
     if(a == 0){
-      if(NAA_re_model(s) > 0){ //rec or rec+1, recruitment has its own options
-        if(proj_R_opt==1) updated_all_NAA(0,s,r,y,a) = exp(log_NAA(s,r,y-1,a)); 
-        if((proj_R_opt==3) | ((proj_NAA_opt==2) & !decouple_recruitment)) updated_all_NAA(0,s,r,y,a) = exp(NAA_devs(s,r,a))*updated_all_NAA(1,s,r,y,a); //log R = R_dev + log pred_R
-        if((proj_R_opt==4) | ((proj_NAA_opt==3) & !decouple_recruitment)) updated_all_NAA(0,s,r,y,a) = updated_all_NAA(1,s,r,y,a); //log R = log pred_R
-      } else { //SCAA, no R RE.
-        if(r == spawn_regions(s)-1) updated_all_NAA(0,s,r,y,0) = exp(logR_proj(y-n_years_model,s));
+      //SCAA, no R RE.
+      if(NAA_re_model(s) == 0) if(r == spawn_regions(s)-1) updated_all_NAA(0,s,r,y,0) = exp(logR_proj(y-n_years_model,s));
+      //rec RE only
+      if(NAA_re_model(s) == 1) {
+        if(proj_R_opt<3) updated_all_NAA(0,s,r,y,a) = exp(log_NAA(s,r,y-1,a)); 
+        if(proj_R_opt==3) updated_all_NAA(0,s,r,y,a) = exp(NAA_devs(s,r,a))*updated_all_NAA(1,s,r,y,a); //log R = R_dev + log pred_R
+        if(proj_R_opt==4) updated_all_NAA(0,s,r,y,a) = updated_all_NAA(1,s,r,y,a); //log R = log pred_R
+      }
+      //rec+1 all NAA RE
+      if(NAA_re_model(s) == 2) {
+        if(((proj_R_opt<3) & decouple_recruitment) | ((proj_NAA_opt==1) & !decouple_recruitment)) updated_all_NAA(0,s,r,y,a) = exp(log_NAA(s,r,y-1,a)); 
+        if(((proj_R_opt==3)  & decouple_recruitment) | ((proj_NAA_opt==2) & !decouple_recruitment)) updated_all_NAA(0,s,r,y,a) = exp(NAA_devs(s,r,a))*updated_all_NAA(1,s,r,y,a); //log R = R_dev + log pred_R
+        if(((proj_R_opt==4)  & decouple_recruitment) | ((proj_NAA_opt==3) & !decouple_recruitment)) updated_all_NAA(0,s,r,y,a) = updated_all_NAA(1,s,r,y,a); //log R = log pred_R
       }
     }
     if(a > 0){

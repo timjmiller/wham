@@ -99,7 +99,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
     plot.colors <- mypalette(n.fleets)
-    ffns <- chartr(" ", "_", mod$input$fleet_names)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    ffns <- gsub(pattern, "_", mod$input$fleet_names)
+    # ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==as.character(f))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
@@ -159,7 +161,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
     plot.colors <- mypalette(n.fleets)
-    ffns <- chartr(" ", "_", mod$input$fleet_names)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    ffns <- gsub(pattern, "_", mod$input$fleet_names)
+    # ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
@@ -250,7 +254,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
     plot.colors <- mypalette(n.fleets)
-    ifns <- chartr(" ", "_", mod$input$index_names)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    ifns <- gsub(pattern, "_", mod$input$index_names)
+    # ifns <- chartr(" ", "_", mod$input$index_names)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==as.character(f))
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],".pdf")), family = fontfam, height = 10, width = 10)
@@ -318,7 +324,9 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     
     n.indices <- mod$input$data$n_indices
     plot.colors <- mypalette(n.indices)
-    ifns <- chartr(" ", "_", mod$input$index_names)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    ifns <- gsub(pattern, "_", mod$input$index_names)
+    # ifns <- chartr(" ", "_", mod$input$index_names)
     for(i in 1:n.indices) if(any(mod$input$data$use_index_paa[,i]==1)){
       if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],".pdf")), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
@@ -409,6 +417,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
     plot.colors <- mypalette(n.fleets)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    efns <- gsub(pattern, "_", mod$input$Ecov_names)
     for(f in 1:n.fleets){
       tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
       obs_ind <- which(mod$input$data$Ecov_use_obs[,f]==1)
@@ -417,8 +427,8 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       tmp$year <- ecov_years#[tmp$year+1] # year in osa is MODEL year, not Ecov year
       tmp$pred <- mod$rep$Ecov_x[obs_ind,f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", chartr(" ", "_", mod$input$Ecov_names[f]),'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
@@ -1027,8 +1037,11 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   if(!missing(use.i)) fleets <- use.i
   else fleets <- 1:dat$n_fleets
   if(missing(plot.colors)) plot.colors = viridisLite::viridis(n=dat$n_fleets) #mypalette(dat$n_fleets)
-  ffns <- chartr(" ", "_", mod$input$fleet_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
+  # ffns <- chartr(" ", "_", mod$input$fleet_names)
+  # rfns <- chartr(" ", "_", mod$input$region_names)
 	for (i in fleets)
 	{
     fleet.name.fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
@@ -1076,9 +1089,12 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:dat$n_indices
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=dat$n_indices) #mypalette(dat$n_indices)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 	for (i in indices)
 	{
-    index.name.fn <- paste0(chartr(" ", "_", mod$input$index_names[i]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$index_regions[i]]))
+    index.name.fn <- paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]])
     index.name.plt <- paste0(mod$input$index_names[i], " in ", mod$input$region_names[mod$input$data$index_regions[i]])
 		if(do.tex) cairo_pdf(file.path(od, paste0("Index_4panel_",index.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Index_4panel_",index.name.fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -1122,8 +1138,11 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
   ages <- 1:dat$n_ages
   if(!missing(use.i)) ages <- use.i
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(ages)) #mypalette(dat$n_ages)
-  sfns <- chartr(" ", "_", mod$input$stock_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  sfns <- gsub(pattern, "_", mod$input$stock_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
+  # sfns <- chartr(" ", "_", mod$input$stock_names)
+  # rfns <- chartr(" ", "_", mod$input$region_names)
 	for(s in stocks) for(r in regions) for (i in ages) if(dat$NAA_where[s,r,i])
 	{
     sigma <- matrix(sigma_all[s,r,], length(years_full), dat$n_ages, byrow = TRUE)
@@ -1215,8 +1234,11 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
   fleets <- 1:mod$env$data$n_fleets
   if(!missing(use.i)) fleets <- use.i
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(fleets)) #mypalette(mod$env$data$n_fleets)
-  ffns <- chartr(" ", "_", mod$input$fleet_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
+  # ffns <- chartr(" ", "_", mod$input$fleet_names)
+  # rfns <- chartr(" ", "_", mod$input$region_names)
 	for (i in fleets)
 	{
     acomp.obs <- mod$env$data$catch_paa[i,,]
@@ -1275,13 +1297,16 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:mod$env$data$n_indices
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(indices)) #mypalette(mod$env$data$n_indices)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 
 	for (i in indices)
 	{
     acomp.obs <- mod$env$data$index_paa[i,,]
     acomp.pred <- mod$rep$pred_IAA[i,1:length(years),] #biomass is accounted for on the cpp side
     acomp.pred <- acomp.pred/apply(acomp.pred,1,sum)
-    index.name.fn <- paste0(chartr(" ", "_", mod$input$index_names[i]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$index_regions[i]]))
+    index.name.fn <- paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]])
     index.name.plt <- paste0(mod$input$index_names[i], " in ", mod$input$region_names[mod$input$data$index_regions[i]])
     if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", index.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", index.name.fn,".png")), width = 10*144, height = 10*144, 
@@ -1373,7 +1398,9 @@ plot.catch.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	if(!missing(use.i)) fleets <- use.i
 	else fleets <- 1:mod$env$data$n_fleets
   tylab <- "Year"
-  ffns <- chartr(" ", "_", mod$input$fleet_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  # ffns <- chartr(" ", "_", mod$input$fleet_names)
 
 	for (i in fleets) {
     yind <- which(dat$use_catch_paa[,i] ==1)
@@ -1449,7 +1476,9 @@ plot.index.age.comp.resids <- function(mod, ages, ages.lab, scale.catch.bubble2 
 	nyrs <- length(years)
 	if(!missing(use.i)) indices <- use.i
 	else indices <- 1:dat$n_indices
-  ifns <- chartr(" ", "_", mod$input$index_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  # ifns <- chartr(" ", "_", mod$input$index_names)
 
 	for (i in indices) {
     yind <- which(dat$use_index_paa[,i] ==1)
@@ -1539,9 +1568,12 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
     sb_p <- dat$selblock_pointer_indices
   }
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(unique(sb_p))) #mypalette(length(unique(sb_p)))
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 	for (i in fleets) {
-    fn <- paste0("Selectivity_", chartr(" ", "_", fleet_names[i]), "_", chartr(" ", "_", fleet_regions[i]))
-    pn <- paste0(fleet_names[i], " in ", fleet_regions[i])
+    fn <- paste0("Selectivity_", ffns[i], "_", rfns[fleet_regions[i]])
+    pn <- paste0(fleet_names[i], " in ", mod$input$region_names[fleet_regions[i]])
 	  if(do.tex) cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
 	  if(do.png) png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	  blocks <- unique(sb_p[,i])
@@ -1590,7 +1622,9 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 	years <- mod$years
 	if(!missing(use.i)) fleets <- use.i
 	else fleets <- 1:mod$env$data$n_fleets
-  ffns <- chartr(" ", "_", mod$input$fleet_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  # ffns <- chartr(" ", "_", mod$input$fleet_names)
 
 	for (i in fleets)
 	{
@@ -3370,8 +3404,11 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
   origpar <- par(no.readonly = TRUE)
   years <- mod$years
 	n_years <- length(years) # don't use projections
-  sfns <- chartr(" ", "_", mod$input$stock_names)
-  rfns <- chartr(" ", "_", mod$input$region_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  sfns <- gsub(pattern, "_", mod$input$stock_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
+  # sfns <- chartr(" ", "_", mod$input$stock_names)
+  # rfns <- chartr(" ", "_", mod$input$region_names)
 
   npeels <- length(mod$peels)
   if(npeels) {
@@ -3649,6 +3686,9 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
   dat <- mod$env$data
   rep <- mod$rep
   n_years <- length(mod$years)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 	for (i in 1:dat$n_fleets)
 	{
 		title1 <- paste("Catch for ",mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], sep="")
@@ -3665,7 +3705,7 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 		cpr.coh <- makecohorts(cpr)
 
 		# make the plots
-    fn <- paste0(chartr(" ", "_", mod$input$fleet_names[i]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$fleet_regions[i]]))
+    fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 		cob.cor <- plotcoh(cob.coh,mytitle=paste(title1," Observed", sep=""),mod=mod)
@@ -3772,6 +3812,9 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 	index.mats <- convert_survey_to_at_age(mod)
 
 	# loop through all the indices
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 	for (ind in 1:dat$n_indices)
 	{
 		if (sum(dat$use_index_paa[,ind]) >0)
@@ -3791,7 +3834,7 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 			mylabels <- paste0("age-",mod$ages.lab, sep="")
 
 			# make the plots
-      fn <- paste0(chartr(" ", "_", mod$input$index_names[ind]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$index_regions[ind]]))
+      fn <- paste0(ifns[ind], "_", rfns[mod$input$data$index_regions[ind]])
 
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3863,6 +3906,9 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 	ages <- 1:dat$n_ages
   my.col <- rep(viridisLite::viridis(n=5),50)
 	#my.col <- rep(c("blue","red","green","orange","gray50"),50)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ffns <- gsub(pattern, "_", mod$input$fleet_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 	for (i in 1:dat$n_fleets)
 	{
 		title1 <- paste("Catch for " , mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], sep="")
@@ -3909,7 +3955,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		z.pr <- calc_Z_cohort(cpr.coh)
 
 		# make the plots
-    fn <- paste0(chartr(" ", "_", mod$input$fleet_names[i]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$fleet_regions[i]]))
+    fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_obs.pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3967,6 +4013,9 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
   n_ages <- dat$n_ages
   cohort <- (min(mod$years)-n_ages-min(ages)):(lastyr+n_ages-min(ages))
 	my.col <- rep(c("blue","red","green","orange","gray50"),50)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  ifns <- gsub(pattern, "_", mod$input$index_names)
+  rfns <- gsub(pattern, "_", mod$input$region_names)
 
 	# convert the west coast style indices to catch at age matrices
 	index.mats <- convert_survey_to_at_age(mod)
@@ -4015,7 +4064,7 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 			z.pr <- calc_Z_cohort(ipr.coh)
 
 			# make the plots
-		  fn <- paste0(chartr(" ", "_", mod$input$index_names[ind]), "_", chartr(" ", "_", mod$input$region_names[mod$input$data$index_regions[ind]]))
+		  fn <- paste0(ifns[ind], "_", rfns[mod$input$data$index_regions[ind]])
 			if(!(all(is.na(iob.coh)) & all(is.na(ipr.coh))))
 			{
 			  if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_obs.pdf")), family = fontfam, height = 10, width = 10)
@@ -4101,7 +4150,9 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   if(!missing(use.i)) ecovs <- use.i
   else ecovs <- 1:dat$n_Ecov
   plot.colors <- viridisLite::viridis(n = dat$n_Ecov) #mypalette(dat$n_Ecov)
-  efns <- chartr(" ", "_", mod$input$Ecov_names)
+  pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+  efns <- gsub(pattern, "_", mod$input$Ecov_names)
+  # efns <- chartr(" ", "_", mod$input$Ecov_names)
   for (i in ecovs)
   {
     if(do.tex) cairo_pdf(file.path(od, paste0(efns[i],"_diagnostic.pdf")), family = fontfam, height = 10, width = 10)
@@ -4207,8 +4258,11 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     } else {
       years_full <- years
     }
-    sfns <- chartr(" ", "_", mod$input$stock_names)
-    rfns <- chartr(" ", "_", mod$input$region_names)
+    pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
+    sfns <- gsub(pattern, "_", mod$input$stock_names)
+    rfns <- gsub(pattern, "_", mod$input$region_names)
+    # sfns <- chartr(" ", "_", mod$input$stock_names)
+    # rfns <- chartr(" ", "_", mod$input$region_names)
     df.plot <- data.frame(Stock = character(), Region = character(), Year = integer(), Age = integer(), Deviation = numeric())
     for(s in 1:mod$env$data$n_stocks) for(r in 1:mod$env$data$n_regions){
       df.MAA <- as.data.frame(rep$MAA[s,r,,])

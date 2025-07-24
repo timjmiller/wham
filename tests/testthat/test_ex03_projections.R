@@ -133,6 +133,11 @@ proj_opts[[13]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 3, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
 
+# default settings: 3 years, use last F, continue ecov, but projected recruitment converges to that used for 40%SPR BRPS and no NAA deviations projected
+proj_opts[[14]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
+              use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
+              cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 2, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
+
 # saveRDS(proj_opts, "c:/work/wham/wham/sandbox/proj_opts.RDS")
 # saveRDS(mod, "c:/work/wham/wham/sandbox/ex3_mod.RDS")
 # proj_opts <- readRDS("c:/work/wham/wham/sandbox/proj_opts.RDS")
@@ -180,6 +185,25 @@ for(m in 1:length(proj_opts)) {
     #  check marginal nll is the same
     nll_proj[m] <-  mod_proj[[m]]$fn()
     expect_equal(as.numeric(nll_proj[!!m]), as.numeric(mod$opt$obj), tolerance=1e-6)
+  }
+  proj_yrs <-mod_proj[[m]]$input$data$n_years_model + 1:mod_proj[[m]]$input$data$n_years_proj 
+  if(m == 12){
+    no_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,1]
+    avg_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,-1]
+    for(i in 1:length(no_devs)) expect_equal(no_devs[!!i], 0.0, tolerance=1e-8)
+    for(a in 1:NCOL(avg_devs)) for(i in 2:NROW(avg_devs)) expect_equal(avg_devs[!!i,!!a], avg_devs[1,a], tolerance=1e-8)
+  }
+  if(m == 13){
+    no_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,-1]
+    avg_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,1]
+    for(i in 2:length(avg_devs)) expect_equal(avg_devs[!!i], avg_devs[1], tolerance=1e-8)
+    for(a in 1:NCOL(no_devs)) for(i in 1:NROW(no_devs)) expect_equal(no_devs[!!i,!!a], 0.0, tolerance=1e-8)
+  }
+  if(m == 14){
+    no_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,-1]
+    avg_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,1]
+    for(i in 1:length(avg_devs)) expect_equal(avg_devs[!!i], -0.2300036, tolerance=1e-6)
+    for(a in 1:NCOL(no_devs)) for(i in 1:NROW(no_devs)) expect_equal(no_devs[!!i,!!a], 0.0, tolerance=1e-8)
   }
   
   #test simulation works with projections included.

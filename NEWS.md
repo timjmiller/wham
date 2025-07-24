@@ -1,3 +1,10 @@
+wham 2.1.0.9001 (2025-07-22)
+=========================
+
+### Bug fixes
+* (2.1.0.9001) fix bug in project_wham() for certain combinations of proj.opts$proj_R_opt and proj.opts$proj_NAA_opt. []()
+* (2.1.0.9001) Remove special characters from index,fleet,stock, and region names for permissable plot file names produced by `plot_wham_output`. []()
+
 wham 2.1.0 (2025-07-17)
 =========================
 

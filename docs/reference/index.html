@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9001</span>
       </span>
     </div>
 
@@ -129,6 +129,12 @@
         </td>
         <td><p>Check convergence of WHAM model</p></td>
       </tr><tr><td>
+          <p><code><a href="check_estimability.html">check_estimability()</a></code> </p>
+        </td>
+        <td><p>Check for identifiability of fixed effects
+Originally provided by the <a href="https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper" class="external-link">TMBhelper</a> package.
+Internal function called by <code>fit_tmb</code>.</p></td>
+      </tr><tr><td>
           <p><code><a href="compare_wham_models.html">compare_wham_models()</a></code> </p>
         </td>
         <td><p>Compare multiple WHAM (or ASAP) models</p></td>
@@ -144,6 +150,14 @@
           <p><code><a href="do_sdreport.html">do_sdreport()</a></code> </p>
         </td>
         <td><p>Add TMB sdreport object to WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="fit_peel.html">fit_peel()</a></code> </p>
+        </td>
+        <td><p>Fit model peeling off <em>i</em> years of data</p></td>
+      </tr><tr><td>
+          <p><code><a href="fit_tmb.html">fit_tmb()</a></code> </p>
+        </td>
+        <td><p>Fit TMB model using nlminb</p></td>
       </tr><tr><td>
           <p><code><a href="fit_wham.html">fit_wham()</a></code> </p>
         </td>
@@ -165,13 +179,13 @@
         </td>
         <td><p>Plot WHAM output</p></td>
       </tr><tr><td>
-          <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
-        </td>
-        <td><p>Prepare input data and parameters for WHAM model</p></td>
-      </tr><tr><td>
           <p><code><a href="prepare_projection.html">prepare_projection()</a></code> </p>
         </td>
         <td><p>Prepare input data and parameters to project an already fit WHAM model</p></td>
+      </tr><tr><td>
+          <p><code><a href="prepare_wham_input.html">prepare_wham_input()</a></code> </p>
+        </td>
+        <td><p>Prepare input data and parameters for WHAM model</p></td>
       </tr><tr><td>
           <p><code><a href="project_wham.html">project_wham()</a></code> </p>
         </td>
@@ -180,6 +194,14 @@
           <p><code><a href="read_asap3_dat.html">read_asap3_dat()</a></code> </p>
         </td>
         <td><p>Read an ASAP3 .dat file into R</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_asap3_fit.html">read_asap3_fit()</a></code> </p>
+        </td>
+        <td><p>Read ASAP3 fit</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_wham_fit.html">read_wham_fit()</a></code> </p>
+        </td>
+        <td><p>Read WHAM fit</p></td>
       </tr><tr><td>
           <p><code><a href="retro.html">retro()</a></code> </p>
         </td>
@@ -241,33 +263,11 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="check_estimability.html">check_estimability()</a></code> </p>
-        </td>
-        <td><p>Check for identifiability of fixed effects
-Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
-Internal function called by <code>fit_tmb</code>.</p></td>
-      </tr><tr><td>
           <p><code><a href="extract_fixed.html">extract_fixed()</a></code> </p>
         </td>
         <td><p>Extract fixed effects
-Originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper 
+Originally provided by the <a href="https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper" class="external-link">TMBhelper</a> package.
 Internal function called by <code>check_estimability</code>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="fit_tmb.html">fit_tmb()</a></code> </p>
-        </td>
-        <td><p>Fit TMB model using nlminb</p></td>
-      </tr><tr><td>
-          <p><code><a href="fit_peel.html">fit_peel()</a></code> </p>
-        </td>
-        <td><p>Fit model peeling off <em>i</em> years of data</p></td>
-      </tr><tr><td>
-          <p><code><a href="read_asap3_fit.html">read_asap3_fit()</a></code> </p>
-        </td>
-        <td><p>Read ASAP3 fit</p></td>
-      </tr><tr><td>
-          <p><code><a href="read_wham_fit.html">read_wham_fit()</a></code> </p>
-        </td>
-        <td><p>Read WHAM fit</p></td>
       </tr><tr><td>
           <p><code><a href="reduce_input.html">reduce_input()</a></code> </p>
         </td>
