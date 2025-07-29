@@ -10,7 +10,6 @@
 #'     \item{$F}{matrix (n_years x n_fleets) of (initial) values for fully-selected fishing morality.}
 #'     \item{$F_config}{integer 1: (default) configure F parameters (on log scale) as an F in the initial year and then deviations from one year to the next,
 #'        or 2: configure F parameters as (log) annual values.}
-#'     \item{$F_map}{matrix (n_years x n_fleets) of (initial) values for fully-selected fishing morality.}
 #'     \item{$map_F}{Specify whether to fix any fully-selected F parameters, corresponds 
 #'                to \code{map$F_pars}. integer matrix (n_years x n_fleets). 
 #'                Use NA to fix parameters and common integers will make those parameters equal.
