@@ -1560,19 +1560,21 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
   }
   if(!indices) {
     fleet_names <- mod$input$fleet_names
-    fleet_regions <- mod$input$region_names[mod$input$data$fleet_regions]
+    fleet_regions <- mod$input$data$fleet_regions
     sb_p <- dat$selblock_pointer_fleets #selblock pointer by year and fleet
   } else {
     fleet_names <- mod$input$index_names
-    fleet_regions <- mod$input$region_names[mod$input$data$index_regions]
+    fleet_regions <- mod$input$data$index_regions
     sb_p <- dat$selblock_pointer_indices
   }
+  fleet_region_names <- mod$input$region_names[fleet_regions]
+  
   if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(unique(sb_p))) #mypalette(length(unique(sb_p)))
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
-  ffns <- gsub(pattern, "_", mod$input$fleet_names)
-  rfns <- gsub(pattern, "_", mod$input$region_names)
+  ffns <- gsub(pattern, "_", fleet_names)
+  rfns <- gsub(pattern, "_", fleet_region_names)
 	for (i in fleets) {
-    fn <- paste0("Selectivity_", ffns[i], "_", rfns[fleet_regions[i]])
+    fn <- paste0("Selectivity_", ffns[i], "_", rfns[i])
     pn <- paste0(fleet_names[i], " in ", mod$input$region_names[fleet_regions[i]])
 	  if(do.tex) cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
 	  if(do.png) png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
@@ -3968,7 +3970,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
 		}
     plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
-    arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3)
+    suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 		if(do.tex | do.png) dev.off()
@@ -3984,7 +3986,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
     plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
-    arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3)
+    suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
 		if(do.tex | do.png) dev.off()
@@ -4079,7 +4081,7 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
 				}
         plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
-        arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3)
+        suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 
 				# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
@@ -4096,7 +4098,7 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
         plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
-        arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3)
+        suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 				# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
 				if(do.tex | do.png) dev.off()
