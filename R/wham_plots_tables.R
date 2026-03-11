@@ -4225,9 +4225,13 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       block.names[i] <- paste0(block.names[i], "\n", paste(block.fleets.indices[[i]], collapse = ", "))
     }
     for(i in 1:n_selblocks) if(include.selblock[i]){
-      tmp <- as.data.frame(rep$selAA[[i]])
-      tmp$Year <- years
-      colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
+      years_ind <- apply(dat$selblock_pointer_fleets, 1, \(x) sum(x == i)) + 
+        apply(dat$selblock_pointer_indices, 1, \(x) sum(x == i))
+      tmp <- rep$selAA[[i]]
+      tmp[which(years_ind == 0),] <- NA
+      tmp <- as.data.frame(tmp)
+      colnames(tmp) <- c(paste0("Age_",1:n_ages))
+      tmp$Year = years
       tmp$Block <- block.names[i]
       df.selAA <- rbind(df.selAA, tmp)
     }
