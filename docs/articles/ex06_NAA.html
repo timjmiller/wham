@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ex 6: Numbers-at-age / survival deviations as random effects • wham</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 6: Numbers-at-age / survival deviations as random effects">
-<meta property="og:description" content="wham">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9004</span>
       </span>
     </div>
 
@@ -43,9 +42,9 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
-     
+
     Vignettes
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
@@ -96,21 +95,21 @@
 <li>
   <a href="../reference/index.html">
     <span class="far fa-file-code fa-lg"></span>
-     
+
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
     Source code
   </a>
 </li>
 <li>
   <a href="../news/index.html">
     <span class="fas fa-bullhorn fa-lg"></span>
-     
+
     News
   </a>
 </li>
@@ -119,14 +118,14 @@
 <li>
   <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
-     
+
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
-     
+
     Contact
   </a>
 </li>
@@ -138,7 +137,7 @@
 </div>
 <!--/.navbar -->
 
-      
+
 
       </header><script src="ex06_NAA_files/kePrint-0.0.1/kePrint.js"></script><link href="ex06_NAA_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
@@ -228,9 +227,7 @@ effects
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://timjmiller.github.io/wham/">wham</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: package 'tidyr' was built under R version 4.2.3</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: package 'dplyr' was built under R version 4.2.3</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <p>For a clean, runnable <code>.R</code> script, look at
 <code>ex6_NAA.R</code> in the <code>example_scripts</code> folder of the
 <code>wham</code> package. You can run this entire example script
@@ -255,9 +252,10 @@ with:</p>
 5</a>, the GSI data file does not have a standard error estimate, either
 for each yearly observation or one overall value. In such a case, WHAM
 can estimate the observation error for the environmental covariate,
-either as one overall value, <span class="math inline">\(\sigma_{GSI}\)</span>, or yearly values as random
-effects, <span class="math inline">\(\mathrm{log}\sigma_{{GSI}_y} \sim
-\mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})\)</span>.
+either as one overall value,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{GSI}</annotation></semantics></math>,
+or yearly values as random effects,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><msub><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow><mi>y</mi></msub></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><mo>,</mo><msubsup><mi>σ</mi><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{log}\sigma_{{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})</annotation></semantics></math>.
 In this example we choose the simpler option and estimate one
 observation error parameter, shared across years.</p>
 </div>
@@ -314,8 +312,9 @@ Common options are specified with strings.
 survival of all other ages is deterministic</li>
 <li>
 <code>"rec+1"</code>: Survival of all ages is stochastic (“full
-state space model”), with 2 estimated <span class="math inline">\(\sigma_a\)</span>, one for recruitment and one
-shared among other ages</li>
+state space model”), with 2 estimated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>a</mi></msub><annotation encoding="application/x-tex">\sigma_a</annotation></semantics></math>,
+one for recruitment and one shared among other ages</li>
 </ul>
 </li>
 <li>
@@ -331,7 +330,9 @@ uncorrelated.</li>
 <code>"ar1_y"</code>: NAA deviations correlated by year (AR1).</li>
 <li>
 <code>"2dar1"</code>: NAA deviations correlated by year and age (2D
-AR1, as for <span class="math inline">\(M\)</span> in example 5).</li>
+AR1, as for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+in example 5).</li>
 </ul>
 </li>
 </ul>
@@ -340,8 +341,14 @@ parameter estimation via <code>NAA_re$sigma_map</code> as an array
 (n_stocks x n_regions x n_ages) of integers (and NAs to fix parameters).
 For example (with 1 stock and 1 region here),
 <code>NAA_re$sigma = array(c(1,2,2,3,3,3), dim = c(1,1,6))</code> will
-estimate three <span class="math inline">\(\sigma\)</span> parameters,
-with recruitment (age-1) deviations having their own <span class="math inline">\(\sigma_R\)</span>, ages 2-3 sharing <span class="math inline">\(\sigma_2\)</span>, and ages 4-6 sharing <span class="math inline">\(\sigma_3\)</span>.</p>
+estimate three
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
+parameters, with recruitment (age-1) deviations having their own
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\sigma_R</annotation></semantics></math>,
+ages 2-3 sharing
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mn>2</mn></msub><annotation encoding="application/x-tex">\sigma_2</annotation></semantics></math>,
+and ages 4-6 sharing
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mn>3</mn></msub><annotation encoding="application/x-tex">\sigma_3</annotation></semantics></math>.</p>
 <p>To fit model <code>m1</code> (SCAA) we do not have to supply
 anything:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -365,8 +372,9 @@ example differs from example 2 in that:</p>
 <ul>
 <li>
 <code>ecov$logsigma = "est_1"</code> estimates the GSI observation
-error (<span class="math inline">\(\sigma_{GSI}\)</span>, one overall
-value for all years like in example 5). The other option is
+error
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{GSI}</annotation></semantics></math>,
+one overall value for all years like in example 5). The other option is
 <code>"est_re"</code> to allow the GSI observation error to have yearly
 fluctuations (random effects). The Cold Pool Index in example 2 had
 yearly observation errors given, so this was not necessary.</li>
@@ -376,12 +384,18 @@ yearly observation errors given, so this was not necessary.</li>
 for models without a GSI-Recruitment effect, in order to compare AIC
 with models that do include the effect. Setting
 <code>ecov$R_how = matrix("limiting-lag-1-linear,1,1)</code> specifies
-that the GSI iyear <span class="math inline">\(t\)</span> affects the
-Beverton-Holt <span class="math inline">\(\beta\)</span> parameter
-(“limiting” / carrying capacity effect) in year <span class="math inline">\(t+1\)</span> linearly (on log scale).</li>
+that the GSI iyear
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+affects the Beverton-Holt
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>
+parameter (“limiting” / carrying capacity effect) in year
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">t+1</annotation></semantics></math>
+linearly (on log scale).</li>
 </ul>
 <p>For example, the <code>ecov</code> list for models
-<code>m8</code>-<code>m13</code> with the linear GSI-<span class="math inline">\(\beta\)</span> effect:</p>
+<code>m8</code>-<code>m13</code> with the linear
+GSI-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>
+effect:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    label <span class="op">=</span> <span class="st">"GSI"</span>,</span>
@@ -541,23 +555,28 @@ R_how
 Converged
 </th>
 <th style="text-align:left;">
-Pos def Hessian
+PD Hessian
 </th>
 <th style="text-align:right;">
-<div class="line-block">Runtime</div>
-(mi
+Runtime (min)
 </th>
 <th style="text-align:right;">
-)| N
+NLL
 </th>
 <th style="text-align:left;">
-L|<span class="math inline">\(\Delta AIC &lt;/th&gt;  &lt;th
-style="text-align:left;"&gt; |AIC &lt;/th&gt;  &lt;th
-style="text-align:left;"&gt; |\)</span>_{R}
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>A</mi><mi>I</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\Delta AIC</annotation></semantics></math>
 </th>
 <th style="text-align:left;">
-|<span class="math inline">\(\rho_{SSB} &lt;/th&gt;  &lt;th
-style="text-align:left;"&gt; |\)</span>_{}
+AIC
+</th>
+<th style="text-align:left;">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_{R}</annotation></semantics></math>
+</th>
+<th style="text-align:left;">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{SSB}</annotation></semantics></math>
+</th>
+<th style="text-align:left;">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mover><mi>F</mi><mo accent="true">¯</mo></mover></msub><annotation encoding="application/x-tex">\rho_{\overline{F}}</annotation></semantics></math>
 </th>
 </tr></thead>
 <tbody>
@@ -1110,8 +1129,7 @@ deviations, because the GSI effect on expected recruitment accounted for
 some of this variability.</li>
 </ul>
 <p>Estimated survival deviations by age (y-axis) and year (x-axis) for
-all converged models:</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png" style="width:95.0%"></p>
+all converged models: <img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png" style="width:100.0%" alt="NAA_devs.png"></p>
 </div>
 <div class="section level4">
 <h4 id="retrospective-patterns">Retrospective patterns<a class="anchor" aria-label="anchor" href="#retrospective-patterns"></a>
@@ -1119,30 +1137,38 @@ all converged models:</p>
 <p>The base model, <code>m1</code> and all
 <code>NAA_re$sigma = "rec"</code> models (<code>m2-m3</code> and
 <code>m8-m9</code>) had a severe retrospective pattern for recruitment,
-SSB, and <span class="math inline">\(F\)</span> (very high <span class="math inline">\(\rho_R\)</span>). The full state-space model
-effectively alleviated this. Adding a GSI-Recruitment link to the
-state-space models further reduced <span class="math inline">\(\rho_R\)</span>, but had negligible effects on
-<span class="math inline">\(\rho_{SSB}\)</span> and <span class="math inline">\(\rho_{\overline{F}}\)</span>.</p>
-<p>The AIC and Mohn’s <span class="math inline">\(\rho\)</span> values
-were similar for <code>m11</code> and <code>m13</code>, the models with
-lowest AIC.</p>
+SSB, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+(very high
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_R</annotation></semantics></math>).
+The full state-space model effectively alleviated this. Adding a
+GSI-Recruitment link to the state-space models further reduced
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_R</annotation></semantics></math>,
+but had negligible effects on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{SSB}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mover><mi>F</mi><mo accent="true">¯</mo></mover></msub><annotation encoding="application/x-tex">\rho_{\overline{F}}</annotation></semantics></math>.</p>
+<p>The AIC and Mohn’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+values were similar for <code>m11</code> and <code>m13</code>, the
+models with lowest AIC.</p>
 <p>The plots below compare retrospective patterns from the base model
 (<code>m1</code>, left) to those from the full model (<code>m13</code>,
 right).</p>
 <div class="section level6">
 <h6 id="numbers-at-age-naa">Numbers-at-age, NAA<a class="anchor" aria-label="anchor" href="#numbers-at-age-naa"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png" style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png" style="width:50.0%" alt="m1 NAA_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png" style="width:50.0%" alt="m13 NAA_retro_relative"></p>
 </div>
 <div class="section level6">
 <h6 id="spawning-stock-biomass-ssb">Spawning stock biomass, SSB<a class="anchor" aria-label="anchor" href="#spawning-stock-biomass-ssb"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png" style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png" style="width:50.0%" alt="m1 SSB_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png" style="width:50.0%" alt="m13 SSB_retro_relative"></p>
 </div>
 <div class="section level6">
 <h6 id="fishing-mortality-f">Fishing mortality, F<a class="anchor" aria-label="anchor" href="#fishing-mortality-f"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png" style="width:45.0%"></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png" style="width:50.0%" alt="m1 Fbar_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png" style="width:50.0%" alt="m13 Fbar_retro_relative"></p>
 </div>
 </div>
 <div class="section level4">
@@ -1152,31 +1178,39 @@ right).</p>
 and more smoothing of the GSI than those without. Compare the confidence
 intervals for <code>m7</code> (left, no GSI-Recruitment link), to those
 for <code>m13</code> (right, with GSI-Recruitment link).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png" style="width:45.0%" alt="Gulf Stream Index (GSI) time-series model, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png" style="width:45.0%" alt="Gulf Stream Index (GSI) time-series model, m13."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m13."></p>
 </div>
 <div class="section level4">
 <h4 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
 </h4>
 <p>The state-space models, with or without the GSI-Recruitment link,
-estimated similar but slightly exaggerated trends in <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> compared to the base model. Left: <span class="math inline">\(SSB\)</span> and <span class="math inline">\(F\)</span> trends from the base model,
-<code>m1</code>. Right: <span class="math inline">\(SSB\)</span> and
-<span class="math inline">\(F\)</span> trends from the state-space model
-without GSI effect, <code>m7</code>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png" style="width:45.0%"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png" style="width:45.0%"></p>
+estimated similar but slightly exaggerated trends in
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow><annotation encoding="application/x-tex">SSB</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+compared to the base model. Left:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow><annotation encoding="application/x-tex">SSB</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+trends from the base model, <code>m1</code>. Right:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow><annotation encoding="application/x-tex">SSB</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+trends from the state-space model without GSI effect,
+<code>m7</code>.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png" style="width:50.0%" alt="m1_SSB_F_trend"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png" style="width:50.0%" alt="m7_SSB_F_trend"></p>
 <p>Adding the GSI-Recruitment link to the state-space model did not
 impact the probability that the stock was overfished or experiencing
 overfishing in the final year, 2016 (<code>m7</code> w/o GSI, left;
 <code>m13</code> w/ GSI, right).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m13."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m13."></p>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 
@@ -1189,16 +1223,16 @@ overfishing in the final year, 2016 (<code>m7</code> w/o GSI, left;
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>

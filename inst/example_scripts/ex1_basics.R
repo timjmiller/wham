@@ -24,10 +24,13 @@ input1 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                     fix_pars=list(4:5,4,2:4)),
                                 NAA_re = list(sigma="rec", cor="iid"), basic_info = basic_info)
-m1 <- fit_wham(input1, do.osa = F) # turn off OSA residuals to save time
+m1 <- fit_wham(input1, do.osa = F, do.retro = F) # turn off retro peels and OSA residuals to save time
 
-# Check that m1 converged (m1$opt$convergence should be 0, and the maximum gradiet should be < 1e-06)
+# Check that m1 converged (m1$opt$convergence should be 0, and the maximum absolute gradient should be tiny (e.g., < 1e-06)
 check_convergence(m1)
+
+#add retro peels
+m1 <- do_retro_peels(m1)
 
 # ---------------------------------------------------------------
 # model 2
@@ -39,10 +42,13 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec", cor="iid"),
                                     age_comp = "logistic-normal-miss0", basic_info = basic_info)
-m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time
+m2 <- fit_wham(input2, do.osa = F, do.retro = F) # turn off retro peels and OSA residuals to save time
 
 # Check that m2 converged
 check_convergence(m2)
+
+#add retro peels
+m2 <- do_retro_peels(m2)
 
 # ---------------------------------------------------------------
 # model 3
@@ -53,10 +59,13 @@ input3 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                     initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
                                     fix_pars=list(4:5,4,2:4)),
                                 NAA_re = list(sigma="rec+1", cor="iid"), basic_info = basic_info)
-m3 <- fit_wham(input3, do.osa = F) # turn off OSA residuals to save time
+m3 <- fit_wham(input3, do.osa = F, do.retro = F) # turn off retro peels and OSA residuals to save time
 
 # Check that m3 converged
 check_convergence(m3)
+
+#add retro peels
+m3 <- do_retro_peels(m3)
 
 # ---------------------------------------------------------------
 # model 4
@@ -68,18 +77,30 @@ input4 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
                                         fix_pars=list(4:5,4,2:4)),
                                     NAA_re = list(sigma="rec+1", cor="iid"),
                                     age_comp = "logistic-normal-miss0", basic_info = basic_info)
-m4 <- fit_wham(input4, do.retro = F, do.sdrep = F, do.osa = F) # turn off extras because it turns out convergence is not good.
+m4 <- fit_wham(input4, do.retro = F, do.osa = F) # turn off extras because it turns out convergence is not good.
 
-# Check that m4 converged. Bad max absolute gradient
+# Check that m4 converged. Bad max absolute gradient for index age comp variance parameter
 check_convergence(m4)
 
-#retry starting at best estimates so far
-input4$par <- m4$parList #best estimates so far
-m4_rev <- fit_wham(input4, do.osa = F) 
+#try initially holding index age comp variance parameters fixed
+input4_fixed <- input4
+input4_fixed[["map"]][["index_paa_pars"]] <- factor(rep(NA, length(input4_fixed[["par"]][["index_paa_pars"]])))
+# input4$par <- m4$parList #best estimates so far
+# input4$par <- m4$parList #best estimates so far
+m4_fixed <- fit_wham(input4_fixed, do.osa = F, do.retro = F) 
+
+# Convergence of initial fit is good
+check_convergence(m4_fixed)
+
+input4[["par"]] <- m4_fixed[["parList"]]  #best estimates so far
+
+m4_rev <- fit_wham(input4, do.osa = F, do.retro = F) 
 
 # Now convergence is good
 check_convergence(m4_rev)
 
+#add retro peels
+m4_rev <- do_retro_peels(m4_rev)
 #add OSA residuals
 m4_rev <- make_osa_residuals(m4_rev)
 

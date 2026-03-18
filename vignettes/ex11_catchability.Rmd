@@ -148,7 +148,7 @@ wham:::plot_q_prior_post(fit)
 abline(v = newdata$q[1,2], lwd = 2)
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/prior_posterior_q.png){ width=80% }
+![prior_posterior_q](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/prior_posterior_q.png){ width=100% }\
 
 ## 5. Add random effects on q for first index
 
@@ -199,7 +199,7 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_1.png){ width=80% }
+![q_time_series_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_1.png){ width=100% }\
 
 ## 6. Add Environmental covariates to the model
 
@@ -263,7 +263,7 @@ for( i in 1:input$data$n_indices){
 }
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_2.png){ width=80% }
+![q_time_series_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_2.png){ width=100% }\
 
 Let's take a look at the true and estimated environmental covariate process pararameters. Columns are the different covariates. Rows are the mean, sd, and correlation parameters, respectively.
 ```{r, eval=FALSE}
@@ -344,7 +344,7 @@ for( i in 1:input$data$n_indices){
 }
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_3.png){ width=80% }
+![q_time_series_3](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_3.png){ width=100% }\
 
 ## 8. Different effects on q and recruitment of the same environmental covariate.
 
@@ -414,5 +414,5 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_4.png){ width=80% }
+![q_time_series_4](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_4.png){ width=100% }\
 

@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ex 5: Time-varying natural mortality linked to the Gulf Stream Index • wham</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 5: Time-varying natural mortality linked to the Gulf Stream Index">
-<meta property="og:description" content="wham">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9004</span>
       </span>
     </div>
 
@@ -43,9 +42,9 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
-     
+
     Vignettes
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
@@ -96,21 +95,21 @@
 <li>
   <a href="../reference/index.html">
     <span class="far fa-file-code fa-lg"></span>
-     
+
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
     Source code
   </a>
 </li>
 <li>
   <a href="../news/index.html">
     <span class="fas fa-bullhorn fa-lg"></span>
-     
+
     News
   </a>
 </li>
@@ -119,14 +118,14 @@
 <li>
   <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
-     
+
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
-     
+
     Contact
   </a>
 </li>
@@ -138,7 +137,7 @@
 </div>
 <!--/.navbar -->
 
-      
+
 
       </header><script src="ex05_GSI_M_files/kePrint-0.0.1/kePrint.js"></script><link href="ex05_GSI_M_files/lightable-0.0.1/lightable.css" rel="stylesheet">
 <div class="row">
@@ -176,50 +175,52 @@ adjacent ages (<code>age_comp = "logistic-normal-pool0"</code>)</li>
 </ul>
 <p>We assume you already have <code>wham</code> installed. If not, see
 the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The
-simpler 1st example, without environmental effects or time-varying <span class="math inline">\(M\)</span>, is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R" class="external-link">R
+simpler 1st example, without environmental effects or time-varying
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R" class="external-link">R
 script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">vignette</a>.</p>
 <p>In example 5, we demonstrate how to specify and run WHAM with the
 following options for natural mortality:</p>
 <ul>
 <li>not estimated (fixed at input values)</li>
-<li>one value, <span class="math inline">\(M\)</span>
+<li>one value,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 </li>
-<li>age-specific, <span class="math inline">\(M_a\)</span>
+<li>age-specific,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
 (independent)</li>
-<li>function of weight-at-age, <span class="math inline">\(M_{y,a} =
-\mu_M * W_{y,a}^b\)</span>
+<li>function of weight-at-age,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>μ</mi><mi>M</mi></msub><mo>*</mo><msubsup><mi>W</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">M_{y,a} = \mu_M * W_{y,a}^b</annotation></semantics></math>
 </li>
-<li>AR1 deviations by age (random effects), <span class="math inline">\(M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad
-\delta_a \sim \mathcal{N} (\rho_a \delta_{a-1},
-\sigma^2_M)\)</span>
+<li>AR1 deviations by age (random effects),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>μ</mi><mi>M</mi></msub><mo>+</mo><msub><mi>δ</mi><mi>a</mi></msub><mspace width="1.0em"></mspace><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow><mspace width="1.0em"></mspace><msub><mi>δ</mi><mi>a</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>ρ</mi><mi>a</mi></msub><msub><mi>δ</mi><mrow><mi>a</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><msubsup><mi>σ</mi><mi>M</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">M_{y,a} = \mu_M + \delta_a \quad\mathrm{and}\quad \delta_a \sim \mathcal{N} (\rho_a \delta_{a-1}, \sigma^2_M)</annotation></semantics></math>
 </li>
-<li>AR1 deviations by year (random effects), <span class="math inline">\(M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad
-\delta_y \sim \mathcal{N} (\rho_y \delta_{y-1},
-\sigma^2_M)\)</span>
+<li>AR1 deviations by year (random effects),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>μ</mi><mi>M</mi></msub><mo>+</mo><msub><mi>δ</mi><mi>y</mi></msub><mspace width="1.0em"></mspace><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow><mspace width="1.0em"></mspace><msub><mi>δ</mi><mi>y</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>ρ</mi><mi>y</mi></msub><msub><mi>δ</mi><mrow><mi>y</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><msubsup><mi>σ</mi><mi>M</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">M_{y,a} = \mu_M + \delta_y \quad\mathrm{and}\quad \delta_y \sim \mathcal{N} (\rho_y \delta_{y-1}, \sigma^2_M)</annotation></semantics></math>
 </li>
-<li>2D AR1 deviations by age and year (random effects), <span class="math inline">\(M_{y,a} = M_a + \delta_{y,a}
-\quad\mathrm{and}\quad \delta_{y,a} \sim
-\mathcal{N}(0,\Sigma)\)</span>
+<li>2D AR1 deviations by age and year (random effects),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>M</mi><mi>a</mi></msub><mo>+</mo><msub><mi>δ</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mspace width="1.0em"></mspace><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow><mspace width="1.0em"></mspace><msub><mi>δ</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mi mathvariant="normal">Σ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">M_{y,a} = M_a + \delta_{y,a} \quad\mathrm{and}\quad \delta_{y,a} \sim \mathcal{N}(0,\Sigma)</annotation></semantics></math>
 </li>
 </ul>
 <p>We also demonstrate alternate specifications for the link between
-<span class="math inline">\(M\)</span> and an environmental covariate,
-the Gulf Stream Index (GSI), as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092" class="external-link">O’Leary
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+and an environmental covariate, the Gulf Stream Index (GSI), as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2018-0092" class="external-link">O’Leary
 et al. (2019)</a>:</p>
 <ul>
 <li>none</li>
-<li>linear (in log-space), <span class="math inline">\(M_{y,a} =
-e^{\mathrm{log}\mu_M + \beta_1 E_y}\)</span>
+<li>linear (in log-space),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msup><mi>e</mi><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>μ</mi><mi>M</mi></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>E</mi><mi>y</mi></msub></mrow></msup></mrow><annotation encoding="application/x-tex">M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y}</annotation></semantics></math>
 </li>
-<li>quadratic (in log-space), <span class="math inline">\(M_{y,a} =
-e^{\mathrm{log}\mu_M + \beta_1 E_y + \beta_2 E^2_y}\)</span>
+<li>quadratic (in log-space),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msup><mi>e</mi><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>μ</mi><mi>M</mi></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>E</mi><mi>y</mi></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msubsup><mi>E</mi><mi>y</mi><mn>2</mn></msubsup></mrow></msup></mrow><annotation encoding="application/x-tex">M_{y,a} = e^{\mathrm{log}\mu_M + \beta_1 E_y + \beta_2 E^2_y}</annotation></semantics></math>
 </li>
 </ul>
-<p>Note that you can specify more than one of the above effects on <span class="math inline">\(M\)</span>, although the model may not be
-estimable. For example, the most complex model with weight-at-age, 2D
-AR1 age- and year-deviations, and a quadratic environmental effect:
-<span class="math inline">\(M_{y,a} = e^{\mathrm{log}\mu_M + b W_{y,a} +
-\beta_1 E_y + \beta_2 E^2_y + \delta_{y,a}}\)</span>.</p>
+<p>Note that you can specify more than one of the above effects on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+although the model may not be estimable. For example, the most complex
+model with weight-at-age, 2D AR1 age- and year-deviations, and a
+quadratic environmental effect:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msup><mi>e</mi><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>μ</mi><mi>M</mi></msub><mo>+</mo><mi>b</mi><msub><mi>W</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>E</mi><mi>y</mi></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msubsup><mi>E</mi><mi>y</mi><mn>2</mn></msubsup><mo>+</mo><msub><mi>δ</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub></mrow></msup></mrow><annotation encoding="application/x-tex">M_{y,a} = e^{\mathrm{log}\mu_M + b W_{y,a} + \beta_1 E_y + \beta_2 E^2_y + \delta_{y,a}}</annotation></semantics></math>.</p>
 <div class="section level2">
 <h2 id="load-data">1. Load data<a class="anchor" aria-label="anchor" href="#load-data"></a>
 </h2>
@@ -253,11 +254,12 @@ with:</p>
 <p>The GSI does not have a standard error estimate, either for each
 yearly observation or one overall value. In such a case, WHAM can
 estimate the observation error for the environmental covariate, either
-as one overall value, <span class="math inline">\(\sigma_E\)</span>, or
-yearly values as random effects, <span class="math inline">\(\mathrm{log}\sigma_{E_y} \sim
-\mathcal{N}(\mathrm{log}\sigma_E, \sigma^2_{\sigma_E})\)</span>. In this
-example we choose the simpler option and estimate one observation error
-parameter, shared across years.</p>
+as one overall value,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>E</mi></msub><annotation encoding="application/x-tex">\sigma_E</annotation></semantics></math>,
+or yearly values as random effects,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><msub><mi>E</mi><mi>y</mi></msub></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><mi>E</mi></msub><mo>,</mo><msubsup><mi>σ</mi><msub><mi>σ</mi><mi>E</mi></msub><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{log}\sigma_{E_y} \sim \mathcal{N}(\mathrm{log}\sigma_E, \sigma^2_{\sigma_E})</annotation></semantics></math>.
+In this example we choose the simpler option and estimate one
+observation error parameter, shared across years.</p>
 </div>
 <div class="section level2">
 <h2 id="specify-models">2. Specify models<a class="anchor" aria-label="anchor" href="#specify-models"></a>
@@ -339,40 +341,54 @@ that includes following entries relevant here:</p>
 <p><code>$mean_model</code>: Natural mortality model options.</p>
 <ul>
 <li>
-<code>"constant"</code>: estimate a single <span class="math inline">\(M\)</span>, shared across all ages and years.</li>
+<code>"constant"</code>: estimate a single
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+shared across all ages and years.</li>
 <li>
-<code>"age-specific"</code>: estimate <span class="math inline">\(M_a\)</span> independent for each age, shared
-across years.</li>
+<code>"age-specific"</code>: estimate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
+independent for each age, shared across years.</li>
 <li>
-<code>"weight-at-age"</code>: estimate <span class="math inline">\(M\)</span> as a function of weight-at-age, <span class="math inline">\(M_{y,a} = \mu_M * W_{y,a}^b\)</span>, as in <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x" class="external-link">Lorenzen
+<code>"weight-at-age"</code>: estimate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+as a function of weight-at-age,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>M</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>μ</mi><mi>M</mi></msub><mo>*</mo><msubsup><mi>W</mi><mrow><mi>y</mi><mo>,</mo><mi>a</mi></mrow><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">M_{y,a} = \mu_M * W_{y,a}^b</annotation></semantics></math>,
+as in <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x" class="external-link">Lorenzen
 (1996)</a> and <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035" class="external-link">Miller
 &amp; Hyun (2018)</a>.</li>
 </ul>
 </li>
 <li>
 <p><code>$re_model</code>: Time- and age-varying random effects on
-<span class="math inline">\(M\)</span>.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>.</p>
 <ul>
 <li>
-<code>"none"</code>: <span class="math inline">\(M\)</span> constant
-in time and across ages (default).</li>
+<code>"none"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+constant in time and across ages (default).</li>
 <li>
-<code>"iid_a"</code>: <span class="math inline">\(M\)</span> varies
-by age, but uncorrelated and constant over years.</li>
+<code>"iid_a"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+varies by age, but uncorrelated and constant over years.</li>
 <li>
-<code>"iid_y"</code>: <span class="math inline">\(M\)</span> varies
-by year, but uncorrelated and constant over age.</li>
+<code>"iid_y"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+varies by year, but uncorrelated and constant over age.</li>
 <li>
-<code>"iid_ay"</code>: <span class="math inline">\(M\)</span> varies
-by year and age, but uncorrelated.</li>
+<code>"iid_ay"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+varies by year and age, but uncorrelated.</li>
 <li>
-<code>"ar1_a"</code>: <span class="math inline">\(M\)</span>
+<code>"ar1_a"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 correlated by age (AR1), constant in time.</li>
 <li>
-<code>"ar1_y"</code>: <span class="math inline">\(M\)</span>
+<code>"ar1_y"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 correlated by year (AR1), constant by age.</li>
 <li>
-<code>"ar1_ay"</code>: <span class="math inline">\(M\)</span>
+<code>"ar1_ay"</code>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 correlated by year and age (2D AR1), as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047" class="external-link">Cadigan
 (2016)</a>.</li>
 </ul>
@@ -386,23 +402,30 @@ n_regions x n_ages) of that distinguishes which mean parameters to
 estimate and whether any should have the same value. In all models we
 have 1 stock and 1 region and 6 ages. So to estimate different M for
 each age we set: <code>$means_map = array(1:6, dim = c(1,1,6))</code>.
-If <code>NULL</code>, <span class="math inline">\(M\)</span> at all ages
-is fixed at <code>M$initial_means</code> (if not <code>NULL</code>) or
-row 1 of the MAA matrix from the ASAP file(s) (if
+If <code>NULL</code>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+at all ages is fixed at <code>M$initial_means</code> (if not
+<code>NULL</code>) or row 1 of the MAA matrix from the ASAP file(s) (if
 <code>M$initial_means = NULL</code>).</p></li>
 </ul>
-<p>For example, to fit model <code>m1</code>, fix <span class="math inline">\(M_a\)</span> at values in ASAP file:</p>
+<p>For example, to fit model <code>m1</code>, fix
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
+at values in ASAP file:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="cn">NULL</span> <span class="co"># or simply leave out of call to prepare_wham_input</span></span></code></pre></div>
-<p>To fit model <code>m9</code>, estimate one <span class="math inline">\(M\)</span>, constant by year and age:</p>
+<p>To fit model <code>m9</code>, estimate one
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+constant by year and age:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mean_model<span class="op">=</span><span class="st">"estimate-M"</span>, means_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span>,dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>To fit model <code>m12</code> where we estimate a mean <span class="math inline">\(M\)</span> parameter and 2DAR1 deviations by year
-and age:</p>
+<p>To fit model <code>m12</code> where we estimate a mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+parameter and 2DAR1 deviations by year and age:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="st">"estimate-M"</span>, means_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">1</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="va">asap3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">dat</span><span class="op">$</span><span class="va">n_ages</span><span class="op">)</span><span class="op">)</span>, re_model<span class="op">=</span><span class="st">"ar1_ay"</span><span class="op">)</span></span></code></pre></div>
-<p>To fit model <code>m11</code>, use the <span class="math inline">\(M_a\)</span> values specified in the ASAP file,
-but with 2D AR1 deviations as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047" class="external-link">Cadigan
+<p>To fit model <code>m11</code>, use the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
+values specified in the ASAP file, but with 2D AR1 deviations as in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047" class="external-link">Cadigan
 (2016)</a>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>re_model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="st">"ar1_ay"</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -420,14 +443,22 @@ value for all years): <code>$logsigma = "est_1"</code>. The other option
 is <code>"est_re"</code> to allow the GSI observation error to have
 yearly fluctuations (random effects). The Cold Pool Index in example 2
 had yearly observation errors given.</li>
-<li>We will assume GSI affects <span class="math inline">\(M\)</span>
+<li>We will assume GSI affects
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 rather than recruitment.</li>
-<li>We will assume a lag of 0 for the effect of GSI on <span class="math inline">\(M\)</span>: GSI in year <em>t</em> affects <span class="math inline">\(M\)</span> in year <em>t</em>, instead of year
-<em>t+1</em>.</li>
-<li>We will consider models with and without the effect of GSI on <span class="math inline">\(M\)</span>, but keep the state-space model for GSI
-in the model to allow AIC comparisons.</li>
-<li>We will consider both linear and quadratic effects of GSI on <span class="math inline">\(M\)</span>. WHAM includes a function to calculate
-orthogonal polynomials in TMB, akin to the <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/poly" class="external-link"><code>poly()</code></a>
+<li>We will assume a lag of 0 for the effect of GSI on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>:
+GSI in year <em>t</em> affects
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+in year <em>t</em>, instead of year <em>t+1</em>.</li>
+<li>We will consider models with and without the effect of GSI on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+but keep the state-space model for GSI in the model to allow AIC
+comparisons.</li>
+<li>We will consider both linear and quadratic effects of GSI on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>.
+WHAM includes a function to calculate orthogonal polynomials in TMB,
+akin to the <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/poly" class="external-link"><code>poly()</code></a>
 function in R.</li>
 </ul>
 <p>For example, the <code>ecov</code> list for model <code>m3</code>
@@ -445,10 +476,11 @@ with a quadratic GSI-M effect:</p>
 <span>    M_how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="st">"lag-0-poly-2"</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">6</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co"># n_Ecov x n_stocks x n_ages x n_regions</span></span></code></pre></div>
 <p>Note that you can set <code>ecov = NULL</code> to fit the model
 without environmental covariate data, but here we fit the
-<code>ecov</code> data even for models without GSI effect on <span class="math inline">\(M\)</span> (<code>m1</code>, <code>m4-12</code>)
-so that we can compare them via AIC (need to have the same data in the
-likelihood). We accomplish this by setting
-<code>ecov$M_how = array("none",c(1,1,6,1))</code> and
+<code>ecov</code> data even for models without GSI effect on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+(<code>m1</code>, <code>m4-12</code>) so that we can compare them via
+AIC (need to have the same data in the likelihood). We accomplish this
+by setting <code>ecov$M_how = array("none",c(1,1,6,1))</code> and
 <code>ecov$process_model = "ar1"</code>.</p>
 </div>
 <div class="section level2">
@@ -553,22 +585,25 @@ effect) parameters. WHAM stores this information in
 <code>mod$opt$convergence</code> (should be <code>0</code>). See
 <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">stats::nlminb()</a></code> and <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport()</a></code> for
 details.</p>
-<p>Model <code>m12</code> (estimate mean <span class="math inline">\(M\)</span> and 2D AR1 deviations by year and age,
-no GSI effect) had the lowest AIC among converged models and was
-overwhelmingly supported relative to the other models
-(<strong>bold</strong> in table below). The retrospective patterns in
-SSB and <span class="math inline">\(F\)</span> were also negligble
-compared to other models as measured by Mohn’s <span class="math inline">\(\rho\)</span>.</p>
+<p>Model <code>m12</code> (estimate mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+and 2D AR1 deviations by year and age, no GSI effect) had the lowest AIC
+among converged models and was overwhelmingly supported relative to the
+other models (<strong>bold</strong> in table below). The retrospective
+patterns in SSB and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
+were also negligble compared to other models as measured by Mohn’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>.</p>
 <table class="table table table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;">
 Model
 </th>
 <th style="text-align:left;">
-M mean model
+Mean model
 </th>
 <th style="text-align:left;">
-M RE model
+RE model
 </th>
 <th style="text-align:left;">
 GSI model
@@ -580,27 +615,28 @@ GSI link
 Converged
 </th>
 <th style="text-align:left;">
-Pos def Hessian
+PD Hessian
 </th>
 <th style="text-align:right;">
-<div class="line-block">Runtime</div>
-(mi
+Runtime (min)
 </th>
 <th style="text-align:right;">
-)| N
+NLL
 </th>
 <th style="text-align:left;">
-L|dAI
+dAIC
 </th>
 <th style="text-align:left;">
-|AIC
+AIC
 </th>
 <th style="text-align:left;">
-|<span class="math inline">\(\rho_{R} &lt;/th&gt;  &lt;th
-style="text-align:left;"&gt; |\)</span>_{SSB}
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_{R}</annotation></semantics></math>
 </th>
 <th style="text-align:left;">
-|$_{}
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{SSB}</annotation></semantics></math>
+</th>
+<th style="text-align:left;">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mover><mi>F</mi><mo accent="true">¯</mo></mover></msub><annotation encoding="application/x-tex">\rho_{\overline{F}}</annotation></semantics></math>
 </th>
 </tr></thead>
 <tbody>
@@ -662,7 +698,7 @@ none
 ar1
 </td>
 <td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-lag-0-linear
+linear
 </td>
 <td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
 TRUE
@@ -706,7 +742,7 @@ none
 ar1
 </td>
 <td style="text-align:left;">
-lag-0-poly-2
+poly-2
 </td>
 <td style="text-align:left;">
 TRUE
@@ -1146,7 +1182,7 @@ ar1_ay
 ar1
 </td>
 <td style="text-align:left;">
-lag-0-linear
+linear
 </td>
 <td style="text-align:left;">
 FALSE
@@ -1190,7 +1226,7 @@ ar1_ay
 ar1
 </td>
 <td style="text-align:left;">
-lag-0-poly-2
+poly-2
 </td>
 <td style="text-align:left;">
 FALSE
@@ -1226,31 +1262,45 @@ FALSE
 <h4 id="estimated-m">Estimated <em>M</em><a class="anchor" aria-label="anchor" href="#estimated-m"></a>
 </h4>
 <ul>
-<li>Models allowed to estimate mean <span class="math inline">\(M\)</span> increased <span class="math inline">\(M\)</span> (<code>m7-m14</code>) compared to the
-fixed values in models <code>m1-m6</code> (more green/yellow than
-blue).</li>
-<li>Models that estimated <span class="math inline">\(M_a\)</span>
-(<code>m4</code>, <code>m7</code>, <code>m10</code>) had highest <span class="math inline">\(M_a\)</span> for ages 4-5.</li>
-<li>Models that estimated <span class="math inline">\(M_y\)</span>
-(<code>m5</code> and <code>m11</code>) had higher <span class="math inline">\(M_y\)</span> in the early 1990s and early
-2000s.</li>
+<li>Models allowed to estimate mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+increased
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+(<code>m7-m14</code>) compared to the fixed values in models
+<code>m1-m6</code> (more green/yellow than blue).</li>
+<li>Models that estimated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
+(<code>m4</code>, <code>m7</code>, <code>m10</code>) had highest
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
+for ages 4-5.</li>
+<li>Models that estimated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>y</mi></msub><annotation encoding="application/x-tex">M_y</annotation></semantics></math>
+(<code>m5</code> and <code>m11</code>) had higher
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>y</mi></msub><annotation encoding="application/x-tex">M_y</annotation></semantics></math>
+in the early 1990s and early 2000s.</li>
 <li>Models with GSI effects and random effects deviations in M did not
 converge.</li>
 </ul>
-<p>Model <code>m6</code> left <span class="math inline">\(M_a\)</span>
+<p>Model <code>m6</code> left
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
 fixed at the values from the ASAP data file (as in <code>m1</code>) and
-estimated 2D AR1 deviations around these mean <span class="math inline">\(M_a\)</span>, but this model did not converge.
-This is how <span class="math inline">\(M\)</span> was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047" class="external-link">Cadigan
+estimated 2D AR1 deviations around these mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>,
+but this model did not converge. This is how
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+was modeled in <a href="https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047" class="external-link">Cadigan
 (2016)</a>. Model <code>m8</code> that assumed M as a function of weight
 at age estimated essentially no effect so that M was constant and a
 negative log likelihood essentially the same as model <code>m9</code>
 that made the simpler assumption of a constant M estimated. Below is a
-plot of <span class="math inline">\(M\)</span> by age (y-axis) and year
-(x-axis) for all models. Models with a positive definite Hessian are
-solid, and models with non-positive definite Hessian are pale.</p>
-<div class="figure">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png" style="width:90.0%" alt=""><p class="caption">Natural mortality by age (y-axis) and year (x-axis)
-for all models.</p>
+plot of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+by age (y-axis) and year (x-axis) for all models. Models with a positive
+definite Hessian are solid, and models with non-positive definite
+Hessian are pale.</p>
+<div class="float">
+<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png" style="width:100.0%" alt="Natural mortality by age (y-axis) and year (x-axis) for all models."><div class="figcaption">Natural mortality by age (y-axis) and year
+(x-axis) for all models.</div>
 </div>
 </div>
 <div class="section level4">
@@ -1261,12 +1311,14 @@ for all models.</p>
 0.31, <code>m1</code> 0.26) but improved for SSB (<code>m8</code> 0.01,
 <code>m1</code> 0.11) and F (<code>m8</code> -0.04, <code>m1</code>
 -0.15). Compare the retrospective patterns of numbers-at-age, SSB, and F
-for models <code>m1</code> (left, fixed <span class="math inline">\(M_a\)</span>) and <code>m12</code> (right,
-estimated <span class="math inline">\(M\)</span> + 2D AR1
-deviations).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for numbers-at-age, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for numbers-at-age, m12."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for SSB, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for SSB, m12."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for F, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png" style="width:45.0%" alt="Mohn’s rho for F, m12."></p>
+for models <code>m1</code> (left, fixed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>)
+and <code>m12</code> (right, estimated
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
++ 2D AR1 deviations).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m12."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m12."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m12."></p>
 </div>
 <div class="section level4">
 <h4 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -1274,18 +1326,22 @@ deviations).</p>
 <p>Compared to <code>m1</code> (left), <code>m12</code> (right)
 estimated SPR-based reference points were more uncertain due to
 estimation of M rather than an assumed value. Model <code>m12</code>
-estimates of <span class="math inline">\(F_{40\%SPR}\)</span> (middle)
-and yield at <span class="math inline">\(F_{40\%SPR}\)</span> (top) were
-higher, whereas estimates of SSB at <span class="math inline">\(F_{40\%SPR}\)</span> were generally lower.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png" style="width:45.0%" alt="Reference point variability, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_annual_time.png" style="width:45.0%" alt="Reference point variability, m12."></p>
+estimates of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mn>40</mn><mi>%</mi><mi>S</mi><mi>P</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">F_{40\%SPR}</annotation></semantics></math>
+(middle) and yield at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mn>40</mn><mi>%</mi><mi>S</mi><mi>P</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">F_{40\%SPR}</annotation></semantics></math>
+(top) were higher, whereas estimates of SSB at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mn>40</mn><mi>%</mi><mi>S</mi><mi>P</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">F_{40\%SPR}</annotation></semantics></math>
+were generally lower.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m12."></p>
 <p>Compared to <code>m1</code> (left), <code>m12</code> (right)
 estimated higher <em>M</em> and higher SSB – a much rosier picture of
 the stock status through time.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" style="width:45.0%" alt="Relative stock status, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png" style="width:45.0%" alt="Relative stock status, m12."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m12."></p>
 <p>In the final year (2011), <code>m12</code> estimated much lower
 probabilities of the stock being overfished than <code>m1</code> (1%
 vs. 93%).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png" style="width:45.0%" alt="Kobe status plot, m12."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m12."></p>
 </div>
 <div class="section level3">
 <h3 id="yet-more-m-options">Yet more <em>M</em> options<a class="anchor" aria-label="anchor" href="#yet-more-m-options"></a>
@@ -1298,9 +1354,7 @@ not all ages</em>, you can modify <code>M$means_map</code>.</p>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 
@@ -1313,16 +1367,16 @@ not all ages</em>, you can modify <code>M$means_map</code>.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>

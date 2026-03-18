@@ -17,7 +17,11 @@ WHAM can also include explicit environmental effects on all parameters above (ex
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Example 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
-A presentation providing an overview of an early version of WHAM (Jan 8 2021): https://www.youtube.com/watch?v=o8vJvbIaOdE
+A presentation providing an overview of an early version of WHAM (Jan 8 2021): 
+
+<p align="center">
+[![Watch the video](https://img.youtube.com/vi/o8vJvbIaOdE/0.jpg)](https://www.youtube.com/watch?v=o8vJvbIaOdE)\
+</p>
 
 ## Background
 
@@ -145,11 +149,17 @@ wham.dir <- find.package("wham")
 source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))
 ```
 
-## Short-course materials
+## Short-course/Workshop materials
 
-A short course was given in Woods Hole in June 2024 on using the WHAM package. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_course_WH_2024)
+Some short courses and workshops on using the WHAM package have been done. Slides and corrresponding R scripts are available in separate Github repositories below.
 
-A workshop was given at Memorial University in September 2024 on using the WHAM package, that expanded on the previous short course and included making inputs without ASAP dat files and fitting multi-stock models. Slides and corresponding R scripts are available in this [repository](https://github.com/timjmiller/wham_workshop_MUN_2024).
+[June 2024 at Woods Hole](https://github.com/timjmiller/wham_course_WH_2024).
+
+[September 2024  at Memorial University ](https://github.com/timjmiller/wham_workshop_MUN_2024). 
+
+[February 2026 at Woods Hole](https://github.com/timjmiller/wham_workshop_ASMFC).
+
+[March 2026 (virtual)](https://github.com/timjmiller/wham_workshop_DFO).
 
 ## Installing vignettes
 

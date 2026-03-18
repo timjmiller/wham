@@ -1,0 +1,470 @@
+# Prepare input data and parameters for WHAM model
+
+Prepares data and parameter settings for
+[`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md),
+optionally using an ASAP3 data file read into R by
+[`read_asap3_dat`](https://timjmiller.github.io/wham/reference/read_asap3_dat.md).
+By default, this will set up a SCAA version like
+[ASAP](https://www.nefsc.noaa.gov/nft/ASAP.html) without any penalties
+or random effects. If any asap3, basic_info, catch_info, and index_info
+arguments are not provided, some respective arbitrary assumptions are
+made. The various options described below, such as `NAA_re` and
+`selectivity`, can still be used without the asap3 object.
+
+## Usage
+
+``` r
+prepare_wham_input(
+  asap3 = NULL,
+  model_name = "WHAM for unnamed stock",
+  recruit_model = 2,
+  ecov = NULL,
+  selectivity = NULL,
+  M = NULL,
+  NAA_re = NULL,
+  catchability = NULL,
+  age_comp = NULL,
+  move = NULL,
+  L = NULL,
+  F = NULL,
+  catch_info = NULL,
+  index_info = NULL,
+  basic_info = NULL
+)
+```
+
+## Arguments
+
+- asap3:
+
+  (optional) list containing data and parameters (output from
+  [`read_asap3_dat`](https://timjmiller.github.io/wham/reference/read_asap3_dat.md))
+
+- model_name:
+
+  character, name of stock/model
+
+- recruit_model:
+
+  numeric, option to specify stock-recruit model (see details)
+
+- ecov:
+
+  (optional) named list of environmental covariate data and parameters
+  (see
+  [`set_ecov`](https://timjmiller.github.io/wham/reference/set_ecov.md)
+  for full details)
+
+- selectivity:
+
+  (optional) list specifying selectivity options by block: models,
+  initial values, parameters to fix, and random effects (see
+  [`set_selectivity`](https://timjmiller.github.io/wham/reference/set_selectivity.md)
+  for full details)
+
+- M:
+
+  (optional) list specifying natural mortality options: model, random
+  effects, initial values, and parameters to fix (see
+  [`set_M`](https://timjmiller.github.io/wham/reference/set_M.md) for
+  full details)
+
+- NAA_re:
+
+  (optional) list specifying options for random effect on
+  numbers-at-age, initial numbers at age, and recruitment model (see
+  [`set_NAA`](https://timjmiller.github.io/wham/reference/set_NAA.md)
+  for full details)
+
+- catchability:
+
+  (optional) list specifying options for priors and random effects on
+  catchability (see
+  [`set_q`](https://timjmiller.github.io/wham/reference/set_q.md) for
+  full details)
+
+- age_comp:
+
+  (optional) character or named list, specifies age composition model
+  for fleet(s) and indices (see
+  [`set_age_comp`](https://timjmiller.github.io/wham/reference/set_age_comp.md)
+  for full details)
+
+- move:
+
+  (optional) list specifying movement/migration options for models with
+  more than 1 region (see
+  [`set_move`](https://timjmiller.github.io/wham/reference/set_move.md)
+  for full details)
+
+- L:
+
+  (optional) list specifying "extra" mortality options (see
+  [`set_L`](https://timjmiller.github.io/wham/reference/set_L.md) for
+  full details)
+
+- F:
+
+  (optional) list specifying fishing mortality options (see
+  [`set_F`](https://timjmiller.github.io/wham/reference/set_F.md) for
+  full details)
+
+- catch_info:
+
+  (optional) list specifying catch information (see
+  [`set_catch`](https://timjmiller.github.io/wham/reference/set_catch.md)
+  for full details)
+
+- index_info:
+
+  (optional) list specifying index informaiton (see
+  [`set_indices`](https://timjmiller.github.io/wham/reference/set_indices.md)
+  for full details)
+
+- basic_info:
+
+  (optional) list of basic population information for use when asap3 is
+  not provided (see details)
+
+## Value
+
+a named list with the following components:
+
+- `data`:
+
+  Named list of data, passed to
+  [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html)
+
+- `par`:
+
+  Named list of parameters, passed to
+  [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html)
+
+- `map`:
+
+  Named list defining how to optionally collect and fix parameters,
+  passed to
+  [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html)
+
+- `random`:
+
+  Character vector of parameters to treat as random effects, passed to
+  [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html)
+
+- `years`:
+
+  Numeric vector of years to fit WHAM model (specified in ASAP3 .dat
+  file)
+
+- `ages.lab`:
+
+  Character vector of age labels, ending with plus-group (specified in
+  ASAP3 .dat file)
+
+- `model_name`:
+
+  Character, name of stock/model (specified in call to
+  `prepare_wham_input`)
+
+- `log`:
+
+  list of character strings attempting to describe the input and what
+  the model assumes.
+
+## Details
+
+`recruit_model` specifies the stock-recruit model. See `wham.cpp` for
+implementation.
+
+- = 1:
+
+  SCAA (without NAA_re option specified) or Random walk (if
+  NAA_re\$sigma specified), i.e. predicted recruitment in year i =
+  recruitment in year i-1
+
+- = 2:
+
+  (default) Random effects about constant mean
+
+- = 3:
+
+  Beverton-Holt
+
+- = 4:
+
+  Ricker
+
+Note:
+[`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md)
+allows fitting a SCAA model (`NAA_re = NULL`), which estimates
+recruitment in every year as separate fixed effect parameters, but in
+that case no stock-recruit function is estimated. A warning message is
+printed if `recruit_model > 2` and `NAA_re = NULL`. If you wish to use a
+stock-recruit function for expected recruitment, choose recruitment
+deviations as random effects, either only age-1
+(`NAA_re = list(sigma="rec")`) or all ages
+(`NAA_re = list(sigma="rec+1")`, "full state-space" model). See below
+for details on `NAA_re` specification.
+
+`ecov` specifies any environmental covariate data and models. See
+[`set_ecov`](https://timjmiller.github.io/wham/reference/set_ecov.md)
+for full details.
+
+`selectivity` specifies options for selectivity, to overwrite existing
+options specified in the ASAP data file. See
+[`set_selectivity`](https://timjmiller.github.io/wham/reference/set_selectivity.md)
+for full details.
+
+`M` specifies estimation options for natural mortality and can overwrite
+M-at-age values specified in the ASAP data file. See
+[`set_M`](https://timjmiller.github.io/wham/reference/set_M.md) for full
+details.
+
+`NAA_re` specifies options for random effects on numbers-at-age (NAA,
+i.e. state-space model or not). See
+[`set_NAA`](https://timjmiller.github.io/wham/reference/set_NAA.md) for
+full details. If `NULL`, a traditional statistical catch-at-age model is
+fit.
+
+`catchability` specifies options for catchability. See
+[`set_q`](https://timjmiller.github.io/wham/reference/set_q.md) for full
+details. If `NULL` and `asap3` is not NULL, a single catchability
+parameter for each index is used with initial values specified in ASAP
+file. If both are NULL, initial catchabilities for all indices = 0.3.
+
+`move` specifies options for movement if there are multiple regions. See
+[`set_move`](https://timjmiller.github.io/wham/reference/set_move.md)
+for full details.
+
+`age_comp` specifies the age composition models for fleet(s) and
+indices. See
+[`set_age_comp`](https://timjmiller.github.io/wham/reference/set_age_comp.md)
+for full details.
+
+`catch_info` is an optional list of fishery catch information that can
+be used to set up these types of observations when there is no asap3
+file given. See
+[`set_catch`](https://timjmiller.github.io/wham/reference/set_catch.md)
+for full details. Useful for setting up an operating model to simulate
+population processes and observations. Also can be useful for setting up
+the structure of assessment model when asap3 has not been used.
+
+`index_info` is an optional list of survey/index information that can be
+used to set up these types of observations when there is no asap3 file
+given. See
+[`set_indices`](https://timjmiller.github.io/wham/reference/set_indices.md)
+for full details. Useful for setting up an operating model to simulate
+population processes and observations. Also can be useful for setting up
+the structure of assessment model when asap3 has not been used.
+
+`basic_info` is an optional list of information that can be used to set
+up the population and types of observations when there is no asap3 file
+given. Particularly useful for setting up an operating model to simulate
+population processes and observations. Also can be useful for setting up
+the structure of assessment model when asap3 has not been used. The
+current options are:
+
+- \$ages:
+
+  integer vector of ages (years) with the last being a plus group
+
+- \$years:
+
+  integer vector of years that the population model spans.
+
+- \$n_seasons:
+
+  number of seasons within year.
+
+- \$n_fleets:
+
+  number of fishing fleets.
+
+- \$fracyr_seasons:
+
+  proportions of year for each season within year (sums to 1).
+
+- \$F:
+
+  matrix (length(years) x n_fleets) of annual fishing mortality rates
+  for each fleet to initialize the model.
+
+- \$waa:
+
+  array ((n_fleets + n_indices + n_stocks) x length(years) x
+  length(ages)) of annual weight at at age for each fleet, each index,
+  and spawning biomass for each stock.
+
+- \$maturity:
+
+  array (n_stocks x length(years) x length(ages)) of annual maturity at
+  age for estimating spawning biomass for each stock.
+
+- \$fracyr_SSB:
+
+  matrix (n_years x n_stocks) (1 or length(years)) of yearly proportions
+  (0-1) of the year at which to calculate spawning biomass.
+
+- \$spawn_seasons:
+
+  vector (n_stocks) of seasons in which each stock spawns.
+
+- \$spawn_regions:
+
+  vector (n_stocks) of regions in which each stock spawns.
+
+- \$NAA_where:
+
+  array (n_stocks x n_regions x n_ages) of 0/1 indicating where
+  individuals of each stock may exist on January 1 of each year.
+
+- \$Fbar_ages:
+
+  integer vector of ages to use to average F at age for reported "Fbar"
+  across all fleets, by regions and by fleet.
+
+- \$q:
+
+  vector (length(n_indices)) of catchabilities for each of the indices
+  to initialize the model.
+
+- \$percentSPR:
+
+  (0-100) percentage of unfished spawning biomass per recruit for
+  determining equilibrium fishing mortality reference point
+
+- \$XSPR_input_average_years:
+
+  which years to average inputs to per recruit calculation (selectivity,
+  M, WAA, maturity) for static (or prevailing) SPR-based reference
+  points. Default is last 5 years (tail(1:length(years),5)). Below
+  specific values will override this option.
+
+- \$average_years_L:
+
+  list (length = n_regions), which years to average L (extra mortality)
+  for per recruit calculation for static (or prevailing) reference
+  points. Default is last 5 years (tail(1:length(years),5))
+
+- \$average_years_M:
+
+  list (length = n_stocks, each is a list with length = n_regions),
+  which years to average M for per recruit calculation for static (or
+  prevailing) reference points. Default is last 5 years
+  (tail(1:length(years),5))
+
+- \$average_years_move:
+
+  list (length = n_stocks, each is a list with length = n_regions),
+  which years to average movement parameters for per recruit calculation
+  for static (or prevailing) reference points. Default is last 5 years
+  (tail(1:length(years),5))
+
+- \$average_years_mat:
+
+  list (length = n_stocks), which years to average maturity for per
+  recruit calculation for static (or prevailing) reference points.
+  Default is last 5 years (tail(1:length(years),5))
+
+- \$average_years_waassb:
+
+  list (length = n_stocks), which years to average ssb waa for per
+  recruit calculation for static (or prevailing) reference points.
+  Default is last 5 years (tail(1:length(years),5))
+
+- \$average_years_sel:
+
+  list (length = n_fleets), which years to average selectivity for per
+  recruit calculation for static (or prevailing) reference points.
+  Default is last 5 years (tail(1:length(years),5))
+
+- \$average_years_waacatch:
+
+  list (length = n_fleets), which years to average catch waa for per
+  recruit calculation for static (or prevailing) reference points.
+  Default is last 5 years (tail(1:length(years),5))
+
+- \$average_years_SRR:
+
+  list (length = n_stocks), which years to average SRR parameters for
+  static (or prevailing) MSY-based reference points. Default is last 5
+  years (tail(1:length(years),5))
+
+- \$XSPR_R_avg_yrs:
+
+  which years to average recruitments for calculating SPR-based SSB
+  reference points. Default is 1:length(years)
+
+- \$XSPR_R_opt:
+
+  1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4):
+  use average R estimates(predictions). 5: use bias-corrected expected
+  recruitment. For long-term projections, may be important to use
+  certain years for XSPR_R_avg_yrs
+
+- \$FXSPR_init:
+
+  which F to initialize internal newton search for annual and static F
+  at X percent SPR. Default is 0.5
+
+- \$FMSY_init:
+
+  which F to initialize internal newton search for annual and static
+  Fmsy (if a stock-recruit model is assumed). Default is 0.5
+
+- \$simulate_process_error:
+
+  T/F vector (length = 9). When simulating from the model, whether to
+  simulate any process errors for (NAA, M, selectivity, q, movement,
+  unidentified mortality, q priors, movement priors, Ecov). Only used
+  for applicable random effects.
+
+- \$simulate_observation_error:
+
+  T/F vector (length = 3). When simulating from the model, whether to
+  simulate catch, index, and ecov observations.
+
+- \$simulate_period:
+
+  T/F vector (length = 2). When simulating from the model, whether to
+  simulate base period (model years) and projection period.
+
+- \$bias_correct_process:
+
+  T/F. Perform bias correction of log-normal random effects for NAA.
+
+- \$bias_correct_BRPs:
+
+  T/F. Perform bias correction of analytic SSB/R and Y/R when there is
+  bias correction of log-normal NAA. May want to use XSPR_R_opt = 5 for
+  long-term projections.
+
+If other arguments to `prepare_wham_input` are provided such as
+`selectivity`, `M`, and `age_comp`, the information provided there must
+be consistent with `basic_info`. For example the dimensions for number
+of years, ages, fleets, and indices.
+
+## See also
+
+[`read_asap3_dat`](https://timjmiller.github.io/wham/reference/read_asap3_dat.md),
+[`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md),
+[ASAP](https://www.nefsc.noaa.gov/nft/ASAP.html), [Iles & Beverton
+(1998)](https://www.sciencedirect.com/science/article/pii/S1385110197000221)
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+asap3 = read_asap3_dat("ex1_SNEMAYT.dat")
+input = prepare_wham_input(asap3)
+mod = fit_wham(input)
+
+# no ASAP3 file, default parameter values and configuration
+input = prepare_wham_input()
+mod = fit_wham(input, fit = FALSE)
+set.seed(8675309)
+simdata = mod$simulate(complete=TRUE)
+input$data = simdata
+fit = fit_wham(input, do.osa = FALSE)
+} # }
+```

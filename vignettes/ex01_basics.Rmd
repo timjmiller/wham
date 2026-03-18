@@ -1,6 +1,9 @@
 ---
 title: "Ex 1: The basics"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette
+pkgdown:
+  as_is: true  
 vignette: >
   %\VignetteIndexEntry{Ex 1: The basics}
   %\VignetteEngine{knitr::rmarkdown}
@@ -111,17 +114,11 @@ Note that the parameterization of age-specific selectivity is specific to SNEMA 
 ## 3. Fit model and check for convergence
 
 ```{r eval=FALSE}
-m1 <- fit_wham(input1, do.osa = F) # turn off OSA residuals to save time in ex
+m1 <- fit_wham(input1, do.osa = F, do.retro = F) # turn off retro peels and OSA residuals to save time
 ```
 
 By default, `fit_wham()` uses 3 extra Newton steps to reduce the absolute value of the gradient (`n.newton = 3`) and estimates standard errors for derived parameters (`do.sdrep = TRUE`). `fit_wham()` also does a retrospective analysis with 7 peels by default (`do.retro = TRUE`, `n.peels = 7`). For more details, see `fit_wham()`.
 
-```{r include=FALSE, eval = FALSE}
-#these are not needed. I think the objects are available without these calls
-#data(vign1_conv) 
-#data(vign1_res)
-#ls()
-```
 
 We need to check that `m1` converged (`m1$opt$convergence` should be 0, and the maximum absolute value of the gradient vector should be < 1e-06). Convergence issues may indicate that a model is misspecified or overparameterized. To help diagnose these problems, `fit_wham()` includes a `do.check` option to run an internal `check_estimability` function [originally written by Jim Thorson](https://github.com/kaskr/TMB_contrib_R/blob/master/TMBhelper/R/check_estimability.R). `do.check = FALSE` by default. To turn on, set `do.check = TRUE`. See `fit_wham()`.
 ```{r eval=FALSE}
@@ -131,6 +128,12 @@ check_convergence(m1)
 ```{r echo=FALSE}
 cat(vign1_m1_conv, sep = "\n")
 ```
+
+Now that we know the model converged well, add retro peels
+```{r eval=FALSE}
+m1 <- do_retro_peels(m1)
+```
+
 
 ### Fit models `m2`-`m4`
 
@@ -143,7 +146,7 @@ input2 <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yel
     fix_pars=list(4:5,4,2:4)),
   NAA_re = list(sigma="rec", cor="iid"),
   age_comp = "logistic-normal-miss0")
-m2 <- fit_wham(input2, do.osa = F) # turn off OSA residuals to save time
+m2 <- fit_wham(input2, do.osa = F, do.retro = F) # turn off retro peels and OSA residuals to save time
 ```
 
 Check that `m2` converged:
@@ -153,6 +156,11 @@ check_convergence(m2)
 
 ```{r echo=FALSE}
 cat(vign1_m2_conv, sep = "\n")
+```
+
+Now that we know the model converged well, add retro peels
+```{r eval=FALSE}
+m2 <- do_retro_peels(m2)
 ```
 
 The third, `m3`, is a full state-space model where numbers at all ages are random effects (`NAA_re$sigma = "rec+1"`):
@@ -173,6 +181,11 @@ check_convergence(m3)
 
 ```{r echo=FALSE}
 cat(vign1_m3_conv, sep = "\n")
+```
+
+Now that we know the model converged well, add retro peels
+```{r eval=FALSE}
+m3 <- do_retro_peels(m3)
 ```
 
 The last, `m4`, is like `m3`, but again changes all the age composition likelihoods to logistic normal:
@@ -196,10 +209,29 @@ check_convergence(m4)
 cat(vign1_m4_bad_conv, sep = "\n")
 ```
 
-Try refitting starting at the previously estimated values. This helps sometimes.
+Try initially holding index age comp variance parameters fixed
+```{r eval=FALSE}
+input4_fixed <- input4
+input4_fixed[["map"]][["index_paa_pars"]] <- factor(rep(NA, length(input4_fixed[["par"]][["index_paa_pars"]])))
+m4_fixed <- fit_wham(input4_fixed, do.osa = F, do.retro = F) 
+```
+
+Convergence of initial fit is good
+```{r eval=FALSE}
+check_convergence(m4_fixed)
+```
+
+```{r echo=FALSE}
+cat(vign1_m4_fixed, sep = "\n")
+```
+
+Now initialize parameters at the best conditional estimates
+```{r eval=FALSE}
+input4[["par"]] <- m4_fixed[["parList"]]  #best estimates so far
+m4_good <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time
+```
 
 ```{r eval=FALSE}
-input4$par <- m4$parList #best estimates so far
 m4_good <- fit_wham(input4, do.osa = F) # turn off OSA residuals to save time
 ```
 
@@ -266,9 +298,11 @@ There are various options for creating WHAM output. The default is to create a s
 plot_wham_output(mod=m4_proj, out.type='html') #default
 ```
 
-![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')` for plots.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/wham_html_diagnostics.png){ width=75% }
+![Example plots in HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_diagnostics.png){ width=100% }
+![Example tables HTML file created by `plot_wham_output(mod=m4, out.type='html')`.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_tables.png){ width=100% }
 
-![Example HTML file created by `plot_wham_output(mod=m4, out.type='html')` for tables.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/wham_html_tables.png){ width=75% }
+```{r include=FALSE}
+```
 
 Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files corresponding to the tabs in the `.html` file (Diagnostics, Input Data, Results, Reference Points, Retrospective, and Misc). This option will also generate a pdf of the same tables as those under the `html` option.
 
@@ -276,35 +310,51 @@ Many plots are generated---here we display some examples:
 
 ### Diagnostics
 
-![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index4panel_index_2_region_1.png){ width=45% }![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png){ width=45% }
 
-![Conditional expected and posterior estimates of age-1 abundance (recruitment).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_1.png){ width=45% }![Conditional expected and posterior estimates of age-5 abundance.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_5.png){ width=45% }
+![Index 2 4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_index_2_region_1.png){ width=50% }
+![Likelihood components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png){ width=50% }
 
-![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index_1_region_1.png){ width=45% }![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index_1.png){ width=45% }
+![Conditional expected and posterior estimates of age-1 abundance (recruitment).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_1.png){ width=50% }
+![Conditional expected and posterior estimates of age-5 abundance.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_5.png){ width=50% }
 
-![One-step-ahead residuals Fleet 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA+resid_catch_4panel_fleet_1.png){ width=30% }![One-step-ahead residuals Index 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index_1.png){ width=30% }![One-step-ahead residuals Index 2 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSAresid_catch_4panel_index_2.png){ width=30% } [One-step-ahead residuals Fleet 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_fleet_1.png){ width=30% } [One-step-ahead residuals Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_1.png){ width=30% } [One-step-ahead residuals Index 2 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_2.png){ width=30% }
+![Fit to Index 1 age composition data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index_1_region_1.png){ width=50% }
+![Residuals for Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index_1.png){ width=50% }
+
+![One-step-ahead residuals Fleet 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_fleet_1.png){ width=33% }
+![One-step-ahead residuals Index 1 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_1.png){ width=33% }
+![One-step-ahead residuals Index 2 catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_2.png){ width=33% } 
+
+![One-step-ahead residuals Fleet 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_fleet_1.png){ width=33% } 
+![One-step-ahead residuals Index 1 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_1.png){ width=33% } 
+![One-step-ahead residuals Index 2 age composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_2.png){ width=33% }
 
 ### Input Data
 
-![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png){width=45%}![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png){width=45%}
+![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png){width=50%}
+![Indices of abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png){width=50%}
 
 ### Results
 
-![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png){width=45%}![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion_stock_1.png){width=45%}
+![SSB and F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png){width=50%}
+![Proportion of SSB at age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion_stock_1.png){width=50%}
 
-![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog_stock_1.png){width=45%}![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet_1_region_1.png){width=45%}
+![SSB-Rec on log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog_stock_1.png){width=50%}
+![Selectivity Fleet 1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet_1_region_1.png){width=50%}
 
 ### Reference Points
 
-![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png){width=45%}![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png){width=45%}
+![Stock status (Kobe plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png){width=50%}
+![Status relative to SPR ](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png){width=50%}
 
 ### Retrospective
 
-![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro.png){width=45%}![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro_relative.png){width=45%}
+![SSB with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro.png){width=50%}
+![Mohn's rho (SSB) with 7 peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro_relative.png){width=50%}
 
 ### Misc
 
-![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet_1_region_1_obs.png){width=45%}![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet_1_region_1.png){width=45%}
+![Catch curves (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet_1_region_1_obs.png){width=50%}
+![Catch at age consistency (Fleet 1 observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet_1_region_1.png){width=50%}
 
 ```{r eval = FALSE, include = FALSE}
 #if you need to regenerate the data used in this vignette

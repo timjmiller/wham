@@ -193,6 +193,6 @@ ggsave(file.path(write.dir,"retro_pred_R.png"), device='png', width=8, height=5,
 
 The two black lines represent the "true" recruitment from each model, i.e., the recruitment estimates when fitting to the full data. Points and lines are colored by peel from yellow (1996) to dark blue (2008). The points are terminal year recruitment estimates and lines are projected recruitment (3 years).
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png){ width=95% }
+![retro_pred_R](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png){ width=100% }\
 
 

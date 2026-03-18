@@ -293,7 +293,7 @@ thebest = c(11,13)
 vign6_res[1,"dAIC"] = '---'
 vign6_res[1,"AIC"] = '---'
 vign6_res |>
-  dplyr::rename("Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime", "$\\Delta AIC$"="dAIC",
+  dplyr::rename("Converged"="conv", "PD Hessian"="pdHess", "Runtime (min)"="runtime", "$\\Delta AIC$"="dAIC",
          "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
   kable(escape = F) |>
   kable_styling(bootstrap_options = c("condensed","responsive")) |>
@@ -307,8 +307,7 @@ vign6_res |>
 - Models with a GSI-Recruitment link also had less extreme recruitment deviations, because the GSI effect on expected recruitment accounted for some of this variability.
 
 Estimated survival deviations by age (y-axis) and year (x-axis) for all converged models:
-
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png){ width=95% }
+![NAA_devs.png](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png){ width=100% }
 
 #### Retrospective patterns
 
@@ -320,29 +319,35 @@ The plots below compare retrospective patterns from the base model (`m1`, left) 
 
 ###### Numbers-at-age, NAA
 
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png){ width=45% }
+![m1 NAA_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png){ width=50% }
+![m13 NAA_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png){ width=50% }
 
 ###### Spawning stock biomass, SSB
 
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png){ width=45% }
+![m1 SSB_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png){ width=50% }
+![m13 SSB_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png){ width=50% }
 
 ###### Fishing mortality, F
 
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png){ width=45% }
+![m1 Fbar_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png){ width=50% }
+![m13 Fbar_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png){ width=50% }
 
 #### Estimated GSI
 
 Models with a GSI-Recruitment link estimated higher observation error and more smoothing of the GSI than those without. Compare the confidence intervals for `m7` (left, no GSI-Recruitment link), to those for `m13` (right, with GSI-Recruitment link).
 
-![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png){ width=45% }![Gulf Stream Index (GSI) time-series model, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png){ width=45% }
+![Gulf Stream Index (GSI) time-series model, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png){ width=50% }
+![Gulf Stream Index (GSI) time-series model, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png){ width=50% }
 
 #### Stock status
 
 The state-space models, with or without the GSI-Recruitment link, estimated similar but slightly exaggerated trends in $SSB$ and $F$ compared to the base model. Left: $SSB$ and $F$ trends from the base model, `m1`. Right: $SSB$ and $F$ trends from the state-space model without GSI effect, `m7`.
 
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png){ width=45% }![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png){ width=45% }
+![m1_SSB_F_trend](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png){ width=50% }
+![m7_SSB_F_trend](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png){ width=50% }
 
 Adding the GSI-Recruitment link to the state-space model did not impact the probability that the stock was overfished or experiencing overfishing in the final year, 2016 (`m7` w/o GSI, left; `m13` w/ GSI, right).
 
-![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png){ width=45% }![Kobe status plot, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png){ width=45% }
+![Kobe status plot, m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png){ width=50% }
+![Kobe status plot, m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png){ width=50% }
 

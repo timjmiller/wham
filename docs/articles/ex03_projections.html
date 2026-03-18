@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ex 3: Projecting / forecasting random effects • wham</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 3: Projecting / forecasting random effects">
-<meta property="og:description" content="wham">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9004</span>
       </span>
     </div>
 
@@ -43,9 +42,9 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
-     
+
     Vignettes
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
@@ -96,21 +95,21 @@
 <li>
   <a href="../reference/index.html">
     <span class="far fa-file-code fa-lg"></span>
-     
+
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
     Source code
   </a>
 </li>
 <li>
   <a href="../news/index.html">
     <span class="fas fa-bullhorn fa-lg"></span>
-     
+
     News
   </a>
 </li>
@@ -119,14 +118,14 @@
 <li>
   <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
-     
+
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
-     
+
     Contact
   </a>
 </li>
@@ -138,7 +137,7 @@
 </div>
 <!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -183,8 +182,11 @@ and Beverton (1998)</a>) effect on recruitment
 <p>In example 3, we demonstrate how to project/forecast WHAM models
 using the <code><a href="../reference/project_wham.html">project_wham()</a></code> function options for handling</p>
 <ul>
-<li><p>fishing mortality / catch (use last F, use average F, use <span class="math inline">\(F_{SPR}\)</span>, use <span class="math inline">\(F_{MSY}\)</span>, specify F, specify catch) and
-the</p></li>
+<li><p>fishing mortality / catch (use last F, use average F, use
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mi>S</mi><mi>P</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">F_{SPR}</annotation></semantics></math>,
+use
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mi>M</mi><mi>S</mi><mi>Y</mi></mrow></msub><annotation encoding="application/x-tex">F_{MSY}</annotation></semantics></math>,
+specify F, specify catch) and the</p></li>
 <li><p>environmental covariate (continue ecov process, use last ecov,
 use average ecov, specify ecov).</p></li>
 </ul>
@@ -487,14 +489,12 @@ some tolerance).</p>
 <div class="section level3">
 <h3 id="projected-cpi">Projected CPI<a class="anchor" aria-label="anchor" href="#projected-cpi"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Ecov_1_CPI.png" style="width:30.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Ecov_1_CPI.png" style="width:30.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Ecov_1_CPI.png" style="width:30.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Ecov_1_CPI.png" style="width:30.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Ecov_1_CPI.png" style="width:30.0%" alt="5 years, specify low CPI ~ -1.5."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Ecov_1_CPI.png" style="width:33.0%" alt="5 years, specify low CPI ~ -1.5."></p>
 </div>
 <div class="section level3">
 <h3 id="projected-f-catch">Projected F / catch<a class="anchor" aria-label="anchor" href="#projected-f-catch"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_SSB_F_trend.png" style="width:30.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_SSB_F_trend.png" style="width:30.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_SSB_F_trend.png" style="width:30.0%" alt="5 years, use FXSPR."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_SSB_F_trend.png" style="width:30.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_SSB_F_trend.png" style="width:30.0%" alt="10 years, use avg F 1992-1996."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_SSB_F_trend.png" style="width:33.0%" alt="5 years, use FXSPR."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_SSB_F_trend.png" style="width:33.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_SSB_F_trend.png" style="width:33.0%" alt="10 years, use avg F 1992-1996."></p>
 </div>
 <div class="section level3">
 <h3 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -502,27 +502,25 @@ some tolerance).</p>
 <p>In the stock status (Kobe) plots of the projected models using 40%
 spawning potential ratio for reference points, the final model year is
 in bold and the final projected year is not bold.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 2."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 4."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 6."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 8."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_status.png" style="width:45.0%" alt="Stock status, projection 10."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 2."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 4."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 6."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 8."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 10."></p>
 <p>We can compare with the same plots that use MSY-based reference
 points.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 2."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 4."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 6."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 8."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_msy_status.png" style="width:45.0%" alt="MSY Stock status, projection 10."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 2."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 4."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 6."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 8."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 10."></p>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 
@@ -535,16 +533,16 @@ points.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>

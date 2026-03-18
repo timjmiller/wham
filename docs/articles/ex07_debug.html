@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ex 7: Debugging WHAM models • wham</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 7: Debugging WHAM models">
-<meta property="og:description" content="wham">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9004</span>
       </span>
     </div>
 
@@ -43,9 +42,9 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
-     
+
     Vignettes
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
@@ -96,21 +95,21 @@
 <li>
   <a href="../reference/index.html">
     <span class="far fa-file-code fa-lg"></span>
-     
+
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
     Source code
   </a>
 </li>
 <li>
   <a href="../news/index.html">
     <span class="fas fa-bullhorn fa-lg"></span>
-     
+
     News
   </a>
 </li>
@@ -119,14 +118,14 @@
 <li>
   <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
-     
+
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
-     
+
     Contact
   </a>
 </li>
@@ -138,7 +137,7 @@
 </div>
 <!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -282,7 +281,8 @@ flag to debug a WHAM model.</p>
 <span><span class="co">#&gt; Error in ff(x, order = 1) : </span></span>
 <span><span class="co">#&gt;   inner newton optimization failed during gradient calculation</span></span>
 <span><span class="co">#&gt; outer mgc:  NaN</span></span>
-<span><span class="co">#&gt; Error in mod$opt$par: $ operator is invalid for atomic vectors</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `mod$opt$par`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> $ operator is invalid for atomic vectors</span></span></code></pre></div>
 <p>What’s wrong? It looks like the likelihood function is returning
 <code>NaN</code>. It is often easier to diagnose problems like this
 using the <em>unoptimized</em> model, i.e. look at everything using the
@@ -345,61 +345,61 @@ can use the <code>$report()</code> function from TMB.</p>
 <p>See all of the <code>REPORT</code>ed objects.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "pred_indices"              "MAA"                      </span></span>
-<span><span class="co">#&gt;  [3] "N1"                        "mu_static"                </span></span>
-<span><span class="co">#&gt;  [5] "Fbar"                      "waa_catch"                </span></span>
-<span><span class="co">#&gt;  [7] "NAA_spawn"                 "log_FAA_by_region"        </span></span>
-<span><span class="co">#&gt;  [9] "FAA_by_region"             "YPR_srf_FXSPR_static"     </span></span>
-<span><span class="co">#&gt; [11] "log_FXSPR_static"          "NAA"                      </span></span>
-<span><span class="co">#&gt; [13] "log_FXSPR"                 "pred_CAA"                 </span></span>
-<span><span class="co">#&gt; [15] "Ecov_x"                    "Ecov_obs_sigma"           </span></span>
-<span><span class="co">#&gt; [17] "log_SSB_FXSPR_static"      "marg_NAA_sigma"           </span></span>
-<span><span class="co">#&gt; [19] "fracyr_SSB_all"            "selAA"                    </span></span>
-<span><span class="co">#&gt; [21] "pred_log_indices"          "pred_catch_paa"           </span></span>
-<span><span class="co">#&gt; [23] "annual_SAA_spawn"          "seasonal_Ps_terminal_year"</span></span>
-<span><span class="co">#&gt; [25] "mature_static"             "log_YPR_FXSPR_static"     </span></span>
-<span><span class="co">#&gt; [27] "log_SPR0_static"           "nll_sel"                  </span></span>
-<span><span class="co">#&gt; [29] "nll"                       "pred_stock_CAA"           </span></span>
-<span><span class="co">#&gt; [31] "log_Fbar_XSPR_static"      "log_M_static"             </span></span>
-<span><span class="co">#&gt; [33] "log_FAA_XSPR"              "pred_log_catch"           </span></span>
-<span><span class="co">#&gt; [35] "log_FAA_XSPR_static"       "q"                        </span></span>
-<span><span class="co">#&gt; [37] "pred_N1"                   "logit_q_mat"              </span></span>
-<span><span class="co">#&gt; [39] "annual_Ps"                 "nll_index_acomp"          </span></span>
-<span><span class="co">#&gt; [41] "selpars"                   "pred_stock_catch"         </span></span>
-<span><span class="co">#&gt; [43] "log_FXSPR_iter"            "NAAPR_FXSPR_static"       </span></span>
-<span><span class="co">#&gt; [45] "all_NAA"                   "nll_Ecov_obs_sig"         </span></span>
-<span><span class="co">#&gt; [47] "SSB"                       "pred_index_paa"           </span></span>
-<span><span class="co">#&gt; [49] "log_FAA_tot"               "pred_NAA"                 </span></span>
-<span><span class="co">#&gt; [51] "log_Y_FXSPR_static"        "log_SSB_FXSPR"            </span></span>
-<span><span class="co">#&gt; [53] "log_index_resid"           "nll_agg_indices"          </span></span>
-<span><span class="co">#&gt; [55] "log_F_tot"                 "log_M"                    </span></span>
-<span><span class="co">#&gt; [57] "log_Y_FXSPR"               "nll_agg_catch"            </span></span>
-<span><span class="co">#&gt; [59] "QAA"                       "mature_all"               </span></span>
-<span><span class="co">#&gt; [61] "waa_ssb"                   "pred_catch"               </span></span>
-<span><span class="co">#&gt; [63] "log_catch_resid"           "trans_mu_base"            </span></span>
-<span><span class="co">#&gt; [65] "R_XSPR"                    "log_FXSPR_iter_static"    </span></span>
-<span><span class="co">#&gt; [67] "nll_Ecov_obs"              "waa_ssb_static"           </span></span>
-<span><span class="co">#&gt; [69] "selpars_re_mats"           "index_Neff_out"           </span></span>
-<span><span class="co">#&gt; [71] "pred_IAA"                  "sel_static"               </span></span>
-<span><span class="co">#&gt; [73] "NAA_devs"                  "NAAPR0_static"            </span></span>
-<span><span class="co">#&gt; [75] "log_Fbar_XSPR"             "FAA"                      </span></span>
-<span><span class="co">#&gt; [77] "log_SPR_FXSPR_static"      "nll_M"                    </span></span>
-<span><span class="co">#&gt; [79] "NAA_index"                 "annual_SPR0AA"            </span></span>
-<span><span class="co">#&gt; [81] "log_YPR_FXSPR"             "nll_catch_acomp"          </span></span>
-<span><span class="co">#&gt; [83] "FAA_static"                "waa_catch_static"         </span></span>
-<span><span class="co">#&gt; [85] "L"                         "nll_NAA"                  </span></span>
-<span><span class="co">#&gt; [87] "log_SPR_FXSPR"             "mu"                       </span></span>
-<span><span class="co">#&gt; [89] "log_SPR0"                  "catch_Neff_out"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "L"                         "selAA"                    </span></span>
+<span><span class="co">#&gt;  [3] "FAA_static"                "waa_catch_static"         </span></span>
+<span><span class="co">#&gt;  [5] "NAA_index"                 "index_Neff_out"           </span></span>
+<span><span class="co">#&gt;  [7] "waa_catch"                 "pred_stock_CAA"           </span></span>
+<span><span class="co">#&gt;  [9] "trans_mu_base"             "N1"                       </span></span>
+<span><span class="co">#&gt; [11] "NAAPR0_static"             "log_SPR_FXSPR_static"     </span></span>
+<span><span class="co">#&gt; [13] "log_index_resid"           "log_FXSPR_iter"           </span></span>
+<span><span class="co">#&gt; [15] "log_F_tot"                 "log_FAA_tot"              </span></span>
+<span><span class="co">#&gt; [17] "nll_M"                     "Ecov_obs_sigma"           </span></span>
+<span><span class="co">#&gt; [19] "log_YPR_FXSPR"             "mu_static"                </span></span>
+<span><span class="co">#&gt; [21] "mature_static"             "log_FAA_XSPR_static"      </span></span>
+<span><span class="co">#&gt; [23] "YPR_srf_FXSPR_static"      "log_M_static"             </span></span>
+<span><span class="co">#&gt; [25] "mature_all"                "Ecov_x"                   </span></span>
+<span><span class="co">#&gt; [27] "fracyr_SSB_all"            "pred_log_catch"           </span></span>
+<span><span class="co">#&gt; [29] "pred_IAA"                  "NAA"                      </span></span>
+<span><span class="co">#&gt; [31] "log_FAA_by_region"         "log_SPR0"                 </span></span>
+<span><span class="co">#&gt; [33] "FAA"                       "pred_NAA"                 </span></span>
+<span><span class="co">#&gt; [35] "seasonal_Ps_terminal_year" "annual_Ps"                </span></span>
+<span><span class="co">#&gt; [37] "nll_sel"                   "nll_agg_catch"            </span></span>
+<span><span class="co">#&gt; [39] "QAA"                       "log_M"                    </span></span>
+<span><span class="co">#&gt; [41] "log_Fbar_XSPR"             "NAAPR_FXSPR_static"       </span></span>
+<span><span class="co">#&gt; [43] "log_Y_FXSPR_static"        "log_FXSPR_iter_static"    </span></span>
+<span><span class="co">#&gt; [45] "FAA_by_region"             "selpars"                  </span></span>
+<span><span class="co">#&gt; [47] "pred_log_indices"          "nll_Ecov_obs"             </span></span>
+<span><span class="co">#&gt; [49] "log_YPR_FXSPR_static"      "waa_ssb_static"           </span></span>
+<span><span class="co">#&gt; [51] "annual_SPR0AA"             "q"                        </span></span>
+<span><span class="co">#&gt; [53] "all_NAA"                   "mu"                       </span></span>
+<span><span class="co">#&gt; [55] "pred_N1"                   "log_FXSPR_static"         </span></span>
+<span><span class="co">#&gt; [57] "log_SSB_FXSPR"             "log_FAA_XSPR"             </span></span>
+<span><span class="co">#&gt; [59] "waa_ssb"                   "R_XSPR"                   </span></span>
+<span><span class="co">#&gt; [61] "sel_static"                "pred_CAA"                 </span></span>
+<span><span class="co">#&gt; [63] "log_FXSPR"                 "log_Y_FXSPR"              </span></span>
+<span><span class="co">#&gt; [65] "NAA_spawn"                 "NAA_devs"                 </span></span>
+<span><span class="co">#&gt; [67] "pred_catch_paa"            "pred_index_paa"           </span></span>
+<span><span class="co">#&gt; [69] "Fbar"                      "nll_agg_indices"          </span></span>
+<span><span class="co">#&gt; [71] "log_catch_resid"           "nll"                      </span></span>
+<span><span class="co">#&gt; [73] "annual_SAA_spawn"          "nll_Ecov_obs_sig"         </span></span>
+<span><span class="co">#&gt; [75] "nll_NAA"                   "catch_Neff_out"           </span></span>
+<span><span class="co">#&gt; [77] "logit_q_mat"               "pred_catch"               </span></span>
+<span><span class="co">#&gt; [79] "log_SSB_FXSPR_static"      "log_Fbar_XSPR_static"     </span></span>
+<span><span class="co">#&gt; [81] "pred_stock_catch"          "marg_NAA_sigma"           </span></span>
+<span><span class="co">#&gt; [83] "nll_catch_acomp"           "MAA"                      </span></span>
+<span><span class="co">#&gt; [85] "SSB"                       "selpars_re_mats"          </span></span>
+<span><span class="co">#&gt; [87] "nll_index_acomp"           "log_SPR_FXSPR"            </span></span>
+<span><span class="co">#&gt; [89] "pred_indices"              "log_SPR0_static"</span></span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and
 sum over all individual values.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          nll_sel              nll  nll_index_acomp nll_Ecov_obs_sig </span></span>
-<span><span class="co">#&gt;           0.0000              NaN        3921.8316           0.0000 </span></span>
-<span><span class="co">#&gt;  nll_agg_indices    nll_agg_catch     nll_Ecov_obs            nll_M </span></span>
-<span><span class="co">#&gt;        1565.7938              NaN           0.0000           0.0000 </span></span>
-<span><span class="co">#&gt;  nll_catch_acomp          nll_NAA </span></span>
-<span><span class="co">#&gt;        2844.2380         325.8628</span></span></code></pre></div>
+<span><span class="co">#&gt;            nll_M          nll_sel    nll_agg_catch     nll_Ecov_obs </span></span>
+<span><span class="co">#&gt;           0.0000           0.0000              NaN           0.0000 </span></span>
+<span><span class="co">#&gt;  nll_agg_indices              nll nll_Ecov_obs_sig          nll_NAA </span></span>
+<span><span class="co">#&gt;        1565.7938              NaN           0.0000         325.8628 </span></span>
+<span><span class="co">#&gt;  nll_catch_acomp  nll_index_acomp </span></span>
+<span><span class="co">#&gt;        2844.2380        3921.8316</span></span></code></pre></div>
 <p>The likelihood components that are equal to 0 are not used in the
 model (no random effects on <code>M</code>, <code>Ecov</code>,
 <code>selectivity</code>, etc.). <code>nll</code> is the total
@@ -739,16 +739,16 @@ negative, and we take the log of a negative number for
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>
