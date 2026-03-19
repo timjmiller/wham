@@ -781,13 +781,12 @@ Type objective_function<Type>::operator() ()
   
 
   //need to do projections before evaluating nll component for NAA
-  vector<Type> fracyr_ssb_y = get_avg_ssbfrac(fracyr_SSB,spawn_regions,avg_years_ind_waassb); 
-  array<Type> mat_y = get_avg_mat_as_array(mature,spawn_regions, avg_years_ind_mat);
-  array<Type> waa_ssb_y = get_avg_waassb_as_array(waa, spawn_regions, avg_years_ind_waassb,waa_pointer_ssb);
-  array<Type> waa_catch_y = get_avg_waacatch_as_array(waa,avg_years_ind_waacatch,waa_pointer_fleets);
-
   if(n_years_proj > 0){
     
+    vector<Type> fracyr_ssb_y = get_avg_ssbfrac(fracyr_SSB,spawn_regions,avg_years_ind_waassb); 
+    array<Type> mat_y = get_avg_mat_as_array(mature,spawn_regions, avg_years_ind_mat);
+    array<Type> waa_ssb_y = get_avg_waassb_as_array(waa, spawn_regions, avg_years_ind_waassb,waa_pointer_ssb);
+    array<Type> waa_catch_y = get_avg_waacatch_as_array(waa,avg_years_ind_waacatch,waa_pointer_fleets);
     array<Type> NAA_devs_y = get_avg_NAA_devs(all_NAA, NAA_where, NAA_re_model, avg_years_ind_NAA);
     
     for(int y = n_years_model; y < n_years_pop; y++){
@@ -895,6 +894,10 @@ Type objective_function<Type>::operator() ()
 
     if(n_years_proj > 0){
 
+      vector<Type> fracyr_ssb_y = get_avg_ssbfrac(fracyr_SSB,spawn_regions,avg_years_ind_waassb); 
+      array<Type> mat_y = get_avg_mat_as_array(mature,spawn_regions, avg_years_ind_mat);
+      array<Type> waa_ssb_y = get_avg_waassb_as_array(waa, spawn_regions, avg_years_ind_waassb,waa_pointer_ssb);
+      array<Type> waa_catch_y = get_avg_waacatch_as_array(waa,avg_years_ind_waacatch,waa_pointer_fleets);
       array<Type> NAA_devs_y = get_avg_NAA_devs(all_NAA, NAA_where, NAA_re_model, avg_years_ind_NAA);
     if(trace(0)) see("finished getting avg_NAA_devs");
 

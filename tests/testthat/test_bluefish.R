@@ -1,8 +1,8 @@
 # Test Bluefish: 
 #   - 2 fleets, and lots of indices, some with limited age ranges in age comp
 
-# pkgbuild::compile_dll("c:/work/wham/wham", debug = FALSE)
-# pkgload::load_all("c:/work/wham/wham")
+# pkgbuild::compile_dll("~/work/wham/wham", debug = FALSE)
+# pkgload::load_all("~/work/wham/wham")
 # library(wham)
 # btime <- Sys.time(); devtools::test(filter = "bluefish"); etime <- Sys.time(); runtime = etime - btime; runtime;
 # ~1.5 min
