@@ -315,41 +315,60 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   fe.vals <- temp[[2]]
   fe.cis <- temp[[3]]
 
-
-  if(sum(!is.na(mod$input$map$Mpars))){ #any (mean) M estimated?
-    for(s in 1:data$n_stocks) for(r in 1:data$n_regions) for(a in 1:data$n_ages){
-      if(!is.na(sd$Mpars[s,r,a])){
-        if(data$M_re_model[s,r] == 1) {# & data$M_model == 1){ #no random effects, ecov or WAA effects on M
-          if(data$M_model == 1) {
-            if(sum(data$Ecov_how_M[,s,a,r]) == 0) modify <- "M for age "
-            if(sum(data$Ecov_how_M[,s,a,r]) >0) modify <- "mean log(M) for age "
+  map_Mpars <- mod[["input"]][["map"]][["Mpars"]]
+  map_arr <- pars[["Mpars"]]
+  map_arr[] <- map_Mpars
+  levs_Mpars <- levels(map_Mpars)
+  if(length(levs_Mpars)){ #any (mean) M estimated?
+    for(s in 1:data[["n_stocks"]]) for(r in 1:data[["n_regions"]]) {
+      modify <- character()
+      vals <- numeric()
+      cis <- matrix(NA, 0, 3)
+      if(data$M_model == 1) { #no WAA effects
+        if((data$M_re_model[s,r] > 1) | (sum(data[["Ecov_how_M"]][,s,,r]) == 0)) type  <- "log(M) intercept" #covariate and/or random effects
+        else type <- "M"
+          
+        for(l in levels(map_Mpars)) if(sum(map_arr[s,r,] == l, na.rm =TRUE)){
+          ind <- which(map_arr[s,r,] == l)
+          if(length(ind) == 1) {
+            modify <- c(modify, paste0(type, " for age ", mod[["ages.lab"]][[ind]])) #just one age with this parameter
+          } else {
+            diffs <- diff(ind)
+            skips <- which(diffs>1)
+            if(!length(skips)) albs <- paste0(mod[["ages.lab"]][[ind[1]]], " to ", mod[["ages.lab"]][[ind[length(ind)]]]) #same for consecutive ages
+            else{ #not consecutive ages
+              albs <- paste0(mod[["ages.lab"]][[ind]], collapse = ", ")
+            }
+            modify <- c(modify, paste0(type, " for ages", albs))
           }
-          if(data$M_model == 2) modify <- "mean log(M) intercept for log(WAA) effects" #whether Ecov or not
-        }
-        if(data$M_re_model[s,r] >1){
-          if(data$M_model == 1) modify <- "mean log(M) intercept for age " #whether Ecov or not
-        }
-        if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ", modify)
-        else modify <- paste0(stock.names.tab[s], " ", modify)
-
-        if(data$M_model == 1) modify <- paste0(modify, mod$ages.lab[a])
-        fe.names <- c(fe.names, modify)
-        if(data$M_re_model[s,r]>1 | data$M_model == 2 | sum(data$Ecov_how_M[,s,a,r]) >0){
-          fe.vals <- c(fe.vals, pars$Mpars[s,r,a])
-          fe.cis <- rbind(fe.cis, ci(pars$Mpars[s,r,a], sd$Mpars[s,r,a]))
-        } else {
-          fe.vals <- c(fe.vals, exp(pars$Mpars[s,r,a]))
-          fe.cis <- rbind(fe.cis, ci(pars$Mpars[s,r,a], sd$Mpars[s,r,a], type = "exp"))
+          if(type == "M") {
+            vals <- c(vals, exp(pars$Mpars[s,r,ind[1]]))
+            cis <- rbind(cis, ci(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]], type = "exp"))
+          } else{
+            vals <- c(vals, pars$Mpars[s,r,ind[1]])
+            cis <- rbind(cis, ci(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]]))
+          }
         }
       }
+      if(data$M_model == 2) if(!is.na(map_arr[s,r,1])){
+        modify  <- c(modify, "log(M) intercept for WAA effects" )
+        vals <- c(vals, pars$Mpars[s,r,1])
+        cis <- rbind(cis, ci(pars$Mpars[s,r,1], sd$Mpars[s,r,1]))
+      }
+      if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ", modify)
+      else modify <- paste0(stock.names.tab[s], " ", modify)
+      fe.names <- c(fe.names, modify)
+      fe.vals <- c(fe.vals, vals)
+      fe.cis <- rbind(fe.cis, cis)
     }
   }
+  
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
     if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ")
     else modify <- paste0(stock.names.tab[s], " ")
 
     if(!is.na(sd$log_b[s,r])){
-      fe.names <- c(fe.names, paste0(modify, "log(M) slope for log(WAA) effect"))
+      fe.names <- c(fe.names, paste0(modify, "log(M) slope for WAA effect"))
       fe.vals <- c(fe.vals, exp(pars$log_b[s,r]))
       fe.cis <- rbind(fe.cis, ci(pars$log_b[s,r], sd$log_b[s,r], type = "exp"))
     }

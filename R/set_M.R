@@ -5,7 +5,7 @@
 #' 
 #' \code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file.
 #' If \code{NULL}, the M-at-age matrix from the ASAP data file is used (M fixed, not estimated). To estimate M-at-age
-#' shared/mirrored among some but not all ages, modify \code{M$means_map} (see vignette for more details). \code{M} is a list 
+#' shared/mirrored among some but not all ages, modify \code{M$means_map} (see \href{https://timjmiller.github.io/wham/articles/ex05_GSI_M.html}{vignette} for more details). \code{M} is a list 
 #' with the following entries:
 #'   \describe{
 #'     \item{$mean_model}{Character describing the type of model for M stock and regional models for natural mortality. Options are:
@@ -14,7 +14,7 @@
 #'           and \code{$initial_means} is not provided, default is M = 0.2 for all stocks, regions and ages}
 #'         \item{"estimate-M"}{estimate one or more (mean) M parameters. Default is to estimate a single M shared across all stocks and ages, but
 #'           use \code{$means_map} to fix or estimate parameters for specific stocks, regions, ages.}
-#'         \item{"weight-at-age"}{specifies M as a function of weight-at-age, \eqn{M_y,a = exp(b0 + b1*log(W_y,a))}, as in
+#'         \item{"weight-at-age"}{specifies M as a function of weight-at-age, \eqn{M_{y,a} = \mathrm{exp}(b0 + b1*\mathrm{log}(W_{y,a}))}, as in
 #'           \href{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x}{Lorenzen (1996)} and
 #'           \href{https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035}{Miller & Hyun (2018)}.
 #'           Default is to estimate a single model shared across all stocks and regions, but
@@ -90,7 +90,7 @@
 #' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 #' input <- prepare_wham_input(asap3)
 #' M = list(mean_model = "estimate-M")
-#' input <- set_q(input, M = M) #estimate a constant M parameters
+#' input <- set_M(input, M = M) #estimate a constant M parameters
 #' }
 #'
 #' @export

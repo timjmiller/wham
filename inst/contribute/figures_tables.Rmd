@@ -36,49 +36,491 @@ options(knitr.kable.NA = "--")
 #library(pander)
 #library(kableExtra)
 #library(tinytex)
+input <- readRDS("model_input.RDS")
 ```
+
 # {.tabset}
 
 ## Figures {.tabset}
 
-### Input
+### Configuration
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+knitr::include_graphics("plots_png/diagnostics/summary_text.png")
+```
+
+### Input {.tabset}
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/input_data", full.names = TRUE)
 plot_files <- plot_files[grep("png", plot_files)]
-if(length(plot_files)) knitr::include_graphics(plot_files)
+not_ind <- integer()
 ```
 
-### Diagnostics
+#### Population Biology
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("maturity", "weight_at_age_SSB")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Catch
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("catch_by_fleet", "catch_age_comp")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Indices
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("scaled_indices.png", "age_comp.png", paste0("weight_at_age_", input$index_names))
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+
+### Diagnostics {.tabset}
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/diagnostics", full.names = TRUE)
 plot_files <- plot_files[grep("png", plot_files)]
-if(length(plot_files)) knitr::include_graphics(plot_files)
+not_ind <- integer()
+#if(length(plot_files)) knitr::include_graphics(plot_files)
 ```
 
-### Results
+#### Aggregate Catch {.tabset}
+
+##### Raw residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Catch_4panel")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### OSA residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("OSA_resid_catch_4panel_fleet")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Catch Age Composition {.tabset}
+
+##### Raw Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Catch_age_comp_resids_fleet")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### OSA Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("OSA_resid_paa_6panel_fleet", "Catch_age_comp_osa_resids_fleet")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### Yearly Observed and Predicted
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Catch_age_comp_fleet")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Aggregate Indices {.tabset}
+
+##### Raw Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Index_4panel")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### OSA Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("OSA_resid_catch_4panel_index")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Index Age Composition {.tabset} 
+
+##### Raw Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Catch_age_comp_resids_index")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### OSA Residuals
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("OSA_resid_paa_6panel_index", "Catch_age_comp_osa_resids_index")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### Yearly Observed and Predicted
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Catch_age_comp_index")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Numbers at age
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("NAA")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Covariates
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("_diagnostic", "ecov")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+### Results {.tabset}
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/results", full.names = TRUE)
 plot_files <- plot_files[grep("png", plot_files)]
-if(length(plot_files)) knitr::include_graphics(plot_files)
+#if(length(plot_files)) knitr::include_graphics(plot_files)
 ```
 
-### Retro
+#### SSB, Abundance, and F {.tabset}
+
+##### SSB and Recruitment
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("SSB_Rec_time", "SSB_Rec_stock", "SSB_Rec_loglog")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### SSB and F
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("SSB_F_trend", "F_byfleet")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### SSB at age
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("SSB_at_age_stock","SSB_at_age_proportion")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### Abundance at age
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Numbers_at_age_stock", "Numbers_at_age_proportion", "NAA_dev_tile")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+##### CVs
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("CV_")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Natural Mortality
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("MAA_tile", "M_at_age")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Selectivity
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("SelAA_tile", "Selectivity")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Catchability
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("q_time_series")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+
+#### Covariates
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Ecov")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+### Retro {.tabset}
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/retro", full.names = TRUE)
 plot_files <- plot_files[grep("png", plot_files)]
-if(length(plot_files)) knitr::include_graphics(plot_files)
+#if(length(plot_files)) knitr::include_graphics(plot_files)
 ```
 
-### Reference points
+#### SSB
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("SSB")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Fishing mortality
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("Fbar")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Recruitment
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("age_1")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### Abundance at age
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+#if(length(plot_files)) knitr::include_graphics(plot_files)
+if(length(plot_files)) {
+  file_grps <- c("NAA_retro")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+### Reference points {.tabset}
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
 plot_files <- list.files("plots_png/ref_points", full.names = TRUE)
 plot_files <- plot_files[grep("png", plot_files)]
-if(length(plot_files)) knitr::include_graphics(plot_files)
+```
+
+#### SPR-based
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+if(length(plot_files)) {
+  file_grps <- c("FSPR_absolute","FSPR_relative","Kobe_status","FSPR_annual","FSPR_freq_annual","SPR_targets", "YPR_F")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+#### MSY-based
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+if(length(plot_files)) {
+  file_grps <- c("MSY","msy")
+  ind <- unlist(sapply(file_grps, \(x) grep(x, plot_files, fixed = TRUE)))
+  not_ind <- c(not_ind, which(!(1:length(plot_files) %in% ind)))
+  #ind <- c(ind, not_ind)
+  files <- plot_files[ind]
+  if(length(files)) knitr::include_graphics(files)
+}
+```
+
+### Likelihood Components
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+knitr::include_graphics("plots_png/diagnostics/likelihood.png")
 ```
 
 ### Miscellaneous

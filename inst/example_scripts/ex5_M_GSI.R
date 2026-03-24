@@ -73,6 +73,7 @@ for(m in 1:n.mods){
 
   mean_map <- NULL
   if(df.mods$mean_model[m] == "estimate-M"){
+    mean_map <- array(NA_integer_, c(1,1,asap3[[1]]$dat$n_ages))
     if(df.mods$age_specific[m]) mean_map[1,1,] <- 1:asap3[[1]]$dat$n_ages
     else mean_map[1,1,] <- 1
   }
@@ -124,7 +125,7 @@ df.mods$pdHess <- as.logical(ok_sdrep)
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 is_conv <- df.mods$conv & df.mods$pdHess
-which(is_conv) # 1, 2, 5, 8, 9, 11, 12
+which(is_conv) # 1, 2, 3, 5, 8, 9, 11, 12
 mods2 <- mods[is_conv]
 #mods2[not_conv] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=TRUE))$tab)
@@ -155,7 +156,7 @@ for(m in which(is_conv)){
 # save results table
 write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
 
-# compare models which(is_conv) 1, 2, 5, 8, 9, 11, 12
+# compare models which(is_conv) 1, 2, 3, 5, 8, 9, 11, 12
 compare_wham_models(mods[which(is_conv)], do.table=FALSE, plot.opts=list(return.ggplot=F))
 compare_wham_models(mods[which(is_conv)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=5))
 compare_wham_models(mods[which(is_conv)], do.table=FALSE, plot.opts=list(return.ggplot=F, which=6, M.age=4))
