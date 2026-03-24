@@ -55,7 +55,6 @@ for(m in conv_mods){
 
 # get output from ASAP model run
 base <- read_asap3_fit(wd=file.path(path_to_examples,"BASE_3"), asap.name="BASE_3")
-if (is.null(base$sdrep)) base$sdrep <- TRUE
 mods <- c(list(base),mods)
 names(mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
 

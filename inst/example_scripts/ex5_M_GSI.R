@@ -125,7 +125,7 @@ df.mods$pdHess <- as.logical(ok_sdrep)
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 is_conv <- df.mods$conv & df.mods$pdHess
-which(is_conv) # 1, 2, 5, 8, 9, 11, 12
+which(is_conv) # 1, 2, 3, 5, 8, 9, 11, 12
 mods2 <- mods[is_conv]
 #mods2[not_conv] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=TRUE))$tab)
@@ -149,26 +149,8 @@ rownames(df.mods) <- NULL
 df.mods
 
 # plot output for all models that converged
-#for(m in which(is_conv)){
-  #plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)))}
-#→Error in `.rowNamesDF<-`(x, value = value): duplicate 'row.names' are not allowed
-#→Additional information: Warning message: non-unique value when setting 'row.names': 'stock 1 mean log(M) intercept for log(WAA) effects'
 for(m in which(is_conv)){
-  od <- file.path(write.dir, paste0("m", m)) 
-  msg <- try(plot_wham_output(mod = mods[[m]], dir.main = od))
-  
-  if(inherits(msg, "try-error")){
-    # m8 fail when plotting M rows due to duplicate row names.
-    # Fallback: make a copy of the model, hide all M rows, and re-run plotting.
-    message(sprintf("model m%d failed; retry with a plotting-only copy (M rows omitted)", m))
-    mod2 <- mods[[m]]                        
-    if(!is.null(mod2$input$map$Mpars)) {
-      mod2$input$map$Mpars[] <- NA_integer_  # hide all M rows for plotting only
-    }
-    od2 <- paste0(od, "_noMrow")             
-    plot_wham_output(mod = mod2, dir.main = od2, out.type = "html")
-    message(sprintf("model m%d: HTML generated with M omitted -> %s", m, od2))
-  }
+  plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)))
 }
 
 # save results table
@@ -234,6 +216,6 @@ for(m in tofit){
 }
 
 # make sure NLL doesn't change with projections
-diff_nll <- sapply(tofit, function(x) mods[[x]]$opt$obj - mods_proj[[x]]$fn()) 
+diff_nll <- sapply(tofit, function(x) mods[[m]]$opt$obj - mods_proj[[m]]$fn()) 
 diff_nll #~0
 

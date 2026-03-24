@@ -11,21 +11,6 @@ library(tidyverse)
 library(viridis)
 library(ggplot2)
 
-#func. from compare_wham_models.R
-fancy_scientific <- function(l) {
-  if(max(l, na.rm=T) < 100){
-    l <- format(l, scientific = FALSE, digits=2)
-  } else {
-    l <- format(l, scientific = TRUE, digits=2)
-    l <- gsub("0e\\+00","0",l)
-    l <- gsub("^(.*)e", "'\\1'e", l)
-    l <- gsub("e\\+","e",l)
-    l <- gsub("e", "%*%10^", l)
-    l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
-  }
-  parse(text=l, keep.source = FALSE)
-}
-
 # create directory for analysis, e.g.
 if(!exists("write.dir")) write.dir <- tempdir(check=TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
@@ -124,7 +109,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	      scale_colour_manual(values=cols) +
 	      scale_fill_manual(values=cols) +
 	      guides(color = "none", fill="none") +
-	      scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=fancy_scientific) +
+	      scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=wham:::fancy_scientific) +
 	      theme_bw() +
 	      theme(legend.position=c(.9,.9), legend.box.margin = margin(0,0,0,0), legend.margin = margin(0,0,0,0))
 	return(g)
