@@ -194,7 +194,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(is.null(plot.opts[["refpt"]])) plot.opts$refpt <- "XSPR"
     if(!plot.opts$refpt %in% c("XSPR","MSY")) stop("plot.opts$refpt must be either 'XSPR' or 'MSY'.")
     if(is.null(plot.opts[["browse"]])) plot.opts$browse <- TRUE
-    if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
+    #if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
     if(any(sapply(mods[wham.mods.ind], function(x) x$env$data$do_SPR_BRPs == 0))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
 
     x <- list()
@@ -207,7 +207,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         x[[i]]$is.wham <- FALSE
       }
     }
-    if(any(sapply(mods, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
+    #if(any(sapply(mods, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
 
     names(x) <- names(mods)
     if(is.null(plot.opts$ages.lab)){
@@ -257,7 +257,6 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       }
       plot.opts$which <- plot.opts$which[which(!(plot.opts$which %in% 8:10))]
     }
-    
     for(i in plot.opts$which){
 
       if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, compare.opts, plot.opts))
