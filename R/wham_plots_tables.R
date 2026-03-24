@@ -505,7 +505,7 @@ fit.summary.text.plot.fn <- function(mod){
   text(5,nl <- nl-0.5,paste0("Model years: ", min(mod$years), "-", max(mod$years)))
   if(mod$env$data$n_years_proj>0){
     proj.yrs <- tail(mod$years_full, mod$env$data$n_years_proj)
-    proj.txt <- ifelse(mod$env$data$n_years_proj>0, "none", paste0(min(proj.yrs), "-", max(proj.yrs)))
+    proj.txt <- ifelse(mod$env$data$n_years_proj>0, paste0(min(proj.yrs), "-", max(proj.yrs)),"none")
     text(5,nl <- nl-0.5,paste0("Projection years: ", proj.txt))
   }
   text(5,nl <- nl-0.5,paste0("Number of stocks: ", mod$env$data$n_stocks))
@@ -1100,7 +1100,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
     if(do.png) png(filename = file.path(od, paste0("Index_4panel_",index.name.fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 		plot(years, index[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Index",
-			ylim=c(0, 1.1*max(index[,i], na.rm=T)))
+			ylim=c(0, 1.1*max(c(index[,i],pred_index[,i]), na.rm=T)))
 		lines(years, pred_index[,i], col=plot.colors[i], lwd=2)
 		log.ob.min <- log(index[,i])-1.96*sigma[,i]
 		log.ob.max <- log(index[,i])+1.96*sigma[,i]
@@ -1242,11 +1242,12 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 	for (i in fleets)
 	{
     acomp.obs <- mod$env$data$catch_paa[i,,]
+    acomp.obs[which(mod$env$data$use_catch_paa[,i]==0),] <- NA
     acomp.pred <- mod$rep$pred_catch_paa[i,1:mod$env$data$n_years_model,]
     fleet.name.fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
     fleet.name.plt <- paste0(mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]])
-    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", fleet.name.fn, ".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_fleet_", fleet.name.fn, ".png")), width = 10*144, height = 10*144, 
+    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", fleet.name.fn, "_a.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", fleet.name.fn, "_a.png")), width = 10*144, height = 10*144, 
       res = 144, pointsize = 12, family = fontfam)
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- fleet.name.plt #paste0("Fleet ", i)
@@ -1272,9 +1273,9 @@ plot.catch.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
       # if 5x3 multipanel is full, save png and open new one
       if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
         dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", fleet.name.fn,"_",letters[j/15],".pdf")), family = fontfam, 
+        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", fleet.name.fn,"_",letters[j/15 + 1],".pdf")), family = fontfam, 
           height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", fleet.name.fn,"_",letters[j/15],".png")), width = 10*144, 
+        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", fleet.name.fn,"_",letters[j/15 + 1],".png")), width = 10*144, 
           height = 10*144, res = 144, pointsize = 12, family = fontfam)
         par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
       }
@@ -1304,12 +1305,13 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
 	for (i in indices)
 	{
     acomp.obs <- mod$env$data$index_paa[i,,]
+    acomp.obs[which(mod$env$data$use_index_paa[,i]==0),] <- NA
     acomp.pred <- mod$rep$pred_IAA[i,1:length(years),] #biomass is accounted for on the cpp side
     acomp.pred <- acomp.pred/apply(acomp.pred,1,sum)
     index.name.fn <- paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]])
     index.name.plt <- paste0(mod$input$index_names[i], " in ", mod$input$region_names[mod$input$data$index_regions[i]])
-    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", index.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", index.name.fn,".png")), width = 10*144, height = 10*144, 
+    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", index.name.fn,"_a.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", index.name.fn,"_a.png")), width = 10*144, height = 10*144, 
       res = 144, pointsize = 12, family = fontfam)
     par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- index.name.plt #paste0("Index ", i)
@@ -1335,9 +1337,9 @@ plot.index.age.comp <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="",
       # if 5x3 multipanel is full, save png and open new one
       if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
         dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", index.name.fn,"_",letters[j/15],".pdf")), family = fontfam, 
+        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", index.name.fn,"_",letters[j/15 + 1],".pdf")), family = fontfam, 
           height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", index.name.fn,"_",letters[j/15],".png")), width = 10*144, 
+        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", index.name.fn,"_",letters[j/15 + 1],".png")), width = 10*144, 
           height = 10*144, res = 144, pointsize = 12, family = fontfam)
         par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
       }
@@ -2246,7 +2248,7 @@ plot.catch.age.comp.bubbles <- function(mod, ages, ages.lab, bubble.col = "#8c8c
 #revised
 
 #------------------------------------
-plot.index.input <- function(mod, plot.colors)
+plot.scaled.index.input <- function(mod, plot.colors)
 {
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(2,1), mar = c(1,1,1,1), oma = c(4,4,0,15))
@@ -2607,7 +2609,7 @@ get_SPR_BRPS_fn <- function(mod, spr_yrs_waassb,spr_yrs_mat,spr_yrs_M, spr_yrs_L
 #y <- get_SPR_BRPS_fn(x)
 
 
-plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
+plot.SPR.table <- function(mod, plot=TRUE)
 {
   origpar <- par(no.readonly = TRUE)
   spr.targ.values <- seq(0.2, 0.8, 0.05)
@@ -2616,23 +2618,29 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 	n_ages<- dat$n_ages
 	years <- mod$years
 	n_years <- length(years)
-  avg.ind <- tail(1:n_years, nyrs.ave)
-  # avg.ind <- (n_years-nyrs.ave+1):n_years
-	#fec.age <- apply(dat$waa[dat$waa_pointer_ssb,,][avg.ind,],2,mean)
-  mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
-  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
-  catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,avg.ind,,drop = FALSE], c(1,3),mean)
-	#catch.waa <- apply(dat$waa[dat$waa_pointer_totcatch,,][avg.ind,],2,mean)
-  M.age <- apply(mod$rep$MAA[1,1,,][avg.ind,,drop = FALSE],2,mean)
-  FAA <- apply(mod$rep$FAA[,avg.ind,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
-  FAAtot <- apply(FAA,2,sum) #sum across fleet averages 
+  nyrs.waacatch <- dat$avg_years_ind_static_waacatch[1,]
+  nyrs.waassb <- dat$avg_years_ind_static_waassb[1,1,1]
+  nyrs.mat <- dat$avg_years_ind_static_mat[1,1,1]
+  nyrs.M <- dat$avg_years_ind_static_M[1,1,1]
+  nyrs.sel <- dat$avg_years_ind_static_sel[1,]
+  avg.ind.waacatch <- dat$avg_years_ind_static_waacatch
+  avg.ind.waassb <- dat$avg_years_ind_static_waassb
+  avg.ind.mat <- dat$avg_years_ind_static_mat
+  avg.ind.M <- dat$avg_years_ind_static_M
+  avg.ind.sel <- dat$avg_years_ind_static_sel
+  mat.age <- apply(dat$mature[1,,][avg.ind.mat[1,1,1+1:nyrs.mat],,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind.waassb[1,1,1+1:nyrs.waassb],,drop = FALSE],2,mean)
+  catch.waa <- t(sapply(1:dat$n_fleets, \(f) apply(dat$waa[dat$waa_pointer_fleets[f], avg.ind.waacatch[1 + 1:nyrs.waacatch[f],f],],2,mean))) #n_fleets x n_ages
+  M.age <- apply(mod$rep$MAA[1,1,,][avg.ind.M[1,1,1+1:nyrs.M],],2,mean)
+  FAA <- t(sapply(1:dat$n_fleets, \(f) apply(mod$rep$FAA[f,avg.ind.sel[1 + 1:nyrs.sel[1],f],], 2, mean))) #mean FAA by fleet n_fleets x n_ages
+  FAAtot <- apply(FAA,2,sum) #sum across fleet averages
   seltot <- FAAtot/max(FAAtot)
   selAA <- FAA/max(FAAtot) 
-  
+
   # sel <- apply(apply(mod$rep$FAA[avg.ind,,,drop=FALSE], 2:3, mean),2,sum) #sum across fleet averages 
   #sel <- apply(mod$rep$FAA_tot[avg.ind,],2,mean) #average FAA, then do selectivity
 	# sel <- sel/max(sel)
-	spawn.time <- mean(dat$fracyr_SSB[avg.ind,1])
+	spawn.time <- mean(dat$fracyr_SSB[avg.ind.waassb[1,1,1+1:nyrs.waassb],1])
   spr0 <- get_SPR(F=0, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 	F.start <- 0.11  # starting guess for optimization routine to find F_SPR%
 
@@ -2656,33 +2664,33 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
 
 	spr.target.table<- as.data.frame(cbind(spr.targ.values, f.spr.vals, ypr.spr.vals))
 	colnames(spr.target.table) <- c("%SPR", "F(%SPR)", "YPR")
-	par(mfrow=c(1,1), mar=c(4,4,2,4))
+	par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
 
 	if(plot){ # plot, not table
   	plot(spr.targ.values, ypr.spr.vals, type='n', xlab="% SPR Target", ylab="", lwd=2, col="blue3",
-      ylim=c(0,1.2*max(ypr.spr.vals)), axes = FALSE)
+      ylim=c(0,max(ypr.spr.vals)), axes = FALSE)
     box(lwd = 2)
     axis(1, lwd = 2)
   	abline(v=seq(0.2,0.8, by=0.05), col="grey85")
   	lines(spr.targ.values, ypr.spr.vals, lwd=2, col="blue3" )
   	points(spr.targ.values, ypr.spr.vals, pch=19, col="blue3" )
 
-    scale.f.spr <- max(f.spr.vals)/max(ypr.spr.vals)
   	axis(side=2, #at=seq(0,1,by=0.1)/scale.f.spr, lab=seq(0,1,by=0.1),
       las=2, col='blue3', col.axis="blue3", lwd = 2)
     mtext(side = 2, "Yield per Recruit", line = 3, col = "blue3")
 
-
+    scale.f.spr <- max(f.spr.vals)/max(ypr.spr.vals)
   	lines(spr.targ.values, f.spr.vals/scale.f.spr, lwd = 2, col="red")
   	points(spr.targ.values, f.spr.vals/scale.f.spr, pch = 19, col="red")
-  	axis(side=4, at=seq(0,1,by=0.1)/scale.f.spr, lab=seq(0,1,by=0.1), las=2, col='red', col.axis="red", lwd = 2)
-  	mtext(side=4, "F (%SPR)", line=3, col="red")
+    pretty.labs <- pretty(seq(0,round(max(f.spr.vals),1),by=0.1))
+  	axis(side=4, at=pretty.labs/scale.f.spr, lab=pretty.labs, las=2, col='red', col.axis="red", lwd = 2)
+  	mtext(side=4, "Fully-selected F", line=3, col="red")
 
-  	title (paste("SPR Target Reference Points (Years Avg = ", nyrs.ave,")", sep=""), outer=T, line=-1)
+  	title (paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
 	}
 
 	if(!plot){ # table, not plot
-  	par(mfrow=c(1,1), mar=c(2,2,2,2))
+  	par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
   	plot(seq(1,15), seq(1,15), type='n', axes=F, bty='n',xlab="",ylab="")
 
   	text(x=2,y=14, labels="% SPR", font=2, pos=4)
@@ -2694,7 +2702,7 @@ plot.SPR.table <- function(mod, nyrs.ave = 5, plot=TRUE)
   		text(x=5, y=seq(n.spr,1, by=-1), labels=round(f.spr.vals,4), cex=1.0, pos=4, font=1)
   		text(x=9, y=seq(n.spr,1, by=-1), labels=round(ypr.spr.vals,4), cex=1.0, pos=4, font=1)
   	}
-  	title (paste("SPR Target Reference Points (Years Avg = ", nyrs.ave,")", sep=""), outer=TRUE, line=-1)
+    title (paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
 	}
   par(origpar)
 	#write.csv( spr.target.table, file=paste(od,"SPR_Target_Table.csv", sep=""),  row.names=F)
@@ -3318,19 +3326,37 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 	n_ages <- dat$n_ages
   years <- mod$years
   n_years <- length(years)
-  avg.ind <- tail(1:n_years, nyrs.ave)
-  # avg.ind <- (n_years-nyrs.ave+1):n_years
-  mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
-  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
-	catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,avg.ind,,drop = FALSE], c(1,3),mean)
-	M.age <- apply(mod$rep$MAA[1,1,,][avg.ind,,drop = FALSE],2,mean)
-  FAA <- apply(mod$rep$FAA[,avg.ind,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
-  FAAtot <- apply(FAA,2,sum) #sum across fleet averages 
+  # avg.ind <- tail(1:n_years, nyrs.ave)
+  # # avg.ind <- (n_years-nyrs.ave+1):n_years
+  # mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
+  # ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
+	# catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,avg.ind,,drop = FALSE], c(1,3),mean)
+	# M.age <- apply(mod$rep$MAA[1,1,,][avg.ind,,drop = FALSE],2,mean)
+  # FAA <- apply(mod$rep$FAA[,avg.ind,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
+  # FAAtot <- apply(FAA,2,sum) #sum across fleet averages 
+  # seltot <- FAAtot/max(FAAtot)
+  # selAA <- FAA/max(FAAtot) 
+
+  nyrs.waacatch <- dat$avg_years_ind_static_waacatch[1,]
+  nyrs.waassb <- dat$avg_years_ind_static_waassb[1,1,1]
+  nyrs.mat <- dat$avg_years_ind_static_mat[1,1,1]
+  nyrs.M <- dat$avg_years_ind_static_M[1,1,1]
+  nyrs.sel <- dat$avg_years_ind_static_sel[1,]
+  avg.ind.waacatch <- dat$avg_years_ind_static_waacatch
+  avg.ind.waassb <- dat$avg_years_ind_static_waassb
+  avg.ind.mat <- dat$avg_years_ind_static_mat
+  avg.ind.M <- dat$avg_years_ind_static_M
+  avg.ind.sel <- dat$avg_years_ind_static_sel
+  mat.age <- apply(dat$mature[1,,][avg.ind.mat[1,1,1+1:nyrs.mat],,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind.waassb[1,1,1+1:nyrs.waassb],,drop = FALSE],2,mean)
+  catch.waa <- t(sapply(1:dat$n_fleets, \(f) apply(dat$waa[dat$waa_pointer_fleets[f], avg.ind.waacatch[1 + 1:nyrs.waacatch[f],f],],2,mean))) #n_fleets x n_ages
+  M.age <- apply(mod$rep$MAA[1,1,,][avg.ind.M[1,1,1+1:nyrs.M],],2,mean)
+  FAA <- t(sapply(1:dat$n_fleets, \(f) apply(mod$rep$FAA[f,avg.ind.sel[1 + 1:nyrs.sel[1],f],], 2, mean))) #mean FAA by fleet n_fleets x n_ages
+  FAAtot <- apply(FAA,2,sum) #sum across fleet averages
   seltot <- FAAtot/max(FAAtot)
   selAA <- FAA/max(FAAtot) 
 
-
-	spawn.time <- mean(dat$fracyr_SSB[avg.ind,1])
+  spawn.time <- mean(dat$fracyr_SSB[avg.ind.waassb[1,1,1+1:nyrs.waassb],1])
   spr0 <- get_SPR(F=0, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 
 	F.range <- seq(0,2.0, by=0.01)
@@ -3342,22 +3368,22 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
   if(plot & all(!is.na(pr))){
     if(do.tex) cairo_pdf(file.path(od, paste0("YPR_F_curve_plot.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("YPR_F_curve_plot.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-  	par(mfrow=c(1,1), mar=c(4,4,2,4))
-  	plot(F.range, ypr, type='n', xlab="Full F", ylab="", lwd=2, col="blue3", ylim=c(0,max(ypr)), axes = FALSE)
+  	par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
+  	plot(F.range, ypr, type='n', xlab="Fully-selected F", ylab="", lwd=2, col="blue3", ylim=c(0,max(ypr)), axes = FALSE)
     box()
     axis(1)
     axis(2, col='blue3', col.axis="blue3")
   	abline(v=seq(0.1,2.0, by=0.1), col="grey85")
   	lines(F.range, ypr, lwd=2, col="blue3" )
-  	points(F.range, ypr, pch=19, col="blue3")
+  	#points(F.range, ypr, pch=19, col="blue3")
     mtext(side =2, "Yield per Recruit", col = "blue3", line = 2)
   	scale.pr <- max(pr)/max(ypr)
 
   	lines(F.range, pr/scale.pr, col="red", lwd=2)
-  	points(F.range, pr/scale.pr, pch=19, col="red")
+  	#points(F.range, pr/scale.pr, pch=19, col="red")
   	axis(side=4, at=seq(0,1,by=0.1)/scale.pr, lab=seq(0,1,by=0.1), las=2, col='red', col.axis="red")
   	mtext(side=4, "% SPR", line=3, col="red")
-  	title (paste("YPR-SPR Reference Points (Years Avg = ", nyrs.ave,")", sep=""), outer=T, line=-1)
+    title ("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
   	if(do.tex | do.png) dev.off() else par(origpar)
   }
 
@@ -3365,7 +3391,7 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
     if(do.tex) cairo_pdf(file.path(od, paste0("YPR_F_curve_table.pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("YPR_F_curve_table.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 
-  	par(mfrow=c(1,1), mar=c(2,2,2,2))
+  	par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
   	plot(seq(1,42), seq(-3,38), type='n', axes=F, bty='n',xlab="",ylab="")
   	text(x=0,y=36, labels="F", font=2, pos=4)
   	text(x=4, y=36, labels="YPR" , font=2, pos=4)
@@ -3389,7 +3415,7 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
     text(x=34, y=35:1, labels=round(ypr[71:105],4), cex=0.82, pos=4, font=1)
     text(x=39, y=35:1, labels=round(pr[71:105],4), cex=0.82, pos=4, font=1)
 
-  	title (paste("YPR-SPR Reference Points (Years Avg = ", nyrs.ave,")", sep=""), outer=T, line=-1)
+  	title ("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
   	if(do.tex | do.png) dev.off() else par(origpar)
   }
   ypr.table <- cbind.data.frame(F.range, ypr, pr)
@@ -3539,8 +3565,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
               points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
             }
             rho.plot <- round(rho.vals$naa[s,r,i],3)
+            legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           }
-          legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
           if(do.tex | do.png) dev.off() else par(origpar)
         }
@@ -3691,9 +3717,11 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ffns <- gsub(pattern, "_", mod$input$fleet_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
+  title2 <- "Correlation of observed cohort catch biomass among age classes\n"
+  title3 <- "Correlation of model predicted cohort catch biomass among age classes\n"
 	for (i in 1:dat$n_fleets)
 	{
-		title1 <- paste("Catch for ",mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], sep="")
+		title1 <- paste0(mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], "\n")
 
 		# get catch at age
     catchob <- dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
@@ -3710,12 +3738,12 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
     fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		cob.cor <- plotcoh(cob.coh,mytitle=paste(title1," Observed", sep=""),mod=mod)
+		cob.cor <- plotcoh(cob.coh,mytitle=paste0(title2,title1),mod=mod)
 		if(do.tex | do.png) dev.off()
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		cpr.cor <- plotcoh(cpr.coh,mytitle=paste(title1," Predicted", sep=""),mod=mod)
+		cpr.cor <- plotcoh(cpr.coh,mytitle=paste0(title3,title1),mod=mod)
 		if(do.tex | do.png) dev.off()
 
 		cat.corr[[i]] <- list(cob.cor,cpr.cor)
@@ -3817,6 +3845,8 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ifns <- gsub(pattern, "_", mod$input$index_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
+  title2 <- "Correlation of observed cohort index abundance among age classes\n"
+  title3 <- "Correlation of model predicted cohort index abundance among age classes\n"
 	for (ind in 1:dat$n_indices)
 	{
 		if (sum(dat$use_index_paa[,ind]) >0)
@@ -3840,12 +3870,12 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-			iob.cor <- plotcoh(iob.coh,mytitle=paste(title1," Observed", sep=""),mylabels,mod=mod)
+			iob.cor <- plotcoh(iob.coh,mytitle=paste0(title2,title1),mylabels,mod=mod)
 			if(do.tex | do.png) dev.off()
 
 			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
 			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-			ipr.cor <- plotcoh(ipr.coh,mytitle=paste(title1," Predicted", sep=""),mylabels,mod=mod)
+			ipr.cor <- plotcoh(ipr.coh,mytitle=paste0(title3,title1),mylabels,mod=mod)
 			if(do.tex | do.png) dev.off()
 
 			index.corr[[ind]] <- list(iob.cor,ipr.cor)
@@ -3911,9 +3941,13 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ffns <- gsub(pattern, "_", mod$input$fleet_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
+  title2a_obs <- "Observed log catch biomass by cohort"
+  title2a_pred <- "Predicted log catch biomass by cohort"
+  title2b_obs <- "Catch curve derived total mortality by cohort from observed biomass at age"
+  title2b_pred <- "Catch curve derived total mortality by cohort from predicted biomass at age"
 	for (i in 1:dat$n_fleets)
 	{
-		title1 <- paste("Catch for " , mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], sep="")
+		title1 <- paste(mod$input$fleet_names[i], " in ", mod$input$region_names[mod$input$data$fleet_regions[i]], sep="")
 
 		# get catch at age
     catchob <- dat$catch_paa[i,,] * dat$agg_catch[,i]/apply(dat$catch_paa[i,,] * dat$waa[dat$waa_pointer_fleets[i],1:n_years,],1,sum)
@@ -3961,15 +3995,15 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_obs.pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
-		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1," Observed"))
+		par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1,"\n",title2a_obs))
 		grid(col = gray(0.7))
 		for (j in 1:NROW(cob.coh))
 		{
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-    plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+    plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_obs))
     suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
@@ -3977,15 +4011,15 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_pred.pdf")), family = fontfam, height = 10, width = 10)
 		if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
-		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1," Predicted"))
+		par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1,"\n",title2a_pred))
 		grid(col = gray(0.7))
 		for (j in 1:length(cob.coh[,1]))
 		{
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
 			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
-    plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+    plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_pred))
     suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
 		grid(col = gray(0.7))
@@ -4018,6 +4052,10 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ifns <- gsub(pattern, "_", mod$input$index_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
+  title2a_obs <- "Observed log catch by cohort"
+  title2a_pred <- "Predicted log catch by cohort"
+  title2b_obs <- "Catch curve derived total mortality by cohort from observed biomass at age"
+  title2b_pred <- "Catch curve derived total mortality by cohort from predicted biomass at age"
 
 	# convert the west coast style indices to catch at age matrices
 	index.mats <- convert_survey_to_at_age(mod)
@@ -4071,16 +4109,15 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 			{
 			  if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_obs.pdf")), family = fontfam, height = 10, width = 10)
 			  if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn ,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-			  par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
-			  plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)",
-          main=paste0(title1," Observed"))
+			  par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+			  plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1,"\n",title2a_obs))
 				grid(col = gray(0.7))
 				for (i in 1:length(iob.coh[,1]))
 				{
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-        plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+        plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_obs))
         suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 
 				# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
@@ -4089,15 +4126,15 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 
 				if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_pred.pdf")), family = fontfam, height = 10, width = 10)
 				if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn ,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-				par(oma=c(1,1,1,1),mar=c(4,4,1,0.5),mfrow=c(2,1))
-				plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1," Predicted"))
+				par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+				plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1,"\n",title2a_pred))
 				grid(col = gray(0.7))
 				for (i in 1:NROW(iob.coh))
 				{
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
 					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
-        plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z")
+        plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_pred))
         suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 				# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
 				grid(col = gray(0.7))
@@ -4225,9 +4262,13 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       block.names[i] <- paste0(block.names[i], "\n", paste(block.fleets.indices[[i]], collapse = ", "))
     }
     for(i in 1:n_selblocks) if(include.selblock[i]){
-      tmp <- as.data.frame(rep$selAA[[i]])
-      tmp$Year <- years
-      colnames(tmp) <- c(paste0("Age_",1:n_ages),"Year")
+      years_ind <- apply(dat$selblock_pointer_fleets, 1, \(x) sum(x == i)) + 
+        apply(dat$selblock_pointer_indices, 1, \(x) sum(x == i))
+      tmp <- rep$selAA[[i]]
+      tmp[which(years_ind == 0),] <- NA
+      tmp <- as.data.frame(tmp)
+      colnames(tmp) <- c(paste0("Age_",1:n_ages))
+      tmp$Year = years
       tmp$Block <- block.names[i]
       df.selAA <- rbind(df.selAA, tmp)
     }

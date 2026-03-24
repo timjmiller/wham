@@ -1,0 +1,222 @@
+# Specify model and parameter configuration for numbers at age
+
+Specify model and parameter configuration for numbers at age
+
+## Usage
+
+``` r
+set_NAA(input, NAA_re = NULL)
+```
+
+## Arguments
+
+- input:
+
+  list containing data, parameters, map, and random elements (output
+  from
+  [`prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md))
+
+- NAA_re:
+
+  (optional) list specifying options for numbers-at-age random effects,
+  initial parameter values, and recruitment model (see details)
+
+  If `NAA_re = NULL`, a traditional statistical catch-at-age model is
+  fit (NAA = pred_NAA for all ages, deterministic). Otherwise, `NAA_re`
+  specifies numbers-at-age configuration. It is a list with the
+  following possible entries:
+
+  \$decouple_recruitment
+
+  :   T/F determining whether correlation structure of recruitment is
+      independent of RE deviations for older ages (default = TRUE). Only
+      applicable for `NAA_re$sigma = "rec+1"` and correlation across
+      ages is specified. If TRUE and `NAA_re$cor = "ar1_a"`, only
+      deviations for ages\>1 have the correlation structure. If TRUE and
+      NAA_re\$cor is "ar1_y" or "2dar1" separate year correlation
+      parameters are estimated for recruitment and older ages.
+
+  \$sigma
+
+  :   Which ages allow deviations from the predicted NAA given NAA from
+      previous time step? Must be a single character string described
+      below or a vector of length n_stocks. If length = 1, assumptions
+      will be applied to all stocks. Options are specified with the
+      strings:
+
+      "rec"
+
+      :   Random effects on recruitment (deviations), all other ages
+          deterministic
+
+      "rec+1"
+
+      :   "Full state space" model with 2 estimated `sigma_a`, one for
+          recruitment and one shared among other ages
+
+  \$sigma_vals
+
+  :   Array (n_stocks x n_regions x n_ages) of initial standard
+      deviation values to use for the NAA deviations. Values are not
+      used if recruit_model = 1 and `NAA_re$sigma` is not specified.
+      Only those for age 1 in the spawning region are used if
+      `NAA_re$sigma` = "rec". If `NAA_re$sigma_map` is defined, the user
+      must ensure that the configuration is compatible with
+      `NAA_re$sigma_vals`
+
+  \$sigma_map
+
+  :   You can specify a more complex parameter configuration by entering
+      an integer array (nstocks x n_regions x n_ages), where each entry
+      points to the NAA_sigma to use for that stock and age. E.g., for 2
+      stocks, 2 regions, and 6 ages, array(rep(c(1,2,2,3,3,3), each =
+      4),c(2,2,6)) will estimate 3 sigmas, with recruitment (age-1)
+      deviations having their own `sigma_R`, ages 2-3 sharing `sigma_2`,
+      and ages 4-6 sharing `sigma_3`. All parameters being the same for
+      both stocks and across regions. The user must be sure that a
+      compatible `NAA_re$sigma` configuration is defined. Values are not
+      used if recruit_model = 1 and `NAA_re$sigma` is not specified.
+
+  \$cor
+
+  :   Correlation structure for the NAA deviations. Must be a single
+      character string described below or a vector of length n_stocks.
+      If length = 1, assumptions will be applied to all stocks. Options
+      are:
+
+      "iid"
+
+      :   NAA deviations vary by year and age, but uncorrelated.
+
+      "ar1_a"
+
+      :   NAA deviations correlated by age (AR1).
+
+      "ar1_y"
+
+      :   NAA deviations correlated by year (AR1).
+
+      "2dar1"
+
+      :   NAA deviations correlated by year and age (2D AR1).
+
+  \$cor_vals
+
+  :   Array (n_stocks x n_regions x 3) of initial correlation values to
+      use for the NAA deviations. The first value correspond to
+      correlation across age. The second is for yearly correlation for
+      NAA deviations for all ages if recruitment is not decoupled, or
+      otherwise just ages after recruitemnt. The third correlation is
+      for annual recruitment deviations and used only when recruitment
+      is decoupled. If unspecified all initial values are 0. If
+      `NAA_re$cor` = "iid", values are not used. If `NAA_re$cor` =
+      "ar1_a", those for yearly correlation are not used, and vice versa
+      for "ar1_y".
+
+  \$cor_map
+
+  :   n_stocks x n_region matrix x 3 array of NA or integers indicating
+      which random effects correlation parameters are estimated and
+      whether to set any to be estimated identically. The 3 values for a
+      given stock and region are for age, year ("survival"), and year
+      ("recruitment"). Both age and years values are used for
+      `NAA_re$cor = "2dar1"`, but only the appropriate values are used
+      for `NAA_re$cor = "ar1_a"`, or `"ar1_y"`. When
+      `NAA_re$decouple_recruitment = TRUE`, the third value is used for
+      both `NAA_re$sigma = "rec"` or `"rec+1"`. For
+      `NAA_re$decouple_recruitment = FALSE`, only the second value is
+      used and applies to both recruitment and "survival" when
+      `NAA_re$sigma = "rec+1"`, and just recruitment when
+      `NAA_re$sigma = "rec"`. If not supplied stock-specific values for
+      age and/or year will be estimated for all regions where
+      `NAA_re$cor` is other than "none", "iid".
+
+  \$N1_model
+
+  :   Character vector (n_stocks) determining which way to model the
+      initial numbers at age:
+
+      "age-specific-fe"
+
+      :   (default) age- and region-specific fixed effects parameters
+
+      "equilibrium"
+
+      :   2 fixed effects parameters: an initial recruitment and an
+          instantaneous fishing mortality rate to generate an
+          equilibruim abundance at age.
+
+      "iid-re"
+
+      :   (default) age- and region-specific iid random effects
+          parameters. 2 parameters: mean and sd for log NAA
+
+      "ar1-re"
+
+      :   (default) age- and region-specific random effects parameters.
+          3 parameters: mean and sd, and cor for log NAA
+
+  \$N1_pars
+
+  :   An (n_stocks x n_regions x n_ages) array. If N1_model = 0, then
+      this should be filled with the initial values to use for abundance
+      at age by stock and region in the first year. If N1_model = 1
+      (equilibrium assumption), only the first two values in the ages
+      dimension are used: the (s,r,1) value is recruitment for stock
+      (and region) and (s,r,2) is the fully-selected equilibrium fishing
+      mortality rate generating the rest of the numbers at age in the
+      first year.
+
+  \$recruit_model
+
+  :   Integer vector (n_stocks) determining how to model recruitment.
+      Overrides `recruit_model` argument to `prepare_wham_input`. Must
+      make sure `NAA_re$sigma`, `NAA_re$cor` and `ecov` are properly
+      specified.
+
+      1
+
+      :   SCAA, estimating annual recruitments as fixed effects.
+
+      2
+
+      :   estimating a mean recruitment with annual recruitments as
+          random effects
+
+      3
+
+      :   Beverton-Holt stock-recruitment with annual recruitments as
+          random effects
+
+      4
+
+      :   Ricker stock-recruitment with annual recruitments as random
+          effects
+
+  \$recruit_pars
+
+  :   list (length = n_stocks) of vectors of initial parameters for
+      recruitment model. If \$recruit_model is 3 or 4, parameters are
+      "alpha" and "beta".
+
+## Value
+
+a named list with same elements as the input provided with abundance
+modeling options modified.
+
+## See also
+
+[`prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md)
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+wham.dir <- find.package("wham")
+path_to_examples <- system.file("extdata", package="wham")
+asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
+input <- prepare_wham_input(asap3)
+NAA <- list(sigma = "rec")
+input <- set_q(input, NAA_re = NAA) #estimate recruitment as random effects
+} # }
+```

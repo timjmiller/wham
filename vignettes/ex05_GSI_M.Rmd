@@ -276,7 +276,7 @@ Only calculate AIC and Mohn's rho for converged models.
 df.mods$runtime <- sapply(mods, function(x) x$runtime)
 df.mods$NLL <- sapply(mods, function(x) round(x$opt$objective,3))
 is_conv <- df.mods$conv & df.mods$pdHess
-which(is_conv) # 1, 2, 5, 8, 9, 11, 12
+which(is_conv) # 1, 2, 3, 5, 8, 9, 11, 12
 mods2 <- mods[is_conv]
 #mods2[not_conv] <- NULL
 df.aic.tmp <- as.data.frame(compare_wham_models(mods2, table.opts=list(sort=FALSE, calc.rho=TRUE))$tab)
@@ -312,13 +312,14 @@ Model `m12` (estimate mean $M$ and 2D AR1 deviations by year and age, no GSI eff
 ```{r echo=FALSE}
 library(knitr)
 library(kableExtra)
-# vign5_res[,12:14] = round(vign5_res[,12:14], 3)
 posdef <- which(vign5_res$pdHess == TRUE)
 thebest <- c(12)
+vign5_res$Ecov_how [grep("linear", vign5_res$Ecov_how)] <- "linear"
+vign5_res$Ecov_how [grep("poly-2", vign5_res$Ecov_how)] <- "poly-2"
 vign5_res |>
   select(!(c(age_specific,mean_model))) |>
-  dplyr::rename("M mean model"="M_model", "M RE model" = "M_re", "GSI model"="Ecov_process", "GSI link"="Ecov_how",
-         "Converged"="conv", "Pos def\nHessian"="pdHess", "Runtime\n(min)"="runtime",
+  dplyr::rename("Mean model"="M_model", "RE model" = "M_re", "GSI model"="Ecov_process", "GSI link"="Ecov_how",
+         "Converged"="conv", "PD Hessian"="pdHess", "Runtime (min)"="runtime",
          "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
   kable(escape = F) |>
   kable_styling(bootstrap_options = c("condensed","responsive")) |>
@@ -337,33 +338,39 @@ vign5_res |>
 
 Model `m6` left $M_a$ fixed at the values from the ASAP data file (as in `m1`) and estimated 2D AR1 deviations around these mean $M_a$, but this model did not converge. This is how $M$ was modeled in [Cadigan (2016)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2015-0047). Model `m8` that assumed M as a function of weight at age estimated essentially no effect so that M was constant and a negative log likelihood essentially the same as model `m9` that made the simpler assumption of a constant M estimated. Below is a plot of $M$ by age (y-axis) and year (x-axis) for all models. Models with a positive definite Hessian are solid, and models with non-positive definite Hessian are pale.
 
-![Natural mortality by age (y-axis) and year (x-axis) for all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png){ width=90% }
+![Natural mortality by age (y-axis) and year (x-axis) for all models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png){ width=100% }
 
 #### Retrospective patterns
 
 Compared to `m1`, the retrospective pattern for `m12` was slightly worse for recruitment (`m12` 0.31, `m1` 0.26) but improved for SSB (`m8` 0.01, `m1` 0.11) and F (`m8` -0.04, `m1` -0.15). Compare the retrospective patterns of numbers-at-age, SSB, and F for models `m1` (left, fixed $M_a$) and `m12` (right, estimated $M$ + 2D AR1 deviations).
 
-![Mohn's rho for numbers-at-age, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png){ width=45% }![Mohn's rho for numbers-at-age, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png){ width=45% }
+![Mohn's rho for numbers-at-age, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png){ width=50% }
+![Mohn's rho for numbers-at-age, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png){ width=50% }
 
-![Mohn's rho for SSB, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png){ width=45% }![Mohn's rho for SSB, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png){ width=45% }
+![Mohn's rho for SSB, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png){ width=50% }
+![Mohn's rho for SSB, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png){ width=50% }
 
-![Mohn's rho for F, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png){ width=45% }![Mohn's rho for F, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png){ width=45% }
+![Mohn's rho for F, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png){ width=50% }
+![Mohn's rho for F, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png){ width=50% }
 
 
 #### Stock status
 
 Compared to `m1` (left), `m12` (right) estimated SPR-based reference points were more uncertain due to estimation of M rather than an assumed value. Model `m12` estimates of $F_{40\%SPR}$ (middle) and yield at $F_{40\%SPR}$ (top) were higher, whereas estimates of SSB at $F_{40\%SPR}$ were generally lower. 
 
-![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_annual_time.png){ width=45% }![Reference point variability, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_annual_time.png){ width=45% }
+![Reference point variability, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_absolute.png){ width=50% }
+![Reference point variability, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_absolute.png){ width=50% }
 
 Compared to `m1` (left), `m12` (right) estimated higher *M* and higher SSB -- a much rosier picture of the stock status through time.
 
-![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png){ width=45% }![Relative stock status, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png){ width=45% }
+![Relative stock status, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png){ width=50% }
+![Relative stock status, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png){ width=50% }
 
 
 In the final year (2011), `m12` estimated much lower probabilities of the stock being overfished than `m1` (1% vs. 93%).
 
-![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png){ width=45% }![Kobe status plot, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m8_Kobe_status.png){ width=45% }
+![Kobe status plot, m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png){ width=50% }
+![Kobe status plot, m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Kobe_status.png){ width=50% }
 
 ### Yet more *M* options
 

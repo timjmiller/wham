@@ -272,7 +272,6 @@ df$conv = factor(df$conv)
 ```
 
 Now plot selectivity-at-age for block 1 (fleet) in all models.
-
 ```{r eval=FALSE}
 print(ggplot(df, aes(x=Year, y=Age)) +
 	geom_tile(aes(fill=Selectivity)) +
@@ -284,8 +283,7 @@ print(ggplot(df, aes(x=Year, y=Age)) +
 	scale_x_continuous(expand=c(0,0)) +
 	scale_y_continuous(expand=c(0,0)))
 ```
-
-![](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }
+![selAA](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png){ width=90% }\
 
 #### A note on convergence
 

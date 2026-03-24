@@ -1,5 +1,8 @@
 url: https://timjmiller.github.io/wham/
 
+template:
+  bootstrap: 5
+
 news:
   one_page: true
 

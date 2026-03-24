@@ -59,7 +59,7 @@ Otherwise, it must be a named list with the following components:
           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
         }
         so "limiting-lag-1-poly-2" would model the covariate affecting recruitment the next year (lag = 1) as a second order orthogonal 
-         polynomial (\eqn{b_0 + b_1*ecov + b_2*ecov^2 + ...}) limiting effect.
+         polynomial to represent (\eqn{b_0 + b_1*\mathrm{Ecov} + b_2*\mathrm{Ecov} + ...}) limiting effect.
      }
     \item{$M_how}{character array (n_Ecov x n_stocks x n_ages x n_regions) indicating how each ecov affects M by age,stock,region and 
        has the form "lag-order". "lag" can be:

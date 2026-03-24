@@ -39,7 +39,7 @@ BugReports: https://github.com/timjmiller/wham/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: 
     testthat,

@@ -13,7 +13,7 @@ prepare_projection(model, proj.opts, check.version = FALSE)
 \itemize{
   \item \code{$n.yrs} (integer), number of years to project/forecast. Default = \code{3}.
   \item \code{$use.last.F} (T/F), use terminal year F for projections. Default = \code{TRUE}.
-  \item \code{$use.avg.F} (T/F), use average of F over certain years for projections. Default = \code{FALSE}. Years to average over determined by $avg.yrs defined below.
+  \item \code{$use.avg.F} (T/F), use average of F over certain years for projections. Default = \code{FALSE}. Years to average over determined by \code{$avg.yrs} defined below.
   \item \code{$use.FXSPR} (T/F), calculate and use F at X\% SPR for projections. Default = \code{FALSE}.
   \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections. Default = \code{FALSE}.
   \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
@@ -29,12 +29,31 @@ prepare_projection(model, proj.opts, check.version = FALSE)
   \item \code{$avg.rec.yrs} (vector), specify which years to calculate the CDF of recruitment for use in projections. Default = all model years. Only used when recruitment is estimated as fixed effects (SCAA).
   \item \code{$percentFXSPR} (scalar), percent of F_XSPR to use for projections, only used if $use.FXSPR = TRUE. For example, to project with F = 75\% F_40\%SPR, \code{proj.opts$percentFXSPR = 75}. Default = 100.
   \item \code{$percentFMSY} (scalar), percent of F_MSY to use for projections, only used if $use.FMSY = TRUE and a stock-recruit relationship is assumed. Default = 100.
-  \item \code{$proj_F_opt} (vector), integers specifying how to configure each year of the projection: 1: use terminal F, 2: use average F, 3: use F at X\% SPR, 4: use specified F, 5: use specified catch, 6: use Fmsy. Overrides any of the above specifications.
+  \item \code{$proj_F_opt} (integer vector), integers specifying how to configure each year of the projection: Overrides any of the above specifications.
+    \itemize{
+      \item 1: Use terminal F.
+      \item 2: use average F (years determined by \code{$avg.yrs}).
+      \item 3: use F at X\% SPR.
+      \item 4: user-specified F (from \code{$proj_Fcatch}).
+      \item 5: user-specified catch (from \code{$proj_Fcatch}).
+      \item 6: use Fmsy (if \code{recruit_model>2}).
+    }
   \item \code{$proj_Fcatch} (vector or matrix), catch or F values to use each projection year: values are not used when using Fmsy, FXSPR, terminal F or average F. Overrides any of the above specifications of proj.F or proj.catch. if vector, total catch or F is supplied else matrix columns should be fleets for fleet-specific F to be found/used (\code{n.yrs} x 1 or n_fleets).
   \item \code{$proj_mature} (array), user-supplied maturity values for the projection years with dimensions (n_stocks x \code{n.yrs} x n_ages).
   \item \code{$proj_waa} (3-d array), user-supplied waa values for the projection years with first and third dimensions equal to that of \code{model$input$data$waa} (waa source x \code{n.yrs} x n_ages).
-  \item \code{$proj_R_opt} (integer), 1: continue any RE processes for recruitment, 2: make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years. 3: average recruitment deviations over $avg.yrs.R (if $sigma = "rec") 4: no recruitment deviations (if $sigma = "rec").
-  \item \code{$proj_NAA_opt} (integer), 1: continue any RE processes for NAA, 2: average NAA deviations over $avg.yrs.NAA. 3: no NAA deviations.
+  \item \code{$proj_R_opt} (integer) specifying how recruitment is treated in projection years
+    \itemize{
+      \item 1: Continue any RE processes for recruitment.
+      \item 2: Make projected recruitment consistent with average recruitment in SPR reference points and cancel any bias correction for NAA in projection years.
+      \item 3: Average recruitment deviations over \code{$avg.yrs.R} (if \code{$sigma = "rec"}).
+      \item 4: No recruitment deviations (if \code{$sigma = "rec"}).
+    }
+  \item \code{$proj_NAA_opt} (integer) specifying how NAA random effects are treated in projection years if \code{$sigma = "rec+1"}:
+    \itemize{
+      \item 1: Continue any RE processes for NAA.
+      \item 2: Average NAA deviations over \code{$avg.yrs.NAA}.
+      \item 3: No NAA deviations.
+    }
   \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
   \item \code{$proj_F_init} which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1
   \item \code{$avg.yrs.sel} list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.

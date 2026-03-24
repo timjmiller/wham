@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index) • wham</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)">
-<meta property="og:description" content="wham">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">wham</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9003</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0.9004</span>
       </span>
     </div>
 
@@ -43,9 +42,9 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fas fa-book fa-lg"></span>
-     
+
     Vignettes
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
@@ -96,21 +95,21 @@
 <li>
   <a href="../reference/index.html">
     <span class="far fa-file-code fa-lg"></span>
-     
+
     Functions
   </a>
 </li>
 <li>
   <a href="https://github.com/timjmiller/wham/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
     Source code
   </a>
 </li>
 <li>
   <a href="../news/index.html">
     <span class="fas fa-bullhorn fa-lg"></span>
-     
+
     News
   </a>
 </li>
@@ -119,14 +118,14 @@
 <li>
   <a href="https://github.com/timjmiller/wham/issues/" class="external-link">
     <span class="fas fa-question-circle fa-lg"></span>
-     
+
     Issues
   </a>
 </li>
 <li>
   <a href="https://www.fisheries.noaa.gov/contact/timothy-miller-phd" class="external-link">
     <span class="fas fa-paper-plane fa-lg"></span>
-     
+
     Contact
   </a>
 </li>
@@ -138,7 +137,7 @@
 </div>
 <!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
@@ -460,22 +459,22 @@ seem to have converged and have a positive definite Hessian.</p>
 recruitment), but <code>m5</code> and <code>m7</code> have similar AIC
 values.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="st">"df.mods"</span>, file<span class="op">=</span><span class="st">"vign2_res.RData"</span><span class="op">)</span></span>
-<span><span class="va">df.mods</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   Model Recruitment Ecov_process    Ecov_how conv pdHess      NLL  Rsig dAIC</span></span>
-<span><span class="co">#&gt; 1    m6    Bev-Holt          ar1 Controlling TRUE   TRUE -824.765 0.688  0.0</span></span>
-<span><span class="co">#&gt; 2    m5    Bev-Holt          ar1    Limiting TRUE   TRUE -824.272 0.694  1.0</span></span>
-<span><span class="co">#&gt; 3    m7      Ricker          ar1 Controlling TRUE   TRUE -824.250 0.699  1.0</span></span>
-<span><span class="co">#&gt; 4    m4    Bev-Holt           rw    Limiting TRUE   TRUE -813.544 0.693 20.4</span></span>
-<span><span class="co">#&gt; 5    m2      Random           rw Controlling TRUE   TRUE -810.097 0.780 25.3</span></span>
-<span><span class="co">#&gt; 6    m3    Bev-Holt           rw         --- TRUE   TRUE -808.177 0.859 29.1</span></span>
-<span><span class="co">#&gt; 7    m1      Random           rw         --- TRUE   TRUE -803.139 0.997 37.2</span></span>
+<code class="sourceCode R"><span><span class="va">df.mods</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/save.html" class="external-link">save</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"vign2_res.RData"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   Recruitment Ecov_process    Ecov_how Model conv pdHess      NLL  Rsig dAIC</span></span>
+<span><span class="co">#&gt; 1    Bev-Holt          ar1 Controlling    m6 TRUE   TRUE -824.765 0.688  0.0</span></span>
+<span><span class="co">#&gt; 2    Bev-Holt          ar1    Limiting    m5 TRUE   TRUE -824.272 0.694  1.0</span></span>
+<span><span class="co">#&gt; 3      Ricker          ar1 Controlling    m7 TRUE   TRUE -824.250 0.699  1.0</span></span>
+<span><span class="co">#&gt; 4    Bev-Holt           rw    Limiting    m4 TRUE   TRUE -813.544 0.693 20.4</span></span>
+<span><span class="co">#&gt; 5      Random           rw Controlling    m2 TRUE   TRUE -810.097 0.780 25.3</span></span>
+<span><span class="co">#&gt; 6    Bev-Holt           rw         ---    m3 TRUE   TRUE -808.177 0.859 29.1</span></span>
+<span><span class="co">#&gt; 7      Random           rw         ---    m1 TRUE   TRUE -803.139 0.997 37.2</span></span>
 <span><span class="co">#&gt;       AIC  rho_R rho_SSB rho_Fbar</span></span>
-<span><span class="co">#&gt; 1 -1509.5 0.2190  0.1076  -0.1342</span></span>
-<span><span class="co">#&gt; 2 -1508.5 0.2324  0.1140  -0.1399</span></span>
-<span><span class="co">#&gt; 3 -1508.5 0.2130  0.1030  -0.1302</span></span>
-<span><span class="co">#&gt; 4 -1489.1 0.2316  0.1149  -0.1404</span></span>
-<span><span class="co">#&gt; 5 -1484.2 0.2447  0.1213  -0.1475</span></span>
+<span><span class="co">#&gt; 1 -1509.5 0.2072  0.1070  -0.1334</span></span>
+<span><span class="co">#&gt; 2 -1508.5 0.2152  0.1126  -0.1382</span></span>
+<span><span class="co">#&gt; 3 -1508.5 0.2044  0.1030  -0.1302</span></span>
+<span><span class="co">#&gt; 4 -1489.1 0.2149  0.1129  -0.1384</span></span>
+<span><span class="co">#&gt; 5 -1484.2 0.2312  0.1196  -0.1459</span></span>
 <span><span class="co">#&gt; 6 -1480.4 0.2319  0.1094  -0.1351</span></span>
 <span><span class="co">#&gt; 7 -1472.3 0.2592  0.1169  -0.1452</span></span></code></pre>
 </div>
@@ -511,13 +510,14 @@ similar in distribution. The linear trend in the OSA residuals with
 observed value for <code>m5</code> is due to the best prediction of the
 next observation being near the mean of the process in this case because
 the estimated autocorrelation parameter is near 0:</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_m4.png" style="width:45.0%" alt="OSA residuals for the CPI, model 4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_m5.png" style="width:45.0%" alt="OSA residuals for the CPI, model 5."></p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_CPI_m4.png" style="width:45.0%" alt="OSA residuals for the CPI, model 4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_CPI_m5.png" style="width:45.0%" alt="OSA residuals for the CPI, model 5."></p>
 <p>As we saw from the table of results, all the models produced similar
-Mohn’s <span class="math inline">\(\rho\)</span> values for SSB, F, and
-recruitment. Below are the relative retrospective peels for the model
-without any SSB or CPI effects on recruitment (<code>m1</code>, left)
-and the best model that included CPI and SSB effects on recruitment,
-(<code>m6</code>, right).</p>
+Mohn’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+values for SSB, F, and recruitment. Below are the relative retrospective
+peels for the model without any SSB or CPI effects on recruitment
+(<code>m1</code>, left) and the best model that included CPI and SSB
+effects on recruitment, (<code>m6</code>, right).</p>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m1.png" style="width:45.0%" alt="Retrospective pattern in recruitment, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m6.png" style="width:45.0%" alt="Retrospective pattern in recruitment, m5."></p>
 </div>
 <div class="section level3">
@@ -529,8 +529,10 @@ Models that included both Bev-Holt and CPI effects on recruitment had
 lower AIC than the model with Bev-Holt but without the CPI
 (<code>m4</code> vs. <code>m3</code>). Adding the CPI effect to the
 Bev-Holt explains some of the variability around the stock-recruit
-curve, which resulted in <code>m4</code> (right) estimating lower <span class="math inline">\(\sigma_R\)</span> than <code>m3</code> (left).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_m3.png" style="width:45.0%" alt="Bev-Holt fit from m3, without a CPI effect."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_m4.png" style="width:45.0%" alt="Bev-Holt fit from m4, WITH a CPI effect."></p>
+curve, which resulted in <code>m4</code> (right) estimating lower
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\sigma_R</annotation></semantics></math>
+than <code>m3</code> (left).</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_fit_m3.png" style="width:45.0%" alt="Bev-Holt fit from m3, without a CPI effect."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_fit_m4.png" style="width:45.0%" alt="Bev-Holt fit from m4, WITH a CPI effect."></p>
 </div>
 <div class="section level3">
 <h3 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -538,23 +540,21 @@ curve, which resulted in <code>m4</code> (right) estimating lower <span class="m
 <p>Whether or not to include a stock-recruit function and/or the CPI did
 not have a great influence on estimated stock status using SPR-based
 reference points. Specifically, the models hardly differed in their
-estimation of the probability that the stock was overfished, <span class="math inline">\(Pr[SSB &lt; 0.5 \: SSB_{40\%}]\)</span>. All
-models estimated with 100% probability that the stock was not
-experiencing overfishing in 2011, <span class="math inline">\(F &lt;
-F_{40\%}\)</span>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m1.png" style="width:45.0%" alt="Stock status, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m3.png" style="width:45.0%" alt="Stock status, m3."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m2.png" style="width:30.0%" alt="Stock status, m2."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m4.png" style="width:30.0%" alt="Stock status, m4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m5.png" style="width:30.0%" alt="Stock status, m5."></p>
-<p>When determined relative MSY-based reference points, status is more
-optimistic: <img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m2.png" style="width:30.0%" alt="MSY stock status, m2."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m4.png" style="width:30.0%" alt="MSY stock status, m4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m5.png" style="width:30.0%" alt="MSY stock status, m5."></p>
+estimation of the probability that the stock was overfished,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mi>r</mi><mo stretchy="false" form="prefix">[</mo><mi>S</mi><mi>S</mi><mi>B</mi><mo>&lt;</mo><mn>0.5</mn><mspace width="0.222em"></mspace><mi>S</mi><mi>S</mi><msub><mi>B</mi><mrow><mn>40</mn><mi>%</mi></mrow></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">Pr[SSB &lt; 0.5 \: SSB_{40\%}]</annotation></semantics></math>.
+All models estimated with 100% probability that the stock was not
+experiencing overfishing in 2011,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mo>&lt;</mo><msub><mi>F</mi><mrow><mn>40</mn><mi>%</mi></mrow></msub></mrow><annotation encoding="application/x-tex">F &lt; F_{40\%}</annotation></semantics></math>.</p>
+<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m1.png" style="width:50.0%" alt="Stock status, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m2.png" style="width:50.0%" alt="Stock status, m2."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m3.png" style="width:50.0%" alt="Stock status, m3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m4.png" style="width:50.0%" alt="Stock status, m4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m5.png" style="width:50.0%" alt="Stock status, m5."></p>
+<p>For models with stock recruit functions, status based on MSY-based
+reference points is more optimistic: <img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m3.png" style="width:50.0%" alt="MSY stock status, m3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m4.png" style="width:50.0%" alt="MSY stock status, m4."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m5.png" style="width:50.0%" alt="MSY stock status, m5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m6.png" style="width:50.0%" alt="MSY stock status, m6."></p>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 
@@ -567,16 +567,16 @@ optimistic: <img src="https://raw.githubusercontent.com/timjmiller/wham/master/v
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
 </div>
 
-  
 
 
-  
+
+
 
   </body>
 </html>

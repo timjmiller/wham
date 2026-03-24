@@ -179,7 +179,7 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 	      scale_colour_manual(values=cols) +
 	      scale_fill_manual(values=cols) +
 	      guides(color = "none", fill="none") +
-	      scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=fancy_scientific) +
+	      scale_y_continuous(expand=c(0.01,0.01), limits = c(0,NA), labels=wham:::fancy_scientific) +
 	      theme_bw() +
 	      theme(legend.position=c(.9,.9), legend.box.margin = margin(0,0,0,0), legend.margin = margin(0,0,0,0))
 	return(g)
@@ -193,6 +193,6 @@ ggsave(file.path(write.dir,"retro_pred_R.png"), device='png', width=8, height=5,
 
 The two black lines represent the "true" recruitment from each model, i.e., the recruitment estimates when fitting to the full data. Points and lines are colored by peel from yellow (1996) to dark blue (2008). The points are terminal year recruitment estimates and lines are projected recruitment (3 years).
 
-![](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png){ width=95% }
+![retro_pred_R](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png){ width=100% }\
 
 

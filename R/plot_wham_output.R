@@ -78,13 +78,16 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
   message("Generating plot files... Please wait ~30 seconds...\n")
   if(out.type == "html") message("html output works best with Google Chrome browser\n")
   graphics.off() # close any open windows
-
+  
+  #save the input so that Rmarkdown file can get information
+  saveRDS(mod$input, file.path(dir.main, "model_input.RDS"))
+  
   if(out.type == 'pdf'){
     # PDF input_data -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"input_data.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
-    plot.catch.by.fleet(mod)
+    if(mod$env$data$n_fleets > 1) plot.catch.by.fleet(mod)
     for(i in 1:mod$env$data$n_fleets) plot.catch.age.comp.bubbles(mod, i=i)
-    plot.index.input(mod)
+    plot.scaled.index.input(mod)
     for(i in 1:mod$env$data$n_indices) plot.index.age.comp.bubbles(mod, i=i)
     for(i in 1:mod$env$data$n_stocks) plot.waa(mod,"ssb", ind = i)
     #plot.waa(mod,"jan1")
@@ -216,17 +219,19 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     # PNG input_data -----------------
     dir.data <- file.path(dir.plots, "input_data")
     dir.create(dir.data, showWarnings = FALSE)
-    png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.catch.by.fleet(mod)
-    dev.off()
+    if(mod$env$data$n_fleets > 1) {
+      png(file.path(dir.data,"catch_by_fleet.png"),width=10,height=10,units="in",res=res,family=fontfam)
+      plot.catch.by.fleet(mod)
+      dev.off()
+    }
     for(i in 1:mod$env$data$n_fleets){
       png(file.path(dir.data, paste0("catch_age_comp_", ffns[i],"_", rfns[mod$input$data$fleet_regions[i]], ".png")),
         width=10,height=10,units="in",res=res,family=fontfam)
       plot.catch.age.comp.bubbles(mod, i=i)
       dev.off()
     }
-    png(file.path(dir.data,"index.png"),width=10,height=10,units="in",res=res,family=fontfam)
-    plot.index.input(mod)
+    png(file.path(dir.data,"scaled_indices.png"),width=10,height=10,units="in",res=res,family=fontfam)
+    plot.scaled.index.input(mod)
     dev.off()
     for(i in 1:mod$env$data$n_indices){
       png(file.path(dir.data, paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]], "_age_comp.png")),

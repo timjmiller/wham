@@ -59,7 +59,7 @@
 #'     \item{$Fbar_ages}{integer vector of ages to use to average F at age for reported "Fbar" across all fleets, by regions and by fleet.}
 #'     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
-#'		 \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.}
+#'     \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.}
 #'		 \item{$average_years_L}{list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
 #'		 \item{$average_years_M}{list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
 #'		 \item{$average_years_move}{list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
@@ -431,8 +431,8 @@ set_basic_info <- function(input, basic_info){
 
 set_brp_static <- function(input, basic_info){
 
-	input$data$do_SPR_BRPs <- 0 #this will be changed when after model fit
-	input$data$do_MSY_BRPs <- 0 #this will be changed when after model fit
+	input$data$do_SPR_BRPs <- 0 #this will be changed after model fit
+	input$data$do_MSY_BRPs <- 0 #this will be changed after model fit
 	input$data$SPR_weight_type <- 0
 	input$data$SPR_weights <- rep(1/input$data$n_stocks, input$data$n_stocks)
 	input$data$n_regions_is_small <- 1
