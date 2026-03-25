@@ -113,9 +113,9 @@ As in [example
 data file does not have a standard error estimate, either for each
 yearly observation or one overall value. In such a case, WHAM can
 estimate the observation error for the environmental covariate, either
-as one overall value, $`\sigma_{GSI}`$, or yearly values as random
-effects,
-$`\mathrm{log}\sigma_{{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})`$.
+as one overall value, $`\sigma_{\mathrm{GSI}}`$, or yearly values as
+random effects,
+$`\mathrm{log}\sigma_{\mathrm{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{\mathrm{GSI}}, \sigma^2_{\sigma_{\mathrm{GSI}}})`$.
 In this example we choose the simpler option and estimate one
 observation error parameter, shared across years.
 
@@ -221,18 +221,18 @@ the environmental covariate options are fed to `prepare_wham_input` as a
 list, `ecov`. This example differs from example 2 in that:
 
 - `ecov$logsigma = "est_1"` estimates the GSI observation error
-  ($`\sigma_{GSI}`$, one overall value for all years like in example 5).
-  The other option is `"est_re"` to allow the GSI observation error to
-  have yearly fluctuations (random effects). The Cold Pool Index in
-  example 2 had yearly observation errors given, so this was not
-  necessary.
+  ($`\sigma_{\mathrm{GSI}}`$, one overall value for all years like in
+  example 5). The other option is `"est_re"` to allow the GSI
+  observation error to have yearly fluctuations (random effects). The
+  Cold Pool Index in example 2 had yearly observation errors given, so
+  this was not necessary.
 - `ecov$R_how = matrix("none",1,1)` or `ecov$R_how = NULL` estimates the
   GSI time-series model (AR1) for models without a GSI-Recruitment
   effect, in order to compare AIC with models that do include the
   effect. Setting `ecov$R_how = matrix("limiting-lag-1-linear,1,1)`
-  specifies that the GSI iyear $`t`$ affects the Beverton-Holt $`\beta`$
-  parameter (“limiting” / carrying capacity effect) in year $`t+1`$
-  linearly (on log scale).
+  specifies that the GSI in year $`t`$ affects the Beverton-Holt
+  $`\beta`$ parameter (“limiting” / carrying capacity effect) in year
+  $`t+1`$ linearly (on log scale).
 
 For example, the `ecov` list for models `m8`-`m13` with the linear
 GSI-$`\beta`$ effect:

@@ -177,9 +177,9 @@ with:</p>
 for each yearly observation or one overall value. In such a case, WHAM
 can estimate the observation error for the environmental covariate,
 either as one overall value,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{GSI}</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{\mathrm{GSI}}</annotation></semantics></math>,
 or yearly values as random effects,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><msub><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow><mi>y</mi></msub></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><mo>,</mo><msubsup><mi>σ</mi><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{log}\sigma_{{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{GSI}, \sigma^2_{\sigma_{GSI}})</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><msub><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow><mi>y</mi></msub></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">g</mi></mrow><msub><mi>σ</mi><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow></msub><mo>,</mo><msubsup><mi>σ</mi><msub><mi>σ</mi><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow></msub><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{log}\sigma_{\mathrm{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{\mathrm{GSI}}, \sigma^2_{\sigma_{\mathrm{GSI}}})</annotation></semantics></math>.
 In this example we choose the simpler option and estimate one
 observation error parameter, shared across years.</p>
 </div>
@@ -297,7 +297,7 @@ example differs from example 2 in that:</p>
 <li>
 <code>ecov$logsigma = "est_1"</code> estimates the GSI observation
 error
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>G</mi><mi>S</mi><mi>I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{GSI}</annotation></semantics></math>,
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi mathvariant="normal">G</mi><mi mathvariant="normal">S</mi><mi mathvariant="normal">I</mi></mrow></msub><annotation encoding="application/x-tex">\sigma_{\mathrm{GSI}}</annotation></semantics></math>,
 one overall value for all years like in example 5). The other option is
 <code>"est_re"</code> to allow the GSI observation error to have yearly
 fluctuations (random effects). The Cold Pool Index in example 2 had
@@ -308,7 +308,7 @@ yearly observation errors given, so this was not necessary.</li>
 for models without a GSI-Recruitment effect, in order to compare AIC
 with models that do include the effect. Setting
 <code>ecov$R_how = matrix("limiting-lag-1-linear,1,1)</code> specifies
-that the GSI iyear
+that the GSI in year
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
 affects the Beverton-Holt
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>β</mi><annotation encoding="application/x-tex">\beta</annotation></semantics></math>
