@@ -20,7 +20,7 @@ navbar:
       -  text: "Ex 3: Projecting / forecasting random effects"
          href: articles/ex03_projections.html
       -  text: "Ex 4: Selectivity with time- and age-varying random effects"
-         href: articles/ex4_selectivity.html
+         href: articles/ex04_selectivity.html
       -  text: "Ex 5: Time-varying natural mortality linked to the Gulf Stream Index"
          href: articles/ex05_GSI_M.html
       -  text: "Ex 6: Numbers-at-age / survival deviations as random effects"
@@ -121,7 +121,7 @@ reference:
       - '`set_osa_obs`'
       - '`set_q`'
       - '`set_selectivity`'      
-  - title: Unexported functions that user do not call
+  - title: Unexported functions
     contents:
       - '`extract_fixed`'
       - '`reduce_input`'

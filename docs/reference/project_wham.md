@@ -94,10 +94,21 @@ project_wham(
     only used if \$use.FMSY = TRUE and a stock-recruit relationship is
     assumed. Default = 100.
 
-  - `$proj_F_opt` (vector), integers specifying how to configure each
-    year of the projection: 1: use terminal F, 2: use average F, 3: use
-    F at X% SPR, 4: use specified F, 5: use specified catch, 6: use
-    Fmsy. Overrides any of the above specifications.
+  - `$proj_F_opt` (integer vector), integers specifying how to configure
+    each year of the projection: Overrides any of the above
+    specifications.
+
+    - 1: Use terminal F.
+
+    - 2: use average F (years determined by `$avg.yrs`).
+
+    - 3: use F at X% SPR.
+
+    - 4: user-specified F (from `$proj_Fcatch`).
+
+    - 5: user-specified catch (from `$proj_Fcatch`).
+
+    - 6: use Fmsy (if `recruit_model>2`).
 
   - `$proj_Fcatch` (vector or matrix), catch or F values to use each
     projection year: values are not used when using Fmsy, FXSPR,
@@ -113,15 +124,28 @@ project_wham(
     years with first and third dimensions equal to that of
     `model$input$data$waa` (waa source x `n.yrs` x n_ages).
 
-  - `$proj_R_opt` (integer), 1: continue any RE processes for
-    recruitment, 2: make projected recruitment consistent with average
-    recruitment in SPR reference points and cancel any bias correction
-    for NAA in projection years. 3: average recruitment deviations over
-    \$avg.yrs.R (if \$sigma = "rec") 4: no recruitment deviations (if
-    \$sigma = "rec").
+  - `$proj_R_opt` (integer) specifying how recruitment is treated in
+    projection years
 
-  - `$proj_NAA_opt` (integer), 1: continue any RE processes for NAA, 2:
-    average NAA deviations over \$avg.yrs.NAA. 3: no NAA deviations.
+    - 1: Continue any RE processes for recruitment.
+
+    - 2: Make projected recruitment consistent with average recruitment
+      in SPR reference points and cancel any bias correction for NAA in
+      projection years.
+
+    - 3: Average recruitment deviations over `$avg.yrs.R` (if
+      `$sigma = "rec"`).
+
+    - 4: No recruitment deviations (if `$sigma = "rec"`).
+
+  - `$proj_NAA_opt` (integer) specifying how NAA random effects are
+    treated in projection years if `$sigma = "rec+1"`:
+
+    - 1: Continue any RE processes for NAA.
+
+    - 2: Average NAA deviations over `$avg.yrs.NAA`.
+
+    - 3: No NAA deviations.
 
   - `$proj_NAA_init` (scalar), the default starting value for all NAA
     random effects in projection years is exp(10), which may not be

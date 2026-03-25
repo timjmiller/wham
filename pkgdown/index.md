@@ -17,7 +17,7 @@ WHAM can also include explicit environmental effects on all parameters above (ex
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Example 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
-A presentation providing an overview of an early version of WHAM (Jan 8 2021):
+A presentation providing an overview of an earlier version of WHAM (Jan 8 2021):
 
 ```{=html}
 <div style="text-align: center;">
@@ -46,7 +46,7 @@ WHAM generalizes and extends state-space age-structured models from [Miller et a
 
 [Miller et al. (2025)](https://doi.org/10.1139/cjfas-2025-0097) provides details for the latest extension to allow multiple regions and stocks, possibly with covariate and random effects on movement. Seasonal changes in fleet fishing effort and movement are also possible. The version of WHAM that only allows a single stock and region remains available as the "single_wham" branch, but it will not be developed further.
 
-WHAM is an R package with computation and estimation that is built on the TMB package [Kristensen et al. 2016](https://doi.org/10.18637/jss.v070.i05), and would not be possible without these superb open-source tools. For more information, see:
+WHAM is an R package with computation and estimation that is built on the TMB package ([Kristensen et al. 2016](https://doi.org/10.18637/jss.v070.i05)), and would not be possible without these superb open-source tools. For more information, see:
 
 - R: https://www.r-project.org/
 - TMB: https://kaskr.github.io/adcomp/_book/Introduction.html

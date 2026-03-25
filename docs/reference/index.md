@@ -114,7 +114,7 @@
 - [`set_selectivity()`](https://timjmiller.github.io/wham/reference/set_selectivity.md)
   : Specify model and parameter configuration for selectivity
 
-## Unexported functions that user do not call
+## Unexported functions
 
 - [`extract_fixed()`](https://timjmiller.github.io/wham/reference/extract_fixed.md)
   :

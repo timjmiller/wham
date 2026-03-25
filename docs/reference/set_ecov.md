@@ -146,8 +146,8 @@ set_ecov(input, ecov)
 
       so "limiting-lag-1-poly-2" would model the covariate affecting
       recruitment the next year (lag = 1) as a second order orthogonal
-      polynomial (\\b_0 + b_1\*ecov + b_2\*ecov^2 + ...\\) limiting
-      effect.
+      polynomial to represent (\\b_0 + b_1\*\mathrm{Ecov} +
+      b_2\*\mathrm{Ecov} + ...\\) limiting effect.
 
   \$M_how
 

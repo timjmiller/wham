@@ -25,8 +25,9 @@ set_M(input, M)
   overwrite M-at-age values specified in the ASAP data file. If `NULL`,
   the M-at-age matrix from the ASAP data file is used (M fixed, not
   estimated). To estimate M-at-age shared/mirrored among some but not
-  all ages, modify `M$means_map` (see vignette for more details). `M` is
-  a list with the following entries:
+  all ages, modify `M$means_map` (see
+  [vignette](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html)
+  for more details). `M` is a list with the following entries:
 
   \$mean_model
 
@@ -49,8 +50,9 @@ set_M(input, M)
 
       "weight-at-age"
 
-      :   specifies M as a function of weight-at-age, \\M_y,a = exp(b0 +
-          b1\*log(W_y,a))\\, as in [Lorenzen
+      :   specifies M as a function of weight-at-age, \\M\_{y,a} =
+          \mathrm{exp}(b0 + b1\*\mathrm{log}(W\_{y,a}))\\, as in
+          [Lorenzen
           (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x)
           and [Miller & Hyun
           (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
@@ -222,6 +224,6 @@ path_to_examples <- system.file("extdata", package="wham")
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 input <- prepare_wham_input(asap3)
 M = list(mean_model = "estimate-M")
-input <- set_q(input, M = M) #estimate a constant M parameters
+input <- set_M(input, M = M) #estimate a constant M parameters
 } # }
 ```

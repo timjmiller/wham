@@ -17,10 +17,12 @@ WHAM can also include explicit environmental effects on all parameters above (ex
 
 A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts ([Example 3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
 
-A presentation providing an overview of an early version of WHAM (Jan 8 2021): 
+A presentation providing an overview of an earlier version of WHAM (Jan 8 2021): 
 
 <p align="center">
-[![Watch the video](https://img.youtube.com/vi/o8vJvbIaOdE/0.jpg)](https://www.youtube.com/watch?v=o8vJvbIaOdE)\
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=o8vJvbIaOdE
+" target="_blank"><img src="http://img.youtube.com/vi/o8vJvbIaOdE/0.jpg" 
+alt="Watch the video" width="400" /></a>
 </p>
 
 ## Background

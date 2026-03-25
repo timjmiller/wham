@@ -1,14 +1,13 @@
-wham 2.1.0.9005 (2025-09-11)
+wham 2.1.0.9005 (2026-03-25)
 =========================
 
 ### Minor improvements
-* (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [](https://github.com/timjmiller/wham/commit/)
+* (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 ### Bug fixes
-* (2.1.0.9005) fix bug in plotting of tiled selectivity blocks when they apply to only a subset of years. [](https://github.com/timjmiller/wham/commit/)
-* (2.1.0.9005) fix bugs in example scripts. [](https://github.com/timjmiller/wham/commit/)
-* (2.1.0.9005) fix bug in `compare_wham_models` with plotting ASAP models. [](https://github.com/timjmiller/wham/commit/)
-* (2.1.0.9005) fix bug in `prepare_projections` with options to average NAA deviations. [](https://github.com/timjmiller/wham/commit/)
+* (2.1.0.9005) fix bugs in example scripts. [35c17a5](https://github.com/timjmiller/wham/commit/35c17a5a2be247940568d47f38cb6e72ce181647)
+* (2.1.0.9005) fix bug in `prepare_projections` with options to average NAA deviations, bug in `compare_wham_models` with plotting ASAP models. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
+* (2.1.0.9005) fix bug in plotting of tiled selectivity blocks when they apply to only a subset of years. [f2e441e](https://github.com/timjmiller/wham/commit/f2e441e7d20b97fbf9998053a05db1aeb371759b)
 * (2.1.0.9004) fix bug in `compare_wham_models` with plotting of selectivity blocks. [1814d3f](https://github.com/timjmiller/wham/commit/1814d3fe00c851ba42986ed1be1603f0e663aa53)
 * (2.1.0.9003) fix bug in `plot_wham_output` with identifying selectivity blocks for plotting. [316f5ea](https://github.com/timjmiller/wham/commit/316f5ea231df4ae15d4d70019179c507e8eda7ae)
 * (2.1.0.9002) fix bug in `project_wham` for models with lognormal bias adjustment. [c68cca1](https://github.com/timjmiller/wham/commit/c68cca1b2aaff95f5a97f0ff606388b9858f9a72)
