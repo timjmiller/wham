@@ -1,6 +1,6 @@
 # Articles
 
-### WHAM tutorial
+### Overview
 
 These vignettes provide an introduction to fitting state-space
 assessment models using the **WHAM** package. They get progressively

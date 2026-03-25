@@ -2,17 +2,32 @@ url: https://timjmiller.github.io/wham/
 
 template:
   bootstrap: 5
+  bootswatch: cosmo
+  #light-switch: true
+  #bslib:
+    #navbar-light-bg: #00467f
+    #navbar-fg: purple
+  #navbar:
+  #  fg: #00467f
+  #bslib:
+  #  navbar-fg: #00467f
 
 news:
   one_page: true
 
 navbar:
-  left:
-    - text: "Vignettes"
+  #fg: #00467f
+  structure:
+    left: [articles,reference,github,news]
+    right: [issues,contact,lightswitch]
+  components:
+#  left:
+    articles:
+      text: "Vignettes"
       icon: fas fa-book fa-lg
       menu:
-      -  text: "Overview"
-         href: articles/index.html
+      #-  text: "Overview"
+      #   href: articles/index.html
       -  text: "Ex 1: The basics"
          href: articles/ex01_basics.html
       -  text: "Ex 2: Recruitment linked to an environmental covariate (Cold Pool Index)"
@@ -39,26 +54,29 @@ navbar:
          href: articles/ex12_multistock.html
       -  text: "Ex 13: WHAM without ASAP"
          href: articles/ex13_no_ASAP.html
-
-    - text: "Functions"
+    reference:
+      text: "Functions"
       icon: far fa-file-code fa-lg
       href: reference/index.html
-    - text: "Source code"
+    github:
+      text: "Source code"
       icon: fab fa-github fa-lg
       href: https://github.com/timjmiller/wham/
-    - text: "News"
+    news:
+      text: "News"
       icon: fas fa-bullhorn fa-lg
       href: news/index.html
-  right:
-    - icon: fas fa-question-circle fa-lg
+    issues:
       text: "Issues"
+      icon: fas fa-question-circle fa-lg
       href: https://github.com/timjmiller/wham/issues/
-    - icon: fas fa-paper-plane fa-lg
+    contact:
       text: "Contact"
+      icon: fas fa-paper-plane fa-lg
       href: https://www.fisheries.noaa.gov/contact/timothy-miller-phd
 
 articles:
-  - title: "WHAM tutorial"
+  - title: Overview
     desc: >
       These vignettes provide an introduction to fitting state-space assessment
       models using the **WHAM** package. They get progressively more complex, so
