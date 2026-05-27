@@ -22,6 +22,7 @@
 #'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
 #'     \item{$waa_pointer_indices}{vector (n_indices) of itegers indicated waa to use for each index.}
 #'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
+#'     \item{$index_model}{vector (n_indices) of character strings defining distributions for indices: "log-normal" (default) or "Tweedie"}
 #'     \item{$initial_index_sd_scale}{vector (n_indices) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
 #'     \item{$map_index_sd_scale}{integer vector (n_indices) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
 #'         Use the same integer for multiple indices to estimate a shared scalar parameter.}
@@ -190,7 +191,7 @@ set_indices <- function(input, index_info=NULL) {
   }
 
   if(is.null(input$by_pwi)){
-    if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_index with index_info$waa_pointer_indices.")
+    if(is.null(data$waa)) stop("basic_info argument does not include an array of weight at age. Add that with appropriate dimensions before calling set_index with index_info$waa_pointer_indices.\n")
     if(any(!(data$waa_pointer_indices %in% 1:dim(data$waa)[1]))){
       stop("some index_info$waa_pointer_indices are outside the number of waa matrices.\n")
     }
@@ -220,12 +221,18 @@ set_indices <- function(input, index_info=NULL) {
 	data$index_paa[is.na(data$index_paa)] <- 0
   data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] <- 100  
   data$agg_index_sigma <- sqrt(log(data$agg_index_sigma^2 + 1))
+  data$index_model <- rep(1, data$n_indices)
+  if(!is.null(index_info$index_model)){
+  	if(length(index_info$index_model) != data$n_indices) stop("index_info$index_model is specified but it must be a vector with length = to the number of indices. \n")
+  	data$index_model[] <- match(index_info$index_model, c("log-normal", "Tweedie"))
+  }
 
-  input$par$log_index_sig_scale <- rep(0, data$n_indices)
-  if(!is.null(index_info$initial_index_sd_scale)) input$par$log_index_sig_scale[] <- log(index_info$initial_index_sd_scale)
-  input$map$log_index_sig_scale <-factor(rep(NA, data$n_indices))
-  if(!is.null(index_info$map_index_sd_scale)) input$map$log_index_sig_scale <- factor(index_info$map_index_sd_scale)
-  
+  input$par$index_var_pars <- matrix(0, data$n_indices,2)
+  input$map$index_var_pars <-matrix(rep(NA, 2))
+  if(!is.null(index_info$initial_index_sd_scale) & (data$index_model[i] == 1)) input$par$index_var_pars[,1] <- log(index_info$initial_index_sd_scale)
+  if(!is.null(index_info$map_index_sd_scale) & (data$index_model[i] == 1)) input$map$index_var_pars[,1] <- index_info$map_index_sd_scale
+  input$map$index_var_pars <- factor(input$map$index_var_pars)
+
   input$data <- data
   if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
   	input <- set_q(input, input$options$catchability)

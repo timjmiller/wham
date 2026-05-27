@@ -34,35 +34,35 @@
 #'        Options are based on (see \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}) 
 #'        combined with the order of orthogonal polynomial of the covariate and has the form "type-lag-order". "type" can be:
 #'         \describe{
-#'           \item{= "none"}{no effect.}
-#'           \item{= "controlling"}{pre-recruit density-independent mortality.}
-#'           \item{= "limiting"}{ maximum recruitment, e.g. ecov determines amount of suitable habitat)}
-#'           \item{= "lethal"}{threshold, i.e. R --> 0 at some ecov value.}
-#'           \item{= "masking"}{metabolic/growth, decreases dR/dS}
-#'           \item{= "directive"}{e.g. behavioral}
+#'           \item{"none"}{no effect.}
+#'           \item{"controlling"}{pre-recruit density-independent mortality.}
+#'           \item{"limiting"}{ maximum recruitment, e.g. ecov determines amount of suitable habitat)}
+#'           \item{"lethal"}{threshold, i.e. R --> 0 at some ecov value.}
+#'           \item{"masking"}{metabolic/growth, decreases dR/dS}
+#'           \item{"directive"}{e.g. behavioral}
 #'          }
 #'         for type other than "none", "lag" can be:
 #'         \describe{
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
+#'           \item{"lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects recruitment in year y+1.}
 #'         }
 #'         for "type" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
-#'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
+#'           \item{"linear"}{the covariate effect is linear on the transformed recruitment parameter (e.g., log).}
+#'           \item{"poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
 #'         }
 #'         so "limiting-lag-1-poly-2" would model the covariate affecting recruitment the next year (lag = 1) as a second order orthogonal 
-#'          polynomial to represent (\eqn{b_0 + b_1*\mathrm{Ecov} + b_2*\mathrm{Ecov} + ...}) limiting effect.
+#'          polynomial to represent (\eqn{b_0 + b_1*\mathrm{Ecov} + b_2*\mathrm{Ecov} + \ldots}) limiting effect.
 #'      }
 #'     \item{$M_how}{character array (n_Ecov x n_stocks x n_ages x n_regions) indicating how each ecov affects M by age,stock,region and 
 #'        has the form "lag-order". "lag" can be:
 #'         \describe{
-#'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects M in year y+1.}
+#'           \item{"none"}{no effect.}
+#'           \item{"lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects M in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed M parameter (e.g., log).}
-#'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
+#'           \item{"linear"}{the covariate effect is linear on the transformed M parameter (e.g., log).}
+#'           \item{"poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
 #'          }
 #'       }
 #'     \item{$M_effect_map}{integer array (n_stocks x n_ages x n_regions x n_Ecov) indicating which estimated effects are common by age,stock,region.
@@ -70,25 +70,25 @@
 #'     \item{$q_how}{character matrix (n_Ecov x n_indices) indicating whether each ecov affects catchability for each index. and has 
 #'      the form "lag-order". "lag" can be:
 #'         \describe{
-#'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects catchability in year y+1.}
+#'           \item{"none"}{no effect.}
+#'           \item{"lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects catchability in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed catchability parameter (e.g., log).}
-#'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
+#'           \item{"linear"}{the covariate effect is linear on the transformed catchability parameter (e.g., log).}
+#'           \item{"poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
 #'          }
 #'       }
 #'     \item{$move_how}{character array (n_Ecov x n_stocks x n_ages x n_seasons x n_regions x n_regions - 1) indicating whether each ecov 
 #'        affects movement from one region to the others by stock,age,season. and has the form "lag-order". "lag" can be:
 #'         \describe{
-#'           \item{= "none"}{no effect.}
-#'           \item{= "lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects a movement parameter in year y+1.}
+#'           \item{"none"}{no effect.}
+#'           \item{"lag-n"}{lag = n which can be 0,1,2,.... lag-1 implies the covariate in year y affects a movement parameter in year y+1.}
 #'         }
 #'         for "lag" being other than "none", "order" can be:
 #'         \describe{
-#'           \item{= "linear"}{the covariate effect is linear on the transformed movement parameter (e.g., log).}
-#'           \item{= "poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
+#'           \item{"linear"}{the covariate effect is linear on the transformed movement parameter (e.g., log).}
+#'           \item{"poly-n"}{orthogonal polynomial where n = 1 (same as "linear"),2,...}
 #'          }
 #'        }
 #'     \item{$move_effect_map}{integer array (n_stocks x n_ages x n_seasons x n_regions x n_regions-1 x n_Ecov) indicating which estimated 

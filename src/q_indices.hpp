@@ -245,64 +245,6 @@ matrix<Type> get_pred_indices(array<Type> pred_IAA, vector<int> units_indices, a
 }
 
 template <class Type>
-matrix<Type> get_pred_log_indices(matrix<Type> pred_indices, matrix<Type> agg_index_sigma, vector<Type> log_index_sig_scale, 
-  int bias_correct_oe){
-  int n_y = agg_index_sigma.rows();
-  int n_indices = agg_index_sigma.cols();
-  matrix<Type> pred_log_indices(n_y,n_indices);
-  pred_log_indices.setZero();
-
-  for(int y = 0; y < n_y; y++) for(int i = 0; i < n_indices; i++) {
-    pred_log_indices(y,i) = log(pred_indices(y,i));
-    Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
-    if(bias_correct_oe) pred_log_indices(y,i) -= 0.5*exp(2*log(sig));
-  }
-  return pred_log_indices;
-}
-
-template <class Type>
-matrix<Type> get_nll_agg_indices(matrix<Type> pred_log_indices, matrix<Type> agg_index_sigma, vector<Type> log_index_sig_scale,
-  vector<Type> obsvec, matrix<int> use_indices, matrix<int> keep_I, data_indicator<vector<Type>, Type> keep){
-  int n_y = agg_index_sigma.rows();
-  int n_indices = agg_index_sigma.cols();
-
-  matrix<Type> nll_agg_indices(n_y,n_indices);
-  nll_agg_indices.setZero();
-
-  for(int y = 0; y < n_y; y++) for(int i = 0; i < n_indices; i++) if(use_indices(y,i)){
-    Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
-    nll_agg_indices(y,i) -= keep(keep_I(y,i)) * dnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig,1);
-    nll_agg_indices(y,i) -= keep.cdf_lower(keep_I(y,i)) * log(squeeze(pnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig)));
-    nll_agg_indices(y,i) -= keep.cdf_upper(keep_I(y,i)) * log(1.0 - squeeze(pnorm(obsvec(keep_I(y,i)), pred_log_indices(y,i), sig)));
-  }
-  return nll_agg_indices;
-}
-
-template <class Type>
-matrix<Type> simulate_agg_indices(matrix<Type> pred_log_indices, matrix<Type> agg_indices, matrix<Type> agg_index_sigma, 
-  vector<Type> log_index_sig_scale, matrix<int> use_indices){
-  int n_y = agg_indices.rows();
-  int n_indices = agg_indices.cols();
-  matrix<Type> agg_indices_out = agg_indices;
-  for(int y = 0; y < n_y; y++) for(int i = 0; i < n_indices; i++) if(use_indices(y,i)) {
-    Type sig = agg_index_sigma(y,i)*exp(log_index_sig_scale(i));
-    agg_indices(y,i) = exp(rnorm(pred_log_indices(y,i), sig));
-  }
-  return agg_indices;
-}
-
-template <class Type>
-vector<Type> sim_agg_indices_in_obsvec(vector<Type> obsvec, matrix<int> keep_I, matrix<Type> agg_indices, matrix<int> use_indices){
-  int n_y = use_indices.rows();
-  int n_indices = use_indices.cols();
-  vector<Type> obsvec_out = obsvec;
-  for(int y = 0; y < n_y; y++) for(int i = 0; i < n_indices; i++){
-    if(use_indices(y,i)) obsvec_out(keep_I(y,i)) = log(agg_indices(y,i));
-  }
-  return obsvec_out;
-}
-
-template <class Type>
 array<Type> get_pred_index_paa(array<Type> pred_IAA, vector<int> units_index_paa, 
   array<Type> waa, vector<int> waa_pointer_indices){
   int n_indices = pred_IAA.dim(0);
@@ -323,77 +265,65 @@ array<Type> get_pred_index_paa(array<Type> pred_IAA, vector<int> units_index_paa
   return pred_index_paa;
 }
 
-template <class Type>
-matrix<Type> get_nll_index_acomp(array<Type> pred_index_paa, matrix<int> use_index_paa, array<Type> index_paa,
-  matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars, 
-  array<int> keep_Ipaa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
-  int n_indices = pred_index_paa.dim(0);
-  int n_y = index_paa.dim(1);
-  int n_ages = pred_index_paa.dim(2);
-  matrix<Type> nll_index_acomp(n_y,n_indices);
-  nll_index_acomp.setZero();
+// template <class Type>
+// matrix<Type> get_nll_index_acomp(array<Type> pred_index_paa, matrix<int> use_index_paa, array<Type> index_paa,
+//   matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars, 
+//   array<int> keep_Ipaa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
+//   int n_indices = pred_index_paa.dim(0);
+//   int n_y = index_paa.dim(1);
+//   int n_ages = pred_index_paa.dim(2);
+//   matrix<Type> nll_index_acomp(n_y,n_indices);
+//   nll_index_acomp.setZero();
 
-  for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++)if(use_index_paa(y,i)) {
-    vector<Type> paa_obs_y(n_ages);
-    vector<Type> t_pred_paa(n_ages);
-    for(int a = 0; a < n_ages; a++){
-      t_pred_paa(a) = pred_index_paa(i,y,a);
-      paa_obs_y(a) = index_paa(i,y,a);
-    }
-    //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,0) + keep_Ipaa(i,y,1) - 1
-    //keep_Ipaa(i,y,0) is first val, keep_Ipaa(i,y,1) is the length of the vector
-    vector<Type> tf_paa_obs = obsvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
-    vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
-    nll_index_acomp(y,i) -= get_acomp_ll(tf_paa_obs, t_pred_paa, index_Neff(y,i), ages_obs_y, age_comp_model_indices(i), 
-      vector<Type>(index_paa_pars.row(i)), keep.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1)), do_osa, paa_obs_y);
-  }
-  return nll_index_acomp;
-}
+//   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++)if(use_index_paa(y,i)) {
+//     vector<Type> paa_obs_y(n_ages);
+//     vector<Type> t_pred_paa(n_ages);
+//     for(int a = 0; a < n_ages; a++){
+//       t_pred_paa(a) = pred_index_paa(i,y,a);
+//       paa_obs_y(a) = index_paa(i,y,a);
+//     }
+//     //NB: indexing in obsvec MUST be: keep_Ipaa(i,y,0),...,keep_Ipaa(i,y,0) + keep_Ipaa(i,y,1) - 1
+//     //keep_Ipaa(i,y,0) is first val, keep_Ipaa(i,y,1) is the length of the vector
+//     vector<Type> tf_paa_obs = obsvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
+//     vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
+//     nll_index_acomp(y,i) -= get_acomp_ll(tf_paa_obs, t_pred_paa, index_Neff(y,i), ages_obs_y, age_comp_model_indices(i), 
+//       vector<Type>(index_paa_pars.row(i)), keep.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1)), do_osa, paa_obs_y);
+//   }
+//   return nll_index_acomp;
+// }
 
-template <class Type>
-vector<Type> simulate_index_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_index_paa, matrix<int> use_index_paa,
-  array<int> keep_Ipaa, matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars){
-  int n_indices = pred_index_paa.dim(0);
-  int n_y = keep_Ipaa.dim(1);
-  int n_ages = pred_index_paa.dim(2);
-  vector<Type> obsvec_out = obsvec;
-  for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {
-    vector<Type> t_pred_paa(n_ages);
-    for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_index_paa(i,y,a);
-    vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
-    vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, index_Neff(y,i), ages_obs_y, age_comp_model_indices(i), 
-      vector<Type>(index_paa_pars.row(i)));
-    obsvec_out.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1)) = tf_paa_obs;
-  }
-  return obsvec_out;
-}
+// template <class Type>
+// vector<Type> simulate_index_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_index_paa, matrix<int> use_index_paa,
+//   array<int> keep_Ipaa, matrix<Type> index_Neff, vector<int> age_comp_model_indices, matrix<Type> index_paa_pars){
+//   int n_indices = pred_index_paa.dim(0);
+//   int n_y = keep_Ipaa.dim(1);
+//   int n_ages = pred_index_paa.dim(2);
+//   vector<Type> obsvec_out = obsvec;
+//   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {
+//     vector<Type> t_pred_paa(n_ages);
+//     for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_index_paa(i,y,a);
+//     vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
+//     vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, index_Neff(y,i), ages_obs_y, age_comp_model_indices(i), 
+//       vector<Type>(index_paa_pars.row(i)));
+//     obsvec_out.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1)) = tf_paa_obs;
+//   }
+//   return obsvec_out;
+// }
 
-template <class Type>
-array<Type> sim_obsvec_in_index_paa(vector<Type> obsvec, vector<int> agesvec, array<Type> index_paa, matrix<int> use_index_paa, array<int> keep_Ipaa, 
-  vector<int> age_comp_model_indices){
-  int n_indices = index_paa.dim(0);
-  int n_y = index_paa.dim(1);
-  int n_ages = index_paa.dim(2);
-  array<Type> index_paa_out = index_paa;
-  vector<Type> paa_obs_y(n_ages);
-  for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {
-    vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
-    vector<Type> tf_paa_obs = obsvec.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1));
-    paa_obs_y = make_paa(tf_paa_obs, age_comp_model_indices(i), ages_obs_y, n_ages);
-    for(int a = 0; a < n_ages; a++) index_paa_out(i,y,a) = paa_obs_y(a);
-  }
-  return index_paa_out;
-}
+// template <class Type>
+// array<Type> sim_obsvec_in_index_paa(vector<Type> obsvec, vector<int> agesvec, array<Type> index_paa, matrix<int> use_index_paa, array<int> keep_Ipaa, 
+//   vector<int> age_comp_model_indices){
+//   int n_indices = index_paa.dim(0);
+//   int n_y = index_paa.dim(1);
+//   int n_ages = index_paa.dim(2);
+//   array<Type> index_paa_out = index_paa;
+//   vector<Type> paa_obs_y(n_ages);
+//   for(int i = 0; i < n_indices; i++) for(int y = 0; y < n_y; y++) if(use_index_paa(y,i)) {
+//     vector<int> ages_obs_y = agesvec.segment(keep_Ipaa(i,y,0), keep_Ipaa(i,y,1));
+//     vector<Type> tf_paa_obs = obsvec.segment(keep_Ipaa(i,y,0),keep_Ipaa(i,y,1));
+//     paa_obs_y = make_paa(tf_paa_obs, age_comp_model_indices(i), ages_obs_y, n_ages);
+//     for(int a = 0; a < n_ages; a++) index_paa_out(i,y,a) = paa_obs_y(a);
+//   }
+//   return index_paa_out;
+// }
 
-template <class Type>
-vector<Type> obsvec_to_paa(int i, int y, vector<Type> obsvec, vector<int> agesvec, matrix<int> use_paa, array<int> keep_paa, 
-  vector<int> age_comp_model, int n_ages){
-  vector<Type> paa(n_ages);
-  paa.setZero();
-  if(use_paa(y,i)) {
-    vector<int> ages_obs_y = agesvec.segment(keep_paa(i,y,0), keep_paa(i,y,1));
-    vector<Type> tf_paa_obs = obsvec.segment(keep_paa(i,y,0),keep_paa(i,y,1));
-    paa = make_paa(tf_paa_obs, age_comp_model(i), ages_obs_y, paa);
-  }
-  return paa;
-}

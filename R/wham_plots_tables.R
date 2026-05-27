@@ -1084,7 +1084,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
   index <- dat$agg_indices
   # index[index < 0] <- NA # robustify to missing values entered as negative
   index[dat$use_indices == 0] <- NA # don't plot unused values
-  sigma <- dat$agg_index_sigma %*% diag(exp(mod$parList$log_index_sig_scale), nrow = length(mod$parList$log_index_sig_scale)) # dims: [ny,ni] x [ni]
+  sigma <- dat$agg_index_sigma %*% diag(exp(mod$parList$index_var_pars[,1]), nrow = NROW(mod$parList$index_var_pars)) # dims: [ny,ni] x [ni]
   log_stdres <- (log(index)-log(pred_index))/sigma
   if(!missing(use.i)) indices <- use.i
   else indices <- 1:dat$n_indices
@@ -1092,8 +1092,7 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ifns <- gsub(pattern, "_", mod$input$index_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
-	for (i in indices)
-	{
+	for (i in indices) if(dat$index_model[i] == 1) {
     index.name.fn <- paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]])
     index.name.plt <- paste0(mod$input$index_names[i], " in ", mod$input$region_names[mod$input$data$index_regions[i]])
 		if(do.tex) cairo_pdf(file.path(od, paste0("Index_4panel_",index.name.fn,".pdf")), family = fontfam, height = 10, width = 10)

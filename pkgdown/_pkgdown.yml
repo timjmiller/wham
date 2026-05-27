@@ -3,6 +3,8 @@ url: https://timjmiller.github.io/wham/
 template:
   bootstrap: 5
   bootswatch: cosmo
+  params:
+    math-rendering: mathjax # or katex
   #light-switch: true
   #bslib:
     #navbar-light-bg: #00467f

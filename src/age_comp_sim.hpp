@@ -285,18 +285,6 @@ vector<Type> rzinf_logisticnormal_2(vector<Type> p, vector<Type> pars, vector<in
   return(obs);
 }
 
-// Simulate from tweedie
-// Adapted from tweedie::rtweedie function in R
-template<class Type>
-Type rTweedie( Type mu, Type phi, Type power){
- Type lambda = pow(mu, Type(2.0) - power) / (phi * (Type(2.0) - power));
- Type alpha = (Type(2.0) - power) / (Type(1.0) - power);
- Type gam = phi * (power - Type(1.0)) * pow(mu, power - Type(1.0));
- Type N = rpois(lambda);
- Type B = rgamma(-N * alpha, gam);   /// Using Shape-Scale parameterization
- return B;
-}
-
 template<class Type>
 vector<Type> rmvtweedie( Type N, vector<Type> p, Type phi, Type power, vector<int> ages)
 {
@@ -395,6 +383,42 @@ vector<Type> make_paa(vector<Type> tf_paa_obs, int age_comp_model, vector<int> a
       p_pos = mvn_to_LN(tf_paa_obs, 0);// no multiplicative options right now
     }
     for(int i = 0; i < ages.size(); i++) paa_out(ages(i)-1) = p_pos(i); 
+  }
+  return paa_out;
+}
+
+
+template <class Type>
+vector<Type> simulate_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_paa, matrix<int> use_paa,
+  array<int> keep_paa, matrix<Type> Neff, vector<int> age_comp_model, matrix<Type> paa_pars){
+  int n_series = pred_paa.dim(0);
+  int n_y = keep_paa.dim(1);
+  int n_ages = pred_paa.dim(2);
+  vector<Type> obsvec_out = obsvec;
+  for(int f = 0; f < n_series; f++) for(int y = 0; y < n_y; y++) if(use_paa(y,f)) {
+    vector<Type> t_pred_paa(n_ages);
+    for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_paa(f,y,a);
+    vector<int> ages_obs_y = agesvec.segment(keep_paa(f,y,0), keep_paa(f,y,1));
+    vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, Neff(y,f), ages_obs_y, age_comp_model(f), 
+      vector<Type>(paa_pars.row(f)));
+    obsvec_out.segment(keep_paa(f,y,0),keep_paa(f,y,1)) = tf_paa_obs;
+  }
+  return obsvec_out;
+}
+
+template <class Type>
+array<Type> sim_obsvec_in_paa(vector<Type> obsvec, vector<int> agesvec, array<Type> paa, matrix<int> use_paa, array<int> keep_paa, 
+  vector<int> age_comp_model){
+  int n_fleets = paa.dim(0);
+  int n_y = paa.dim(1);
+  int n_ages = paa.dim(2);
+  array<Type> paa_out = paa;
+  vector<Type> paa_obs_y(n_ages);
+  for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++) if(use_paa(y,f)) {
+    vector<Type> tf_paa_obs = obsvec.segment(keep_paa(f,y,0),keep_paa(f,y,1));
+    vector<int> ages_obs_y = agesvec.segment(keep_paa(f,y,0), keep_paa(f,y,1));
+    paa_obs_y = make_paa(tf_paa_obs, age_comp_model(f), ages_obs_y, n_ages);
+    for(int a = 0; a < n_ages; a++) paa_out(f,y,a) = paa_obs_y(a);
   }
   return paa_out;
 }

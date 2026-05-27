@@ -228,91 +228,91 @@ array<Type> get_pred_catch_paa(array<Type> pred_CAA, int n_years_model){
   return pred_catch_paa;
 }
 
-template <class Type>
-matrix<Type> get_nll_catch_acomp(array<Type> pred_catch_paa, matrix<int> use_catch_paa, array<Type> catch_paa,
-  matrix<Type> catch_Neff, vector<int> age_comp_model_fleets, matrix<Type> catch_paa_pars, 
-  array<int> keep_Cpaa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
-  int n_fleets = pred_catch_paa.dim(0);
-  int n_y = catch_paa.dim(1);
-  int n_ages = pred_catch_paa.dim(2);
-  matrix<Type> nll_catch_acomp(n_y,n_fleets);
-  nll_catch_acomp.setZero();
+// template <class Type>
+// matrix<Type> get_nll_catch_acomp(array<Type> pred_catch_paa, matrix<int> use_catch_paa, array<Type> catch_paa,
+//   matrix<Type> catch_Neff, vector<int> age_comp_model_fleets, matrix<Type> catch_paa_pars, 
+//   array<int> keep_Cpaa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
+//   int n_fleets = pred_catch_paa.dim(0);
+//   int n_y = catch_paa.dim(1);
+//   int n_ages = pred_catch_paa.dim(2);
+//   matrix<Type> nll_catch_acomp(n_y,n_fleets);
+//   nll_catch_acomp.setZero();
 
-  for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++)if(use_catch_paa(y,f)) {
-    vector<Type> paa_obs_y(n_ages);
-    vector<Type> t_pred_paa(n_ages);
-    for(int a = 0; a < n_ages; a++){
-      t_pred_paa(a) = pred_catch_paa(f,y,a);
-      paa_obs_y(a) = catch_paa(f,y,a);
-    }
-    //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
-    //keep_Cpaa(i,y,0) is first val, keep_Cpaa(i,y,1) is the length of the vector
-    vector<Type> tf_paa_obs = obsvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
-    vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
-    nll_catch_acomp(y,f) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
-      vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)), do_osa, paa_obs_y);
-  }
-  return nll_catch_acomp;
-}
+//   for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++)if(use_catch_paa(y,f)) {
+//     vector<Type> paa_obs_y(n_ages);
+//     vector<Type> t_pred_paa(n_ages);
+//     for(int a = 0; a < n_ages; a++){
+//       t_pred_paa(a) = pred_catch_paa(f,y,a);
+//       paa_obs_y(a) = catch_paa(f,y,a);
+//     }
+//     //NB: indexing in obsvec MUST be: keep_Cpaa(i,y,0),...,keep_Cpaa(i,y,0) + keep_Cpaa(i,y,1) - 1
+//     //keep_Cpaa(i,y,0) is first val, keep_Cpaa(i,y,1) is the length of the vector
+//     vector<Type> tf_paa_obs = obsvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
+//     vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
+//     nll_catch_acomp(y,f) -= get_acomp_ll(tf_paa_obs, t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
+//       vector<Type>(catch_paa_pars.row(f)), keep.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)), do_osa, paa_obs_y);
+//   }
+//   return nll_catch_acomp;
+// }
 
-template <class Type>
-vector<Type> simulate_catch_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_catch_paa, matrix<int> use_catch_paa,
-  array<int> keep_Cpaa, matrix<Type> catch_Neff, vector<int> age_comp_model_fleets, matrix<Type> catch_paa_pars, int trace = 0){
-  if(trace) see("in simulate_catch_paa_in_obsvec");
-  int n_fleets = pred_catch_paa.dim(0);
-  if(trace) see(n_fleets);
-  int n_y = keep_Cpaa.dim(1);
-  if(trace) see(n_y);
-  int n_ages = pred_catch_paa.dim(2);
-  if(trace) see(n_ages);
-  vector<Type> obsvec_out = obsvec;
-  for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++) if(use_catch_paa(y,f)) {
-    vector<Type> t_pred_paa(n_ages);
-    for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_catch_paa(f,y,a);
-    vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
-    vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
-      vector<Type>(catch_paa_pars.row(f)));
-    obsvec_out.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)) = tf_paa_obs;
-    if((f == 0) & (y == 0)){
-      if(trace) see(f);
-      if(trace) see(y);
-      if(trace) see(t_pred_paa);
-      if(trace) see(ages_obs_y);
-      if(trace) see(tf_paa_obs);
-      if(trace) see(keep_Cpaa(f,y,0));
-      if(trace) see(keep_Cpaa(f,y,1));
-      if(trace) see(obsvec.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)));
-      if(trace) see(obsvec_out.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)));
-    }
-  }
-  if(trace) see("end simulate_catch_paa_in_obsvec");
-  return obsvec_out;
-}
+// template <class Type>
+// vector<Type> simulate_catch_paa_in_obsvec(vector<Type> obsvec, vector<int> agesvec, array<Type> pred_catch_paa, matrix<int> use_catch_paa,
+//   array<int> keep_Cpaa, matrix<Type> catch_Neff, vector<int> age_comp_model_fleets, matrix<Type> catch_paa_pars, int trace = 0){
+//   if(trace) see("in simulate_catch_paa_in_obsvec");
+//   int n_fleets = pred_catch_paa.dim(0);
+//   if(trace) see(n_fleets);
+//   int n_y = keep_Cpaa.dim(1);
+//   if(trace) see(n_y);
+//   int n_ages = pred_catch_paa.dim(2);
+//   if(trace) see(n_ages);
+//   vector<Type> obsvec_out = obsvec;
+//   for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++) if(use_catch_paa(y,f)) {
+//     vector<Type> t_pred_paa(n_ages);
+//     for(int a = 0; a < n_ages; a++) t_pred_paa(a) = pred_catch_paa(f,y,a);
+//     vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
+//     vector<Type> tf_paa_obs = sim_acomp(t_pred_paa, catch_Neff(y,f), ages_obs_y, age_comp_model_fleets(f), 
+//       vector<Type>(catch_paa_pars.row(f)));
+//     obsvec_out.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)) = tf_paa_obs;
+//     if((f == 0) & (y == 0)){
+//       if(trace) see(f);
+//       if(trace) see(y);
+//       if(trace) see(t_pred_paa);
+//       if(trace) see(ages_obs_y);
+//       if(trace) see(tf_paa_obs);
+//       if(trace) see(keep_Cpaa(f,y,0));
+//       if(trace) see(keep_Cpaa(f,y,1));
+//       if(trace) see(obsvec.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)));
+//       if(trace) see(obsvec_out.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1)));
+//     }
+//   }
+//   if(trace) see("end simulate_catch_paa_in_obsvec");
+//   return obsvec_out;
+// }
 
-template <class Type>
-array<Type> sim_obsvec_in_catch_paa(vector<Type> obsvec, vector<int> agesvec, array<Type> catch_paa, matrix<int> use_catch_paa, array<int> keep_Cpaa, 
-  vector<int> age_comp_model_fleets, int trace = 0){
-  if(trace) see("in sim_obsvec_in_catch_paa");
-  int n_fleets = catch_paa.dim(0);
-  if(trace) see(n_fleets);
-  int n_y = catch_paa.dim(1);
-  if(trace) see(n_y);
-  int n_ages = catch_paa.dim(2);
-  if(trace) see(n_ages);
-  array<Type> catch_paa_out = catch_paa;
-  if(trace) see(catch_paa_out.dim);
-  vector<Type> paa_obs_y(n_ages);
-  for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++) if(use_catch_paa(y,f)) {
-    if(trace) see(f);
-    if(trace) see(y);
-    vector<Type> tf_paa_obs = obsvec.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1));
-    if(trace) see(tf_paa_obs);
-    vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
-    if(trace) see(ages_obs_y);
-    paa_obs_y = make_paa(tf_paa_obs, age_comp_model_fleets(f), ages_obs_y, n_ages);
-    if(trace) see(paa_obs_y);
-    for(int a = 0; a < n_ages; a++) catch_paa_out(f,y,a) = paa_obs_y(a);
-  }
-  if(trace) see("end sim_obsvec_in_catch_paa");
-  return catch_paa_out;
-}
+// template <class Type>
+// array<Type> sim_obsvec_in_catch_paa(vector<Type> obsvec, vector<int> agesvec, array<Type> catch_paa, matrix<int> use_catch_paa, array<int> keep_Cpaa, 
+//   vector<int> age_comp_model_fleets, int trace = 0){
+//   if(trace) see("in sim_obsvec_in_catch_paa");
+//   int n_fleets = catch_paa.dim(0);
+//   if(trace) see(n_fleets);
+//   int n_y = catch_paa.dim(1);
+//   if(trace) see(n_y);
+//   int n_ages = catch_paa.dim(2);
+//   if(trace) see(n_ages);
+//   array<Type> catch_paa_out = catch_paa;
+//   if(trace) see(catch_paa_out.dim);
+//   vector<Type> paa_obs_y(n_ages);
+//   for(int f = 0; f < n_fleets; f++) for(int y = 0; y < n_y; y++) if(use_catch_paa(y,f)) {
+//     if(trace) see(f);
+//     if(trace) see(y);
+//     vector<Type> tf_paa_obs = obsvec.segment(keep_Cpaa(f,y,0),keep_Cpaa(f,y,1));
+//     if(trace) see(tf_paa_obs);
+//     vector<int> ages_obs_y = agesvec.segment(keep_Cpaa(f,y,0), keep_Cpaa(f,y,1));
+//     if(trace) see(ages_obs_y);
+//     paa_obs_y = make_paa(tf_paa_obs, age_comp_model_fleets(f), ages_obs_y, n_ages);
+//     if(trace) see(paa_obs_y);
+//     for(int a = 0; a < n_ages; a++) catch_paa_out(f,y,a) = paa_obs_y(a);
+//   }
+//   if(trace) see("end sim_obsvec_in_catch_paa");
+//   return catch_paa_out;
+// }

@@ -2,7 +2,7 @@
 #'
 #' Refits a previously fitted WHAM model a number of times with different initial parameter values
 #'
-#' Because the likelihood surface of a specific model may not be monotone, optimization may result in a local maximum which can be dependent on the parameter
+#' Because the likelihood surface of a specific model may not be unimodal, optimization may result in a local maximum which can be dependent on the parameter
 #' values used to start the optimization. It is considered good practice to check whether the optimization is consistent for a range of starting values.
 #' There does not appear to be an approach that is both best and computationally efficient to do this check so, this function allows the user to provide the 
 #' alternative starting values for all fixed effects parameters to use in the jittering. When \code{initial_vals} is not provided, a default method is used

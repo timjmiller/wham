@@ -38,11 +38,15 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(agg_catch); //n_years x n_fleets 
   DATA_IMATRIX(use_agg_catch); //n_years x n_fleets 
   DATA_MATRIX(agg_catch_sigma); //n_years x n_fleets 
+  DATA_IVECTOR(agg_catch_model); //n_fleets: 1,2 = log-normal, 3,4 = gamma, 5 = generalized gamma, 6 = Tweedie
+  DATA_IMATRIX(catch_pos); //n_years x n_fleets, 0/1 whether catch was a zero despite fishing effort
+  DATA_MATRIX(catch_effort); //n_years x n_fleets: measure of fishing effort for use in modeling p(positive tows) when using Tweedie or delta models. Default is to not use it.
   DATA_ARRAY(catch_paa); //n_fleets x n_years x n_ages_model 
   DATA_IMATRIX(use_catch_paa); //n_years x n_fleets 
   DATA_MATRIX(catch_Neff); //n_years x n_fleets 
   DATA_IVECTOR(age_comp_model_fleets); //length = n_fleets
   DATA_INTEGER(F_config); //1: F_pars is log_F1, F_devs, 2: F_pars is log_F.
+  
   DATA_IVECTOR(index_regions); //length = n_indices
   DATA_IVECTOR(index_seasons); //n_indices. indicator must only be for one season
   DATA_IVECTOR(units_indices); //length = n_indices
@@ -50,6 +54,9 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(agg_indices); //n_years x n_indices
   DATA_IMATRIX(use_indices);  //n_years x n_indices
   DATA_MATRIX(agg_index_sigma); //n_years x n_indices
+  DATA_IVECTOR(agg_index_model); //n_indices: 1,2 = log-normal, 3,4 = gamma, 5 = generalized gamma, 6 = Tweedie, 7-11 delta/hurdle models of 1-5
+  DATA_IMATRIX(index_pos); //n_years x n_indices, 0/1 whether index was a zero (nothing caught but survey occurred) or a positive value 
+  DATA_MATRIX(index_effort); //n_years x n_indices: measure of sampling effort for use in modeling p(positive tows) when using Tweedie or delta models. Default is to not use it.
   DATA_IVECTOR(units_index_paa); //length = n_indices
   DATA_ARRAY(index_paa); //n_indices x n_years x n_ages_model
   DATA_IMATRIX(use_index_paa); //n_years x n_indices
@@ -258,8 +265,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
-  PARAMETER_VECTOR(log_catch_sig_scale); //n_fleets
-  PARAMETER_VECTOR(log_index_sig_scale); //n_indices
+  PARAMETER_MATRIX(agg_catch_pars); //n_indices x 3 (parameters that may be used in various likelihood options for agg catch)
+  PARAMETER_MATRIX(agg_index_pars); //n_indices x 3 (parameters that may be used in various likelihood options for agg index)
+  // PARAMETER_VECTOR(log_catch_sig_scale); //n_fleets
   
   PARAMETER_ARRAY(Mpars); // (n_stocks x n_regions x n_ages) mean log M-at-age, fixed effects
   PARAMETER_ARRAY(M_re); // random effects for year- and age-varying M deviations from mean Mpars, dim = n_stocks x n_regions x n_years x n_ages
@@ -986,7 +994,8 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_stock_catch);
   matrix<Type> pred_catch = get_pred_catch(pred_stock_catch);
   REPORT(pred_catch);
-  matrix<Type> pred_log_catch = get_pred_log_catch(pred_catch, agg_catch_sigma, log_catch_sig_scale, bias_correct_oe);
+  matrix<Type> pred_log_catch = get_log_pred(pred_catch, agg_catch_pars, agg_catch_sigma, agg_catch_model, bias_correct_oe);
+  // matrix<Type> pred_log_catch = get_pred_log_catch(pred_catch, agg_catch_sigma, log_catch_sig_scale, bias_correct_oe);
   REPORT(pred_log_catch);
   
   if(n_years_proj >0){
@@ -994,21 +1003,33 @@ Type objective_function<Type>::operator() ()
     REPORT(pred_log_catch_proj);
     if((sum_do_post_samp == 0)) ADREPORT(pred_log_catch_proj);
   }
-  matrix<Type> nll_agg_catch = get_nll_agg_catch(pred_log_catch, agg_catch_sigma, log_catch_sig_scale, obsvec,
-    use_agg_catch, keep_C, keep);
+  // array<Type> index_annual_nll_pars = get_annual_agg_obs_nll_pars(agg_index_model, pred_log_indices, index_obs_sigma, index_effort, agg_index_pars);
+  array<Type> catch_annual_nll_pars = get_annual_agg_obs_nll_pars(agg_catch_model, pred_log_catch, agg_catch_sigma, catch_effort, agg_catch_pars);
+  REPORT(catch_annual_nll_pars);
+  // matrix<Type> nll_agg_indices = get_nll_agg_obs(agg_index_model, index_pos, index_annual_nll_pars, obsvec, use_indices, keep_I, keep);
+  matrix<Type> nll_agg_catch = get_nll_agg_obs(agg_catch_model, catch_pos, catch_annual_nll_pars, obsvec, use_agg_catch, keep_C, keep);
+  // matrix<Type> nll_agg_catch = get_nll_agg_catch(pred_log_catch, agg_catch_sigma, log_catch_sig_scale, obsvec,
+  //   use_agg_catch, keep_C, keep);
   nll += nll_agg_catch.sum();
   //see(nll);
   REPORT(nll_agg_catch);
   SIMULATE if(do_simulate_data(0)){
     if(trace(0)) see("begin getting simulated agg_catch");
-    agg_catch = simulate_agg_catch(pred_log_catch, agg_catch, agg_catch_sigma, log_catch_sig_scale, use_agg_catch);
+    // agg_catch = simulate_agg_catch(pred_log_catch, agg_catch, agg_catch_sigma, log_catch_sig_scale, use_agg_catch);
+    catch_pos = simulate_obs_pos(agg_catch_model, catch_pos, catch_annual_nll_pars, use_agg_catch);
+    agg_catch = simulate_agg_obs(agg_catch_model, agg_catch, catch_pos, catch_annual_nll_pars, use_agg_catch);
     REPORT(agg_catch);
-    obsvec = sim_agg_catch_in_obsvec(obsvec,keep_C,agg_catch, use_agg_catch);
+    obsvec = sim_agg_obs_in_obsvec(obsvec,keep_C,agg_catch_model, agg_catch, catch_pos, use_agg_catch);
+    // agg_catch = simulate_agg_obs(pred_log_catch, agg_catch, agg_catch_sigma, log_catch_sig_scale, use_agg_catch);
+    // REPORT(agg_catch);
+    // obsvec = sim_agg_catch_in_obsvec(obsvec,keep_C,agg_catch, use_agg_catch);
     if(trace(0)) see("finished getting simulated agg_catch");
   }
 
-  matrix<Type> nll_catch_acomp = get_nll_catch_acomp(pred_catch_paa, use_catch_paa, catch_paa,
+  matrix<Type> nll_catch_acomp = get_nll_acomp(pred_catch_paa, use_catch_paa, catch_paa,
     catch_Neff, age_comp_model_fleets, catch_paa_pars, keep_Cpaa, keep, obsvec, agesvec, do_osa);
+  // matrix<Type> nll_catch_acomp = get_nll_catch_acomp(pred_catch_paa, use_catch_paa, catch_paa,
+  //   catch_Neff, age_comp_model_fleets, catch_paa_pars, keep_Cpaa, keep, obsvec, agesvec, do_osa);
   nll += nll_catch_acomp.sum();
   REPORT(nll_catch_acomp);
   matrix<Type> catch_Neff_out = get_Neff_out(catch_Neff, age_comp_model_fleets, catch_paa_pars);
@@ -1016,9 +1037,12 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   SIMULATE if(do_simulate_data(0)){
     if(trace(0)) see("begin getting simulated catch_paa");
-    obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
-      age_comp_model_fleets, catch_paa_pars, trace(1));
-    catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, trace(1));
+    obsvec = simulate_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
+      age_comp_model_fleets, catch_paa_pars);
+    // obsvec = simulate_catch_paa_in_obsvec(obsvec, agesvec, pred_catch_paa, use_catch_paa,  keep_Cpaa, catch_Neff, 
+    //   age_comp_model_fleets, catch_paa_pars, trace(1));
+    // catch_paa = sim_obsvec_in_catch_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets, trace(1));
+    catch_paa = sim_obsvec_in_paa(obsvec, agesvec, catch_paa, use_catch_paa, keep_Cpaa, age_comp_model_fleets);
     if(trace(0)) see("finished getting simulated catch_paa");
     REPORT(catch_paa);
   }
@@ -1037,24 +1061,32 @@ Type objective_function<Type>::operator() ()
 
   matrix<Type> pred_indices = get_pred_indices(pred_IAA, units_indices, waa, waa_pointer_indices);
   REPORT(pred_indices);
-  matrix<Type> pred_log_indices = get_pred_log_indices(pred_indices, agg_index_sigma, log_index_sig_scale, bias_correct_oe);
+  matrix<Type> pred_log_indices = get_log_pred(pred_indices, agg_index_pars, agg_index_sigma, agg_index_model, bias_correct_oe);
+  //matrix<Type> pred_log_indices = get_pred_log_indices(pred_indices, agg_index_sigma, index_var_pars, index_model, bias_correct_oe);
   REPORT(pred_log_indices);
 
-  matrix<Type> nll_agg_indices = get_nll_agg_indices(pred_log_indices, agg_index_sigma, log_index_sig_scale, obsvec,
-    use_indices, keep_I, keep);
+  // matrix<Type> nll_agg_indices = get_nll_agg_indices(index_model, pred_log_indices, agg_index_sigma, index_var_pars, obsvec,
+  //   use_indices, keep_I, keep);
+  array<Type> index_annual_nll_pars = get_annual_agg_obs_nll_pars(agg_index_model, pred_log_indices, agg_index_sigma, index_effort, agg_index_pars);
+  REPORT(index_annual_nll_pars);
+  matrix<Type> nll_agg_indices = get_nll_agg_obs(agg_index_model, index_pos, index_annual_nll_pars, obsvec, use_indices, keep_I, keep);
   nll += nll_agg_indices.sum();
   //see(nll);
   REPORT(nll_agg_indices);
   SIMULATE if(do_simulate_data(1)){
     if(trace(0)) see("begin getting simulated agg_indices");
-    agg_indices = simulate_agg_indices(pred_log_indices, agg_indices, agg_index_sigma, log_index_sig_scale, use_indices);
+    index_pos = simulate_obs_pos(agg_index_model, index_pos, index_annual_nll_pars, use_indices);
+    REPORT(index_pos);
+    agg_indices = simulate_agg_obs(agg_index_model, agg_indices, index_pos, index_annual_nll_pars, use_indices);
     REPORT(agg_indices);
-    obsvec = sim_agg_indices_in_obsvec(obsvec,keep_I,agg_indices, use_indices);
+    obsvec = sim_agg_obs_in_obsvec(obsvec,keep_I,agg_index_model, agg_indices, index_pos, use_indices);
     if(trace(0)) see("finished getting simulated agg_indices");
   }
 
-  matrix<Type> nll_index_acomp = get_nll_index_acomp(pred_index_paa, use_index_paa, index_paa,
+  matrix<Type> nll_index_acomp = get_nll_acomp(pred_index_paa, use_index_paa, index_paa,
     index_Neff, age_comp_model_indices, index_paa_pars, keep_Ipaa, keep, obsvec, agesvec, do_osa);
+  // matrix<Type> nll_index_acomp = get_nll_index_acomp(pred_index_paa, use_index_paa, index_paa,
+  //   index_Neff, age_comp_model_indices, index_paa_pars, keep_Ipaa, keep, obsvec, agesvec, do_osa);
   nll += nll_index_acomp.sum();
   REPORT(nll_index_acomp);
   matrix<Type> index_Neff_out = get_Neff_out(index_Neff, age_comp_model_indices, index_paa_pars);
@@ -1062,9 +1094,12 @@ Type objective_function<Type>::operator() ()
   //see(nll);
   SIMULATE if(do_simulate_data(1)){
     if(trace(0)) see("begin getting simulated index_paa");
-    obsvec = simulate_index_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
+    // obsvec = simulate_index_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
+    //   age_comp_model_indices, index_paa_pars);
+    obsvec = simulate_paa_in_obsvec(obsvec, agesvec, pred_index_paa, use_index_paa,  keep_Ipaa, index_Neff, 
       age_comp_model_indices, index_paa_pars);
-    index_paa = sim_obsvec_in_index_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
+    // index_paa = sim_obsvec_in_index_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
+    index_paa = sim_obsvec_in_paa(obsvec, agesvec, index_paa, use_index_paa, keep_Ipaa, age_comp_model_indices);
     if(trace(0)) see("finished getting simulated index_paa");
     // trace(0) = 0;
     REPORT(index_paa);

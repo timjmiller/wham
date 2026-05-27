@@ -7,12 +7,12 @@
 #'
 #' @return a list with at least the first three of these components:
 #'   \describe{
-#'     \item{\code{$convergence}}{From \code{\link[stats:nlminb]{stats::nlminb}}, "0 indicates successful convergence for nlminb"}
-#'     \item{\code{$maxgr}}{Max absolute gradient value, from `max(abs(mod$gr(mod$opt$par)))`}
-#'     \item{\code{$maxgr_par}}{Name of parameter with max gradient}
-#'     \item{\code{$is_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+#'     \item{\code{convergence}}{From \code{\link[stats:nlminb]{stats::nlminb}}, "0 indicates successful convergence for nlminb"}
+#'     \item{\code{maxgr}}{Max absolute gradient value, from `max(abs(mod[["gr"]](mod[["opt"]][["par"]])))`}
+#'     \item{\code{maxgr_par}}{Name of parameter with max gradient}
+#'     \item{\code{is_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
 #'     for this model, this indicates whether it performed without error}
-#'     \item{\code{$na_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+#'     \item{\code{na_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
 #'     without error for this model, this indicates which (if any) components of the
 #'     diagonal of the inverted hessian were returned as NA}
 #'   }
@@ -28,22 +28,22 @@
 check_convergence <- function(mod, ret=FALSE){#, f = ""){
   #app <- f != ""
   res <- list()
-  res$convergence <- mod$opt$convergence
-  res$maxgr <- max(abs(mod$final_gradient))
-  res$maxgr_par <- names(mod$par)[which.max(mod$final_gradient)]
+  res[["convergence"]] <- mod[["opt"]][["convergence"]]
+  res[["maxgr"]] <- max(abs(mod[["final_gradient"]]))
+  res[["maxgr_par"]] <- names(mod[["par"]])[which.max(mod[["final_gradient"]])]
   # print to screen
-  if(res$convergence == 0){
-    message("stats:nlminb thinks the model has converged: mod$opt$convergence == 0\n")#, file = f)
+  if(res[["convergence"]] == 0){
+    message("stats:nlminb thinks the model has converged: mod[["opt"]][["convergence"]] == 0\n")#, file = f)
   } else {
-    message("stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0\n")#, file = f, append = app)
+    message("stats:nlminb thinks the model has NOT converged: mod[["opt"]][["convergence"]] != 0\n")#, file = f, append = app)
   }
-  message("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n")#, file = f, append = app)
-  message("Max gradient parameter:",res$maxgr_par,"\n")#, file = f, append = app)
+  message("Maximum gradient component:",formatC(res[["maxgr"]], format = "e", digits = 2),"\n")#, file = f, append = app)
+  message("Max gradient parameter:",res[["maxgr_par"]],"\n")#, file = f, append = app)
   if("sdrep" %in% names(mod)){
-    res$is_sdrep <- mod$is_sdrep
-    if(res$is_sdrep){
-      res$na_sdrep <- mod$na_sdrep
-      if(!(res$na_sdrep)) message("TMB:sdreport() was performed successfully for this model\n")#, file = f, append = app)
+    res[["is_sdrep"]] <- mod[["is_sdrep"]]
+    if(res[["is_sdrep"]]){
+      res[["na_sdrep"]] <- mod[["na_sdrep"]]
+      if(!(res[["na_sdrep"]])) message("TMB:sdreport() was performed successfully for this model\n")#, file = f, append = app)
       else message("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")#, file = f, append = app)
     }
     else message("TMB:sdreport() was performed for this model, but it appears hessian was not invertible\n")#, file = f, append = app)

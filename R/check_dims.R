@@ -1,8 +1,8 @@
 check_dims <- function(input){
 	
-	input_data_dims <- lapply(input$data, dim)
+	input_data_dims <- lapply(input[["data"]], dim)
 	vecs <- which(sapply(input_data_dims, is.null))
-	input_data_dims[vecs] <- lapply(input$data[vecs], length)
+	input_data_dims[vecs] <- lapply(input[["data"]][vecs], length)
 
 	#################################################
 	#basics are single integers
@@ -16,7 +16,7 @@ check_dims <- function(input){
 
 	good_dims[basics] <- sapply(basics, function(x) identical(should_dims[[x]], input_data_dims[[x]]))
  	if(any(!good_dims[basics])) stop(paste0("These should be a single integer: ", paste0(basics[!good_dims[basics]], collapse = ", ")))
-	for(i in basics) assign(i, as.integer(input$data[[i]]))
+	for(i in basics) assign(i, as.integer(input[["data"]][[i]]))
 
 
 	#################################################
@@ -38,7 +38,7 @@ check_dims <- function(input){
 	#################################################
 	#vectors
 	
- 	# if(input_data_dims[["do_simulate_period"]] !=should_dims["do_simulate_period"])) stop("input$data$do_simulate_period should be length 2")
+ 	# if(input_data_dims[["do_simulate_period"]] !=should_dims["do_simulate_period"])) stop("input[["data"]][["do_simulate_period"]] should be length 2")
  	two <- "do_simulate_period"
  	three <- "do_simulate_data"
 	n_stocks_vecs <- c("spawn_regions", "spawn_seasons", "mig_type", "waa_pointer_ssb",  "logR_mean",  "logR_sd", "recruit_model", "waa_pointer_M", "N1_model", "NAA_re_model", 
@@ -170,9 +170,9 @@ check_dims <- function(input){
 	#################################################
  
  	#pars
-	input_par_dims <- lapply(input$par, dim)
+	input_par_dims <- lapply(input[["par"]], dim)
 	vecs <- which(sapply(input_par_dims, is.null))
-	input_par_dims[vecs] <- lapply(input$par[vecs], length)
+	input_par_dims[vecs] <- lapply(input[["par"]][vecs], length)
 
 	#################################################
 
@@ -181,7 +181,7 @@ check_dims <- function(input){
 
  	n_fleets_vec <- "log_catch_sig_scale"
 	for(i in n_fleets_vec) should_dims[[i]] <- n_fleets
- 	n_indices_vec <- c("logit_q", "q_prior_re", "log_index_sig_scale")
+ 	n_indices_vec <- c("logit_q", "q_prior_re")
 	for(i in n_indices_vec) should_dims[[i]] <- n_indices
 
 
@@ -191,7 +191,7 @@ check_dims <- function(input){
 	for(i in n_stocks_2) should_dims[[i]] <- c(n_stocks, 2L)
  	n_years_n_indices <- "q_re"
 	for(i in n_years_n_indices) should_dims[[i]] <- c(n_years_model, n_indices)
- 	n_indices_2 <- "q_repars"
+ 	n_indices_2 <- c("q_repars", "index_var_pars")
 	for(i in n_indices_2) should_dims[[i]] <- c(n_indices, 2L)
  	n_years_n_fleets <- "F_pars"
 	for(i in n_years_n_fleets) should_dims[[i]] <- c(n_years_model, n_fleets)
@@ -238,13 +238,13 @@ check_dims <- function(input){
 	n_blocks_n_y_n_ages <- "selpars_re"
 	for(i in n_blocks_n_y_n_ages) should_dims[[i]] <- c(n_selblocks, n_years_model, n_ages)
 	n_stocks_n_E_np <- "Ecov_beta_R"
-	for(i in n_stocks_n_E_np) should_dims[[i]] <- c(n_stocks, n_Ecov, as.integer(max(input$data[["n_poly_Ecov_R"]])))
+	for(i in n_stocks_n_E_np) should_dims[[i]] <- c(n_stocks, n_Ecov, as.integer(max(input[["data"]][["n_poly_Ecov_R"]])))
 	n_stocks_n_ages_n_regions_n_E_np <- "Ecov_beta_M"
-	for(i in n_stocks_n_ages_n_regions_n_E_np) should_dims[[i]] <- c(n_stocks, n_ages, n_regions, n_Ecov, as.integer(max(input$data[["n_poly_Ecov_M"]])))
+	for(i in n_stocks_n_ages_n_regions_n_E_np) should_dims[[i]] <- c(n_stocks, n_ages, n_regions, n_Ecov, as.integer(max(input[["data"]][["n_poly_Ecov_M"]])))
 	n_stocks_n_ages_n_seasons_n_regions_n_reg_m1_n_E_np <- "Ecov_beta_mu"
-	for(i in n_stocks_n_ages_n_seasons_n_regions_n_reg_m1_n_E_np) should_dims[[i]] <- c(n_stocks, n_ages, n_seasons, n_regions, n_regions-1L, n_Ecov, as.integer(max(c(0,input$data[["n_poly_Ecov_mu"]]))))
+	for(i in n_stocks_n_ages_n_seasons_n_regions_n_reg_m1_n_E_np) should_dims[[i]] <- c(n_stocks, n_ages, n_seasons, n_regions, n_regions-1L, n_Ecov, as.integer(max(c(0,input[["data"]][["n_poly_Ecov_mu"]]))))
 	n_indices_n_E_np <- "Ecov_beta_q"
-	for(i in n_indices_n_E_np) should_dims[[i]] <- c(n_indices, n_Ecov, as.integer(max(input$data[["n_poly_Ecov_q"]])))
+	for(i in n_indices_n_E_np) should_dims[[i]] <- c(n_indices, n_Ecov, as.integer(max(input[["data"]][["n_poly_Ecov_q"]])))
 
 	should_par_dims <- should_dims
 	bad_par_dims <- sapply(names(should_par_dims), function(x) !identical(should_par_dims[[x]],input_par_dims[[x]]))

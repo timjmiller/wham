@@ -555,3 +555,32 @@ matrix<Type>  get_Neff_out(matrix<Type> Neff_input, vector<int> age_comp_models,
   }
   return(Neff_est);
 }
+
+
+template <class Type>
+matrix<Type> get_nll_acomp(array<Type> pred_paa, matrix<int> use_paa, array<Type> paa,
+  matrix<Type> Neff, vector<int> age_comp_model, matrix<Type> paa_pars, 
+  array<int> keep_paa, data_indicator<vector<Type>, Type> keep, vector<Type> obsvec, vector<int> agesvec, int do_osa){
+  int n_series = pred_paa.dim(0);
+  int n_y = paa.dim(1);
+  int n_ages = pred_paa.dim(2);
+  matrix<Type> nll_acomp(n_y,n_series);
+  nll_acomp.setZero();
+
+  for(int i = 0; i < n_series; i++) for(int y = 0; y < n_y; y++)if(use_paa(y,i)) {
+    vector<Type> paa_obs_y(n_ages);
+    vector<Type> t_pred_paa(n_ages);
+    for(int a = 0; a < n_ages; a++){
+      t_pred_paa(a) = pred_paa(i,y,a);
+      paa_obs_y(a) = paa(i,y,a);
+    }
+    //NB: indexing in obsvec MUST be: keep_paa(i,y,0),...,keep_paa(i,y,0) + keep_paa(i,y,1) - 1
+    //keep_paa(i,y,0) is first val, keep_paa(i,y,1) is the length of the vector
+    vector<Type> tf_paa_obs = obsvec.segment(keep_paa(i,y,0), keep_paa(i,y,1));
+    vector<int> ages_obs_y = agesvec.segment(keep_paa(i,y,0), keep_paa(i,y,1));
+    nll_acomp(y,i) -= get_acomp_ll(tf_paa_obs, t_pred_paa, Neff(y,i), ages_obs_y, age_comp_model(i), 
+      vector<Type>(paa_pars.row(i)), keep.segment(keep_paa(i,y,0),keep_paa(i,y,1)), do_osa, paa_obs_y);
+  }
+  return nll_acomp;
+}
+

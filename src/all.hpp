@@ -1,5 +1,6 @@
 #include <iostream>
 #include "helper_functions.hpp"
+#include "agg_obs.hpp"
 #include "age_comp_osa.hpp"
 #include "age_comp_sim.hpp"
 #include "ecov.hpp"

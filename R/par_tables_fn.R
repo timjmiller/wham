@@ -470,10 +470,10 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
   }
   for(i in 1:data$n_indices){
-    if(!is.na(sd$log_index_sig_scale[i])){
+    if(!is.na(sd$index_var_pars[i,1]) & data$index_model[i] == 1){
       fe.names <- c(fe.names, paste0(index.names.tab[i], " log-index observation SD scalar"))
-      fe.vals <- c(fe.vals, exp(pars$log_index_sig_scale[i]))
-      fe.cis <- rbind(fe.cis, ci(pars$log_index_sig_scale[i], sd$log_index_sig_scale[i], type = "exp"))
+      fe.vals <- c(fe.vals, exp(pars$index_var_pars[i,1]))
+      fe.cis <- rbind(fe.cis, ci(pars$index_var_pars[i,1], sd$index_var_pars[i,1], type = "exp"))
     }
   }
 
