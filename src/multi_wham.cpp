@@ -92,9 +92,9 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(selblock_models);
   int n_selblocks = selblock_models.size();
   DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
-  DATA_IVECTOR(n_selpars); //length = n_selblocks
-  DATA_IMATRIX(selpars_est); // n_blocks x (n_pars + n_ages), is the selpar estimated in this block?
-  DATA_IVECTOR(n_selpars_est); // of the selpars, how many are actually estimated (not fixed at 0 or 1)
+  //DATA_IVECTOR(n_selpars); //length = n_selblocks
+  DATA_IMATRIX(selpars_re_index); // n_blocks x max(n_ages,4), where to put unique Re for selpars (analogous to M_re_index)
+  DATA_IVECTOR(n_selpars_re); // number of unique selpar REs in a given year
   DATA_IVECTOR(n_years_selblocks); // for each block, number of years the block covers
   DATA_IMATRIX(selblock_years); // n_years_model x n_selblocks, = 1 if block covers year, = 0 if not
   DATA_IMATRIX(selblock_pointer_fleets);
@@ -254,7 +254,7 @@ Type objective_function<Type>::operator() ()
   
   PARAMETER_MATRIX(logR_proj); // (n_proj_years x n_stocks) recruitment (random effects) in proj years, only if SCAA
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
-  PARAMETER_ARRAY(selpars_re);    // (n_selblocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+  PARAMETER_ARRAY(selpars_re);    // (n_selblocks x n_years x n_ages+6) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
@@ -541,20 +541,23 @@ Type objective_function<Type>::operator() ()
   /////////////////////////////////////////
   // Selectivity --------------------------------------------------------------
   if(selblock_models_re.sum()>0) {
-    vector<Type> nll_sel = get_nll_sel(selblock_models_re, n_years_selblocks, n_selpars_est, selpars_re, sel_repars);
+    vector<Type> nll_sel = get_nll_sel(selblock_models_re, selblock_models, n_years_selblocks, selblock_years, n_selpars_re, 
+      selpars_re, sel_repars);
+    //vector<Type> nll_sel = get_nll_sel(selblock_models_re, n_years_selblocks, n_selpars_re, selpars_re, sel_repars);
     nll += nll_sel.sum();
     REPORT(nll_sel);
     SIMULATE if(do_simulate_sel_re){
-      selpars_re = simulate_selpars_re(selblock_models_re, n_years_selblocks, n_selpars_est, selpars_re, sel_repars);
+      selpars_re = simulate_selpars_re(selblock_models_re, selblock_models, n_years_selblocks, selblock_years, n_selpars_re, 
+      selpars_re, sel_repars);
       REPORT(selpars_re);
     }
     if(do_post_samp_sel) ADREPORT(selpars_re);
   }
-  vector<matrix<Type> > selpars_re_mats = get_selpars_re_mats(n_selpars, selblock_years, selpars_est, 
-    n_years_model, selpars_re, selblock_models, selblock_models_re);
+  vector<matrix<Type> > selpars_re_mats = get_selpars_re_mats(selblock_years, selpars_re_index, 
+    selpars_re, selblock_models, selblock_models_re);
   REPORT(selpars_re_mats); //can't report a vector<array<Type>> ?
 
-  vector<matrix<Type> > selpars = get_selpars(selblock_models, n_selpars, logit_selpars, 
+  vector<matrix<Type> > selpars = get_selpars(selblock_models, logit_selpars, 
     selpars_re_mats, selpars_lower, selpars_upper, n_years_model);
   REPORT(selpars);
 

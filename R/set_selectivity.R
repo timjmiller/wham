@@ -13,6 +13,8 @@
 #'
 #' \code{selectivity} is a list with the following entries:
 #'   \describe{
+#'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
+#'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
 #'     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
 #'     \item{$re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
 #'                  If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
@@ -62,8 +64,13 @@
 #'                and year,respectively. Parameters can be shared by setting corresponding values of \code{map_cor} to the same integer. Use \code{NA} to fix a parameter.
 #'                If \code{re = 'ar1'} or \code{re = 'ar1_y'}, only the column for the corresponding correlation are used.
 #'                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
-#'     \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
-#'                of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
+#'     \item{$map_re}{Specify whether and how to estimate selectivity random effects. Structure is the same as $map_pars: list of length = number of selectivity blocks, where each item is a 
+#'                vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+#'                double-logistic: 4). Use \code{NA} to not estimate random effects for a corresponding mean parameter and integers to estimate. Use the same integer
+#'                for multiple ages to estimate shared parameters within a selectivity block. For \code{re = "ar1_y" or "2dar1"}, the annual RE are unique, but identical for parameters specified to be equal. E.g. for selectivity block 1 with age-specific 
+#'                selectivity and annual random effect (and n_ages = 6), \code{$map_pars[[1]] = c(1,2,2,NA,NA,4)}
+#'                will estimate 2 sets of unique annual RE for ages 1, 6, and another unique set applied to both ages 2 and 3.
+#'                No RE will be estimated for any mean parameters that are at bounds (\code{par_min} or \code{par_max}). Lack of convergence should be expected when there is only 1 unique set of annual RE and correlation across parameters is estimated (i.e., \code{re = "2dar1"}) or when the ratio of unique RE and mean parameters is low without annual RE (i.e., \code{re = "ar1"}).}
 #'   }
 #'
 #' @return a named list with same elements as the input provided with selectivity options modified.
@@ -83,347 +90,345 @@
 #' }
 #'
 #' @export
-set_selectivity <- function(input, selectivity)
-{
-  if(is.null(input$use_asap3)){
-    input$use_asap3 <- TRUE
-    if(is.null(input$asap3)) input$use_asap3 <- FALSE
-  }
+set_selectivity <- function(input, selectivity){
   data <- input[["data"]]
   if(is.null(data)) data <- list()
   par <- input$par
   if(is.null(par)) par <- list()
   map <- input$map
   if(is.null(map)) map <- list()
-  asap3 <- input$asap3
+  
   par_index <- list(
     1:data$n_ages,
     data$n_ages + 1:2,
     data$n_ages + 3:6,
     data$n_ages + 1:2
   )
-  input$log$selectivity <- list()
-  if(!input$use_asap3) {
-    if(is.null(selectivity$n_selblocks) & is.null(data$n_selblocks)) {
-      #data$n_selblocks <- data$n_fleets+ data$n_indices
-      #selblock pointers are defined upstream in set_indices and set_catch
-      if(is.null(data$n_selblocks)) data$n_selblocks <- max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
-      input$log$selectivity <- c(input$log$selectivity, paste0("number of selblocks, ", data$n_selblocks, 
-        ", is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).\n"))
-      #data$n_selblocks <- data$n_fleets + data$n_indices  #1 for fleet, 1 for index
-    }# else data$n_selblocks <- selectivity$n_selblocks
-  } else {
-    data$selblock_models <- integer(0)
-    data$n_selblocks <- 0
-    for(i in 1:length(asap3)){ #have to do all fleets first, then indices
-      data$n_selblocks <- data$n_selblocks + asap3[[i]]$n_fleet_sel_blocks
-      data$selblock_models <- c(data$selblock_models, asap3[[i]]$sel_block_option)
-    }
-    for(i in 1:length(asap3)){
-      which_indices <- which(asap3[[i]]$use_index ==1) # length <- data$n_indices
-      asap3[[i]]$index_sel_option <- asap3[[i]]$index_sel_option[which_indices]
-      asap3[[i]]$index_sel_ini <- asap3[[i]]$index_sel_ini[which_indices]
-      data$n_selblocks <- data$n_selblocks + length(which_indices)
-      data$selblock_models <- c(data$selblock_models, asap3[[i]]$index_sel_option)
-    }
-    orig_sel_models <- data$selblock_models
-  }
-  #no_asap <- is.null(asap3)
   selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
-  
+  default_selpars <- list(rep(0.5,data$n_ages),rep(data$n_ages/2,2),rep(data$n_ages/2,4),rep(data$n_ages/2,2)) #For age-specfic, need to fix one par at 1.
+  n_selpars <- c(data[["n_ages"]],2,4,2)
+  asap3 <- input$asap3
+  if(is.null(input$use_asap3)){
+    input$use_asap3 <- FALSE
+  }
+  if(input$use_asap3 & is.null(asap3)) input$use_asap3 <- FALSE
+  estimate_selpars <- selpars_ini <- NULL
+  if(input$use_asap3) {
+    x <- set_asap3_selectivity(asap3, input) 
+    input <- x$input
+    selpars_ini <- x$selpars_ini
+    estimate_selpars <- x$estimate_selpars
+    #input$use_asap3 <- FALSE
+  }
+
+  input$log$selectivity <- list()
+
+  if(is.null(selectivity$n_selblocks) & is.null(data$n_selblocks)) {
+    #selblock pointers are defined upstream in set_indices and set_catch
+    data$n_selblocks <- max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices)
+    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$n_selblocks was not provided so number of selblocks: ", data$n_selblocks, 
+      ", is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).\n"))
+    #data$n_selblocks <- data$n_fleets + data$n_indices  #1 for fleet, 1 for index
+  }
+
   if(!is.null(selectivity$n_selblocks)){ #override asap structure
     data$n_selblocks <- selectivity$n_selblocks
   }
-  if(is.null(data$selblock_models)) data$selblock_models <- rep(2, data$n_selblocks)
-  # if(is.null(selectivity$model)) {
-  #   if(no_asap) if(is.null(data$selblock_models)) data$selblock_models <- rep(2, data$n_selblocks)
-  # } 
+  if(is.null(data$selblock_models) & is.null(selectivity$model)) {
+    data$selblock_models <- rep(2, data$n_selblocks)
+    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$selblock_models was not provided so logistic selectivity is being set for mean models of all ", 
+      data$n_selblocks, " selblocks.\n"))
+  }
   if(!is.null(selectivity$model)){
-    if(length(selectivity$model) != data$n_selblocks) stop("Length of selectivity$model must equal number of selectivity blocks (e.g., asap3$n_fleet_sel_blocks + asap3$n_indices)")
+    if(length(selectivity$model) != data$n_selblocks) stop(paste0("Length of selectivity$model: ", length(selectivity[["model"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]]))
     if(!all(selectivity$model %in% selopts)) stop("Each model entry must be one of the following: 'age-specific','logistic','double-logistic','decreasing-logistic'")
     data$selblock_models <- match(selectivity$model, selopts)
   }
   input$log$selectivity <- c(input$log$selectivity, paste0("(Mean) selectivity block models are:\n",
     paste0("Block ", 1:data$n_selblocks, ": ", selopts[data$selblock_models], collapse = "\n"), "\n\n")
   )
-  # if(is.null(selectivity$re)) data$selblock_models_re <- rep(1, data$n_selblocks) # default: no RE on selectivity parameters
-  if(!is.null(selectivity$re)){
-    if(length(selectivity$re) != data$n_selblocks) stop("Length of selectivity$re must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
-    if(!all(selectivity$re %in% c("none","iid","ar1","ar1_y","2dar1"))) stop("Each selectivity$re entry must be one of the following: 'none','iid','ar1','ar1_y','2dar1'")
-    data$selblock_models_re <- match(selectivity$re, c("none","iid","ar1","ar1_y","2dar1"))
-  } 
-  if(is.null(data$selblock_models_re) | (length(data$selblock_models_re) != data$n_selblocks)) {
-    data$selblock_models_re <- rep(1, data$n_selblocks) # default: no RE on selectivity parameters))
-  }
-  input$log$selectivity <- c(input$log$selectivity, paste0("Random effects options for each selectivity block are:\n",
-    paste0("Block ", 1:data$n_selblocks, ": ", c("none","iid","ar1","ar1_y","2dar1")[data$selblock_models_re], collapse ="\n"), "\n\n")
-  )
-  
-  selblock_pointers <- cbind(data$selblock_pointer_fleets, data$selblock_pointer_indices)
-  if(is.null(data[["selblock_years"]]) | !identical(dim(data[["selblock_years"]]), as.integer(c(data[["n_years_model"]], data[["n_selblocks"]])))) {
-    data[["selblock_years"]] <- matrix(0, data[["n_years_model"]], data[["n_selblocks"]])
-    for(b in 1:data[["n_selblocks"]]) data[["selblock_years"]][,b] <- apply(selblock_pointers, 1, function(x) b %in% x)
-  }
 
-  # if(is.null(data$selblock_years)) {
-  #   data$selblock_years <- matrix(0, nrow=data$n_years_model, ncol=data$n_selblocks)
-  #   for(b in 1:data$n_selblocks) data$selblock_years[,b] <- apply(selblock_pointers, 1, function(x) b %in% x)
-  # }
-  data$n_years_selblocks <- apply(data$selblock_years, 2, sum)
-  
-  data$n_selpars <- c(data$n_ages,2,4,2)[data$selblock_models] # num selpars per block
-  # Prep selectivity initial values  
-  selpars_ini <- matrix(NA, data$n_selblocks, data$n_ages + 6)
-  # Prep selectivity map
-  phase_selpars <- matrix(-1, data$n_selblocks, data$n_ages + 6)
-  for(b in 1:data$n_selblocks){
-    phase_selpars[b,par_index[[data$selblock_models[b]]]] <- 1
+  ##########################################################################################################################
+  # Starting/Fixed values, and upper and lower bounds for mean selectivity parameters
+
+  if(is.null(selpars_ini)) { #wasn't provided by set_asap3_selectivity()
+    selpars_ini <- matrix(NA, data$n_selblocks, data$n_ages + 6) 
+    for(b in 1:data$n_selblocks) selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[data$selblock_models[b]]]
   }
 
   # initial values
-  if(is.null(selectivity$initial_pars)) {
-    if(input$use_asap3) {
-      j <- 1
-      for(k in 1:length(asap3)) for(i in 1:asap3[[k]]$n_fleet_sel_blocks) {
-        selpars_ini[j,] <- asap3[[k]]$sel_ini[[i]][,1]
-        j <- j + 1
-      }
-      for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)){
-        selpars_ini[j,] <- asap3[[k]]$index_sel_ini[[i]][,1]
-        j <- j + 1
-      }
-    }
-    default_selpars <- list()
-    dpars <- c(0.5,data$n_ages/2)
-    orig_selpars <- list()
-
+  if(!is.null(selectivity$initial_pars)){ #override anything from asap3 file or defaults
+    if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list of length = number of selectivity blocks.")
+    if(length(selectivity$initial_pars) != data$n_selblocks) stop(paste0("Length of selectivity$initial_pars: ", length(selectivity[["initial_pars"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]]))
     for(b in 1:data$n_selblocks){
-      if(data$selblock_models[b] == 1) 
-      {
-        default_selpars[[b]] <- rep(0.5, data$n_ages) # default to middle of par range
-      }
-      if(data$selblock_models[b] %in% c(2,4)) {
-        default_selpars[[b]] <- rep(data$n_ages/2, 2) # default to middle of par range
-      }
-      if(data$selblock_models[b] == 3) {
-        default_selpars[[b]] <- rep(data$n_ages/2, 4) # default to middle of par range
-      }
-      if(input$use_asap3){
-        orig_selpars[[b]] <- selpars_ini[b,par_index[[data$selblock_models[b]]]]
-      }
-    }
-    if(!input$use_asap3) for(b in 1:data$n_selblocks){
-      selpars_ini[b,] <- c(rep(0.5,data$n_ages), rep(data$n_ages/2, 6))#default_selpars[[b]] # default to middle of par range
-    }
-    if(input$use_asap3) {
-      #defined above
-      #orig_sel_models <- c(asap3[[i]]$sel_block_option, asap3[[i]]$index_sel_option)
-      sel_mod_diff_warn <- NULL
-      #for(b in 1:data$n_selblocks){
-      for(b in 1:length(orig_sel_models)){
-        if(data$selblock_models[b] != orig_sel_models[b]){
-          selpars_ini[b,par_index[[data$selblock_models[b]]]] <- default_selpars[[b]] # default to middle of par range
-          sel_mod_diff_warn <- paste(sel_mod_diff_warn, paste0("For Selectivity Block ",b,":"), 
-            #paste0("  ASAP .dat file: ",selopts[orig_sel_models[b]]),
-            paste0("  selectivity$model: ",selopts[data$selblock_model[b]]),
-            paste0("  Changing values from ASAP3 .dat file ",
-            #paste0(orig_selpars[[b]], collapse = ", "),
-            " to inits in middle of par range ",
-            paste0(default_selpars[[b]], collapse = ", ")), sep="\n")
-        }
-      }
-      if(!is.null(sel_mod_diff_warn)){
-        sel_mod_diff_warn <- paste("Selectivity models differ from ASAP .dat file but initial","parameter values not specified. Please check initial values","and specify with selectivity$initial_pars if desired.",sel_mod_diff_warn,sep="\n")
-        input$log$selectivity <- c(input$log$selectivity, sel_mod_diff_warn, sep="\n")
-      }
-    }
-  } else {
-    if(!is.list(selectivity$initial_pars)) stop("selectivity$initial_pars must be a list")
-    if(length(selectivity$initial_pars) != data$n_selblocks) stop("Length of selectivity$initial_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
-    for(b in 1:data$n_selblocks){
-      if(length(selectivity$initial_pars[[b]]) != data$n_selpars[b]) stop(paste0("Length of vector ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",data$n_selpars[b]))
+      if(length(selectivity$initial_pars[[b]]) != n_selpars[data$selblock_models[b]]) stop(paste0("Length of vector for selectivity block ",b," in the selectivity$initial_pars list is not equal to the number of selectivity parameters for block ",b,": ",n_selpars[data$selblock_models[b]]))
       selpars_ini[b,par_index[[data$selblock_models[b]]]] <- selectivity$initial_pars[[b]]
     }
   }
+
+  # initial values on logit scale, par$logit_selpars
+  selpars_lo <- selpars_hi <- matrix(0, data$n_selblocks, data$n_ages + 6)
+  selpars_hi[,1:data$n_ages] <- 1
+  selpars_hi[,data$n_ages + 1:6] <- data$n_ages
   
-  # which selpars to fix, either $fix_pars or $map_pars
-  if(is.null(selectivity$fix_pars) & is.null(selectivity$map_pars)){
-    if(input$use_asap3){
-      j <- 1
-      for(k in 1:length(asap3)) for(i in 1:asap3[[k]]$n_fleet_sel_blocks) {
-        phase_selpars[j,par_index[[asap3[[k]]$sel_block_option[i]]]] <- asap3[[k]]$sel_ini[[i]][par_index[[asap3[[k]]$sel_block_option[i]]],2]
-        j <- j + 1
+  #user-specified upper and lower bounds
+  if(!is.null(selectivity$par_min)){
+    for(b in 1:data$n_selblocks) {
+      if(any(selectivity$par_min[[b]]<0)) stop(paste0("At least one of the lower bounds provided for selectivity block ", b,": ", , " is less than 0. Parameters must be positive.\n"))
+      if(any(selectivity$par_min[[b]] > selpars_ini[b, par_index[[data$selblock_models[b]]]])){
+        stop(paste0("At least one of the lower bounds provided for selectivity block ", b,": ", , " is greater than the corresonding initial value.\n",
+        paste0("Initial values ", selpars_ini[b, par_index[[data$selblock_models[b]]]], ", and par_min: ", selectivity$par_min[[b]], collapse = "\n"), "\n\n"))
       }
-      for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)) {
-        phase_selpars[j,par_index[[asap3[[k]]$index_sel_option[i]]]] <- asap3[[k]]$index_sel_ini[[i]][par_index[[asap3[[k]]$index_sel_option[i]]],2]
-        j <- j + 1
-      }
-    } 
-  } else {
-    if(!is.null(selectivity$fix_pars) & !is.null(selectivity$map_pars)) stop("Cannot specify $fix_pars and $map_pars (both set which pars to estimate). Choose one or the other.")
-    # fix_pars
-    if(!is.null(selectivity$fix_pars)){
-      if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list")
-      if(length(selectivity$fix_pars) != data$n_selblocks) stop("Length of selectivity$fix_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices).
-        Use 'NULL' to not fix any parameters for a block, e.g. list(NULL,4,2) does not fix any pars in block 1")
-      for(b in 1:data$n_selblocks){
-        if(data$selblock_models[b] == 1) phase_selpars[b,selectivity$fix_pars[[b]]] <- -1
-        if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] <- -1
-        if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages+2+selectivity$fix_pars[[b]]] <- -1
-      }
+      selpars_lo[b, par_index[[data$selblock_models[b]]]] <- selectivity$par_min[[b]]
     }
-    # map_pars
-    if(!is.null(selectivity$map_pars)){
-      if(!is.list(selectivity$map_pars)) stop("selectivity$map_pars must be a list")
-      if(length(selectivity$map_pars) != data$n_selblocks) stop("Length of selectivity$map_pars must equal number of selectivity blocks (asap3$n_fleet_sel_blocks + asap3$n_indices)")
-      for(b in 1:data$n_selblocks){
-        naind <- which(is.na(selectivity$map_pars[[b]]))
-        if(data$selblock_models[b] == 1) phase_selpars[b, naind] <- -1
-        if(data$selblock_models[b] %in% c(2,4)) phase_selpars[b, data$n_ages + naind] <- -1
-        if(data$selblock_models[b] == 3) phase_selpars[b,data$n_ages + 2 + naind] <- -1
+  }
+  if(!is.null(selectivity$par_max)){
+    for(b in 1:data$n_selblocks) {
+      if(any(selectivity$par_max[[b]]<0)) stop(paste0("At least one of the upper bounds provided for selectivity block ", b,": ", , " is less than 0. Parameters must be positive.\n"))
+      if(any(selectivity$par_max[[b]] < selpars_ini[b, par_index[[data$selblock_models[b]]]])){
+        stop(paste0("At least one of the upper bounds provided for selectivity block ", b,": ", , " is less than the corresonding initial value.\n",
+        paste0("Initial values ", selpars_ini[b, par_index[[data$selblock_models[b]]]], ", and par_max: ", selectivity$par_min[[b]], collapse = "\n"), "\n\n"))
+      }
+      selpars_hi[b, par_index[[data$selblock_models[b]]]] <- selectivity$par_max[[b]]
+    }
+  }
+
+  #if selpars_ini are still outside of bounds, then set them at the closest bound
+  selpars_ini[which(selpars_ini > selpars_hi)] <- selpars_hi[which(selpars_ini > selpars_hi)]
+  selpars_ini[which(selpars_ini < selpars_lo)] <- selpars_lo[which(selpars_ini < selpars_lo)]
+  data$selpars_lower <- selpars_lo #only need these for estimated parameters
+  data$selpars_upper <- selpars_hi
+  
+  ##########################################################################################################################
+  #MAPPING mean selectivity parameters, (but also checking for 0 observations to set age-specific pars to 0, so par$logit_selpars not set yet.)
+
+  if(is.null(estimate_selpars)) { #wasn't provided by set_asap3_selectivity()
+    estimate_selpars <- matrix(0, data$n_selblocks, data$n_ages + 6)
+    for(b in 1:data$n_selblocks) estimate_selpars[b,par_index[[data$selblock_models[b]]]] <- 1
+  }
+
+  map_logit_selpars <- matrix(NA, data$n_selblocks, data$n_ages + 6)
+  map_logit_selpars[which(estimate_selpars > 0)] <- 1:sum(estimate_selpars>0)
+
+  # which selpars to fix, either $fix_pars or $map_pars
+  if(!is.null(selectivity$fix_pars) & !is.null(selectivity$map_pars)) {
+    stop("Cannot specify $fix_pars and $map_pars (both set which pars to estimate). Choose one or the other.\n")
+  }
+  # $fix_pars
+  if(!is.null(selectivity$fix_pars)){
+    if(!is.list(selectivity$fix_pars)) stop("selectivity$fix_pars must be a list.\n")
+    if(length(selectivity$fix_pars) != data$n_selblocks) stop(paste0("Length of selectivity$fix_pars: ",  length(selectivity$fix_pars), " must equal number of selectivity blocks: ", data$n_selblocks,".\n
+      Use 'NULL' to not fix any parameters for a block, e.g. list(NULL,4,2) does not fix any pars in block 1.\n"))
+    for(b in 1:data$n_selblocks){
+      if(data$selblock_models[b] == 1) map_logit_selpars[b,selectivity$fix_pars[[b]]] <- NA
+      if(data$selblock_models[b] %in% c(2,4)) map_logit_selpars[b,data$n_ages+selectivity$fix_pars[[b]]] <- NA
+      if(data$selblock_models[b] == 3) map_logit_selpars[b,data$n_ages+2+selectivity$fix_pars[[b]]] <- NA
+    }
+  }
+  # $map_pars 
+  if(!is.null(selectivity$map_pars)){
+    if(!is.list(selectivity$map_pars)) stop("selectivity$map_pars must be a list.\n")
+    if(length(selectivity$map_pars) != data$n_selblocks) stop(paste0("Length of selectivity$map_pars", length(selectivity$map_pars), " must equal number of selectivity blocks ", data$n_selblocks,".\n"))    
+    #start map from scratch
+    map_logit_selpars <- matrix(NA, data$n_selblocks, data$n_ages + 6)
+    all_map <- unlist(selectivity$map_pars)
+    unique_selpars <- unique(all_map[!is.na(all_map)])
+    for(b in 1:data$n_selblocks) {
+      if(length(selectivity$map_pars[[b]] != length(par_index[[data$selblock_models[b]]]))) stop(paste0("Length of Length of selectivity$map_pars[[", b, 
+        "]] is not equal to the number required by the specified selectivity model: ", selopts[data$selblock_models[b]], ".\n"))
+      for(ind in unique_selpars) {
+        ind_b <- par_index[[data$selblock_models[b]]][which(selectivity$map_pars[[b]] == ind)]
+        if(length(ind_b)) map_logit_selpars[b,ind_b] <- ind
       }
     }
   }
   # For age-specific selectivity blocks, check for ages with ~zero catch and fix these at 0
   age_specific <- which(data$selblock_models==1)
   for(b in age_specific){
-    if(all(phase_selpars[b,] < 0)){ # if no selpars estimated, keep fixed at specified initial values
-     phase_selpars[b,] <- -1
-    } else {
-      ind <- list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
-      ind$indices <- which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
-      paa <- matrix(nrow = 0, ncol = data$n_ages)
-      if(length(ind$fleets)) for(f in ind$fleets) {
-        y <- data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
-        paa <- rbind(paa,y)
-      }
-      if(length(ind$indices)) for(i in ind$indices) {
-        y <- data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
-        paa <- rbind(paa,y)
-      }
-      y <- apply(paa,2,sum)
-      ind <- which(y < 1e-5 & phase_selpars[b,1:data$n_ages] > 0) #if phase is set to -1 and 0s in all years for an age and selpars_ini >0, then keep selpars as is.
-      selpars_ini[b, ind] <- 0
-      phase_selpars[b, ind] <- -1
+    ind <- list(fleets = which(apply(data$selblock_pointer_fleets == b,2,sum) > 0))
+    ind$indices <- which(apply(data$selblock_pointer_indices == b,2,sum) > 0)
+    paa <- matrix(nrow = 0, ncol = data$n_ages)
+    if(length(ind$fleets)) for(f in ind$fleets) {
+      y <- data$catch_paa[f,which(data$selblock_pointer_fleets[,f] == b & data$use_catch_paa[,f] == 1),]
+      paa <- rbind(paa,y)
+    }
+    if(length(ind$indices)) for(i in ind$indices) {
+      y <- data$index_paa[i,which(data$selblock_pointer_indices[,i] == b & data$use_index_paa[,i] == 1),]
+      paa <- rbind(paa,y)
+    }
+    y <- apply(paa,2,sum)
+    ind <- which(y < 1e-5 & !is.na(map_logit_selpars[b,1:data$n_ages])) #if phase is set to estimate par and 0s in all years for an age, then change input to fix those pars at 0.
+    selpars_ini[b, ind] <- 0
+    map_logit_selpars[b, ind] <- NA
+    if(length(ind)){
+      input$log$selectivity <- c(input$log$selectivity, paste0("Age-specific mean model set for selectivity block ", b, 
+        ", but there are no observations > 0 for some ages corresponding to parameters specified to be estimated so they have been fixed at 0.\n"))
     }
   }
-  temp <- matrix(NA, data$n_selblocks, data$n_ages + 6)
-  # if(!is.null(selectivity$fix_pars)){ # use fix_pars
-    temp[which(phase_selpars > 0)] <- 1:sum(phase_selpars>0)
-  # }
-  if(!is.null(selectivity$map_pars)){ # use map_pars directly
-    for(b in 1:data$n_selblocks) temp[b, par_index[[data$selblock_models[b]]]] <- selectivity$map_pars[[b]]
+  par$logit_selpars <- log(selpars_ini-data$selpars_lower) - log(data$selpars_upper - selpars_ini)
+  par$logit_selpars[!is.na(map_logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] <- -10
+  par$logit_selpars[!is.na(map_logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars>0] <- 10  
+
+  ##########################################################################################################################
+  #RANDOM EFFECTS:
+  
+  selblock_pointers <- cbind(data[["selblock_pointer_fleets"]], data[["selblock_pointer_indices"]])
+  if(is.null(data[["selblock_years"]]) | !identical(dim(data[["selblock_years"]]), as.integer(c(data[["n_years_model"]], data[["n_selblocks"]])))) {
+    data[["selblock_years"]] <- matrix(0L, data[["n_years_model"]], data[["n_selblocks"]])
+    #for each selblock find which years it is used in any fleet or index
+    for(b in 1:data[["n_selblocks"]]) data[["selblock_years"]][,b] <- apply(selblock_pointers, 1, function(x) b %in% x)
   }
+  data[["n_years_selblocks"]] <- apply(data[["selblock_years"]], 2, sum)
+  #data[["n_selpars"]] <- c(data[["n_ages"]],2,4,2)[data[["selblock_models"]]] # num selpars per block
+
+  data[["selblock_models_re"]] <- rep(1, data[["n_selblocks"]]) # default: no RE on selectivity parameters
+  if(!is.null(selectivity[["re"]])){
+    if(length(selectivity[["re"]]) != data[["n_selblocks"]]) stop(paste0("Length of selectivity$re: ", length(selectivity[["re"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]],".\n"))
+    if(!all(selectivity[["re"]] %in% c("none","iid","ar1","ar1_y","2dar1"))) stop("Each selectivity$re entry must be one of the following: 'none','iid','ar1','ar1_y','2dar1'.\n")
+    data$selblock_models_re <- match(selectivity[["re"]], c("none","iid","ar1","ar1_y","2dar1"))
+  } 
+
+  input$log$selectivity <- c(input$log$selectivity, paste0("Random effects options for each selectivity block are:\n",
+    paste0("Block ", 1:data$n_selblocks, ": ", c("none","iid","ar1","ar1_y","2dar1")[data$selblock_models_re], collapse ="\n"), "\n\n")
+  )
+  
   for(b in 1:data$n_selblocks){ 
-    if(data$selblock_models_re[b] == 3){
-      bl <- temp[b, par_index[[data$selblock_models[b]]]]
-      if(sum(!is.na(bl)) < 3) {
-        #data$selblock_models_re[b] <- 1 #no RE for this block
-        stop("'ar1' (AR1(age)) selectivity random effects specified for block ",b,", but number of free mean parameters is <= 2, 
-        which will not be identifiable. Use age-specific selectivity with more free mean selectivity parameters (par$logit_selpars) or use 
-        a different random effects specification.")
-      } else {
-      # if re='ar1' (by age) with age-specific selectivity, warning that only estimate one mean shared across ages
-      # but don't overwrite fixed pars (likely will be fixing one age at 1)
-        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) with age-specific selectivity for block ",b,
-        ". Only estimating one mean parameter to be shared across ages that are not fixed (there are at least 3 ages that are free here).\n"))
-        # but don't overwrite fixed pars (likely will be fixing one age at 1)
-        bl[!is.na(bl)] <- min(bl, na.rm=TRUE)
-        temp[b, par_index[[data$selblock_models[b]]]] <- bl
+    if(data$selblock_models_re[b] == 3){ #ar1(age)
+      if(data$selblock_model[b] != 1) stop(paste0("'ar1' (AR1(age)) random effects specified for selectivity block ",b,", but the mean model is not specified as 'age-specific'.\n"))
+      pars_map <- map_logit_selpars[b, par_index[[data$selblock_models[b]]]]
+      #only allow random effects for mean parameters that are not (fixed at) at bounds
+      pars_with_re <- which(!is.infinite(par$logit_selapars[b,1:data[["n_ages"]]]))
+      if(sum(pars_with_re) < 3) {
+        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) RE with age-specific selectivity are specified for block ",b,", 
+          but number of mean parameters that will have RE is <= 2, which may not be estimable if the RE variance/correlation parameters are estimated. \n",
+          "RE are not allowed for mean parameters set at their bounds (0 or 1) so perhaps redefine those initial values.\n"))
+      }
+      unique_pars <- unique(pars_map[!is.na(pars_map)])
+      if(length(unique_pars)>1){ #more than 1 mean parameter. multiple mean pars may make convergence difficult
+        if(!is.null(selectivity$map_pars)) {
+          input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) RE with age-specific selectivity are specified for block ",b,
+          ", but there are multiple mean age-specific parameters being estimated which may not allow convergence.\n", 
+          "Consider configuring $map_pars for this block to estimate just one mean parameter shared across ages that are not fixed at 1 or 0(there are at least 3 ages that are free here).\n"))
+        } else { #map_pars not used, so do default behavior
+          input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) RE with age-specific selectivity are specified for block ",b,
+          ", $map_pars was not specified so default behavior is to estimate just one mean parameter shared across ages that are not fixed at 1 or 0.\n"))
+          # but don't overwrite fixed pars (likely will be fixing one age at 1)
+          pars_map[!is.na(pars_map)] <- min(pars_map, na.rm=TRUE)
+          map_logit_selpars[b, par_index[[data$selblock_models[b]]]] <- pars_map
+        }
       }
       # warning message if no mean sel pars (logit_selpars) are fixed
       # allow so user can fit model without fixing and then fix the age with highest sel at 1
-      if(all(!is.na(bl))  & data$selblock_models[b] == 1) input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) with age-specific selectivity for block ",b,
-        ", but no age fixed at 1. Advised to fit the current model and then fix the age with highest selectivity at 1. 
+      if(all(!is.na(pars_map))) {
+        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) RE with age-specific selectivity are specified for block ",b,
+        ", but no age fixed at 1 which may not converge. Advised to fit the current model and then fix the age with highest selectivity at 1. 
         Can use selectivity$fix_pars.\n"))
-      # could add warning message if most ages are fixed, leaving less than xx ages to estimate with the AR1 re
-    }
-  }
-  #data$selpars_est <- phase_selpars
-  #data$selpars_est[data$selpars_est == -1] <- 0
-  data$selpars_est <- matrix(0, data$n_selblocks, data$n_ages + 6)
-  data$selpars_est[which(!is.na(temp))] <- 1
-  data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
-  map$logit_selpars <- factor(temp)
-
-  # initial values on logit scale, par$logit_selpars
-  selpars_lo <- selpars_hi <- matrix(0, data$n_selblocks, data$n_ages + 6)
-  selpars_hi[,1:data$n_ages] <- 1
-  selpars_hi[,data$n_ages + 1:6] <- data$n_ages
-  data$selpars_lower <- selpars_lo #only need these for estimated parameters
-  data$selpars_upper <- selpars_hi
-  
-  #user-specified upper and lower bounds
-  selpar_ind <- list(1:data$n_ages, data$n_ages + 1:2, data$n_ages + 1:4, data$n_ages + 1:2)
-  if(!is.null(selectivity$par_min)){
-    for(b in 1:data$n_selblocks) data$selpars_lower[b, selpar_ind[[data$selblock_models[b]]]] <- selectivity$par_min[[b]]
-  }
-  if(!is.null(selectivity$par_max)){
-    for(b in 1:data$n_selblocks) data$selpars_upper[b, selpar_ind[[data$selblock_models[b]]]] <- selectivity$par_max[[b]]
-  }
-
-  selpars_ini[which(selpars_ini > selpars_hi)] <- selpars_hi[which(selpars_ini > selpars_hi)]
-  selpars_ini[which(selpars_ini < selpars_lo)] <- selpars_lo[which(selpars_ini < selpars_lo)]
-  par$logit_selpars <- log(selpars_ini-selpars_lo) - log(selpars_hi - selpars_ini)
-  par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars<0] <- -10
-  par$logit_selpars[!is.na(map$logit_selpars) & is.infinite(par$logit_selpars) & par$logit_selpars>0] <- 10
-  
-  # random effects, selpars_re
-  # number of estimated selpars per block * number of years per block (only if that block has re)
-  par$selpars_re <- array(0, c(data$n_selblocks, data$n_years_model, data$n_ages))
-  map$selpars_re <- array(NA, c(data$n_selblocks, data$n_years_model, data$n_ages))
-  if(any(data$selblock_models_re > 1)){
-    #par$selpars_re <- rep(0, sum((data$selblock_models_re > 1)*data$n_selpars_est*data$n_years_selblocks))
-    #tmp_vec <- c()
-    ct <- 0
-    for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] > 1){
-        #tmp <- matrix(0, nrow=data$n_years_selblocks[b], ncol=data$n_selpars_est[b])
-        if(data$selblock_models_re[b] %in% c(2,5)){ # 2d ar1
-          # map$selpars_re[b,which(data$selblock_years[,b]==1),1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
-          map$selpars_re[b,1:data$n_years_selblocks[b],1:data$n_selpars_est[b]] <- ct + 1:(data$n_years_selblocks[b]*data$n_selpars_est[b])
-          #tmp[] <- 1:(dim(tmp)[1]*dim(tmp)[2]) + ct # all y,a estimated
-        }
-        if(data$selblock_models_re[b] == 3){ # ar1_a (devs by age, constant by year)
-          #for(i in 1:dim(tmp)[2]) {
-          for(i in 1:data$n_selpars_est[b]) {
-            map$selpars_re[b,1:data$n_years_selblocks[b],i] <- ct + i
-            #tmp[,i] <- (i + ct)
-          }
-        }
-        if(data$selblock_models_re[b] == 4){ # ar1_y (devs by year, constant by age)
-          #for(i in 1:dim(tmp)[1]) {
-          for(i in 1:data$n_years_selblocks[b]) {
-            map$selpars_re[b,i,1:data$n_selpars_est[b]] <- ct + i
-            #tmp[i,] <- (i + ct)
-          }
-        }
-        #if(length(tmp)){
-        if(any(!is.na(map$selpars_re))){
-          #ct <- max(tmp)
-          ct <- max(map$selpars_re, na.rm =T)
-          #tmp_vec <- c(tmp_vec, as.vector(tmp))
-        } else stop(paste0("set_selectivity thinks you want to use random effects for selblock ", b, 
-            ", but either the selblock is not used, or there are no selectivity parameters being estimated."))
+      }
+      # if there are few ages ages, estimating ar1(age) may be difficult
+      if(data[["n_ages"]]<6) {
+        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1' (AR1(age)) RE with age-specific selectivity are specified for block ",b,
+        ", but the number of age classes for the population is less than 6 which may make converge difficult.\n"))
       }
     }
-    #map$selpars_re <- factor(tmp_vec)
-  } else {
-    #par$selpars_re <- matrix(0)
-    #map$selpars_re <- factor(NA)
+    if(data$selblock_models_re[b] == 4){ #ar1(year)
+      if(data[["n_years_selblocks"]][b]<10){
+        input$log$selectivity <- c(input$log$selectivity, paste0("\nNOTE: 'ar1_y' (AR1(year)) RE spedified for block ",b,
+        ", but the number of years where this block is used is less than 10 which may make converge difficult.\n"))
+      }
+    }
   }
+  #NOTE: n_selpars_re and selpare_re_index are used to configure RE on TMB side
+  #data$selpars_est_re <- matrix(0, data$n_selblocks, data$n_ages + 6)
+  par$selpars_re <- array(0, c(data$n_selblocks, data$n_years_model, data$n_ages+6))
+  map$selpars_re <- array(NA, c(data$n_selblocks, data$n_years_model, data$n_ages+6))
+  data$selpars_re_index <- matrix(0, data$n_selblocks, max(data$n_ages,4)) #configured like M_re_index
+  data$n_selpars_re <- rep(1,data[["n_selblocks"]]) #configured like n_M_re
+  ct <- 0
+  for(b in 1:data$n_selblocks){
+    #if map_re not provided, just make RE for any parameter not fixed at bounds
+    par_index_b <- par_index[[data$selblock_models[b]]]
+    is_re <- !is.infinite(par$logit_selpars[b,par_index_b])
+    if(data$selblock_models_re[b] > 1) {
+      if(!sum(is_re)) stop(paste0("RE are specified for selectivity block ", b, ", but all mean parameters are set at upper or lower bounds."))
+      #data$selpars_est_re[b,par_index_b[which(is_re)]] <- 1
+    }
+    ind_y <- which(data[["selblock_years"]][,b]==1)
+    if(data$selblock_models_re[b] == 4) { #ar1(year)
+      data$n_selpars_re[b] <- 1
+      data$selpars_re_index[b,which(is_re)] <- 1 #default is 1 common RE for all selpars
+      for(s in which(is_re)) map$selpars_re[b,ind_y,par_index_b[s]] <- ct + 1:data[["n_years_selblocks"]][b]
+      ct <- ct + data[["n_years_selblocks"]][b]
+    }
+    if(data$selblock_models_re[b] == 3) { #ar1(age)
+      data$n_selpars_re[b] <- length(which(is_re))
+      data$selpars_re_index[b,which(is_re)] <- 1:data$n_selpars_re[b]
+      for(s in which(is_re)) {
+        map$selpars_re[b,ind_y,par_index_b[s]] <- ct + 1
+        ct <- ct + 1
+      }
+    }
+    if(data$selblock_models_re[b] %in% c(2,5)) { #2d iid or 2d ar1
+      data$n_selpars_re[b] <- length(which(is_re))
+      print(b)
+      print(par$logit_selpars[b,])
+      print(par_index_b)
+      print(is_re)
+      print(dim(data$selpars_re_index))
+      print(data$n_selpars_re[b])
+      print(data[["selblock_years"]][,b])
+      data$selpars_re_index[b,which(is_re)] <- 1:data$n_selpars_re[b]
+      print(data$selpars_re_index[b,])
+      print(par_index_b[which(is_re)])
+      map$selpars_re[b,ind_y,par_index_b[which(is_re)]] <- ct + 1:(data[["n_years_selblocks"]][b]*sum(is_re))
+      print(map$selpars_re[b,,])
+      ct <- ct + (data[["n_years_selblocks"]][b]*sum(is_re))
+    }
+  }
+
+  ct <- 0
+  if(!is.null(selectivity$map_re)){
+    #this can override data$selblock_models_re[b] == 4
+    if(!is.list(selectivity$map_re)) stop("selectivity$map_re must be a list.\n")
+    if(length(selectivity[["map_re"]]) != data[["n_selblocks"]]) stop(paste0("Length of selectivity$map_re: ", length(selectivity[["map_re"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]],".\n"))
+    for(b in 1:data[["n_selblocks"]]) if(data$selblock_models_re[b]>1){
+      if(length(selectivity$map_re[[b]] != length(par_index[[data$selblock_models[b]]]))) stop(paste0("Length of selectivity$map_re[[", b, 
+        "]] is not equal to the number required by the specified selectivity model: ", selopts[data$selblock_models[b]], ".\n"))
+      par_index_b <- par_index[[data$selblock_models[b]]]
+      if(any(!is.na(selectivity$map_re[[b]]) & is.infinite(par[["logit_selpars"]][b,par_index_b]))){
+        stop(paste0("selectivity$map_re for block ", b, " specifies RE (not NA), but there are corresponding mean parameters that are set at their bounds which is not allowed."))
+      }
+      if(all(is.na(selectivity$map_re[[b]]))) stop(paste0("Random effects have been specified for selectivity model: ", b, ", but selectivity$map_re[[b]] are all NA."))
+      
+      #ind_re <- selectivity$map_re[[b]] 
+      ind_re <- unclass(factor(selectivity$map_re[[b]]))
+      
+      #data$selpars_est_re[b,par_index_b[which(!is.na(ind_re))]] <- 1
+      unique_ind_re <- unique(ind_re[which(!is.na(ind_re))])
+      data$selpars_re_index[b,] <- ind_re
+      data$n_selpars_re[b] <- length(unique_ind_re)
+      ind_y <- which(data[["selblock_years"]][,b]==1)
+      if(data$selblock_models_re[b] == 3){ #ar1(age): constant across years
+        for(y in ind_y){
+          map$selpars_re[b,y,] <- ind_re
+        }
+        ct <- ct + data[["n_selpars_re"]]
+      }
+      if(data$selblock_models_re[b] %in% c(2,4,5)){ #ar1(year): constant across age, 2d(iid), 2d(ar1). Note ar1(year) and 2d(iid) with $map_re can configure equivalent models
+        for(y in ind_y){
+          map$selpars_re[b,y,] <- ind_re + ct
+          ct <- ct + data[["n_selpars_re"]]
+        }
+      }
+    }
+  }
+
+  # data$n_selpars_est <- apply(data$selpars_est > 0, 1, sum)
   map$selpars_re <- factor(map$selpars_re)
   
   # initial and map for parameters controlling selectivity RE
   # default initial values: sigma = 0.1, rho = 0
   par$sel_repars <- matrix(0, nrow=data$n_selblocks, ncol=3)
   par$sel_repars[,1] <- log(0.1)
-  # for(b in 1:data$n_selblocks){
-    # if(data$selblock_models_re[b] == 3) par$sel_repars[b,3] <- 0 # if ar1 over ages only, fix rho_y = 0
-    # if(data$selblock_models_re[b] == 4) par$sel_repars[b,2] <- 0 # if ar1 over years only, fix rho = 0
-    # check if only 1 estimated sel par (e.g. because all but 1 age is fixed), can't estimate rho
-    # if(data$n_selpars_est[b] < 2) par$sel_repars[b,2] <- 0
-  # }
   if(!is.null(selectivity$sigma_vals)){
     if(any(selectivity$sigma_vals < 0)) stop('Variance controlling selectivity random effects must be positive.') 
     par$sel_repars[,1] <- log(selectivity$sigma_vals) # log scale
@@ -446,7 +451,6 @@ set_selectivity <- function(input, selectivity)
     for(b in 1:data$n_selblocks) if(data$selblock_models_re[b]>1) tmp.sel.repars[b,1] <- selectivity$map_sigma[b]
   } else{ #default mapping: unique values for each selblock
     for(b in 1:data$n_selblocks){
-      #if(data$selblock_models_re[b] == 1) tmp.sel.repars[b,] <- rep(NA,3) # no RE pars to estimate
       if(data$selblock_models_re[b] > 1) tmp.sel.repars[b,1] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma
     }
   }
@@ -467,6 +471,7 @@ set_selectivity <- function(input, selectivity)
     }
   }
   map$sel_repars <- factor(tmp.sel.repars)
+  map$logit_selpars <- factor(map_logit_selpars)
 
   input$data <- data
   input$par <- par
@@ -504,3 +509,49 @@ set_selectivity <- function(input, selectivity)
   return(input)
 
 }
+
+
+set_asap3_selectivity <- function(asap3, input){
+  data <- input$data
+  data$selblock_models <- integer(0)
+  data$n_selblocks <- 0
+  par_index <- list(
+    1:data$n_ages,
+    data$n_ages + 1:2,
+    data$n_ages + 3:6,
+    data$n_ages + 1:2
+  )
+  for(i in 1:length(asap3)){ #have to do all fleets first, then indices
+    data$n_selblocks <- data$n_selblocks + asap3[[i]]$n_fleet_sel_blocks
+    data$selblock_models <- c(data$selblock_models, asap3[[i]]$sel_block_option)
+  }
+  for(i in 1:length(asap3)){
+    which_indices <- which(asap3[[i]]$use_index ==1) # length <- data$n_indices
+    asap3[[i]]$index_sel_option <- asap3[[i]]$index_sel_option[which_indices]
+    asap3[[i]]$index_sel_ini <- asap3[[i]]$index_sel_ini[which_indices]
+    data$n_selblocks <- data$n_selblocks + length(which_indices)
+    data$selblock_models <- c(data$selblock_models, asap3[[i]]$index_sel_option)
+  }
+  #orig_sel_models <- data$selblock_models
+  
+  selpars_ini <- matrix(NA, data$n_selblocks, data$n_ages + 6)
+  estimate_selpars <- matrix(0, data$n_selblocks, data$n_ages + 6)
+  j <- 1
+  for(k in 1:length(asap3)) for(i in 1:asap3[[k]]$n_fleet_sel_blocks) {
+    selpars_ini[j,] <- asap3[[k]]$sel_ini[[i]][,1]
+    which_sel_model <- asap3[[k]]$sel_block_option[i]
+    which_estimate <- which(asap3[[k]]$sel_ini[[i]][par_index[[which_sel_model]],2] > 0)
+    estimate_selpars[j,par_index[[which_sel_model]][which_estimate]] <- 1
+    j <- j + 1
+  }
+  for(k in 1:length(asap3)) for(i in 1:length(asap3[[k]]$index_sel_ini)){
+    selpars_ini[j,] <- asap3[[k]]$index_sel_ini[[i]][,1]
+    which_sel_model <- asap3[[k]]$index_sel_option[i]
+    which_estimate <- which(asap3[[k]]$index_sel_ini[[i]][par_index[[which_sel_model]],2] > 0)
+    estimate_selpars[j,par_index[[which_sel_model]][which_estimate]] <- 1
+    j <- j + 1
+  }
+  input$data <- data
+  return(list(input = input, selpars_ini = selpars_ini, estimate_selpars = estimate_selpars))
+}
+
