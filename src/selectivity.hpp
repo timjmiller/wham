@@ -15,7 +15,7 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int>selblock_mod
   int n_selblocks = selblock_models_re.size();
   vector<Type> nll_sel(n_selblocks);
   int n_years = selblock_years.rows();
-  int n_ages = selpars_re.dim(3) - 6;
+  int n_ages = selpars_re.dim(2) - 6;
   nll_sel.setZero();
   for(int b = 0; b < n_selblocks; b++){
     if(selblock_models_re(b) > 1){
@@ -81,7 +81,7 @@ vector<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int>selb
   int n_selblocks = selblock_models_re.size();
   vector<Type> nll_sel(n_selblocks);
   int n_years = selblock_years.rows();
-  int n_ages = selpars_re.dim(3) - 6;
+  int n_ages = selpars_re.dim(2) - 6;
   array<Type> sim_selpars_re = selpars_re;
   sim_selpars_re.setZero();
   
@@ -230,7 +230,7 @@ vector<matrix<Type> > get_selpars_re_mats(matrix<int> selblock_years, matrix<int
   */
   
   int n_selblocks = selblock_models.size();
-  int n_ages = selpars_re.dim(3) - 6;
+  int n_ages = selpars_re.dim(2) - 6;
   int n_years_model = selblock_years.rows();
 
   vector<matrix<Type> > selpars_re_mats(n_selblocks);
