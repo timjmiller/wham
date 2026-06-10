@@ -91,7 +91,7 @@ Type objective_function<Type>::operator() ()
   
   DATA_IVECTOR(selblock_models);
   int n_selblocks = selblock_models.size();
-  DATA_IVECTOR(selblock_models_re); // for each block: 1 = none, 2 = IID, 3 = ar1, 4 = ar1_y, 5 = 2dar1
+  DATA_IVECTOR(selblock_models_re); // for each block: 0 = none, 1 = IID, 2 = ar1, 3 = ar1_y, 4 = 2dar1
   //DATA_IVECTOR(n_selpars); //length = n_selblocks
   DATA_IMATRIX(selpars_re_index); // n_blocks x max(n_ages,4), where to put unique Re for selpars (analogous to M_re_index)
   DATA_IVECTOR(n_selpars_re); // number of unique selpar REs in a given year
@@ -254,7 +254,7 @@ Type objective_function<Type>::operator() ()
   
   PARAMETER_MATRIX(logR_proj); // (n_proj_years x n_stocks) recruitment (random effects) in proj years, only if SCAA
   PARAMETER_MATRIX(logit_selpars); // mean selectivity, dim = n_selblocks x n_ages + 6 (n_ages for by age, 2 for logistic, 4 for double-logistic)
-  PARAMETER_ARRAY(selpars_re);    // (n_selblocks x n_years x n_ages+6) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
+  PARAMETER_ARRAY(selpars_re);    // (n_selblocks x n_years x max(n_ages,4)) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
   PARAMETER_MATRIX(sel_repars);    // fixed effect parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   PARAMETER_MATRIX(catch_paa_pars); //n_fleets x 3
   PARAMETER_MATRIX(index_paa_pars); //n_indices x 3
@@ -554,7 +554,7 @@ Type objective_function<Type>::operator() ()
     if(do_post_samp_sel) ADREPORT(selpars_re);
   }
   vector<matrix<Type> > selpars_re_mats = get_selpars_re_mats(selblock_years, selpars_re_index, 
-    selpars_re, selblock_models, selblock_models_re);
+    selpars_re, selblock_models, selblock_models_re, n_ages);
   REPORT(selpars_re_mats); //can't report a vector<array<Type>> ?
 
   vector<matrix<Type> > selpars = get_selpars(selblock_models, logit_selpars, 
