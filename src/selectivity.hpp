@@ -22,13 +22,6 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int>selblock_mod
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
       array<Type> tmp(n_years_selblocks(b), n_selpars_re(b));
       int yy = 0;
-      // int selmod_start = 0;
-      // if((selblock_models(b) == 2) | (selblock_models(b) == 4)) {
-      //   selmod_start = n_ages;
-      // }
-      // if(selblock_models(b) == 3) {
-      //   selmod_start = n_ages + 2;
-      // }
       for(int y = 0; y < n_years; y++) if(selblock_years(y,b) == 1){
         for(int i=0; i < n_selpars_re(b); i++) {
           tmp(yy,i) = selpars_re(b,y,i);
@@ -87,13 +80,6 @@ array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int>selbl
   for(int b = 0; b < n_selblocks; b++){
     if(selblock_models_re(b) > 0){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
-      // int selmod_start = 0;
-      // if((selblock_models(b) == 2) | (selblock_models(b) == 4)) {
-      //   selmod_start = n_ages;
-      // }
-      // if(selblock_models(b) == 3) {
-      //   selmod_start = n_ages + 2;
-      // }
       Type sigma = exp(sel_repars(b,0)); // sd selectivity RE (fixed effect)
       //ensures correlation parameter is between -1 and 1, see helper_functions.hpp
       Type rho_p = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(1));// among-par correlation selectivity RE (fixed effect) 
@@ -142,77 +128,6 @@ array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int>selbl
   return sim_selpars_re;
 }
 
-// template <class Type>
-// array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int> n_years_selblocks, matrix<int> selblock_years, vector<int> n_selpars_est, 
-//   array<Type> selpars_re, matrix<Type> sel_repars){
-//   /* 
-//      simulate any selectivity random effects
-//         selblock_models_re: (n_selblocks) 0 = no RE, 1 = IID, 2 = ar1, 3 = ar1_y, 4 = 2dar1
-//          n_years_selblocks: for each block, number of years the block covers
-//              selblock_years: (n_years x n_selblocks) 0/1 whether selblock is used (columns sum to n_years_selblocks)
-//              n_selpars_est: n_selbocks, how many selpars are actually estimated (not fixed at 0 or 1) 
-//                 selpars_re: (n_selbocks x n_years x n_ages) deviations in selectivity parameters (random effects), length = sum(n_selpars)*n_years per block
-//                 sel_repars: parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
-//   */
-//   using namespace density;
-//   int n_selblocks = selblock_models_re.size();
-//   int n_years = selblock_years.rows();
-//   //int istart = 0;
-//   array<Type> sim_selpars_re = selpars_re;
-//   for(int b = 0; b < n_selblocks; b++){
-
-//     if(selblock_models_re(b) > 0){
-//       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
-//       int yy = 0;
-//       array<Type> tmp(n_years_selblocks(b), n_selpars_est(b));
-//       // for(int i = 0; i < n_years_selblocks(b); i++) for(int j=0; j<n_selpars_est(b); j++){
-//       for(int y = 0; y < n_years; y++) for(int j=0; j<n_selpars_est(b); j++) if(selblock_years(y,b) == 1) {
-//         tmp(yy,j) = selpars_re(b,y,j);
-//         yy++;
-//         //tmp.col(j) = selpars_re.segment(istart,n_years_selblocks(b));
-//         //istart += n_years_selblocks(b);
-//       }
-
-//       //question: is it faster here to just work on the selectivity parameters as re rather than the deviations?
-//       // likelihood of RE sel devs (if turned on)
-//       Type sigma = exp(sel_repars(b,0)); // sd selectivity deviations (fixed effect)
-//       //rho_trans ensures correlation parameter is between -1 and 1, see helper_functions.hpp
-//       Type rho = geninvlogit(sel_repars(b,1),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-par correlation selectivity deviations (fixed effect) 
-//       Type rho_y = geninvlogit(sel_repars(b,2),Type(-1),Type(1),Type(1));//using scale =1 ,2 is legacy // among-year correlation selectivity deviations (fixed effect)
-//       Type Sigma_sig_sel = 0;
-
-//       if((selblock_models_re(b) == 1) | (selblock_models_re(b) == 4)){
-//         // 2D AR1 process on selectivity parameter deviations
-//         Sigma_sig_sel = pow(pow(sigma,2) / ((1-pow(rho_y,2))*(1-pow(rho,2))),0.5);
-//         SEPARABLE(AR1(rho),AR1(rho_y)).simulate(tmp);
-//       } else {
-//         // 1D AR1 process on selectivity parameter deviations
-//         if(selblock_models_re(b) == 2){ // ar1 across parameters in selblock, useful for age-specific pars.
-//           vector<Type> tmp0 = tmp.matrix().row(0); //random effects are constant across years 
-//           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho,2)),0.5);
-//           AR1(rho).simulate(tmp0);
-//           for(int y = 0; y < tmp.rows(); y++) for(int i = 0; i < tmp0.size(); i++) tmp(y,i) = tmp0(i);
-//         } else { // selblock_models_re(b) = 3, ar1_y, not sure if this one really makes sense.
-//           vector<Type> tmp0 = tmp.matrix().col(0); //random effects are constant within years 
-//           Sigma_sig_sel = pow(pow(sigma,2) / (1-pow(rho_y,2)),0.5);
-//           AR1(rho_y).simulate(tmp0);
-//           for(int a = 0; a < tmp.cols(); a++) tmp.col(a) = tmp0;
-//         }
-//       }
-//       tmp = tmp * Sigma_sig_sel;
-//       //istart -= n_selpars_est(b) * n_years_selblocks(b); //bring it back to the beginning for this selblock
-//       yy = 0;
-//       // for(int y = 0; y < n_years_selblocks(b); y++) for(int j=0; j<n_selpars_est(b); j++) {
-//       for(int y = 0; y < n_years; y++) for(int j=0; j<n_selpars_est(b); j++) if(selblock_years(y,b) == 1) {
-//         sim_selpars_re(b,y,j) = tmp(yy,j);
-//         yy++;
-//         //sim_selpars_re(istart) = tmp(y,j);
-//       }
-//     }
-//   }
-//   return sim_selpars_re;
-// }
-
 template <class Type>
 vector<matrix<Type> > get_selpars_re_mats(matrix<int> selblock_years, matrix<int> selpars_re_index, 
   array<Type> selpars_re, vector<int> selblock_models, vector<int> selblock_models_re, int n_ages){
@@ -233,15 +148,9 @@ vector<matrix<Type> > get_selpars_re_mats(matrix<int> selblock_years, matrix<int
   for(int b = 0; b < n_selblocks; b++){
     int n_selpars = n_ages;
     //offset for indexing selectivity pars, depends on selectivity model for block b: n_ages (age-specific) + 2 (logistic +/-) + 4 (double-logistic)
-    // int selmod_start = 0;
-    if((selblock_models(b) == 2) | (selblock_models(b) == 4)) {
-      n_selpars = 2;
-      // selmod_start = n_ages;
-    }
-    if(selblock_models(b) == 3) {
-      n_selpars = 4;
-      // selmod_start = n_ages + 2;
-    }
+    if((selblock_models(b) == 2) | (selblock_models(b) == 4)) n_selpars = 2;
+    if(selblock_models(b) == 3) n_selpars = 4;
+    
     matrix<Type> tmp(n_years_model, n_selpars);
     tmp.setZero();
     selpars_re_mats(b) = tmp;

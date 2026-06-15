@@ -40,7 +40,7 @@ suppressWarnings(suppressMessages({
         fix_pars=list(4:5,4,2:4)),
         age_comp = models[i],
       basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE))
-    unfit[[i]] <- fit_wham(inputs[[i]], do.osa = F, do.retro=F, do.fit = F, MakeADFun.silent = TRUE)
+    unfit[[i]] <- fit_wham(inputs[[i]], do.osa = FALSE, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
   }
 
 
@@ -59,7 +59,7 @@ suppressWarnings(suppressMessages({
       basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE))
     if(i %in% c(3:5,8)) {
       siminputs[[i]]$par$index_paa_pars[,1] = -10
-    } #else siminputs[[i]]$par$index_paa_pars[,1] = 10
+    } else siminputs[[i]]$par$index_paa_pars[,1] = 10
     #if(i %in% c(1:2,8:9,11)) siminputs[[i]]$data$index_Neff[] <- 10000L
     set.seed(1234)
     temp <- fit_wham(siminputs[[i]], do.osa = FALSE, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)

@@ -91,22 +91,7 @@
 #'
 #' @export
 set_selectivity <- function(input, selectivity){
-  data <- input[["data"]]
-  if(is.null(data)) data <- list()
-  par <- input$par
-  if(is.null(par)) par <- list()
-  map <- input$map
-  if(is.null(map)) map <- list()
   
-  par_index <- list(
-    1:data$n_ages,
-    data$n_ages + 1:2,
-    data$n_ages + 3:6,
-    data$n_ages + 1:2
-  )
-  selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
-  default_selpars <- list(rep(0.5,data$n_ages),rep(data$n_ages/2,2),rep(data$n_ages/2,4),rep(data$n_ages/2,2)) #For age-specfic, need to fix one par at 1.
-  n_selpars <- c(data[["n_ages"]],2,4,2)
   asap3 <- input$asap3
   if(is.null(input$use_asap3)){
     input$use_asap3 <- FALSE
@@ -119,6 +104,23 @@ set_selectivity <- function(input, selectivity){
     selpars_ini <- x$selpars_ini
     estimate_selpars <- x$estimate_selpars
   }
+
+  data <- input[["data"]]
+  if(is.null(data)) data <- list()
+  par <- input$par
+  if(is.null(par)) par <- list()
+  map <- input$map
+  if(is.null(map)) map <- list()
+
+  par_index <- list(
+    1:data$n_ages,
+    data$n_ages + 1:2,
+    data$n_ages + 3:6,
+    data$n_ages + 1:2
+  )
+  selopts <- c("age-specific","logistic","double-logistic","decreasing-logistic")
+  default_selpars <- list(rep(0.5,data$n_ages),rep(data$n_ages/2,2),rep(data$n_ages/2,4),rep(data$n_ages/2,2)) #For age-specfic, need to fix one par at 1.
+  n_selpars <- c(data[["n_ages"]],2,4,2)
 
   input$log$selectivity <- list()
 
@@ -232,7 +234,7 @@ set_selectivity <- function(input, selectivity){
     all_map <- unlist(selectivity$map_pars)
     unique_selpars <- unique(all_map[!is.na(all_map)])
     for(b in 1:data$n_selblocks) {
-      if(length(selectivity$map_pars[[b]] != length(par_index[[data$selblock_models[b]]]))) stop(paste0("Length of Length of selectivity$map_pars[[", b, 
+      if(length(selectivity$map_pars[[b]]) != length(par_index[[data$selblock_models[b]]])) stop(paste0("Length of selectivity$map_pars[[", b, 
         "]] is not equal to the number required by the specified selectivity model: ", selopts[data$selblock_models[b]], ".\n"))
       for(ind in unique_selpars) {
         ind_b <- par_index[[data$selblock_models[b]]][which(selectivity$map_pars[[b]] == ind)]
@@ -375,11 +377,12 @@ set_selectivity <- function(input, selectivity){
 
   ct <- 0
   if(!is.null(selectivity$map_re)){
+    map$selpars_re[] <- NA #clear any specification above for selectivity$map_re not give.
     #this can override data$selblock_models_re[b] == 3
     if(!is.list(selectivity$map_re)) stop("selectivity$map_re must be a list.\n")
     if(length(selectivity[["map_re"]]) != data[["n_selblocks"]]) stop(paste0("Length of selectivity$map_re: ", length(selectivity[["map_re"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]],".\n"))
     for(b in 1:data[["n_selblocks"]]) if(data$selblock_models_re[b]>0){
-      if(length(selectivity$map_re[[b]] != length(par_index[[data$selblock_models[b]]]))) stop(paste0("Length of selectivity$map_re[[", b, 
+      if(length(selectivity$map_re[[b]]) != length(par_index[[data$selblock_models[b]]])) stop(paste0("Length of selectivity$map_re[[", b, 
         "]] is not equal to the number required by the specified selectivity model: ", selopts[data$selblock_models[b]], ".\n"))
       par_index_b <- par_index[[data$selblock_models[b]]]
       if(any(!is.na(selectivity$map_re[[b]]) & is.infinite(par[["logit_selpars"]][b,par_index_b]))){
@@ -390,7 +393,7 @@ set_selectivity <- function(input, selectivity){
       ind_re <- unclass(factor(selectivity$map_re[[b]]))
       
       unique_ind_re <- unique(ind_re[which(!is.na(ind_re))])
-      data$selpars_re_index[b,] <- ind_re
+      data$selpars_re_index[b,1:length(ind_re)] <- ind_re
       data$n_selpars_re[b] <- length(unique_ind_re)
       ind_y <- which(data[["selblock_years"]][,b]==1)
       if(data$selblock_models_re[b] == 2){ #ar1(age): constant across years
@@ -402,8 +405,9 @@ set_selectivity <- function(input, selectivity){
         ct <- ct + data[["n_selpars_re"]][b]
       }
       if(data$selblock_models_re[b] %in% c(1,3,4)){ #ar1(year): constant across age, 2d(iid), 2d(ar1). Note ar1(year) and 2d(iid) with $map_re can configure equivalent models
-        map$selpars_re[b,ind_y,1:data$n_selpars_re[b]] <- 1:(data[["n_selpars_re"]][b]*data[["n_selblock_years"]][b]) + ct
-        ct <- ct + data[["n_selpars_re"]][b]*data[["n_selblock_years"]][b]
+        if((data$n_selpars_re[b] == 1) & (data$selblock_models_re[b]==4)) stop(paste0("selectivity$map_re[[", b, "]] specifies just 1 selectivity random effect each year for a 2d(ar1) model. The between parameter correlation will not be estimable."))
+        map$selpars_re[b,ind_y,1:data$n_selpars_re[b]] <- 1:(data[["n_selpars_re"]][b]*data[["n_years_selblocks"]][b]) + ct
+        ct <- ct + data[["n_selpars_re"]][b]*data[["n_years_selblocks"]][b]
       }
     }
   }
@@ -429,30 +433,37 @@ set_selectivity <- function(input, selectivity){
     }
   }  
 
-  # map selectivity RE
+  maxfn <- function(x) max(c(0,x), na.rm = TRUE)
+  # map selectivity RE variance parameters
   tmp.sel.repars <- matrix(NA, data$n_selblocks, 3)
+  for(b in 1:data$n_selblocks){
+    if(data$selblock_models_re[b] > 0) tmp.sel.repars[b,1] <- maxfn(tmp.sel.repars) + 1 # estimate sigma
+  }
+  for(b in 1:data$n_selblocks){
+    if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2] <- maxfn(tmp.sel.repars) + 1 # estimate sigma, rho
+    if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- maxfn(tmp.sel.repars) + 1 # estimate sigma, rho_y
+    if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,2:3] <- maxfn(tmp.sel.repars) + 1:2 # estimate sigma, rho, rho_y
+  }
+
   if(!is.null(selectivity$map_sigma)){
     if(length(selectivity$map_sigma) != data$n_selblocks) stop("selectivity$map_sigma must be a vector of length = number of selectivity blocks")
+    
+    tmp.sel.repars[,1] <- NA
+    map_sigma <- selectivity$map_sigma
+    map_sigma[] <- maxfn(tmp.sel.repars) + unclass(factor(map_sigma))
     for(b in 1:data$n_selblocks) if(data$selblock_models_re[b]>0) tmp.sel.repars[b,1] <- selectivity$map_sigma[b]
-  } else{ #default mapping: unique values for each selblock
-    for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] > 0) tmp.sel.repars[b,1] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma
-    }
   }
   if(!is.null(selectivity$map_cor)){
     if(!is.matrix(selectivity$map_cor)) stop("selectivity$map_cor must be an n_selbocks x 2 matrix.")
     if(!all(dim(selectivity$map_cor) == c(data$n_selblocks,2))) stop("selectivity$map_cor must be an n_selbocks x 2 matrix.")
-    selectivity$map_cor[] <- as.interger(selectivity$map_cor)
-    for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2] <- selectivity$map_cor[b,1]
-      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- selectivity$map_cor[b,2] 
-      if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,2:3] <- selectivity$map_cor[b,1:2]
-    }
-  } else { #default mapping: unique values for each selblock
-    for(b in 1:data$n_selblocks){
-      if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma, rho
-      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- max(c(0,tmp.sel.repars), na.rm = T) + 1 # estimate sigma, rho_y
-      if(data$selblock_models_re[b] == 4) tmp.sel.repars[b,2:3] <- max(c(0,tmp.sel.repars), na.rm = T) + 1:2 # estimate sigma, rho, rho_y
+    
+    tmp.sel.repars[,2:3] <- NA
+    map_cor <- selectivity$map_cor
+    map_cor[] <- maxfn(tmp.sel.repars) + unclass(factor(map_cor))
+    for(b in 1:data$n_selblocks) if(data$selblock_models_re[b]>0) {
+      if(data$selblock_models_re[b] == 2) tmp.sel.repars[b,2] <- map_cor[b,1] #can only specify whether to estimate cor(age/par) ar1(age)
+      if(data$selblock_models_re[b] == 3) tmp.sel.repars[b,3] <- map_cor[b,2] #can only specify whether to estimate cor(year) for ar1(year)
+      if(data$selblock_models_re[b] %in% c(1,4)) tmp.sel.repars[b,2:3] <- map_cor[b,1:2] #can specify whether to estimate either cor par for iid or 2dar1
     }
   }
   map$sel_repars <- factor(tmp.sel.repars)
