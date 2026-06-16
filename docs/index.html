@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Woods Hole Assessment Model (WHAM) • wham</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Woods Hole Assessment Model (WHAM)">
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,18 +68,18 @@
 <div class="page-header"><h1 id="wham-a-state-space-age-structured-assessment-model">WHAM: a state-space age-structured assessment model<a class="anchor" aria-label="anchor" href="#wham-a-state-space-age-structured-assessment-model"></a>
 </h1></div>
 <p>The Woods Hole Assessment Model (WHAM) is a general age-structured stock assessment framework that can be configured to estimate assessment models that range in complexity from statistical catch-at-age (SCAA) model with annual recruitments as fixed effects, to state-space, multi-stock, multi-region, age-structured models where many parameters can be treated as time- and age-varying process errors and/or allowing effects of environmental covariates.</p>
-<p>The default configuration of WHAM will estimate a traditional SCAA model with no random effects (see <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Example 6</a>, <a href="https://timjmiller.github.io/wham/articles/ex8_compare.html">Example 8</a>, and <a href="https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html">Example 13</a>)</p>
+<p>The default configuration of WHAM will estimate a traditional SCAA model with no random effects (see <a href="https://timjmiller.github.io/wham/articles/ex06_NAA.html">Example 6</a>, <a href="https://timjmiller.github.io/wham/articles/ex08_compare.html">Example 8</a>, and <a href="https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html">Example 13</a>)</p>
 <p>WHAM can estimate process errors as random effects on:</p>
 <ul>
-<li>recruitment (<a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">Example 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Example 6</a>, and <a href="https://timjmiller.github.io/wham/articles/ex8_compare.html">Example 8</a>)</li>
-<li>transitions in numbers-at-age over time (<a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">Example 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex6_NAA.html">Example 6</a>, <a href="https://timjmiller.github.io/wham/articles/ex8_compare.html">Example 8</a>, and <a href="https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html">Example 13</a>,</li>
-<li>selectivity (<a href="https://timjmiller.github.io/wham/articles/ex4_selectivity.html">Example 4</a>),</li>
-<li>natural mortality (<a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Example 5</a>),</li>
+<li>recruitment (<a href="https://timjmiller.github.io/wham/articles/ex01_basics.html">Example 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex06_NAA.html">Example 6</a>, and <a href="https://timjmiller.github.io/wham/articles/ex08_compare.html">Example 8</a>)</li>
+<li>transitions in numbers-at-age over time (<a href="https://timjmiller.github.io/wham/articles/ex01_basics.html">Example 1</a>, <a href="https://timjmiller.github.io/wham/articles/ex06_NAA.html">Example 6</a>, <a href="https://timjmiller.github.io/wham/articles/ex08_compare.html">Example 8</a>, and <a href="https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html">Example 13</a>,</li>
+<li>selectivity (<a href="https://timjmiller.github.io/wham/articles/ex04_selectivity.html">Example 4</a>),</li>
+<li>natural mortality (<a href="https://timjmiller.github.io/wham/articles/ex05_GSI_M.html">Example 5</a>),</li>
 <li>index catchability (<a href="https://timjmiller.github.io/wham/articles/ex11_catchability.html">Example 11</a>), and</li>
 <li>movement of stocks between regions (<a href="https://timjmiller.github.io/wham/articles/ex12_multistock.html">Example 12</a>)</li>
 </ul>
-<p>WHAM can also include explicit environmental effects on all parameters above (except selectivity) and uses a state-space treatment of the covariates so that observation error of the covariates is considered (e.g., <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">Example 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex5_GSI_M.html">Example 5</a>)</p>
-<p>A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts (<a href="https://timjmiller.github.io/wham/articles/ex3_projections.html">Example 3</a>).</p>
+<p>WHAM can also include explicit environmental effects on all parameters above (except selectivity) and uses a state-space treatment of the covariates so that observation error of the covariates is considered (e.g., <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">Example 2</a> and <a href="https://timjmiller.github.io/wham/articles/ex05_GSI_M.html">Example 5</a>)</p>
+<p>A nice property of treating population and environmental processes as random effects is that their uncertainty is naturally propagated in projections/forecasts (<a href="https://timjmiller.github.io/wham/articles/ex03_projections.html">Example 3</a>).</p>
 <p>A presentation providing an overview of an earlier version of WHAM (Jan 8 2021):</p>
 <div style="text-align: center;">
 <figure class="video_container"><iframe width="560" height="315" src="https://www.youtube.com/embed/o8vJvbIaOdE" frameborder="0" allowfullscreen="true" data-external="1" class="embed-responsive-item"> </iframe>
