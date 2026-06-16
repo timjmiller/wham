@@ -238,33 +238,33 @@ names(therep)
 #> [31] "log_FAA_by_region"         "log_SPR0"                 
 #> [33] "FAA"                       "pred_NAA"                 
 #> [35] "seasonal_Ps_terminal_year" "annual_Ps"                
-#> [37] "nll_sel"                   "nll_agg_catch"            
-#> [39] "QAA"                       "log_M"                    
-#> [41] "log_Fbar_XSPR"             "NAAPR_FXSPR_static"       
-#> [43] "log_Y_FXSPR_static"        "log_FXSPR_iter_static"    
-#> [45] "FAA_by_region"             "selpars"                  
-#> [47] "pred_log_indices"          "nll_Ecov_obs"             
-#> [49] "log_YPR_FXSPR_static"      "waa_ssb_static"           
-#> [51] "annual_SPR0AA"             "q"                        
-#> [53] "all_NAA"                   "mu"                       
-#> [55] "pred_N1"                   "log_FXSPR_static"         
-#> [57] "log_SSB_FXSPR"             "log_FAA_XSPR"             
-#> [59] "waa_ssb"                   "R_XSPR"                   
-#> [61] "sel_static"                "pred_CAA"                 
-#> [63] "log_FXSPR"                 "log_Y_FXSPR"              
-#> [65] "NAA_spawn"                 "NAA_devs"                 
-#> [67] "pred_catch_paa"            "pred_index_paa"           
-#> [69] "Fbar"                      "nll_agg_indices"          
-#> [71] "log_catch_resid"           "nll"                      
-#> [73] "annual_SAA_spawn"          "nll_Ecov_obs_sig"         
-#> [75] "nll_NAA"                   "catch_Neff_out"           
-#> [77] "logit_q_mat"               "pred_catch"               
-#> [79] "log_SSB_FXSPR_static"      "log_Fbar_XSPR_static"     
-#> [81] "pred_stock_catch"          "marg_NAA_sigma"           
-#> [83] "nll_catch_acomp"           "MAA"                      
-#> [85] "SSB"                       "selpars_re_mats"          
-#> [87] "nll_index_acomp"           "log_SPR_FXSPR"            
-#> [89] "pred_indices"              "log_SPR0_static"
+#> [37] "nll_agg_catch"             "QAA"                      
+#> [39] "log_M"                     "log_Fbar_XSPR"            
+#> [41] "NAAPR_FXSPR_static"        "log_Y_FXSPR_static"       
+#> [43] "log_FXSPR_iter_static"     "FAA_by_region"            
+#> [45] "selpars"                   "pred_log_indices"         
+#> [47] "nll_Ecov_obs"              "log_YPR_FXSPR_static"     
+#> [49] "waa_ssb_static"            "annual_SPR0AA"            
+#> [51] "q"                         "all_NAA"                  
+#> [53] "mu"                        "pred_N1"                  
+#> [55] "log_FXSPR_static"          "log_SSB_FXSPR"            
+#> [57] "log_FAA_XSPR"              "waa_ssb"                  
+#> [59] "R_XSPR"                    "sel_static"               
+#> [61] "pred_CAA"                  "log_FXSPR"                
+#> [63] "log_Y_FXSPR"               "NAA_spawn"                
+#> [65] "NAA_devs"                  "pred_catch_paa"           
+#> [67] "pred_index_paa"            "Fbar"                     
+#> [69] "nll_agg_indices"           "log_catch_resid"          
+#> [71] "nll"                       "annual_SAA_spawn"         
+#> [73] "nll_Ecov_obs_sig"          "nll_NAA"                  
+#> [75] "catch_Neff_out"            "logit_q_mat"              
+#> [77] "pred_catch"                "log_SSB_FXSPR_static"     
+#> [79] "log_Fbar_XSPR_static"      "pred_stock_catch"         
+#> [81] "marg_NAA_sigma"            "nll_catch_acomp"          
+#> [83] "MAA"                       "SSB"                      
+#> [85] "selpars_re_mats"           "nll_index_acomp"          
+#> [87] "log_SPR_FXSPR"             "pred_indices"             
+#> [89] "log_SPR0_static"
 ```
 
 Now just get the objects with `"nll"` in their name, and sum over all
@@ -273,12 +273,12 @@ individual values.
 ``` r
 
 sapply(grep("nll",names(therep),value=T), function(x) sum(therep[[x]]))
-#>            nll_M          nll_sel    nll_agg_catch     nll_Ecov_obs 
-#>           0.0000           0.0000              NaN           0.0000 
-#>  nll_agg_indices              nll nll_Ecov_obs_sig          nll_NAA 
-#>        1565.7938              NaN           0.0000         325.8628 
-#>  nll_catch_acomp  nll_index_acomp 
-#>        2844.2380        3921.8316
+#>            nll_M    nll_agg_catch     nll_Ecov_obs  nll_agg_indices 
+#>           0.0000              NaN           0.0000        1565.7938 
+#>              nll nll_Ecov_obs_sig          nll_NAA  nll_catch_acomp 
+#>              NaN           0.0000         325.8628        2844.2380 
+#>  nll_index_acomp 
+#>        3921.8316
 ```
 
 The likelihood components that are equal to 0 are not used in the model

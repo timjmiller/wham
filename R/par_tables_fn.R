@@ -212,11 +212,11 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       fe.cis <- rbind(fe.cis, ci(pars$logit_selpars[i,a], sd$logit_selpars[i,a], lo = data$selpars_lower[i,a], hi = data$selpars_upper[i,a], type = "expit"))
     }
   }
-  for(i in 1:data$n_selblocks) if(data$selblock_models_re[i]>1){
+  for(i in 1:data$n_selblocks) if(data$selblock_models_re[i]>0){
     fe.names <- c(fe.names, paste0(extra.names[i], "Selectivity RE $\\sigma$", " (Block ", i, ")"))
     fe.vals <- c(fe.vals, exp(pars$sel_repars[i,1]))
     fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,1], sd$sel_repars[i,1], type = "exp"))
-    if(data$selblock_models_re[i] %in% c(3,5)) {
+    if(data$selblock_models_re[i] %in% c(2,4)) {
       modify <- ""
       if(data$selblock_models[i] == 1) modify <- " AR1 $\\rho$ (age)"
       if(data$selblock_models[i] %in% c(2,4)) modify <- " $\\rho$ for $a_{50}$ and 1/slope" 
@@ -225,7 +225,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
       fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
     }
-    if(data$selblock_models_re[i] %in% c(4,5)) {
+    if(data$selblock_models_re[i] %in% c(3,4)) {
       fe.names <- c(fe.names, paste0(extra.names[i], "Selectivity RE AR1 $\\rho$ (year)", " (Block ", i, ")"))
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
       fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))

@@ -185,8 +185,8 @@ mod_1$simulate
 #>     }
 #>     ans
 #> }
-#> <bytecode: 0x0000020930098548>
-#> <environment: 0x00000209301ad1c0>
+#> <bytecode: 0x000001a7e2b45270>
+#> <environment: 0x000001a7e29ab118>
 ```
 
 As we can see it is a function, but less apparent is that it will report
@@ -804,7 +804,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -916,7 +916,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -1048,7 +1048,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -1173,7 +1173,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -1276,7 +1276,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -1397,7 +1397,7 @@ stock_om_input <- prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic
@@ -1555,7 +1555,7 @@ stock_om_input = prepare_wham_input(
 #> -------------------------------------------------------------------------------------------------------------------------------------
 #> 
 #> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> number of selblocks, 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
+#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
 #> (Mean) selectivity block models are:
 #> Block 1: logistic
 #> Block 2: logistic

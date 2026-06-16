@@ -21,6 +21,8 @@ to modify the selectivity specification.
 
 \code{selectivity} is a list with the following entries:
   \describe{
+    \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
+               of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
     \item{$model}{Selectivity model for each block. Vector with length = number of selectivity blocks. Each entry must be one of: "age-specific", "logistic", "double-logistic", or "decreasing-logistic".}
     \item{$re}{Time-varying (random effects) for each block. Vector with length = number of selectivity blocks.
                  If \code{NULL}, selectivity parameters in all blocks are constant over time and uncorrelated.
@@ -70,8 +72,13 @@ to modify the selectivity specification.
                and year,respectively. Parameters can be shared by setting corresponding values of \code{map_cor} to the same integer. Use \code{NA} to fix a parameter.
                If \code{re = 'ar1'} or \code{re = 'ar1_y'}, only the column for the corresponding correlation are used.
                Not used if \code{re = 'none'} or \code{re = 'iid'} for all blocks.}
-    \item{$n_selblocks}{How many selectivity blocks. Optional. If unspecified and no asap3 object, then this is set to the number 
-               of fleets + indices. If specified, ensure other components of \code{selectivity} are consistent.}
+    \item{$map_re}{Specify whether and how to estimate selectivity random effects. Structure is the same as $map_pars: list of length = number of selectivity blocks, where each item is a 
+               vector of length = number of selectivity parameters (age-specific: n.ages, logistic: 2, 
+               double-logistic: 4). Use \code{NA} to not estimate random effects for a corresponding mean parameter and integers to estimate. Use the same integer
+               for multiple ages to estimate shared parameters within a selectivity block. For \code{re = "ar1_y" or "2dar1"}, the annual RE are unique, but identical for parameters specified to be equal. E.g. for selectivity block 1 with age-specific 
+               selectivity and annual random effect (and n_ages = 6), \code{$map_pars[[1]] = c(1,2,2,NA,NA,4)}
+               will estimate 2 sets of unique annual RE for ages 1, 6, and another unique set applied to both ages 2 and 3.
+               No RE will be estimated for any mean parameters that are at bounds (\code{par_min} or \code{par_max}). Lack of convergence should be expected when there is only 1 unique set of annual RE and correlation across parameters is estimated (i.e., \code{re = "2dar1"}) or when the ratio of unique RE and mean parameters is low without annual RE (i.e., \code{re = "ar1"}).}
   }}
 }
 \value{

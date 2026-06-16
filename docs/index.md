@@ -10,29 +10,29 @@ effects of environmental covariates.
 
 The default configuration of WHAM will estimate a traditional SCAA model
 with no random effects (see [Example
-6](https://timjmiller.github.io/wham/articles/ex6_NAA.html), [Example
-8](https://timjmiller.github.io/wham/articles/ex8_compare.html), and
+6](https://timjmiller.github.io/wham/articles/ex06_NAA.html), [Example
+8](https://timjmiller.github.io/wham/articles/ex08_compare.html), and
 [Example
 13](https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html))
 
 WHAM can estimate process errors as random effects on:
 
 - recruitment ([Example
-  1](https://timjmiller.github.io/wham/articles/ex1_basics.html),
-  [Example 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html),
+  1](https://timjmiller.github.io/wham/articles/ex01_basics.html),
+  [Example 6](https://timjmiller.github.io/wham/articles/ex06_NAA.html),
   and [Example
-  8](https://timjmiller.github.io/wham/articles/ex8_compare.html))
+  8](https://timjmiller.github.io/wham/articles/ex08_compare.html))
 - transitions in numbers-at-age over time ([Example
-  1](https://timjmiller.github.io/wham/articles/ex1_basics.html),
-  [Example 6](https://timjmiller.github.io/wham/articles/ex6_NAA.html),
+  1](https://timjmiller.github.io/wham/articles/ex01_basics.html),
+  [Example 6](https://timjmiller.github.io/wham/articles/ex06_NAA.html),
   [Example
-  8](https://timjmiller.github.io/wham/articles/ex8_compare.html), and
+  8](https://timjmiller.github.io/wham/articles/ex08_compare.html), and
   [Example
   13](https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html),
 - selectivity ([Example
-  4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html)),
+  4](https://timjmiller.github.io/wham/articles/ex04_selectivity.html)),
 - natural mortality ([Example
-  5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html)),
+  5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html)),
 - index catchability ([Example
   11](https://timjmiller.github.io/wham/articles/ex11_catchability.html)),
   and
@@ -43,14 +43,14 @@ WHAM can also include explicit environmental effects on all parameters
 above (except selectivity) and uses a state-space treatment of the
 covariates so that observation error of the covariates is considered
 (e.g., [Example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html)
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html)
 and [Example
-5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html))
+5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html))
 
 A nice property of treating population and environmental processes as
 random effects is that their uncertainty is naturally propagated in
 projections/forecasts ([Example
-3](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+3](https://timjmiller.github.io/wham/articles/ex03_projections.html)).
 
 A presentation providing an overview of an earlier version of WHAM (Jan
 8 2021):

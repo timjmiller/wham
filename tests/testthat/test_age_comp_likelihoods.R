@@ -40,7 +40,7 @@ suppressWarnings(suppressMessages({
         fix_pars=list(4:5,4,2:4)),
         age_comp = models[i],
       basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE))
-    unfit[[i]] <- fit_wham(inputs[[i]], do.osa = F, do.retro=F, do.fit = F, MakeADFun.silent = TRUE)
+    unfit[[i]] <- fit_wham(inputs[[i]], do.osa = FALSE, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
   }
 
 
@@ -49,18 +49,20 @@ suppressWarnings(suppressMessages({
   for(i in 1:length(models)){ #check simulations of dirichlet and logistic-normal models
     index_Neff <- inputs[[i]]$data$index_Neff
     index_Neff[] <- 10000L
+    index_info <- list(index_Neff = index_Neff)
     siminputs[[i]] <- prepare_wham_input(asap3, recruit_model=2, model_name="Ex 1: SNEMA Yellowtail Flounder",
       selectivity=list(model=rep("age-specific",3), re=rep("none",3), 
           initial_pars=list(c(0.5,0.5,0.5,1,1,0.5),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,1,1,1,0.5,0.5)), 
         fix_pars=list(4:5,4,2:4)),
         age_comp = models[i],
-      basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE, index_Neff = index_Neff))
+        index_info = index_info,
+      basic_info = list(bias_correct_process = TRUE, bias_correct_observation = TRUE))
     if(i %in% c(3:5,8)) {
       siminputs[[i]]$par$index_paa_pars[,1] = -10
     } else siminputs[[i]]$par$index_paa_pars[,1] = 10
-    if(i %in% c(1:2,8:9,11)) siminputs[[i]]$data$index_Neff[] <- 10000L
+    #if(i %in% c(1:2,8:9,11)) siminputs[[i]]$data$index_Neff[] <- 10000L
     set.seed(1234)
-    temp <- fit_wham(siminputs[[i]], do.osa = F, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
+    temp <- fit_wham(siminputs[[i]], do.osa = FALSE, do.retro=FALSE, do.fit = FALSE, MakeADFun.silent = TRUE)
     temp$fn()
     sims[[i]] <- temp$simulate(complete=TRUE)
   }

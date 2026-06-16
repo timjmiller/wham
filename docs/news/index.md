@@ -1,15 +1,25 @@
 # Changelog
 
-## wham 2.1.0.9005 (2026-03-25)
+## wham 2.1.0.9006 (2026-06-16)
 
 #### Minor improvements
 
+- (2.1.0.9006) added `map_re` element to selectivity options to allow
+  greater flexibility of random effects configuration.
+  [c7f2e2a](https://github.com/timjmiller/wham/commit/c7f2e2a5f172f48a41802b3081ecfcc3d5e4f457)
 - (2.1.0.9005) added greater tab structure to improve organization of
   plots in html files produced with plot_wham_output.
   [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 #### Bug fixes
 
+- (2.1.0.9006) fix bug in double logistic bounds configuration using
+  `selectivity$par_min` and `selectiivity$par_max`.
+  [c7f2e2a](https://github.com/timjmiller/wham/commit/c7f2e2a5f172f48a41802b3081ecfcc3d5e4f457)
+- (2.1.0.9006) fix bug in selectivity random effects in retro peels.
+  [c7f2e2a](https://github.com/timjmiller/wham/commit/c7f2e2a5f172f48a41802b3081ecfcc3d5e4f457)
+- (2.1.0.9006) fix OSA residual plots missing from html output.
+  [0889fd7](https://github.com/timjmiller/wham/commit/0889fd7c7714e6e90b14a305699d8f2825a4f6a3)
 - (2.1.0.9005) fix bugs in example scripts.
   [35c17a5](https://github.com/timjmiller/wham/commit/35c17a5a2be247940568d47f38cb6e72ce181647)
 - (2.1.0.9005) fix bug in `prepare_projections` with options to average
