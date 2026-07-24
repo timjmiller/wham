@@ -1,6 +1,6 @@
 # Changelog
 
-## wham 2.1.0.9006 (2026-06-16)
+## wham 2.1.0.9007 (2026-07-24)
 
 #### Minor improvements
 
@@ -13,6 +13,10 @@
 
 #### Bug fixes
 
+- (2.1.0.9007) fix bug using log(sigma) instead of sigma when
+  bias-correcting lognormal recruitment in reference points and
+  projections.
+  [844448a](https://github.com/timjmiller/wham/commit/844448a4d3d7a4aa74e4362a134e4897aa650974)
 - (2.1.0.9006) fix bug in double logistic bounds configuration using
   `selectivity$par_min` and `selectiivity$par_max`.
   [c7f2e2a](https://github.com/timjmiller/wham/commit/c7f2e2a5f172f48a41802b3081ecfcc3d5e4f457)
