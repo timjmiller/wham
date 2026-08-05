@@ -1,6 +1,6 @@
 # Changelog
 
-## wham 2.1.0.9007 (2026-07-24)
+## wham 2.1.0.9008 (2026-08-05)
 
 #### Minor improvements
 
@@ -13,6 +13,10 @@
 
 #### Bug fixes
 
+- (2.1.0.9008) fix bug requiring wham to be loaded in
+  wham:::verify_version from
+  PR[\#94](https://github.com/timjmiller/wham/pull/94).
+  [0c35f19](https://github.com/timjmiller/wham/commit/0c35f19cb437e30c08e6682b28940a8081651007)
 - (2.1.0.9007) fix bug using log(sigma) instead of sigma when
   bias-correcting lognormal recruitment in reference points and
   projections.
