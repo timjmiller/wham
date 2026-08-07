@@ -7,7 +7,7 @@ array<T> get_marginal_NAA_sigma(array<T> log_NAA_sigma, array<T> trans_NAA_rho, 
   int n_ages = log_NAA_sigma.dim(2);
   int n_rho = trans_NAA_rho.dim(2);
   array<T> NAA_rho = trans_NAA_rho;
-  array<T> NAA_sigma = log_NAA_sigma;
+  //array<T> NAA_sigma = log_NAA_sigma;
   array<T> marginal_sigma = log_NAA_sigma;
   marginal_sigma.setZero();
   int rho_y_R_ind = 1;
@@ -18,7 +18,7 @@ array<T> get_marginal_NAA_sigma(array<T> log_NAA_sigma, array<T> trans_NAA_rho, 
     for(int k = 0; k < n_rho ; k++) NAA_rho(s,r,k) = geninvlogit(trans_NAA_rho(s,r,k), T(-1), T(1), T(1)); //using scale =1 ,2 is legacy
     if((NAA_re_model(s) == 1) | ((NAA_re_model(s) == 2) & decouple_recruitment)){ //"rec"
       NAA_rho_y = NAA_rho(s,r,rho_y_R_ind);
-      marginal_sigma(s,r,0) = NAA_sigma(s,r,0) * pow(1-pow(NAA_rho_y,2),-0.5);
+      marginal_sigma(s,r,0) = exp(log_NAA_sigma(s,r,0)) * pow(1-pow(NAA_rho_y,2),-0.5);
     }
     if(NAA_re_model(s) == 2){
       NAA_rho_y = geninvlogit(trans_NAA_rho(s,r,1), T(-1), T(1), T(1)); //using scale =1 ,2 is legacy        
@@ -26,8 +26,7 @@ array<T> get_marginal_NAA_sigma(array<T> log_NAA_sigma, array<T> trans_NAA_rho, 
       int age_start = 0;
       if(decouple_recruitment) age_start = 1;
       for(int a = age_start; a < n_ages ; a++) {
-        NAA_sigma(s,r,a) = exp(log_NAA_sigma(s,r,a));
-        marginal_sigma(s,r,a) = NAA_sigma(s,r,a) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
+        marginal_sigma(s,r,a) = exp(log_NAA_sigma(s,r,a)) * pow((1-pow(NAA_rho_y,2))*(1-pow(NAA_rho_a,2)),-0.5);
       }
     }
   }

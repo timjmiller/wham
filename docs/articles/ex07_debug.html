@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Ex 7: Debugging WHAM models • wham</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Ex 7: Debugging WHAM models">
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -288,43 +288,43 @@ can use the <code>$report()</code> function from TMB.</p>
 <span><span class="co">#&gt; [31] "log_FAA_by_region"         "log_SPR0"                 </span></span>
 <span><span class="co">#&gt; [33] "FAA"                       "pred_NAA"                 </span></span>
 <span><span class="co">#&gt; [35] "seasonal_Ps_terminal_year" "annual_Ps"                </span></span>
-<span><span class="co">#&gt; [37] "nll_sel"                   "nll_agg_catch"            </span></span>
-<span><span class="co">#&gt; [39] "QAA"                       "log_M"                    </span></span>
-<span><span class="co">#&gt; [41] "log_Fbar_XSPR"             "NAAPR_FXSPR_static"       </span></span>
-<span><span class="co">#&gt; [43] "log_Y_FXSPR_static"        "log_FXSPR_iter_static"    </span></span>
-<span><span class="co">#&gt; [45] "FAA_by_region"             "selpars"                  </span></span>
-<span><span class="co">#&gt; [47] "pred_log_indices"          "nll_Ecov_obs"             </span></span>
-<span><span class="co">#&gt; [49] "log_YPR_FXSPR_static"      "waa_ssb_static"           </span></span>
-<span><span class="co">#&gt; [51] "annual_SPR0AA"             "q"                        </span></span>
-<span><span class="co">#&gt; [53] "all_NAA"                   "mu"                       </span></span>
-<span><span class="co">#&gt; [55] "pred_N1"                   "log_FXSPR_static"         </span></span>
-<span><span class="co">#&gt; [57] "log_SSB_FXSPR"             "log_FAA_XSPR"             </span></span>
-<span><span class="co">#&gt; [59] "waa_ssb"                   "R_XSPR"                   </span></span>
-<span><span class="co">#&gt; [61] "sel_static"                "pred_CAA"                 </span></span>
-<span><span class="co">#&gt; [63] "log_FXSPR"                 "log_Y_FXSPR"              </span></span>
-<span><span class="co">#&gt; [65] "NAA_spawn"                 "NAA_devs"                 </span></span>
-<span><span class="co">#&gt; [67] "pred_catch_paa"            "pred_index_paa"           </span></span>
-<span><span class="co">#&gt; [69] "Fbar"                      "nll_agg_indices"          </span></span>
-<span><span class="co">#&gt; [71] "log_catch_resid"           "nll"                      </span></span>
-<span><span class="co">#&gt; [73] "annual_SAA_spawn"          "nll_Ecov_obs_sig"         </span></span>
-<span><span class="co">#&gt; [75] "nll_NAA"                   "catch_Neff_out"           </span></span>
-<span><span class="co">#&gt; [77] "logit_q_mat"               "pred_catch"               </span></span>
-<span><span class="co">#&gt; [79] "log_SSB_FXSPR_static"      "log_Fbar_XSPR_static"     </span></span>
-<span><span class="co">#&gt; [81] "pred_stock_catch"          "marg_NAA_sigma"           </span></span>
-<span><span class="co">#&gt; [83] "nll_catch_acomp"           "MAA"                      </span></span>
-<span><span class="co">#&gt; [85] "SSB"                       "selpars_re_mats"          </span></span>
-<span><span class="co">#&gt; [87] "nll_index_acomp"           "log_SPR_FXSPR"            </span></span>
-<span><span class="co">#&gt; [89] "pred_indices"              "log_SPR0_static"</span></span></code></pre></div>
+<span><span class="co">#&gt; [37] "nll_agg_catch"             "QAA"                      </span></span>
+<span><span class="co">#&gt; [39] "log_M"                     "log_Fbar_XSPR"            </span></span>
+<span><span class="co">#&gt; [41] "NAAPR_FXSPR_static"        "log_Y_FXSPR_static"       </span></span>
+<span><span class="co">#&gt; [43] "log_FXSPR_iter_static"     "FAA_by_region"            </span></span>
+<span><span class="co">#&gt; [45] "selpars"                   "pred_log_indices"         </span></span>
+<span><span class="co">#&gt; [47] "nll_Ecov_obs"              "log_YPR_FXSPR_static"     </span></span>
+<span><span class="co">#&gt; [49] "waa_ssb_static"            "annual_SPR0AA"            </span></span>
+<span><span class="co">#&gt; [51] "q"                         "all_NAA"                  </span></span>
+<span><span class="co">#&gt; [53] "mu"                        "pred_N1"                  </span></span>
+<span><span class="co">#&gt; [55] "log_FXSPR_static"          "log_SSB_FXSPR"            </span></span>
+<span><span class="co">#&gt; [57] "log_FAA_XSPR"              "waa_ssb"                  </span></span>
+<span><span class="co">#&gt; [59] "R_XSPR"                    "sel_static"               </span></span>
+<span><span class="co">#&gt; [61] "pred_CAA"                  "log_FXSPR"                </span></span>
+<span><span class="co">#&gt; [63] "log_Y_FXSPR"               "NAA_spawn"                </span></span>
+<span><span class="co">#&gt; [65] "NAA_devs"                  "pred_catch_paa"           </span></span>
+<span><span class="co">#&gt; [67] "pred_index_paa"            "Fbar"                     </span></span>
+<span><span class="co">#&gt; [69] "nll_agg_indices"           "log_catch_resid"          </span></span>
+<span><span class="co">#&gt; [71] "nll"                       "annual_SAA_spawn"         </span></span>
+<span><span class="co">#&gt; [73] "nll_Ecov_obs_sig"          "nll_NAA"                  </span></span>
+<span><span class="co">#&gt; [75] "catch_Neff_out"            "logit_q_mat"              </span></span>
+<span><span class="co">#&gt; [77] "pred_catch"                "log_SSB_FXSPR_static"     </span></span>
+<span><span class="co">#&gt; [79] "log_Fbar_XSPR_static"      "pred_stock_catch"         </span></span>
+<span><span class="co">#&gt; [81] "marg_NAA_sigma"            "nll_catch_acomp"          </span></span>
+<span><span class="co">#&gt; [83] "MAA"                       "SSB"                      </span></span>
+<span><span class="co">#&gt; [85] "selpars_re_mats"           "nll_index_acomp"          </span></span>
+<span><span class="co">#&gt; [87] "log_SPR_FXSPR"             "pred_indices"             </span></span>
+<span><span class="co">#&gt; [89] "log_SPR0_static"</span></span></code></pre></div>
 <p>Now just get the objects with <code>"nll"</code> in their name, and
 sum over all individual values.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"nll"</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">therep</span><span class="op">)</span>,value<span class="op">=</span><span class="cn">T</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">therep</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            nll_M          nll_sel    nll_agg_catch     nll_Ecov_obs </span></span>
-<span><span class="co">#&gt;           0.0000           0.0000              NaN           0.0000 </span></span>
-<span><span class="co">#&gt;  nll_agg_indices              nll nll_Ecov_obs_sig          nll_NAA </span></span>
-<span><span class="co">#&gt;        1565.7938              NaN           0.0000         325.8628 </span></span>
-<span><span class="co">#&gt;  nll_catch_acomp  nll_index_acomp </span></span>
-<span><span class="co">#&gt;        2844.2380        3921.8316</span></span></code></pre></div>
+<span><span class="co">#&gt;            nll_M    nll_agg_catch     nll_Ecov_obs  nll_agg_indices </span></span>
+<span><span class="co">#&gt;           0.0000              NaN           0.0000        1565.7938 </span></span>
+<span><span class="co">#&gt;              nll nll_Ecov_obs_sig          nll_NAA  nll_catch_acomp </span></span>
+<span><span class="co">#&gt;              NaN           0.0000         325.8628        2844.2380 </span></span>
+<span><span class="co">#&gt;  nll_index_acomp </span></span>
+<span><span class="co">#&gt;        3921.8316</span></span></code></pre></div>
 <p>The likelihood components that are equal to 0 are not used in the
 model (no random effects on <code>M</code>, <code>Ecov</code>,
 <code>selectivity</code>, etc.). <code>nll</code> is the total
