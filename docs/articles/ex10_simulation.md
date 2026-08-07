@@ -185,8 +185,8 @@ mod_1$simulate
 #>     }
 #>     ans
 #> }
-#> <bytecode: 0x000002903cc3aa88>
-#> <environment: 0x000002903ca66930>
+#> <bytecode: 0x0000012861b4eaf0>
+#> <environment: 0x00000128619a0a88>
 ```
 
 As we can see it is a function, but less apparent is that it will report

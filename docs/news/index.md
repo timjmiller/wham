@@ -1,6 +1,6 @@
 # Changelog
 
-## wham 2.1.0.9008 (2026-08-05)
+## wham 2.1.0.9009 (2026-08-07)
 
 #### Minor improvements
 
@@ -13,6 +13,9 @@
 
 #### Bug fixes
 
+- (2.1.0.9009) fix bug CIs for Tweedie power parameter from
+  PR[\#92](https://github.com/timjmiller/wham/pull/92).
+  [5bb24c5](https://github.com/timjmiller/wham/commit/5bb24c50ab854c49910f1ec9e06bc89297d6e118)
 - (2.1.0.9008) fix bug requiring wham to be loaded in
   wham:::verify_version from
   PR[\#94](https://github.com/timjmiller/wham/pull/94).
