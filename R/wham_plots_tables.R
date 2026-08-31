@@ -515,8 +515,7 @@ wham_fill_scale <- function(midpoint = NULL, ...){
       warm = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "YlOrRd", rev = FALSE), ...),
       ocean = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Teal", rev = FALSE), ...),
       forest = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Green-Brown", rev = TRUE), ...),
-      highcontrast = ggplot2::scale_fill_gradientn(colours = grDevices::colorRampPalette(c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"), space = "Lab")(256), ...),
+      highcontrast = ggplot2::scale_fill_gradient(low = "#1f77b4", high = "#ff7f0e", ...),
       pastel = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Pastel 1", rev = FALSE), ...)
     ))
   }
@@ -524,7 +523,7 @@ wham_fill_scale <- function(midpoint = NULL, ...){
     viridis::scale_fill_viridis(...)
   } else {
     colors <- wham_palette(2)
-    if(color.option == "highcontrast") colors <- wham_palette(10)[1:2]
+    if(color.option == "highcontrast") colors <- c("#1f77b4", "#ff7f0e")
     if(color.option == "warm") colors <- c("black", grDevices::hcl.colors(2, palette = "YlOrRd", rev = FALSE)[1])
     if(color.option == "ocean") colors <- c("black", grDevices::hcl.colors(2, palette = "Teal", rev = FALSE)[1])
     ggplot2::scale_fill_gradient2(
