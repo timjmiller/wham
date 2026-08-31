@@ -502,8 +502,24 @@ wham_palette <- function(n){
   )
 }
 
-wham_fill_scale <- function(midpoint, ...){
+wham_fill_scale <- function(midpoint = NULL, ...){
   color.option <- getOption("wham.colors", "default")
+  if(is.null(midpoint)) {
+    return(switch(
+      color.option,
+      default = viridis::scale_fill_viridis(...),
+      cividis = viridis::scale_fill_viridis(option = "cividis", ...),
+      turbo = viridis::scale_fill_viridis(option = "turbo", begin = 0.2, end = 0.8, ...),
+      bw = ggplot2::scale_fill_gradient(low = "white", high = "black", ...),
+      gray = ggplot2::scale_fill_gradient(low = "#f2f2f2", high = "#666666", ...),
+      warm = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "YlOrRd", rev = FALSE), ...),
+      ocean = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Teal", rev = FALSE), ...),
+      forest = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Green-Brown", rev = TRUE), ...),
+      highcontrast = ggplot2::scale_fill_gradientn(colours = grDevices::colorRampPalette(c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"), space = "Lab")(256), ...),
+      pastel = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Pastel 1", rev = FALSE), ...)
+    ))
+  }
   if(color.option == "default") {
     viridis::scale_fill_viridis(...)
   } else {
@@ -4316,8 +4332,6 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     levels(df.plot$Age) <- ages.lab
     df.plot$Block <- factor(as.character(df.plot$Block), levels=block.names[include.selblock])
     fn <- "SelAA_tile"
-    sel.midpoint <- mean(range(df.plot$Selectivity, na.rm = TRUE))
-    if(!is.finite(sel.midpoint)) sel.midpoint <- 0
     if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
       print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
@@ -4327,7 +4341,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
 #        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
         ggplot2::theme_bw() + 
         ggplot2::facet_wrap(~Block, dir="v") +
-        wham_fill_scale(midpoint = sel.midpoint))
+        wham_fill_scale())
     if(do.tex | do.png) dev.off()
   }
 
@@ -4358,8 +4372,6 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
     fn <- paste0("MAA_tile")
-    M.midpoint <- mean(range(df.plot$M, na.rm = TRUE))
-    if(!is.finite(M.midpoint)) M.midpoint <- 0
 
     if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
@@ -4370,7 +4382,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       ggplot2::theme_bw() + 
       ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
       ggplot2::ggtitle("MAA") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-      wham_fill_scale(midpoint = M.midpoint)
+      wham_fill_scale()
       if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
       print(plt)
     if(do.tex | do.png) dev.off()
