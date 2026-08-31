@@ -509,7 +509,8 @@ wham_fill_scale <- function(midpoint, ...){
   } else {
     colors <- wham_palette(2)
     if(color.option == "highcontrast") colors <- wham_palette(10)[1:2]
-    if(color.option %in% c("warm", "ocean")) colors[1] <- "black"
+    if(color.option == "warm") colors <- c("black", "darkred")
+    if(color.option == "ocean") colors <- c("black", "darkblue")
     ggplot2::scale_fill_gradient2(
       low = colors[1], mid = "white", high = colors[2], midpoint = midpoint, ...)
   }
