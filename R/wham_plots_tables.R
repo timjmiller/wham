@@ -503,9 +503,14 @@ wham_palette <- function(n){
 }
 
 wham_fill_scale <- function(midpoint, ...){
-  colors <- wham_palette(2)
-  ggplot2::scale_fill_gradient2(
-    low = colors[1], mid = "white", high = colors[2], midpoint = midpoint, ...)
+  color.option <- getOption("wham.colors", "default")
+  if(color.option == "default") {
+    viridis::scale_fill_viridis(...)
+  } else {
+    colors <- wham_palette(2)
+    ggplot2::scale_fill_gradient2(
+      low = colors[1], mid = "white", high = colors[2], midpoint = midpoint, ...)
+  }
 }
 
 fit.summary.text.plot.fn <- function(mod){
