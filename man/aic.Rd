@@ -4,21 +4,27 @@
 \alias{aic}
 \title{Calculate Akaike's Information Criterion for a WHAM model}
 \usage{
-aic(mod)
+aic(mod, conditional = FALSE)
 }
 \arguments{
-\item{mod}{A fitted WHAM model object returned by \code{\link{fit_wham}}.}
+\item{mod}{A fitted WHAM model object returned by \code{fit_wham()}.}
+
+\item{conditional}{(TRUE/FALSE) When the model includes random effects, the default (\code{conditional = FALSE})
+calculation uses the marginal likelihood and number of fixed effects parameters. If \code{conditional = TRUE},
+the joint likelihood of the data conditional on the estimated random effects is used with an estimated effective degress of freedom
+that is calculated using the approach descsribed by \href{https://doi.org/10.48550/arXiv.2411.14185}{Zhang et al. 2024} and code provided by Noel Cadigan.}
 }
 \value{
-A numeric AIC value.
+A numeric AIC value with attributes denoting the degrees of freedom, number of observations, and the type (marginal or conditional).
 }
 \description{
-Calculates AIC from a fitted WHAM model's minimized negative log-likelihood
+Calculates AIC from a fitted WHAM model's negative log-likelihood
 and number of estimated parameters.
 }
 \examples{
 \dontrun{
 mod <- fit_wham(input)
 aic(mod)
+aic(mod, conditional = TRUE)
 }
 }
