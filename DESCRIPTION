@@ -39,7 +39,6 @@ BugReports: https://github.com/timjmiller/wham/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: 
     testthat,
@@ -47,3 +46,4 @@ Suggests:
     here,
     parallel,
     snowfall
+Config/roxygen2/version: 8.1.0

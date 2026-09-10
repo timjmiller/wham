@@ -104,7 +104,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(is.null(table.opts$calc.aic)) table.opts$calc.aic <- TRUE
     if(is.null(table.opts$print)) table.opts$print <- TRUE
     if(is.null(table.opts$save.csv)) table.opts$save.csv <- FALSE
-    aic.tab <- aic <- daic <- NULL
+    aic.tab <- aic.values <- daic <- NULL
     if(no.wham) warning("No WHAM models. Consider setting do.table = FALSE.\n")
     if(!all.wham){
       message("Cannot calculate AIC or Mohn's rho for ASAP3 models.\n
@@ -127,14 +127,13 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     }
     tab <- NULL
     if(table.opts$calc.aic){
-      aic <- sapply(wham.mods, function(x){
-        k <- length(x$opt$par)
-        2*(x$opt$obj + k) # AIC
+      aic.values <- sapply(wham.mods, function(x){
+        aic(x)
         # 2*(x$opt$obj + k + k*(k+1)/(n-k-1)) # AICc
       })
-      aic <- round(aic, 1)
-      daic <- round(aic - min(aic), 1)
-      aic.tab <- cbind(daic, aic)
+      aic.values <- round(aic.values, 1)
+      daic <- round(aic.values - min(aic.values), 1)
+      aic.tab <- cbind(daic, aic.values)
       colnames(aic.tab) <- c("dAIC","AIC")
       tab <- cbind(aic.tab)
     }
@@ -158,11 +157,11 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     }
 
     best <- NULL
-    if(table.opts$calc.aic) best <- names(wham.mods)[which(aic == min(aic))]
+    if(table.opts$calc.aic) best <- names(wham.mods)[which(aic.values == min(aic.values))]
     if(table.opts$sort){
-      ord <- order(aic)
+      ord <- order(aic.values)
       daic <- daic[ord]
-      aic <- aic[ord]
+      aic.values <- aic.values[ord]
       rho <- rho[ord,]
       if(!is.null(tab)) tab <- tab[ord,]
     }
@@ -170,7 +169,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
       if(table.opts$print) message(paste(capture.output(print(as.data.frame(tab))), collapse = "\n")) # print to console
     }
-    out[c("daic","aic","rho","best","tab")] <- list(daic,aic,rho,best,tab)
+    out[c("daic","aic","rho","best","tab")] <- list(daic,aic.values,rho,best,tab)
   }
   if(do.plot){
   if(is.null(plot.opts)) plot.opts=list(out.type='png', ci=TRUE, years=NULL, which=1:10, relative.to=NULL, alpha=0.05, ages.lab=mods[[1]]$ages.lab, kobe.yr=NULL, M.age=NULL, return.ggplot=TRUE, kobe.prob=TRUE, browse = TRUE)
