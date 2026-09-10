@@ -134,15 +134,19 @@ set_selectivity <- function(input, selectivity){
   if(!is.null(selectivity$n_selblocks)){ #override asap structure
     data$n_selblocks <- selectivity$n_selblocks
   }
-  if(is.null(data$selblock_models) & is.null(selectivity$model)) {
+  if((is.null(data$selblock_models) || length(data$selblock_models) != data$n_selblocks) && is.null(selectivity$model)) {
     data$selblock_models <- rep(2, data$n_selblocks)
-    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$selblock_models was not provided so logistic selectivity is being set for mean models of all ", 
+    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$model was not provided so logistic selectivity is being set for mean models of all ", 
       data$n_selblocks, " selblocks.\n"))
   }
   if(!is.null(selectivity$model)){
     if(length(selectivity$model) != data$n_selblocks) stop(paste0("Length of selectivity$model: ", length(selectivity[["model"]])," must equal number of selectivity blocks: ", data[["n_selblocks"]]))
     if(!all(selectivity$model %in% selopts)) stop("Each model entry must be one of the following: 'age-specific','logistic','double-logistic','decreasing-logistic'")
     data$selblock_models <- match(selectivity$model, selopts)
+  }
+  if(!is.null(selpars_ini) && (!identical(dim(selpars_ini), as.integer(c(data$n_selblocks, data$n_ages + 6))) || !is.null(selectivity$model))) {
+    selpars_ini <- NULL
+    estimate_selpars <- NULL
   }
   input$log$selectivity <- c(input$log$selectivity, paste0("(Mean) selectivity block models are:\n",
     paste0("Block ", 1:data$n_selblocks, ": ", selopts[data$selblock_models], collapse = "\n"), "\n\n")

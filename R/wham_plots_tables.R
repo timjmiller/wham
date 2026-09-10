@@ -502,23 +502,33 @@ wham_palette <- function(n){
   )
 }
 
-wham_fill_scale <- function(){
-  colors <- getOption("wham.colors", "default")
-
-  switch(
-    colors,
-    default = viridis::scale_fill_viridis(),
-    cividis = viridis::scale_fill_viridis(option = "cividis"),
-    turbo = viridis::scale_fill_viridis(option = "turbo", begin = 0.2, end = 0.8),
-    bw = ggplot2::scale_fill_gradient(low = "white", high = "black"),
-    gray = ggplot2::scale_fill_gradient(low = "#f2f2f2", high = "#666666"),
-    warm = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "YlOrRd", rev = FALSE)),
-    ocean = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Teal", rev = FALSE)),
-    forest = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Green-Brown", rev = TRUE)),
-    highcontrast = ggplot2::scale_fill_gradientn(colours = grDevices::colorRampPalette(c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-      "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"), space = "Lab")(256)),
-    pastel = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Pastel 1", rev = FALSE))
-  )
+wham_fill_scale <- function(midpoint = NULL, ...){
+  color.option <- getOption("wham.colors", "default")
+  if(is.null(midpoint)) {
+    return(switch(
+      color.option,
+      default = viridis::scale_fill_viridis(...),
+      cividis = viridis::scale_fill_viridis(option = "cividis", ...),
+      turbo = viridis::scale_fill_viridis(option = "turbo", begin = 0.2, end = 0.8, ...),
+      bw = ggplot2::scale_fill_gradient(low = "white", high = "black", ...),
+      gray = ggplot2::scale_fill_gradient(low = "#f2f2f2", high = "#666666", ...),
+      warm = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "YlOrRd", rev = FALSE), ...),
+      ocean = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Teal", rev = FALSE), ...),
+      forest = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Green-Brown", rev = TRUE), ...),
+      highcontrast = ggplot2::scale_fill_gradient(low = "#1f77b4", high = "#ff7f0e", ...),
+      pastel = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Pastel 1", rev = FALSE), ...)
+    ))
+  }
+  if(color.option == "default") {
+    viridis::scale_fill_viridis(...)
+  } else {
+    colors <- wham_palette(2)
+    if(color.option == "highcontrast") colors <- c("#1f77b4", "#ff7f0e")
+    if(color.option == "warm") colors <- c("black", grDevices::hcl.colors(2, palette = "YlOrRd", rev = FALSE)[1])
+    if(color.option == "ocean") colors <- c("black", grDevices::hcl.colors(2, palette = "Teal", rev = FALSE)[1])
+    ggplot2::scale_fill_gradient2(
+      low = colors[1], mid = "white", high = colors[2], midpoint = midpoint, ...)
+  }
 }
 
 fit.summary.text.plot.fn <- function(mod){
@@ -806,7 +816,7 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   res <- list()
   res$ll <- -mod$opt$obj
   res$np <- length(mod$opt$par)
-  res$aic <- 2*(mod$opt$obj + res$np)
+  res$aic <- aic(mod)
   #rho <- mohns_rho(mod) #if no peels, then this will be NULL
   # tcol <- col2rgb('black')
   # black.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -1091,7 +1101,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 		plot(years_full, pred_catch[,i], col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab="Total Catch",
 			ylim=c(0, 1.1*max(c(catch[,i],pred_catch[,i]))))
-    points(years, catch[,i], col=plot.colors[i], pch=1)
+    points(years, catch[,i], col=plot.colors[i], pch=19)
     if(mod$env$data$n_fleets == 1){
       if(length(years_full) > length(years)){
         abline(v=tail(years,1), lty=2, lwd=1)
@@ -1101,7 +1111,7 @@ plot.catch.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
 		log.ob.max <- log(catch[,i])+1.96*sigma[,i]
 		plot(years_full, log(pred_catch[,i]), col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab="Ln(Total Catch)",
 			ylim=c(min(log.ob.min,log(pred_catch[,i]), na.rm=T), 1.1*max(log.ob.max,log(pred_catch[,i]), na.rm=T)))
-		points(years, log(catch[,i]), pch=1, col=plot.colors[i])
+    points(years, log(catch[,i]), pch=19, col=plot.colors[i])
     if(mod$env$data$n_fleets == 1) abline(v=tail(years,1), lty=2, lwd=1)
 		arrows(years, log.ob.min, years, log.ob.max, length=0)
 		#title (paste0("Fleet ",i, " Catch"), outer=T, line=-1)
@@ -1139,14 +1149,14 @@ plot.index.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", 
 		if(do.tex) cairo_pdf(file.path(od, paste0("Index_4panel_",index.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
     if(do.png) png(filename = file.path(od, paste0("Index_4panel_",index.name.fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
-		plot(years, index[,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Index",
+    plot(years, index[,i], type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Index",
 			ylim=c(0, 1.1*max(c(index[,i],pred_index[,i]), na.rm=T)))
 		lines(years, pred_index[,i], col=plot.colors[i], lwd=2)
 		log.ob.min <- log(index[,i])-1.96*sigma[,i]
 		log.ob.max <- log(index[,i])+1.96*sigma[,i]
     y.min <- min(c(log.ob.min,log(pred_index[,i]))[is.finite(c(log.ob.min,log(pred_index[,i])))], na.rm=T)
     y.max <- 1.1*max(c(log.ob.max,log(pred_index[,i]))[is.finite(c(log.ob.max,log(pred_index[,i])))], na.rm=T)
-		plot(years, log(index[,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Index)", ylim=c(y.min, y.max))
+    plot(years, log(index[,i]), type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Ln(Index)", ylim=c(y.min, y.max))
 		lines(years, log(pred_index[,i]), col=plot.colors[i], lwd=2)
 		arrows(years, log.ob.min, years, log.ob.max, length=0)
 		#title (paste0("Index ",i), outer=T, line=-1)
@@ -1194,7 +1204,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
     y.max <- max(NAA[s,r,,i], na.rm = TRUE)
     if(!is.na(y.max)) {
-      plot(years_full, NAA[s,r,,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Abundance (1000s)",
+      plot(years_full, NAA[s,r,,i], type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Abundance (1000s)",
         ylim=c(0, 1.1*y.max))
       lines(years_full, pred_NAA[s,r,,i], col=plot.colors[i], lwd=2)
       if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
@@ -1204,7 +1214,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
     y.max <- max(log.ob.max,log(pred_NAA[s,r,,i]), na.rm = TRUE)
     y.min <- min(log.ob.min,log(pred_NAA[s,r,,i]), na.rm = TRUE)
     if(!is.na(y.max) & !is.na(y.min)) {
-      plot(years_full, log(NAA[s,r,,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Abundance)",
+      plot(years_full, log(NAA[s,r,,i]), type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Ln(Abundance)",
         ylim=c(y.min,y.max))
       lines(years_full, log(pred_NAA[s,r,,i]), col=plot.colors[i], lwd=2)
       arrows(years_full, log.ob.min, years_full, log.ob.max, length=0)
@@ -2312,7 +2322,10 @@ plot.scaled.index.input <- function(mod, plot.colors)
 	axis(2)
 	box()
 	mtext(side = 2, "Rescaled Indices", outer = FALSE, line = 3)
-	for (i in 1:n_indices) lines(years,rescaled[,i],col=plot.colors[i])
+  for (i in 1:n_indices) {
+    lines(years,rescaled[,i],col=plot.colors[i])
+    points(years, rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+  }
   leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
   legend("right", legend = leg, col = plot.colors, lty = 1, horiz = FALSE, xpd = NA, inset = c(-0.5,0), bty = "n")
   #legend("top", legend = mod$input$index_names, col = plot.colors, lty = 1, horiz = TRUE, xpd = NA, inset = c(0,-0.1), bty = "n")
@@ -2327,8 +2340,11 @@ plot.scaled.index.input <- function(mod, plot.colors)
 	my.log.range <- range(log.rescaled, na.rm=T)
 	plot(years,log.rescaled[,1], xlab="",ylab="",ylim=my.log.range,col=plot.colors[1],type='n')
 	grid(col = gray(0.7))
-	for (i in 1:n_indices) lines(years,log.rescaled[,i],col=plot.colors[i])
-	mtext(side = 2, "Rescaled Log(Indices)", outer = FALSE, line = 3)
+  for (i in 1:n_indices) {
+    lines(years,log.rescaled[,i],col=plot.colors[i])
+    points(years, log.rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+  }
+	mtext(side = 2, "Rescaled Log Indices", outer = FALSE, line = 3)
 	mtext(side = 1, "Year", outer = FALSE, line = 3)
 	par(origpar)
 }
@@ -3494,6 +3510,7 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
     # standard retro plot
     plot.colors <- wham_palette(npeels+1)
     tcol <- adjustcolor(plot.colors, alpha.f=0.4)
+    rho.vals <- mohns_rho(mod)
     # tcol <- col2rgb(plot.colors)
     # tcol <- rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
     # if(what %in% c("NAA","NAA_age")){
@@ -3529,6 +3546,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
               lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
               points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
             }
+            rho.plot <- round(rho.vals$naa[s,r,i],3)
+            legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           }
           title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
           if(do.tex | do.png) dev.off() else par(origpar)
@@ -3546,6 +3565,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
             lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),age.ind], col = tcol[j+1])
             points(years[n_years-j],res[[j+1]][s,r,n_years-j,age.ind],pch=16,col=plot.colors[j+1])
           }
+          rho.plot <- round(rho.vals$naa[s,r,age.ind],3)
+          legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
           if(do.tex | do.png) dev.off() else par(origpar)
         }
@@ -3573,6 +3594,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
           lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
           points(years[n_years-i],res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
+        rho.plot <- round(rho.vals[[what]][p],3)
+        legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
         title(names.plot[p], line = 1, outer = TRUE)
         if(do.tex | do.png) dev.off() else par(origpar)
       }
@@ -3580,7 +3603,6 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
 
     # relative retro plot
     if(missing(y.lab)) y.lab <- bquote(paste("Mohn's ", rho, "(",.(what),")"))
-    rho.vals <- mohns_rho(mod)
 
     if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks){
       regions <- 1:mod$input$data$n_regions
@@ -4399,6 +4421,8 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
     fn <- paste0("NAA_dev_tile")
+    dev.limit <- max(abs(df.plot$Deviation), na.rm = TRUE)
+    if(!is.finite(dev.limit) || dev.limit == 0) dev.limit <- 1
 
     if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
@@ -4409,7 +4433,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
         ggplot2::theme_bw() + 
         ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
         ggplot2::ggtitle("NAA deviations") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-        wham_fill_scale()
+        wham_fill_scale(midpoint = 0, limits = c(-dev.limit, dev.limit))
       if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
       print(plt)
     if(do.tex | do.png) dev.off()
