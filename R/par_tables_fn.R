@@ -652,24 +652,15 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   }
 
   #Spawning stock biomass by year and spawn region
-  SSB <- as.matrix(mod$rep$SSB)
-  rownames(SSB) <- mod$years_full
-  if(data$n_regions == 1) {
-    SSB <- matrix(rowSums(SSB), ncol = 1, dimnames = list(mod$years_full, "Total"))
-  } else {
-    colnames(SSB) <- region.names.tab[data$spawn_regions]
-    if(data$n_stocks > 1) SSB <- cbind(SSB, Total = rowSums(SSB))
-  }
+  SSB <- mod[["rep"]][["SSB"]]
+  rownames(SSB) <- mod[["years_full"]]
+  colnames(SSB) <- ifelse(data[["n_stocks"]]>1, stock.names.tab, "Total")
+  if(data[["n_stocks"]]>1) SSB <- cbind(SSB, Total = rowSums(SSB))
   if(!is.null(od)) saveRDS(SSB, file = file.path(od, "SSB_table.RDS"))
-  if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
-    if(data$n_regions == 1) {
-      SSB.cv <- matrix(if(data$n_stocks > 1) sd[["log_SSB_all"]] else sd[["log_SSB"]],
-                       ncol = 1, dimnames = list(mod$years_full, "Total"))
-    } else {
-      SSB.cv <- matrix(NA, nrow = NROW(SSB), ncol = data$n_stocks)
-      SSB.cv[] <- sd[["log_SSB"]]
-      if(data$n_stocks > 1) SSB.cv <- cbind(SSB.cv, sd[["log_SSB_all"]])
-    }
+  
+  if(!is.null(mod[["opt"]])) if(!is.na(mod[["na_sdrep"]])) if(mod[["is_sdrep"]]) {
+    SSB.cv <- sd[["log_SSB"]]
+    if(data[["n_stocks"]]>1) SSB.cv <- cbind(SSB.cv, sd[["log_SSB_all"]])
     SSB.sd <- SSB * SSB.cv
     SSB.lo <- exp(log(SSB) - qnorm(0.975) * SSB.cv)
     SSB.hi <- exp(log(SSB) + qnorm(0.975) * SSB.cv)
