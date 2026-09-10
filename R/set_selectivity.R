@@ -136,7 +136,7 @@ set_selectivity <- function(input, selectivity){
   }
   if((is.null(data$selblock_models) || length(data$selblock_models) != data$n_selblocks) && is.null(selectivity$model)) {
     data$selblock_models <- rep(2, data$n_selblocks)
-    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$selblock_models was not provided so logistic selectivity is being set for mean models of all ", 
+    input$log$selectivity <- c(input$log$selectivity, paste0("selectivity$model was not provided so logistic selectivity is being set for mean models of all ", 
       data$n_selblocks, " selblocks.\n"))
   }
   if(!is.null(selectivity$model)){
