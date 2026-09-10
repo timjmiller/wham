@@ -2,6 +2,9 @@
 
 ## Exported functions that user can call directly
 
+- [`aic()`](https://timjmiller.github.io/wham/reference/aic.md) :
+  Calculate Akaike's Information Criterion for a WHAM model
+
 - [`check_convergence()`](https://timjmiller.github.io/wham/reference/check_convergence.md)
   : Check convergence of WHAM model
 

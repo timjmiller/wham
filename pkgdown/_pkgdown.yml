@@ -106,6 +106,7 @@ articles:
 reference:
   - title: Exported functions that user can call directly
     contents:
+      - '`aic`'
       - '`check_convergence`'
       - '`check_estimability`'
       - '`compare_wham_models`'

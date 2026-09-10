@@ -41,12 +41,13 @@ plot_wham_output(
 ## Details
 
 `out.type = 'html'` (default) makes a html file for viewing plot .png
-files and html tables of parameter estimates in a browser.
-`out.type = 'pdf'` makes one pdf file of all plots and tables.
-`out.type = 'png'` creates a subdirectory \`plots_png“ in `dir.main` and
-saves .png files within. `out.type = 'pdf' or 'png'` makes LaTeX and pdf
-files of tables of parameter estimates. (tabs: 'input data',
-'diagnostics', 'results', 'ref_points', 'retro', and 'misc').
+files and html tables of parameter estimates, numbers at age, fishing
+mortality, and spawning stock biomass in a browser. `out.type = 'pdf'`
+makes one pdf file of all plots and tables. `out.type = 'png'` creates a
+subdirectory \`plots_png“ in `dir.main` and saves .png files within.
+`out.type = 'pdf' or 'png'` makes LaTeX and pdf files of tables of
+parameter estimates. (tabs: 'input data', 'diagnostics', 'results',
+'ref_points', 'retro', and 'misc').
 
 `plot.opts` holds optional arguments to modify plots:
 

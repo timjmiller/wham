@@ -198,10 +198,11 @@ relevant here:
 
 - `$mean_model`: Natural mortality model options.
 
-  - `"constant"`: estimate a single $`M`$, shared across all ages and
+  - `"estimate-M"`: estimate one or more (mean) $`M`$ parameters.
+    Default is to estimate a single $`M`$, shared across all ages and
     years.
-  - `"age-specific"`: estimate $`M_a`$ independent for each age, shared
-    across years.
+  - `"fixed-M"`: Use initial values from ASAP3 dat files or
+    `$initial_means` for (mean) $`M`$ as fixed values.
   - `"weight-at-age"`: estimate $`M`$ as a function of weight-at-age,
     $`M_{y,a} = \mu_M * W_{y,a}^b`$, as in [Lorenzen
     (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x)
