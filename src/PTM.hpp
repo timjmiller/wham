@@ -24,10 +24,9 @@ matrix<T> expm_more(matrix<T> A, int type = 0, int n_step = 5, int small_dim = 1
     }
   }
   if(type == 2){ //use eigen decomp
-    using namespace Eigen;
-    Matrix<T,Dynamic,Dynamic> A_eig = A;
+    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> A_eig = A;
     A_eig.setZero();
-    SelfAdjointEigenSolver<Matrix<T,Dynamic,Dynamic> > es(A_eig);  
+    Eigen::SelfAdjointEigenSolver<Matrix<T,Eigen::Dynamic,Eigen::Dynamic> > es(A_eig);  
     matrix<T> D(dim,dim), V_inv(dim,dim); 
     D.setZero();
     for(int i = 0; i < dim; i++) D(i,i) = exp(es.eigenvalues()(i));
