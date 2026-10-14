@@ -23,7 +23,7 @@ wham.dir <- find.package("wham")
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 4th `wham` example, which builds off model `m4` from [example 1](https://timjmiller.github.io/wham/articles/ex01_basics.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -74,7 +74,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html). Read in `ex1_SNEMAYT.dat`:
+We need the same data files as in [example 1](https://timjmiller.github.io/wham/articles/ex01_basics.html). Read in `ex1_SNEMAYT.dat`:
 ```{r, eval = FALSE}
 asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex1_SNEMAYT.dat"))
 ```

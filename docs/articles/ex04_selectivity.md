@@ -12,7 +12,7 @@ England / Mid-Atlantic Yellowtail Flounder.
 Here we assume you already have `wham` installed. If not, see the
 [Introduction](https://timjmiller.github.io/wham/). This is the 4th
 `wham` example, which builds off model `m4` from [example
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html):
 
 - full state-space model (numbers-at-age are random effects for all
   ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
@@ -76,7 +76,7 @@ setwd(write.dir)
 ```
 
 We need the same data files as in [example
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html). Read in
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html). Read in
 `ex1_SNEMAYT.dat`:
 
 ``` r

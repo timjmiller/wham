@@ -1,6 +1,6 @@
 # Changelog
 
-## wham 2.1.0.9011 (2026-09-10)
+## wham 2.1.0.9012 (2026-10-14)
 
 #### Minor improvements
 
@@ -22,6 +22,11 @@
 
 #### Bug fixes
 
+- (2.1.0.9012) fix some bugs in vignettes. [PR
+  101](https://github.com/timjmiller/wham/pull/101)
+- (2.1.0.9012) Change to minimize Eigen namespace usage per TMB
+  issue 417.
+  [e63ea63](https://github.com/timjmiller/wham/commit/e63ea63cad9a08acc67f74ac28cd385dd2220a77)
 - (2.1.0.9011) fix bug in selectivity configuration using
   `prepare_wham_input`.
   [823107f](https://github.com/timjmiller/wham/commit/823107fd2dadb1fa6819124fdc3681fe6615c69e)

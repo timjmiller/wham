@@ -10,18 +10,18 @@ and in this example we apply WHAM to the same stock, Southern New
 England / Mid-Atlantic Yellowtail Flounder.
 
 This is the 6th WHAM example, which blends aspects from [Ex
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html), [Ex
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html),
-and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html).
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html), [Ex
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html),
+and [Ex 5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html).
 We assume you already have `wham` installed. If not, see the
 [Introduction](https://timjmiller.github.io/wham/). The simpler 1st
 example is available as a [R
 script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R)
 and
-[vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+[vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
 As in [example
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html):
 
 - Stock: Southern New England-Mid Atlantic (SNEMA) yellowtail flounder
 - Data: 1973-2011, 1 fishery and 2 indices
@@ -30,7 +30,7 @@ As in [example
 - Selectivity: age-specific
 
 As in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 - Environmental covariate (ecov) modeled as an AR1 process
@@ -39,13 +39,13 @@ As in [example
   effect on recruitment (`ecov$how = 2`)
 
 As in [example
-4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html):
+4](https://timjmiller.github.io/wham/articles/ex04_selectivity.html):
 
 - Age-specific selectivity with some ages fixed at 1 (fishery: 4-5,
   index1: 4, index2: 2-4)
 
 As in [example
-5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html):
+5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html):
 
 - Environmental covariate: Gulf Stream Index (GSI)
 - 2D AR1 deviations by age and year (random effects)
@@ -97,7 +97,7 @@ setwd(write.dir)
 ```
 
 We need the same ASAP data file as in [example
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html), and the
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html), and the
 environmental covariate (Gulf Stream Index, GSI). Read in
 `ex1_SNEMAYT.dat` and `GSI.csv`:
 
@@ -109,7 +109,7 @@ head(env.dat)
 ```
 
 As in [example
-5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html), the GSI
+5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html), the GSI
 data file does not have a standard error estimate, either for each
 yearly observation or one overall value. In such a case, WHAM can
 estimate the observation error for the environmental covariate, either
@@ -216,7 +216,7 @@ NAA_re <- list(sigma="rec+1", cor="2dar1")
 ## 4. Linking recruitment to an environmental covariate (GSI)
 
 As described in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html),
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html),
 the environmental covariate options are fed to `prepare_wham_input` as a
 list, `ecov`. This example differs from example 2 in that:
 

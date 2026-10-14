@@ -1,4 +1,4 @@
-wham 2.1.0.9011 (2026-09-10)
+wham 2.1.0.9012 (2026-10-14)
 =========================
 
 ### Minor improvements
@@ -9,6 +9,8 @@ wham 2.1.0.9011 (2026-09-10)
 * (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 ### Bug fixes
+* (2.1.0.9012) fix some bugs in vignettes. [PR 101](https://github.com/timjmiller/wham/pull/101)
+* (2.1.0.9012) Change to minimize Eigen namespace usage per TMB issue 417. [e63ea63](https://github.com/timjmiller/wham/commit/e63ea63cad9a08acc67f74ac28cd385dd2220a77)
 * (2.1.0.9011) fix bug in selectivity configuration using `prepare_wham_input`. [823107f](https://github.com/timjmiller/wham/commit/823107fd2dadb1fa6819124fdc3681fe6615c69e)
 * (2.1.0.9010) fix bug in `set_ecov` when specifying lag of ecov effect on movement rates. [4111197](https://github.com/timjmiller/wham/commit/4111197ea1689ad92ee050b598d0fbde29408e0d)
 * (2.1.0.9010) fix bug in estimating time-invariant M when ASAP input has time-varying M. [4111197](https://github.com/timjmiller/wham/commit/4111197ea1689ad92ee050b598d0fbde29408e0d)

@@ -23,26 +23,26 @@ library(kableExtra)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 6th WHAM example, which blends aspects from [Ex 1](https://timjmiller.github.io/wham/articles/ex1_basics.html), [Ex 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), and [Ex 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html). We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+This is the 6th WHAM example, which blends aspects from [Ex 1](https://timjmiller.github.io/wham/articles/ex01_basics.html), [Ex 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html), and [Ex 5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html). We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
-As in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html):
+As in [example 1](https://timjmiller.github.io/wham/articles/ex01_basics.html):
 
 - Stock: Southern New England-Mid Atlantic (SNEMA) yellowtail flounder
 - Data: 1973-2011, 1 fishery and 2 indices
 - Age compositions: logistic normal, treating observations of zero as missing (`age_comp = "logistic-normal-miss0"`)
 - Selectivity: age-specific
 
-As in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+As in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - Beverton-Holt recruitment (`recruit_model = 3`)
 - Environmental covariate (ecov) modeled as an AR1 process (`ecov$process_model = 'ar1'`)
 - Compare with and w/o ecov having a "limiting" (carrying capacity) effect on recruitment (`ecov$how = 2`)
 
-As in [example 4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html):
+As in [example 4](https://timjmiller.github.io/wham/articles/ex04_selectivity.html):
 
 - Age-specific selectivity with some ages fixed at 1 (fishery: 4-5, index1: 4, index2: 2-4)
 
-As in [example 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html):
+As in [example 5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html):
 
 - Environmental covariate: Gulf Stream Index (GSI)
 - 2D AR1 deviations by age and year (random effects)
@@ -84,7 +84,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same ASAP data file as in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html), and the environmental covariate (Gulf Stream Index, GSI).
+We need the same ASAP data file as in [example 1](https://timjmiller.github.io/wham/articles/ex01_basics.html), and the environmental covariate (Gulf Stream Index, GSI).
 Read in `ex1_SNEMAYT.dat` and `GSI.csv`:
 ```{r eval=FALSE}
 asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"))
@@ -92,7 +92,7 @@ env.dat <- read.csv(file.path(wham.dir,"extdata","GSI.csv"), header=T)
 head(env.dat)
 ```
 
-As in [example 5](https://timjmiller.github.io/wham/articles/ex5_GSI_M.html), the GSI data file does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value, $\sigma_{\mathrm{GSI}}$, or yearly values as random effects, $\mathrm{log}\sigma_{\mathrm{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{\mathrm{GSI}}, \sigma^2_{\sigma_{\mathrm{GSI}}})$. In this example we choose the simpler option and estimate one observation error parameter, shared across years.
+As in [example 5](https://timjmiller.github.io/wham/articles/ex05_GSI_M.html), the GSI data file does not have a standard error estimate, either for each yearly observation or one overall value. In such a case, WHAM can estimate the observation error for the environmental covariate, either as one overall value, $\sigma_{\mathrm{GSI}}$, or yearly values as random effects, $\mathrm{log}\sigma_{\mathrm{GSI}_y} \sim \mathcal{N}(\mathrm{log}\sigma_{\mathrm{GSI}}, \sigma^2_{\sigma_{\mathrm{GSI}}})$. In this example we choose the simpler option and estimate one observation error parameter, shared across years.
 
 ## 2. Specify models
 
@@ -148,7 +148,7 @@ NAA_re <- list(sigma="rec+1", cor="2dar1")
 
 ## 4. Linking recruitment to an environmental covariate (GSI)
 
-As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
+As described in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html), the environmental covariate options are fed to `prepare_wham_input` as a list, `ecov`. This example differs from example 2 in that:
 
 - `ecov$logsigma = "est_1"` estimates the GSI observation error ($\sigma_{\mathrm{GSI}}$, one overall value for all years like in example 5). The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given, so this was not necessary.
 - `ecov$R_how = matrix("none",1,1)` or `ecov$R_how = NULL` estimates the GSI time-series model (AR1) for models without a GSI-Recruitment effect, in order to compare AIC with models that do include the effect. Setting `ecov$R_how = matrix("limiting-lag-1-linear,1,1)` specifies that the GSI in year $t$ affects the Beverton-Holt $\beta$ parameter ("limiting" / carrying capacity effect) in year $t+1$ linearly (on log scale).

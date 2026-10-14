@@ -17,7 +17,7 @@ installed. If not, see the
 example, without environmental effects, is available as a [R
 script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R)
 and
-[vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+[vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
 In example 2, we demonstrate how to specify and run WHAM with varying
 
@@ -29,8 +29,8 @@ In example 2, we demonstrate how to specify and run WHAM with varying
 - how the CPI affects recruitment (controlling or limiting)
 
 As in [example
-1](https://timjmiller.github.io/wham/articles/ex1_basics.html), we check
-that each model converges
+1](https://timjmiller.github.io/wham/articles/ex01_basics.html), we
+check that each model converges
 ([`check_convergence()`](https://timjmiller.github.io/wham/reference/check_convergence.md)),
 plot diagnostics, results, and reference points
 ([`plot_wham_output()`](https://timjmiller.github.io/wham/reference/plot_wham_output.md)),

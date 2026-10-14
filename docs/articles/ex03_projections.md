@@ -12,7 +12,7 @@ England / Mid-Atlantic Yellowtail Flounder.
 Here we assume you already have `wham` installed. If not, see the
 [Introduction](https://timjmiller.github.io/wham/). This is the 3rd
 `wham` example, which builds off model `m5` from [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all
   ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
@@ -70,7 +70,7 @@ setwd(write.dir)
 ```
 
 We need the same data files as in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html).
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html).
 Read in `ex2_SNEMAYT.dat` and `CPI.csv`:
 
 ``` r
@@ -83,7 +83,7 @@ env.dat <- read.csv(file.path(wham.dir,"extdata","CPI.csv"), header=T)
 ## 2. Specify model
 
 Setup model `m5` from [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all
   ages, `NAA_re = list(sigma='rec+1',cor='iid')`)

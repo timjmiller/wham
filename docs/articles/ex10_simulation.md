@@ -185,8 +185,8 @@ mod_1$simulate
 #>     }
 #>     ans
 #> }
-#> <bytecode: 0x000001d04d3a71f8>
-#> <environment: 0x000001d04cbb5888>
+#> <bytecode: 0x000002b01b40ea50>
+#> <environment: 0x000002b01ac500a8>
 ```
 
 As we can see it is a function, but less apparent is that it will report
@@ -1625,10 +1625,10 @@ plot(stock_om$years, sim_Ecov$NAA[1,1,,1], type = 'l', ylab = "Recruitment", xla
 ![sim_plot_4e_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png)  
 
 See the [catchability
-vignette](https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd)
+vignette](https://timjmiller.github.io/wham/articles/ex11_catchability.Rmd)
 for an example of simulating effects of multiple covariates on the
 population. Also see the [CPI and recruitment
-vignette](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html)
+vignette](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html)
 for configuring effects on recruitment when a stock-recruit function is
 assumed.
 
