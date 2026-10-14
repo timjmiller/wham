@@ -135,7 +135,7 @@ fix selectivity at 1. In the code above, we have already determined the
 ages to fix selectivity at 1 (ages 4-5 in fishery, age 4 in index 1, and
 ages 2-4 in index 2). If you are interested in more details and options
 for selectivity in WHAM, see [Example
-4](https://timjmiller.github.io/wham/articles/ex4_selectivity.html) and
+4](https://timjmiller.github.io/wham/articles/ex04_selectivity.html) and
 [`prepare_wham_input()`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md).
 
 ## 3. Fit model and check for convergence

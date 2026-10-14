@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9011</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,7 @@ projecting each peel <em>y</em> years. Although this can be done for any
 variable, we demonstrate how to do so for recruitment, as in Fig. 4 of
 <a href="https://doi.org/10.1111/fog.12236" class="external-link">Xu et al. (2018)</a>. We use
 the same data and model setup as for <code>m3</code> and <code>m5</code>
-from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+from <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a>.</p>
 <div class="section level2">
 <h2 id="load-wham-and-other-useful-packages">1. Load WHAM and other useful packages<a class="anchor" aria-label="anchor" href="#load-wham-and-other-useful-packages"></a>
@@ -97,7 +97,7 @@ from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.htm
 <span><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span></code></pre></div>
-<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+<p>We need the same data files as in <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a>. Let’s copy <code>ex2_SNEMAYT.dat</code> and <code>CPI.csv</code>
 to our analysis directory:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -111,7 +111,7 @@ to our analysis directory:</p>
 <h2 id="specify-models">2. Specify models<a class="anchor" aria-label="anchor" href="#specify-models"></a>
 </h2>
 <p>Setup models <code>m5</code> (with CPI effect on recruitment) and
-<code>m3</code> (no CPI effect on recruitment) from <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+<code>m3</code> (no CPI effect on recruitment) from <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a>:</p>
 <ul>
 <li><p>full state-space model (numbers-at-age are random effects for all
@@ -189,7 +189,7 @@ and Beverton (1998)</a>) effect on recruitment
 = 0 and continuing the CPI AR1 process model (without new observations).
 You can specify alternative options for the projections using
 <code>$proj.opts</code> (see <a href="https://timjmiller.github.io/wham/reference/project_wham.html"><code>project_wham()</code></a>
-and <a href="https://timjmiller.github.io/wham/articles/ex3_projections.html">Ex
+and <a href="https://timjmiller.github.io/wham/articles/ex03_projections.html">Ex
 3: Projections</a>).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n.yrs.peel</span> <span class="op">&lt;-</span> <span class="fl">15</span></span>

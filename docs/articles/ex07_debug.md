@@ -18,7 +18,7 @@ asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex7_SNEMAYT.dat"))
 ```
 
 Prepare the WHAM model (`m3` from [example
-1](https://timjmiller.github.io/wham/articles/ex1_SNEMA_yellowtail_flounder.html)).
+1](https://timjmiller.github.io/wham/articles/ex01_SNEMA_yellowtail_flounder.html)).
 
 ``` r
 
