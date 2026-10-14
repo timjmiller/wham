@@ -26,7 +26,7 @@ library(wham)
 
 This is the 9th WHAM example. We assume you already have `wham` installed and are relatively familiar with the package. If not, read the [Introduction](https://timjmiller.github.io/wham/) and  [Tutorial](https://timjmiller.github.io/wham/articles/).
 
-In this vignette we show how to calculate retrospective predictions, by peeling *x* years of data, re-fitting models, and then projecting each peel *y* years. Although this can be done for any variable, we demonstrate how to do so for recruitment, as in Fig. 4 of [Xu et al. (2018)](https://doi.org/10.1111/fog.12236). We use the same data and model setup as for `m3` and `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html).
+In this vignette we show how to calculate retrospective predictions, by peeling *x* years of data, re-fitting models, and then projecting each peel *y* years. Although this can be done for any variable, we demonstrate how to do so for recruitment, as in Fig. 4 of [Xu et al. (2018)](https://doi.org/10.1111/fog.12236). We use the same data and model setup as for `m3` and `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html).
 
 ## 1. Load WHAM and other useful packages
 
@@ -46,7 +46,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
+We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html). Let's copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 file.copy(from=file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"), to=write.dir, overwrite=TRUE)
@@ -57,7 +57,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 ## 2. Specify models
 
-Setup models `m5` (with CPI effect on recruitment) and `m3` (no CPI effect on recruitment) from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+Setup models `m5` (with CPI effect on recruitment) and `m3` (no CPI effect on recruitment) from [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -128,7 +128,7 @@ res <- compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(kobe
 
 ## 5. Run retrospective predictions
 
-For each model, peel 3-15 years of data and re-fit the model using `retro()`, and then project each peel 3 years by calling `project_wham()`. These projections are done with *F* = 0 and continuing the CPI AR1 process model (without new observations). You can specify alternative options for the projections using `$proj.opts` (see [`project_wham()`](https://timjmiller.github.io/wham/reference/project_wham.html) and [Ex 3: Projections](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+For each model, peel 3-15 years of data and re-fit the model using `retro()`, and then project each peel 3 years by calling `project_wham()`. These projections are done with *F* = 0 and continuing the CPI AR1 process model (without new observations). You can specify alternative options for the projections using `$proj.opts` (see [`project_wham()`](https://timjmiller.github.io/wham/reference/project_wham.html) and [Ex 3: Projections](https://timjmiller.github.io/wham/articles/ex03_projections.html)).
 
 ```{r eval=FALSE}
 n.yrs.peel <- 15
