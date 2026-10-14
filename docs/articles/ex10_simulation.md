@@ -187,8 +187,8 @@ mod_1$simulate
     #>     }
     #>     ans
     #> }
-    #> <bytecode: 0x0000013036425268>
-    #> <environment: 0x0000013035c5a8f8>
+    #> <bytecode: 0x00000261f839ee40>
+    #> <environment: 0x00000261f7c5e4d0>
 
 As we can see it is a function, but less apparent is that it will report
 anything using the `REPORT` calls, and most importantly, those within
@@ -1626,7 +1626,7 @@ plot(stock_om$years, sim_Ecov$NAA[1,1,,1], type = 'l', ylab = "Recruitment", xla
 ![sim_plot_4e_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png)  
 
 See the [catchability
-vignette](https://timjmiller.github.io/wham/articles/ex11_catchability.Rmd)
+vignette](https://timjmiller.github.io/wham/articles/ex11_catchability.html)
 for an example of simulating effects of multiple covariates on the
 population. Also see the [CPI and recruitment
 vignette](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html)

@@ -243,8 +243,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;     ans</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x0000013036425268&gt;</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000013035c5a8f8&gt;</span></span></code></pre>
+<span><span class="co">#&gt; &lt;bytecode: 0x00000261f839ee40&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x00000261f7c5e4d0&gt;</span></span></code></pre>
 <p>As we can see it is a function, but less apparent is that it will
 report anything using the <code>REPORT</code> calls, and most
 importantly, those within SIMULATE statements in the compiled cpp code.
@@ -1576,7 +1576,7 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Recruitment"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png" style="width:100.0%" alt="sim_plot_4e_2"><br></p>
-<p>See the <a href="https://timjmiller.github.io/wham/articles/ex11_catchability.Rmd">catchability
+<p>See the <a href="https://timjmiller.github.io/wham/articles/ex11_catchability.html">catchability
 vignette</a> for an example of simulating effects of multiple covariates
 on the population. Also see the <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">CPI
 and recruitment vignette</a> for configuring effects on recruitment when
