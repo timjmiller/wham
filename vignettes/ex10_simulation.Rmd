@@ -798,7 +798,7 @@ plot(stock_om$years, sim_Ecov$NAA[1,1,,1], type = 'l', ylab = "Recruitment", xla
 ![sim_plot_4e_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png){ width=100% }\
 
 
-See the [catchability vignette](https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd) for an example of simulating effects of multiple covariates on the population. Also see the [CPI and recruitment vignette](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) for configuring effects on recruitment when a stock-recruit function is assumed. 
+See the [catchability vignette](https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd) for an example of simulating effects of multiple covariates on the population. Also see the [CPI and recruitment vignette](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html) for configuring effects on recruitment when a stock-recruit function is assumed. 
 
 ## 4f. Estimation model with incorrect M assumption
 
