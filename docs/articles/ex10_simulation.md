@@ -172,22 +172,23 @@ The important item for this vignette is `mod_1$simulate`
 ``` r
 
 mod_1$simulate
-#> function (par = last.par, complete = FALSE) 
-#> {
-#>     f(par, order = 0, type = "double", do_simulate = TRUE)
-#>     sim <- as.list(reportenv)
-#>     if (complete) {
-#>         ans <- data
-#>         ans[names(sim)] <- sim
-#>     }
-#>     else {
-#>         ans <- sim
-#>     }
-#>     ans
-#> }
-#> <bytecode: 0x000002b01b40ea50>
-#> <environment: 0x000002b01ac500a8>
 ```
+
+    #> function (par = last.par, complete = FALSE) 
+    #> {
+    #>     f(par, order = 0, type = "double", do_simulate = TRUE)
+    #>     sim <- as.list(reportenv)
+    #>     if (complete) {
+    #>         ans <- data
+    #>         ans[names(sim)] <- sim
+    #>     }
+    #>     else {
+    #>         ans <- sim
+    #>     }
+    #>     ans
+    #> }
+    #> <bytecode: 0x0000013036425268>
+    #> <environment: 0x0000013035c5a8f8>
 
 As we can see it is a function, but less apparent is that it will report
 anything using the `REPORT` calls, and most importantly, those within

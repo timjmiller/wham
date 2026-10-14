@@ -229,8 +229,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <p>The important item for this vignette is
 <code>mod_1$simulate</code></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mod_1</span><span class="op">$</span><span class="va">simulate</span></span>
-<span><span class="co">#&gt; function (par = last.par, complete = FALSE) </span></span>
+<code class="sourceCode R"><span><span class="va">mod_1</span><span class="op">$</span><span class="va">simulate</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; function (par = last.par, complete = FALSE) </span></span>
 <span><span class="co">#&gt; {</span></span>
 <span><span class="co">#&gt;     f(par, order = 0, type = "double", do_simulate = TRUE)</span></span>
 <span><span class="co">#&gt;     sim &lt;- as.list(reportenv)</span></span>
@@ -243,8 +243,8 @@ the<code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-lin
 <span><span class="co">#&gt;     }</span></span>
 <span><span class="co">#&gt;     ans</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x000002b01b40ea50&gt;</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000002b01ac500a8&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x0000013036425268&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000013035c5a8f8&gt;</span></span></code></pre>
 <p>As we can see it is a function, but less apparent is that it will
 report anything using the <code>REPORT</code> calls, and most
 importantly, those within SIMULATE statements in the compiled cpp code.
@@ -259,7 +259,7 @@ and maturity at age.</p>
 <p>Here is a simple function that will simulate data from an operating
 model. It will fit the same model configuration to that data with the
 argument <code>self.fit=TRUE</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">self.fit</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">do.sdrep</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">input</span> <span class="op">&lt;-</span> <span class="va">om</span><span class="op">$</span><span class="va">input</span></span>
 <span>  <span class="va">input</span><span class="op">$</span><span class="va">data</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -289,7 +289,7 @@ data before fitting each of them and to update results with each fit so
 that results are not lost if a catastrophic error occurs. Here is a
 lo-tech approach to simulating many data inputs and save information
 from fits of the same model to each of those data sets.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">n_sims</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="co">#more is better, but takes longer</span></span>
 <span><span class="va">sim_inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="va">n_sims</span>, <span class="fu">sim_fn</span><span class="op">(</span><span class="va">mod_1</span><span class="op">)</span>, simplify<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -319,7 +319,7 @@ interval coverage for the basic parameters as well as a variety of
 derived model output (e.g., SSB, reference points).</p>
 <p>Below is a plot of bias and 95% confidence intervals for SSB
 estimation.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">true</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">sim_inputs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">SSB</span><span class="op">)</span></span>
 <span><span class="va">est</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">reps</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">SSB</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">SSB_rel_resid</span> <span class="op">=</span> <span class="va">est</span><span class="op">/</span><span class="va">true</span> <span class="op">-</span> <span class="fl">1</span></span>
@@ -337,7 +337,7 @@ estimation.</p>
 <p>When the fitted model is different from that used to simulate the
 data, there is a bit more work involved. Some components of the input
 used by <code>fit_wham</code> are important.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span></span>
 <span>  <span class="va">asap3</span>, </span>
 <span>  selectivity <span class="op">=</span> <span class="va">selectivity</span>,</span>
@@ -365,7 +365,7 @@ model<a class="anchor" aria-label="anchor" href="#a--an-alternative-age-composit
 </h3>
 <p>Below is an example where an alternative likelihood for the age
 composition observations is assumed for the estimation model.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input_em</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span></span>
 <span>  <span class="va">asap3</span>, </span>
 <span>  recruit_model<span class="op">=</span><span class="fl">2</span>, </span>
@@ -390,7 +390,7 @@ composition observations is assumed for the estimation model.</p>
 composition observations that are fitted and those that were simulated.
 The 4-9 elements correspond to the index age composition observations in
 the first year:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">sim</span> <span class="op">=</span> <span class="fu">sim_fn</span><span class="op">(</span><span class="va">mod_1</span>, <span class="va">input_em</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">sim</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">obs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,<span class="op">]</span> <span class="co">#data.frame of observations and identifying information</span></span>
@@ -428,10 +428,10 @@ Similarly, the log transform of aggregate index and catch observations
 provided in the vector of observations (<code>obsvec</code>) used to fit
 the model as those are treated as normal distributed observations.</p>
 <p>Now go ahead and fit the simulated data.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">simfit</span> <span class="op">=</span> <span class="fu">sim_fn</span><span class="op">(</span><span class="va">mod_1</span>, <span class="va">input_em</span>, do.fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3a.png" style="width:100.0%" alt="sim_fit_3a"><br></p>
@@ -465,7 +465,7 @@ whatever parameter values are set (normally as initial and fixed values)
 in <code>input$par</code> will be used to simulate data. For the
 estimating model we can use the same input as the operating model except
 for changing the inputs for the effective sample size.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">Neff_om</span> <span class="op">=</span> <span class="fl">50</span>, <span class="va">Neff_em</span> <span class="op">=</span> <span class="fl">200</span>, <span class="va">do.fit</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">om_input</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="va">input</span> <span class="co">#the original input</span></span>
 <span>  <span class="va">om_input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">index_Neff</span><span class="op">[</span><span class="op">]</span> <span class="op">=</span> <span class="va">Neff_om</span> <span class="co">#true effective sample size for the indices</span></span>
@@ -488,7 +488,7 @@ for changing the inputs for the effective sample size.</p>
 frequencies are rescaled by the assumed multinomial sample size. Again,
 we can check the observations are being used correctly by usingg do.fit
 = FALSE:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">sim</span> <span class="op">=</span> <span class="fu">sim_fn</span><span class="op">(</span><span class="va">mod_1</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">sim</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">obs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,<span class="op">]</span> <span class="co">#data.frame of observations and identifying information</span></span>
@@ -521,7 +521,7 @@ operating and estimating model, but the frequencies in the estimating
 model are 4 times those in the operating model because we are assuming
 the effective sample size is 4 times the true value.</p>
 <p>Now go ahead and fit the simulated data.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">simfit</span> <span class="op">=</span> <span class="fu">sim_fn</span><span class="op">(</span><span class="va">mod_1</span>, do.fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -543,7 +543,7 @@ just random effects on recruitment when a full state-space model was the
 operating model. We will fit the full state-space model to the example
 data to get a configuration for the operating model then simulate data
 from it and fit the recruitment-only model to it.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">NAA_re_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  sigma<span class="op">=</span><span class="st">"rec+1"</span>, <span class="co">#random effects for recruitment and older age classes</span></span>
@@ -597,7 +597,7 @@ size and terminal year stock size is very different.</p>
 model, but that we wanted to evaluate the effect of assuming logistic
 selectivity. Use the same <code>NAA_re</code> defined earlier but change
 the selectivity</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">selectivity_em</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -624,7 +624,7 @@ the selectivity</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_1.png" style="width:100.0%" alt="sim_fit_3d_1"><br></p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB/SSB(F40)"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">mod_1</span><span class="op">$</span><span class="va">years</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_2.png" style="width:100.0%" alt="sim_fit_3d_2"><br></p>
@@ -648,7 +648,7 @@ make a list that can be provided to the <code>basic_info</code> ,
 <code>catch_info</code>, and <code>index_info</code> arguments of
 <code>prepare_wham_input</code>. The elements of the output it provides
 are defined in the help file for <code>prepare_wham_input</code>.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">make_info</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">base_years</span> <span class="op">=</span> <span class="fl">1982</span><span class="op">:</span><span class="fl">2021</span>, <span class="va">ages</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="va">Fhist</span> <span class="op">=</span> <span class="st">"updown"</span>, <span class="va">n_feedback_years</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span> <span class="co">#changed years</span></span>
 <span>    <span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>    <span class="va">info</span><span class="op">$</span><span class="va">ages</span> <span class="op">&lt;-</span> <span class="va">ages</span></span>
@@ -723,7 +723,7 @@ random effects
 Importantly, <code>fit_wham</code> must be called with
 <code>do.fit=FALSE</code> to set up the model to be simulated with the
 parameter values specified rather than estimated.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om_info</span> <span class="op">&lt;-</span> <span class="fu">make_info</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">basic_info</span> <span class="op">&lt;-</span> <span class="va">stock_om_info</span><span class="op">$</span><span class="va">basic_info</span></span>
 <span><span class="va">catch_info</span> <span class="op">&lt;-</span> <span class="va">stock_om_info</span><span class="op">$</span><span class="va">catch_info</span></span>
@@ -817,7 +817,7 @@ parameter values specified rather than estimated.</p>
 <span><span class="co">#&gt; -------------------------------------------------------------------------------------------------------------------------------------</span></span>
 <span></span>
 <span><span class="co">#stock_om &lt;- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)</span></span></code></pre></div>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#n_stock x n_regions x n_ages array</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">log_NAA_sigma</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co">#Rsigma</span></span>
 <span><span class="co">#&gt; [1] 0.5</span></span></code></pre></div>
@@ -840,7 +840,7 @@ on a logit scale with the parameter bounds of (-1,1). These parameters
 can be set using the <code>NAA_re</code> argument to
 <code>prepare_wham_input</code>. See the help file for
 <code>set_NAA</code>.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">NAA_re_om</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  N1_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">basic_info</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="va">M_om</span><span class="op">$</span><span class="va">initial_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">basic_info</span><span class="op">$</span><span class="va">ages</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -925,7 +925,7 @@ can be set using the <code>NAA_re</code> argument to
 <span></span>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_NAA(stock_om_input, NAA_re_om)</span></span></code></pre></div>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#n_stock x n_regions x 3 array</span></span>
 <span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">trans_NAA_rho</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 1.7346011 0.8472979 1.3862944</span></span>
@@ -940,7 +940,7 @@ time are second and third in the <code>trans_NAA_rho</code> vector. If
 only the second and third parameters are used. Other values are set to
 zero automatically so the random effects independent in the appropriate
 way. Now if we built the operating model:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>calling <code>stock_om$simulate()</code> will use the variance anc
 correlation as we specified.</p>
@@ -960,7 +960,7 @@ variance of the (log) M random effects = 0.1 and correlations with age
 and time of 0.7 and 0.4. However, we can use the <code>M</code> argument
 to <code>prepare_wham_input</code> to specify many of these
 configurations. See the help file for <code>set_M</code>.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">M_om</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  re_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="st">"ar1_ay"</span>, <span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,</span>
@@ -1050,7 +1050,7 @@ configurations. See the help file for <code>set_M</code>.</p>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_NAA(stock_om_input, NAA_re_om)</span></span>
 <span><span class="co">#stock_om_input &lt;- set_M(stock_om_input, M_om)</span></span></code></pre></div>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#n_stock x n_regions x 3 array</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">log_NAA_sigma</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co">#Rsigma</span></span>
@@ -1088,7 +1088,7 @@ specify <code>M$re = "2dar1"</code> and set <code>M$cor_map</code> to
 fix the appropriate parameter fixed at 0. To force random effects for
 certain age classes to be the same, one can configure
 <code>M$re_map</code> appropriately.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">M_om</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  mean_model <span class="op">=</span> <span class="st">"estimate-M"</span>,</span>
 <span>  re_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="st">"ar1_ay"</span>, <span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,</span>
@@ -1185,7 +1185,7 @@ fleet and one for the index. We will assume that the variance parameter
 for the fleet is 0.4 and that for the index is 0.1, but they both have
 the same correlation parameters with age and time: 0.7 and 0.4. See the
 help file for <code>set_selectivity</code>.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">selectivity_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">catch_info</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">index_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="va">catch_info</span><span class="op">$</span><span class="va">n_fleets</span> <span class="op">+</span> <span class="va">index_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span>,</span>
@@ -1273,7 +1273,7 @@ help file for <code>set_selectivity</code>.</p>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_M(stock_om_input, M_om)</span></span>
 <span><span class="co">#stock_om_input &lt;- set_selectivity(stock_om_input, selectivity_om)</span></span></code></pre></div>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">sel_repars</span></span>
 <span><span class="co">#&gt;            [,1]     [,2]      [,3]</span></span>
 <span><span class="co">#&gt; [1,] -0.9162907 1.734601 0.8472979</span></span>
@@ -1303,7 +1303,7 @@ estimated in the <code>logit_q</code> parameter which is defined in the
 <code>make_basic_info</code> function. Here we will assume the
 transformed catchability is an AR1 process with standard deviation 0.1
 and autocorrelation = 0.5.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">selectivity_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">catch_info</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="va">index_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, <span class="va">catch_info</span><span class="op">$</span><span class="va">n_fleets</span> <span class="op">+</span> <span class="va">index_info</span><span class="op">$</span><span class="va">n_indices</span><span class="op">)</span></span>
@@ -1389,13 +1389,13 @@ and autocorrelation = 0.5.</p>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_selectivity(stock_om_input, selectivity_om)</span></span>
 <span><span class="co">#stock_om_input &lt;- set_q(stock_om_input, catchability_om)</span></span></code></pre></div>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">q_repars</span></span>
 <span><span class="co">#&gt;           [,1]     [,2]</span></span>
 <span><span class="co">#&gt; [1,] -2.302585 1.098612</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span>, <span class="fu">wham</span><span class="fu">:::</span><span class="fu">gen.logit</span><span class="op">(</span><span class="fl">0.5</span>,<span class="op">-</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] -2.302585  1.098612</span></span></code></pre></div>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
@@ -1447,7 +1447,7 @@ process is AR1 with mean 0, standard deviation = 0.3 and correlation
 parameter 0.5. We will also assume the effect is on (log) recruitment
 (no stock-recruit function) and the size of the effect is
 <code>Ecov_beta = 0.3</code>.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">ecov_om</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    label <span class="op">=</span> <span class="st">"Climate variable 1"</span>,</span>
@@ -1556,7 +1556,7 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <span></span>
 <span><span class="co">#or equivalently</span></span>
 <span><span class="co">#stock_om_input &lt;- set_ecov(stock_om_input, ecov_om)</span></span></code></pre></div>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#sd and rho of ecov processes</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_process_pars</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  0.000000 -1.203973  1.098612</span></span>
@@ -1565,7 +1565,7 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <span><span class="co">#size of Ecov_beta</span></span>
 <span><span class="va">stock_om_input</span><span class="op">$</span><span class="va">par</span><span class="op">$</span><span class="va">Ecov_beta_R</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span> <span class="co">#=0.3</span></span>
 <span><span class="co">#&gt; [1] 0.3</span></span></code></pre></div>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stock_om</span> <span class="op">=</span> <span class="fu"><a href="../reference/fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">stock_om_input</span>, do.fit <span class="op">=</span> <span class="cn">FALSE</span>, MakeADFun.silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
@@ -1573,7 +1573,7 @@ parameter 0.5. We will also assume the effect is on (log) recruitment
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">Ecov_x</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Covariate"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_1.png" style="width:100.0%" alt="sim_plot_4e_1"><br></p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">sim_Ecov</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"Recruitment"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png" style="width:100.0%" alt="sim_plot_4e_2"><br></p>
 <p>See the <a href="https://timjmiller.github.io/wham/articles/ex11_catchability.Rmd">catchability
@@ -1590,7 +1590,7 @@ natural mortality rate (M = 0.3), but other aspects of the estimation
 model are consistent with the operating model. The <code>sim_fn</code>
 function will return the simulated population and data and either the
 input for the estimating model or the fitted estimation model.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">stock_om_input</span> <span class="op">=</span> <span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span></span>
 <span>    basic_info <span class="op">=</span> <span class="va">basic_info</span>, </span>
@@ -1635,7 +1635,7 @@ input for the estimating model or the fitted estimation model.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4f_1.png" style="width:100.0%" alt="sim_fit_4f_1"><br></p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">simfit</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'l'</span>, ylab <span class="op">=</span> <span class="st">"SSB/SSB(F40)"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code></pre></div>
@@ -1661,7 +1661,7 @@ essentially just a solver for the F in the operating model for a catch
 that would be provided as management advice using the estimation model,
 but note that when the catch advice is not possible to actually take
 from the population or implies F greater than 10, F is set at 10.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">get_F_from_catch</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">year</span>, <span class="va">catch</span>, <span class="va">Finit</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">maxF</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">rep</span> <span class="op">=</span> <span class="va">om</span><span class="op">$</span><span class="va">rep</span></span>
 <span>    <span class="va">naa</span> <span class="op">=</span> <span class="va">rep</span><span class="op">$</span><span class="va">NAA</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="va">year</span>,<span class="op">]</span></span>
@@ -1686,7 +1686,7 @@ from the population or implies F greater than 10, F is set at 10.</p>
 <p>The second function uses <code>get_F_from_catch</code> to get the F
 and replace the F parameters in the operating model and update the
 population and observations</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">update_om_F</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">year</span>, <span class="va">catch</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">rep</span> <span class="op">&lt;-</span> <span class="va">om</span><span class="op">$</span><span class="va">rep</span> <span class="co">#generate the reported values given the parameters</span></span>
 <span>    <span class="va">year_ind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">om</span><span class="op">$</span><span class="va">years</span> <span class="op">==</span> <span class="va">year</span><span class="op">)</span> <span class="co">#index corresponding to year</span></span>
@@ -1725,7 +1725,7 @@ terminal year can be updated appropriately through the feedback period.
 Note that we will be using all of the same assumptions as the operating
 model using the <code>make_info</code> function, but an alternative
 function with incorrect assumptions could be created and used.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">make_em_input</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">M_em</span>, <span class="va">sel_em</span>, <span class="va">NAA_em</span>, <span class="va">om_data</span>, <span class="va">em_years</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">info</span> <span class="op">=</span> <span class="fu">make_info</span><span class="op">(</span>base_years <span class="op">=</span> <span class="va">em_years</span><span class="op">)</span> <span class="co">#update the terminal year for the estimation model</span></span>
 <span>  <span class="va">ind_em</span> <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">em_years</span><span class="op">)</span> <span class="co">#year indices</span></span>
@@ -1745,7 +1745,7 @@ function with incorrect assumptions could be created and used.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We also need a function that will take the estimated model and
 generate catch advice from it.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">advice_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">em</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">#make 5 year projections using F40. Use average SSB/R and YPR inputs over most recent 5 years</span></span>
 <span>  <span class="va">proj_opts</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n.yrs<span class="op">=</span><span class="fl">5</span>, use.FXSPR<span class="op">=</span><span class="cn">TRUE</span>, avg.yrs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">em</span><span class="op">$</span><span class="va">years</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> </span>
@@ -1757,7 +1757,7 @@ generate catch advice from it.</p>
 <p>Finally, we make a function that uses all the other functions and
 steps through the feedback period, updating the operating model,
 refitting the estimation model, and generating the catch advice.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loop_through_fn</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">om</span>, <span class="va">M_em</span>, <span class="va">selectivity_em</span>, <span class="va">NAA_re_em</span>, <span class="va">assess_years</span>, <span class="va">assess_interval</span> <span class="op">=</span> <span class="va">assess.interval</span>, <span class="va">base_years</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">catches</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#save the catch advice</span></span>
 <span>  <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="va">assess_years</span><span class="op">)</span><span class="op">{</span></span>
@@ -1793,7 +1793,7 @@ iteratively in the closed loop to keep the same simulated values
 throughout the base period and up to each time catch advice is defined.
 Running the <code>loop_through_fn</code> function will take a little
 while.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">assess.interval</span> <span class="op">=</span> <span class="fl">4</span></span>
 <span><span class="va">base.years</span> <span class="op">=</span> <span class="fu">make_info</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">info</span><span class="op">$</span><span class="va">years</span> <span class="co">#no feedback period yet</span></span>
@@ -1807,7 +1807,7 @@ while.</p>
 <span><span class="va">looped_rep</span> <span class="op">&lt;-</span> <span class="va">looped_res</span><span class="op">$</span><span class="va">om</span><span class="op">$</span><span class="va">rep</span></span></code></pre></div>
 <p>Once the closed loop simulation is done we can see how the population
 size has been changed during the feedback period.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span>, <span class="va">looped_rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">"l"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="st">"SSB"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code></pre></div>
@@ -1816,7 +1816,7 @@ size has been changed during the feedback period.</p>
 to the true reference point
 (SSB(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mn>40</mn></msub><annotation encoding="application/x-tex">F_{40}</annotation></semantics></math>))
 compared to the true status.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">looped_rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span><span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">looped_rep</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="va">looped_res</span><span class="op">$</span><span class="va">em</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">SSB</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span><span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">looped_res</span><span class="op">$</span><span class="va">em</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">log_SSB_FXSPR</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span><span class="op">]</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">"l"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="st">"SSB/SSB40"</span>, xlab <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">stock_om</span><span class="op">$</span><span class="va">years</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">76</span><span class="op">]</span>, <span class="va">res</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code></pre></div>

@@ -104,8 +104,11 @@ mod_1$sdrep #the standard errors of the fixed effects
 
 The important item for this vignette is `mod_1$simulate`
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 mod_1$simulate
+```
+```{r, echo = FALSE, eval=TRUE}
+print(mod_1$simulate, useSource =FALSE)
 ```
 As we can see it is a function, but less apparent is that it will report anything using the `REPORT` calls, and most importantly, those within SIMULATE statements in the compiled cpp code. More information about simulation using the TMB package can be found [here](http://kaskr.github.io/adcomp/_book/Simulation.html). The WHAM cpp code is written to be able to simulate all observations and any random effects that are specified to be part of the particular model configuration. `mod_1$simulate` is what we use to simulate data for simulation studies. The `complete` argument tells the function to provide all data inputs whether they are simulated or not. For a wham model this would include important things like weight and maturity at age.
 
