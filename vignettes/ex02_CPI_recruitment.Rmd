@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 2nd `wham` example, which builds off model `m4` from example 1 (full state-space model, numbers at all ages are random effects, logistic normal age-compositions). We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+This is the 2nd `wham` example, which builds off model `m4` from example 1 (full state-space model, numbers at all ages are random effects, logistic normal age-compositions). We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
 In example 2, we demonstrate how to specify and run WHAM with varying
 
@@ -27,7 +27,7 @@ In example 2, we demonstrate how to specify and run WHAM with varying
 
 - how the CPI affects recruitment (controlling or limiting)
 
-As in [example 1](https://timjmiller.github.io/wham/articles/ex1_basics.html), we check that each model converges (`check_convergence()`), plot diagnostics, results, and reference points (`plot_wham_output()`), and compare models using AIC and Mohn's rho (`compare_wham_models()`).
+As in [example 1](https://timjmiller.github.io/wham/articles/ex01_basics.html), we check that each model converges (`check_convergence()`), plot diagnostics, results, and reference points (`plot_wham_output()`), and compare models using AIC and Mohn's rho (`compare_wham_models()`).
 
 ## 1. Prepare `wham`
 
