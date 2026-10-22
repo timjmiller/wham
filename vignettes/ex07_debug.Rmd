@@ -84,7 +84,7 @@ therep$nll_agg_catch
 ```
 
 We see that the problem is in year 42. The user will not necessarily know what names are used in WHAM to denote the different inputs to `nll_agg_catch`, so we can 
-search the [WHAM .cpp file](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L915) for "nll_agg_catch". We find that it depends on `agg_catch` (the catch data), `pred_log_catch` (model-predicted log catch), `agg_catch_sigma`, and `log_catch_sig_scale`. The aggregate catch CVs from ASAP are transformed to standard deviations for the log-normal assumption on aggregate catch and supplied to WHAM as `input$data$agg_catch_sigma`. It is possible to attempt to estimate a scalar multiple of the annual SDs via `log_catch_sig_scale`, but it is not used by default.
+search the WHAM main [.cpp file](https://github.com/timjmiller/wham/blob/master/src/multi_wham.cpp) for "nll_agg_catch". We find that it depends on the observed aggregate catch (in `obsvec`), and the annual lognormal parameters for each observation `catch_annual_pars` which are the predicted value from the model (`pred_log_catch`) and the standard deviation, which is a function of `agg_catch_cv`, and a scalar parameter defined in `catch_pars`. The aggregate catch CVs from ASAP are transformed to standard deviations for the log-normal assumption on aggregate catch. It is possible to attempt to estimate the scalar parameter of the annual SDs, but it is not used by default (see `?wham::set_agg_obs`).
 
 The catch data looks ok.
 
@@ -92,10 +92,10 @@ The catch data looks ok.
 input$data$agg_catch
 ```
 
-The catch SDs looks ok.
+The catch CVs looks ok.
 
 ```{r}
-input$data$agg_catch_sigma
+input$data$agg_catch_cv
 ```
 
 The predicted log catch in year 42 is the issue.
@@ -104,7 +104,7 @@ The predicted log catch in year 42 is the issue.
 therep$pred_log_catch
 ```
 
-The predicted log catch is just a [log-transformation](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L912) of  `pred_catch` which [aggregates over stock-specific catches](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L910) (if more than 1). The stock-specific catches are a [function](https://github.com/timjmiller/wham/blob/d3370a0f82d0f2012a1a19afdfb4b2c29da73720/src/multi_wham.cpp#L908) of stock-specific catch-at-age and weight-at-age for each fleet. These objects are reported out by wham, so first let's look at `pred_stock_CAA` which is an array (n_fleetx x n_stocks x n_years x n_ages). There is only 1 fleet and 1 stock so:
+The predicted log catch is just a log-transformation of  `pred_catch` which aggregates over stock-specific catches (if more than 1). The stock-specific catches are a function of stock-specific catch-at-age and weight-at-age for each fleet. These objects are reported out by wham, so first let's look at `pred_stock_CAA` which is an array (n_fleetx x n_stocks x n_years x n_ages). There is only 1 fleet and 1 stock so:
 
 ```{r}
 therep$pred_stock_CAA[1,1,,]

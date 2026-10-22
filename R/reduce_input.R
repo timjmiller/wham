@@ -140,13 +140,13 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 	data$mature <- data$mature[,ind,,drop=F]
 	data$catch_Neff <- data$catch_Neff[ind,,drop=F]
 	data$agg_catch <- data$agg_catch[ind,,drop=F]
-	data$agg_catch_sigma <- data$agg_catch_sigma[ind,,drop=F]
+	data$agg_catch_cv <- data$agg_catch_cv[ind,,drop=F]
 	data$catch_paa <- data$catch_paa[,ind,,drop=F]
 	data$use_agg_catch <- data$use_agg_catch[ind,,drop=F]
 	data$use_catch_paa <- data$use_catch_paa[ind,,drop=F]
 	data$selblock_pointer_fleets <- data$selblock_pointer_fleets[ind,,drop=F]
 	data$index_Neff <- data$index_Neff[ind,,drop=F]
-	data$agg_index_sigma <- data$agg_index_sigma[ind,,drop=F]
+	data$agg_index_cv <- data$agg_index_cv[ind,,drop=F]
 	data$agg_indices <- data$agg_indices[ind,,drop=F]
 	data$index_paa <- data$index_paa[,ind,,drop=F]
 	data$use_indices <- data$use_indices[ind,,drop=F]
@@ -161,6 +161,34 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 	data$keep_I <- data$keep_I[ind,,drop=F]
 	data$keep_Cpaa <- data$keep_Cpaa[,ind,,drop=F]
 	data$keep_Ipaa <- data$keep_Ipaa[,ind,,drop=F]
+	data$catch_pos <- data$catch_pos[ind,,drop = FALSE]
+	data$index_pos <- data$index_pos[ind,,drop = FALSE]
+	data$catch_effort <- data$catch_effort[ind,,drop = FALSE]
+	data$index_effort <- data$index_effort[ind,,drop = FALSE]
+
+  use_cv_re <- list(fleet = data$catch_cv_use_re, index = data$index_cv_use_re)
+  if(any(unlist(use_cv_re_old))){
+  	n <- c(data$n_fleets, data$n_indices)
+	  cv_repars_map <- list(fleet = matrix(map$catch_cv_repars,n[1],3), index = matrix(map$index_cv_repars,n[2],3))
+	  agg_obs_model <- list(fleet = data$catch_model, index = data$index_model)
+	  obs_pos <- list(fleet = data$catch_pos, index = data$index_pos)
+  	n_cv_re <- c(fleet = 0, index = 0)
+  	cv_re <- list(fleet = par$catch_cv_re, index = par$index_cv_re)
+    #if no missing CVs, then don't estimate cv model.
+    for(i in c("fleet", "index")) for(j in n[i]) {
+    	if(!(sum(obs_pos[[i]][,j] == 0) & agg_obs_model[[i]][j] %in% 6:13)) {
+		  	use_cv_re[[i]][j] <- 0
+   			cv_repars_map[[i]][j,] <- NA 
+   		} else{ 
+ 	   		n_cv_re[i] <- n_cv_re[i] + sum(obs_pos[[i]][,j] == 0)
+ 	   	}
+		}
+	}
+  cv_re <- list(fleet = rep(0,n_cv_re[1]), index = rep(0,n_cv_re[2]))
+  par[c("catch_cv_re", "index_cv_re")] <- cv_re[lnms]
+  data[c("catch_cv_use_re", "index_cv_use_re")] <- use_cv_re[lnms]
+  map[c("catch_cv_repars","index_cv_repars")] <- lapply(cv_repars_map[lnms], factor)
+
 
 	if(!is.null(map$q_re)) {
 		tmp <- par$q_re

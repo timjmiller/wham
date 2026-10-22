@@ -22,14 +22,17 @@
 #'     \item{$index_Neff}{matrix (n_years_model x n_indices) of effective sample sizes for proportions at age observations.}
 #'     \item{$waa_pointer_indices}{vector (n_indices) of itegers indicated waa to use for each index.}
 #'     \item{$selblock_pointer_indices}{matrix (n_years_model x n_indices) of itegers indicated selblocks to use.}
-#'     \item{$index_model}{vector (n_indices) of character strings defining distributions for indices: "log-normal" (default) or "Tweedie"}
-#'     \item{$initial_index_sd_scale}{vector (n_indices) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
-#'     \item{$map_index_sd_scale}{integer vector (n_indices) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
-#'         Use the same integer for multiple indices to estimate a shared scalar parameter.}
 #'   }
 #'
 #' @export
 set_indices <- function(input, index_info=NULL) {
+
+  if(!is.null(index_info[["initial_index_sd_scale"]])) {
+    stop('In wham::set_indices, index_info[["initial_index_sd_scale"]] is no longer an option. Use wham::set_agg_obs_model to define models and initial parameters instead.')
+  }
+  if(!is.null(index_info[["map_index_sd_scale"]])) {
+    stop('In wham::set_indices, index_info[["map_index_sd_scale"]] is no longer an option. Use wham::set_agg_obs_model to define models and map parameters instead.')
+  }
   if(is.null(input$use_asap3)){
   	input$use_asap3 <- TRUE
   	if(is.null(input$asap3)) input$use_asap3 <- FALSE
@@ -50,7 +53,7 @@ set_indices <- function(input, index_info=NULL) {
 	}
 	if(is.null(index_info)) index_info <- list()
 	if(!is.null(index_info$n_indices)) data$n_indices <- index_info$n_indices
-  # index_data_names <- c("n_indices", "agg_indices","index_paa","use_indices","use_index_paa","units_indices", "units_index_paa","index_Neff", "agg_index_sigma",
+  # index_data_names <- c("n_indices", "agg_indices","index_paa","use_indices","use_index_paa","units_indices", "units_index_paa","index_Neff", "agg_index_cv",
   # 	"index_regions", "index_seasons","fracyr_indices", "selblock_pointer_indices", "waa_pointer_indices")
 	# if(is.null(asap3)) {
 	#   # data$n_indices <- 1
@@ -75,7 +78,7 @@ set_indices <- function(input, index_info=NULL) {
 	  data$index_seasons <- 0
     data$fracyr_indices <- matrix(0, data$n_years_model, data$n_indices)
     data$agg_indices <- matrix(0, data$n_years_model, data$n_indices)
-    data$agg_index_sigma <- matrix(0, data$n_years_model, data$n_indices)
+    data$agg_index_cv <- matrix(0, data$n_years_model, data$n_indices)
     data$index_paa <- array(0, c(data$n_indices,data$n_years_model,data$n_ages))
     data$units_indices <- 0
     data$units_index_paa <- 0
@@ -96,7 +99,7 @@ set_indices <- function(input, index_info=NULL) {
 		  	data$fracyr_indices[,k] <- tmp - int_starts[ind]
 				data$agg_indices[,k] <- asap3[[i]]$IAA_mats[[j]][,2]
 	    	for(y in 1:data$n_years_model) if(asap3[[i]]$IAA_mats[[j]][y,2] < 1e-15) data$use_indices[y,k] <- 0
-	  		data$agg_index_sigma[,k] <- asap3[[i]]$IAA_mats[[j]][,3]
+	  		data$agg_index_cv[,k] <- asap3[[i]]$IAA_mats[[j]][,3]
 		    temp <- asap3[[i]]$IAA_mats[[j]][,3 + 1:data$n_ages]
 	    	temp[which(is.na(temp))] <- 0
 	    	temp[which(temp<0)] <- 0
@@ -161,9 +164,9 @@ set_indices <- function(input, index_info=NULL) {
 	  }
 	}
 	vals <- c(10,0.3,100,1,1,data$fracyr_seasons[1]*0.5)
-	index_info$agg_index_sigma <- index_info$agg_index_cv
+	index_info$agg_index_cv <- index_info$agg_index_cv
 
-	obs <- c("agg_indices", "agg_index_sigma","index_Neff", "use_indices", "use_index_paa","fracyr_indices")
+	obs <- c("agg_indices", "agg_index_cv","index_Neff", "use_indices", "use_index_paa","fracyr_indices")
   for(i in 1:length(obs) ){
 	  if(!is.null(index_info[[obs[i]]])){
 	  	data[[obs[i]]] <- index_info[[obs[i]]]
@@ -211,27 +214,15 @@ set_indices <- function(input, index_info=NULL) {
   if(is.null(index_info$waa_pointer_indices) & input$use_asap3) input$log$indices <- c(input$log$indices, "waa_pointer_indices determined from ASAP file(s). \n")
 
   ################################################################################
-  # for plotting, in years where index is not used set sigma = avg of used years
-  tmp <- data$agg_index_sigma
+  # for plotting, in years where index is not used set cv = avg of used years
+  tmp <- data$agg_index_cv
   tmp[data$use_indices == 0] <- NA
-  mean_agg_ind_sigma <- apply(tmp, 2, mean, na.rm=T)
-  for(i in 1:data$n_indices) data$agg_index_sigma[data$use_indices[,i] == 0,i] <- mean_agg_ind_sigma[i]
+  mean_agg_ind_cv <- apply(tmp, 2, mean, na.rm=T)
+  for(i in 1:data$n_indices) data$agg_index_cv[data$use_indices[,i] == 0,i] <- mean_agg_ind_cv[i]
   ################################################################################
 
 	data$index_paa[is.na(data$index_paa)] <- 0
-  data$agg_index_sigma[which(data$agg_index_sigma < 1e-15)] <- 100  
-  data$agg_index_sigma <- sqrt(log(data$agg_index_sigma^2 + 1))
-  data$index_model <- rep(1, data$n_indices)
-  if(!is.null(index_info$index_model)){
-  	if(length(index_info$index_model) != data$n_indices) stop("index_info$index_model is specified but it must be a vector with length = to the number of indices. \n")
-  	data$index_model[] <- match(index_info$index_model, c("log-normal", "Tweedie"))
-  }
-
-  input$par$index_var_pars <- matrix(0, data$n_indices,2)
-  input$map$index_var_pars <-matrix(rep(NA, 2))
-  if(!is.null(index_info$initial_index_sd_scale) & (data$index_model[i] == 1)) input$par$index_var_pars[,1] <- log(index_info$initial_index_sd_scale)
-  if(!is.null(index_info$map_index_sd_scale) & (data$index_model[i] == 1)) input$map$index_var_pars[,1] <- index_info$map_index_sd_scale
-  input$map$index_var_pars <- factor(input$map$index_var_pars)
+  data$agg_index_cv[which(data$agg_index_cv < 1e-15)] <- 100  
 
   input$data <- data
   if(is.null(input$by_pwi)) { #check whether called by prepare_wham_input
@@ -243,6 +234,7 @@ set_indices <- function(input, index_info=NULL) {
 				"\tMake sure to run set_selectivity with appropriate options before using the input.\n"))
 		}
 		input <- set_ecov(input, input$options$ecov) #may need to resize dimensions for catchability if number of indices changes
+  	input <- set_agg_obs_model(input, input$options$agg_obs_model)
   	input <- set_age_comp(input, input$options$age_comp)
   	input <- set_osa_obs(input)
   }

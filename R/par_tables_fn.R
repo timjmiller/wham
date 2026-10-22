@@ -462,18 +462,85 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       }
     }
   }
-  for(i in 1:data$n_fleets){
-    if(!is.na(sd$log_catch_sig_scale[i])){
-      fe.names <- c(fe.names, paste0(fleet.names.tab[i], " log-catch observation SD scalar"))
-      fe.vals <- c(fe.vals, exp(pars$log_catch_sig_scale[i]))
-      fe.cis <- rbind(fe.cis, ci(pars$log_catch_sig_scale[i], sd$log_catch_sig_scale[i], type = "exp"))
+  for(type in 1:2){
+    n <- "n_fleets"
+    parname <- "catch_pars" 
+    model <- "catch_model"
+    names.tab <- fleet.names.tab
+    if(type == 2){
+      n <- "n_indices"
+      parname <- "index_pars" 
+      model <- "index_model"
+      names.tab <- index.names.tab
     }
-  }
-  for(i in 1:data$n_indices){
-    if(!is.na(sd$index_var_pars[i,1]) & data$index_model[i] == 1){
-      fe.names <- c(fe.names, paste0(index.names.tab[i], " log-index observation SD scalar"))
-      fe.vals <- c(fe.vals, exp(pars$index_var_pars[i,1]))
-      fe.cis <- rbind(fe.cis, ci(pars$index_var_pars[i,1], sd$index_var_pars[i,1], type = "exp"))
+    for(i in 1:data[[n]]){
+      if(!is.na(sd[[parname]][i,1])) {
+        if(data[[model]][i] %in% c(1:4, 9:12)){
+          loc <- 0
+          mod <- ""
+          if(data[[model]][i] %in% c(2,4,10,12)){ #SD > than input
+            loc <- 1
+            mod <- " > 1"
+          }
+          like_text <- paste0(" log-normal obs SD scalar", mod)
+          if(data[[model]][i] %in% c(3:4,11:12)) like_text <- paste0(" gamma obs CV scalar", mod)
+          
+          fe.names <- c(fe.names, paste0(names.tab[i], like_text))
+          fe.vals <- c(fe.vals, loc + exp(pars[[parname]][i,1]))
+          fe.cis <- rbind(fe.cis, loc + ci(pars[[parname]][i,1], sd[[parname]][i,1], type = "exp"))
+        }
+        if(data[[model]][i] %in% c(5,13)) {
+          fe.names <- c(fe.names, paste0(names.tab[i], "Gen. gamma obs dispersion par (nu) > 0"))
+          fe.vals <- c(fe.vals, exp(pars[[parname]][i,1]))
+          fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,1], sd[[parname]][i,1], type = "exp"))
+        }
+        if(data[[model]][i] == 6) {
+          fe.names <- c(fe.names, paste0(names.tab[i], "CPG (Tweedie) alpha"))
+          fe.vals <- c(fe.vals, exp(pars[[parname]][i,1]))
+          fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,1], sd[[parname]][i,1], type = "exp"))
+        }
+        if(data[[model]][i] == 7) {
+          fe.names <- c(fe.names, paste0(names.tab[i], "CPG (Tweedie) beta fraction"))
+          fe.vals <- c(fe.vals, 1/(1 + exp(- pars[[parname]][i,1])))
+          fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,1], sd[[parname]][i,1], lo = 0, hi = 1, type = "expit"))
+        }
+        if(data[[model]][i] ==8) {
+          fe.names <- c(fe.names, paste0(names.tab[i], "intercept/constant for CPG (Tweedie) log(lambda)"))
+          fe.vals <- c(fe.vals, pars[[parname]][i,1])
+          fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,1], sd[[parname]][i,1], type = "I"))
+        }
+      }
+      if(data[[model]][i]>7){
+        if(!is.na(sd[[parname]][i,2])){
+          if(data[[model]][i] > 8) {
+            fe.names <- c(fe.names, paste0(names.tab[i], "intercept/constant for delta-model log(lambda)"))
+            fe.vals <- c(fe.vals, pars[[parname]][i,2])
+            fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,2], sd[[parname]][i,2], type = "I"))
+          }
+          else { #model =  8
+            fe.names <- c(fe.names, paste0(names.tab[i], "CPG (Tweedie) lambda abundance effect (>0)"))
+            fe.vals <- c(fe.vals, exp(pars[[parname]][i,2]))
+            fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,2], sd[[parname]][i,2], type = "exp"))
+          }
+        }
+        if(!is.na(sd[[parname]][i,3])){
+          if(data[[model]][i] > 8) {
+            fe.names <- c(fe.names, paste0(names.tab[i], "delta-model log(lambda) abundance effect (>0)"))
+            fe.vals <- c(fe.vals, exp(pars[[parname]][i,3]))
+            fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,3], sd[[parname]][i,3], type = "exp"))
+          }
+          else { #model =  8
+            fe.names <- c(fe.names, paste0(names.tab[i], "CPG (Tweedie) lambda effort effect (>0)"))
+            fe.vals <- c(fe.vals, exp(pars[[parname]][i,3]))
+            fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,3], sd[[parname]][i,3], type = "exp"))
+          }
+        }
+        if(!is.na(sd[[parname]][i,4]) & (data[[model]][i] > 8)) {
+          fe.names <- c(fe.names, paste0(names.tab[i], "delta-model log(lambda) effort effect (>0)"))
+          fe.vals <- c(fe.vals, exp(pars[[parname]][i,3]))
+          fe.cis <- rbind(fe.cis, ci(pars[[parname]][i,3], sd[[parname]][i,3], type = "exp"))
+        }
+      }
     }
   }
 

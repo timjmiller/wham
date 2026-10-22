@@ -124,37 +124,28 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     if(!is.null(fit.tmb.control$opt.control)) opt.control <- fit.tmb.control$opt.control
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep, use.optim=use.optim, opt.control = opt.control)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"),2) # don't count retro or proj in runtime
-    if(do.brps){
-      mod <- do_reference_points(mod)
-      # if(any(mod$input$data$can_move==1) & any(mod$input$data$mig_type == 1)){
-      #   warning("Cannot currently calculate standard errors of biological reference points internally when survival and movement are simultaneous for any stock.")
-      # } else {
-      #   mod <- check_which_F_age(mod)
-      #   mod$input$data$do_SPR_BRPs <- mod$env$data$do_SPR_BRPs <- 1
-      #   if(any(input$data$recruit_model %in% 3:4)) mod$input$data$do_MSY_BRPs <- mod$env$data$do_MSY_BRPs <- 1
-      #   mod$rep = mod$report() #par values don't matter because function has not been evaluated
-      #   mod <- check_FXSPR(mod)
-      # }
-    }
+    if(!is.null(mod$opt)) if(!is.character(mod$opt)) {
+      if(do.brps) mod <- do_reference_points(mod)
     
-    if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
-    if(do.sdrep) mod <- do_sdreport(mod, save.sdrep = save.sdrep, TMB.bias.correct = TMB.bias.correct, TMB.jointPrecision = TMB.jointPrecision)
+      if(mod$env$data$do_proj==1) mod <- check_projF(mod) #projections added.
+      if(do.sdrep) mod <- do_sdreport(mod, save.sdrep = save.sdrep, TMB.bias.correct = TMB.bias.correct, TMB.jointPrecision = TMB.jointPrecision)
 
-    # retrospective analysis
-    if(do.retro){
-      tryCatch(mod$peels <- retro(mod, n.peels= n.peels,
-        MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
+      # retrospective analysis
+      if(do.retro){
+        tryCatch(mod$peels <- retro(mod, n.peels= n.peels,
+          MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent), error = function(e) {mod$err_retro <<- conditionMessage(e)})
+      }
+      
+      # one-step-ahead residuals
+      if(do.osa & mod$is_sdrep){
+        mod <- make_osa_residuals(mod, osa.opts = osa.opts)
+      } else if(do.osa) warning(paste("","** Did not do OSA residual analyses. **",
+          "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",
+          sep='\n'))
+
+      # projections, calls prepare_projection + fit_wham(do.proj=F)
+      if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)
     }
-    
-    # one-step-ahead residuals
-    if(do.osa & mod$is_sdrep){
-      mod <- make_osa_residuals(mod, osa.opts = osa.opts)
-    } else if(do.osa) warning(paste("","** Did not do OSA residual analyses. **",
-        "If do.sdrep = TRUE, then there was an error during TMB::sdreport(), and so should check for unidentifiable parameters.","",
-        sep='\n'))
-
-    # projections, calls prepare_projection + fit_wham(do.proj=F)
-    if(do.proj) mod <- project_wham(mod, proj.opts=proj.opts, MakeADFun.silent = MakeADFun.silent, do.sdrep = do.sdrep, save.sdrep = save.sdrep)
 
     # error message reporting
     if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",
@@ -189,7 +180,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
 
 check_which_F_age <- function(mod)
 {
-  if(is.null(mod$opt)) mle <- mod$par
+  if(is.null(mod$opt) | is.character(mod$opt)) mle <- mod$par
   else {
     mle <- mod$opt$par
   }
@@ -220,7 +211,7 @@ check_which_F_age <- function(mod)
 check_FXSPR <- function(mod)
 {
   #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
-  if(is.null(mod$opt)) mle <- mod$par
+  if(is.null(mod$opt) | is.character(mod$opt)) mle <- mod$par
   else {
     mle <- mod$opt$par
   }
@@ -275,7 +266,7 @@ check_FXSPR <- function(mod)
 
 check_projF <- function(mod)
 {
-  if(is.null(mod$opt)) mle <- mod$par
+  if(is.null(mod$opt) | is.character(mod$opt)) mle <- mod$par
   else {
     mle <- mod$opt$par
   }

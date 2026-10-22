@@ -57,7 +57,7 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
   #first do continuous obs, condition on obs without osa (probably none)
   subset.agecomp <- which(model$osa$type %in% c("indexpaa", "catchpaa"))
   subset.ecov <- which(model$osa$type %in% c("Ecov"))
-  subset.aggregate <- which(model$osa$type %in% c("logindex", "logcatch"))
+  subset.aggregate <- which(model$osa$type %in% c("agg_index", "agg_catch"))
   conditional. <- NULL
   if(length(subset.ecov)){ #do Ecov first
     message("Doing OSA for Ecov observations...\n")

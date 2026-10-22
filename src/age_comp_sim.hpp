@@ -422,3 +422,14 @@ array<Type> sim_obsvec_in_paa(vector<Type> obsvec, vector<int> agesvec, array<Ty
   }
   return paa_out;
 }
+
+// template <class Type> //this line not needed because no "Type" arguments or output are specified
+matrix<int> set_sim_use_paa(vector<int> obs_model, matrix<int> obs_pos, matrix<int> use_paa){ //if any agg_obs become 0 need to disallow paa obs
+  matrix<int> use_paa_out = use_paa;
+  int n_y = use_paa.rows();
+  int n_series = use_paa.cols();
+  for(int i = 0; i < n_series; i++) if((obs_model(i) > 5)) for(int y = 0; y < n_y; y++) {
+    if((!obs_pos(y,i)) & use_paa(y,i)) use_paa_out(y,i) = 0; //if were using paa in original data, then change to 0 if obs_pos changed for the aggregate obs
+  }
+  return use_paa_out;
+}

@@ -32,13 +32,15 @@
 #'
 #' \code{move} specifies options for movement if there are multiple regions. See \code{\link{set_move}} for full details. 
 #'
-#' \code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
-#'
 #' \code{catch_info} is an optional list of fishery catch information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_catch}} for full details. Useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
 #'
 #' \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. Useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+#'
+#' \code{age_obs_model} specifies the probability models for aggregate catch and index observations. See \code{\link{set_age_obs_model}} for full details. 
+#'
+#' \code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
 #'
 #' \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
 #' up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
@@ -90,6 +92,7 @@
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see \code{\link{set_M}} for full details)
 #' @param NAA_re (optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see \code{\link{set_NAA}} for full details)
 #' @param catchability (optional) list specifying options for priors and random effects on catchability (see \code{\link{set_q}} for full details)
+#' @param agg_obs_model (optional) list, specifying aggregate catch and index probability model configurations (see \code{\link{set_agg_obs_model}} for full details)
 #' @param age_comp (optional) character or named list, specifies age composition model for fleet(s) and indices (see \code{\link{set_age_comp}} for full details)
 #' @param move (optional) list specifying movement/migration options for models with more than 1 region (see \code{\link{set_move}} for full details)
 #' @param L (optional) list specifying "extra" mortality options (see \code{\link{set_L}} for full details)
@@ -129,7 +132,7 @@
 #'
 #' @export
 prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock", recruit_model=2, ecov=NULL, selectivity=NULL, M=NULL, 
-	NAA_re=NULL, catchability=NULL, age_comp=NULL, move=NULL, L=NULL, F=NULL, catch_info=NULL, index_info=NULL, basic_info = NULL){
+	NAA_re=NULL, catchability=NULL, agg_obs_model = NULL, age_comp=NULL, move=NULL, L=NULL, F=NULL, catch_info=NULL, index_info=NULL, basic_info = NULL){
 
 	data <- list()
 	par <- list()
@@ -280,6 +283,10 @@ prepare_wham_input <- function(asap3 = NULL, model_name="WHAM for unnamed stock"
 	input <- set_selectivity(input, selectivity)
 	message("selectivity done")
 	#print(input$data$selblock_pointer_indices)
+
+	# Aggregate observation model for fleets and indices
+	input <- set_agg_obs_model(input, agg_obs_model)
+	message("agg_obs_model done")
 
 	# Age composition model
 	input <- set_age_comp(input, age_comp)

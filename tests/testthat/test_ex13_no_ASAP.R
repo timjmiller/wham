@@ -49,7 +49,7 @@ basic_info <- list(
 catch_info <- list(
     n_fleets = NCOL(input$data$agg_catch), #(n_fleets)
     agg_catch = cbind(input$data$agg_catch), #(n_years x n_fleets)
-    agg_catch_cv = cbind(sqrt(exp(input$data$agg_catch_sigma^2) - 1)), #(n_years x n_fleets)
+    agg_catch_cv = input$data$agg_catch_cv, #(n_years x n_fleets)
     catch_paa = input$data$catch_paa, #(n_fleets x n_years x n_ages)
     use_catch_paa = cbind(input$data$use_catch_paa), #(n_years x n_fleets), 0: don't use, 1: use
     catch_Neff = cbind(input$data$catch_Neff), #(n_years x n_fleets)
@@ -63,7 +63,7 @@ index_info <- list(
     agg_indices = cbind(input$data$agg_indices), #(n_years x n_indices)
     units_indices = input$data$units_indices, #(n_indices) 1: biomass 2: numbers
     units_index_paa = input$data$units_index_paa, #(n_indices) 1: biomass 2: numbers
-    agg_index_cv = cbind(sqrt(exp(input$data$agg_index_sigma^2) - 1)), #(n_years x n_indices)
+    agg_index_cv = input$data$agg_index_cv, #(n_years x n_indices)
     index_Neff = cbind(input$data$index_Neff), #(n_years x n_indices)
     fracyr_indices = cbind(input$data$fracyr_indices), #(n_years x n_indices)
     use_indices = cbind(input$data$use_indices), #(n_years x n_indices)
@@ -167,7 +167,7 @@ basic_info <- list(
 catch_info <- list(
     n_fleets = NCOL(input$data$agg_catch), #(n_fleets)
     agg_catch = cbind(input$data$agg_catch), #(n_years x n_fleets)
-    agg_catch_cv = cbind(sqrt(exp(input$data$agg_catch_sigma^2) - 1)), #(n_years x n_fleets)
+    agg_catch_cv = input$data$agg_catch_cv, #(n_years x n_fleets)
     catch_paa = input$data$catch_paa, #(n_fleets x n_years x n_ages)
     use_catch_paa = cbind(input$data$use_catch_paa), #(n_years x n_fleets), 0: don't use, 1: use
     catch_Neff = cbind(input$data$catch_Neff), #(n_years x n_fleets)
@@ -181,7 +181,7 @@ index_info <- list(
     agg_indices = cbind(input$data$agg_indices), #(n_years x n_indices)
     units_indices = input$data$units_indices, #(n_indices) 1: biomass 2: numbers
     units_index_paa = input$data$units_index_paa, #(n_indices) 1: biomass 2: numbers
-    agg_index_cv = cbind(sqrt(exp(input$data$agg_index_sigma^2) - 1)), #(n_years x n_indices)
+    agg_index_cv = input$data$agg_index_cv, #(n_years x n_indices)
     index_Neff = cbind(input$data$index_Neff), #(n_years x n_indices)
     fracyr_indices = cbind(input$data$fracyr_indices), #(n_years x n_indices)
     use_indices = cbind(input$data$use_indices), #(n_years x n_indices)

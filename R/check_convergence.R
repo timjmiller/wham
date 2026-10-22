@@ -33,12 +33,12 @@ check_convergence <- function(mod, ret=FALSE){#, f = ""){
   res[["maxgr_par"]] <- names(mod[["par"]])[which.max(mod[["final_gradient"]])]
   # print to screen
   if(res[["convergence"]] == 0){
-    message("stats:nlminb thinks the model has converged: mod[["opt"]][["convergence"]] == 0\n")#, file = f)
+    message('stats:nlminb thinks the model has converged: mod[["opt"]][["convergence"]] == 0\n')#, file = f)
   } else {
-    message("stats:nlminb thinks the model has NOT converged: mod[["opt"]][["convergence"]] != 0\n")#, file = f, append = app)
+    message('stats:nlminb thinks the model has NOT converged: mod[["opt"]][["convergence"]] != 0\n')#, file = f, append = app)
   }
-  message("Maximum gradient component:",formatC(res[["maxgr"]], format = "e", digits = 2),"\n")#, file = f, append = app)
-  message("Max gradient parameter:",res[["maxgr_par"]],"\n")#, file = f, append = app)
+  message('Maximum gradient component:',formatC(res[["maxgr"]], format = "e", digits = 2),"\n")#, file = f, append = app)
+  message('Max gradient parameter:',res[["maxgr_par"]],"\n")#, file = f, append = app)
   if("sdrep" %in% names(mod)){
     res[["is_sdrep"]] <- mod[["is_sdrep"]]
     if(res[["is_sdrep"]]){

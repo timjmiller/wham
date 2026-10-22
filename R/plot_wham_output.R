@@ -86,9 +86,9 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     # PDF input_data -----------------
     grDevices::cairo_pdf(filename=file.path(dir.main,"input_data.pdf"), family = fontfam, height = 10, width = 10, onefile = TRUE)
     if(mod$env$data$n_fleets > 1) plot.catch.by.fleet(mod)
-    for(i in 1:mod$env$data$n_fleets) plot.catch.age.comp.bubbles(mod, i=i)
+    for(i in 1:mod$env$data$n_fleets) plot.age.comp.bubbles(mod, type = "catch", i=i)
     plot.scaled.index.input(mod)
-    for(i in 1:mod$env$data$n_indices) plot.index.age.comp.bubbles(mod, i=i)
+    for(i in 1:mod$env$data$n_indices) plot.age.comp.bubbles(mod, type = "index", i=i)
     for(i in 1:mod$env$data$n_stocks) plot.waa(mod,"ssb", ind = i)
     #plot.waa(mod,"jan1")
     #plot.waa(mod,"totcatch")
@@ -102,20 +102,20 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     fit.summary.text.plot.fn(mod)
     plot.ll.table.fn(mod)
     for(i in 1:mod$env$data$n_fleets){
-      plot.catch.4.panel(mod, use.i = i)
-      plot.catch.age.comp(mod, use.i = i)
-      plot.catch.age.comp.resids(mod, use.i = i)
+      plot.agg.obs.4.panel(mod, type = "catch", use.i = i)
+      plot.age.comp(mod, type = "catch", use.i = i)
+      plot.age.comp.resids(mod, type = "catch", use.i = i)
     }
     for(i in 1:mod$env$data$n_indices){
-      plot.index.4.panel(mod, use.i = i)
-      plot.index.age.comp(mod, use.i = i)
-      plot.index.age.comp.resids(mod, use.i = i)
+      plot.agg.obs.4.panel(mod, type = "index", use.i = i)
+      plot.age.comp(mod, type = "index", use.i = i)
+      plot.age.comp.resids(mod, type = "index", use.i = i)
     }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod)
     plot.NAA.4.panel(mod)
     if(!is.null(mod$osa)) {
-      plot.catch.age.comp.resids(mod, osa = TRUE)
-      plot.index.age.comp.resids(mod, osa = TRUE)
+      plot.age.comp.resids(mod, type = "catch", osa = TRUE)
+      plot.age.comp.resids(mod, type = "index", osa = TRUE)
       plot.osa.residuals(mod)
     }
     if(mod$is_sdrep) plot.all.stdresids.fn(mod)
@@ -227,7 +227,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     for(i in 1:mod$env$data$n_fleets){
       png(file.path(dir.data, paste0("catch_age_comp_", ffns[i],"_", rfns[mod$input$data$fleet_regions[i]], ".png")),
         width=10,height=10,units="in",res=res,family=fontfam)
-      plot.catch.age.comp.bubbles(mod, i=i)
+      plot.age.comp.bubbles(mod, type = "catch", i=i)
       dev.off()
     }
     png(file.path(dir.data,"scaled_indices.png"),width=10,height=10,units="in",res=res,family=fontfam)
@@ -236,7 +236,7 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     for(i in 1:mod$env$data$n_indices){
       png(file.path(dir.data, paste0(ifns[i], "_", rfns[mod$input$data$index_regions[i]], "_age_comp.png")),
         width=10,height=10,units="in",res=res,family=fontfam)
-      plot.index.age.comp.bubbles(mod, i=i)
+      plot.age.comp.bubbles(mod, type = "index", i=i)
       dev.off()
     }
     for(i in 1:mod$env$data$n_stocks) {
@@ -276,20 +276,20 @@ plot_wham_output <- function(mod, dir.main = getwd(), out.type = 'html', res = 7
     plot.ll.table.fn(mod)
     dev.off()
     for(i in 1:mod$env$data$n_fleets){
-      plot.catch.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
-      plot.catch.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
-      plot.catch.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.agg.obs.4.panel(mod, type = "catch", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.age.comp(mod, type = "catch", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.age.comp.resids(mod, type = "catch", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     for(i in 1:mod$env$data$n_indices){
-      plot.index.4.panel(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
-      plot.index.age.comp(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
-      plot.index.age.comp.resids(mod, do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.agg.obs.4.panel(mod, type = "index", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.age.comp(mod, type = "index", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
+      plot.age.comp.resids(mod, type = "index", do.png = TRUE, fontfam=fontfam, use.i=i, od=dir.diag)
     }
     if(!all(mod$env$data$Ecov_model == 0) & mod$is_sdrep) plot.ecov.diagnostic(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     plot.NAA.4.panel(mod, do.png = TRUE, fontfam=fontfam, od=dir.diag)
     if(!is.null(mod$osa)) {
-      plot.catch.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
-      plot.index.age.comp.resids(mod, osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.age.comp.resids(mod, type = "catch", osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
+      plot.index.age.comp.resids(mod, type = "index", osa = TRUE, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
       plot.osa.residuals(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)
     }
     if(mod$is_sdrep) plot.all.stdresids.fn(mod, do.png=TRUE, fontfam=fontfam, res=res, od=dir.diag)

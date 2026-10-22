@@ -15,7 +15,7 @@ set_osa_obs <- function(input)
   obs <- data.frame(matrix(ncol = length(obs.colnames), nrow = 0))
   colnames(obs) <- obs.colnames
 
-  # 5 components: Ecov, fleet catch (log), index catch (log), paa catch, paa index
+  # 5 components: Ecov, fleet catch, index catch, paa catch, paa index
   # do all Ecov first
   # 1. Ecov
   if(!all(data$Ecov_use_obs==0)){
@@ -90,7 +90,9 @@ set_osa_obs <- function(input)
     colnames(x) <- paste0("index_", 1:data$n_indices)
     for(i in 1:data$n_indices) {
       if(!is.na(x[y,i])) {
-        tmp <- data.frame(year = y, fleet = colnames(x)[i], age = NA, type = 'logindex', val = log(x[y,i]))
+        thisobs <- x[y,i]
+        if(data$index_model[i] %in% c(1,2,9,10)) thisobs <- log(thisobs)
+        tmp <- data.frame(year = y, fleet = colnames(x)[i], age = NA, type = 'agg_index', val = thisobs)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
@@ -101,7 +103,9 @@ set_osa_obs <- function(input)
     colnames(x) <- paste0("fleet_", 1:data$n_fleets)
     for(i in 1:data$n_fleets) {
       if(!is.na(x[y,i])) {
-        tmp <- data.frame(year = y, fleet = colnames(x)[i], age = NA, type = 'logcatch', val = log(x[y,i]))
+        thisobs <- x[y,i]
+        if(data$catch_model[i] %in% c(1,2,9,10)) thisobs <- log(thisobs)
+        tmp <- data.frame(year = y, fleet = colnames(x)[i], age = NA, type = 'agg_catch', val = thisobs)
         obs <- rbind(obs, tmp[, obs.colnames])
       }
     }
@@ -188,7 +192,7 @@ set_osa_obs <- function(input)
   data$keep_C <- matrix(NA, nrow=data$n_years_model, ncol=data$n_fleets)
   for(y in 1:data$n_years_model) for(i in 1:data$n_fleets){
     if(data$use_agg_catch[y,i]==1){ 
-      data$keep_C[y,i] <- subset(obs, year == y & type=='logcatch' & fleet == paste0("fleet_",i))$ind
+      data$keep_C[y,i] <- subset(obs, year == y & type=='agg_catch' & fleet == paste0("fleet_",i))$ind
     }
   }
   # subtract 1 bc TMB indexes from 0
@@ -197,7 +201,7 @@ set_osa_obs <- function(input)
   data$keep_I <- matrix(NA, nrow=data$n_years_model, ncol=data$n_indices)
   for(y in 1:data$n_years_model) for(i in 1:data$n_indices){
     if(data$use_indices[y,i]==1){ 
-      data$keep_I[y,i] <- subset(obs, year == y & type=='logindex' & fleet == paste0("index_",i))$ind
+      data$keep_I[y,i] <- subset(obs, year == y & type=='agg_index' & fleet == paste0("index_",i))$ind
     }
   }
   # subtract 1 bc TMB indexes from 0

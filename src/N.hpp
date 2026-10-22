@@ -1369,6 +1369,12 @@ matrix<Type> get_simulated_log_NAA(vector<int> N1_model, array<Type> N1, array<T
   array<Type> sim_log_NAA = log_NAA;
   sim_log_NAA.setZero();
   array<Type> NAA_y_minus_1 = N1;
+  for(int s = 0; s < n_stocks; s++) if(NAA_re_model(s) == 0){ //SCAA: no sim
+    for(int y = 1; y < n_years_pop; y++) for(int a = 0; a < n_ages; a++) {
+      sim_log_NAA(s,spawn_regions(s)-1,y-1,a) = log_NAA(s,spawn_regions(s)-1,y-1,a);
+    }
+  }
+
   matrix<Type> NAA_spawn_y_minus_1 = get_NAA_spawn_y(0, NAA_y_minus_1,  annual_SAA_spawn, spawn_regions);
   vector<Type> SSB_y_minus_1 = get_SSB_y(0, NAA_spawn_y_minus_1, waa_ssb, mature);
   for(int y = 1; y < n_years_pop; y++) {

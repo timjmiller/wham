@@ -81,8 +81,8 @@ check_dims <- function(input){
 
  	n_years_n_stocks <- c("fracyr_SSB")
  	n_fleets_n_seasons <- c("fleet_seasons")
- 	n_years_n_fleets <- c("agg_catch", "agg_catch_sigma", "use_agg_catch", "use_catch_paa", "catch_Neff", "keep_C", "selblock_pointer_fleets")
- 	n_years_n_indices <- c("agg_indices", "agg_index_sigma", "use_indices", "use_index_paa", "index_Neff", "fracyr_indices", "keep_I", "selblock_pointer_indices")
+ 	n_years_n_fleets <- c("agg_catch", "agg_catch_cv", "use_agg_catch", "use_catch_paa", "catch_Neff", "keep_C", "selblock_pointer_fleets")
+ 	n_years_n_indices <- c("agg_indices", "agg_index_cv", "use_indices", "use_index_paa", "index_Neff", "fracyr_indices", "keep_I", "selblock_pointer_indices")
  	n_years_n_Ecov <- c("Ecov_use_obs", "Ecov_obs", "keep_E")
  	n_years_n_blocks <- c("selblock_years")
  	n_Ecov_n_stocks <- c("Ecov_how_R","ind_Ecov_out_start_R","ind_Ecov_out_end_R", "n_poly_Ecov_R")
@@ -180,11 +180,8 @@ check_dims <- function(input){
 	correct_dims <- lapply(1:length(input_par_dims), function(x) integer(0))
 	names(correct_dims) <- names(input_par_dims)
 
- 	n_fleets_vec <- "log_catch_sig_scale"
-	for(i in n_fleets_vec) correct_dims[[i]] <- n_fleets
- 	n_indices_vec <- c("logit_q", "q_prior_re", "log_index_sig_scale")
+ 	n_indices_vec <- c("logit_q", "q_prior_re")
 	for(i in n_indices_vec) correct_dims[[i]] <- n_indices
-
 
  	#matrices
 

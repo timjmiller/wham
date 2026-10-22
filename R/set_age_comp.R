@@ -59,7 +59,6 @@ set_age_comp <- function(input, age_comp)
                    "mvtweedie",
                    "dir-mult-linear" )
   input$log$age_comp <- list()
-  n_pars <- c(0,1,1,1,1,2,1,3,2,2,1)
   if(is.null(age_comp)){
     if(!is.null(data$n_fleets)) data$age_comp_model_fleets <- rep(1, data$n_fleets) # multinomial by default
     if(!is.null(data$n_indices)) data$age_comp_model_indices <- rep(1, data$n_indices) # multinomial by default
@@ -71,7 +70,7 @@ set_age_comp <- function(input, age_comp)
         age_comp[which(name_change)] <- "dirichlet-pool0"
       }
       themod <- match(age_comp, all_models)
-      if(is.na(themod)) stop("age_comp option not recognized. See ?prepare_wham_input.")
+      if(is.na(themod)) stop("age_comp option not recognized. See ?set_age_comp.")
       if(!is.null(data$n_fleets)) data$age_comp_model_fleets <- rep(themod, data$n_fleets)
       if(!is.null(data$n_indices)) data$age_comp_model_indices <- rep(themod, data$n_indices)
     } else {
@@ -96,6 +95,13 @@ set_age_comp <- function(input, age_comp)
       }
     }
   }
+
+  input$log$age_comp <- c(input$log$age_comp, paste0("Fleet age composition observation models are:\n",
+    paste0("Fleet ", 1:data$n_fleets, ": ", all_models[data$age_comp_model_fleets], collapse = "\n"), "\n\n")
+  )
+  input$log$age_comp <- c(input$log$age_comp, paste0("Index age composition observation models are:\n",
+    paste0("Index ", 1:data$n_indices, ": ", all_models[data$age_comp_model_indices], collapse = "\n"), "\n\n")
+  )
 
   # age comp pars
   if(!is.null(data$n_fleets)) { #catch data have been added

@@ -62,6 +62,9 @@
 #'        If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected 
 #'        equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
 #'     }
+#'     \item{$N1_map}{An (n_stocks x n_regions x n_ages) array of NA or integers indicating which N1_pars should be fixed at initial values (NA), estimated uniquely (different integers) or commonly (the same integer). If N1_model = 0, then this should be filled with the initial values to use for abundance at age by stock and region in the first year. 
+#'        If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used like \code{$N1_pars}.
+#'     }
 #'     \item{$recruit_model}{Integer vector (n_stocks) determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
 #'        and \code{ecov} are properly specified.
 #'       \describe{
@@ -175,6 +178,13 @@ set_NAA <- function(input, NAA_re=NULL)
   }
   if(!is.null(NAA_re[["N1_pars"]])){
     par$log_N1[] <- log(NAA_re$N1_pars)
+  }
+  if(!is.null(NAA_re[["N1_map"]])){
+    map$log_N1[] <- NA
+    for(s in 1:data$n_stocks) {
+      if(data$N1_model[s] == 1) map$log_N1[s,data$spawn_region[s],1:2] <- NAA_re[["N1_map"]][s,data$spawn_region[s],1:2]
+      if((data$N1_model[s] == 0) || data$N1_model[s] == 2) for(r in 1:data$n_regions)  map$log_N1[s,r,] <- NAA_re[["N1_map"]][s,r,]
+    }
   }
   map$log_N1 <- factor(map$log_N1)
 

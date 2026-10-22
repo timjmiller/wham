@@ -15,6 +15,8 @@ set_random <- function(input){
   if(any(input$data$mu_model %in% c(2:4,6:8,10:12,14:16))) random <- c(random, "mu_re")
   if(sum(input$data$use_q_prior)) random <- c(random, "q_prior_re")
   if(sum(input$data$use_q_re)) random <- c(random, "q_re")
+  if(sum(input$data$index_cv_use_re)) random <- c(random, "index_cv_re")
+  if(sum(input$data$catch_cv_use_re)) random <- c(random, "catch_cv_re")
   input$random <- random	
   return(input)
 }
