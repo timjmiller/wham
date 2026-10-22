@@ -70,6 +70,9 @@ If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NA
        If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected 
        equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
     }
+    \item{$N1_map}{An (n_stocks x n_regions x n_ages) array of NA or integers indicating which N1_pars should be fixed at initial values (NA), estimated uniquely (different integers) or commonly (the same integer). If N1_model = 0, then this should be filled with the initial values to use for abundance at age by stock and region in the first year. 
+       If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used like \code{$N1_pars}.
+    }
     \item{$recruit_model}{Integer vector (n_stocks) determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
        and \code{ecov} are properly specified.
       \describe{

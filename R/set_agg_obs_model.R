@@ -12,65 +12,58 @@
 #' @param agg_obs_model list specifying the aggregate observation models, and other configuration options for each fleet and index. If \code{NULL}, the "lognormal-1" is used as it was previously 
 #'   the only option. 
 #' 
-#'   \item{\code{obs_model}}{a single character string (applied to all fleets and indices) or a named list of two vectors ("fleet" and "index") of character strings of probability models 
+#' \code{obs_model} a single character string (applied to all fleets and indices) or a named list of two vectors ("fleet" and "index") of character strings of probability models 
 #'     for annual aggregate observations:
-#'     \describe{Below \eqn{\widehat x} is the predicted aggregate *positive* observation (for fleets) or index whereas \eqn{x} is the observed random variable that can = 0 for some models.
-#'       \item{\code{"lognormal-1"}}{Log-normal distribution for observation: \eqn{E(\log(x)) = \log(\widehat{x})}, \eqn{\text{SD}(\log(x)) = \sqrt(\log(\text{CV}_+(x)^2 + 1)) * \phi}. 
+#'     \describe{Below \eqn{\widehat P} is the predicted aggregate index or catch (for fleets) whereas \eqn{x} is the observation that can = 0 for some models.
+#'       \item{\code{"lognormal-1"}}{Log-normal distribution for observation: \eqn{E(\log(x)) = \log(\widehat{P})}, \eqn{\text{SD}(\log(x)) = (\log(\text{CV}_{+\text{in}}^2 + 1))^{0.5} \phi}. 
 #'         This will be used by default with \eqn{\phi = 1}.
 #'       }
-#'       \item{\code{"lognormal-2"}}{Log-normal distribution for observation: \eqn{E(\log(x)) = \log(\widehat{x})}, \eqn{\text{SD}(\log(x)) = \sqrt(\log(\text{CV}_+(x)^2 + 1)) * (\phi + 1)}. 
-#'         \eqn{\phi} estimated by default. SD must be greater than that implied by input CV.
+#'       \item{\code{"lognormal-2"}}{Log-normal distribution for observation: \eqn{E(\log(x)) = \log(\widehat{P})}, \eqn{\text{SD}(\log(x)) = (\log(\text{CV}_{+\text{in}}^2 + 1))^{0.5} (\phi + 1)}. 
+#'         \eqn{\phi} estimated by default. SD must be greater than that implied by input \eqn{\text{CV}_{+\text{in}}}.
 #'       }
-#'       \item{\code{"gamma-1"}}{Gamma distribution for observation: \eqn{E(x) = \widehat x}, \eqn{SD(x) = \phi * \text{CV}_+(x)) * x}. \eqn{\phi} is set = 1 by default.}
-#'       \item{\code{"gamma-2"}}{Gamma distribution for observation: \eqn{E(x) = \widehat x}, \eqn{SD(x) = (\phi + 1) * \text{CV}_+(x)) * x}; \eqn{\phi} is estimated by default. SD must be 
-#'         greater than that implied by input CV.
+#'       \item{\code{"gamma-1"}}{Gamma distribution for observation: \eqn{E(x) = \widehat P}, \eqn{\text{CV}_+ = \phi \text{CV}_{+\text{in}}}. \eqn{\phi} is set = 1 by default.}
+#'       \item{\code{"gamma-2"}}{Gamma distribution for observation: \eqn{E(x) = \widehat P}, \eqn{\text{CV}_+ = (\phi + 1) \text{CV}_{+\text{in}}}; \eqn{\phi} is estimated by default. \eqn{\text{CV}_+} must be 
+#'         greater than that implied by input \eqn{\text{CV}_{+\text{in}}}.
 #'       }
-#'       \item{\code{"gengamma"}}{Generalized gamma distribution (Rigby et al. 2019 parameterization) for observation: \eqn{E(x) = \widehat x}, with parameter \eqn{\nu>0} estimated by 
+#'       \item{\code{"gengamma"}}{Generalized gamma distribution (Rigby et al. 2019 parameterization) for observation: \eqn{E(x) = \widehat P}, with parameter \eqn{\nu>0} estimated by 
 #'         default, and parameter \eqn{\sigma>0} defined such that 
-#'         \deqn{CV(x)^2 = \Gamma(\theta)\Gamma(\theta + 2/\nu)/\Gamma(\theta + 1/\nu)^2 - 1} where \eqn{\theta = (\sigma\nu)^{-2}}.
+#'         \deqn{\text{CV}_+^2 = \frac{\Gamma(\theta)\Gamma(\theta + 2/\nu)}{\Gamma(\theta + 1/\nu)^2} - 1} where \eqn{\theta = (\sigma\nu)^{-2}}.
 #'       } 
-#'       \item{\code{"CPG-alpha"}}{Compound Poisson Gamma (Tweedie with power paraemter \eqn{1<p<2}) distribution for observation. For all versions:
-#'         \deqn{E(x) = \widehat x p_+ = \mu = \lambda\alpha \beta}
-#'         \deqn{V(x) = \mu^p * \phi  = (\text{CV}_+^2 + 1- p_+) * \mu^2/p_+ = \lambda\alpha(\alpha+1)\beta^2} with \eqn{1<p<2} where
-#'         \eqn{p_+ = 1-\exp(-\lambda)} is the probability of a positive value (Poisson RV neq 0). For this version ("CPG-alpha"), \eqn{\alpha} is estimated by default and other parameters 
-#'         are defined by \eqn{\alpha}, \eqn{\widehat x} and \eqn{CV_+}.
+#'       \item{\code{"CPG-alpha"}}{Compound Poisson-Gamma distribution (Tweedie with power parameter \eqn{1<p<2}) for observation. For all versions:
+#'         \deqn{E(x) = \widehat P p_+ = \lambda\alpha \beta}
+#'         \deqn{V(x) = \mu^p \phi  = p_+\widehat P^2(\text{CV}_+^2 + (1 - p_+))  = \lambda\alpha(\alpha+1)\beta^2} where
+#'         \eqn{p_+ = 1-e^{-\lambda}} is the probability of a positive value (Poisson RV neq 0). For this version ("CPG-alpha"), \eqn{0<\alpha<1} is estimated by default and other parameters 
+#'         are defined by \eqn{\alpha}, \eqn{\widehat P} and \eqn{\text{CV}_+}.
 #'       }
-#'       \item{\code{"CPG-beta"}}{Compound Poisson Gamma distribution with fraction of maximum \eqn{\beta} estimated by default (\eqn{0 < \beta < \mu_+ CV_+^2}).}
-#'       \item{\code{"CPG-lambda"}}{Compound Poisson Gamma distribution with \eqn{\lambda} estimated by default with a minimum determined by \eqn{CV_+}.}
-#'       \item{\code{"delta-X"}{delta distributions where X is one of the first five strictly positive distributions.}
+#'       \item{\code{"CPG-beta"}}{Compound Poisson-Gamma distribution with fraction of maximum \eqn{\beta} estimated by default (\eqn{0 < \beta < \widehat P \text{CV}_+^2}).}
+#'       \item{\code{"CPG-lambda"}}{Compound Poisson-Gamma distribution with \eqn{\lambda} estimated by default with a minimum determined by \eqn{\text{CV}_+}.}
+#'       \item{\code{"delta-X"}}{delta distributions where X is one of the first five strictly positive distributions.}
 #'     }
-#'   }
-#'   \item{\code{lambda_model}}{a single character string (applied to all fleets and indices) or a named list of two vectors ("fleet" and "index") of character strings. 
-#'     For models that allow zeros, \eqn{p_+ = 1 - \exp{-lambda}} and the general model for lambda for \code{"CPG-lambda"} and \code{"delta-X"} models is 
+#' \code{lambda_model} a single character string (applied to all fleets and indices) or a named list of two vectors ("fleet" and "index") of character strings. 
+#'     For models that allow zeros, \eqn{p_+ = 1 - e^{-\lambda}} and the general model for lambda for \code{"CPG-lambda"} and \code{"delta-X"} models is 
 #'     \deqn{\log\lambda = \beta_0 + \beta_1 \log\widehat P + \beta_2 \log\text{effort}}
 #'     where \eqn{\beta_1>0} and \eqn{\beta_2>0} when used so that the probability of 0 decreases with the covariate. This option is specified by a character string that 
 #'     may contain nothing (""), "0" (intercept or constant parameter), "P" (for effects of \eqn{\widehat P}, predicted abundance or catch), or "E" (for effort effects). For example, "0PE" 
 #'     would indicate to estimate all parameters. When "0", "P", or "E" are not included the corresponding parameter is fixed at 0. These values are ignored for other aggregate observation model options.
-#'   }
-#'   \item{\code{effort}}{optional named list ("fleet" and "index") of two of matrices (n_years_model x n_fleets and n_years_model x n_indices) defining relative changes in effort 
+#' \code{effort} optional named list ("fleet" and "index") of two of matrices (n_years_model x n_fleets and n_years_model x n_indices) defining relative changes in effort 
 #'     over time for each fleet and index that may be used to model the probability of observed 0s described above for the \code{"CPG-lambda"} or \code{"delta-X"} models. 
 #'     See \code{\lambda_model} below.
-#'   }
-#'   \item{\code{obs_par_val}}{optional named list of two lists ("fleet" and "index") of vectors of initial/fixed parameters that may be used to configure models defined in 
+#' \code{obs_par_val} optional named list of two lists ("fleet" and "index") of vectors of initial/fixed parameters that may be used to configure models defined in 
 #'     \code{obs_model}. A single value \eqn{\phi} for \code{"normal-1"}, \code{"normal-2"}, \code{"gamma-1"}, and \code{"gamma-2"} (set to 1 by default which will inflate SD/CV by 
 #'     2 for "-2" models). A single value \eqn{\nu} for \code{"gen-gamma"} (set to 1 by default = gamma pdf). For \code{"CPG-alpha"} a single value \eqn{\alpha}. Set = 1 by default. For 
 #'     \code{"CPG-beta"} a single value equal to the fraction of maximum \eqn{\beta} (set to 0.5 by default). For \code{"CPG-lambda"} models three values for the \code{beta} parameters in the order 
-#'     defined for the  \eqn{\log\lambda} model. For "delta-" models 4 values: first for the CV scalar as described above, and the last three as described for \eqn{\log\lambda}}.
-#'   }
-#'   \item{\code{obs_par_map}}{Same structure as \code{obs_par_val}. Specifying whether to fix (use NA) or estimate (anything else) aggregate catch model parameters. For estimated parameters,
+#'     defined for the  \eqn{\log\lambda} model. For "delta-" models 4 values: first for the CV scalar as described above, and the last three as described for \eqn{\log\lambda}.
+#' \code{obs_par_map} Same structure as \code{obs_par_val}. Specifying whether to fix (use NA) or estimate (anything else) aggregate catch model parameters. For estimated parameters,
 #'     each will be estimated uniquely regardless of common non-NA values.
-#'   }
-#'   \item{\code{obs_zero}}{optional named list ("fleet" and "index") of two of matrices (n_years_model x n_fleets and n_years_model x n_indices) of 0/1 integers defining years where
+#' \code{obs_zero} optional named list ("fleet" and "index") of two of matrices (n_years_model x n_fleets and n_years_model x n_indices) of 0/1 integers defining years where
 #'     fishing or sampling effort occurred but there was zero catch. Only used when models allowing observed 0s described above are used. E.g., \code{"CPG-X"} or \code{"delta-X"} models.
 #'     the CV for positive observations will be assumed unavailable for these observations and the random effect model is used to estimate a CV for those years.
-#'   }
-#'   \item{\code{cv_model}}{Optional single character value or named list ("fleet" and "index") of two vectors of character values ("fixed-mean", iid" or "ar1"). "fixed-mean" is the default. For models
+#' \code{cv_model} Optional single character value or named list ("fleet" and "index") of two vectors of character values ("fixed-mean", iid" or "ar1"). "fixed-mean" is the default. For models
 #'     that allow observed 0s, there will be missing zeros for those observations and an input CV is not available. The "fixed-mean" option will just use the mean CV of the non-zero observations in series. 
 #'     The "iid" or "ar1" option will estimate a correspond CV as a random effect. The general model is
 #'     \deqn{\log CV_y = \mu(1-\rho) + \rho \log CV_{y-1} + \epsilon_y}
 #'     where \eqn{\epsilon_y \sim N(0,\sigma^2)}. For "ar1" \eqn{\rho} is estimated and set \eqn{\rho = 0} for the "iid" model. Specified values only used for \code{"CPG-X"} and 
 #'     \code{"delta-X"} models.
-#'   }
 #'
 #' @return a named list with same elements as the input provided with aggregate index options modified.
 #'

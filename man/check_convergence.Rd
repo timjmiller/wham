@@ -14,12 +14,12 @@ check_convergence(mod, ret = FALSE)
 \value{
 a list with at least the first three of these components:
   \describe{
-    \item{\code{$convergence}}{From \code{\link[stats:nlminb]{stats::nlminb}}, "0 indicates successful convergence for nlminb"}
-    \item{\code{$maxgr}}{Max absolute gradient value, from `max(abs(mod$gr(mod$opt$par)))`}
-    \item{\code{$maxgr_par}}{Name of parameter with max gradient}
-    \item{\code{$is_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+    \item{\code{convergence}}{From \code{\link[stats:nlminb]{stats::nlminb}}, "0 indicates successful convergence for nlminb"}
+    \item{\code{maxgr}}{Max absolute gradient value, from `max(abs(mod[["gr"]](mod[["opt"]][["par"]])))`}
+    \item{\code{maxgr_par}}{Name of parameter with max gradient}
+    \item{\code{is_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
     for this model, this indicates whether it performed without error}
-    \item{\code{$na_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
+    \item{\code{na_sdrep}}{If \code{\link[TMB:sdreport]{TMB::sdreport}} was performed
     without error for this model, this indicates which (if any) components of the
     diagonal of the inverted hessian were returned as NA}
   }

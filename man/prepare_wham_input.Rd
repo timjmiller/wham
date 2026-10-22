@@ -13,6 +13,7 @@ prepare_wham_input(
   M = NULL,
   NAA_re = NULL,
   catchability = NULL,
+  agg_obs_model = NULL,
   age_comp = NULL,
   move = NULL,
   L = NULL,
@@ -38,6 +39,8 @@ prepare_wham_input(
 \item{NAA_re}{(optional) list specifying options for random effect on numbers-at-age, initial numbers at age, and recruitment model (see \code{\link{set_NAA}} for full details)}
 
 \item{catchability}{(optional) list specifying options for priors and random effects on catchability (see \code{\link{set_q}} for full details)}
+
+\item{agg_obs_model}{(optional) list, specifying aggregate catch and index probability model configurations (see \code{\link{set_agg_obs_model}} for full details)}
 
 \item{age_comp}{(optional) character or named list, specifies age composition model for fleet(s) and indices (see \code{\link{set_age_comp}} for full details)}
 
@@ -100,13 +103,15 @@ If \code{NULL}, a traditional statistical catch-at-age model is fit.
 
 \code{move} specifies options for movement if there are multiple regions. See \code{\link{set_move}} for full details. 
 
-\code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
-
 \code{catch_info} is an optional list of fishery catch information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_catch}} for full details. Useful for setting
 up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
 
 \code{index_info} is an optional list of survey/index information that can be used to set up these types of observations when there is no asap3 file given.  See \code{\link{set_indices}} for full details. Useful for setting
 up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.
+
+\code{age_obs_model} specifies the probability models for aggregate catch and index observations. See \code{\link{set_age_obs_model}} for full details. 
+
+\code{age_comp} specifies the age composition models for fleet(s) and indices. See \code{\link{set_age_comp}} for full details. 
 
 \code{basic_info} is an optional list of information that can be used to set up the population and types of observations when there is no asap3 file given. Particularly useful for setting
 up an operating model to simulate population processes and observations. Also can be useful for setting up the structure of assessment model when asap3 has not been used.

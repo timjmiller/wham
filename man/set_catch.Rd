@@ -12,23 +12,19 @@ set_catch(input, catch_info = NULL)
 \item{catch_info}{(optional) list specifying various aspects about catch by fleet (see details)
 
 \code{catch_info} specifies observations, and various configuration options for fleet-specific catch observations and will overwrite attributes specified in the ASAP data file.
-If \code{NULL}, all settings from the ASAP data file or basic_info are used.
-\code{catch_info} is a list with any of the following entries:
+If \code{NULL}, all settings from the ASAP data file or basic_info are used. It is a list with any of the following entries:
   \describe{
-    \item{$n_fleets}{number of fleets}
-    \item{$fleet_regions}{vector (n_fleets) of regions where each fleet operates.}
-    \item{$fleet_seasons}{matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.}
-    \item{$fleet_names}{character vector (n_fleets) of names for fleets. Used for naming results in plots and tables.}
-    \item{$agg_catch}{matrix (n_years_model x n_fleets) of annual aggregate catches by fleet.}
-    \item{$agg_catch_cv}{matrix (n_years_model x n_fleets) of CVs for annual aggregate catches by fleet.}
-    \item{$catch_paa}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}
-    \item{$use_catch_paa}{matrix (n_years_model x n_fleets) of 0/1 values flagging whether to use proportions at age observations.}
-    \item{$catch_Neff}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
-    \item{$waa_pointer_fleets}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
-    \item{$selblock_pointer_fleets}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
-    \item{$initial_catch_sd_scale}{vector (n_fleets) of scalar multipliers of annual log-observation standard deviation. Default = 1.}
-    \item{$map_catch_sd_scale}{integer vector (n_fleets) specifying which sd scalar parameters to fix. Use \code{NA} to fix a parameter and integers to estimate. 
-        Use the same integer for multiple fleets to estimate a shared scalar parameter.}
+    \item{\code{n_fleets}}{number of fleets}
+    \item{\code{fleet_regions}}{vector (n_fleets) of regions where each fleet operates.}
+    \item{\code{fleet_seasons}}{matrix (n_fleets x n_seasons) of 0/1 values flagging which seasons each fleet operates.}
+    \item{\code{fleet_names}}{character vector (n_fleets) of names for fleets. Used for naming results in plots and tables.}
+    \item{\code{agg_catch}}{matrix (n_years_model x n_fleets) of annual aggregate catch observations by fleet.}
+    \item{\code{agg_catch_cv}}{matrix (n_years_model x n_fleets) of CVs for annual aggregate catches by fleet.}
+    \item{\code{catch_paa}}{array (n_fleets x n_years_model x n_ages) of annual catch proportions at age by fleet.}
+    \item{\code{use_catch_paa}}{matrix (n_years_model x n_fleets) of 0/1 values flagging whether to use proportions at age observations.}
+    \item{\code{catch_Neff}}{matrix (n_years_model x n_fleets) of effective sample sizes for proportions at age observations.}
+    \item{\code{waa_pointer_fleets}}{vector (n_fleets) of itegers indicated waa to use for each fleet.}
+    \item{\code{selblock_pointer_fleets}}{matrix (n_years_model x n_fleets) of itegers indicated selblocks to use.}
   }}
 }
 \value{
