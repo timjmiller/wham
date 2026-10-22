@@ -10,7 +10,7 @@ and in this example we apply WHAM to the same stock, Southern New
 England / Mid-Atlantic Yellowtail Flounder.
 
 This is the 5th WHAM example, which builds off [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html)
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html)
 (also available as an [R script](NA) :
 
 - full state-space model (numbers-at-age are random effects for all
@@ -27,7 +27,7 @@ example, without environmental effects or time-varying $`M`$, is
 available as a [R
 script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R)
 and
-[vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+[vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
 In example 5, we demonstrate how to specify and run WHAM with the
 following options for natural mortality:
@@ -94,7 +94,7 @@ setwd(write.dir)
 ```
 
 We need the same ASAP data file as in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html),
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html),
 and the environmental covariate (Gulf Stream Index, GSI). Read in
 `ex2_SNEMAYT.dat` and `GSI.csv`:
 
@@ -198,10 +198,11 @@ relevant here:
 
 - `$mean_model`: Natural mortality model options.
 
-  - `"constant"`: estimate a single $`M`$, shared across all ages and
+  - `"estimate-M"`: estimate one or more (mean) $`M`$ parameters.
+    Default is to estimate a single $`M`$, shared across all ages and
     years.
-  - `"age-specific"`: estimate $`M_a`$ independent for each age, shared
-    across years.
+  - `"fixed-M"`: Use initial values from ASAP3 dat files or
+    `$initial_means` for (mean) $`M`$ as fixed values.
   - `"weight-at-age"`: estimate $`M`$ as a function of weight-at-age,
     $`M_{y,a} = \mu_M * W_{y,a}^b`$, as in [Lorenzen
     (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x)
@@ -268,7 +269,7 @@ M <- list(re_model=matrix("ar1_ay",1,1))
 ## 4. Linking *M* to an environmental covariate (GSI)
 
 As described in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html),
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html),
 the environmental covariate options are fed to
 [`prepare_wham_input()`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md)
 as a list, `ecov`. This example differs from example 2 in that:

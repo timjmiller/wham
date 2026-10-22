@@ -39,7 +39,7 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   ecov.res <- (ecov.obs - ecov.pred[1:dat$n_years_Ecov,]) / ecov.obs.sig # standard residual (obs - pred)
 
   ecovs <- 1:dat$n_Ecov
-  plot.colors <- mypalette(dat$n_Ecov)
+  plot.colors <- wham_palette(dat$n_Ecov)
   for (i in ecovs)
   {
     if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,"_",mod$input$Ecov_names[i],".pdf")), family = fontfam, height = 10, width = 10)
@@ -98,7 +98,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
-    plot.colors <- mypalette(n.fleets)
+    plot.colors <- wham_palette(n.fleets)
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     ffns <- gsub(pattern, "_", mod$input$fleet_names)
     # ffns <- chartr(" ", "_", mod$input$fleet_names)
@@ -160,7 +160,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
-    plot.colors <- mypalette(n.fleets)
+    plot.colors <- wham_palette(n.fleets)
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     ffns <- gsub(pattern, "_", mod$input$fleet_names)
     # ffns <- chartr(" ", "_", mod$input$fleet_names)
@@ -253,7 +253,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
-    plot.colors <- mypalette(n.fleets)
+    plot.colors <- wham_palette(n.fleets)
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     ifns <- gsub(pattern, "_", mod$input$index_names)
     # ifns <- chartr(" ", "_", mod$input$index_names)
@@ -323,7 +323,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     #dat$residual[which(as.integer(dat$age) == mod$input$data$n_ages)] <- NA #remove last age class
     
     n.indices <- mod$input$data$n_indices
-    plot.colors <- mypalette(n.indices)
+    plot.colors <- wham_palette(n.indices)
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     ifns <- gsub(pattern, "_", mod$input$index_names)
     # ifns <- chartr(" ", "_", mod$input$index_names)
@@ -416,7 +416,7 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
-    plot.colors <- mypalette(n.fleets)
+    plot.colors <- wham_palette(n.fleets)
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     efns <- gsub(pattern, "_", mod$input$Ecov_names)
     for(f in 1:n.fleets){
@@ -482,9 +482,53 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
 
 #revised
 
-mypalette <- function(n){
-  palette.fn <- colorRampPalette(c("dodgerblue","green","red"), space = "Lab")
-  palette.fn(n)
+wham_palette <- function(n){
+  colors <- getOption("wham.colors", "default")
+  default.colors <- viridisLite::viridis(n)
+
+  switch(
+    colors,
+    default = default.colors,
+    bw = grDevices::gray.colors(n, start = 0.15, end = 0.75),
+    gray = grDevices::gray.colors(n, start = 0.35, end = 0.85),
+    cividis = viridisLite::cividis(n),
+    warm = grDevices::hcl.colors(n, palette = "YlOrRd", rev = FALSE),
+    ocean = grDevices::hcl.colors(n, palette = "Teal", rev = FALSE),
+    forest = grDevices::hcl.colors(n, palette = "Green-Brown", rev = TRUE),
+    highcontrast = grDevices::colorRampPalette(c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+      "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"), space = "Lab")(n),
+    pastel = grDevices::hcl.colors(n, palette = "Pastel 1", rev = FALSE),
+    turbo = viridisLite::turbo(n, begin = 0.2, end = 0.8)
+  )
+}
+
+wham_fill_scale <- function(midpoint = NULL, ...){
+  color.option <- getOption("wham.colors", "default")
+  if(is.null(midpoint)) {
+    return(switch(
+      color.option,
+      default = viridis::scale_fill_viridis(...),
+      cividis = viridis::scale_fill_viridis(option = "cividis", ...),
+      turbo = viridis::scale_fill_viridis(option = "turbo", begin = 0.2, end = 0.8, ...),
+      bw = ggplot2::scale_fill_gradient(low = "white", high = "black", ...),
+      gray = ggplot2::scale_fill_gradient(low = "#f2f2f2", high = "#666666", ...),
+      warm = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "YlOrRd", rev = FALSE), ...),
+      ocean = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Teal", rev = FALSE), ...),
+      forest = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Green-Brown", rev = TRUE), ...),
+      highcontrast = ggplot2::scale_fill_gradient(low = "#1f77b4", high = "#ff7f0e", ...),
+      pastel = ggplot2::scale_fill_gradientn(colours = grDevices::hcl.colors(256, "Pastel 1", rev = FALSE), ...)
+    ))
+  }
+  if(color.option == "default") {
+    viridis::scale_fill_viridis(...)
+  } else {
+    colors <- wham_palette(2)
+    if(color.option == "highcontrast") colors <- c("#1f77b4", "#ff7f0e")
+    if(color.option == "warm") colors <- c("black", grDevices::hcl.colors(2, palette = "YlOrRd", rev = FALSE)[1])
+    if(color.option == "ocean") colors <- c("black", grDevices::hcl.colors(2, palette = "Teal", rev = FALSE)[1])
+    ggplot2::scale_fill_gradient2(
+      low = colors[1], mid = "white", high = colors[2], midpoint = midpoint, ...)
+  }
 }
 
 fit.summary.text.plot.fn <- function(mod){
@@ -645,7 +689,7 @@ plot.ll.table.fn <- function(mod,plot.colors){
   n.likes <- length(likes)
   my.range <- c(min(likes)-50,max(likes)+50)#1.2*range(likes)#c(min(likes), 1.2*max(likes))
   par(mar=c(5,20,1,1), oma=c(1,0,0,0))
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n.likes) #mypalette(n.likes)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n.likes)
   barplot(horiz=TRUE, likes, beside=FALSE, col=plot.colors, xlab="Joint log-likelihood components",  axisnames=FALSE,  axes=FALSE,  space=0,
     xlim=my.range)
   axis(side=1, at=pretty(seq(my.range[1],my.range[2]), n=10), labels=pretty(seq(my.range[1],my.range[2]), n=10), cex=.75 )
@@ -783,7 +827,7 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   res <- list()
   res$ll <- -mod$opt$obj
   res$np <- length(mod$opt$par)
-  res$aic <- 2*(mod$opt$obj + res$np)
+  res$aic <- aic(mod)
   #rho <- mohns_rho(mod) #if no peels, then this will be NULL
   # tcol <- col2rgb('black')
   # black.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -830,7 +874,7 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   max.y <- max(SSB.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(SSB)
-  pal = viridisLite::viridis(n=ns)
+  pal = wham_palette(ns)
   plot(years,SSB[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
   axis(1, lwd = 2, cex.axis = 1.5)
   axis(2, lwd = 2, cex.axis = 1.5)
@@ -1025,6 +1069,12 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
     ggplot2::facet_wrap(~Label)
     # ggplot2::facet_grid(type ~ row)
     # ggplot2::facet_grid(row ~ type)
+  if(getOption("wham.colors", "default") != "default") {
+    plot.colors <- wham_palette(nlevels(x$type))
+    ggp <- ggp +
+      ggplot2::scale_color_manual(values = plot.colors) +
+      ggplot2::scale_fill_manual(values = plot.colors)
+  }
   if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_time.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("Residuals_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   print(ggp)
@@ -1135,7 +1185,6 @@ plot.agg.obs.4.panel <- function(mod, type = "catch", do.tex = FALSE, do.png = F
 
 #revised
 
-
 plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, use.s, use.r, plot.colors, od)
 {
   origpar <- par(no.readonly = TRUE)
@@ -1152,7 +1201,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
   if(!missing(use.r)) regions <- use.r
   ages <- 1:dat$n_ages
   if(!missing(use.i)) ages <- use.i
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(ages)) #mypalette(dat$n_ages)
+  if(missing(plot.colors)) plot.colors <- wham_palette(length(ages))
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   sfns <- gsub(pattern, "_", mod$input$stock_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
@@ -1169,7 +1218,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
     y.max <- max(NAA[s,r,,i], na.rm = TRUE)
     if(!is.na(y.max)) {
-      plot(years_full, NAA[s,r,,i], type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Abundance (1000s)",
+      plot(years_full, NAA[s,r,,i], type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Abundance (1000s)",
         ylim=c(0, 1.1*y.max))
       lines(years_full, pred_NAA[s,r,,i], col=plot.colors[i], lwd=2)
       if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
@@ -1179,7 +1228,7 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
     y.max <- max(log.ob.max,log(pred_NAA[s,r,,i]), na.rm = TRUE)
     y.min <- min(log.ob.min,log(pred_NAA[s,r,,i]), na.rm = TRUE)
     if(!is.na(y.max) & !is.na(y.min)) {
-      plot(years_full, log(NAA[s,r,,i]), type='p', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Abundance)",
+      plot(years_full, log(NAA[s,r,,i]), type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Ln(Abundance)",
         ylim=c(y.min,y.max))
       lines(years_full, log(pred_NAA[s,r,,i]), col=plot.colors[i], lwd=2)
       arrows(years_full, log.ob.min, years_full, log.ob.max, length=0)
@@ -1321,6 +1370,8 @@ plot.age.comp <- function(mod, type = "catch", do.tex = FALSE, do.png = FALSE, f
 
   # par(origpar)
 }
+
+#revised
 
 pearson.fn <- function(mod, index = NULL, fleet = NULL, age_comp_mod= 1, sims = NULL) {
   dat <- mod$env$data
@@ -1479,7 +1530,7 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
   }
   fleet_region_names <- mod$input$region_names[fleet_regions]
   
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(unique(sb_p))) #mypalette(length(unique(sb_p)))
+  if(missing(plot.colors)) plot.colors <- wham_palette(length(unique(sb_p)))
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ffns <- gsub(pattern, "_", fleet_names)
   rfns <- gsub(pattern, "_", fleet_region_names)
@@ -1530,7 +1581,7 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- ages
   sb_p <- dat$selblock_pointer_fleets #selblock pointer by year and fleet
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=length(unique(sb_p))) #mypalette(length(unique(sb_p)))
+  if(missing(plot.colors)) plot.colors <- wham_palette(length(unique(sb_p)))
 	years <- mod$years
 	if(!missing(use.i)) fleets <- use.i
 	else fleets <- 1:mod$env$data$n_fleets
@@ -1584,7 +1635,7 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- ages
   sb_p <- dat$selblock_pointer_indices #selblock pointer by year and index
-  if(missing(plot.colors)) plot.colors <- mypalette(length(unique(sb_p)))
+  if(missing(plot.colors)) plot.colors <- wham_palette(length(unique(sb_p)))
 	years <- mod$years
 	if(!missing(use.i)) indices <- use.i
 	else indices <- 1:mod$env$data$n_indices
@@ -1662,7 +1713,7 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   max.y <- max(ssb.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(ssb)
-  pal <- viridisLite::viridis(n=mod$env$data$n_stocks)
+  pal <- wham_palette(mod$env$data$n_stocks)
   plot(years_full, ssb[,1], type='n', lwd=2, xlab="", ylab="", ylim=c(0,max.y), axes = FALSE)
   axis(1, labels = FALSE)
   axis(2)
@@ -1680,7 +1731,7 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   max.y <- max(full.f.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(full.f)
-  pal <- viridisLite::viridis(n_regions)
+  pal <- wham_palette(n_regions)
   #if(!no.f.ci){ # have CI
   plot(years_full, full.f[,1], type='n', lwd=2, xlab="", ylab="", ylim=c(0,max.y), axes = FALSE)
   axis(1)
@@ -1707,7 +1758,7 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE, stock = 1)
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- mod$ages.lab
 	n.ages <- length(ages)
-  if(missing(plot.colors)) plot.colors <- mypalette(n.ages)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n.ages)
 	years<-  mod$years
   years_full <-  mod$years_full
 	n.yrs <- length(years_full)
@@ -1749,7 +1800,7 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- mod$ages.lab
 	n.ages <- length(ages)
-  if(missing(plot.colors)) plot.colors <- mypalette(n.ages)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n.ages)
   years<-  mod$years
   years_full <-  mod$years_full
   n.yrs <- length(years_full)
@@ -1812,7 +1863,7 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
   R.cv <- std[R.ind,2]
 	#ssb.R.cov <- cov[c(ssb.ind,R.ind),c(ssb.ind,R.ind)]
 
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=nyrs-age.recruit)# mypalette(nyrs-age.recruit)
+  if(missing(plot.colors)) plot.colors <- wham_palette(nyrs-age.recruit)
 	SR <- matrix(NA, (nyrs-age.recruit), 3)
 	SR[,1] <- years[1:(nyrs-age.recruit)]
 	SR[,2] <- exp(log.ssb[1:(nyrs-age.recruit)])/scale.ssb
@@ -1931,7 +1982,7 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
   ssb.plot <- ssb[1:(nyrs-age.recruit)]/scale.ssb
   recr.plot <- R[age.recruit + 1:(nyrs-age.recruit)]/scale.recruits
   yr.text <- substr(years_full,3,4)
-  plot.colors <- viridisLite::viridis(n=2)
+  plot.colors <- wham_palette(2)
   max.r <- max(recr.plot)
   max.ssb <- max(ssb.plot)
   scale.r <- max(ssb.plot)/max(recr.plot)
@@ -1982,7 +2033,7 @@ plot.fleet.F <- function(mod, plot.colors)
   # faa.ind <- which(rownames(std) == "log_FAA_tot")
   # log.faa <- matrix(std[faa.ind,1], nyrs, mod$env$data$n_ages)
 
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_fleets) # mypalette(n_fleets)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n_fleets)
   plot(years_full, F[,1], xlab="Year", ylab="Full F", ylim=c(0,max(F)),	type='n', lty=1, lwd=2)
 	if(n_fleets == 1){ 
     lines(years_full, F, lty=1, lwd=2, col = "black")
@@ -2039,7 +2090,7 @@ plot.cv <- function(mod)
   any.na <- any(is.na(c(R.cv, ssb.cv, F.cv)))
 
   if(!any.na){
-    plot.colors <- viridisLite::viridis(n=dat$n_stocks + dat$n_fleets) 
+    plot.colors <- wham_palette(dat$n_stocks + dat$n_fleets)
   	plot(years_full, R.cv[,1], type='n', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, F.cv)))
     for(s in 1:dat$n_stocks) {
       lines(years_full, R.cv[,s], lty = 1, lwd=2, col=plot.colors[s])
@@ -2070,7 +2121,7 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors, stock = 1, re
   years <- mod$years
   years_full <- mod$years_full
   n_years <- length(years_full)
-	if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_years) #mypalette(n_years)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n_years)
 	n.M.by.age <- lapply(1:n_ages, function(x) table(mod$rep$MAA[stock,region,,x]))
 	plot(ages,meanMAA,lwd=2,xlab="Age",ylab="Natural Mortality Rate", ylim=c(0,1.1*(max(mod$rep$MAA[stock,region,,]))), type= 'n', xlim = c(min(ages)-0.5,max(ages)+1),
 		axes=FALSE)
@@ -2103,7 +2154,7 @@ plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
   nyrs <- length(years)
 	catch.obs <- dat$agg_catch
 	n_fleets <- dat$n_fleets
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_fleets) #mypalette(n_fleets)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n_fleets)
 	# barplot(t(catch.obs), xlab="Year", ylab= paste0("Catch (", units, ")"), ylim=c(0,1.1*max(apply(catch.obs,1,sum))), col=plot.colors,space=0)
 	# axis(side=1, at = seq(2,nyrs,2)-0.5, labels = years[seq(2,nyrs,2)], cex=0.75)
 	# box(lwd = 2)
@@ -2141,15 +2192,18 @@ plot.scaled.index.input <- function(mod, plot.colors)
 	for (i in 1:n_indices) rescaled[,i] <- (indvals[,i] - my.mean[i]) / my.std[i]
 
 	my.range <- range(rescaled, na.rm=TRUE)
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_indices) #mypalette(n_indices)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n_indices)
 	plot(years,rescaled[,1],xlab="",ylab="", axes = FALSE, xlim = range(years), ylim=my.range,col=plot.colors[1],type='n')
 	grid(col = gray(0.7))
 	axis(1, labels = FALSE)
 	axis(2)
 	box()
 	mtext(side = 2, "Rescaled Indices", outer = FALSE, line = 3)
-	for (i in 1:n_indices) lines(years,rescaled[,i],col=plot.colors[i])
-  leg <- paste0(mod$input$index_names, ifelse(dat$n_regions>1, paste0(" ", mod$input$region_names[mod$input$data$index_regions]), ""))
+  for (i in 1:n_indices) {
+    lines(years,rescaled[,i],col=plot.colors[i])
+    points(years, rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+  }
+  leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
   legend("right", legend = leg, col = plot.colors, lty = 1, horiz = FALSE, xpd = NA, inset = c(-0.5,0), bty = "n")
   #legend("top", legend = mod$input$index_names, col = plot.colors, lty = 1, horiz = TRUE, xpd = NA, inset = c(0,-0.1), bty = "n")
 
@@ -2163,8 +2217,11 @@ plot.scaled.index.input <- function(mod, plot.colors)
 	my.log.range <- range(log.rescaled, na.rm=T)
 	plot(years,log.rescaled[,1], xlab="",ylab="",ylim=my.log.range,col=plot.colors[1],type='n')
 	grid(col = gray(0.7))
-	for (i in 1:n_indices) lines(years,log.rescaled[,i],col=plot.colors[i])
-	mtext(side = 2, "Rescaled Log(Indices)", outer = FALSE, line = 3)
+  for (i in 1:n_indices) {
+    lines(years,log.rescaled[,i],col=plot.colors[i])
+    points(years, log.rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+  }
+	mtext(side = 2, "Rescaled Log Indices", outer = FALSE, line = 3)
 	mtext(side = 1, "Year", outer = FALSE, line = 3)
 	par(origpar)
 }
@@ -2236,7 +2293,7 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
   else years <- mod$years
   nyrs <- length(years)
   dat <- mod$env$data
-  if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=dat$n_ages) #mypalette(dat$n_ages)
+  if(missing(plot.colors)) plot.colors <- wham_palette(dat$n_ages)
   point <- switch(type,
     ssb = dat$waa_pointer_ssb[ind],
     #jan1 = dat$waa_pointer_jan1,
@@ -2290,7 +2347,7 @@ plot.maturity <- function(mod, ages.lab, plot.colors, stock = 1)
   if(missing(ages.lab)) ages.lab <- mod$ages.lab
   mature <- dat$mature[stock,,] #matrix
 	meanmaturity <- apply(mature,2,mean)
-	if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n=n_years) #mypalette(n_years)
+  if(missing(plot.colors)) plot.colors <- wham_palette(n_years)
 
 	plot(ages,meanmaturity,type='l',lwd=2,xlab="Age",ylab="Maturity",ylim=c(0,max(mature)), axes = FALSE)
   axis(1, at = ages, labels = ages.lab, lwd = 2)
@@ -2661,7 +2718,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 		}  # end j-loop over n_years
 	}  #end i-loop over SPR values
 
-  plot.colors <- mypalette(n.spr)
+  plot.colors <- wham_palette(n.spr)
   if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_annual_time.pdf")), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, paste0("FSPR_annual_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	par(mfrow=c(2,1), mar=c(4,5,2,1))
@@ -2753,7 +2810,7 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     #exp(log_a) *seq.ssb/(1 + exp(log_b)*seq.ssb)
     ci.pred.lR <- pred.lR + qnorm(0.975)*cbind(-sd.pred.lR, sd.pred.lR) - log(scale.recruits)
 
-    if(missing(plot.colors)) plot.colors <- viridisLite::viridis(n = 1)
+    if(missing(plot.colors)) plot.colors <- wham_palette(1)
     tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
     # tcol <- col2rgb(plot.colors[1])
     # tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
@@ -2977,7 +3034,7 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y
     ci <-  lapply(1:np[i], function(x) vals[,x] + cbind(qnorm(1-alpha/2)*cv[,x], -qnorm(1-alpha/2)*cv[,x]))
     max_y1 <- exp(max(sapply(ci, max, na.rm = T), na.rm = T))
     plot.colors <- "black"
-    if(np[i]>1) plot.colors <- viridisLite::viridis(n = np[i])
+    if(np[i]>1) plot.colors <- wham_palette(np[i])
     tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
     if(all(!is.nan(unique(vals)))){
   	  if(!na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max_y1), type = 'n', xaxt = 'n', cex.lab = 2)
@@ -3348,8 +3405,9 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
     n_ages <- dim(mod$rep$NAA)[4]
 
     # standard retro plot
-    plot.colors <- viridisLite::viridis(n=npeels+1)
+    plot.colors <- wham_palette(npeels+1)
     tcol <- adjustcolor(plot.colors, alpha.f=0.4)
+    rho.vals <- mohns_rho(mod)
     # tcol <- col2rgb(plot.colors)
     # tcol <- rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
     # if(what %in% c("NAA","NAA_age")){
@@ -3385,6 +3443,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
               lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
               points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
             }
+            rho.plot <- round(rho.vals$naa[s,r,i],3)
+            legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           }
           title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
           if(do.tex | do.png) dev.off() else par(origpar)
@@ -3402,7 +3462,9 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
             lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),age.ind], col = tcol[j+1])
             points(years[n_years-j],res[[j+1]][s,r,n_years-j,age.ind],pch=16,col=plot.colors[j+1])
           }
-          title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
+          rho.plot <- round(rho.vals$naa[s,r,age.ind],3)
+          legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+          title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
           if(do.tex | do.png) dev.off() else par(origpar)
         }
       }
@@ -3429,6 +3491,8 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
           lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
           points(years[n_years-i],res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
+        rho.plot <- round(rho.vals[[what]][p],3)
+        legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
         title(names.plot[p], line = 1, outer = TRUE)
         if(do.tex | do.png) dev.off() else par(origpar)
       }
@@ -3436,7 +3500,6 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
 
     # relative retro plot
     if(missing(y.lab)) y.lab <- bquote(paste("Mohn's ", rho, "(",.(what),")"))
-    rho.vals <- mohns_rho(mod)
 
     if(what %in% c("NAA","NAA_age")) for(s in 1:mod$input$data$n_stocks){
       regions <- 1:mod$input$data$n_regions
@@ -3832,7 +3895,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
   n_years <- length(mod$years)
 	cohort <- (min(mod$years) - dat$n_ages-1):(lastyr+dat$n_ages-1)
 	ages <- 1:dat$n_ages
-  my.col <- rep(viridisLite::viridis(n=5),50)
+  my.col <- rep(wham_palette(5),50)
 	#my.col <- rep(c("blue","red","green","orange","gray50"),50)
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   ffns <- gsub(pattern, "_", mod$input$fleet_names)
@@ -4084,7 +4147,7 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
 
   if(!missing(use.i)) ecovs <- use.i
   else ecovs <- 1:dat$n_Ecov
-  plot.colors <- viridisLite::viridis(n = dat$n_Ecov) #mypalette(dat$n_Ecov)
+  plot.colors <- wham_palette(dat$n_Ecov)
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   efns <- gsub(pattern, "_", mod$input$Ecov_names)
   # efns <- chartr(" ", "_", mod$input$Ecov_names)
@@ -4186,7 +4249,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
 #        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
         ggplot2::theme_bw() + 
         ggplot2::facet_wrap(~Block, dir="v") +
-        viridis::scale_fill_viridis())
+        wham_fill_scale())
     if(do.tex | do.png) dev.off()
   }
 
@@ -4227,7 +4290,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       ggplot2::theme_bw() + 
       ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
       ggplot2::ggtitle("MAA") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-      viridis::scale_fill_viridis()
+      wham_fill_scale()
       if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
       print(plt)
     if(do.tex | do.png) dev.off()
@@ -4255,6 +4318,8 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
     fn <- paste0("NAA_dev_tile")
+    dev.limit <- max(abs(df.plot$Deviation), na.rm = TRUE)
+    if(!is.finite(dev.limit) || dev.limit == 0) dev.limit <- 1
 
     if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
     if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
@@ -4265,7 +4330,7 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
         ggplot2::theme_bw() + 
         ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
         ggplot2::ggtitle("NAA deviations") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-        viridis::scale_fill_viridis()
+        wham_fill_scale(midpoint = 0, limits = c(-dev.limit, dev.limit))
       if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
       print(plt)
     if(do.tex | do.png) dev.off()
@@ -4291,7 +4356,7 @@ plot_q_prior_post <- function(mod, do.tex = F, do.png = F, fontfam="", od){
     if(do.tex) cairo_pdf(file.path(od, "q_prior_post.pdf"), family = fontfam, height = ht, width = wd)
     if(do.png) png(filename = file.path(od, "q_prior_post.png"), width = wd*144, height = ht*144, res = 144, pointsize = 12, family = fontfam)
     par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(1,length(ind)))
-    pal <- viridisLite::viridis(n=2)
+    pal <- wham_palette(2)
     for(i in ind) {
       qmax <- mod$input$data$q_upper[i]
       x <- seq(0.001,qmax,0.001)
@@ -4317,7 +4382,7 @@ plot_q <- function(mod, do.tex = F, do.png = F, fontfam = '', od){
   if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
   if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   par(mar=c(4,4,3,1), oma=c(1,1,1,15))
-  pal <- viridisLite::viridis(n=mod$input$data$n_indices)
+  pal <- wham_palette(mod$input$data$n_indices)
   ymax <- max(q, na.rm = TRUE)
   if("sdrep" %in% names(mod)){
     if("q_re" %in% mod$input$random) se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat[yrs,,drop = FALSE]
@@ -4370,7 +4435,7 @@ plot_mu <- function(mod, do.tex = F, do.png = F, fontfam = '', od){
       if(do.tex) cairo_pdf(file.path(od, "mu_", r,"_", k, "_time_series.pdf"), family = fontfam, height = 10, width = 10)
       if(do.png) png(filename = file.path(od, "mu_", r,"_", k, "_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
       par(mar=c(4,4,3,1), oma=c(1,1,1,15))
-      pal <- viridisLite::viridis(n=nt+ns)
+      pal <- wham_palette(nt+ns)
       plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
       for(s in 1:ns) for(a in 1:na) for(t in 1:nt) if(dat$can_move[s,t,r,rr]) {
         lines(mod$years, mod$rep$mu[s,a,t,r,rr], lwd = 2, col = pal[t + (s-1)*nt])

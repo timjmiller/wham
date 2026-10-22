@@ -21,7 +21,7 @@ wham.dir <- find.package("wham")
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+Here we assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). This is the 3rd `wham` example, which builds off model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 
@@ -62,7 +62,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html). Read in `ex2_SNEMAYT.dat` and `CPI.csv`:
+We need the same data files as in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html). Read in `ex2_SNEMAYT.dat` and `CPI.csv`:
 ```{r eval=FALSE}
 wham.dir <- find.package("wham")
 asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"))
@@ -71,7 +71,7 @@ env.dat <- read.csv(file.path(wham.dir,"extdata","CPI.csv"), header=T)
 
 ## 2. Specify model
 
-Setup model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+Setup model `m5` from [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 

@@ -46,6 +46,7 @@ selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selbloc
     fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
     initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))
 diff_stocks_input <- prepare_wham_input(diff_stocks_asap, selectivity = selectivity)
+expect_equal(dim(diff_stocks_input$par$logit_selpars), c(selectivity$n_selblocks, diff_stocks_input$data$n_ages + 6))
 nofit_2_diff_stock <- fit_wham(diff_stocks_input, do.fit = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
 

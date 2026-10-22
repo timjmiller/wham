@@ -172,22 +172,23 @@ The important item for this vignette is `mod_1$simulate`
 ``` r
 
 mod_1$simulate
-#> function (par = last.par, complete = FALSE) 
-#> {
-#>     f(par, order = 0, type = "double", do_simulate = TRUE)
-#>     sim <- as.list(reportenv)
-#>     if (complete) {
-#>         ans <- data
-#>         ans[names(sim)] <- sim
-#>     }
-#>     else {
-#>         ans <- sim
-#>     }
-#>     ans
-#> }
-#> <bytecode: 0x000001a7e2b45270>
-#> <environment: 0x000001a7e29ab118>
 ```
+
+    #> function (par = last.par, complete = FALSE) 
+    #> {
+    #>     f(par, order = 0, type = "double", do_simulate = TRUE)
+    #>     sim <- as.list(reportenv)
+    #>     if (complete) {
+    #>         ans <- data
+    #>         ans[names(sim)] <- sim
+    #>     }
+    #>     else {
+    #>         ans <- sim
+    #>     }
+    #>     ans
+    #> }
+    #> <bytecode: 0x00000261f839ee40>
+    #> <environment: 0x00000261f7c5e4d0>
 
 As we can see it is a function, but less apparent is that it will report
 anything using the `REPORT` calls, and most importantly, those within
@@ -1625,10 +1626,10 @@ plot(stock_om$years, sim_Ecov$NAA[1,1,,1], type = 'l', ylab = "Recruitment", xla
 ![sim_plot_4e_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png)  
 
 See the [catchability
-vignette](https://github.com/timjmiller/wham/devel/vignettes/ex11_catchability.Rmd)
+vignette](https://timjmiller.github.io/wham/articles/ex11_catchability.html)
 for an example of simulating effects of multiple covariates on the
 population. Also see the [CPI and recruitment
-vignette](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html)
+vignette](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html)
 for configuring effects on recruitment when a stock-recruit function is
 assumed.
 

@@ -117,7 +117,7 @@ set_M <- function(input, M)
   #clear any map definitions that may exist. necessary because some configurations may not define map elements.
   map <- map[(!names(map) %in% c("log_b", "M_repars", "Mpars","M_re"))]
 
-  #M_model length is n_regions; 1: Estimate-M, 2: f(WAA), 3: f(WAA) by stock
+  #M_model length is n_regions; 1: Fixed-M, 2: Estimate-M, 3: f(WAA) by stock
   data$M_model <- 1 #Fixed-M
   data$log_b_model <- 1 #constant if estimated
   data$use_b_prior <- 0
@@ -168,7 +168,7 @@ set_M <- function(input, M)
   M_mods <- c("fixed-M", "estimate-M", "weight-at-age")
   if(!(M$mean_model %in% M_mods)) stop(paste0("M$mean_model must be one of these: ", paste0(M_mods, collapse=",")))
   data$M_model[] <- ifelse(M$mean_model %in% M_mods[1:2], 1, 2) #only needs to know f(age) or f(waa)
-
+  
   if(!is.null(M$initial_means)){
     if(!is.array(M$initial_means)) stop("M$initial_means must now be an array with dimensions = c(n_stocks,n_regions,n_ages)") 
     dimsM <- dim(M$initial_means)
@@ -186,6 +186,9 @@ set_M <- function(input, M)
       for(y in 1:data$n_years_model) par$M_re[i,r,y,] <- log(M$initial_MAA[i,r,y,]) - par$Mpars[i,r,]
     }
   }
+
+  if(M$mean_model != "fixed-M") par$M_re[] <- 0
+
 
   if(!is.null(M$re_model)){
     if(!is.matrix(M$re_model)) stop("M$re_model must be a character n_stocks x n_regions matrix.")

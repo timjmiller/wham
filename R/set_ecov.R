@@ -666,7 +666,7 @@ set_ecov <- function(input, ecov) {
 
           input$log$ecov <- c(input$log$ecov, paste0("Lag: ",ecov$lag_mu[i,s,a,t,r,rr],"
           Ex: ",ecov$label[i]," in ",years[1]," affects movement in ",years[1+ecov$lag_mu[i,s,a,t,r,rr]],"
-              ",ecov$label[i]," in ",lastyr," affects movement in ",lastyr+lag_mu[i,s,a,t,r,rr],"
+              ",ecov$label[i]," in ",lastyr," affects movement in ",lastyr+ecov$lag_mu[i,s,a,t,r,rr],"
 
           \n"))
         }

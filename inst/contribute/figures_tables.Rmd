@@ -577,6 +577,17 @@ for(s in 1:dat$n_stocks) for(r in 1:dat$n_regions){
 }
 ```
 
+### Spawning stock biomass
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}
+out = readRDS("res_tables/SSB_table.RDS")
+out = round(out, 0)
+out <- out |> knitr::kable(format = type, booktabs = T, escape=F, longtable = T, row.names = T, label = "SSB-table",
+    caption="Spawning stock biomass (mt).") |>
+    kableExtra::kable_styling(latex_options=c("basic", "repeat_header"))
+cat(knitr::knit_print(out))
+```
+
 ### Fishing mortality at age by region
 
 ```{r echo=FALSE, message=FALSE, warnings=FALSE, error = FALSE, results='asis'}

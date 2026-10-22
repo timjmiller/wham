@@ -1,6 +1,6 @@
 Package: wham
 Title: Woods Hole Assessment Model (WHAM)
-Version: 2.1.0.9006
+Version: 2.1.0.9012
 Authors@R: c(
     person("Tim", "Miller", role = c("aut", "cre"),
            email = "timothy.j.miller@noaa.gov",
@@ -39,7 +39,6 @@ BugReports: https://github.com/timjmiller/wham/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests: 
     testthat,
@@ -47,3 +46,4 @@ Suggests:
     here,
     parallel,
     snowfall
+Config/roxygen2/version: 8.1.0

@@ -27,7 +27,7 @@ library(viridis)
 ```
 In this vignette we walk through an example using the `wham` (WHAM = Woods Hole Assessment Model) package to run a state-space age-structured stock assessment model. WHAM is a generalization of code written for [Miller et al. (2016)](https://doi.org/10.1139/cjfas-2015-0339) and [Xu et al. (2018)](https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236), and in this example we apply WHAM to the same stock, Southern New England / Mid-Atlantic Yellowtail Flounder. 
 
-This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html) (also available as an [R script](is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment.R) ) :
+This is the 5th WHAM example, which builds off [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html) (also available as an [R script](is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment.R) ) :
 
 - full state-space model (numbers-at-age are random effects for all ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
 - logistic normal age compositions, pooling zero observations with adjacent ages (`age_comp = "logistic-normal-pool0"`)
@@ -35,7 +35,7 @@ This is the 5th WHAM example, which builds off [example 2](https://timjmiller.gi
 - 5 indices
 - fit to 1973-2011 data
 
-We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex1_basics.html).
+We assume you already have `wham` installed. If not, see the [Introduction](https://timjmiller.github.io/wham/). The simpler 1st example, without environmental effects or time-varying $M$, is available as a [R script](https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R) and [vignette](https://timjmiller.github.io/wham/articles/ex01_basics.html).
 
 In example 5, we demonstrate how to specify and run WHAM with the following options for natural mortality:
 
@@ -82,7 +82,7 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-We need the same ASAP data file as in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), and the environmental covariate (Gulf Stream Index, GSI). Read in `ex2_SNEMAYT.dat` and `GSI.csv`:
+We need the same ASAP data file as in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html), and the environmental covariate (Gulf Stream Index, GSI). Read in `ex2_SNEMAYT.dat` and `GSI.csv`:
 ```{r eval=FALSE}
 asap3 <- read_asap3_dat(file.path(wham.dir,"extdata","ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(wham.dir,"extdata","GSI.csv"), header=T)
@@ -132,8 +132,8 @@ We specify the options for modeling natural mortality by including an optional l
 
 - `$mean_model`: Natural mortality model options.
 
-  - `"constant"`: estimate a single $M$, shared across all ages and years.
-  - `"age-specific"`: estimate $M_a$ independent for each age, shared across years.
+  - `"estimate-M"`: estimate one or more (mean) $M$ parameters. Default is to estimate a single $M$, shared across all ages and years.
+  - `"fixed-M"`: Use initial values from ASAP3 dat files or `$initial_means` for (mean) $M$ as fixed values.
   - `"weight-at-age"`: estimate $M$ as a function of weight-at-age, $M_{y,a} = \mu_M * W_{y,a}^b$, as in [Lorenzen (1996)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1095-8649.1996.tb00060.x) and [Miller & Hyun (2018)](https://www.nrcresearchpress.com/doi/10.1139/cjfas-2017-0035).
 
 - `$re_model`: Time- and age-varying random effects on $M$.
@@ -176,7 +176,7 @@ M <- list(re_model=matrix("ar1_ay",1,1))
 
 ## 4. Linking *M* to an environmental covariate (GSI)
 
-As described in [example 2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html), the environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`. This example differs from example 2 in that:
+As described in [example 2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html), the environmental covariate options are fed to `prepare_wham_input()` as a list, `ecov`. This example differs from example 2 in that:
 
 - We will estimate the observation error for the GSI (one overall value for all years): `$logsigma = "est_1"`. The other option is `"est_re"` to allow the GSI observation error to have yearly fluctuations (random effects). The Cold Pool Index in example 2 had yearly observation errors given.
 - We will assume GSI affects $M$ rather than recruitment.

@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,7 +84,7 @@ generalization of code written for <a href="https://doi.org/10.1139/cjfas-2015-0
 and <a href="https://onlinelibrary.wiley.com/doi/full/10.1111/fog.12236" class="external-link">Xu et
 al. (2018)</a>, and in this example we apply WHAM to the same stock,
 Southern New England / Mid-Atlantic Yellowtail Flounder.</p>
-<p>This is the 5th WHAM example, which builds off <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+<p>This is the 5th WHAM example, which builds off <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a> (also available as an <a href="is%20available%20as%20a%20%5BR%20script%5D(https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex2_CPI_recruitment.R)" class="external-link">R
 script</a> :</p>
 <ul>
@@ -101,7 +101,7 @@ the <a href="https://timjmiller.github.io/wham/">Introduction</a>. The
 simpler 1st example, without environmental effects or time-varying
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
 is available as a <a href="https://github.com/timjmiller/wham/blob/master/inst/example_scripts/ex1_basics.R" class="external-link">R
-script</a> and <a href="https://timjmiller.github.io/wham/articles/ex1_basics.html">vignette</a>.</p>
+script</a> and <a href="https://timjmiller.github.io/wham/articles/ex01_basics.html">vignette</a>.</p>
 <p>In example 5, we demonstrate how to specify and run WHAM with the
 following options for natural mortality:</p>
 <ul>
@@ -167,7 +167,7 @@ with:</p>
 <span><span class="va">write.dir</span> <span class="op">&lt;-</span> <span class="st">"choose/where/to/save/output"</span> <span class="co"># need to change e.g., tempdir(check=TRUE)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">write.dir</span><span class="op">)</span></span></code></pre></div>
-<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+<p>We need the same ASAP data file as in <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a>, and the environmental covariate (Gulf Stream Index, GSI). Read in
 <code>ex2_SNEMAYT.dat</code> and <code>GSI.csv</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -264,13 +264,16 @@ that includes following entries relevant here:</p>
 <p><code>$mean_model</code>: Natural mortality model options.</p>
 <ul>
 <li>
-<code>"constant"</code>: estimate a single
+<code>"estimate-M"</code>: estimate one or more (mean)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+parameters. Default is to estimate a single
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
 shared across all ages and years.</li>
 <li>
-<code>"age-specific"</code>: estimate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>a</mi></msub><annotation encoding="application/x-tex">M_a</annotation></semantics></math>
-independent for each age, shared across years.</li>
+<code>"fixed-M"</code>: Use initial values from ASAP3 dat files or
+<code>$initial_means</code> for (mean)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+as fixed values.</li>
 <li>
 <code>"weight-at-age"</code>: estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
@@ -356,7 +359,7 @@ values specified in the ASAP file, but with 2D AR1 deviations as in <a href="htt
 <div class="section level2">
 <h2 id="linking-m-to-an-environmental-covariate-gsi">4. Linking <em>M</em> to an environmental covariate (GSI)<a class="anchor" aria-label="anchor" href="#linking-m-to-an-environmental-covariate-gsi"></a>
 </h2>
-<p>As described in <a href="https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html">example
+<p>As described in <a href="https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html">example
 2</a>, the environmental covariate options are fed to
 <code><a href="../reference/prepare_wham_input.html">prepare_wham_input()</a></code> as a list, <code>ecov</code>. This
 example differs from example 2 in that:</p>

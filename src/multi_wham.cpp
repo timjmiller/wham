@@ -1,7 +1,6 @@
 #define TMB_LIB_INIT R_init_wham
 #include <TMB.hpp>
 #include "all.hpp"
-#include <Eigen/Eigenvalues>
 
 template<class Type>
 Type objective_function<Type>::operator() ()

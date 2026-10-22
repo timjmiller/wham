@@ -87,7 +87,6 @@ list of various “basic” model structure information:
 basic_info <- list(
     n_stocks = 1L,
     n_seasons = 1L,
-    n_fleets = 1L,
     ages = 1:input$data$n_ages,
     n_fleets = input$data$n_fleets,
     fracyr_SSB = cbind(input$data$fracyr_SSB), #(n_years x n_stocks)

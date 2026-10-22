@@ -11,7 +11,7 @@ peel *y* years. Although this can be done for any variable, we
 demonstrate how to do so for recruitment, as in Fig. 4 of [Xu et
 al. (2018)](https://doi.org/10.1111/fog.12236). We use the same data and
 model setup as for `m3` and `m5` from [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html).
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html).
 
 ## 1. Load WHAM and other useful packages
 
@@ -26,7 +26,7 @@ setwd(write.dir)
 ```
 
 We need the same data files as in [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html).
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html).
 Let’s copy `ex2_SNEMAYT.dat` and `CPI.csv` to our analysis directory:
 
 ``` r
@@ -42,7 +42,7 @@ env.dat <- read.csv("CPI.csv", header=T)
 
 Setup models `m5` (with CPI effect on recruitment) and `m3` (no CPI
 effect on recruitment) from [example
-2](https://timjmiller.github.io/wham/articles/ex2_CPI_recruitment.html):
+2](https://timjmiller.github.io/wham/articles/ex02_CPI_recruitment.html):
 
 - full state-space model (numbers-at-age are random effects for all
   ages, `NAA_re = list(sigma='rec+1',cor='iid')`)
@@ -131,7 +131,7 @@ process model (without new observations). You can specify alternative
 options for the projections using `$proj.opts` (see
 [`project_wham()`](https://timjmiller.github.io/wham/reference/project_wham.html)
 and [Ex 3:
-Projections](https://timjmiller.github.io/wham/articles/ex3_projections.html)).
+Projections](https://timjmiller.github.io/wham/articles/ex03_projections.html)).
 
 ``` r
 

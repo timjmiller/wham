@@ -85,7 +85,6 @@ There is a `basic_info` argument to `prepare_wham_input` that provides a list of
 basic_info <- list(
     n_stocks = 1L,
     n_seasons = 1L,
-    n_fleets = 1L,
     ages = 1:input$data$n_ages,
     n_fleets = input$data$n_fleets,
     fracyr_SSB = cbind(input$data$fracyr_SSB), #(n_years x n_stocks)

@@ -294,8 +294,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         }
         if(age_comp_models[i] == 10){
           fe.names <- c(fe.names, paste0(startnames[i], " age comp, MV Tweedie: ",
-            c("$\\phi$", "power")))
-          fe.vals <- c(fe.vals, exp(pars[i,1:2]))
+            c("$\\phi$", "p")))
+          fe.vals <- c(fe.vals, exp(pars[i,1]), 1+(1/(1+exp(-pars[i,2]))))
           fe.cis <- rbind(fe.cis, 
             ci(pars[i,1], pars_sd[i,1], type = "exp"),
             1 + ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
@@ -715,6 +715,28 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         saveRDS(FAA.lo, file = file.path(od,paste0(fleet.names.f[f], "_FAA_lo_table.RDS")))
         saveRDS(FAA.hi, file = file.path(od,paste0(fleet.names.f[f], "_FAA_hi_table.RDS")))
       }
+    }
+  }
+
+  #Spawning stock biomass by year and spawn region
+  SSB <- mod[["rep"]][["SSB"]]
+  rownames(SSB) <- mod[["years_full"]]
+  colnames(SSB) <- ifelse(data[["n_stocks"]]>1, stock.names.tab, "Total")
+  if(data[["n_stocks"]]>1) SSB <- cbind(SSB, Total = rowSums(SSB))
+  if(!is.null(od)) saveRDS(SSB, file = file.path(od, "SSB_table.RDS"))
+  
+  if(!is.null(mod[["opt"]])) if(!is.na(mod[["na_sdrep"]])) if(mod[["is_sdrep"]]) {
+    SSB.cv <- sd[["log_SSB"]]
+    if(data[["n_stocks"]]>1) SSB.cv <- cbind(SSB.cv, sd[["log_SSB_all"]])
+    SSB.sd <- SSB * SSB.cv
+    SSB.lo <- exp(log(SSB) - qnorm(0.975) * SSB.cv)
+    SSB.hi <- exp(log(SSB) + qnorm(0.975) * SSB.cv)
+    dimnames(SSB.sd) <- dimnames(SSB.cv) <- dimnames(SSB.lo) <- dimnames(SSB.hi) <- dimnames(SSB)
+    if(!is.null(od)){
+      saveRDS(SSB.sd, file = file.path(od, "SSB_sd_table.RDS"))
+      saveRDS(SSB.cv, file = file.path(od, "SSB_cv_table.RDS"))
+      saveRDS(SSB.lo, file = file.path(od, "SSB_lo_table.RDS"))
+      saveRDS(SSB.hi, file = file.path(od, "SSB_hi_table.RDS"))
     }
   }
   
