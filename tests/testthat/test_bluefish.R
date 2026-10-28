@@ -15,7 +15,7 @@ test_that("Bluefish fitting performs correctly",{
 suppressWarnings(suppressMessages({
 
   path_to_examples <- system.file("extdata", package="wham")
-  bluefish_tests <- readRDS(file.path(path_to_examples,"bluefish_test_results.rds"))
+  bluefish_tests <- readRDS(file.path(path_to_examples,"bluefish_test_results.RDS"))
   tmp.dir <- tempdir(check=TRUE)
 
   asap3 <- read_asap3_dat(file.path(path_to_examples,"bluefish_23.dat"))
