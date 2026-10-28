@@ -15,7 +15,7 @@ test_that("Spasmaddock selectivity and retros",{
 suppressWarnings(suppressMessages({
 
 path_to_examples <- system.file("extdata", package="wham")
-tests <- readRDS(file.path(path_to_examples,"spasmaddock_test_results.rds"))
+tests <- readRDS(file.path(path_to_examples,"spasmaddock_test_results.RDS"))
 tmp.dir <- tempdir(check=TRUE)
 asap3 <- readRDS(file.path(path_to_examples,"spasmaddock_asap3.RDS"))
 
