@@ -37,7 +37,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4  # Ensure you are using a modern version
+        uses: codecov/codecov-action@v7  # Ensure you are using a modern version
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           
