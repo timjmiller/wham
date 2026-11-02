@@ -231,7 +231,7 @@ test_that("unsupported legacy configurations are rejected before rebuilding", {
   )
   unsupported <- list(
     Ecov_model = 3, selblock_models_re = 6, M_re_model = 6,
-    M_model = 3, use_steepness = 1, do_proj = 1
+    M_model = 4, use_steepness = 1, do_proj = 1
   )
   for (field in names(unsupported)) {
     legacy_input <- input
@@ -393,6 +393,11 @@ test_that("legacy process and environmental features preserve stored likelihoods
     expect_identical(fit$input, original_input, info = path)
     expect_equal(input$data$M_re_model[1], c(1L, 4L, 2L, 3L, 4L)[original_input$data$M_re_model])
     expect_equal(input$data$selblock_models_re, original_input$data$selblock_models_re - 1L)
+    expect_equal(input$data$M_model, if (original_input$data$M_model == 3L) 2L else 1L)
+    if (isTRUE(original_input$data$use_steepness == 1L)) {
+      expect_equal(input$data$recruit_model, original_input$data$recruit_model)
+      expect_true(all(is.finite(input$par$mean_rec_pars)))
+    }
     model <- TMB::MakeADFun(input$data, input$par, random = input$random,
       map = input$map, DLL = "wham", silent = TRUE)
     expect_length(model$par, length(fit$opt$par))
@@ -433,6 +438,28 @@ test_that("historical environmental AR1 simulation preserves its transition", {
   set.seed(193)
   simulated <- model$simulate(model$par)
   expect_equal(as.vector(simulated$Ecov_re), expected, tolerance = 1e-12)
+})
+
+test_that("legacy steepness uses equivalent current stock-recruit coefficients", {
+  root <- test_path("..", "..", "oldfitobjects", "release_refits", "v1.0.6", "features")
+  paths <- file.path(root, paste0(c("steepness_bh", "steepness_ricker"), "_original.rds"))
+  skip_if_not(all(file.exists(paths)), "Generate the steepness fixtures")
+  for (path in paths) {
+    fit <- readRDS(path)
+    input <- suppressMessages(migrate_legacy_refit_input(fit))
+    expect_true(input$data$recruit_model %in% 3:4)
+    expect_identical(input$legacy_steepness$recruit_model, fit$input$data$recruit_model)
+    model <- TMB::MakeADFun(
+      input$data, input$par, map = input$map, DLL = "wham", silent = TRUE
+    )
+    expect_equal(
+      as.numeric(model$fn(model$par)),
+      as.numeric(fit$opt$objective),
+      tolerance = 1e-6,
+      scale = 1
+    )
+    TMB::FreeADFun(model)
+  }
 })
 
 test_that("legacy Butterfish migration preserves the likelihood and estimates", {

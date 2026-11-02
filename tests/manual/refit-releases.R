@@ -30,7 +30,36 @@ save_reference_report <- function(fit, path) {
   saveRDS(report[c("MAA", "NAA", "SSB", "pred_catch", "pred_indices")], path)
 }
 
-if (stage == "reference") {
+if (stage == "summarize-features") {
+  tags <- if (length(args) > 1L) args[-1L] else c("v1.0.0", "v1.0.5", "v1.0.6")
+  expected <- c("selectivity_iid", "selectivity_ar1", "selectivity_shared_year",
+    "mortality_ar1_y", "mortality_constant_ar1", "mortality_2dar1_fixed",
+    "environment_ar1_recruit", "environment_rw_recruit", "environment_ar1_mortality",
+    "mortality_weight", "mortality_weight_ar1", "steepness_bh", "steepness_ricker")
+  summary <- do.call(rbind, lapply(tags, function(release) {
+    target <- file.path(output_root, release, "features")
+    fits <- list.files(target, "_original\\.rds$")
+    refitted <- read.csv(file.path(target, "refit-features_summary.csv"),
+      colClasses = c(warnings = "character", error = "character"))
+    complete <- nrow(refitted) == length(expected) &&
+      setequal(refitted$model, expected) &&
+      setequal(sub("_original\\.rds$", "", fits), expected)
+    data.frame(tag = release, cases = nrow(refitted),
+      stored_nll_matches = sum(refitted$stored_nll_matches),
+      refit_nll_matches = sum(refitted$nll_matches),
+      max_stored_nll_difference = max(abs(refitted$stored_nll_difference)),
+      max_refit_nll_difference = max(abs(refitted$nll_difference)),
+      original_convergence_warnings = sum(refitted$convergence_original != 0L),
+      cases_with_warnings = sum(nzchar(refitted$warnings)),
+      errors = sum(nzchar(refitted$error)),
+      passed = complete && all(refitted$stored_nll_matches) &&
+        all(refitted$nll_matches) && all(refitted$convergence == 0L) &&
+        all(refitted$error == ""))
+  }))
+  write.csv(summary, file.path(output_root, "feature_summary.csv"), row.names = FALSE)
+  print(summary)
+  stopifnot(all(summary$passed))
+} else if (stage == "reference") {
   library(TMB)
   dyn.load(TMB::dynlib(file.path(release_dir, "source", "src", "wham")))
   paths <- list.files(release_dir, "_original\\.rds$", full.names = TRUE)
@@ -187,11 +216,28 @@ if (stage == "reference") {
     feature_cases$environment_ar1_mortality <- feature_cases$environment_ar1_recruit
     feature_cases$environment_ar1_mortality$ecov$where <- "M"
     feature_cases$environment_ar1_mortality$ecov$lag <- 0
+    feature_cases$mortality_weight <- list(M = list(
+      model = "weight-at-age", re = "none", est_ages = 1L, initial_means = 0.3
+    ))
+    feature_cases$mortality_weight_ar1 <- list(M = list(
+      model = "weight-at-age", re = "ar1_y", est_ages = 1L, initial_means = 0.3
+    ))
+    feature_cases$steepness_bh <- list(recruit_model = 3L,
+      NAA_re = list(sigma = "rec+1", cor = "iid", use_steepness = TRUE,
+        recruit_pars = c(0.7, 100000)))
+    feature_cases$steepness_ricker <- list(recruit_model = 4L,
+      NAA_re = list(sigma = "rec+1", cor = "iid", use_steepness = TRUE,
+        recruit_pars = c(0.7, 100000)))
   }
   reference <- readRDS(file.path(source_dir, "inst", "extdata", "ex1_test_results.rds"))
   summary <- data.frame()
   model_ids <- if (stage == "generate-features") names(feature_cases) else c(paste0("m", seq_len(4L)), names(cases))
   if (stage == "generate-features" && length(args) > 2L) model_ids <- intersect(model_ids, args[-c(1L, 2L)])
+  summary_path <- file.path(release_dir, "generation_summary.csv")
+  if (stage == "generate-features" && file.exists(summary_path)) {
+    summary <- read.csv(summary_path)
+    summary <- summary[!summary$model %in% model_ids, , drop = FALSE]
+  }
   for (model_id in model_ids) {
     if (stage == "generate-features") {
       prepare_call <- baseline_call
@@ -200,6 +246,18 @@ if (stage == "reference") {
         prepare_call[[option]] <- feature_cases[[model_id]][[option]]
       }
       input <- eval(prepare_call, example)
+      if (startsWith(model_id, "steepness_")) {
+        for (year in seq_len(input$data$n_years_model)[-1L]) {
+          input$data$mature[, year, ] <- input$data$mature[, 1L, ]
+        }
+        pointer <- input$data$waa_pointer_ssb[1L]
+        weights <- input$data$waa[pointer, 1L, ]
+        for (year in seq_len(input$data$n_years_model)) {
+          input$data$waa[pointer, year, ] <- weights
+        }
+        input$data$fracyr_SSB[, 1L] <- input$data$fracyr_SSB[1L, 1L]
+        input$data$M_re_model[] <- 1L
+      }
       if (startsWith(model_id, "selectivity_") && !"age_comp" %in% names(formals(historical$prepare_wham_input))) {
         input$data$age_comp_model_fleets <- rep(7L, input$data$n_fleets)
         input$data$age_comp_model_indices <- rep(7L, input$data$n_indices)
@@ -212,6 +270,20 @@ if (stage == "reference") {
       if (model_id == "mortality_2dar1_fixed") {
         input$par$M_repars <- c(log(0.1), atanh(0.2), atanh(0.3))
         input$map$M_repars <- factor(rep(NA_integer_, 3L))
+      }
+      if (startsWith(model_id, "mortality_weight")) {
+        weights <- input$data$waa
+        count <- dim(weights)[1L]
+        input$data$waa <- array(0, c(count + 1L, dim(weights)[-1L]))
+        input$data$waa[seq_len(count), , ] <- weights
+        input$data$waa[count + 1L, , ] <- matrix(
+          seq(0.1, 1, length.out = input$data$n_ages),
+          input$data$n_years_model, input$data$n_ages, byrow = TRUE)
+        input$data$waa_pointer_jan1 <- count + 1L
+        if (model_id == "mortality_weight_ar1") {
+          input$par$M_repars <- c(log(0.1), 0, atanh(0.3))
+          input$map$M_repars <- factor(rep(NA_integer_, 3L))
+        }
       }
     } else if (model_id %in% names(cases)) {
       prepare_call <- baseline_call

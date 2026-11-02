@@ -12,32 +12,16 @@
 #' errors are available. This is a descriptive check, not a formal test,
 #' because both fits use the same data.
 #'
-#' Older multi-stock selectivity inputs are migrated from packed vectors or
-#' arrays without rebuilding the model from preparation options. Mean values,
-#' bounds, and mappings are retained, including shared annual random effects.
+#' Older inputs are migrated to current structures while retaining fitted
+#' values, parameter mappings, observations, and supported likelihoods.
+#' Migration covers historical selectivity, recruitment, mortality,
+#' environmental, and age-composition layouts when their conventions can be
+#' identified. Unsupported or ambiguous layouts are rejected rather than
+#' guessed. Native compatibility modes require rebuilding WHAM.
 #'
-#' Supported single-stock pre-2.0 inputs are migrated to the current input
-#' structure while retaining fitted values, parameter mappings, observations,
-#' bias correction, and correlation transforms. Fits without stored ASAP3 data
-#' use their stored model years and dimensions. Early packed age-composition
-#' parameters, two abundance correlations, and fixed mortality baselines are
-#' converted to the current layout, including rebuilt observation indices.
-#' For early inputs with packed age-composition parameter vectors, supported
-#' age-composition likelihoods are multinomial, Dirichlet-multinomial, and
-#' logistic-normal with zeros missing. Stored age-composition likelihood
-#' components distinguish historical unweighted and sample-size-weighted
-#' variances. Migration uses unit or original effective sample sizes accordingly,
-#' retaining the originals in \code{input$legacy_age_comp_Neff}. Missing or
-#' ambiguous likelihood evidence produces an error instead of guessing.
-#' Later matrix-layout inputs retain their likelihood numbering and sample-size
-#' weights even when their observation indices need rebuilding.
-#' Estimated legacy mortality baselines with age-specific offsets are not
-#' supported. Parameter comparisons use
-#' the original parameterization even when migration changes names or order.
-#' Recruitment decoupling is recovered from stored options or data flags, then
-#' from active recruitment correlation parameters, defaulting to coupled when
-#' no information is available. Legacy decoupled correlations and variances are
-#' converted to the current parameterization.
+#' Parameter differences are compared in the original parameterization, even
+#' when migration changes parameter names or order. Recruitment decoupling is
+#' recovered from stored options, data flags, or active correlation parameters.
 #'
 #' @param fit a fitted WHAM model object containing \code{$input} and
 #'   \code{$opt}.
@@ -255,6 +239,8 @@ refit_wham <- function(fit = NULL) {
   ) {
     fit_args$n.peels <- length(fit$peels)
   }
+  legacy_steepness <- input$legacy_steepness
+  input$legacy_steepness <- NULL
   refit <- do.call(fit_wham, c(list(input = input), fit_args))
 
   est_fit <- fit$opt$par
@@ -303,12 +289,8 @@ refit_wham <- function(fit = NULL) {
     pars$log_F1 <- pars$F_pars[1, ]
     pars$F_devs <- pars$F_pars[-1, , drop = FALSE]
     pars$M_a <- as.vector(pars$Mpars)[seq_along(fit$input$par$M_a)]
-    old_M0 <- fit$parList$M0
-    if (is.null(old_M0)) old_M0 <- fit$input$par$M0
-    if (!is.null(old_M0)) {
-      pars$M0 <- if (fit$input$data$M_model == 1L) pars$Mpars[1] else old_M0
-      pars$M_a <- pars$M_a - pars$M0
-    }
+    pars <- refit_legacy_mortality_parameters(pars, fit)
+    pars <- refit_legacy_steepness_parameters(pars, legacy_steepness)
     for (parameter in c("catch_paa_pars", "index_paa_pars")) {
       if (!is.matrix(fit$input$par[[parameter]])) {
         pars[[parameter]] <- pars[[parameter]][

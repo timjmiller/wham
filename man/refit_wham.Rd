@@ -29,36 +29,16 @@ z-like value. Parameters with \eqn{|z| > 1.96} are flagged when standard
 errors are available. This is a descriptive check, not a formal test,
 because both fits use the same data.
 
-Older multi-stock selectivity inputs are migrated from packed vectors or
-arrays without rebuilding the model from preparation options. Mean values,
-bounds, and mappings are retained, including shared annual random effects.
+Older inputs are migrated to current structures while retaining fitted
+values, parameter mappings, observations, and supported likelihoods.
+Migration covers historical selectivity, recruitment, mortality,
+environmental, and age-composition layouts when their conventions can be
+identified. Unsupported or ambiguous layouts are rejected rather than
+guessed. Native compatibility modes require rebuilding WHAM.
 
-Supported single-stock pre-2.0 inputs are migrated to the current input
-structure while retaining fitted values, parameter mappings, observations,
-bias correction, and correlation transforms. Fits without stored ASAP3 data
-use their stored model years and dimensions. Early packed age-composition
-parameters, two abundance correlations, and fixed mortality baselines are
-converted to the current layout, including rebuilt observation indices.
-For early inputs with packed age-composition parameter vectors, supported
-age-composition likelihoods are multinomial, Dirichlet-multinomial, and
-logistic-normal with zeros missing. Stored age-composition likelihood
-components distinguish historical unweighted and sample-size-weighted
-variances. Migration uses unit or original effective sample sizes accordingly,
-retaining the originals in \code{input$legacy_age_comp_Neff}. Missing or
-ambiguous likelihood evidence produces an error instead of guessing.
-Later matrix-layout inputs retain their likelihood numbering and sample-size
-weights even when their observation indices need rebuilding.
-Estimated legacy mortality baselines with age-specific offsets are not
-supported. Environmental
-effects,
-selectivity or mortality random effects, weight-based mortality,
-steepness, and stored projections are not yet supported and produce
-an error rather than silently changing the model. Parameter comparisons use
-the original parameterization even when migration changes names or order.
-Recruitment decoupling is recovered from stored options or data flags, then
-from active recruitment correlation parameters, defaulting to coupled when
-no information is available. Legacy decoupled correlations and variances are
-converted to the current parameterization.
+Parameter differences are compared in the original parameterization, even
+when migration changes parameter names or order. Recruitment decoupling is
+recovered from stored options, data flags, or active correlation parameters.
 }
 \seealso{
 \code{\link{prepare_wham_input_from_fit}}, \code{\link{fit_wham}}

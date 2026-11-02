@@ -54,10 +54,11 @@ logs, and stops on the first failure. Generation is repeatable but not cached;
 use the `refit` stage alone to rerun migration against already-generated fits.
 
 Other tags may be supplied, but a successful v1.0.0 run alone does not establish
-coverage of every release or model configuration. Environmental effects,
-selectivity or mortality random effects, weight-based mortality, steepness,
-stored projections, and estimated early mortality baselines with age-specific
-offsets remain unsupported by the legacy migration.
+coverage of every release or model configuration. Stored projections and
+estimated early mortality baselines with age-specific offsets remain unsupported
+by the legacy migration. Environmental cross-effect coefficient sharing,
+ambiguous process conventions, and early observation-error random effects
+are explicitly rejected.
 For the early packed age-composition parameter layout, supported likelihood codes
 are 1 (multinomial), 2 (Dirichlet-multinomial), and 7 (logistic-normal with zeros
 missing). Historical code 7 becomes current code 5. Stored likelihood components
@@ -77,3 +78,49 @@ Verified with WHAM 2.1.0.9012 and R 4.4.3: all 54 cases across v1.0.1 through
 v1.0.6 pass the `1e-6` absolute NLL tolerance before and after refitting. The
 largest refit difference was `1.65e-8`. Five v1.0.1 cases retain singular-Hessian
 warnings; v1.0.2 through v1.0.6 produced no refit warnings in this matrix.
+
+## Legacy Feature Checks
+
+```text
+Rscript tests/manual/refit-releases.R generate-features v1.0.6
+Rscript tests/manual/refit-releases.R refit-features v1.0.6
+Rscript tests/manual/refit-releases.R summarize-features
+```
+
+Feature stages write separate results under `<tag>/features/`. Optional trailing
+case names restrict generation without refitting the other fixtures. Run refits
+against a rebuilt current package: native compatibility code is needed for the
+early environmental AR1 equation and for BH/Ricker steepness. Loading only the
+updated R functions is insufficient.
+
+The feature matrix covers IID, correlated and shared-annual selectivity effects;
+age-specific and constant mortality with annual or two-dimensional deviations;
+environmental RW/AR1 effects on recruitment and mortality; allometric mortality
+with and without shared annual intercept deviations; and BH/Ricker steepness.
+Allometric fixtures use a separate, controlled positive mortality-weight matrix,
+without changing catch or survey weights. Their annual process variance and
+correlation are fixed to provide stable historical test fits. The original nine
+feature cases are tested on v1.0.0, v1.0.5 and v1.0.6, spanning the main coefficient
+layouts. These examples do not establish support for every possible combination.
+
+Steepness retains the original parameterization rather than converting only its
+starting values to alpha/beta. Its yearly unfished SPR changes with mortality.
+The legacy mode is restricted to single-stock, single-region, single-season
+models without projections. The biological regression checks use independent
+reports evaluated by the historical DLL at saved fixed and latent parameters.
+
+Verified on v1.0.0, v1.0.5 and v1.0.6: all 39 feature cases pass both the saved-
+parameter and refitted NLL checks (`1e-6` absolute tolerance). Maximum differences
+are `5.18e-7` at saved parameters and `2.82e-8` after refitting. All refits report
+optimizer convergence. Eight v1.0.0 cases retain numerical warnings, and one
+original v1.0.0 steepness fit did not report convergence; NLL agreement does not
+remove these conditioning concerns. The later two releases produced no warnings
+in this feature matrix. Results are saved in
+`oldfitobjects/release_refits/feature_summary.csv`.
+
+The focused migration regression run passes 1,292 assertions, including the
+original release fixtures, the 39 feature fixtures, historical AR1 simulation,
+and steepness formula checks that perturb mortality. Both v1.0.6 steepness models
+also complete reference-point and standard-error calls successfully. OSA,
+posterior sampling, stored projections, and every possible combination of these
+features are not covered by this matrix.

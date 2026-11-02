@@ -435,11 +435,12 @@ migrate_legacy_refit_input <- function(fit) {
   if (length(data$M_re_model) != 1L || !data$M_re_model %in% 1:5) {
     unsupported <- c(unsupported, "unknown mortality random-effect model")
   }
-  if (data$M_model == 3) {
-    unsupported <- c(unsupported, "weight-based mortality")
+  if (!data$M_model %in% 1:3) {
+    unsupported <- c(unsupported, "unknown mortality mean model")
   }
-  if (isTRUE(data$use_steepness == 1)) {
-    unsupported <- c(unsupported, "steepness parameterization")
+  if (isTRUE(data$use_steepness == 1) &&
+      !(length(data$recruit_model) == 1L && data$recruit_model %in% c(3L, 4L))) {
+    unsupported <- c(unsupported, "steepness without a Beverton-Holt or Ricker recruitment model")
   }
   if (isTRUE(data$do_proj == 1)) {
     unsupported <- c(unsupported, "stored projections")
@@ -523,7 +524,7 @@ migrate_legacy_refit_input <- function(fit) {
     data$n_indices
   )]
   input$data$waa_pointer_M <- data$waa_pointer_jan1
-  input$data$M_model <- 1L
+  input <- migrate_legacy_refit_model_codes(input, data)
   input$data$M_re_model[] <- c(1L, 4L, 2L, 3L, 4L)[data$M_re_model]
   input$data$n_M_re[] <- data$n_M_a
   input$data$M_re_index[] <- if (data$n_M_a == 1L) 1L else seq_len(data$n_ages)
@@ -609,9 +610,13 @@ migrate_legacy_refit_input <- function(fit) {
   for (parameter in setdiff(names(pars), c(renamed, inactive))) {
     if (parameter %in% names(input$par)) transfer(parameter)
   }
-  transfer("M_re", indices = if (data$n_M_a == 1L) {
-    rep(seq_len(data$n_years_model), data$n_ages)
-  } else seq_along(pars$M_re))
+  if (data$M_model == 3L) {
+    input <- migrate_legacy_weight_mortality(input, old, pars, data)
+  } else {
+    transfer("M_re", indices = if (data$n_M_a == 1L) {
+      rep(seq_len(data$n_years_model), data$n_ages)
+    } else seq_along(pars$M_re))
+  }
   if (environmental) {
     use_process <- data$Ecov_use_re
     if (is.matrix(use_process)) {
@@ -691,17 +696,18 @@ migrate_legacy_refit_input <- function(fit) {
     mapping[seq_along(values)] <- as.integer(source_map)
     input$map[[parameter]] <- factor(mapping)
   }
+  input <- migrate_legacy_steepness(input, fit, data, pars)
   pointers <- data$NAA_sigma_pointers
   if (data$n_NAA_sigma > 0) {
     transfer("log_NAA_sigma", indices = pointers)
   }
-  if (!is.null(pars$M0) && data$M_model == 1L) {
+  if (!is.null(pars$M0) && data$M_model %in% c(1L, 3L)) {
     transfer("Mpars", "M0", rep(1L, data$n_ages))
   } else {
     transfer(
       "Mpars",
       "M_a",
-      if (data$M_model == 1) rep(1L, data$n_ages) else seq_len(data$n_ages)
+      if (data$M_model %in% c(1L, 3L)) rep(1L, data$n_ages) else seq_len(data$n_ages)
     )
     if (!is.null(pars$M0)) input$par$Mpars[] <- input$par$Mpars + pars$M0
   }
