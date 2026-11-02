@@ -19,6 +19,12 @@
 #' identified. Unsupported or ambiguous layouts are rejected rather than
 #' guessed. Native compatibility modes require rebuilding WHAM.
 #'
+#' Stored projections in historical multi-stock layouts retain their projected
+#' parameters, maps, fishing controls and averaging years. A saved
+#' \code{\link{project_wham}} call is refit from this stored input without
+#' evaluating the original model argument or extending the projection again.
+#' Earlier packed single-stock projection layouts remain unsupported.
+#'
 #' Parameter differences are compared in the original parameterization, even
 #' when migration changes parameter names or order. Recruitment decoupling is
 #' recovered from stored options, data flags, or active correlation parameters.
@@ -49,9 +55,6 @@ refit_wham <- function(fit = NULL) {
   ) {
     data <- input$data
     input <- migrate_refit_selectivity(input)
-    if (isTRUE(data$do_proj == 1L)) {
-      stop("Cannot safely migrate stored projections in this WHAM input.")
-    }
     defaults <- set_proj(set_brp_static(input, list()))$data
     missing <- setdiff(names(defaults), names(input$data))
     input$data[missing] <- defaults[missing]
@@ -64,24 +67,35 @@ refit_wham <- function(fit = NULL) {
     if (is.null(input$data$do_simulate_period)) {
       input$data$do_simulate_period <- c(1L, 1L)
     }
-    if (!is.null(data$avg_years_ind)) {
+    if (!is.null(data$avg_years_ind) || !is.null(data$avg_years_ind_static)) {
       for (field in grep("^avg_years_ind_", missing, value = TRUE)) {
+        averaging_years <- data$avg_years_ind
+        if (startsWith(field, "avg_years_ind_static_") &&
+            !is.null(data$avg_years_ind_static)) {
+          averaging_years <- data$avg_years_ind_static
+        }
+        if (is.null(averaging_years)) next
+        if (!is.numeric(averaging_years) || !length(averaging_years) ||
+            length(averaging_years) > data$n_years_model ||
+            anyNA(averaging_years) || any(!is.finite(averaging_years)) ||
+            any(averaging_years < 0 | averaging_years >= data$n_years_model |
+              averaging_years != floor(averaging_years))) {
+          stop("Cannot safely migrate invalid stored averaging years for ", field, ".")
+        }
+        packed_years <- c(length(averaging_years), averaging_years)
         target <- input$data[[field]]
         year_axis <- length(dim(target))
         if (year_axis == 2L) {
           target[] <- 0
-          target[seq_len(length(data$avg_years_ind) + 1L), ] <- c(
-            length(data$avg_years_ind),
-            data$avg_years_ind
-          )
+          target[seq_along(packed_years), ] <- packed_years
         } else {
           dim(target) <- c(
             prod(dim(target)[-year_axis]),
             dim(target)[year_axis]
           )
           target[] <- 0
-          target[, seq_len(length(data$avg_years_ind) + 1L)] <- rep(
-            c(length(data$avg_years_ind), data$avg_years_ind),
+          target[, seq_along(packed_years)] <- rep(
+            packed_years,
             each = nrow(target)
           )
           dim(target) <- dim(input$data[[field]])
@@ -204,7 +218,23 @@ refit_wham <- function(fit = NULL) {
   }
 
   if (is.call(fit$call)) {
-    fit_args <- as.list(fit$call)[-1]
+    fit_call <- fit$call
+    call_name <- fit_call[[1L]]
+    if (is.call(call_name) &&
+        (identical(call_name[[1L]], as.name("::")) ||
+          identical(call_name[[1L]], as.name(":::")))) {
+      call_name <- call_name[[3L]]
+    }
+    if (identical(call_name, as.name("project_wham"))) {
+      fit_call <- match.call(project_wham, fit_call)
+      fit_args <- as.list(fit_call)[-1L]
+      fit_args[c("model", "proj.opts", "check.version")] <- NULL
+      fit_args$do.proj <- FALSE
+      fit_args$do.osa <- FALSE
+      fit_args$do.post.samp <- FALSE
+    } else {
+      fit_args <- as.list(fit_call)[-1L]
+    }
     fit_args$input <- NULL
   } else {
     # Old saved fits may not contain the call recorded by fit_wham().

@@ -123,6 +123,138 @@ test_that("refitting preserves stored mappings and uses fitted starting values",
   expect_identical(fit$input, original_input)
 })
 
+test_that("projection calls refit stored inputs without evaluating the old model", {
+  for (call in list(
+    quote(project_wham(unavailable_model, unavailable_options,
+      do.sdrep = FALSE, n.newton = 0L, check.version = FALSE)),
+    quote(wham::project_wham(model = unavailable_model,
+      proj.opts = unavailable_options, do.sdrep = FALSE, n.newton = 0L))
+  )) {
+    fit <- list(
+      input = list(data = list(n_years_model = 3L, do_proj = 1L,
+        n_years_proj = 2L, proj_F_opt = c(5L, 3L))),
+      opt = list(par = c(parameter = 1), objective = 0, convergence = 0),
+      call = call
+    )
+    refit <- refit_wham
+    environment(refit) <- list2env(list(
+      fit_wham = function(input, ...) {
+        arguments <- list(...)
+        expect_null(arguments$model)
+        expect_null(arguments$proj.opts)
+        expect_null(arguments$check.version)
+        expect_false(arguments$do.proj)
+        expect_false(arguments$do.osa)
+        expect_false(arguments$do.post.samp)
+        expect_false(arguments$do.sdrep)
+        expect_identical(arguments$n.newton, 0L)
+        expect_false(arguments$do.retro)
+        list(input = input, opt = fit$opt)
+      }
+    ), parent = environment(refit_wham))
+
+    capture.output(result <- refit(fit))
+
+    expect_identical(result$input$data$do_proj, 1L)
+    expect_identical(result$input$data$n_years_proj, 2L)
+    expect_identical(result$input$data$proj_F_opt, c(5L, 3L))
+  }
+})
+
+test_that("stored projections retain controls and separate averaging windows", {
+  input <- list(
+    data = list(n_years_model = 4L, n_years_proj = 2L, do_proj = 1L,
+      n_stocks = 1L, n_regions = 1L, n_fleets = 1L, n_ages = 2L,
+      n_selblocks = 1L, selblock_models = 1L, selblock_models_re = 1L,
+      selpars_est = matrix(0L, 1L, 6L), proj_F_opt = c(5L, 3L),
+      proj_Fcatch = c(100, 0), proj_M_opt = 2L,
+      avg_years_ind = c(2L, 3L), avg_years_ind_static = c(0L, 1L),
+      FXSPR_init = rep(0.5, 6L), FMSY_init = rep(0.5, 6L)),
+    par = list(selpars_re = 0), map = list(selpars_re = factor(NA)),
+    years = 2000:2003, years_full = 2000:2005
+  )
+  fit <- list(input = input,
+    opt = list(par = c(parameter = 1), objective = 0, convergence = 0))
+  refit <- refit_wham
+  environment(refit) <- list2env(list(
+    fit_wham = function(input, ...) list(input = input, opt = fit$opt)
+  ), parent = environment(refit_wham))
+
+  capture.output(result <- refit(fit))
+  data <- result$input$data
+  expect_identical(data$do_proj, 1L)
+  expect_identical(data$n_years_proj, 2L)
+  expect_identical(data$proj_F_opt, input$data$proj_F_opt)
+  expect_identical(as.vector(data$proj_Fcatch), input$data$proj_Fcatch)
+  expect_identical(dim(data$proj_Fcatch), c(2L, 1L))
+  expect_identical(data$proj_M_opt, 2L)
+  expect_equal(data$avg_years_ind_sel[, 1L], c(2, 2, 3, 0, 0))
+  expect_equal(data$avg_years_ind_static_sel[, 1L], c(2, 0, 1, 0, 0))
+  expect_equal(as.vector(data$avg_years_ind_M), c(2, 2, 3, 0, 0))
+  expect_equal(as.vector(data$avg_years_ind_static_M), c(2, 0, 1, 0, 0))
+  expect_identical(result$input$years_full, input$years_full)
+  expect_identical(result$input$par$logR_proj, NULL)
+  expect_identical(fit$input, input)
+
+  fit$input$data$avg_years_ind <- c(3L, 4L)
+  expect_error(refit(fit), "invalid stored averaging years")
+})
+
+test_that("stored historical projections preserve likelihoods and forecast reports", {
+  path <- test_path("..", "..", "oldfitobjects", "BSB_2023Run34projfit.RDS")
+  skip_if_not(file.exists(path), "Local historical projection fit is unavailable")
+  fit <- readRDS(path)
+  original_input <- fit$input
+  fit$call$do.sdrep <- FALSE
+  refit <- refit_wham
+  environment(refit) <- list2env(list(
+    fit_wham = function(input, ...) {
+      expect_identical(input$data$do_proj, original_input$data$do_proj)
+      expect_identical(input$data$n_years_proj, original_input$data$n_years_proj)
+      expect_identical(input$data$proj_F_opt, original_input$data$proj_F_opt)
+      expect_identical(as.vector(input$data$proj_Fcatch), as.vector(original_input$data$proj_Fcatch))
+      expect_identical(input$map$log_NAA, original_input$map$log_NAA)
+      expect_identical(input$random, original_input$random)
+      expect_identical(input$years_full, original_input$years_full)
+      for (field in names(fit$parList)) {
+        if (!field %in% c("selpars_re", "sel_repars", "Ecov_process_pars")) {
+          expect_identical(input$par[[field]], fit$parList[[field]], info = field)
+        }
+      }
+      expected_selectivity <- fit$parList$sel_repars
+      expected_selectivity[, 2:3] <- 2 * expected_selectivity[, 2:3]
+      expect_equal(input$par$sel_repars, expected_selectivity, tolerance = 1e-12)
+      expected_environment <- fit$parList$Ecov_process_pars
+      columns <- which(input$data$Ecov_model == 2L & input$data$Ecov_use_re == 1L)
+      correlation <- tanh(expected_environment[3L, columns] / 2)
+      expected_environment[2L, columns] <- expected_environment[2L, columns] +
+        0.5 * log1p(-correlation^2)
+      expect_equal(input$par$Ecov_process_pars, expected_environment, tolerance = 1e-12)
+      objective <- TMB::MakeADFun(input$data, input$par, random = input$random,
+        map = input$map, DLL = "wham", silent = TRUE)
+      expect_equal(as.numeric(objective$fn(objective$par)), as.numeric(fit$opt$objective),
+        tolerance = 1e-6, scale = 1)
+      TMB::FreeADFun(objective)
+      objective <- TMB::MakeADFun(input$data, input$par,
+        map = input$map, DLL = "wham", silent = TRUE)
+      objective$fn(objective$par)
+      report <- objective$report()
+      for (field in c("MAA", "NAA", "SSB", "pred_catch", "pred_indices")) {
+        expect_equal(dim(report[[field]]), dim(fit$rep[[field]]), info = field)
+        expect_equal(as.vector(report[[field]]), as.vector(fit$rep[[field]]),
+          tolerance = 1e-8, info = field)
+      }
+      TMB::FreeADFun(objective)
+      list(input = input, opt = fit$opt, parList = input$par)
+    }
+  ), parent = environment(refit_wham))
+
+  capture.output(result <- suppressMessages(refit(fit)))
+
+  expect_identical(fit$input, original_input)
+  expect_identical(result$input$data$proj_F_opt, c(5, 3, 3))
+})
+
 test_that("packed and array selectivity migrations retain means and shared effects", {
   for (layout in c("packed", "array")) for (model in c(4L, 5L)) {
     shared <- model == 4L

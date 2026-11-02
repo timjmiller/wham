@@ -53,6 +53,63 @@ likelihood, stored projections, OSA, posterior sampling, retrospectives, or
 uncertainty/reference-point workflows. Separate saved-fit regressions may cover
 some of these, but must not be counted as release-by-feature coverage.
 
+## All-Version Baseline Audit
+
+```text
+Rscript oldfitobjects/test_refit_releases.R --baseline-only
+```
+
+This mode tests all semantic-version release tags plus `current`, the installed
+build matching the workspace version. Current fixtures use that installation;
+historical fixtures use the corresponding tagged R functions and native code.
+It reuses original fixtures but performs fresh refits, continues after failed
+versions, and writes separate `version_audit_status.csv` and
+`version_audit_coverage.csv` reports. Historical code is tested with the current
+R/TMB toolchain, not a reconstruction of its original runtime environment.
+
+The November 2026 history inventory contains 42 distinct version numbers from
+1.0.0 through 2.1.0.9012: twelve release tags, the current build, and 29 other
+untagged development versions. The release/current audit is not an exhaustive
+audit of those development versions or of every commit sharing a version
+number. See `version_audit_version_inventory.csv` for the explicit coverage gap.
+
+Completed with R 4.4.3 and TMB 1.9.25: all 117 baseline cases passed across
+v1.0.0-v1.0.9, v2.0.0, v2.1.0 and current 2.1.0.9012. Maximum absolute NLL
+differences were `1.02e-10` at saved parameters and `2.26e-8` after refitting.
+All 52 archived example NLL checks passed. All 117 stored-parameter biological
+comparisons passed for mortality, abundance, SSB, predicted catch and indices;
+the maximum `abs(actual - reference) / (1 + abs(reference))` was `5.74e-16`.
+Ten cases on v1.0.0/v1.0.1 retain conditioning warnings. Results and provenance
+are in `version_audit_summary.csv` and `version_audit_provenance.rds`.
+
+Historical compilation selects the AD backend declared in the release's
+Makevars file. In particular v2.1.0 requires TMBad; using the default CppAD
+backend at the same time is a harness build error, not a refit failure.
+
+The nine configurations per version test SCAA, IID recruitment and abundance,
+multinomial/logistic-normal compositions, and recruitment/abundance AR1 variants.
+Checks require absolute NLL agreement within `1e-6` at saved parameters and
+after refitting, optimizer convergence, and no refit error. Diagnostic workflows
+remain disabled. Passing these checks does not establish that every former fit
+can be recreated or that uncertainty estimates are valid.
+
+A previously unsupported saved fit was `BSB_2023Run34projfit.RDS`, reporting
+WHAM `1.0.7.9000 / local install`. Its stored multi-stock projection now migrates
+without resetting the projected parameters, maps or fishing controls. The
+three-year forecast retains its catch target followed by two FXSPR years.
+The focused refit converged with absolute NLL difference `6.01e-9`; projected
+mortality, abundance, SSB and indices matched exactly, and predicted catches
+matched to scaled tolerance `3.66e-16`. See `stored_projection_refit_summary.csv`.
+This check disabled uncertainty and retrospective calculations.
+
+Migration translates old averaging windows into the current packed layouts,
+keeping projection and static-reference windows separate. Saved `project_wham`
+calls use their stored projected inputs rather than evaluating an old model
+symbol or extending the projections a second time. Earlier packed single-stock
+projection inputs remain explicitly unsupported; this fix is not a universal
+compatibility guarantee. `version_audit_saved_projection.csv` records the
+historical rejection before this fix, not the current behavior.
+
 Run from the repository root in separate Rscript processes:
 
 ```text
@@ -107,9 +164,10 @@ logs, and stops on the first failure. Generation is repeatable but not cached;
 use the `refit` stage alone to rerun migration against already-generated fits.
 
 Other tags may be supplied, but a successful v1.0.0 run alone does not establish
-coverage of every release or model configuration. Stored projections and
-estimated early mortality baselines with age-specific offsets remain unsupported
-by the legacy migration. Environmental cross-effect coefficient sharing,
+coverage of every release or model configuration. Stored projections in the
+earliest packed single-stock layout and estimated early mortality baselines
+with age-specific offsets remain unsupported by the legacy migration.
+Environmental cross-effect coefficient sharing,
 ambiguous process conventions, and early observation-error random effects
 are explicitly rejected.
 For the early packed age-composition parameter layout, supported likelihood codes

@@ -120,30 +120,46 @@ if (stage == "summarize-features") {
   }
   print(status)
 } else if (stage %in% c("generate", "generate-features")) {
-  commit <- git_output(c("rev-parse", paste0(tag, "^{commit}")))
-  source_dir <- file.path(output_root, tag, "source")
-  archive <- file.path(release_dir, "source.zip")
-  git_output(c("archive", "--format=zip", paste0("--output=", shQuote(archive)), tag))
-  unzip(archive, exdir = source_dir)
-  description <- read.dcf(file.path(source_dir, "DESCRIPTION"))
-  stopifnot(paste0("v", description[1, "Version"]) == tag)
   library(TMB)
   library(dplyr)
   library(tidyr)
-  original_dir <- getwd()
-  setwd(file.path(source_dir, "src"))
-  if (!file.exists("wham.cpp")) {
-    template <- if (file.exists("wham_v0.cpp")) "wham_v0.cpp" else "multi_wham.cpp"
-    stopifnot(file.copy(template, "wham.cpp"))
-  }
-  if (!file.exists(dynlib("wham"))) {
-    compile("wham.cpp", flags = "-O1 -g0")
-  }
-  dyn.load(dynlib("wham"))
-  setwd(original_dir)
-  historical <- new.env(parent = globalenv())
-  for (path in list.files(file.path(source_dir, "R"), "\\.[Rr]$", full.names = TRUE)) {
-    sys.source(path, envir = historical)
+  if (tag == "current") {
+    current_library <- Sys.getenv("WHAM_CURRENT_LIBRARY")
+    if (nzchar(current_library)) library(wham, lib.loc = current_library) else library(wham)
+    source_dir <- normalizePath(".", winslash = "/")
+    commit <- git_output(c("rev-parse", "HEAD"))
+    description <- read.dcf(file.path(source_dir, "DESCRIPTION"))
+    stopifnot(as.character(packageVersion("wham")) == description[1, "Version"])
+    historical <- asNamespace("wham")
+  } else {
+    commit <- git_output(c("rev-parse", paste0(tag, "^{commit}")))
+    source_dir <- file.path(output_root, tag, "source")
+    archive <- file.path(release_dir, "source.zip")
+    git_output(c("archive", "--format=zip", paste0("--output=", shQuote(archive)), tag))
+    unzip(archive, exdir = source_dir)
+    description <- read.dcf(file.path(source_dir, "DESCRIPTION"))
+    stopifnot(paste0("v", description[1, "Version"]) == tag)
+    original_dir <- getwd()
+    setwd(file.path(source_dir, "src"))
+    if (!file.exists("wham.cpp")) {
+      template <- if (file.exists("wham_v0.cpp")) "wham_v0.cpp" else "multi_wham.cpp"
+      stopifnot(file.copy(template, "wham.cpp"))
+    }
+    makevars <- if (.Platform$OS.type == "windows" && file.exists("Makevars.win")) {
+      "Makevars.win"
+    } else "Makevars"
+    framework <- if (any(grepl("^[^#]*-DTMBAD_FRAMEWORK", readLines(makevars, warn = FALSE)))) {
+      "TMBad"
+    } else "CppAD"
+    if (!file.exists(dynlib("wham"))) {
+      compile("wham.cpp", flags = "-O1 -g0", framework = framework)
+    }
+    dyn.load(dynlib("wham"))
+    setwd(original_dir)
+    historical <- new.env(parent = globalenv())
+    for (path in list.files(file.path(source_dir, "R"), "\\.[Rr]$", full.names = TRUE)) {
+      sys.source(path, envir = historical)
+    }
   }
   provenance <- list(
     tag = tag,
@@ -151,6 +167,8 @@ if (stage == "summarize-features") {
     version = description[1, "Version"],
     R = R.version.string,
     TMB = as.character(packageVersion("TMB")),
+    AD_framework = if (tag == "current") "installed" else framework,
+    workspace_dirty = length(git_output(c("status", "--porcelain"))) > 0L,
     generated = Sys.time()
   )
   saveRDS(provenance, file.path(release_dir, "provenance.rds"))

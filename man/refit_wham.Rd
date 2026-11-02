@@ -36,6 +36,12 @@ environmental, and age-composition layouts when their conventions can be
 identified. Unsupported or ambiguous layouts are rejected rather than
 guessed. Native compatibility modes require rebuilding WHAM.
 
+Stored projections in historical multi-stock layouts retain their projected
+parameters, maps, fishing controls and averaging years. A saved
+\code{\link{project_wham}} call is refit from this stored input without
+evaluating the original model argument or extending the projection again.
+Earlier packed single-stock projection layouts remain unsupported.
+
 Parameter differences are compared in the original parameterization, even
 when migration changes parameter names or order. Recruitment decoupling is
 recovered from stored options, data flags, or active correlation parameters.
