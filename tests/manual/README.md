@@ -1,5 +1,58 @@
 # Historical Refit Checks
 
+The verification counts later in this document describe earlier runs, not a
+guarantee for the current workspace. The November 2026 rerun exposed steepness
+rejections and cached v1.0.0 fixtures whose steepness option was inactive.
+The fixes preserve the original steepness parameterization in the native model
+and regenerate missing or inactive fixtures using the release's array layout.
+Consult the current rerun reports before claiming release-by-feature support.
+
+Rebuild WHAM before testing the native steepness fix. Local validation uses
+`oldfitobjects/refit-fix-library` without replacing the user's installed package:
+
+```text
+R CMD INSTALL --library=oldfitobjects/refit-fix-library .
+```
+
+Set `WHAM_CURRENT_LIBRARY` to that directory for the commands below. The native
+compatibility modes use internal recruitment codes 5/6 and retain the saved
+steepness/R0 values and maps. Their coefficients are recalculated each objective
+evaluation using annual mortality, maturity, spawning weights and spawn timing.
+They remain restricted to one stock, region and season without projections.
+The native regressions independently check the historical BH/Ricker formulas,
+including perturbations to mortality and year-specific spawning inputs.
+
+The shared optimizer and its Newton refinement are unchanged. Weakly identified
+historical models can still report singular-Hessian warnings; likelihood
+agreement does not establish identifiability or valid standard errors.
+
+The local `oldfitobjects/test_refit_releases.R` runner checks all semantic-version
+Git tags, reusing historical fixtures when available and generating missing
+ones. It runs the nine baseline cases and thirteen feature cases independently
+for each release, continues after failed stages, and writes `rerun_status.csv`
+and `rerun_coverage.csv` under `oldfitobjects/release_refits/`:
+
+```text
+Rscript oldfitobjects/test_refit_releases.R
+Rscript oldfitobjects/test_refit_releases.R v1.0.6
+Rscript oldfitobjects/test_refit_releases.R --regenerate
+```
+
+The runner exits unsuccessfully if any stage or required case fails. Missing
+fixtures, inactive steepness and incomplete refits are not counted as passes. This tests a defined
+matrix across tagged releases, not every historical development commit or
+every feature combination. Migration rejections, numerical failures, and
+historical generation failures must be distinguished in the per-stage logs.
+Use a current native build consistent with the workspace R code; an older
+installed DLL can invalidate comparisons.
+
+The 22-case matrix is not a full WHAM feature inventory. In particular it does
+not establish cross-version support for catchability effects, movement,
+multi-stock/multi-region models, length models, every age-composition
+likelihood, stored projections, OSA, posterior sampling, retrospectives, or
+uncertainty/reference-point workflows. Separate saved-fit regressions may cover
+some of these, but must not be counted as release-by-feature coverage.
+
 Run from the repository root in separate Rscript processes:
 
 ```text
@@ -12,8 +65,8 @@ Rscript tests/manual/refit-releases.R summarize
 
 Set `WHAM_CURRENT_LIBRARY` to the library directory containing the current WHAM
 installation if it is not on R's library path. The refit stages load the installed
-native model and the workspace versions of `R/migrate_wham_input.R` and
-`R/refit_wham.R`; the installed R functions are not modified.
+native model and the workspace migration, refit and fitting functions; the
+installed R functions are not modified.
 
 `generate` requires Git, the local release tag, TMB, dplyr, tidyr, and a working R
 C++ toolchain. It extracts the release, compiles an unchanged build copy of its

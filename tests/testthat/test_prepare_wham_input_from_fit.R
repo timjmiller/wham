@@ -395,7 +395,7 @@ test_that("legacy process and environmental features preserve stored likelihoods
     expect_equal(input$data$selblock_models_re, original_input$data$selblock_models_re - 1L)
     expect_equal(input$data$M_model, if (original_input$data$M_model == 3L) 2L else 1L)
     if (isTRUE(original_input$data$use_steepness == 1L)) {
-      expect_equal(input$data$recruit_model, original_input$data$recruit_model)
+      expect_equal(input$data$recruit_model, original_input$data$recruit_model + 2L)
       expect_true(all(is.finite(input$par$mean_rec_pars)))
     }
     model <- TMB::MakeADFun(input$data, input$par, random = input$random,
@@ -440,17 +440,18 @@ test_that("historical environmental AR1 simulation preserves its transition", {
   expect_equal(as.vector(simulated$Ecov_re), expected, tolerance = 1e-12)
 })
 
-test_that("legacy steepness uses equivalent current stock-recruit coefficients", {
+test_that("legacy steepness preserves the original marginal likelihood", {
   root <- test_path("..", "..", "oldfitobjects", "release_refits", "v1.0.6", "features")
   paths <- file.path(root, paste0(c("steepness_bh", "steepness_ricker"), "_original.rds"))
   skip_if_not(all(file.exists(paths)), "Generate the steepness fixtures")
   for (path in paths) {
     fit <- readRDS(path)
     input <- suppressMessages(migrate_legacy_refit_input(fit))
-    expect_true(input$data$recruit_model %in% 3:4)
+    expect_true(input$data$recruit_model %in% 5:6)
     expect_identical(input$legacy_steepness$recruit_model, fit$input$data$recruit_model)
     model <- TMB::MakeADFun(
-      input$data, input$par, map = input$map, DLL = "wham", silent = TRUE
+      input$data, input$par, random = input$random,
+      map = input$map, DLL = "wham", silent = TRUE
     )
     expect_equal(
       as.numeric(model$fn(model$par)),

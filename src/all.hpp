@@ -16,3 +16,4 @@
 #include "MSY.hpp"
 #include "tagging.hpp"
 #include "projections.hpp"
+#include "refit_legacy.hpp"

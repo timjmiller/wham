@@ -133,7 +133,8 @@ if (stage == "summarize-features") {
   original_dir <- getwd()
   setwd(file.path(source_dir, "src"))
   if (!file.exists("wham.cpp")) {
-    stopifnot(file.copy("wham_v0.cpp", "wham.cpp"))
+    template <- if (file.exists("wham_v0.cpp")) "wham_v0.cpp" else "multi_wham.cpp"
+    stopifnot(file.copy(template, "wham.cpp"))
   }
   if (!file.exists(dynlib("wham"))) {
     compile("wham.cpp", flags = "-O1 -g0")
@@ -158,15 +159,25 @@ if (stage == "summarize-features") {
   )
   example <- new.env(parent = historical)
   example$asap3 <- asap3
-  expressions <- parse(file.path(source_dir, "tests", "testthat", "test_ex1_SNEMAYT.R"))
+  example_paths <- file.path(source_dir, "tests", "testthat",
+    c("test_ex1_SNEMAYT.R", "test_ex01_SNEMAYT.R"))
+  expressions <- parse(example_paths[file.exists(example_paths)][1L])
   test <- Filter(function(expression) {
     is.call(expression) && identical(expression[[1]], as.name("test_that"))
   }, as.list(expressions))[[1L]]
   baseline_call <- NULL
-  for (expression in as.list(test[[3L]])[-1L]) {
+  setup_expressions <- function(expression) {
+    if (!is.call(expression)) return(list())
+    operator <- as.character(expression[[1L]])[1L]
+    if (operator %in% c("<-", "=")) return(list(expression))
+    if (!operator %in% c("{", "suppressWarnings", "suppressMessages")) return(list())
+    unlist(lapply(as.list(expression)[-1L], setup_expressions), recursive = FALSE)
+  }
+  for (expression in setup_expressions(test[[3L]])) {
     if (!is.call(expression) || !as.character(expression[[1L]]) %in% c("<-", "=")) next
     target <- expression[[2L]]
     while (is.call(target)) target <- target[[2L]]
+    if (identical(target, as.name("basic_info"))) eval(expression, example)
     if (is.symbol(target) && as.character(target) %in% paste0("input", 1:4)) {
       eval(expression, example)
       if (identical(expression[[2L]], as.name("input1"))) baseline_call <- expression[[3L]]
@@ -238,7 +249,9 @@ if (stage == "summarize-features") {
     summary <- read.csv(summary_path)
     summary <- summary[!summary$model %in% model_ids, , drop = FALSE]
   }
+  generation_errors <- data.frame(model = character(), error = character())
   for (model_id in model_ids) {
+    tryCatch({
     if (stage == "generate-features") {
       prepare_call <- baseline_call
       prepare_call$NAA_re <- list(sigma = "rec+1", cor = "iid")
@@ -247,16 +260,28 @@ if (stage == "summarize-features") {
       }
       input <- eval(prepare_call, example)
       if (startsWith(model_id, "steepness_")) {
-        for (year in seq_len(input$data$n_years_model)[-1L]) {
-          input$data$mature[, year, ] <- input$data$mature[, 1L, ]
+        years <- input$data$n_years_model
+        if (is.matrix(input$data$mature)) {
+          input$data$mature[,] <- rep(input$data$mature[1L, ], each = years)
+        } else {
+          for (year in seq_len(years)[-1L]) {
+            input$data$mature[, year, ] <- input$data$mature[, 1L, ]
+          }
         }
         pointer <- input$data$waa_pointer_ssb[1L]
         weights <- input$data$waa[pointer, 1L, ]
         for (year in seq_len(input$data$n_years_model)) {
           input$data$waa[pointer, year, ] <- weights
         }
-        input$data$fracyr_SSB[, 1L] <- input$data$fracyr_SSB[1L, 1L]
+        input$data$fracyr_SSB[] <- input$data$fracyr_SSB[1L]
         input$data$M_re_model[] <- 1L
+        input$data$use_steepness <- 1L
+        settings <- feature_cases[[model_id]]$NAA_re$recruit_pars
+        input$par$mean_rec_pars[] <- c(
+          if (model_id == "steepness_bh") qlogis((settings[1L] - 0.2) / 0.8) else
+            log(settings[1L] - 0.2),
+          log(settings[2L])
+        )
       }
       if (startsWith(model_id, "selectivity_") && !"age_comp" %in% names(formals(historical$prepare_wham_input))) {
         input$data$age_comp_model_fleets <- rep(7L, input$data$n_fleets)
@@ -310,22 +335,31 @@ if (stage == "summarize-features") {
       archived_nll = archived_nll,
       difference = as.numeric(fit$opt$objective) - archived_nll,
       convergence = fit$opt$convergence,
-      n_NAA_sigma = input$data$n_NAA_sigma,
+      n_NAA_sigma = if (is.null(input$data$n_NAA_sigma)) NA_integer_ else input$data$n_NAA_sigma,
       max_gradient = max(abs(fit$final_gradient))
     ))
     write.csv(summary, file.path(release_dir, "generation_summary.csv"), row.names = FALSE)
     TMB::FreeADFun(fit)
+    }, error = function(error) {
+      message("Generation failed for ", model_id, ": ", conditionMessage(error))
+      generation_errors <<- rbind(generation_errors,
+        data.frame(model = model_id, error = conditionMessage(error)))
+    })
   }
+  write.csv(generation_errors, file.path(release_dir, "generation_errors.csv"), row.names = FALSE)
   print(summary)
   checked <- !is.na(summary$archived_nll)
-  stopifnot(all(is.finite(summary$nll)), sum(checked) == if (stage == "generate") 4L else 0L,
+  stopifnot(nrow(generation_errors) == 0L, all(is.finite(summary$nll)), sum(checked) == if (stage == "generate") 4L else 0L,
     all(abs(summary$difference[checked]) <= 1e-6))
 } else if (stage %in% c("refit", "refit-defaults", "refit-features")) {
   current_library <- Sys.getenv("WHAM_CURRENT_LIBRARY")
   if (nzchar(current_library)) library(wham, lib.loc = current_library) else library(wham)
   updated <- new.env(parent = asNamespace("wham"))
+  sys.source("R/refit_legacy_compatibility.R", updated)
   sys.source("R/migrate_wham_input.R", updated)
   sys.source("R/refit_wham.R", updated)
+  sys.source("R/fit_tmb.R", updated)
+  sys.source("R/fit_wham.R", updated)
   paths <- list.files(release_dir, "_original\\.rds$", full.names = TRUE)
   if (!length(paths)) stop("Generate historical fits first.")
   summary <- data.frame()
@@ -343,10 +377,27 @@ if (stage == "summarize-features") {
     )
     tryCatch(withCallingHandlers({
       fit <- readRDS(path)
+      if (startsWith(model_id, "steepness_") &&
+          !isTRUE(fit$input$data$use_steepness == 1L)) {
+        stop("Historical fixture does not have steepness enabled; regenerate it.")
+      }
       result$nll_original <- as.numeric(fit$opt$objective)
       result$convergence_original <- fit$opt$convergence
       result$max_gradient_original <- max(abs(fit$final_gradient))
-      input <- suppressMessages(updated$migrate_legacy_refit_input(fit))
+      legacy <- is.null(fit$input$data$n_stocks) &&
+        !is.null(fit$input$data$n_NAA_sigma)
+      if (legacy) {
+        input <- suppressMessages(updated$migrate_legacy_refit_input(fit))
+      } else {
+        prepare <- updated$refit_wham
+        environment(prepare) <- list2env(list(
+          fit_wham = function(input, ...) stop(structure(
+            list(message = "Input prepared", input = input),
+            class = c("wham_prepared_input", "error", "condition")))
+        ), parent = updated)
+        input <- tryCatch(suppressMessages(prepare(fit)),
+          wham_prepared_input = function(condition) condition$input)
+      }
       objective <- TMB::MakeADFun(input$data, input$par, random = input$random,
         map = input$map, DLL = "wham", silent = TRUE)
       result$nll_at_stored <- as.numeric(objective$fn(objective$par))
