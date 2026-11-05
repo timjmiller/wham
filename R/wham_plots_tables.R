@@ -14,9 +14,9 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   #   sdrep <- mod$sdrep
   # }
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
-      as.list(mod$sdrep, what = "Std", report = T))
-    ecov.pred.se[] <- temp[[2]]$Ecov_x #as.list(mod$sdrep, what = "Std.", report=TRUE)$Ecov_x
+    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+    ecov.pred.se[] <- temp[[2]]$Ecov_x #TMB:::as.list.sdreport(mod$sdrep, what = "Std.", report=TRUE)$Ecov_x
     ecov.pred.low[] <- ecov.pred - 1.96 * ecov.pred.se
     ecov.pred.high[] <- ecov.pred + 1.96 * ecov.pred.se
   }
@@ -841,8 +841,8 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   SSB <- SSB.lo <- SSB.hi <- R <- R.lo <- R.hi <- matrix(NA, nrow = ny, ncol = ns)
   Fbar <- Fbar.lo <- Fbar.hi <- matrix(NA, nrow = ny, ncol = nr+nf+1)
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
-      as.list(mod$sdrep, what = "Std", report = T))
+    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
     SSB <- exp(temp[[1]]$log_SSB)
     SSB.lo <- SSB * exp( - qnorm(0.975)*temp[[2]]$log_SSB)
     SSB.hi <- SSB * exp( qnorm(0.975)*temp[[2]]$log_SSB)
@@ -936,8 +936,8 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
     ni <- mod$env$data$n_Ecov
     Ecov_resid <- Ecov_resid.lo <- Ecov_resid.hi <- matrix(NA, nrow = ny, ncol = ni)
     if(class(mod$sdrep)[1] == "sdreport"){
-      temp <- list(as.list(mod$sdrep, what = "Est", report = T),
-        as.list(mod$sdrep, what = "Std", report = T))
+      temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+        TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
       Ecov_resid[] <- temp[[1]]$Ecov_resid
       Ecov_resid.lo[] <- Ecov_resid - qnorm(0.975)*temp[[2]]$Ecov_resid
       Ecov_resid.hi[] <- Ecov_resid + qnorm(0.975)*temp[[2]]$Ecov_resid
@@ -983,8 +983,8 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
   log_index_resid.hi[] <- log_index_resid + qnorm(0.975)*mod$input$data$agg_index_sigma
 
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
-      as.list(mod$sdrep, what = "Std", report = T))
+    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
       if(!is.null(temp[[1]]$log_index_resid)){
         log_index_resid[] <- temp[[1]]$log_index_resid
         log_index_resid.lo[] <- log_index_resid - qnorm(0.975)*temp[[2]]$log_index_resid
@@ -1782,7 +1782,7 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   faa <- faa.lo <- faa.hi <- array(NA, dim = dim(mod$rep$log_FAA_by_region))
   full.f <- full.f.lo <- full.f.hi <- matrix(NA, length(years_full), n_regions)
   if(class(mod$sdrep)[1] == "sdreport"){
-    std <- list(as.list(mod$sdrep, what = "Est", report = TRUE), as.list(mod$sdrep, what = "Std", report = TRUE))
+    std <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = TRUE), TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = TRUE))
     ssb[] <- exp(std[[1]]$log_SSB)
     ssb.lo[] <- ssb*exp(qnorm(alpha/2)*std[[2]]$log_SSB)
     ssb.hi[] <- ssb*exp( -qnorm(alpha/2)*std[[2]]$log_SSB)
@@ -1931,8 +1931,8 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
   origpar <- par(no.readonly = TRUE)
   par(mfrow=c(1,1), mar = c(4,5,3,1), oma = c(1,1,1,1))
 
-  # std <- list(as.list(mod$sdrep, what = "Est", report = T),
-  #     as.list(mod$sdrep, what = "Std", report = T))
+  # std <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
+  #     TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
 
   std <- summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov

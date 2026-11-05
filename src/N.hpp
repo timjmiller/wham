@@ -203,7 +203,7 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
       for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
         NAA_1(s,r,a) = exp(log_N1(s,r,a)); //log_N1 has to be mapped to not be estimated for NAA_where(s,r,a)==0
       }
-    } else{ //1 = equilibrium
+    } else{ //N1_model(s) == 1
       array<Type> FAA1(n_fleets,1,n_ages);
       FAA1.setZero();
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {

@@ -17,7 +17,6 @@ matrix<Type> get_nll_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_process_pars
   nll_Ecov.setZero();
 
   for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
-    if(n_y == 0 || (Ecov_model(i) == 1 && n_y < 2)) continue;
     // Ecov model option 1: RW
     if((Ecov_model(i) == 1) & (Ecov_use_re(i)==1)){
       Type Ecov_sig = exp(Ecov_process_pars(1,i)); // sd (sig_x in Eq1, pg 1262, Miller et al. 2016)
@@ -60,7 +59,6 @@ matrix<Type> get_Ecov(vector<int> Ecov_model, matrix<Type> Ecov_process_pars, ma
 
   // Ecov_model == 0) no Ecov
   for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
-    if(n_y == 0) continue;
     // Ecov model option 1: RW
     if((Ecov_model(i) == 1) & (Ecov_use_re(i)==1)){
       Type Ecov1 = Ecov_process_pars(0,i); // Ecov_x in year 1 (fixed effect)
@@ -95,7 +93,6 @@ matrix<Type> simulate_Ecov_re(vector<int> Ecov_model, matrix<Type> Ecov_process_
   matrix<Type> re_sim = Ecov_re;
 
   for(int i = 0; i < n_Ecov; i++){ // loop over Ecovs
-    if(n_y == 0 || (Ecov_model(i) == 1 && n_y < 2)) continue;
     if(Ecov_use_re(i)==1){
       // Ecov model option 1: RW
       if((Ecov_model(i) == 1) & (Ecov_use_re(i)==1)){
@@ -142,11 +139,11 @@ matrix<Type> get_Ecov_out(matrix<Type> Ecov_x, int n_years_model, int n_years_pr
   Ecov_out.setZero(); // set Ecov_out = 0
   for(int i = 0; i < n_Ecov; i++){
       int ct = 0;
-      for(ct = 0; ct < n_years_model + n_years_proj; ct++){
+      for(int y = ind_Ecov_out_start(i); y < ind_Ecov_out_end(i) + 1 + n_years_proj; y++){
         if(ct < n_years_model) {
-          Ecov_out(ct,i) = Ecov_x(ind_Ecov_out_start(i) + ct,i);
+          Ecov_out(ct,i) = Ecov_x(y,i);
         } else { //projection year
-          if(proj_Ecov_opt(i) == 1) Ecov_out(ct,i) = Ecov_x(ind_Ecov_out_start(i) + ct,i); //continue Ecov process
+          if(proj_Ecov_opt(i) == 1) Ecov_out(ct,i) = Ecov_x(y,i); //continue Ecov process
           if(proj_Ecov_opt(i) == 2) { //average over avg_years
             // for(int ind = 0; ind < avg_years.size(); ind++) Ecov_out(ct,i) += Ecov_out(avg_years(ind),i)/Type(avg_years.size());
             for(int ind = 0; ind < avg_years.size(); ind++) Ecov_out(ct,i) += Ecov_x(avg_years(ind),i)/Type(avg_years.size());
@@ -154,6 +151,7 @@ matrix<Type> get_Ecov_out(matrix<Type> Ecov_x, int n_years_model, int n_years_pr
           if(proj_Ecov_opt(i) == 3) Ecov_out(ct,i) = Ecov_out(n_years_model-1,i); //use terminal year
           if(proj_Ecov_opt(i) == 4) Ecov_out(ct,i) = Ecov_use_proj(ct-n_years_model,i); //user-defined ecov
         }
+        ct++;
       }
   }
   return Ecov_out;

@@ -18,7 +18,6 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int>selblock_mod
   // int n_ages = selpars_re.dim(2) - 6;
   nll_sel.setZero();
   for(int b = 0; b < n_selblocks; b++){
-    if(n_years_selblocks(b) == 0) continue;
     if(selblock_models_re(b) > 0){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
       array<Type> tmp(n_years_selblocks(b), n_selpars_re(b));
@@ -79,7 +78,6 @@ array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int>selbl
   sim_selpars_re.setZero();
   
   for(int b = 0; b < n_selblocks; b++){
-    if(n_years_selblocks(b) == 0) continue;
     if(selblock_models_re(b) > 0){
       // fill in sel devs from RE vector, selpars_re (fixed at 0 if RE off)
       Type sigma = exp(sel_repars(b,0)); // sd selectivity RE (fixed effect)

@@ -47,12 +47,8 @@ retro <- function(model, n.peels = 7, ran = NULL, use.mle = TRUE, do.sdrep = FAL
   if(use.mle) temp$par <- par
   peels <- list()
   if(n.peels>0) for(i in 1:n.peels) {
-    peels[[i]] <- tryCatch(fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent,
-      save.input = save.input), error = function(e) {
-        msg <- paste0("Retrospective peel ", i, ": ", conditionMessage(e))
-        warning(msg, call. = FALSE)
-        list(peel = i, err = msg)
-      })
+    tryCatch(peels[[i]] <- fit_peel(i, input = temp, do.sdrep = do.sdrep, n.newton = n.newton, MakeADFun.silent = MakeADFun.silent, retro.silent = retro.silent,
+      save.input = save.input), error = function(e) {peels[[i]]$err <<- conditionMessage(e)})
   }
   return(peels)
 }

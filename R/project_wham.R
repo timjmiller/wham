@@ -146,7 +146,6 @@ project_wham <- function(model,
 
   if("err_proj" %in% names(model)) stop(model$err_proj)
   else{# refit model to estimate derived quantities in projection years
-    validate_input_safety(input2)
   #if(!exists("err")) 
     tryCatch(proj_mod <- TMB::MakeADFun(input2$data, input2$par, DLL = "wham", random = input2$random, map = input2$map, silent = MakeADFun.silent),
       error = function(e) {model$err_MakeADFun <<- conditionMessage(e)})

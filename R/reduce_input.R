@@ -10,7 +10,7 @@
 #'
 reduce_input <- function(input,years_peeled, retro = TRUE){
 	
-	validate_reduction_years(input, years_peeled)
+	if(input$data$n_years_proj>0) stop("cannot run wham:::reduce_input on an input for a projection")
 	new <- input
 	data <- new$data
 	par <- new$par
@@ -204,6 +204,10 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
   }
   par$selpars_re <- par$selpars_re[,ind,,drop=F]
 
+	map$F_pars <- par$F_pars <- par$F_pars[ind,,drop=F]
+	map$F_pars[] <- 1:(length(ind)*data$n_fleets)
+	map$F_pars <- as.factor(map$F_pars)
+
   dims <- dim(par$q_re)
   dims[2] <- data$n_years_model + data$n_years_proj
   tmp <- matrix(0, nrow = data$n_years_model + data$n_years_proj, ncol = NCOL(par$q_re))
@@ -214,7 +218,21 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 	new$map <- map
 	new$data <- data
 
-	new <- reduce_refit_input(new, input, ind)
+	#adjust Ecov dimensions
+	if(!is.null(new$options$ecov)){
+		ecov <- new$options$ecov
+		if(retro) ind_E <- which(ecov$year < min(years_peeled))
+		else ind_E <- which(!(ecov$year %in% years_peeled))
+	  ecov$year <- ecov$year[ind_E]
+		ecov$mean <- ecov$mean[ind_E,,drop=F]
+		ecov$use_obs <- ecov$use_obs[ind_E,,drop=F]
+		if(is.list(ecov$logsigma)) if(is.matrix(ecov$logsigma[[1]])){
+			ecov$logsigma[[1]] <- ecov$logsigma[[1]][ind_E,,drop = FALSE]
+		}
+		if(is.matrix(ecov$logsigma)) ecov$logsigma <- ecov$logsigma[ind_E,,drop = FALSE]
+		new <- set_ecov(new,ecov)
+		#else set_ecov should define the pars correctly
+	}
 
 	#reset the obs_vec
 	new$by_pwi <- TRUE #needed to check age ranges of age comp
