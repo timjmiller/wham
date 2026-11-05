@@ -9,6 +9,10 @@ wham 2.1.0.9012 (2026-10-14)
 * (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 ### Bug fixes
+* `read_wham_fit` supplies missing log-scale abundance reports for comparison plots of fits without standard errors.
+* `compare_wham_models` handles legacy fits without the SPR reference-point flag when comparing older and newer saved fits; `read_wham_fit` normalizes historical abundance and mortality dimensions and preserves uncertainty in biomass, fishing mortality, and stock status.
+* `fit_wham` and `fit_peel` validate unsafe environmental and selectivity inputs in R before entering TMB; `fit_peel` also validates the number of years removed.
+* `prepare_projection` pads annual environmental observation-error random effects along with projected covariate years.
 * (2.1.0.9012) fix some bugs in vignettes. [PR 101](https://github.com/timjmiller/wham/pull/101)
 * (2.1.0.9012) Change to minimize Eigen namespace usage per TMB issue 417. [e63ea63](https://github.com/timjmiller/wham/commit/e63ea63cad9a08acc67f74ac28cd385dd2220a77)
 * (2.1.0.9011) fix bug in selectivity configuration using `prepare_wham_input`. [823107f](https://github.com/timjmiller/wham/commit/823107fd2dadb1fa6819124fdc3681fe6615c69e)
@@ -286,4 +290,3 @@ wham 1.0.0 (2020-10-07)
 =========================
 
 * This is the first release of WHAM.
-

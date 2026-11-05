@@ -1,4 +1,4 @@
-par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
+﻿par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 {
   #require(rmarkdown)
 
@@ -20,8 +20,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   data <- mod$env$data
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est")
-    sd <- TMB:::as.list.sdreport(sdrep, "Std")
+    pars <- as.list(sdrep, "Est")
+    sd <- as.list(sdrep, "Std")
   } else {
     pars <- mod$parList
     sd <- lapply(pars, function(x) {
@@ -584,8 +584,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est", report = TRUE)
-    sd <- TMB:::as.list.sdreport(sdrep, "Std", report = TRUE)
+    pars <- as.list(sdrep, "Est", report = TRUE)
+    sd <- as.list(sdrep, "Std", report = TRUE)
   }
   #Jan 1 numbers at age, by stock and region
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions){
@@ -654,7 +654,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   #Spawning stock biomass by year and spawn region
   SSB <- mod[["rep"]][["SSB"]]
   rownames(SSB) <- mod[["years_full"]]
-  colnames(SSB) <- ifelse(data[["n_stocks"]]>1, stock.names.tab, "Total")
+  colnames(SSB) <- if(data[["n_stocks"]]>1) stock.names.tab else "Total"
   if(data[["n_stocks"]]>1) SSB <- cbind(SSB, Total = rowSums(SSB))
   if(!is.null(od)) saveRDS(SSB, file = file.path(od, "SSB_table.RDS"))
   

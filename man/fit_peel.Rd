@@ -25,7 +25,8 @@ fit_peel(
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
-\item{retro.silent}{T/F, Passed to argument of internal fit_peel function. Determines whether peel number is printed to screen. Default = \code{FALSE}.}
+\item{retro.silent}{T/F, suppress the message identifying the peel number?
+Default = \code{FALSE}.}
 
 \item{save.input}{T/F, should modified input list be saved? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.}
 }
@@ -33,8 +34,9 @@ fit_peel(
 \code{out}, output of \code{\link{fit_tmb}} for peel \emph{i}
 }
 \description{
-Internal function called by \code{\link{retro}} for \emph{i} in 1--\code{n.peels}.
-Fits the model peeling off \emph{i} years of data (calls \code{\link{fit_tmb}}).
+Fits a single retrospective peel by removing the specified number of years
+of data and calling \code{\link{fit_tmb}}. Called by
+\code{\link{retro}} and available for fitting an individual peel directly.
 }
 \seealso{
 \code{\link{fit_wham}}, \code{\link{retro}}, \code{\link{fit_tmb}}

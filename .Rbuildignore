@@ -7,3 +7,5 @@
 ^sandbox$
 ^check_wham$
 ^.github$
+^\.posit$
+^oldfitobjects$

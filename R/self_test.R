@@ -14,15 +14,16 @@
 #' @param wham_location (optional) location of WHAM package. Useful if not using the WHAM installation in the standard library location.
 #' @param test_dir (optional) directory for package repository. To be used when the function is being called during package testing rather than an installed version of WHAM.
 #' @param save_inputs T/F whether to save the simulated inputs in res_dir. Default = FALSE.
+#' @param do_check_convergence T/F whether to check optimizer convergence and Hessian invertibility. Default = FALSE.
 #'
-#' @return a list of two elements. First is the results which is a list (length = n) of lists with 6 elements: minimized negative log-likelihood, MLEs, gradient, SSB, F, abundance at age.
+#' @return a list of two elements. First is the results which is a list (length = n) of lists with minimized negative log-likelihood, MLEs, gradient, SSB, F, and abundance at age. If \code{do_check_convergence = TRUE}, the results also contain a logical convergence indicator.
 #'  Second element is the vector of seeds used for self-test simulations.
 #'
 #' @seealso \code{\link{fit_wham}}
 #' @export
 #'
 self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, conditional = TRUE, map_change = NULL, do_parallel = TRUE, n_cores  = NULL, 
-  res_dir = NULL, wham_location = NULL, test_dir = NULL, save_inputs = FALSE){
+  res_dir = NULL, wham_location = NULL, test_dir = NULL, save_inputs = FALSE, do_check_convergence = FALSE){
   
   if(is.null(fit_RDS)) stop("Provide fit_RDS, an RDS file name for a fitted WHAM model.")
   if(!is.null(res_dir)) {
@@ -68,17 +69,24 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
         set.seed(seeds[i])
         sim_input$data <- sim_mod$simulate(complete=TRUE)
         sim_input$random <- fit$input$random #set random correctly for estimation
-        x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
+        x <- try(fit_wham(sim_input, do.sdrep = do_check_convergence, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
         out <- list(obj = NA, 
           par = rep(NA,length(sim_mod$par)), 
-          grad = rep(NA, length(sim_mod$par)), 
+          grad = rep(NA, length(sim_mod$par)),
           SSB = matrix(NA,NROW(sim_mod$rep$SSB),NCOL(sim_mod$rep$SSB)), 
           F = rep(NA,length(sim_mod$rep$log_F_tot)), 
           NAA = array(NA, dim = dim(sim_mod$rep$NAA)))
+        if(do_check_convergence) out$convergence <- FALSE
         if(!is.null(x$opt)){
           out$obj <- x$opt$obj
           out$par <- x$opt$par
           out$grad <- x$final_gradient
+          if(do_check_convergence){
+            convergence_check <- check_convergence(x, ret = TRUE)
+            out$convergence <- isTRUE(convergence_check$convergence == 0) &&
+              isTRUE(convergence_check$is_sdrep) &&
+              isTRUE(!convergence_check$na_sdrep)
+          }
           out$SSB <- x$rep$SSB
           out$F <- exp(x$rep$log_F_tot)
           out$NAA <- x$rep$NAA
@@ -113,17 +121,24 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
       set.seed(seeds[i])
       sim_input$data <- sim_mod$simulate(complete=TRUE)
       sim_input$random <- fit$input$random #set random correctly for estimation
-      x <- try(fit_wham(sim_input, do.sdrep = FALSE, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
+      x <- try(fit_wham(sim_input, do.sdrep = do_check_convergence, do.retro = FALSE, do.osa = FALSE, do.brps = FALSE, MakeADFun.silent = TRUE))
       out <- list(obj = NA, 
         par = rep(NA,length(sim_mod$par)), 
         grad = rep(NA, length(sim_mod$par)), 
         SSB = matrix(NA,NROW(sim_mod$rep$SSB),NCOL(sim_mod$rep$SSB)), 
         F = rep(NA,length(sim_mod$rep$log_F_tot)), 
         NAA = array(NA, dim = dim(sim_mod$rep$NAA)))
+      if(do_check_convergence) out$convergence <- FALSE
       if(!(is.character(x) | is.null(x$opt))){
         out$obj <- x$opt$obj
         out$par <- x$opt$par
         out$grad <- x$final_gradient
+        if(do_check_convergence){
+          convergence_check <- check_convergence(x, ret = TRUE)
+          out$convergence <- isTRUE(convergence_check$convergence == 0) &&
+            isTRUE(convergence_check$is_sdrep) &&
+            isTRUE(!convergence_check$na_sdrep)
+        }
         out$SSB <- x$rep$SSB
         out$F <- exp(x$rep$log_F_tot)
         out$NAA <- x$rep$NAA

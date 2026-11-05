@@ -1,10 +1,11 @@
 #' Read WHAM fit
 #'
-#' Gets output from a fit WHAM model for plotting with other models.
-#' Internal function, called within \code{\link{compare_wham_models}}.
+#' Extracts output from a fitted WHAM model for plotting with other models.
+#' Called by \code{\link{compare_wham_models}} and available for direct use
+#' when preparing model output for custom comparisons or plots.
 #'
 #' @param mod output from \code{\link{fit_wham}}
-#' @param alphaCI (1-alpha)\% confidence intervals will be calculated. Default = 0.05 for 95\% CI.  
+#' @param alphaCI (1-alpha)\% confidence intervals will be calculated. Default = 0.05 for 95\% CI.
 #'
 #' @return a named list with the following elements:
 #'   \describe{
@@ -40,14 +41,14 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x <- list()
 
   if(!is.null(mod$sdrep)){
-    std <- list(est = TMB:::as.list.sdreport(mod$sdrep, report=T, what = "Est"), se = TMB:::as.list.sdreport(mod$sdrep, report=T, what = "Std"))
+    std <- list(est = as.list(mod$sdrep, report=T, what = "Est"), se = as.list(mod$sdrep, report=T, what = "Std"))
     inds <- list()
     std.summ <- summary(mod$sdrep, "report")
   	# inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)
   	inds$F.t <- which(rownames(std.summ) == "log_FXSPR")
   	inds$SSB.t <- matrix(which(rownames(std.summ) == "log_SSB_FXSPR"), ncol = NCOL(std$est$log_SSB_FXSPR))[,NCOL(std$est$log_SSB_FXSPR)]
-  	inds$ssb <- which(rownames(std.summ) == "log_SSB_all")
-  	inds$full.f <- which(rownames(std.summ) == "log_F_tot")
+    inds$ssb <- wham_report_index(std.summ, "log_SSB_all", "log_SSB")
+    inds$full.f <- wham_report_index(std.summ, "log_F_tot", "log_F")
     rep_names <- names(std$est)
     # rep_names <- c("log_FMSY", "log_SSB_MSY", "log_MSY", "log_SSB", "log_SSB_all", "log_F_tot", "log_NAA_rep", "log_FXSPR", "log_Y_FXSPR", "log_SSB_FXSPR")
     cov <- mod$sdrep$cov
@@ -93,6 +94,6 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x$selblock_pointer_indices <- mod$env$data$selblock_pointer_indices
   x$MAA <- mod$rep$MAA
   x$percentSPR <- mod$env$data$percentSPR
+  x <- normalize_wham_fit(x)
   return(x)
 }
-

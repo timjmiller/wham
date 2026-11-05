@@ -32,8 +32,9 @@ a named list with the following elements:
   }
 }
 \description{
-Gets output from a fit WHAM model for plotting with other models.
-Internal function, called within \code{\link{compare_wham_models}}.
+Extracts output from a fitted WHAM model for plotting with other models.
+Called by \code{\link{compare_wham_models}} and available for direct use
+when preparing model output for custom comparisons or plots.
 }
 \seealso{
 \code{\link{fit_wham}}, \code{\link{read_asap3_fit}}, \code{\link{compare_wham_models}}

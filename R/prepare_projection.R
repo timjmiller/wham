@@ -1,7 +1,9 @@
 #' Prepare input data and parameters to project an already fit WHAM model
 #'
-#' \code{prepare_projection} is an internal function called by \code{\link{project_wham}},
-#' which in turn is called by \code{\link{fit_wham}} if \code{do.proj = TRUE}.
+#' Prepares projection inputs for a fitted WHAM model. Called by
+#' \code{\link{project_wham}}, which in turn is called by
+#' \code{\link{fit_wham}} if \code{do.proj = TRUE}. Available for direct use
+#' when projection inputs need to be inspected or modified before fitting.
 #'
 #' @param model a previously fit wham model
 #' @param proj.opts a named list with the following components:
@@ -422,6 +424,9 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
       data$Ecov_use_obs <- rbind(data$Ecov_use_obs, matrix(0, nrow = end_model-end_Ecov, ncol = data$n_Ecov))
       
       n_years_proj_Ecov <- end_model - end_Ecov
+      sigma_input <- extend_ecov_input(par, map, data, n_years_proj_Ecov)
+      par <- sigma_input$par
+      map <- sigma_input$map
       # data$Ecov_use_proj <- matrix(0, nrow = n_years_proj_Ecov, ncol=data$n_Ecov)
       data$Ecov_use_proj <- matrix(0, nrow = data$n_years_proj, ncol=data$n_Ecov)
       #data$years_use_Ecov <- 1:(data$n_years_Ecov + n_years_proj_Ecov) - 1

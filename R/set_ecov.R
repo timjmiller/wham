@@ -270,18 +270,18 @@ set_ecov <- function(input, ecov) {
       for(i in 1:data$n_Ecov) {
         if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_1'){ # estimate 1 Ecov obs sigma for each Ecov
           data$Ecov_obs_sigma_opt[i] <- 2
-          par$Ecov_obs_logsigma[,i] <- -1.3 
-          map$Ecov_obs_logsigma[,i] <- i 
+          par$Ecov_obs_logsigma[,i] <- -1.3
+          map$Ecov_obs_logsigma[,i] <- i
         }
         if(!is.na(ecov$logsigma[i])) if(ecov$logsigma[i] == 'est_re'){
           data$Ecov_obs_sigma_opt[i] <- 4
           map$Ecov_obs_logsigma[,i] <- NA # turn off estimation of fixed effects
           par$Ecov_obs_sigma_par[,i] <- c(-1.3, -2.3) # random effect pars
-          map$Ecov_obs_sigma_par[,i] <- max(0, map$Ecov_obs_sigma_par, na.rm =T) + 1:2 
+          map$Ecov_obs_sigma_par[,i] <- max(0, map$Ecov_obs_sigma_par, na.rm =T) + 1:2
         }
       }
 
-      #default values for: 
+      #default values for:
       #map of observation error variance parameters
       map$Ecov_obs_logsigma_re <- matrix(NA, nrow=n_Ecov_obs, ncol=data$n_Ecov) # turn off estimation
       #initial values of random effects

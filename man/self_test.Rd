@@ -16,7 +16,8 @@ self_test(
   res_dir = NULL,
   wham_location = NULL,
   test_dir = NULL,
-  save_inputs = FALSE
+  save_inputs = FALSE,
+  do_check_convergence = FALSE
 )
 }
 \arguments{
@@ -43,9 +44,11 @@ self_test(
 \item{test_dir}{(optional) directory for package repository. To be used when the function is being called during package testing rather than an installed version of WHAM.}
 
 \item{save_inputs}{T/F whether to save the simulated inputs in res_dir. Default = FALSE.}
+
+\item{do_check_convergence}{T/F whether to check optimizer convergence and Hessian invertibility. Default = FALSE.}
 }
 \value{
-a list of two elements. First is the results which is a list (length = n) of lists with 6 elements: minimized negative log-likelihood, MLEs, gradient, SSB, F, abundance at age.
+a list of two elements. First is the results which is a list (length = n) of lists with minimized negative log-likelihood, MLEs, gradient, SSB, F, and abundance at age. If \code{do_check_convergence = TRUE}, the results also contain a logical convergence indicator.
  Second element is the vector of seeds used for self-test simulations.
 }
 \description{

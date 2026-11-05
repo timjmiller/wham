@@ -194,7 +194,8 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(!plot.opts$refpt %in% c("XSPR","MSY")) stop("plot.opts$refpt must be either 'XSPR' or 'MSY'.")
     if(is.null(plot.opts[["browse"]])) plot.opts$browse <- TRUE
     #if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
-    if(any(sapply(mods[wham.mods.ind], function(x) x$env$data$do_SPR_BRPs == 0))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
+    # Legacy fits lack this flag; reported output below determines availability.
+    if(any(vapply(wham.mods, function(x) isTRUE(x$env$data$do_SPR_BRPs == 0), logical(1)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
 
     x <- list()
     for(i in 1:length(mods)){

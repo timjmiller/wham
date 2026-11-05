@@ -94,6 +94,7 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
 
   # fit model
   if(missing(model)){
+    validate_input_safety(input)
     mod <- TMB::MakeADFun(input$data, input$par, DLL = "wham", random = input$random, map = input$map, silent = MakeADFun.silent)
   } else {
     verify_version(model)
