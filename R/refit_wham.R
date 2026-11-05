@@ -19,6 +19,12 @@
 #' identified. Unsupported or ambiguous layouts are rejected rather than
 #' guessed. Native compatibility modes require rebuilding WHAM.
 #'
+#' Historical initial-equilibrium bugs are not reproduced. If stored initial
+#' abundance differs from the corrected calculation, a warning is issued and
+#' the model is refit using the corrected equilibrium. Estimates and
+#' likelihoods may therefore change. Missing or incompatible stored abundance
+#' reports also produce a warning because the historical bug cannot be checked.
+#'
 #' Stored projections in historical multi-stock layouts retain their projected
 #' parameters, maps, fishing controls and averaging years. A saved
 #' \code{\link{project_wham}} call is refit from this stored input without
@@ -49,6 +55,10 @@ refit_wham <- function(fit = NULL) {
   input <- if (legacy) migrate_legacy_refit_input(fit) else fit$input
   if (!legacy && !is.null(fit$parList)) {
     input$par[names(fit$parList)] <- fit$parList
+  }
+  if (any(input$data$Ecov_model == 3L)) {
+    input$data$Ecov_model[input$data$Ecov_model == 3L] <- 2L
+    warning("Historical environmental AR1 is no longer supported; refitting with the current AR1 model. Likelihoods and estimates may change.", call. = FALSE)
   }
   if (
     is.null(input$data$selpars_re_index) && !is.null(input$data$selpars_est)
@@ -213,9 +223,7 @@ refit_wham <- function(fit = NULL) {
     input <- scales$input
   }
 
-  if (legacy || !is.null(fit$input$data$selpars_est)) {
-    input <- refit_initial_equilibrium(input, fit$rep$N1)
-  }
+  input <- refit_initial_equilibrium(input, fit$rep$N1)
 
   if (is.call(fit$call)) {
     fit_call <- fit$call
@@ -269,8 +277,6 @@ refit_wham <- function(fit = NULL) {
   ) {
     fit_args$n.peels <- length(fit$peels)
   }
-  legacy_steepness <- input$legacy_steepness
-  input$legacy_steepness <- NULL
   refit <- do.call(fit_wham, c(list(input = input), fit_args))
 
   est_fit <- fit$opt$par
@@ -320,7 +326,6 @@ refit_wham <- function(fit = NULL) {
     pars$F_devs <- pars$F_pars[-1, , drop = FALSE]
     pars$M_a <- as.vector(pars$Mpars)[seq_along(fit$input$par$M_a)]
     pars <- refit_legacy_mortality_parameters(pars, fit)
-    pars <- refit_legacy_steepness_parameters(pars, legacy_steepness)
     for (parameter in c("catch_paa_pars", "index_paa_pars")) {
       if (!is.matrix(fit$input$par[[parameter]])) {
         pars[[parameter]] <- pars[[parameter]][

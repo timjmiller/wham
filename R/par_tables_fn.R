@@ -20,8 +20,8 @@
   data <- mod$env$data
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est")
-    sd <- TMB:::as.list.sdreport(sdrep, "Std")
+    pars <- as.list(sdrep, "Est")
+    sd <- as.list(sdrep, "Std")
   } else {
     pars <- mod$parList
     sd <- lapply(pars, function(x) {
@@ -484,13 +484,13 @@
       fe.vals <- c(fe.vals, pars$Ecov_process_pars[1,i])
       fe.cis <- rbind(fe.cis, ci(pars$Ecov_process_pars[1,i], sd$Ecov_process_pars[1,i]))
       if(data$Ecov_model[i] == 1) fe.names <- c(fe.names, paste0(ecov.labels[i], "RW Ecov$_1$"))
-      if(data$Ecov_model[i] %in% c(2, 3)) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\mu$"))
+      if(data$Ecov_model[i] == 2) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\mu$"))
     }
     if(!is.na(sd$Ecov_process_pars[2,i])){
       fe.vals <- c(fe.vals, exp(pars$Ecov_process_pars[2,i]))
       fe.cis <- rbind(fe.cis, ci(pars$Ecov_process_pars[2,i], sd$Ecov_process_pars[2,i], type = "exp"))
       if(data$Ecov_model[i] == 1) fe.names <- c(fe.names, paste0(ecov.labels[i], "RW $\\sigma$"))
-      if(data$Ecov_model[i] %in% c(2, 3)) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\sigma$"))
+      if(data$Ecov_model[i] == 2) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\sigma$"))
     }
     if(!is.na(sd$Ecov_process_pars[3,i])){
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(-pars$Ecov_process_pars[3,i])))
@@ -584,8 +584,8 @@
   
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est", report = TRUE)
-    sd <- TMB:::as.list.sdreport(sdrep, "Std", report = TRUE)
+    pars <- as.list(sdrep, "Est", report = TRUE)
+    sd <- as.list(sdrep, "Std", report = TRUE)
   }
   #Jan 1 numbers at age, by stock and region
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions){

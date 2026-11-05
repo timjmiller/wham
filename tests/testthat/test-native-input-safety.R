@@ -17,6 +17,8 @@ native_safety_input <- function(process = "ar1", sigma = "est_re") {
 }
 
 native_safety_objective <- function(input, mapped = TRUE) {
+  if (!mapped) input$map <- list()
+  validate_input_safety(input)
   TMB::MakeADFun(
     data = input$data,
     parameters = input$par,
@@ -27,7 +29,7 @@ native_safety_objective <- function(input, mapped = TRUE) {
   )
 }
 
-test_that("native objective rejects historical NAA matrix ranks safely", {
+test_that("R validation rejects historical NAA matrix ranks safely", {
   for (field in c("log_NAA_sigma", "trans_NAA_rho")) {
     input <- native_safety_input()
     input$par[[field]] <- matrix(input$par[[field]], nrow = 1L)
@@ -45,13 +47,13 @@ test_that("native objective rejects historical NAA matrix ranks safely", {
     expect_s3_class(error, "error")
     expect_match(
       conditionMessage(error),
-      "NAA sigma and correlation parameters must be",
+      paste0(field, " must have dimensions"),
       fixed = TRUE
     )
   }
 })
 
-test_that("native objective guards malformed Ecov dimensions and endpoints", {
+test_that("R validation guards malformed Ecov dimensions and endpoints", {
   input <- native_safety_input()
   malformed <- list(
     function(x) {
@@ -80,12 +82,12 @@ test_that("native objective guards malformed Ecov dimensions and endpoints", {
     }
   )
   patterns <- c(
-    "Ecov random effects or process parameters have incompatible dimensions",
-    "Ecov random effects or process parameters have incompatible dimensions",
-    "Ecov observation sigma random effects and parameters have incompatible dimensions",
-    "Ecov observation sigma random effects and parameters have incompatible dimensions",
-    "Ecov output endpoints must be in bounds and span n_years_model years",
-    "Ecov years_use contains an out-of-bounds year"
+    "Ecov_re must span",
+    "Ecov_process_pars must have dimensions",
+    "Ecov_obs_logsigma_re must have dimensions",
+    "Ecov_obs_sigma_par must have dimensions",
+    "start/end indices",
+    "years_use_Ecov contains invalid"
   )
   for (i in seq_along(malformed)) {
     objective <- NULL

@@ -41,7 +41,7 @@ read_wham_fit <- function(mod, alphaCI=0.05){
   x <- list()
 
   if(!is.null(mod$sdrep)){
-    std <- list(est = TMB:::as.list.sdreport(mod$sdrep, report=T, what = "Est"), se = TMB:::as.list.sdreport(mod$sdrep, report=T, what = "Std"))
+    std <- list(est = as.list(mod$sdrep, report=T, what = "Est"), se = as.list(mod$sdrep, report=T, what = "Std"))
     inds <- list()
     std.summ <- summary(mod$sdrep, "report")
   	# inds$Y.t <- matrix(which(rownames(std) == "log_Y_FXSPR"), ncol = all_catch)

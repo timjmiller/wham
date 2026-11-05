@@ -88,12 +88,43 @@ refit_process_scales <- function(input, stored_report) {
   list(input = input, selectivity = selectivity, ecov = ecov)
 }
 
-# Preserve initial-equilibrium likelihoods at stored latent values. Select the
-# historical convention only when its abundance report matches the saved fit;
-# stop if neither convention reproduces stored stock-level abundances.
+# Compare equilibrium abundance at stored latent values, not optimized modes.
+# Historical bug replication is no longer supported.
 refit_initial_equilibrium <- function(input, stored_N1) {
+  historical <- which(input$data$N1_model == -1L)
+  if (length(historical)) {
+    input$data$N1_model[historical] <- 1L
+  }
   stocks <- which(input$data$N1_model == 1L)
-  if (!length(stocks) || is.null(stored_N1)) {
+  if (!length(stocks)) {
+    return(input)
+  }
+  warn_equilibrium <- function(stocks, reason) {
+    warning(
+      "Initial NAA equilibrium for stock(s) ",
+      paste(stocks, collapse = ", "),
+      ": ",
+      reason,
+      " The model will be refit using the corrected equilibrium ",
+      "calculation; parameter estimates and likelihoods may change.",
+      call. = FALSE
+    )
+  }
+  if (length(historical)) {
+    warn_equilibrium(
+      historical,
+      "the saved input used the historical equilibrium bug."
+    )
+  }
+  stocks <- setdiff(stocks, historical)
+  if (!length(stocks)) {
+    return(input)
+  }
+  if (is.null(stored_N1)) {
+    warn_equilibrium(
+      stocks,
+      "stored initial abundance is unavailable, so exposure to the historical equilibrium bug cannot be checked."
+    )
     return(input)
   }
   validate_input_safety(input)
@@ -111,9 +142,14 @@ refit_initial_equilibrium <- function(input, stored_N1) {
     model$report()$N1
   }
   current <- initial_numbers(input)
-  historical <- input
-  historical$data$N1_model[stocks] <- -1L
-  old <- initial_numbers(historical)
+  if (!identical(dim(current), dim(stored_N1))) {
+    warn_equilibrium(
+      stocks,
+      "stored initial abundance has incompatible dimensions, so exposure to the historical equilibrium bug cannot be checked."
+    )
+    return(input)
+  }
+  affected <- integer()
   for (stock in stocks) {
     target <- stored_N1[stock, , , drop = FALSE]
     if (
@@ -125,17 +161,13 @@ refit_initial_equilibrium <- function(input, stored_N1) {
     ) {
       next
     }
-    if (
-      !isTRUE(all.equal(old[stock, , , drop = FALSE], target, tolerance = 1e-8))
-    ) {
-      stop(
-        "Cannot safely reproduce stored initial equilibrium abundance for stock ",
-        stock,
-        "."
-      )
-    }
-    # Preserve the historical likelihood, not just its starting abundance.
-    input$data$N1_model[stock] <- -1L
+    affected <- c(affected, stock)
+  }
+  if (length(affected)) {
+    warn_equilibrium(
+      affected,
+      "stored initial abundance differs from the corrected calculation and may reflect the historical equilibrium bug."
+    )
   }
   input
 }
@@ -400,18 +432,7 @@ refit_legacy_ecov_process <- function(input, stored_report) {
     if (matches[2L]) legacy <- c(legacy, covariate)
   }
   if (length(legacy)) {
-    input$data$Ecov_model[legacy] <- 3L
-    model <- TMB::MakeADFun(input$data, input$par, map = input$map, DLL = "wham", silent = TRUE)
-    on.exit(TMB::FreeADFun(model))
-    model$fn(model$par)
-    report <- model$report()
-    for (covariate in legacy) {
-      if (!isTRUE(all.equal(sum(report$nll_Ecov[, covariate]),
-          likelihood(parameters[, covariate], input$par$Ecov_re[, covariate], TRUE),
-          tolerance = 1e-7, scale = 1))) {
-        stop("Cannot reproduce the early environmental AR1 likelihood; rebuild WHAM with legacy AR1 support.")
-      }
-    }
+    warning("Historical environmental AR1 is no longer supported; refitting with the current AR1 model. Likelihoods and estimates may change.", call. = FALSE)
   }
   input
 }
@@ -438,9 +459,8 @@ migrate_legacy_refit_input <- function(fit) {
   if (!data$M_model %in% 1:3) {
     unsupported <- c(unsupported, "unknown mortality mean model")
   }
-  if (isTRUE(data$use_steepness == 1) &&
-      !(length(data$recruit_model) == 1L && data$recruit_model %in% c(3L, 4L))) {
-    unsupported <- c(unsupported, "steepness without a Beverton-Holt or Ricker recruitment model")
+  if (isTRUE(data$use_steepness == 1)) {
+    unsupported <- c(unsupported, "steepness parameterization")
   }
   if (isTRUE(data$do_proj == 1)) {
     unsupported <- c(unsupported, "stored projections")
@@ -696,7 +716,6 @@ migrate_legacy_refit_input <- function(fit) {
     mapping[seq_along(values)] <- as.integer(source_map)
     input$map[[parameter]] <- factor(mapping)
   }
-  input <- migrate_legacy_steepness(input, fit, data, pars)
   pointers <- data$NAA_sigma_pointers
   if (data$n_NAA_sigma > 0) {
     transfer("log_NAA_sigma", indices = pointers)

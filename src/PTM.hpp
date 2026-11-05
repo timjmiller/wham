@@ -478,7 +478,7 @@ array<Type> get_seasonal_Ps_y(int y, vector<int> fleet_regions, matrix<int> flee
 template <class Type>
 array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seasons, array<int> can_move, 
   vector<int> mig_type, array<Type> FAA, array<Type> log_M, array<Type> mu, matrix<Type> L, 
-  vector<Type> fracyr_seasons, int small_dim, bool legacy_initial = false){
+  vector<Type> fracyr_seasons, int small_dim){
   /* 
     calculate equilibrium survival (at age) by stock and region. If movement is set up approriately 
     all fish can be made to return to a single spawning region for each stock.
@@ -511,17 +511,11 @@ array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seaso
     matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
     matrix<Type> S_ya = get_S(P_ya, n_regions);
     for(int a = 0; a < n_ages; a++) {
-      // Before November 2023, initial equilibrium survival skipped age 1.
-      if(legacy_initial && a == 0) {
-        for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
-        continue;
-      }
       matrix<Type> P_ya = I; //PTM for year and age and up to time of spawning
       for(int t = 0; t < n_seasons; t++) {
         //update PTM to end of season t P(0,s) * P(s,t) = P(0,t)
         P_ya = P_ya * get_P_t(a, y, s, t, fleet_regions, fleet_seasons, can_move, mig_type, fracyr_seasons(t), FAA, log_M, mu, L);
       }
-      if(legacy_initial) S_ya = S_ya * get_S(P_ya, n_regions);
       if(a == n_ages-1){
         //plus group
         matrix<Type> fundm(n_regions,n_regions);
@@ -536,7 +530,7 @@ array<Type> get_eq_SAA(int y, vector<int> fleet_regions, matrix<int> fleet_seaso
         for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
       } else{
         for(int i = 0; i < n_regions; i++) for(int j = 0; j < n_regions; j++) SAA(s,a,i,j) = S_ya(i,j);
-        if(!legacy_initial) S_ya = S_ya * get_S(P_ya, n_regions); //accumulate for next age
+        S_ya = S_ya * get_S(P_ya, n_regions); //accumulate for next age
       }
     }
   }

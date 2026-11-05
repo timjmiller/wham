@@ -101,7 +101,7 @@ test_that("saved legacy fits retain status estimates and covariance", {
     expect_equal(result$log_F_tot$se, as.vector(result$log_F$se))
     expect_equal(
       result$log_NAA_rep$est[1, 1, , ],
-      TMB:::as.list.sdreport(mod$sdrep, report = TRUE, what = "Est")$log_NAA_rep
+      as.list(mod$sdrep, report = TRUE, what = "Est")$log_NAA_rep
     )
   }
 })

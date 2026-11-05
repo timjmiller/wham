@@ -97,7 +97,6 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(selpars_upper);
   
   DATA_IVECTOR(recruit_model); //1: SCAA or RW, 2: RE with constant mean, 3: RE with Beverton Holt mean, 4: RE with Ricker mean 
-  vector<int> legacy_steepness = normalize_legacy_recruitment(recruit_model, n_stocks, n_regions, n_seasons);
   DATA_INTEGER(decouple_recruitment); //0: keep recruitment and abundance at age correlation, 1: recruitment is independent of RE for older NAA
   DATA_IVECTOR(N1_model); //n_stocks, 0: just age-specific numbers at age, 1: 2 pars: log_N_{1,1}, log_F0, age-structure defined by equilibrium NAA calculations, 2: AR1 random effect
   DATA_IVECTOR(NAA_re_model); //n_stocks, 0 SCAA, 1 "rec", 2 "rec+1"
@@ -321,13 +320,6 @@ Type objective_function<Type>::operator() ()
   /////////////////////////////////////////
   // Environmental covariate observation model -------------------------------------
   //TODO: Ecov obs are not yet simulated in projection years!!!!!!!!
-  if(Ecov_obs_sigma_opt.size() != n_Ecov)
-    Rf_error("Ecov_obs_sigma_opt must have one entry per Ecov");
-  for(int i = 0; i < n_Ecov; i++) if(Ecov_obs_sigma_opt(i) == 4 && n_years_Ecov > 0){
-    if(Ecov_obs_logsigma_re.rows() < n_years_Ecov || Ecov_obs_logsigma_re.cols() <= i ||
-       Ecov_obs_sigma_par.rows() < 2 || Ecov_obs_sigma_par.cols() <= i)
-      Rf_error("Ecov observation sigma random effects and parameters have incompatible dimensions");
-  }
   matrix<Type> nll_Ecov_obs(n_years_Ecov, n_Ecov);
   nll_Ecov_obs.setZero();
   Type nll_Ecov_obs_sig = Type(0); // Ecov obs sigma random effects (opt = 4)
@@ -699,8 +691,6 @@ Type objective_function<Type>::operator() ()
   //get annual stock-recruit pars if needed
   matrix<Type> log_SR_a = get_SR_log_a(recruit_model, mean_rec_pars, Ecov_lm_R, Ecov_how_R);
   matrix<Type> log_SR_b = get_SR_log_b(recruit_model, mean_rec_pars, Ecov_lm_R, Ecov_how_R);
-  apply_legacy_steepness(legacy_steepness, mean_rec_pars, log_M, mature, waa_ssb, fracyr_SSB,
-    n_years_model, n_years_proj, log_SR_a, log_SR_b);
 
   bool any_N1_re = false;
   for(int s = 0; s < n_stocks; s++) if(N1_model(s) ==2) any_N1_re = true;

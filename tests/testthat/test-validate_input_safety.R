@@ -25,6 +25,43 @@ test_that("prepared inputs pass safety validation without modification", {
   expect_identical(validate_input_safety(no_ecov), no_ecov)
 })
 
+test_that("R guards cover vector lengths, random-walk predecessors and projections", {
+  input <- validation_safety_input()
+  broken <- input
+  broken$data$NAA_re_model <- integer()
+  local_edition(3)
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken <- input
+  broken$data$selblock_models <- integer()
+  expect_snapshot(error = TRUE, validate_selpars_re(broken))
+  broken <- input
+  broken$data$Ecov_model[] <- 1L
+  broken$data$years_use_Ecov <- c(0L, 1L, 0L)
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken <- input
+  broken$data$Ecov_model[] <- 3L
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  input$data$n_years_proj <- 2L
+  input$data$proj_Ecov_opt <- 3L
+  expect_identical(validate_input_safety(input), input)
+  broken <- input
+  broken$data$n_years_proj <- -1L
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken <- input
+  broken$data$proj_Ecov_opt <- 0L
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken$data$proj_Ecov_opt <- 1L
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken$data$proj_Ecov_opt <- 2L
+  broken$data$avg_years_Ecov <- integer()
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken$data$proj_Ecov_opt <- 4L
+  broken$data$Ecov_use_proj <- matrix(0, 1L, 1L)
+  expect_snapshot(error = TRUE, validate_input_safety(broken))
+  broken$data$Ecov_use_proj <- matrix(0, 2L, 1L)
+  expect_identical(validate_input_safety(broken), broken)
+})
+
 test_that("unsafe environmental dimensions, mappings and values identify their fields", {
   input <- validation_safety_input()
   cases <- list(

@@ -94,6 +94,34 @@ test_that("refitting supplies missing year indices and preserves stored indices"
   expect_identical(result$input, fit$input)
 })
 
+test_that("refitting saved code 3 uses current AR1 without changing the saved input", {
+  local_edition(3)
+  input <- suppressMessages(prepare_wham_input(
+    NAA_re = list(sigma = "rec"),
+    basic_info = list(years = 2000:2005, ages = 1:4),
+    ecov = list(year = 2000:2005, mean = matrix(1:6, 6L, 1L),
+      use_obs = matrix(1L, 6L, 1L),
+      logsigma = -1, process_model = "ar1",
+      recruitment_how = matrix("controlling-lag-1-linear", 1L, 1L))
+  ))
+  input$data$Ecov_model[] <- 3L
+  fit <- list(input = input,
+    opt = list(par = c(parameter = 1), objective = 0, convergence = 0))
+  refit <- refit_wham
+  environment(refit) <- list2env(list(fit_wham = function(input, ...) {
+    validate_input_safety(input)
+    model <- TMB::MakeADFun(input$data, input$par, map = input$map,
+      DLL = "wham", silent = TRUE)
+    on.exit(TMB::FreeADFun(model))
+    expect_equal(is.finite(model$fn(model$par)), TRUE)
+    expect_equal(all(is.finite(model$gr(model$par))), TRUE)
+    list(input = input, opt = fit$opt)
+  }), parent = environment(refit_wham))
+  expect_snapshot(capture.output(result <- suppressMessages(refit(fit))))
+  expect_equal(as.integer(result$input$data$Ecov_model), 2L)
+  expect_identical(fit$input, input)
+})
+
 test_that("refitting preserves stored mappings and uses fitted starting values", {
   fit <- list(
     input = list(
@@ -521,15 +549,21 @@ test_that("legacy process and environmental features preserve stored likelihoods
     fit <- readRDS(path)
     reference <- readRDS(sub("_original\\.rds$", "_reference.rds", path))
     original_input <- fit$input
-    input <- suppressMessages(migrate_legacy_refit_input(fit))
+    if (isTRUE(original_input$data$use_steepness == 1L)) next
+    warnings <- character()
+    input <- withCallingHandlers(suppressMessages(migrate_legacy_refit_input(fit)),
+      warning = function(w) {
+        warnings <<- c(warnings, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      })
+    if (any(grepl("Historical environmental AR1", warnings, fixed = TRUE))) {
+      expect_equal(as.integer(input$data$Ecov_model), 2L)
+      next
+    }
     expect_identical(fit$input, original_input, info = path)
     expect_equal(input$data$M_re_model[1], c(1L, 4L, 2L, 3L, 4L)[original_input$data$M_re_model])
     expect_equal(input$data$selblock_models_re, original_input$data$selblock_models_re - 1L)
     expect_equal(input$data$M_model, if (original_input$data$M_model == 3L) 2L else 1L)
-    if (isTRUE(original_input$data$use_steepness == 1L)) {
-      expect_equal(input$data$recruit_model, original_input$data$recruit_model + 2L)
-      expect_true(all(is.finite(input$par$mean_rec_pars)))
-    }
     model <- TMB::MakeADFun(input$data, input$par, random = input$random,
       map = input$map, DLL = "wham", silent = TRUE)
     expect_length(model$par, length(fit$opt$par))
@@ -547,51 +581,33 @@ test_that("legacy process and environmental features preserve stored likelihoods
   }
 })
 
-test_that("historical environmental AR1 simulation preserves its transition", {
+test_that("historical environmental AR1 migrates to the current process", {
   path <- test_path("..", "..", "oldfitobjects", "release_refits", "v1.0.0",
     "features", "environment_ar1_recruit_original.rds")
   skip_if_not(file.exists(path), "Generate the earliest environmental fixture")
   fit <- readRDS(path)
-  input <- suppressMessages(migrate_legacy_refit_input(fit))
-  expect_equal(as.integer(input$data$Ecov_model), 3L)
+  local_edition(3)
+  expect_snapshot(input <- suppressMessages(migrate_legacy_refit_input(fit)))
+  expect_equal(as.integer(input$data$Ecov_model), 2L)
   for (field in grep("^do_simulate_", names(input$data), value = TRUE)) input$data[[field]][] <- 0L
   input$data$do_simulate_Ecov_re <- 1L
   input$data$do_simulate_period <- c(1L, 0L)
   model <- TMB::MakeADFun(input$data, input$par, map = input$map, DLL = "wham", silent = TRUE)
   on.exit(TMB::FreeADFun(model))
-  parameters <- input$par$Ecov_process_pars[, 1L]
-  correlation <- tanh(parameters[3L] / 2)
-  deviation <- exp(parameters[2L])
-  expected <- numeric(input$data$n_years_Ecov)
-  set.seed(193)
-  expected[1L] <- rnorm(1, 0, deviation / sqrt(1 - correlation^2))
-  for (year in 2:length(expected)) expected[year] <- rnorm(1,
-    correlation * (expected[year - 1L] - parameters[1L]), deviation)
-  set.seed(193)
   simulated <- model$simulate(model$par)
-  expect_equal(as.vector(simulated$Ecov_re), expected, tolerance = 1e-12)
+  expect_equal(all(is.finite(simulated$Ecov_re)), TRUE)
+  expect_equal(as.vector(simulated$Ecov_x),
+    as.vector(simulated$Ecov_re + input$par$Ecov_process_pars[1L, 1L]))
 })
 
-test_that("legacy steepness preserves the original marginal likelihood", {
+test_that("legacy steepness is not silently treated as alpha and beta", {
+  local_edition(3)
   root <- test_path("..", "..", "oldfitobjects", "release_refits", "v1.0.6", "features")
   paths <- file.path(root, paste0(c("steepness_bh", "steepness_ricker"), "_original.rds"))
   skip_if_not(all(file.exists(paths)), "Generate the steepness fixtures")
   for (path in paths) {
     fit <- readRDS(path)
-    input <- suppressMessages(migrate_legacy_refit_input(fit))
-    expect_true(input$data$recruit_model %in% 5:6)
-    expect_identical(input$legacy_steepness$recruit_model, fit$input$data$recruit_model)
-    model <- TMB::MakeADFun(
-      input$data, input$par, random = input$random,
-      map = input$map, DLL = "wham", silent = TRUE
-    )
-    expect_equal(
-      as.numeric(model$fn(model$par)),
-      as.numeric(fit$opt$objective),
-      tolerance = 1e-6,
-      scale = 1
-    )
-    TMB::FreeADFun(model)
+    expect_snapshot(error = TRUE, migrate_legacy_refit_input(fit))
   }
 })
 

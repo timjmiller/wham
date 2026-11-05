@@ -1,28 +1,4 @@
 template <class Type>
-void validate_selpars_re(vector<int> selblock_models_re, vector<int> selblock_models,
-  vector<int> n_years_selblocks, matrix<int> selblock_years, vector<int> n_selpars_re,
-  array<Type> selpars_re, matrix<Type> sel_repars){
-  int n_blocks = selblock_models_re.size();
-  if(selblock_models.size() != n_blocks || n_years_selblocks.size() != n_blocks ||
-     n_selpars_re.size() != n_blocks || selblock_years.cols() != n_blocks)
-    Rf_error("Selectivity block vectors and year matrix have incompatible dimensions");
-  for(int b = 0; b < n_blocks; b++) if(selblock_models_re(b) > 0){
-    int count = 0;
-    for(int y = 0; y < selblock_years.rows(); y++)
-      if(selblock_years(y,b) == 1) count++;
-    if(n_years_selblocks(b) < 0 || count != n_years_selblocks(b))
-      Rf_error("Selectivity block year count does not match selblock_years");
-    if(count == 0) continue;
-    if(n_selpars_re(b) <= 0 || selpars_re.dim.size() != 3 ||
-       sel_repars.rows() <= b || sel_repars.cols() < 3)
-      Rf_error("Active selectivity random effects require nonempty compatible dimensions");
-    if(selpars_re.dim(0) <= b || selpars_re.dim(1) < selblock_years.rows() ||
-       selpars_re.dim(2) < n_selpars_re(b))
-      Rf_error("Selectivity random effects array has incompatible dimensions");
-  }
-}
-
-template <class Type>
 vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int>selblock_models, vector<int> n_years_selblocks, matrix<int> selblock_years, vector<int> n_selpars_re,
   array<Type> selpars_re, matrix<Type> sel_repars){
   /* 
@@ -36,8 +12,6 @@ vector<Type> get_nll_sel(vector<int> selblock_models_re, vector<int>selblock_mod
                 sel_repars: parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   */
   using namespace density;
-  validate_selpars_re(selblock_models_re, selblock_models, n_years_selblocks,
-    selblock_years, n_selpars_re, selpars_re, sel_repars);
   int n_selblocks = selblock_models_re.size();
   vector<Type> nll_sel(n_selblocks);
   int n_years = selblock_years.rows();
@@ -98,8 +72,6 @@ array<Type> simulate_selpars_re(vector<int> selblock_models_re, vector<int>selbl
                 sel_repars: parameters controlling selpars_re, dim = n_blocks, 3 (sigma, rho, rho_y)
   */
   using namespace density;
-  validate_selpars_re(selblock_models_re, selblock_models, n_years_selblocks,
-    selblock_years, n_selpars_re, selpars_re, sel_repars);
   int n_selblocks = selblock_models_re.size();
   int n_years = selblock_years.rows();
   // int n_ages = selpars_re.dim(2) - 6;

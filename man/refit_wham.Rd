@@ -36,6 +36,12 @@ environmental, and age-composition layouts when their conventions can be
 identified. Unsupported or ambiguous layouts are rejected rather than
 guessed. Native compatibility modes require rebuilding WHAM.
 
+Historical initial-equilibrium bugs are not reproduced. If stored initial
+abundance differs from the corrected calculation, a warning is issued and
+the model is refit using the corrected equilibrium. Estimates and
+likelihoods may therefore change. Missing or incompatible stored abundance
+reports also produce a warning because the historical bug cannot be checked.
+
 Stored projections in historical multi-stock layouts retain their projected
 parameters, maps, fishing controls and averaging years. A saved
 \code{\link{project_wham}} call is refit from this stored input without

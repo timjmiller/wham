@@ -11,11 +11,12 @@ wham 2.1.0.9012 (2026-10-14)
 * (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 ### Bug fixes
+* `refit_wham` no longer reproduces the historical initial NAA equilibrium bug. It warns when stored equilibrium abundance differs or cannot be checked, and refits using the corrected calculation; estimates and likelihoods may change.
 * `refit_wham` migrates stored multi-stock projections, preserving projected parameter maps, fishing controls and separate projection/reference-point averaging windows. Saved `project_wham` calls no longer reuse the old model or reapply projection options.
-* `refit_wham` preserves historical BH/Ricker steepness parameters and maps using native annual unfished-SPR calculations, without requiring cached mortality reports. Rebuilding WHAM is required for this compatibility mode.
 * `read_wham_fit` supplies missing log-scale abundance reports for comparison plots of fits without standard errors.
 * `compare_wham_models` handles legacy fits without the SPR reference-point flag when comparing saved fits with current refits; `read_wham_fit` normalizes historical abundance and mortality dimensions and preserves uncertainty in biomass, fishing mortality, and stock status.
-* `fit_wham` and `fit_peel` validate unsafe environmental and selectivity inputs before entering TMB; native bounds checks prevent known out-of-range accesses, and failed peels report their number and error.
+* `fit_wham`, `fit_peel`, and `project_wham` validate unsafe environmental and selectivity inputs in R before entering TMB; failed peels report their number and error.
+* `refit_wham` uses the current environmental AR1 model instead of the historical compatibility option and warns that likelihoods and estimates may change.
 * `prepare_projection` pads annual environmental observation-error random effects along with projected covariate years.
 * `reduce_input` truncates environmental data, fitted starting values, and maps together even without saved preparation options; it preserves fishing-mortality maps and disables selectivity blocks lost in a peel.
 * `set_ecov` fixes annual observation-error random-effect dimensions, padding, initial values, and maps, preserves mixed fixed/estimated sigma options, and rejects nonconsecutive covariate years.

@@ -2,12 +2,6 @@
 template <class T>
 array<T> get_marginal_NAA_sigma(array<T> log_NAA_sigma, array<T> trans_NAA_rho, vector<int> NAA_re_model, int decouple_recruitment = 0){
 
-  if(log_NAA_sigma.dim.size() != 3 || trans_NAA_rho.dim.size() != 3)
-    Rf_error("NAA sigma and correlation parameters must be stock x region x parameter arrays");
-  if(log_NAA_sigma.dim(0) != trans_NAA_rho.dim(0) ||
-     log_NAA_sigma.dim(1) != trans_NAA_rho.dim(1) ||
-     trans_NAA_rho.dim(2) != 3 || NAA_re_model.size() != log_NAA_sigma.dim(0))
-    Rf_error("NAA sigma and correlation parameter dimensions are incompatible");
   int n_stocks = log_NAA_sigma.dim(0);
   int n_regions = log_NAA_sigma.dim(1);
   int n_ages = log_NAA_sigma.dim(2);
@@ -209,14 +203,14 @@ array<Type> get_NAA_1(vector<int> N1_model, array<Type> log_N1, array<int> NAA_w
       for(int a = 0; a < n_ages; a++) for(int r = 0; r < n_regions; r++) if(NAA_where(s,r,a)){
         NAA_1(s,r,a) = exp(log_N1(s,r,a)); //log_N1 has to be mapped to not be estimated for NAA_where(s,r,a)==0
       }
-    } else{ //1 = equilibrium; -1 preserves historical initial survival for refits
+    } else{ //1 = equilibrium
       array<Type> FAA1(n_fleets,1,n_ages);
       FAA1.setZero();
       for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++) {
         FAA1(f,0,a) = exp(log_N1(s,spawn_regions(s)-1,1)) * sel1(f,a); //only 1 F0 per stock
       }
       array<Type> SAA1 = get_eq_SAA(0, fleet_regions, fleet_seasons, can_move, mig_type, FAA1, log_M, 
-        mu, L, fracyr_seasons, small_dim, N1_model(s) == -1);
+        mu, L, fracyr_seasons, small_dim);
       for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_regions; i++) if(NAA_where(s,i,a)) {
         NAA_1(s,i,a) += exp(log_N1(s,spawn_regions(s)-1,0)) * SAA1(s,a,spawn_regions(s)-1,i); //only 1 Rec per stock, this must be consistent with NAA_where
       }
