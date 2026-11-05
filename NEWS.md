@@ -11,6 +11,7 @@ wham 2.1.0.9012 (2026-10-14)
 * (2.1.0.9005) added greater tab structure to improve organization of plots in html files produced with plot_wham_output. [23150ef](https://github.com/timjmiller/wham/commit/23150efbd02aefea69000c958d7f3594744017fe)
 
 ### Bug fixes
+* `refit_wham` no longer compensates recruitment-deviation standard deviations to reproduce historical decoupled NAA variance errors, and retains stored effective sample sizes instead of matching historical unweighted age-composition likelihoods. Correction warnings distinguish identified historical errors from unexplained report differences.
 * `refit_wham` no longer reproduces the historical initial NAA equilibrium bug. It warns when stored equilibrium abundance differs or cannot be checked, and refits using the corrected calculation; estimates and likelihoods may change.
 * `refit_wham` migrates stored multi-stock projections, preserving projected parameter maps, fishing controls and separate projection/reference-point averaging windows. Saved `project_wham` calls no longer reuse the old model or reapply projection options.
 * `read_wham_fit` supplies missing log-scale abundance reports for comparison plots of fits without standard errors.

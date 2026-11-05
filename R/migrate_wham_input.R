@@ -1,3 +1,13 @@
+refit_correction_warning <- function(issue, confirmed = TRUE) {
+  warning(
+    "WHAM refit correction: ", issue, ". ",
+    if (confirmed) "The original fit used an affected historical calculation. " else
+      "The stored report differs from the current calculation; the cause is not uniquely identified. ",
+    "Refitting uses the current implementation; the corrected NLL and parameter estimates may differ from the original fit.",
+    call. = FALSE
+  )
+}
+
 # Recover historical process scales only when stored likelihood components
 # identify a reproducible transform. Return input plus comparison-scale flags;
 # reject ambiguous fixed/shared AR1 scales rather than change the model.
@@ -228,6 +238,7 @@ refit_legacy_age_comp_indices <- function(data, parameter) {
 }
 
 refit_legacy_age_comp_weights <- function(input, stored_report) {
+  if (!is.list(stored_report)) return(input)
   report_at_parameters <- function(candidate) {
     validate_input_safety(candidate)
     model <- TMB::MakeADFun(candidate$data, candidate$par, map = candidate$map,
@@ -236,38 +247,33 @@ refit_legacy_age_comp_weights <- function(input, stored_report) {
     model$fn(model$par)
     model$report()
   }
-  weighted <- input
-  weighted$data$catch_Neff <- input$legacy_age_comp_Neff$catch
-  weighted$data$index_Neff <- input$legacy_age_comp_Neff$index
-  unweighted_report <- report_at_parameters(input)
-  weighted_report <- report_at_parameters(weighted)
+  weighted_report <- NULL
   for (kind in c("catch", "index")) {
     group <- if (kind == "catch") "fleets" else "indices"
     models <- input$data[[paste0("age_comp_model_", group)]]
     use <- input$data[[paste0("use_", kind, "_paa")]]
-    field <- paste0(kind, "_Neff")
     likelihood <- paste0("nll_", kind, "_acomp")
+    target <- stored_report[[likelihood]]
+    if (!is.matrix(target) || !identical(dim(target), dim(use))) next
     for (series in which(models == 5L)) {
       active <- which(use[, series] == 1L)
-      if (!length(active) || all(weighted$data[[field]][active, series] == 1)) {
-        input$data[[field]][, series] <- weighted$data[[field]][, series]
-        next
+      if (!length(active)) next
+      if (is.null(weighted_report)) {
+        weighted_report <- tryCatch(report_at_parameters(input), error = function(e) NULL)
+        if (is.null(weighted_report)) return(input)
       }
-      target <- stored_report[[likelihood]]
-      if (!is.matrix(target) || !identical(dim(target), dim(use))) {
-        stop("Cannot infer historical age-composition weighting without stored ", likelihood, ".")
-      }
-      matches <- function(report) isTRUE(all.equal(
-        as.numeric(report[[likelihood]][active, series]),
+      if (!is.matrix(weighted_report[[likelihood]]) ||
+          !identical(dim(weighted_report[[likelihood]]), dim(use))) next
+      matches <- isTRUE(all.equal(
+        as.numeric(weighted_report[[likelihood]][active, series]),
         as.numeric(target[active, series]), tolerance = 1e-8, scale = 1
       ))
-      original_weights <- matches(weighted_report)
-      unit_weights <- matches(unweighted_report)
-      if (original_weights == unit_weights) {
-        stop("Cannot safely infer historical age-composition weighting for ", kind, " ", series, ".")
-      }
-      if (original_weights) {
-        input$data[[field]][, series] <- weighted$data[[field]][, series]
+      if (!matches) {
+        refit_correction_warning(
+          "historical logistic-normal effective-sample-size weighting",
+          confirmed = FALSE
+        )
+        return(input)
       }
     }
   }
@@ -750,11 +756,9 @@ migrate_legacy_refit_input <- function(fit) {
     )
     if (data$n_NAA_sigma > 1) {
       rho <- tanh(pars$trans_NAA_rho)
-      input$par$log_NAA_sigma[1] <- input$par$log_NAA_sigma[1] -
-        0.5 * log1p(-rho[1]^2)
-      input$par$log_NAA_sigma[-1] <- input$par$log_NAA_sigma[-1] +
-        0.5 * log1p(-rho[3]^2) -
-        0.5 * log1p(-rho[2]^2)
+      if (rho[1]^2 != 0 || rho[2]^2 != rho[3]^2) {
+        refit_correction_warning("historical decoupled recruitment used the wrong correlations in NAA marginal variances")
+      }
     }
   }
   if (!is.null(pars$q_repars)) {
@@ -787,17 +791,12 @@ migrate_legacy_refit_input <- function(fit) {
     catch_logistic <- packed_age_comp & data$age_comp_model_fleets == 7L
     index_logistic <- packed_age_comp & data$age_comp_model_indices == 7L
     if (any(catch_logistic) || any(index_logistic)) {
-      input$legacy_age_comp_Neff <- list(
-        catch = data$catch_Neff, index = data$index_Neff
-      )
       input$data$age_comp_model_fleets[catch_logistic] <- 5L
       input$data$age_comp_model_indices[index_logistic] <- 5L
-      input$data$catch_Neff[, catch_logistic] <- 1
-      input$data$index_Neff[, index_logistic] <- 1
     }
     input <- set_osa_obs(input)
     if (any(catch_logistic) || any(index_logistic)) {
-      input <- refit_legacy_age_comp_weights(input, fit$rep)
+      input <- refit_legacy_age_comp_weights(input, fit[["rep"]])
     }
   }
   if (environmental && !is.null(data$agesvec)) input <- set_osa_obs(input)

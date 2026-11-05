@@ -335,13 +335,6 @@ refit_wham <- function(fit = NULL) {
     }
     pointers <- fit$input$data$NAA_sigma_pointers
     if (refit_decouple_recruitment(fit)) {
-      rho <- tanh(as.vector(pars$trans_NAA_rho) / 2)
-      if (fit$input$data$n_NAA_sigma > 1) {
-        pars$log_NAA_sigma[1] <- pars$log_NAA_sigma[1] + 0.5 * log1p(-rho[1]^2)
-        pars$log_NAA_sigma[-1] <- pars$log_NAA_sigma[-1] -
-          0.5 * log1p(-rho[2]^2) +
-          0.5 * log1p(-rho[3]^2)
-      }
       pars$trans_NAA_rho[] <- as.vector(pars$trans_NAA_rho)[c(1L, 3L, 2L)]
     }
     pars$log_NAA_sigma <- as.vector(pars$log_NAA_sigma)[

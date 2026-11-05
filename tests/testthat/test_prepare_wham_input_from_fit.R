@@ -425,7 +425,13 @@ test_that("v1.0.0 fits migrate without ASAP3 data", {
     fit <- readRDS(path)
     original_input <- fit$input
     expect_null(fit$input$asap3)
-    input <- suppressMessages(migrate_legacy_refit_input(fit))
+    warnings <- character()
+    input <- withCallingHandlers(suppressMessages(migrate_legacy_refit_input(fit)),
+      warning = function(w) {
+        warnings <<- c(warnings, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      })
+    weighting_changed <- any(grepl("historical logistic-normal effective-sample-size weighting", warnings, fixed = TRUE))
     expect_identical(fit$input, original_input)
     expect_identical(input$years, fit$input$years)
     expect_identical(input$ages.lab, fit$input$ages.lab)
@@ -442,25 +448,33 @@ test_that("v1.0.0 fits migrate without ASAP3 data", {
     if (any(fit$input$data$age_comp_model_fleets == 7L)) {
       expect_true(all(input$data$age_comp_model_fleets == 5L))
       expect_true(all(input$data$age_comp_model_indices == 5L))
-      expect_true(all(input$data$catch_Neff == 1))
-      expect_true(all(input$data$index_Neff == 1))
-      expect_identical(input$legacy_age_comp_Neff$catch, fit$input$data$catch_Neff)
-      expect_identical(input$legacy_age_comp_Neff$index, fit$input$data$index_Neff)
     }
+    expect_identical(input$data$catch_Neff, fit$input$data$catch_Neff)
+    expect_identical(input$data$index_Neff, fit$input$data$index_Neff)
+    expect_null(input$legacy_age_comp_Neff)
     model <- TMB::MakeADFun(
       input$data, input$par, DLL = "wham", random = input$random,
       map = input$map, silent = TRUE
     )
-    expect_equal(as.numeric(model$fn(model$par)), as.numeric(fit$opt$objective), tolerance = 1e-6, scale = 1)
+    objective <- as.numeric(model$fn(model$par))
+    if (!weighting_changed) {
+      expect_equal(objective, as.numeric(fit$opt$objective), tolerance = 1e-6, scale = 1)
+    }
     report <- model$report()
     for (field in c("MAA", "NAA", "SSB", "pred_catch", "pred_indices")) {
-      expect_equal(as.vector(report[[field]]), as.vector(fit$rep[[field]]), tolerance = 1e-8)
+      if (weighting_changed && field != "MAA") {
+        expect_equal(all(is.finite(report[[field]])), TRUE)
+      } else {
+        expect_equal(as.vector(report[[field]]), as.vector(fit$rep[[field]]), tolerance = 1e-8)
+      }
     }
     TMB::FreeADFun(model)
     fit$call <- quote(fit_wham(input = input, do.retro = FALSE, do.osa = FALSE,
       do.sdrep = FALSE, do.brps = FALSE, do.post.samp = FALSE, MakeADFun.silent = TRUE))
     capture.output(result <- suppressWarnings(suppressMessages(refit_wham(fit))))
-    expect_equal(result$opt$objective, fit$opt$objective, tolerance = 1e-6, scale = 1)
+    if (!weighting_changed) {
+      expect_equal(result$opt$objective, fit$opt$objective, tolerance = 1e-6, scale = 1)
+    }
     expect_equal(result$opt$convergence, 0)
     expect_identical(fit$input, original_input)
     TMB::FreeADFun(result)
@@ -485,7 +499,13 @@ test_that("tagged v1.0.1 through v1.0.6 fits preserve stored likelihoods", {
     fit <- readRDS(path)
     reference <- readRDS(sub("_original\\.rds$", "_reference.rds", path))
     original_input <- fit$input
-    input <- suppressMessages(migrate_legacy_refit_input(fit))
+    warnings <- character()
+    input <- withCallingHandlers(suppressMessages(migrate_legacy_refit_input(fit)),
+      warning = function(w) {
+        warnings <<- c(warnings, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      })
+    weighting_changed <- any(grepl("historical logistic-normal effective-sample-size weighting", warnings, fixed = TRUE))
     expect_identical(fit$input, original_input, info = path)
     expect_equal(input$years, original_input$years, info = path)
     expect_length(input$data$which_F_age, input$data$n_years_model)
@@ -494,16 +514,19 @@ test_that("tagged v1.0.1 through v1.0.6 fits preserve stored likelihoods", {
     if (is.matrix(original_input$par$catch_paa_pars)) {
       expect_identical(input$data$age_comp_model_fleets, original_input$data$age_comp_model_fleets)
       expect_identical(input$data$age_comp_model_indices, original_input$data$age_comp_model_indices)
-      expect_identical(input$data$catch_Neff, original_input$data$catch_Neff)
-      expect_identical(input$data$index_Neff, original_input$data$index_Neff)
-      expect_null(input$legacy_age_comp_Neff)
     }
+    expect_identical(input$data$catch_Neff, original_input$data$catch_Neff)
+    expect_identical(input$data$index_Neff, original_input$data$index_Neff)
+    expect_null(input$legacy_age_comp_Neff)
     model <- TMB::MakeADFun(
       input$data, input$par, DLL = "wham", random = input$random,
       map = input$map, silent = TRUE
     )
-    expect_equal(as.numeric(model$fn(model$par)), as.numeric(fit$opt$objective),
-      tolerance = 1e-6, scale = 1, info = path)
+    objective <- as.numeric(model$fn(model$par))
+    if (!weighting_changed) {
+      expect_equal(objective, as.numeric(fit$opt$objective),
+        tolerance = 1e-6, scale = 1, info = path)
+    }
     TMB::FreeADFun(model)
     model <- TMB::MakeADFun(
       input$data, input$par, DLL = "wham", map = input$map, silent = TRUE
@@ -518,25 +541,41 @@ test_that("tagged v1.0.1 through v1.0.6 fits preserve stored likelihoods", {
   }
 })
 
-test_that("early logistic-normal weighting requires a matching stored report", {
+test_that("age-composition weighting diagnostics tolerate missing stored reports", {
+  input <- list(data = list(
+    age_comp_model_fleets = 5L, age_comp_model_indices = 5L,
+    use_catch_paa = matrix(1L, 2L, 1L), use_index_paa = matrix(1L, 2L, 1L),
+    catch_Neff = matrix(c(20, 40), 2L, 1L), index_Neff = matrix(c(30, 60), 2L, 1L)
+  ))
+  for (report in list(NULL, list(), list(nll_catch_acomp = 1, nll_index_acomp = 1))) {
+    expect_identical(refit_legacy_age_comp_weights(input, report), input)
+  }
+})
+
+test_that("early logistic-normal weighting retains stored effective sample sizes", {
   root <- test_path("..", "..", "oldfitobjects", "release_refits")
   paths <- file.path(root, c("v1.0.2", "v1.0.3"), "m2_original.rds")
   skip_if_not(all(file.exists(paths)), "Generate v1.0.2 and v1.0.3 fixtures")
   for (position in seq_along(paths)) {
     fit <- readRDS(paths[position])
-    input <- suppressMessages(migrate_legacy_refit_input(fit))
-    expected <- fit$input$data$catch_Neff
-    if (position == 1L) expected[] <- 1
-    expect_identical(input$data$catch_Neff, expected)
-    expect_identical(input$legacy_age_comp_Neff$catch, fit$input$data$catch_Neff)
+    input <- suppressWarnings(suppressMessages(migrate_legacy_refit_input(fit)))
+    expect_identical(input$data$catch_Neff, fit$input$data$catch_Neff)
+    expect_identical(input$data$index_Neff, fit$input$data$index_Neff)
+    expect_null(input$legacy_age_comp_Neff)
   }
   fit <- readRDS(paths[2L])
   fit$rep$nll_catch_acomp <- fit$rep$nll_catch_acomp + 1
-  expect_error(suppressMessages(migrate_legacy_refit_input(fit)),
-    "Cannot safely infer historical age-composition weighting")
-  fit$rep$nll_catch_acomp <- NULL
-  expect_error(suppressMessages(migrate_legacy_refit_input(fit)),
-    "without stored nll_catch_acomp")
+  expect_warning(input <- suppressMessages(migrate_legacy_refit_input(fit)),
+    "historical logistic-normal effective-sample-size weighting")
+  expect_identical(input$data$catch_Neff, fit$input$data$catch_Neff)
+  expect_identical(input$data$index_Neff, fit$input$data$index_Neff)
+  for (report in list(NULL, list(nll_catch_acomp = 1), list())) {
+    fit$rep <- report
+    input <- suppressWarnings(suppressMessages(migrate_legacy_refit_input(fit)))
+    expect_identical(input$data$catch_Neff, fit$input$data$catch_Neff)
+    expect_identical(input$data$index_Neff, fit$input$data$index_Neff)
+    expect_null(input$legacy_age_comp_Neff)
+  }
 })
 
 test_that("legacy process and environmental features preserve stored likelihoods", {
@@ -556,6 +595,10 @@ test_that("legacy process and environmental features preserve stored likelihoods
         warnings <<- c(warnings, conditionMessage(w))
         invokeRestart("muffleWarning")
       })
+    weighting_changed <- any(grepl("historical logistic-normal effective-sample-size weighting", warnings, fixed = TRUE))
+    expect_identical(input$data$catch_Neff, original_input$data$catch_Neff)
+    expect_identical(input$data$index_Neff, original_input$data$index_Neff)
+    expect_null(input$legacy_age_comp_Neff)
     if (any(grepl("Historical environmental AR1", warnings, fixed = TRUE))) {
       expect_equal(as.integer(input$data$Ecov_model), 2L)
       next
@@ -567,13 +610,17 @@ test_that("legacy process and environmental features preserve stored likelihoods
     model <- TMB::MakeADFun(input$data, input$par, random = input$random,
       map = input$map, DLL = "wham", silent = TRUE)
     expect_length(model$par, length(fit$opt$par))
-    expect_equal(as.numeric(model$fn(model$par)), as.numeric(fit$opt$objective),
-      tolerance = 1e-6, scale = 1, info = path)
+    objective <- as.numeric(model$fn(model$par))
+    if (!weighting_changed) {
+      expect_equal(objective, as.numeric(fit$opt$objective),
+        tolerance = 1e-6, scale = 1, info = path)
+    }
     TMB::FreeADFun(model)
     model <- TMB::MakeADFun(input$data, input$par, map = input$map, DLL = "wham", silent = TRUE)
     model$fn(model$par)
     report <- model$report()
     for (field in names(reference)) {
+      if (weighting_changed && grepl("^nll", field, ignore.case = TRUE)) next
       expect_equal(as.vector(report[[field]]), as.vector(reference[[field]]),
         tolerance = 1e-7, info = paste(path, field))
     }
@@ -645,35 +692,39 @@ test_that("legacy Butterfish migration preserves the likelihood and estimates", 
   expect_true(any(grepl("max_abs_par_diff", output)))
 })
 
-test_that("legacy decoupled Cod migration preserves the likelihood", {
+test_that("legacy decoupled Cod migration uses corrected variances", {
+  local_edition(3)
   fit_file <- test_path("..", "..", "oldfitobjects", "GBK_Cod_2024MTfit.rds")
   skip_if_not(file.exists(fit_file), "Local decoupled fit is unavailable")
   fit <- readRDS(fit_file)
   original_input <- fit$input
-  input <- suppressMessages(migrate_legacy_refit_input(fit))
+  expect_snapshot(input <- suppressMessages(migrate_legacy_refit_input(fit)))
   expect_identical(fit$input, original_input)
   expect_identical(input$data$decouple_recruitment, 1L)
   expect_equal(as.vector(input$par$trans_NAA_rho), 2 * fit$parList$trans_NAA_rho[c(1L, 3L, 2L)])
+  expect_equal(as.vector(input$par$log_NAA_sigma),
+    fit$parList$log_NAA_sigma[fit$input$data$NAA_sigma_pointers])
 
   model <- TMB::MakeADFun(
     input$data, input$par, DLL = "wham", random = input$random,
     map = input$map, silent = TRUE
   )
-  expect_equal(as.numeric(model$fn(model$par)), as.numeric(fit$opt$objective), tolerance = 1e-8)
+  corrected_nll <- as.numeric(model$fn(model$par))
+  expect_equal(is.finite(corrected_nll), TRUE)
+  expect_gt(abs(corrected_nll - fit$opt$objective), 1e-8)
+  expect_equal(all(is.finite(model$gr(model$par))), TRUE)
+  TMB::FreeADFun(model)
 
   refit <- refit_wham
   environment(refit) <- list2env(list(
     fit_wham = function(input, ...) list(input = input, opt = fit$opt, parList = input$par)
   ), parent = environment(refit_wham))
-  expect_message(
-    output <- capture.output(result <- suppressMessages(refit(fit))),
-    NA
-  )
+  expect_snapshot(output <- capture.output(result <- suppressMessages(refit(fit))))
   expect_identical(result$input$data$decouple_recruitment, 1L)
   expect_true(any(grepl("max_abs_par_diff", output)))
 
   fit$input$data$decouple_rec <- NULL
-  inferred <- suppressMessages(migrate_legacy_refit_input(fit))
+  expect_snapshot(inferred <- suppressMessages(migrate_legacy_refit_input(fit)))
   expect_identical(inferred$data$decouple_recruitment, 1L)
   expect_equal(inferred$par, input$par)
   expect_identical(inferred$map, input$map)

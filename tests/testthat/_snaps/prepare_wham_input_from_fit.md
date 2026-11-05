@@ -32,3 +32,27 @@
       Error:
       ! Cannot safely migrate this legacy WHAM input: steepness parameterization.
 
+# legacy decoupled Cod migration uses corrected variances
+
+    Code
+      input <- suppressMessages(migrate_legacy_refit_input(fit))
+    Condition
+      Warning:
+      WHAM refit correction: historical decoupled recruitment used the wrong correlations in NAA marginal variances. The original fit used an affected historical calculation. Refitting uses the current implementation; the corrected NLL and parameter estimates may differ from the original fit.
+
+---
+
+    Code
+      output <- capture.output(result <- suppressMessages(refit(fit)))
+    Condition
+      Warning:
+      WHAM refit correction: historical decoupled recruitment used the wrong correlations in NAA marginal variances. The original fit used an affected historical calculation. Refitting uses the current implementation; the corrected NLL and parameter estimates may differ from the original fit.
+
+---
+
+    Code
+      inferred <- suppressMessages(migrate_legacy_refit_input(fit))
+    Condition
+      Warning:
+      WHAM refit correction: historical decoupled recruitment used the wrong correlations in NAA marginal variances. The original fit used an affected historical calculation. Refitting uses the current implementation; the corrected NLL and parameter estimates may differ from the original fit.
+
