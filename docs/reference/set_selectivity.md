@@ -199,14 +199,13 @@ options modified.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-wham.dir <- find.package("wham")
-path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
 sel <- list(model=rep("logistic",input$data$n_selblocks),
    initial_pars=rep(list(c(3,3)),input$data$n_selblocks),
    fix_pars=rep(list(NULL),input$data$n_selblocks))
+#> Error: object 'input' not found
 input <- set_selectivity(input, selectivity = sel) #logistic selectivity for all selectivity blocks
-} # }
+#> Error: object 'input' not found
 ```

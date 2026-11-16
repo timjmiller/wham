@@ -247,11 +247,17 @@ corresponding to `i` above, e.g. `g[[2]]` is the CV plot.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-base <- read_asap3_fit()
-m1 <- fit_wham(input1)
-m2 <- fit_wham(input2)
-mods <- list(base=base, m1=m1, m2=m2)
-res <- compare_wham_models(mods)
-} # }
+# \donttest{
+input1 <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+input2 <- set_NAA(input1, list(sigma="rec", cor="iid"))
+#> Error: object 'input1' not found
+m1 <- fit_wham(input1, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input1' not found
+m2 <- fit_wham(input2, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input2' not found
+res <- compare_wham_models(list(m1=m1, m2=m2), fdir = tempdir(check=TRUE))
+#> Error: object 'm1' not found
+# }
 ```

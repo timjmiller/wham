@@ -347,3 +347,32 @@ population model, then none of the above need be specified.
 [`fit_tmb`](https://timjmiller.github.io/wham/reference/fit_tmb.md)
 
 ## Examples
+
+``` r
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
+
+# add projections 
+# using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+mod_proj <- project_wham(mod) 
+#> Error: object 'mod' not found
+
+names(mod_proj$rep) # list of derived quantities
+#> Error: object 'mod_proj' not found
+tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
+#> Error: object 'mod_proj' not found
+
+x <- list(est = as.list(mod_proj$sdrep, "Est", report =TRUE), sd = as.list(mod_proj$sdrep, "Std", report =TRUE))
+#> Error: object 'mod_proj' not found
+ssb.mat <- exp(cbind(x$est$log_SSB[,1], x$est$log_SSB[,1] + qnorm(0.975)*cbind(-x$sd$log_SSB[,1],x$sd$log_SSB[,1]))) # calculate 95% CI
+#> Error: object 'x' not found
+colnames(ssb.mat) <- c("SSB","SSB_lower","SSB_upper")
+#> Error: object 'ssb.mat' not found
+tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
+#> Error: object 'ssb.mat' not found
+# }
+```

@@ -46,4 +46,6 @@ Other contributors:
 
 - Chris Legault <chris.legault@noaa.gov> \[contributor\]
 
+- Emily Liljestrand <emily.liljestrand@noaa.gov> \[contributor\]
+
 - Jim Thorson <james.thorson@noaa.gov> \[contributor\]

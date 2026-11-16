@@ -276,12 +276,11 @@ covariate observations, effects, and model options modified.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-wham.dir <- find.package("wham")
 path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
-input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=TRUE)
 ecov <- list(
  label = "GSI",
  mean = as.matrix(env.dat$GSI),
@@ -290,5 +289,5 @@ ecov <- list(
  use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
  process_model = 'ar1') # "rw" or "ar1"
 input <- set_ecov(input, ecov = ecov) #GSI in the model without any effects
-} # }
+#> Error: object 'input' not found
 ```

@@ -9,11 +9,7 @@
   : Check convergence of WHAM model
 
 - [`check_estimability()`](https://timjmiller.github.io/wham/reference/check_estimability.md)
-  :
-
-  Check for identifiability of fixed effects Originally provided by the
-  [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper)
-  package. Internal function called by `fit_tmb`.
+  : Check for identifiability of fixed effects
 
 - [`compare_wham_models()`](https://timjmiller.github.io/wham/reference/compare_wham_models.md)
   : Compare multiple WHAM (or ASAP) models
@@ -120,14 +116,8 @@
 ## Unexported functions
 
 - [`extract_fixed()`](https://timjmiller.github.io/wham/reference/extract_fixed.md)
-  :
-
-  Extract fixed effects Originally provided by the
-  [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper)
-  package. Internal function called by `check_estimability`.
-
+  : Extract fixed effects
 - [`reduce_input()`](https://timjmiller.github.io/wham/reference/reduce_input.md)
   : Reduce the years of the model
-
 - [`wham_html()`](https://timjmiller.github.io/wham/reference/wham_html.md)
   : Create HTML file to view output plots in browser
