@@ -13,15 +13,15 @@
 #' @param input Named list with components:
 #'   \describe{
 #'     \item{\code{$data}}{Data to fit the assessment model to.}
-#'     \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
-#'     \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
+#'     \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
+#'     \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
 #'     \item{\code{$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
 #'     \item{\code{$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
 #'     \item{\code{$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{3}.
-#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
+#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{TRUE}.
 #' @param do.retro T/F, do retrospective analysis? Default = \code{TRUE}.
 #' @param n.peels integer, number of peels to use in retrospective analysis. Default = \code{7}.
 #' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default = \code{TRUE}. See details. Returned
@@ -53,11 +53,11 @@
 #'     \item \code{$percentFMSY} (scalar), percent of F_MSY to use for calculating catch in projections, only used if $use.FMSY = TRUE.
 #'   }
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' @param do.brps T/F, calculate and report biological reference points. Default = \code{TRUE}.
 #' @param fit.tmb.control list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.
-#' @param TMB.bias.correct T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.
-#' @param TMB.jointPrecision T/F whether TMB::sdreport should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.
+#' @param TMB.bias.correct T/F whether to use the bias.correct feature of \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.
+#' @param TMB.jointPrecision T/F whether \code{\link[TMB:sdreport]{TMB::sdreport}} should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.
 #'
 #' @return a fit TMB model with additional output if specified:
 #'   \describe{
@@ -73,15 +73,14 @@
 #' @seealso \code{\link{fit_tmb}}, \code{\link{retro}}, \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}, \code{\link{project_wham}}
 #'
 #' @examples
-#' \dontrun{
-#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-#' mod = fit_wham(input4_SNEMAYT) # using default values
-#' mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
+#' \donttest{
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 #'
 #' names(mod$rep) # list of derived quantities
 #' mod$rep$SSB # get SSB estimates (weight, not numbers)
-#' m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
-#' m1$rep$F[,1] # get F estimates for fleet 1
+#' mod$rep$NAA[1,1,,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
+#' exp(mod$rep$log_F_tot[,1]) # total fully-selected F estimates
 #' }
 fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.peels = 7,
                     do.osa = TRUE, osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), do.post.samp = TRUE,
@@ -110,9 +109,9 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
   #mod$rep <- mod$report() #not needed because check_which_F_age calls mod$report()
   #ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package=="wham") %>% dplyr::select(loadedversion, source) %>% unname
   #mod$wham_version <- paste0(ver, collapse=" / ")
-  wham_commit <- packageDescription("wham")$GithubSHA1
+  wham_commit <- utils::packageDescription("wham")$GithubSHA1
   mod$wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 
-  wham_version <- packageDescription("wham")$Version
+  wham_version <- utils::packageDescription("wham")$Version
   mod$wham_version <- paste0(wham_version, " / ", mod$wham_commit)
 
   if(do.fit){
@@ -171,11 +170,11 @@ fit_wham <- function(input, n.newton = 3, do.sdrep = TRUE, do.retro = TRUE, n.pe
     mod <- check_which_F_age(mod)
     #mod$rep <- mod$report() #not needed because check_which_F_age calls mod$report()
     if(is.null(mod$TMB_commit)){
-      TMB_commit <- packageDescription("TMB")$GithubSHA1
+      TMB_commit <- utils::packageDescription("TMB")$GithubSHA1
       mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
     }
     if(is.null(mod$TMB_version)){
-      TMB_version <- packageDescription("TMB")$Version
+      TMB_version <- utils::packageDescription("TMB")$Version
       mod$TMB_version <- paste0(TMB_version, " / ", mod$TMB_commit, ")")
     }
     if(is.null(mod$is_sdrep)) mod$is_sdrep = FALSE

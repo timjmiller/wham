@@ -2,7 +2,7 @@ context("AIC function")
 
 test_that("aic() calculates AIC from a WHAM model fit", {
   path_to_examples <- system.file("extdata", package="wham")
-  ex2_test_results <- readRDS(file.path(path_to_examples,"ex2_test_results.rds"))
+  ex2_test_results <- readRDS(testthat::test_path("fixtures","ex02_test_results.RDS"))
 
   asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
   env.dat <- read.csv(file.path(path_to_examples,"CPI.csv"), header=T)
@@ -18,7 +18,7 @@ test_that("aic() calculates AIC from a WHAM model fit", {
 
   n.mods <- dim(df.mods)[1]
   df.mods$Model <- paste0("m",1:n.mods)
-  df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model to first col
+  df.mods <- df.mods |> dplyr::relocate(Model) # moves Model to first col
   ecov <- list(
     label = "CPI",
     mean = as.matrix(env.dat$CPI),

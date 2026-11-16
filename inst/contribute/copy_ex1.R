@@ -10,7 +10,7 @@
 library(here)
 pkg.dir <- here()
 pkgbuild::compile_dll(debug = FALSE); 
-#pkgload::load_all(compile=FALSE)
+#pkgload::load_all() #this is done in the ex1_basics.R script and running multiple times causes multiple dlls to get loaded and confuse make_osa_residuals()
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran ex1 today. if not, need to change
@@ -23,12 +23,14 @@ path_to_scripts <- here("inst","example_scripts")
 
 #should write everything to write.dir and create any R objects in the session
 source(file.path(path_to_scripts, "ex1_basics.R"))
+setwd(pkg.dir)
+
 mods[["m4_fixed"]] <- m4_fixed #mods[[5]]
 
 mods[["m4_bad"]] <- m4 #mods[[5]]
 mods[["m4_proj"]] <- m4_proj #mods[[6]]
-save(mods, file = file.path(main.dir, "ex1_models.RData"))
-#load(here("sandbox", "pkg_example_results","ex01","ex1_models.RData")) # get 'mods'
+saveRDS(mods, file = file.path(main.dir, "ex1_models.RDS"))
+#mods <- readRDS(file.path(main.dir, "ex1_models.RDS")) # get 'mods'
 res <- compare_wham_models(mods[c("m1","m2","m3","m4")], table.opts=list(fname="ex1_table", sort=TRUE), fdir = main.dir)
 plot_wham_output(mod=m4_proj, dir.main = main.dir)
 
@@ -40,16 +42,14 @@ plot_wham_output(mod=m4_proj, dir.main = main.dir)
 # 0.64 1.10 0.13 0.21
 # total = 2.08
 
-# made in test_ex01 script
-# ex1_test_results <- list(nll=sapply(mods, function(x) x$opt$obj),
-# 						 par=lapply(mods, function(x) as.numeric(x$opt$par)))
-# saveRDS(ex1_test_results, file=file.path(pkg.dir, "inst", "extdata", "ex1_test_results.rds"))
+# test results are made in test_ex01_SNEMAYT.R because bias correction is still used for it. 
 
-# data files used by vignettes must be .RData with one object saved (eg 'vign1_m1_conv'), and that object's name must match the filename ('vign1_m1_conv.RData')
-# for example, the commented-out line below will not work (can't just save 'res' as 'vign1_res.RData')
-#   save(res, file=file.path(pkg.dir, "data", "vign1_res.RData"))
+to.dir <-here("vignettes", "ex01_files")
+dir.create(to.dir)
+
 vign1_res <- res
-save(vign1_res, file=here("data", "vign1_res.RData"))
+#save(vign1_res, file=here("data", "vign1_res.RData"))
+vign1_res <- res[c("tab","best")]
 
 vign1_m1_conv <- capture.output(check_convergence(mods[["m1"]]), type = "message")
 vign1_m2_conv <- capture.output(check_convergence(mods[["m2"]]), type = "message")
@@ -57,13 +57,13 @@ vign1_m3_conv <- capture.output(check_convergence(mods[["m3"]]), type = "message
 vign1_m4_conv <- capture.output(check_convergence(mods[["m4"]]), type = "message")
 vign1_m4_fixed <- capture.output(check_convergence(mods[["m4_fixed"]]), type = "message")
 vign1_m4_bad_conv <- capture.output(check_convergence(mods[["m4_bad"]]), type = "message")
-save(vign1_m1_conv,vign1_m2_conv,vign1_m3_conv,vign1_m4_conv,vign1_m4_bad_conv,vign1_m4_fixed, file=here("data", "vign1_conv.RData"))
+save(vign1_res, vign1_m1_conv,vign1_m2_conv,vign1_m3_conv,vign1_m4_conv,vign1_m4_bad_conv,vign1_m4_fixed, file=file.path(to.dir, "ex01_res.RData"))
 
-# copy plots from sandbox to ex1_plots for vignette
+# copy plots from sandbox to ex01_files for vignette
 # these are hard-coded linux file paths... 
 from.dir <- file.path(write.dir,"plots_png") #here("sandbox", "pkg_example_results", "ex01","plots_png") #file.path(write.dir,"plots_png")
-to.dir <- here("vignettes","ex1_plots") #file.path(pkg.dir, "vignettes", "ex1_plots")
-plot.files <- c("diagnostics/Catch_age_comp_index_1_region_1.png",
+#to.dir <- here("vignettes","ex01_files") #file.path(pkg.dir, "vignettes", "ex01_files")
+plot.files <- c("diagnostics/Catch_age_comp_index_1_region_1_a.png",
                 "diagnostics/Catch_age_comp_resids_index_1.png",
                 "diagnostics/Index_4panel_index_2_region_1.png",
                 "diagnostics/NAA_4panel_stock_1_region_1_age_1.png",
@@ -80,17 +80,28 @@ plot.files <- c("diagnostics/Catch_age_comp_index_1_region_1.png",
                 "ref_points/FSPR_absolute.png",
                 "ref_points/FSPR_relative.png",
                 "ref_points/Kobe_status.png",
-                #"ref_points/SPR_targets_ave_plot.png",
                 "results/Selectivity_fleet_1_region_1.png",
                 "results/SSB_at_age_proportion_stock_1.png",
                 "results/SSB_F_trend.png",
                 "results/SSB_Rec_loglog_stock_1.png",
                 "retro/stock_1_SSB_retro.png",
                 "retro/stock_1_SSB_retro_relative.png",
-                "input_data/catch_by_fleet.png",
-                "input_data/index.png",
+                "input_data/weight_at_age_fleet_1_fleet.png",
+                "input_data/scaled_indices.png",
                 "input_data/weight_at_age_fleet_1_fleet.png")
 from.files <- file.path(from.dir, plot.files)
+to.files <- paste0(to.dir, "/", sapply(strsplit(plot.files,"/"), function(x) x[2]))
+  # img <- magick::image_read(from.files[1])
+  # img_small <- magick::image_scale(img, "600") # Resizes width to 600px
+  # magick::image_write(img_small, path = file.path(to.dir, "temp.jpg"), format = "jpg", quality = 75)
+
+# sapply(1:length(plot.files), function(x){
+#   img <- magick::image_read(from.files[x])
+#   img_small <- magick::image_scale(img, "600") # Resizes width to 600px
+#   magick::image_write(img_small, path = to.files[x], format = "png")
+
+#   })
+
 to.files <- paste0(to.dir, "/", sapply(strsplit(plot.files,"/"), function(x) x[2]))
 file.copy(from=from.files, to=to.files, overwrite = TRUE)
 
@@ -99,5 +110,8 @@ file.copy(from = file.path(main.dir, "wham_html_diagnostics.png"),
   to = file.path(to.dir, "wham_html_diagnostics.png"), overwrite = TRUE)
 file.copy(from =file.path(main.dir, "wham_html_tables.png"), 
   to = file.path(to.dir, "wham_html_tables.png"), overwrite = TRUE)
+
+#save input for use in help file examples
+saveRDS(input3, here::here("inst","extdata", "ytf_rec1.RDS"))
 
 setwd(here())

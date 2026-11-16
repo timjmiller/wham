@@ -1,6 +1,6 @@
 #' Set up observation vector that is used by the model for likelihood calculations and one-step-ahead residuals.
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #'
 #' @return the same input list as provided, but with $obs and $obsvec configured.
 #' This is run after any changes have been made to the data
@@ -23,8 +23,21 @@ set_osa_obs <- function(input)
     x[data$Ecov_use_obs==0] <- NA # only include index data to fit in obsvec
     colnames(x) <- paste0("Ecov_", 1:data$n_Ecov)
     x$year <- seq(from=input$years_Ecov[1]-input$years[1]+1, length.out=data$n_years_Ecov) # don't assume Ecov and model years are the same
-    tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
-    tmp <- tmp[complete.cases(tmp),]
+    fleet_cols <- setdiff(names(x), "year")
+    tmp <- stats::reshape(
+      data = x,
+      direction = "long",
+      varying = fleet_cols,
+      v.names = "val",
+      timevar = "fleet",
+      times = fleet_cols,
+      idvar = "year"
+    )
+    rownames(tmp) <- NULL
+    tmp <- tmp[order(tmp$year), ]
+
+    # tmp <- tidyr::pivot_longer(x, cols = -year, values_to = 'val', names_to="fleet")
+    tmp <- tmp[stats::complete.cases(tmp),]
     tmp$age <- NA
     tmp$type <- "Ecov"
     obs <- rbind(obs, tmp[, obs.colnames])
@@ -180,7 +193,7 @@ set_osa_obs <- function(input)
   data$keep_E <- matrix(NA, nrow=data$n_years_Ecov, ncol=data$n_Ecov)
   for(i in 1:data$n_Ecov){
     ind <- which(data$Ecov_use_obs[,i]==1) 
-    data$keep_E[ind,i] <- subset(obs, type=='Ecov' & fleet == paste0("Ecov_",i))$ind
+    data$keep_E[ind,i] <- subset(obs, obs$type=='Ecov' & obs$fleet == paste0("Ecov_",i))$ind
   }
   # subtract 1 bc TMB indexes from 0
   data$keep_E <- data$keep_E - 1
@@ -188,7 +201,7 @@ set_osa_obs <- function(input)
   data$keep_C <- matrix(NA, nrow=data$n_years_model, ncol=data$n_fleets)
   for(y in 1:data$n_years_model) for(i in 1:data$n_fleets){
     if(data$use_agg_catch[y,i]==1){ 
-      data$keep_C[y,i] <- subset(obs, year == y & type=='logcatch' & fleet == paste0("fleet_",i))$ind
+      data$keep_C[y,i] <- subset(obs, obs$year == y & obs$type=='logcatch' & obs$fleet == paste0("fleet_",i))$ind
     }
   }
   # subtract 1 bc TMB indexes from 0
@@ -197,7 +210,7 @@ set_osa_obs <- function(input)
   data$keep_I <- matrix(NA, nrow=data$n_years_model, ncol=data$n_indices)
   for(y in 1:data$n_years_model) for(i in 1:data$n_indices){
     if(data$use_indices[y,i]==1){ 
-      data$keep_I[y,i] <- subset(obs, year == y & type=='logindex' & fleet == paste0("index_",i))$ind
+      data$keep_I[y,i] <- subset(obs, obs$year == y & obs$type=='logindex' & obs$fleet == paste0("index_",i))$ind
     }
   }
   # subtract 1 bc TMB indexes from 0
@@ -209,7 +222,7 @@ set_osa_obs <- function(input)
   data$keep_Cpaa <- array(NA, dim=c(data$n_fleets, data$n_years_model, 2))
   for(i in 1:data$n_fleets) {
     for(y in 1:data$n_years_model) if(data$use_catch_paa[y,i]==1){
-      tmp <- subset(obs, year == y & type=='catchpaa' & fleet==paste0("fleet_",i))
+      tmp <- subset(obs, obs$year == y & obs$type=='catchpaa' & obs$fleet==paste0("fleet_",i))
       if(length(tmp$ind)) #should always be TRUE because use_paa changed above
       {
         data$keep_Cpaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))
@@ -225,7 +238,7 @@ set_osa_obs <- function(input)
   data$keep_Ipaa <- array(NA, dim=c(data$n_indices, data$n_years_model, 2))
   for(i in 1:data$n_indices) {
     for(y in 1:data$n_years_model) if(data$use_index_paa[y,i]==1){
-      tmp <- subset(obs, year == y & type=='indexpaa' & fleet==paste0("index_",i))
+      tmp <- subset(obs, obs$year == y & obs$type=='indexpaa' & obs$fleet==paste0("index_",i))
       if(length(tmp$ind)) #should always be TRUE because use_paa changed above
       {
         data$keep_Ipaa[i,y,1:2] <- c(tmp$ind[1], length(tmp$ind))

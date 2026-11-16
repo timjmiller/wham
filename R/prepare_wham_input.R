@@ -59,15 +59,15 @@
 #'     \item{$Fbar_ages}{integer vector of ages to use to average F at age for reported "Fbar" across all fleets, by regions and by fleet.}
 #'     \item{$q}{vector (length(n_indices)) of catchabilities for each of the indices to initialize the model.}
 #'     \item{$percentSPR}{(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point}
-#'     \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.}
-#'		 \item{$average_years_L}{list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_M}{list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_move}{list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_mat}{list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_waassb}{list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_sel}{list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_waacatch}{list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))}
-#'		 \item{$average_years_SRR}{list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (tail(1:length(years),5))}
+#'     \item{$XSPR_input_average_years}{which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (utils::tail(1:length(years),5)). Below specific values will override this option.}
+#'		 \item{$average_years_L}{list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_M}{list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_move}{list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_mat}{list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_waassb}{list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_sel}{list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_waacatch}{list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))}
+#'		 \item{$average_years_SRR}{list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (utils::tail(1:length(years),5))}
 #'     \item{$XSPR_R_avg_yrs}{which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)}
 #'     \item{$XSPR_R_opt}{1(3): use annual R estimates(predictions) for annual SSB_XSPR, 2(4): use average R estimates(predictions). 5: use bias-corrected expected recruitment. For long-term projections, may be important to use certain years for XSPR_R_avg_yrs}
 #'		 \item{$FXSPR_init}{which F to initialize internal newton search for annual and static F at X percent SPR. Default is 0.5}
@@ -113,18 +113,10 @@
 #' @seealso \code{\link{read_asap3_dat}}, \code{\link{fit_wham}}, \href{https://www.nefsc.noaa.gov/nft/ASAP.html}{ASAP}, \href{https://www.sciencedirect.com/science/article/pii/S1385110197000221}{Iles & Beverton (1998)}
 #'
 #' @examples
-#' \dontrun{
-#' asap3 = read_asap3_dat("ex1_SNEMAYT.dat")
+#' \donttest{
+#' asap3 = read_asap3_dat(file.path(system.file("extdata", package="wham"), "ex1_SNEMAYT.dat"))
 #' input = prepare_wham_input(asap3)
-#' mod = fit_wham(input)
-#'
-#' # no ASAP3 file, default parameter values and configuration
-#' input = prepare_wham_input()
-#' mod = fit_wham(input, fit = FALSE)
-#' set.seed(8675309)
-#' simdata = mod$simulate(complete=TRUE)
-#' input$data = simdata
-#' fit = fit_wham(input, do.osa = FALSE)
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 #' }
 #'
 #' @export
@@ -449,7 +441,7 @@ set_brp_static <- function(input, basic_info){
 	input$data$FXSPR_static_init <- 0.5 #initial value for Newton search of static F (spr-based) reference point (inputs to spr are averages of annual values using avg_years_ind_static)
 	input$data$FMSY_static_init <- 0.5 #initial value for Newton search of static Fmsy (if a SRR is used)
 
-	avg_years_ind <- tail(1:input$data$n_years_model,5) - 1
+	avg_years_ind <- utils::tail(1:input$data$n_years_model,5) - 1
 	if(!is.null(basic_info$XSPR_input_average_years)) {		# input$data$avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
 		avg_years_ind <- basic_info$XSPR_input_average_years - 1 #user input shifted to start @ 0  
 	}

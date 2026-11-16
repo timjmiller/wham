@@ -7,7 +7,6 @@ if(is.character(is.repo)) library(wham) #not using repo
 #by default do not perform bias-correction
 if(!exists("basic_info")) basic_info <- NULL
 
-library(tidyverse)
 library(viridis)
 library(ggplot2)
 
@@ -95,11 +94,11 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
 									termyr=0))
 	}
 
-	df <- filter(df, Year > 1990)
+	df <- subset(df, Year > 1990)
 	df$Model <- factor(df$Model, levels=names(mods), labels=names(mods))
 	df$Year <- as.integer(df$Year) 
 	df$Peel <- factor(df$Peel)
-	dfpts <- filter(df, termyr==1)
+	dfpts <- subset(df, termyr==1)
 
 	cols <- c("black", viridis_pal(option="plasma")(length(levels(df$Peel))-1))
 	g <- ggplot(df, aes(x=Year, y=Recruitment, linetype=Model, color=Peel, fill=Peel, group=interaction(Model,Peel))) + 

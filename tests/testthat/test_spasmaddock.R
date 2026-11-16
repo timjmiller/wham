@@ -14,10 +14,9 @@ test_that("Spasmaddock selectivity and retros",{
 
 suppressWarnings(suppressMessages({
 
-path_to_examples <- system.file("extdata", package="wham")
-tests <- readRDS(file.path(path_to_examples,"spasmaddock_test_results.RDS"))
+tests <- readRDS(testthat::test_path("fixtures","spasmaddock_test_results.RDS"))
+asap3 <- readRDS(testthat::test_path("fixtures","spasmaddock_asap3.RDS"))
 tmp.dir <- tempdir(check=TRUE)
-asap3 <- readRDS(file.path(path_to_examples,"spasmaddock_asap3.RDS"))
 
 
 fix_fleet_sel = lapply(1:2, function(x) NA)
@@ -56,7 +55,7 @@ input$par <- tests$parList
   # test_results$nll <- c(fit$opt$obj, sapply(fit$peels[1:2], function(x) x$opt$obj)) 
   # test_results$parList <- fit$parList
   # test_results$par <- c(list(fit$opt$par), lapply(fit$peels[1:2], function(x) x$opt$par))
-  # saveRDS(test_results, file.path(path_to_examples,"spasmaddock_test_results.RDS"))
+  # saveRDS(test_results, testthat::test_path("fixtures","spasmaddock_test_results.RDS"))
 
   # Check neg-log-likelihoods are within 1e-6
   nll <- c(fit$opt$obj, sapply(fit$peels, function(x) x$opt$obj))

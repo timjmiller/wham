@@ -1,6 +1,6 @@
 #' Specify configuration for environmental covariates, effects on the population, and parameter values
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param ecov (optional) named list of environmental covariate data and parameters (see details)
 #' 
 #' \code{ecov} specifies any environmental covariate data and model as well as the effect on the population. Environmental covariate data need not span
@@ -105,12 +105,9 @@
 #' @seealso \code{\link{prepare_wham_input}} 
 #'
 #' @examples
-#' \dontrun{
-#' wham.dir <- find.package("wham")
 #' path_to_examples <- system.file("extdata", package="wham")
-#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-#' env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
-#' input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=TRUE)
 #' ecov <- list(
 #'  label = "GSI",
 #'  mean = as.matrix(env.dat$GSI),
@@ -119,7 +116,6 @@
 #'  use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
 #'  process_model = 'ar1') # "rw" or "ar1"
 #' input <- set_ecov(input, ecov = ecov) #GSI in the model without any effects
-#' }
 #'
 #' @export
 set_ecov <- function(input, ecov) {
@@ -213,8 +209,8 @@ set_ecov <- function(input, ecov) {
     if(length(ecov$year) != n_Ecov_obs) stop("ecov$year is not the same length as # rows in ecov$mean")
     #data$Ecov_year <- as.numeric(ecov$year)
     input$years_Ecov <- as.numeric(ecov$year)
-    end_model <- tail(input$years,1)
-    end_Ecov <- tail(ecov$year,1)
+    end_model <- utils::tail(input$years,1)
+    end_Ecov <- utils::tail(ecov$year,1)
     
     #define labels and report info about effects of each
     if(length(ecov$label) == data$n_Ecov){
@@ -596,7 +592,7 @@ set_ecov <- function(input, ecov) {
     #if(!identical(length(ecov$lag), length(ecov$label), data$n_Ecov)) stop("Length of ecov$lag and ecov$label not equal to # Ecov")
     for(i in 1:data$n_Ecov){
       years <- input$years_Ecov[as.logical(data$Ecov_use_obs[,i])]
-      lastyr <- tail(years,1)
+      lastyr <- utils::tail(years,1)
 
       # recruitment
       for(s in 1:data$n_stocks) if(data$Ecov_how_R[i,s] > 0){ 

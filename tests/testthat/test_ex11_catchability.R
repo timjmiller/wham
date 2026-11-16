@@ -372,15 +372,6 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 dev.off()
 
-#mods$fit5 <- fit
-# ex11_test_results <- list()
-# ex11_test_results$nll <- sapply(mods, function(x) x$opt$obj) #have to remove old model 3 and old model 7 is done differently now.
-# ex11_test_results$par <- lapply(mods, function(x) x$opt$par) #have to save with different order and names
-# ex11_test_results$mohns_rho <- lapply(mods, function(x) {
-#  mr <- mohns_rho(x)
-#  c(mr$SSB, mr$Fbar, mr$naa)
-# saveRDS(ex11_test_results, file.path(path_to_examples,"ex11_test_results.RDS"))
-
 }))
 })
 

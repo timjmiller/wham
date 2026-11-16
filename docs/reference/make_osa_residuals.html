@@ -93,6 +93,14 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
 <dl><dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>A fit WHAM model, output from <code><a href="fit_wham.html">fit_wham</a></code>.</p></dd>
 
+
+<dt id="arg-osa-opts">osa.opts<a class="anchor" aria-label="anchor" href="#arg-osa-opts"></a></dt>
+<dd><p>a list of options: <code>method</code> = ("oneStepGaussianOffMode" (default), "oneStepGaussian", or "oneStepGeneric") and <code>parallel</code> (T (default)/F) to pass to <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>.</p></dd>
+
+
+<dt id="arg-sdrep-required">sdrep_required<a class="anchor" aria-label="anchor" href="#arg-sdrep-required"></a></dt>
+<dd><p>(T/F) whether the osa residuals should be calculated without the <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> being performed on the model.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>

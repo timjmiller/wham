@@ -7,7 +7,7 @@
 set_F(input, F_opts = NULL)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{F_opts}{(optional) named list of initial values for annual fully-selected fishing mortality and configuration method for estimation.
 

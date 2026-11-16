@@ -34,9 +34,9 @@ fit_wham(
 \item{input}{Named list with components:
 \describe{
   \item{\code{$data}}{Data to fit the assessment model to.}
-  \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB]{MakeADFun}}.}
-  \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB]{MakeADFun}}.}
-  \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB]{MakeADFun}}.}
+  \item{\code{$par}}{Parameters, a list of all parameter objects required by the user template (both random and fixed effects). See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
+  \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters. See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
+  \item{\code{$random}}{Character vector defining the parameters to treat as random effect. See \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.}
   \item{\code{$years}}{Numeric vector of the years which the model spans. Not important for model fitting, but useful for plotting.}
   \item{\code{$model_name}}{Character, name of the model, e.g. \code{"Yellowtail flounder"}}
   \item{\code{$ages.lab}}{Character vector of the age labels, e.g. \code{c("1","2","3","4+").}}
@@ -44,7 +44,7 @@ fit_wham(
 
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{3}.}
 
-\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
+\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{TRUE}.}
 
 \item{do.retro}{T/F, do retrospective analysis? Default = \code{TRUE}.}
 
@@ -89,15 +89,15 @@ Default: \code{osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE)}.
 
 \item{do.fit}{T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.}
 
-\item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
+\item{save.sdrep}{T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
 
 \item{do.brps}{T/F, calculate and report biological reference points. Default = \code{TRUE}.}
 
 \item{fit.tmb.control}{list of optimizer controlling attributes passed to \code{\link[wham]{fit_tmb}}. Default is \code{list(use.optim = FALSE, opt.control = list(iter.max = 1000, eval.max = 1000))}, so stats::nlminb is used to opitmize.}
 
-\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
+\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.}
 
-\item{TMB.jointPrecision}{T/F whether TMB::sdreport should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.}
+\item{TMB.jointPrecision}{T/F whether \code{\link[TMB:sdreport]{TMB::sdreport}} should return the joint precision matrix for the fixed and random effects. Default = \code{FALSE}.}
 }
 \value{
 a fit TMB model with additional output if specified:
@@ -121,15 +121,14 @@ to use the (much faster, ~1 sec instead of 2 min) full Gaussian approximation in
 generic method, you can use \code{osa.opts=list(method="fullGaussian")}.
 }
 \examples{
-\dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod = fit_wham(input4_SNEMAYT) # using default values
-mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 
 names(mod$rep) # list of derived quantities
 mod$rep$SSB # get SSB estimates (weight, not numbers)
-m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
-m1$rep$F[,1] # get F estimates for fleet 1
+mod$rep$NAA[1,1,,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
+exp(mod$rep$log_F_tot[,1]) # total fully-selected F estimates
 }
 }
 \seealso{

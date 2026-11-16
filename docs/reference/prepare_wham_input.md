@@ -337,58 +337,58 @@ current options are:
 
   which years to average inputs to per recruit calculation (selectivity,
   M, WAA, maturity) for static (or prevailing) SPR-based reference
-  points. Default is last 5 years (tail(1:length(years),5)). Below
-  specific values will override this option.
+  points. Default is last 5 years (utils::tail(1:length(years),5)).
+  Below specific values will override this option.
 
 - \$average_years_L:
 
   list (length = n_regions), which years to average L (extra mortality)
   for per recruit calculation for static (or prevailing) reference
-  points. Default is last 5 years (tail(1:length(years),5))
+  points. Default is last 5 years (utils::tail(1:length(years),5))
 
 - \$average_years_M:
 
   list (length = n_stocks, each is a list with length = n_regions),
   which years to average M for per recruit calculation for static (or
   prevailing) reference points. Default is last 5 years
-  (tail(1:length(years),5))
+  (utils::tail(1:length(years),5))
 
 - \$average_years_move:
 
   list (length = n_stocks, each is a list with length = n_regions),
   which years to average movement parameters for per recruit calculation
   for static (or prevailing) reference points. Default is last 5 years
-  (tail(1:length(years),5))
+  (utils::tail(1:length(years),5))
 
 - \$average_years_mat:
 
   list (length = n_stocks), which years to average maturity for per
   recruit calculation for static (or prevailing) reference points.
-  Default is last 5 years (tail(1:length(years),5))
+  Default is last 5 years (utils::tail(1:length(years),5))
 
 - \$average_years_waassb:
 
   list (length = n_stocks), which years to average ssb waa for per
   recruit calculation for static (or prevailing) reference points.
-  Default is last 5 years (tail(1:length(years),5))
+  Default is last 5 years (utils::tail(1:length(years),5))
 
 - \$average_years_sel:
 
   list (length = n_fleets), which years to average selectivity for per
   recruit calculation for static (or prevailing) reference points.
-  Default is last 5 years (tail(1:length(years),5))
+  Default is last 5 years (utils::tail(1:length(years),5))
 
 - \$average_years_waacatch:
 
   list (length = n_fleets), which years to average catch waa for per
   recruit calculation for static (or prevailing) reference points.
-  Default is last 5 years (tail(1:length(years),5))
+  Default is last 5 years (utils::tail(1:length(years),5))
 
 - \$average_years_SRR:
 
   list (length = n_stocks), which years to average SRR parameters for
   static (or prevailing) MSY-based reference points. Default is last 5
-  years (tail(1:length(years),5))
+  years (utils::tail(1:length(years),5))
 
 - \$XSPR_R_avg_yrs:
 

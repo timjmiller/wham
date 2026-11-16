@@ -33,8 +33,8 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_rows)) which_rows <- 1:n_jitter
-  is_snowfall <- require("snowfall")
-  is_parallel <- require("parallel")
+  is_snowfall <- requireNamespace("snowfall")
+  is_parallel <- requireNamespace("parallel")
   
   mod <- readRDS(fit_RDS)
 
@@ -43,7 +43,7 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
     cov <- mod$sdrep$cov.fixed
     chol.L <- t(chol(cov))
     set.seed(8675309)
-    initial_vals <- t(sapply(1:n_jitter, function(x) mod$opt$par + chol.L %*% cbind(rnorm(n= NCOL(cov)))))
+    initial_vals <- t(sapply(1:n_jitter, function(x) mod$opt$par + chol.L %*% cbind(stats::rnorm(n= NCOL(cov)))))
   }
   if(!all(which_rows %in% 1:NROW(initial_vals))) stop("some of which_rows are outside the rows of initial_vals.")
   if(!is.null(res_dir)) saveRDS(initial_vals, file.path(res_dir, "initial_values.RDS"))
@@ -53,17 +53,14 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
       if(!is.null(res_dir)) snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile=file.path(res_dir,"jitter_log.txt"))
       snowfall::sfExportAll()
       jit_res <- snowfall::sfLapply(which_rows, function(i){
-        if(is.null(test_dir)) library(wham, lib.loc = wham_location)
+        if(is.null(test_dir)) requireNamespace("wham", lib.loc = wham_location)
         else pkgload::load_all(test_dir)
         jit_mod <- readRDS(fit_RDS)
         jit_mod$env$data$do_SPR_BRPs[] <-  0
         jit_mod$env$data$do_MSY_BRPs[] <- 0
         jit_mod$env$inner.control$trace <- FALSE #to silence inner optimization in log file
         jit_mod$par[] <- initial_vals[i,]
-        # x <- try(nlminb(initial_vals[i,], jit_mod$fn, jit_mod$gr))
         x <- try(fit_tmb(jit_mod, n.newton = 0, do.sdrep = FALSE))
-        # snowfall::sfCat(names(x))
-        # print(x)
     		out <- list(obj = NA, 
           par = rep(NA,length(jit_mod$par)), 
           grad = rep(NA,length(jit_mod$par)))
@@ -73,7 +70,6 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
         out$parList <- NULL
         out$opt <- NULL
         out$last.par.best <- rep(NA, length(jit_mod$env$last.par.best))
-    		# if(!(is.character(x) | is.null(x))){
         if(!(is.character(x$opt) | is.null(x$opt))){
           out$opt <- x$opt
           out$rep <- x$rep
@@ -97,7 +93,6 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
       jit_mod <- readRDS(fit_RDS)
       jit_mod$env$data$do_SPR_BRPs[] <- 0
       jit_mod$par[] <- initial_vals[which_rows[i],]
-      # jit_fit <- try(nlminb(initial_vals[i,], jit_mod$fn, jit_mod$gr))
       x <- try(fit_tmb(jit_mod, n.newton = 0, do.sdrep = FALSE))
       jit_res[[i]] <- list(obj = NA, par = rep(NA,length(jit_mod$par)), grad = rep(NA,length(jit_mod$par)))
       jit_res[[i]]$initial_vals_row <- i
@@ -106,7 +101,6 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
       jit_res[[i]]$parList <- NULL
       jit_res[[i]]$opt <- NULL
       jit_res[[i]]$last.par.best <- rep(NA, length(jit_mod$env$last.par.best))
-      # if(!(is.character(x) | is.null(x))){
       if(!(is.character(x$opt) | is.null(x$opt))){
         jit_res[[i]]$opt <- x$opt
         jit_res[[i]]$rep <- x$rep
@@ -115,7 +109,6 @@ jitter_wham <- function(fit_RDS = NULL, n_jitter = 10, initial_vals = NULL, whic
         jit_res[[i]]$obj <- x$opt$obj
         jit_res[[i]]$par <- x$opt$par
         jit_res[[i]]$grad <- x$gr(x$opt$par)
-        # jit_res[[i]]$grad <- x$gr(x$par)
       }
       if(!is.null(res_dir)){
         saveRDS(jit_res[[i]], file.path(res_dir, paste0("jitter_sim_", which_rows[i], ".RDS")))

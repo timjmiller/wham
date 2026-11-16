@@ -22,7 +22,7 @@ set_proj <- function(input, proj.opts = NULL)
 			data$proj_Ecov_opt <- rep(1, data$n_Ecov)
 			data$Ecov_use_proj <- matrix(0, 1, data$n_Ecov)
 		}
-		avg_years_ind <- tail(1:data$n_years_model,5) - 1
+		avg_years_ind <- utils::tail(1:data$n_years_model,5) - 1
 		# data$avg_years_ind <- avg_years_ind #default values to average FAA, M, movement, WAA, and maturity for projections (need to separate these)
 		
 		data$avg_years_ind_L <- matrix(0, data$n_years_model+1, data$n_regions) 

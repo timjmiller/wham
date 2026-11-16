@@ -172,11 +172,11 @@ plot_retro_pred_R <- function(mods, peels=3:n.yrs.peel, n.yrs.proj=n.yrs.proj){
                                     termyr=0))
     }
 
-    df <- filter(df, Year > 1990)
+    df <- subset(df, Year > 1990)
     df$Model <- factor(df$Model, levels=names(mods), labels=names(mods))
     df$Year <- as.integer(df$Year) 
     df$Peel <- factor(df$Peel)
-    dfpts <- filter(df, termyr==1)
+    dfpts <- subset(df, termyr==1)
 
     cols <- c("black", viridis_pal(option="plasma")(length(levels(df$Peel))-1))
     g <- ggplot(df, aes(x=Year, y=Recruitment, linetype=Model, color=Peel, fill=Peel, group=interaction(Model,Peel))) + 
@@ -205,4 +205,4 @@ and lines are colored by peel from yellow (1996) to dark blue (2008).
 The points are terminal year recruitment estimates and lines are
 projected recruitment (3 years).
 
-![retro_pred_R](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex9_plots/retro_pred_R.png)  
+![retro_pred_R](ex09_files/retro_pred_R.png)  

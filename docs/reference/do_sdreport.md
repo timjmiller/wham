@@ -31,13 +31,16 @@ do_sdreport(
 
 - TMB.bias.correct:
 
-  T/F whether to use the bias.correct feature of TMB::sdreport. Default
+  T/F whether to use the `bias.correct` feature of
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
   = `FALSE`.
 
 - TMB.jointPrecision:
 
   T/F whether to return the joint precision matrix for the fixed and
-  random effects from TMB::sdreport. Default = `FALSE`.
+  random effects from
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `FALSE`.
 
 ## See also
 

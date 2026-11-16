@@ -49,18 +49,18 @@ fit_wham(
 
   :   Parameters, a list of all parameter objects required by the user
       template (both random and fixed effects). See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$map`
 
   :   Map, a mechanism for collecting and fixing parameters. See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$random`
 
   :   Character vector defining the parameters to treat as random
       effect. See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$years`
 
@@ -85,8 +85,8 @@ fit_wham(
 - do.sdrep:
 
   T/F, calculate standard deviations of model parameters? See
-  [`sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default =
-  `TRUE`.
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `TRUE`.
 
 - do.retro:
 
@@ -219,13 +219,16 @@ fit_wham(
 
 - TMB.bias.correct:
 
-  T/F whether to use the bias.correct feature of TMB::sdreport. Default
+  T/F whether to use the bias.correct feature of
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
   = `FALSE`.
 
 - TMB.jointPrecision:
 
-  T/F whether TMB::sdreport should return the joint precision matrix for
-  the fixed and random effects. Default = `FALSE`.
+  T/F whether
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) should
+  return the joint precision matrix for the fixed and random effects.
+  Default = `FALSE`.
 
 ## Value
 
@@ -273,8 +276,11 @@ generic method, you can use `osa.opts=list(method="fullGaussian")`.
 ``` r
 if (FALSE) { # \dontrun{
 data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod = fit_wham(input4_SNEMAYT) # using default values
-mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
+# using default values
+mod <- fit_wham(input4_SNEMAYT) 
+
+# slower OSA method.
+mod <- fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric"))  
 
 names(mod$rep) # list of derived quantities
 mod$rep$SSB # get SSB estimates (weight, not numbers)

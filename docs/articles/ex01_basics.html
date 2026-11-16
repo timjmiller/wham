@@ -69,7 +69,7 @@
       <h1>Ex 1: The basics</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex01_basics.Rmd" class="external-link"><code>vignettes/ex01_basics.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/articles/ex01_basics.Rmd" class="external-link"><code>vignettes/articles/ex01_basics.Rmd</code></a></small>
       <div class="d-none name"><code>ex01_basics.Rmd</code></div>
     </div>
 
@@ -215,7 +215,7 @@ turn on, set <code>do.check = TRUE</code>. See
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:4.28e-13</span></span>
+<span><span class="co">#&gt; Maximum gradient component:1.07e-12</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Max gradient parameter:F_pars</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -243,9 +243,9 @@ the age composition likelihoods from multinomial to logistic normal
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:5.52e-12</span></span>
+<span><span class="co">#&gt; Maximum gradient component:3.79e-12</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Max gradient parameter:index_paa_pars</span></span>
+<span><span class="co">#&gt; Max gradient parameter:F_pars</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre>
 <p>Now that we know the model converged well, add retro peels</p>
@@ -267,9 +267,9 @@ at all ages are random effects
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m3</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:5.80e-12</span></span>
+<span><span class="co">#&gt; Maximum gradient component:2.09e-12</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Max gradient parameter:logit_selpars</span></span>
+<span><span class="co">#&gt; Max gradient parameter:logit_q</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre>
 <p>Now that we know the model converged well, add retro peels</p>
@@ -292,9 +292,9 @@ not good.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m4</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:1.28e+09</span></span>
+<span><span class="co">#&gt; Maximum gradient component:8.32e+08</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Max gradient parameter:index_paa_pars</span></span>
+<span><span class="co">#&gt; Max gradient parameter:logit_q</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed for this model, but it appears hessian was not invertible</span></span></code></pre>
 <p>Try initially holding index age comp variance parameters fixed</p>
@@ -307,7 +307,7 @@ not good.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m4_fixed</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:6.34e-10</span></span>
+<span><span class="co">#&gt; Maximum gradient component:6.54e-10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Max gradient parameter:F_pars</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -323,7 +323,7 @@ not good.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span><span class="va">m4_good</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; stats:nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Maximum gradient component:6.34e-11</span></span>
+<span><span class="co">#&gt; Maximum gradient component:3.74e-10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Max gradient parameter:F_pars</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -391,7 +391,7 @@ On Windows you may need to use Chrome or Internet Explorer to view the
 not Linux).</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">m4_proj</span>, out.type<span class="op">=</span><span class="st">'html'</span><span class="op">)</span> <span class="co">#default</span></span></code></pre></div>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_diagnostics.png" style="width:100.0%" alt="Example plots in HTML file created by plot_wham_output(mod=m4, out.type='html')."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_tables.png" style="width:100.0%" alt="Example tables HTML file created by plot_wham_output(mod=m4, out.type='html')."></p>
+<p><img src="ex01_files/wham_html_diagnostics.png" style="width:100.0%" alt="Example plots in HTML file created by plot_wham_output(mod=m4, out.type='html')."><img src="ex01_files/wham_html_tables.png" style="width:100.0%" alt="Example tables HTML file created by plot_wham_output(mod=m4, out.type='html')."></p>
 <p>Setting <code>out.type='pdf'</code> saves the plots organized into 6
 <code>.pdf</code> files corresponding to the tabs in the
 <code>.html</code> file (Diagnostics, Input Data, Results, Reference
@@ -401,37 +401,37 @@ of the same tables as those under the <code>html</code> option.</p>
 <div class="section level3">
 <h3 id="diagnostics">Diagnostics<a class="anchor" aria-label="anchor" href="#diagnostics"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_index_2_region_1.png" style="width:50.0%" alt="Index 2 4-panel"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png" style="width:50.0%" alt="Likelihood components"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_1.png" style="width:50.0%" alt="Conditional expected and posterior estimates of age-1 abundance (recruitment)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_5.png" style="width:50.0%" alt="Conditional expected and posterior estimates of age-5 abundance."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index_1_region_1.png" style="width:50.0%" alt="Fit to Index 1 age composition data."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index_1.png" style="width:50.0%" alt="Residuals for Index 1 age composition."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_fleet_1.png" style="width:33.0%" alt="One-step-ahead residuals Fleet 1 catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_1.png" style="width:33.0%" alt="One-step-ahead residuals Index 1 catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_2.png" style="width:33.0%" alt="One-step-ahead residuals Index 2 catch."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_fleet_1.png" style="width:33.0%" alt="One-step-ahead residuals Fleet 1 age composition."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_1.png" style="width:33.0%" alt="One-step-ahead residuals Index 1 age composition."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_2.png" style="width:33.0%" alt="One-step-ahead residuals Index 2 age composition."></p>
+<p><img src="ex01_files/Index_4panel_index_2_region_1.png" style="width:50.0%" alt="Index 2 4-panel"><img src="ex01_files/likelihood.png" style="width:50.0%" alt="Likelihood components"></p>
+<p><img src="ex01_files/NAA_4panel_stock_1_region_1_age_1.png" style="width:50.0%" alt="Conditional expected and posterior estimates of age-1 abundance (recruitment)."><img src="ex01_files/NAA_4panel_stock_1_region_1_age_5.png" style="width:50.0%" alt="Conditional expected and posterior estimates of age-5 abundance."></p>
+<p><img src="ex01_files/Catch_age_comp_index_1_region_1_a.png" style="width:50.0%" alt="Fit to Index 1 age composition data."><img src="ex01_files/Catch_age_comp_resids_index_1.png" style="width:50.0%" alt="Residuals for Index 1 age composition."></p>
+<p><img src="ex01_files/OSA_resid_catch_4panel_fleet_1.png" style="width:33.0%" alt="One-step-ahead residuals Fleet 1 catch."><img src="ex01_files/OSA_resid_catch_4panel_index_1.png" style="width:33.0%" alt="One-step-ahead residuals Index 1 catch."><img src="ex01_files/OSA_resid_catch_4panel_index_2.png" style="width:33.0%" alt="One-step-ahead residuals Index 2 catch."></p>
+<p><img src="ex01_files/OSA_resid_paa_6panel_fleet_1.png" style="width:33.0%" alt="One-step-ahead residuals Fleet 1 age composition."><img src="ex01_files/OSA_resid_paa_6panel_index_1.png" style="width:33.0%" alt="One-step-ahead residuals Index 1 age composition."><img src="ex01_files/OSA_resid_paa_6panel_index_2.png" style="width:33.0%" alt="One-step-ahead residuals Index 2 age composition."></p>
 </div>
 <div class="section level3">
 <h3 id="input-data">Input Data<a class="anchor" aria-label="anchor" href="#input-data"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png" style="width:50.0%" alt="Catch"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png" style="width:50.0%" alt="Indices of abundance"></p>
+<p><img src="ex01_files/weight_at_age_fleet_1_fleet.png" style="width:50.0%" alt="Catch"><img src="ex01_files/scaled_indices.png" style="width:50.0%" alt="Indices of abundance"></p>
 </div>
 <div class="section level3">
 <h3 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png" style="width:50.0%" alt="SSB and F"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion_stock_1.png" style="width:50.0%" alt="Proportion of SSB at age"></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog_stock_1.png" style="width:50.0%" alt="SSB-Rec on log-scale"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet_1_region_1.png" style="width:50.0%" alt="Selectivity Fleet 1"></p>
+<p><img src="ex01_files/SSB_F_trend.png" style="width:50.0%" alt="SSB and F"><img src="ex01_files/SSB_at_age_proportion_stock_1.png" style="width:50.0%" alt="Proportion of SSB at age"></p>
+<p><img src="ex01_files/SSB_Rec_loglog_stock_1.png" style="width:50.0%" alt="SSB-Rec on log-scale"><img src="ex01_files/Selectivity_fleet_1_region_1.png" style="width:50.0%" alt="Selectivity Fleet 1"></p>
 </div>
 <div class="section level3">
 <h3 id="reference-points">Reference Points<a class="anchor" aria-label="anchor" href="#reference-points"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png" style="width:50.0%" alt="Stock status (Kobe plot)"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png" style="width:50.0%" alt="Status relative to SPR"></p>
+<p><img src="ex01_files/Kobe_status.png" style="width:50.0%" alt="Stock status (Kobe plot)"><img src="ex01_files/FSPR_relative.png" style="width:50.0%" alt="Status relative to SPR"></p>
 </div>
 <div class="section level3">
 <h3 id="retrospective">Retrospective<a class="anchor" aria-label="anchor" href="#retrospective"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro.png" style="width:50.0%" alt="SSB with 7 peels"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho (SSB) with 7 peels"></p>
+<p><img src="ex01_files/stock_1_SSB_retro.png" style="width:50.0%" alt="SSB with 7 peels"><img src="ex01_files/stock_1_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho (SSB) with 7 peels"></p>
 </div>
 <div class="section level3">
 <h3 id="misc">Misc<a class="anchor" aria-label="anchor" href="#misc"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet_1_region_1_obs.png" style="width:50.0%" alt="Catch curves (Fleet 1 observed)"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet_1_region_1.png" style="width:50.0%" alt="Catch at age consistency (Fleet 1 observed)"></p>
+<p><img src="ex01_files/catch_curves_fleet_1_region_1_obs.png" style="width:50.0%" alt="Catch curves (Fleet 1 observed)"><img src="ex01_files/catch_at_age_consistency_obs_fleet_1_region_1.png" style="width:50.0%" alt="Catch at age consistency (Fleet 1 observed)"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

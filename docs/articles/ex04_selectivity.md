@@ -240,56 +240,157 @@ Check which models converged.
 
 ``` r
 
-vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
-for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
+conv_check <- lapply(mods, function(x) paste(capture.output(check_convergence(x), type = "message"), collapse = "\n"))
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), conv_check[[m]], "", sep='\n\n')
 ```
 
     #> Model 1:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 6.24e-11 
-    #> Max gradient parameter: log_NAA_sigma 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:3.89e-10
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:index_paa_pars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 2:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 8.81e-13 
-    #> Max gradient parameter: logit_q 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:5.19e-13
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:logit_selpars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 3:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 2.84e-13 
-    #> Max gradient parameter: logit_q 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:6.32e-13
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:logit_selpars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 4:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 1.71e-10 
-    #> Max gradient parameter: log_NAA_sigma 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:4.24e-12
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:F_pars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 5:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 5.27e-08 
-    #> Max gradient parameter: catch_paa_pars 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:3.39e-08
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:catch_paa_pars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 6:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 5.61e-13 
-    #> Max gradient parameter: logit_q 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:4.08e-13
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:log_NAA_sigma
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
+    #> 
+    #> 
+    #> 
     #> 
     #> Model 7:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 1.08e-09 
-    #> Max gradient parameter: index_paa_pars 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:1.19e-10
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:index_paa_pars
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
     #> 
+    #> 
+    #> 
+    #> 
     #> Model 8:
+    #> 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
-    #> Maximum gradient component: 3.58e-09 
-    #> Max gradient parameter: F_pars 
+    #> 
+    #> 
+    #> 
+    #> Maximum gradient component:1.47e-13
+    #> 
+    #> 
+    #> 
+    #> Max gradient parameter:log_NAA_sigma
+    #> 
+    #> 
+    #> 
     #> TMB:sdreport() was performed successfully for this model
 
 Plot output for models that converged (in a subfolder for each model):
@@ -327,14 +428,14 @@ df.mods
 ```
 
     #>   Model  Selectivity Block1_re opt_converged pd_hessian      NLL Runtime dAIC
-    #> 1    m1     logistic      none           Yes        Yes -788.748    0.73 54.5
-    #> 2    m2     logistic       iid           Yes        Yes -811.603    0.87 10.8
-    #> 3    m3     logistic     2dar1           Yes        Yes -818.980    0.89  0.0
-    #> 4    m4 age-specific      none           Yes        Yes -793.497    0.67 51.0
-    #> 5    m5 age-specific       iid           Yes        Yes -793.497    0.84 53.0
-    #> 6    m6 age-specific       ar1           Yes        Yes -785.042    0.85 67.9
-    #> 7    m7 age-specific     ar1_y           Yes        Yes -818.610    0.68  4.8
-    #> 8    m8 age-specific     2dar1           Yes        Yes -820.487    0.84  3.0
+    #> 1    m1     logistic      none           Yes        Yes -788.748    0.21 54.5
+    #> 2    m2     logistic       iid           Yes        Yes -811.603    0.28 10.8
+    #> 3    m3     logistic     2dar1           Yes        Yes -818.980    0.24  0.0
+    #> 4    m4 age-specific      none           Yes        Yes -793.497    0.23 51.0
+    #> 5    m5 age-specific       iid           Yes        Yes -793.497    0.27 53.0
+    #> 6    m6 age-specific       ar1           Yes        Yes -785.042    0.25 67.9
+    #> 7    m7 age-specific     ar1_y           Yes        Yes -818.610    0.22  4.8
+    #> 8    m8 age-specific     2dar1           Yes        Yes -820.487    0.25  3.0
     #>       AIC
     #> 1 -1449.5
     #> 2 -1493.2
@@ -349,12 +450,12 @@ Prepare to plot selectivity-at-age for block 1 (fleet).
 
 ``` r
 
-library(tidyverse)
 library(viridis)
 
 selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
 sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
-sel_cor <- factor(c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])], levels=c("None","IID","AR1","AR1_y","2D AR1"))
+sel_cor <- factor(c("None","IID","AR1(age)","AR1(year)","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])+1], 
+    levels=c("None","IID","AR1(age)","AR1(year)","2D AR1"))
 df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
 colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
 for(m in 1:n.mods){
@@ -367,14 +468,29 @@ for(m in 1:n.mods){
     df$sel_cor = sel_cor[m]
     df.selAA <- rbind(df.selAA, df)
 }
-df <- df.selAA |> pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
-                names_to = "Age",
-                names_prefix = "Age_",
-                names_transform = list(Age = as.integer),
-                values_to = "Selectivity")
+
+id_cols <- c("Year", "Model", "conv", "sel_mod", "sel_cor")
+age_cols <- setdiff(names(df.selAA), id_cols)
+age_vals <- as.integer(sub("^Age_", "", age_cols))
+df <- reshape(
+  data = df.selAA, 
+  varying = age_cols,
+  v.names = "Selectivity",
+  timevar = "Age",
+  times = age_vals,
+  idvar = id_cols,
+  direction = "long"
+)
+rownames(df) <- NULL
+
+#df <- df.selAA |> pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
+#               names_to = "Age",
+#               names_prefix = "Age_",
+#               names_transform = list(Age = as.integer),
+#               values_to = "Selectivity")
 df$Age <- as.integer(df$Age)
 df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
-df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1(age)","AR1(year)","2D AR1"))
 df$conv = factor(df$conv)
 ```
 
@@ -393,7 +509,7 @@ print(ggplot(df, aes(x=Year, y=Age)) +
     scale_y_continuous(expand=c(0,0)))
 ```
 
-![selAA](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex4_plots/selAA.png)  
+![selAA](ex04_files/selAA.png)  
 
 #### A note on convergence
 

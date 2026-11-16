@@ -135,7 +135,7 @@ df.mods <- data.frame(M_model = c(rep("---",6),"age-specific","weight-at-age",re
                       Ecov_how = Ecov_how, stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> dplyr::relocate(Model)
 ```
 
 Look at the model table:
@@ -435,22 +435,24 @@ overwhelmingly supported relative to the other models (**bold** in table
 below). The retrospective patterns in SSB and $`F`$ were also negligble
 compared to other models as measured by Mohn’s $`\rho`$.
 
-| Model | Mean model | RE model | GSI model | GSI link | Converged | PD Hessian | Runtime (min) | NLL | dAIC | AIC | $`\rho_{R}`$ | $`\rho_{SSB}`$ | $`\rho_{\overline{F}}`$ |
-|:---|:---|:---|:---|:---|:---|:---|---:|---:|:---|:---|:---|:---|:---|
-| m1 | — | none | ar1 | none | TRUE | TRUE | 0.82 | -813.858 | 37.1 | -1489.7 | 0.259 | 0.117 | -0.145 |
-| m2 | — | none | ar1 | linear | TRUE | TRUE | 0.70 | -819.584 | 27.6 | -1499.2 | 0.400 | 0.150 | -0.164 |
-| m3 | — | none | ar1 | poly-2 | TRUE | FALSE | 2.68 | -820.307 | — | — | — | — | — |
-| m4 | — | ar1_a | ar1 | none | TRUE | FALSE | 0.84 | -828.322 | — | — | — | — | — |
-| m5 | — | ar1_y | ar1 | none | TRUE | TRUE | 0.75 | -821.393 | 26.0 | -1500.8 | 0.704 | 0.128 | -0.133 |
-| m6 | — | ar1_ay | ar1 | none | FALSE | FALSE | 0.39 | -813.968 | — | — | — | — | — |
-| m7 | age-specific | none | ar1 | none | TRUE | FALSE | 0.78 | -837.559 | — | — | — | — | — |
-| m8 | weight-at-age | none | ar1 | none | TRUE | TRUE | 0.57 | -825.020 | 18.8 | -1508.0 | 0.725 | 0.140 | -0.144 |
-| m9 | constant | none | ar1 | none | TRUE | TRUE | 0.58 | -825.015 | 16.8 | -1510.0 | 0.544 | 0.129 | -0.141 |
-| m10 | constant | ar1_a | ar1 | none | TRUE | FALSE | 1.02 | -829.109 | — | — | — | — | — |
-| m11 | constant | ar1_y | ar1 | none | TRUE | TRUE | 0.74 | -825.399 | 20.0 | -1506.8 | 1.186 | 0.414 | -0.298 |
-| m12 | constant | ar1_ay | ar1 | none | TRUE | TRUE | 0.85 | -836.408 | 0.0 | -1526.8 | 0.312 | 0.006 | -0.044 |
-| m13 | constant | ar1_ay | ar1 | linear | FALSE | FALSE | 0.54 | -845.739 | — | — | — | — | — |
-| m14 | constant | ar1_ay | ar1 | poly-2 | FALSE | FALSE | 2.06 | -845.339 | — | — | — | — | — |
+``` r
+
+library(knitr)
+library(kableExtra)
+posdef <- which(df.mods$pdHess == TRUE)
+thebest <- c(12)
+df.mods$Ecov_how [grep("linear", vign5_res$Ecov_how)] <- "linear"
+df.mods$Ecov_how [grep("poly-2", vign5_res$Ecov_how)] <- "poly-2"
+df.mods |>
+  select(!(c(age_specific,mean_model))) |>
+  dplyr::rename("Mean model"="M_model", "RE model" = "M_re", "GSI model"="Ecov_process", "GSI link"="Ecov_how",
+         "Converged"="conv", "PD Hessian"="pdHess", "Runtime (min)"="runtime",
+         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
+  knitr::kable(escape = F) |>
+  kableExtra::kable_styling(bootstrap_options = c("condensed","responsive")) |>
+  kableExtra::row_spec(posdef, background = gray.colors(10,end=0.95)[10]) |>
+  kableExtra::row_spec(thebest, bold=TRUE)
+```
 
 #### Estimated *M*
 
@@ -477,9 +479,7 @@ definite Hessian are solid, and models with non-positive definite
 Hessian are pale.
 
 ![Natural mortality by age (y-axis) and year (x-axis) for all
-models.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png)
-
-Natural mortality by age (y-axis) and year (x-axis) for all models.
+models.](ex05_files/MAA.png)){ width=50% }
 
 #### Retrospective patterns
 
@@ -490,19 +490,14 @@ patterns of numbers-at-age, SSB, and F for models `m1` (left, fixed
 $`M_a`$) and `m12` (right, estimated $`M`$ + 2D AR1 deviations).
 
 ![Mohn’s rho for numbers-at-age,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png)![Mohn’s
-rho for numbers-at-age,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png)
+m1.](ex05_files/m1_NAA_retro_relative.png)![Mohn’s rho for
+numbers-at-age, m12.](ex05_files/m12_NAA_retro_relative.png)
 
-![Mohn’s rho for SSB,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png)![Mohn’s
-rho for SSB,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png)
+![Mohn’s rho for SSB, m1.](ex05_files/m1_SSB_retro_relative.png)![Mohn’s
+rho for SSB, m12.](ex05_files/m12_SSB_retro_relative.png)
 
-![Mohn’s rho for F,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png)![Mohn’s
-rho for F,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png)
+![Mohn’s rho for F, m1.](ex05_files/m1_Fbar_retro_relative.png)![Mohn’s
+rho for F, m12.](ex05_files/m12_Fbar_retro_relative.png)
 
 #### Stock status
 
@@ -513,25 +508,20 @@ $`F_{40\%SPR}`$ (top) were higher, whereas estimates of SSB at
 $`F_{40\%SPR}`$ were generally lower.
 
 ![Reference point variability,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_absolute.png)![Reference
-point variability,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_absolute.png)
+m1.](ex05_files/m1_FSPR_absolute.png)![Reference point variability,
+m12.](ex05_files/m12_FSPR_absolute.png)
 
 Compared to `m1` (left), `m12` (right) estimated higher *M* and higher
 SSB – a much rosier picture of the stock status through time.
 
-![Relative stock status,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png)![Relative
-stock status,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png)
+![Relative stock status, m1.](ex05_files/m1_FSPR_relative.png)![Relative
+stock status, m12.](ex05_files/m12_FSPR_relative.png)
 
 In the final year (2011), `m12` estimated much lower probabilities of
 the stock being overfished than `m1` (1% vs. 93%).
 
-![Kobe status plot,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png)![Kobe
-status plot,
-m12.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Kobe_status.png)
+![Kobe status plot, m1.](ex05_files/m1_Kobe_status.png)![Kobe status
+plot, m12.](ex05_files/m12_Kobe_status.png)
 
 ### Yet more *M* options
 

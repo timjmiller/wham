@@ -1,6 +1,6 @@
 #' Specify model and parameter configuration for movement when input$data$n_regions > 1
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param move (optional) list specifying movement options: model, random effects, initial values, and parameters to fix (see details)
 #' 
 #' \code{move} specifies estimation options for movement.

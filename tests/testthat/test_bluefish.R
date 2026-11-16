@@ -14,12 +14,11 @@ test_that("Bluefish fitting performs correctly",{
 
 suppressWarnings(suppressMessages({
 
-  path_to_examples <- system.file("extdata", package="wham")
-  bluefish_tests <- readRDS(file.path(path_to_examples,"bluefish_test_results.RDS"))
+  #path_to_examples <- system.file("extdata", package="wham")
+  bluefish_tests <- readRDS(testthat::test_path("fixtures","bluefish_test_results.RDS"))
+  asap3 <- readRDS(testthat::test_path("fixtures", "bluefish_23_dat.RDS"))
+  #asap3 <- read_asap3_dat(file.path(path_to_examples,"bluefish_23.dat"))
   tmp.dir <- tempdir(check=TRUE)
-
-  asap3 <- read_asap3_dat(file.path(path_to_examples,"bluefish_23.dat"))
-
 
   input<-prepare_wham_input(asap3, recruit_model = 2, model_name = "multiwham_olddat", 
           NAA_re = list(sigma = "rec+1", cor = "2dar1", decouple_recruitment = FALSE), basic_info = list(percentSPR = 35,
@@ -31,7 +30,7 @@ suppressWarnings(suppressMessages({
   # bluefish_test_results <- list()
   # bluefish_test_results$nll <- c(fit$opt$obj, sapply(fit$peels, function(x) x$opt$obj)) 
   # bluefish_test_results$par <- c(list(fit$opt$par), lapply(fit$peels, function(x) x$opt$par))
-  # saveRDS(bluefish_test_results, file.path(path_to_examples,"bluefish_test_results.RDS"))
+  # saveRDS(bluefish_test_results, testthat::test_path("fixtures","bluefish_test_results.RDS"))
 
   # Check neg-log-likelihoods are within 1e-6
   nll <- c(fit$opt$obj, sapply(fit$peels, function(x) x$opt$obj))

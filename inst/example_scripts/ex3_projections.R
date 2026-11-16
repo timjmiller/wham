@@ -50,7 +50,7 @@ input$par$logit_selpars[1:4,7:8] <- 0 # original code started selpars at 0 (last
 ## Fit model without projections
 
 mod <- fit_wham(input) # default do.proj=FALSE
-saveRDS(mod, file="m5.rds")
+saveRDS(mod, file="mod.rds")
 #mod <- readRDS("m5.rds")
 
 # Add projections to previously fit model
@@ -126,8 +126,8 @@ mod_proj[[14]] <- project_wham(mod, proj.opts=list(n.yrs=3, use.last.F=TRUE, use
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 2, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996)), save.sdrep=FALSE)
 
-saveRDS(mod_proj, file="m5_proj.rds")
-# mod_proj <- readRDS("m5_proj.rds")
+saveRDS(mod_proj, file="mod_proj.rds")
+# mod_proj <- readRDS("mod_proj.rds")
 
 #  check marginal nll is the same
 nll_proj <-  sapply(mod_proj, function(x) x$opt$obj)

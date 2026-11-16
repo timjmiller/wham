@@ -26,7 +26,9 @@ source(file.path(path_to_scripts, "ex4_selectivity.R"))
 
 # mod.list <- file.path(write.dir,paste0("m",1:8,".rds"))
 # mods <- lapply(mod.list, readRDS)
-#vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
+
+vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x), type = "message"))
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
 #df.mods <- read.csv(file.path(write.dir,"ex4_table.csv"))
 
 #save(vign4_conv, file=file.path(pkg.dir, "data","vign4_conv.RData"))
@@ -34,14 +36,21 @@ vign4_df_mods <- df.mods
 
 #selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
 vign4_selAA <- selAA
+
+to.dir <-here("vignettes", "ex04_files")
+dir.create(to.dir)
+
 #save(vign4_selAA, file=file.path(pkg.dir, "data","vign4_selAA.RData"))
-save(vign4_selAA, vign4_conv, vign4_df_mods, file=file.path(pkg.dir, "data","vign4_res.RData"))
+save(vign4_selAA, vign4_conv, vign4_df_mods, file = file.path(to.dir,"ex04_res.RData"))
 
 # copy selAA.png to vignette plots folder
-file.copy(from=file.path(write.dir,"selAA.png"), to=file.path(pkg.dir, "vignettes","ex4_plots","selAA.png"), overwrite=T)
+file.copy(from=file.path(write.dir,"selAA.png"), to=file.path(to.dir,"selAA.png"), overwrite=T)
 
-# # save results for testing
-# ex4_test_results <- list(pars=NULL, nll=NULL)
-# ex4_test_results$pars <- lapply(mods, function(x) as.numeric(x$opt$par))
-# ex4_test_results$nll <- sapply(mods, function(x) x$opt$objective)
-# saveRDS(ex4_test_results, file=file.path(pkg.dir, "inst","extdata","ex4_test_results.rds"))
+make_test_res <- FALSE
+if(make_test_res){
+# save results for testing
+	ex4_test_results <- list(pars=NULL, nll=NULL)
+	ex4_test_results$pars <- lapply(mods, function(x) as.numeric(x$opt$par))
+	ex4_test_results$nll <- sapply(mods, function(x) x$opt$objective)
+	saveRDS(ex4_test_results, file=file.path(pkg.dir, "tests","testthat","fixtures", "ex04_test_results.rds"))
+}

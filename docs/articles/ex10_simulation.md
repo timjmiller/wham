@@ -24,6 +24,15 @@ In this vignette we show how to:
 
 ## 2. Setup and read in model input
 
+``` r
+
+# devtools::install_github("timjmiller/wham", dependencies=TRUE)
+library(wham)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
 Create a directory for this analysis:
 
 ``` r
@@ -75,9 +84,9 @@ names(mod_1)
 #>  [9] "report"         "simulate"       "years"          "years_full"    
 #> [13] "ages.lab"       "model_name"     "input"          "call"          
 #> [17] "rep"            "wham_commit"    "wham_version"   "opt"           
-#> [21] "date"           "dir"            "TMB_commit"     "TMB_version"   
-#> [25] "parList"        "final_gradient" "is_sdrep"       "na_sdrep"      
-#> [29] "runtime"        "sdrep"
+#> [21] "newton_info"    "parList"        "final_gradient" "date"          
+#> [25] "dir"            "TMB_commit"     "TMB_version"    "is_sdrep"      
+#> [29] "na_sdrep"       "runtime"        "sdrep"
 ```
 
 Several of the elements in the object returned by `fit_wham` are those
@@ -187,8 +196,8 @@ mod_1$simulate
     #>     }
     #>     ans
     #> }
-    #> <bytecode: 0x00000261f839ee40>
-    #> <environment: 0x00000261f7c5e4d0>
+    #> <bytecode: 0x000001d640f208c8>
+    #> <environment: 0x000001d640f08dd0>
 
 As we can see it is a function, but less apparent is that it will report
 anything using the `REPORT` calls, and most importantly, those within
@@ -224,7 +233,7 @@ plot(mod_1$years, self_sim_fit$input$data$SSB, type = 'l', ylab = "SSB", xlab = 
 lines(mod_1$years, self_sim_fit$rep$SSB, lty = 2, col = 'red')
 ```
 
-![self_fit_1_ssb](https://github.com/timjmiller/wham/devel/vignettes/ex10_plots/self_fit_1_ssb.png)  
+![self_fit_1_ssb](ex10_files/self_fit_1_ssb.png)  
 
 Note that we just have to over-write the data component of the input
 with the values produced by `om$simulate(complete=TRUE)`. The call of
@@ -291,7 +300,7 @@ lines(mod_1$years, resid_cis[,2])
 abline(h = 0, lty = 2)
 ```
 
-![ssb_rel_bias](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/ssb_rel_bias.png)  
+![ssb_rel_bias](ex10_files/ssb_rel_bias.png)  
 
 ## 3. Fitting a model different from the operating model
 
@@ -310,9 +319,9 @@ names(input)
 ```
 
     #>  [1] "data"         "par"          "map"          "years"        "years_full"  
-    #>  [6] "ages.lab"     "model_name"   "asap3"        "log"          "options"     
-    #> [11] "stock_names"  "region_names" "fleet_names"  "index_names"  "years_Ecov"  
-    #> [16] "Ecov_names"   "random"       "call"
+    #>  [6] "ages.lab"     "model_name"   "asap3"        "log"          "use_asap3"   
+    #> [11] "options"      "stock_names"  "region_names" "fleet_names"  "index_names" 
+    #> [16] "years_Ecov"   "Ecov_names"   "random"       "call"
 
 Many of the elements of the input (e.g., `data`, `par`, `map`, `random`)
 are those used by TMB::MakeADFun to set up an objective function with
@@ -374,7 +383,7 @@ log(paa[-6]) - log(paa[6]) # = inverse additive logistic transform for obsvec th
 
     #>    year   fleet age     type        val ind cohort
     #> 1     1 index_1  NA logindex 10.4147974   1     NA
-    #> 2     1 index_2  NA logindex  9.6452466   2     NA
+    #> 2     1 index_2  NA logindex  9.6452829   2     NA
     #> 3     1 fleet_1  NA logcatch  9.7927340   3     NA
     #> 4     1 index_1   1 indexpaa -0.6931472   4      0
     #> 5     1 index_1   2 indexpaa  1.0986123   5     -1
@@ -415,7 +424,7 @@ plot(mod_1$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod_1$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-![sim_fit_3a](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3a.png)  
+![sim_fit_3a](ex10_files/sim_fit_3a.png)  
 
 It is very important that the `obsvec` component of the simulated data
 is put into the input used for fitting because this holds the values in
@@ -487,7 +496,7 @@ sim[[1]]$data$index_Neff[1] * paa # = em obsvec (multinomial frequencies with la
 
     #>    year   fleet age     type        val ind cohort
     #> 1     1 index_1  NA logindex 10.4147974   1     NA
-    #> 2     1 index_2  NA logindex  9.6452466   2     NA
+    #> 2     1 index_2  NA logindex  9.6452829   2     NA
     #> 3     1 fleet_1  NA logcatch  9.7927340   3     NA
     #> 4     1 index_1   1 indexpaa -0.6931472   4      0
     #> 5     1 index_1   2 indexpaa  1.0986123   5     -1
@@ -519,7 +528,7 @@ plot(mod_1$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod_1$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-![sim_fit_3b](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3b.png)  
+![sim_fit_3b](ex10_files/sim_fit_3b.png)  
 
 The incorrect age composition precision has a large effect here! Note
 that we could make the assumed effective sample size only incorrect for
@@ -580,7 +589,7 @@ plot(om_ss$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(om_ss$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-![sim_fit_3c](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3c.png)  
+![sim_fit_3c](ex10_files/sim_fit_3c.png)  
 
 The scale of the population estimates from the recruitment-only model is
 similar to the true value, but it does not have sufficient flexibility
@@ -623,7 +632,7 @@ plot(mod_1$years, simfit[[2]]$SSB, type = 'l', ylab = "SSB", xlab = "Year")
 lines(mod_1$years, simfit[[1]]$rep$SSB, lty = 2, col = 'red')
 ```
 
-![sim_fit_3d_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_1.png)  
+![sim_fit_3d_1](ex10_files/sim_fit_3d_1.png)  
 
 ``` r
 
@@ -631,7 +640,7 @@ plot(mod_1$years, simfit[[2]]$SSB/exp(simfit[[2]]$log_SSB_FXSPR[,2]), type = 'l'
 lines(mod_1$years, simfit[[1]]$rep$SSB/exp(simfit[[1]]$rep$log_SSB_FXSPR[,2]), lty = 2, col = 'red')
 ```
 
-![sim_fit_3d_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_3d_2.png)  
+![sim_fit_3d_2](ex10_files/sim_fit_3d_2.png)  
 
 Lower SSB and stock status are estimated if logistic selectivity is
 assumed.
@@ -759,76 +768,17 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
-#stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
+stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
 
 ``` r
 
 #n_stock x n_regions x n_ages array
 exp(stock_om_input$par$log_NAA_sigma[1,1,1]) #Rsigma
-#> [1] 0.5
 ```
+
+    #> [1] 0.5
 
 ### 4a. Setting NAA random effects variance parameters.
 
@@ -871,79 +821,17 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec+1).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
 #or equivalently
 #stock_om_input <- set_NAA(stock_om_input, NAA_re_om)
-```
-
-``` r
 
 #n_stock x n_regions x 3 array
 stock_om_input$par$trans_NAA_rho[1,1,1:3]
-#> [1] 1.7346011 0.8472979 1.3862944
 wham:::gen.logit(c(0.7,0.4,0.6), -1, 1) #age first, year (2+) second, year (rec) third
-#> [1] 1.7346011 0.8472979 1.3862944
 ```
+
+    #> [1] 1.7346011 0.8472979 1.3862944
+    #> [1] 1.7346011 0.8472979 1.3862944
 
 Note we made use of an unexported function from the wham package that
 can do the transformation of parameters estimated on the logit scale.
@@ -1003,93 +891,30 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
 
 #or equivalently
 #stock_om_input <- set_NAA(stock_om_input, NAA_re_om)
 #stock_om_input <- set_M(stock_om_input, M_om)
-```
 
-``` r
+stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 #n_stock x n_regions x 3 array
-
 exp(stock_om_input$par$log_NAA_sigma[1,1,1]) #Rsigma
-#> [1] 0.6
 
-exp(stock_om_input$par$M_repars[1,1,1]) #
-#> [1] 0.2
+exp(stock_om_input$par$M_repars[1,1,1])
 
 stock_om_input$par$M_repars[1,1,2:3]
-#> [1] 1.7346011 0.8472979
 wham:::gen.logit(c(0.7,0.4), -1, 1) #age first, year second
-#> [1] 1.7346011 0.8472979
-
-#stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 ```
 
+    #> [1] 0.6
+    #> [1] 0.2
+    #> [1] 1.7346011 0.8472979
+    #> [1] 1.7346011 0.8472979
+
 Note that the initial values for the mean of the M autoregressing random
-effects is defined by the `initial_means` component of the `M` argument
+effects are defined by the `initial_means` component of the `M` argument
 to `prepare_wham_input`. These mean parameters are not estimated by
 default, and so therefore are fixed at these initial values. To estimate
 the mean of the M random effects at age, or just estimate a constant M
@@ -1128,72 +953,14 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-
 
 #or equivalently
 #stock_om_input <- set_M(stock_om_input, M_om)
 stock_om_input$map$Mpars
 ```
+
+    #>  [1] 1 1 1 1 1 1 1 1 1 1
+    #> Levels: 1
 
 ### 4c. Setting selectivity random effects variance parameters
 
@@ -1231,85 +998,23 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: 2dar1
-#> Block 2: 2dar1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
 
 #or equivalently
 #stock_om_input <- set_M(stock_om_input, M_om)
 #stock_om_input <- set_selectivity(stock_om_input, selectivity_om)
-```
-
-``` r
 
 stock_om_input$par$sel_repars
-#>            [,1]     [,2]      [,3]
-#> [1,] -0.9162907 1.734601 0.8472979
-#> [2,] -2.3025851 1.734601 0.8472979
 rbind(c(log(0.4), wham:::gen.logit(c(0.7,0.4),-1,1)),
 c(log(0.1), wham:::gen.logit(c(0.7,0.4),-1,1)))
-#>            [,1]     [,2]      [,3]
-#> [1,] -0.9162907 1.734601 0.8472979
-#> [2,] -2.3025851 1.734601 0.8472979
 ```
+
+    #>            [,1]     [,2]      [,3]
+    #> [1,] -0.9162907 1.734601 0.8472979
+    #> [2,] -2.3025851 1.734601 0.8472979
+    #>            [,1]     [,2]      [,3]
+    #> [1,] -0.9162907 1.734601 0.8472979
+    #> [2,] -2.3025851 1.734601 0.8472979
 
 Note in this case where we assume logistic selectivity and 2D AR1 random
 effects, the correlation with “age” is actually just the correlation of
@@ -1352,81 +1057,19 @@ stock_om_input <- prepare_wham_input(
   M = M_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
 
 #or equivalently
 #stock_om_input <- set_selectivity(stock_om_input, selectivity_om)
 #stock_om_input <- set_q(stock_om_input, catchability_om)
-```
-
-``` r
 
 stock_om_input$par$q_repars
-#>           [,1]     [,2]
-#> [1,] -2.302585 1.098612
 c(log(0.1), wham:::gen.logit(0.5,-1,1))
-#> [1] -2.302585  1.098612
 ```
+
+    #>           [,1]     [,2]
+    #> [1,] -2.302585 1.098612
+    #> [1] -2.302585  1.098612
 
 ``` r
 
@@ -1438,7 +1081,7 @@ sim_q = stock_om$simulate(complete=TRUE)
 plot(stock_om$years, sim_q$q[,1], type = 'l', ylab = "Catchability", xlab = "Year")
 ```
 
-![sim_plot_4d](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4d.png)  
+![sim_plot_4d](ex10_files/sim_plot_4d.png)  
 
 ### 4e. Setting effects of environmental covariates.
 
@@ -1509,121 +1152,41 @@ stock_om_input = prepare_wham_input(
     ecov = ecov_om,
     F = F_info
 )
-#> 
-#> --Creating input---------------------------------------------------------------------------------------------------------------------
-#> basic_info done
-#> catch done
-#> indices done
-#> WAA done
-#> NAA done
-#> q done
-#> selectivity done
-#> age_comp done
-#> F done
-#> M done
-#> move done
-#> ecov done
-#> osa_obs done
-#> --Input Complete--------------------------------------------------------------------------------------------------------------------
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> WHAM version 2.0.0 and forward: 
-#> 1) makes major changes to the structure of some data, parameters, and reported objects.
-#> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.
-#> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> input$data$spawn_regions will be defined from input$data$NAA_where for age 1.
-#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
-#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
-#> Selectivity blocks for each fleet:
-#> Fleet 1: 1
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Indices----------------------------------------------------------------------------------------------------------------------------
-#> Selectivity blocks for each index:
-#> index_1: 2
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --WAA--------------------------------------------------------------------------------------------------------------------------------
-#> basic_info$waa_pointer_ssb was not provided and no asap3 file(s), so the first waa matrix will be used. 
-#> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --NAA--------------------------------------------------------------------------------------------------------------------------------
-#> 
-#>  Same NAA_re$sigma being used for all stocks (rec).
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Selectivity------------------------------------------------------------------------------------------------------------------------
-#> selectivity$n_selblocks was not provided so number of selblocks: 2, is being determined by max(input$data$selblock_pointer_fleets,input$data$selblock_pointer_indices).
-#> (Mean) selectivity block models are:
-#> Block 1: logistic
-#> Block 2: logistic
-#> 
-#> Random effects options for each selectivity block are:
-#> Block 1: none
-#> Block 2: none
-#> 
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Ecov--------------------------------------------------------------------------------------------------------------------------------
-#> ecov$logsigma is numeric. Coercing to a matrix... 
-#> Please check that the environmental covariates have been loaded and interpreted correctly.
-#> 
-#>       Model years: 1982 to 2021
-#>       Ecov years: 1982 to 2021
-#> 
-#>     Ecov 1: Climate variable 1
-#>           Controlling (linear) effect on: recruitment for stock 1
-#> 
-#>           Model years:
-#>         1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021Lag: 0
-#>         Ex: Climate variable 1 in 1982 affects recruitment in 1982
-#>             Climate variable 1 in 2021 affects recruitment in 2021
-#> 
-#>         
-#> -------------------------------------------------------------------------------------------------------------------------------------
-#> 
-#> --Reference points-------------------------------------------------------------------------------------------------------------------
-#> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. 
-#> -------------------------------------------------------------------------------------------------------------------------------------
 
 
 #or equivalently
 #stock_om_input <- set_ecov(stock_om_input, ecov_om)
-```
-
-``` r
 
 #sd and rho of ecov processes
 c(stock_om_input$par$Ecov_process_pars)
-#> [1]  0.000000 -1.203973  1.098612
 c(0, log(0.3), wham:::gen.logit(0.5,-1,1)) #mean, log(sd), logit(0.5)
-#> [1]  0.000000 -1.203973  1.098612
 #size of Ecov_beta
 stock_om_input$par$Ecov_beta_R[1,1,1] #=0.3
-#> [1] 0.3
 ```
 
-``` r
+\`\`{r echo = FALSE} \#sd and rho of ecov processes
+c(vign_10_4e_om_Ecov_process_pars) c(0, log(0.3),
+wham:::gen.logit(0.5,-1,1)) \#mean, log(sd), logit(0.5) \#size of
+Ecov_beta vign_10_4e_om_Ecov_beta_R\[1,1,1\] \#=0.3
 
-stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
-set.seed(123)
-sim_Ecov = stock_om$simulate(complete=TRUE)
 
-plot(stock_om$years, sim_Ecov$Ecov_x, type = 'l', ylab = "Covariate", xlab = "Year")
-```
+    ``` r
+    stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
-![sim_plot_4e_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_1.png)  
+    set.seed(123)
+    sim_Ecov = stock_om$simulate(complete=TRUE)
+
+    plot(stock_om$years, sim_Ecov$Ecov_x, type = 'l', ylab = "Covariate", xlab = "Year")
+
+![sim_plot_4e_1](ex10_files/sim_plot_4e_1.png)  
 
 ``` r
 
 plot(stock_om$years, sim_Ecov$NAA[1,1,,1], type = 'l', ylab = "Recruitment", xlab = "Year")
 ```
 
-![sim_plot_4e_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_plot_4e_2.png)  
+![sim_plot_4e_2](ex10_files/sim_plot_4e_2.png)  
 
 See the [catchability
 vignette](https://timjmiller.github.io/wham/articles/ex11_catchability.html)
@@ -1688,7 +1251,7 @@ plot(stock_om$years, res[,1], type = 'l', ylab = "SSB", xlab = "Year", ylim = c(
 lines(stock_om$years, res[,2], lty = 2, col = 'red')
 ```
 
-![sim_fit_4f_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4f_1.png)  
+![sim_fit_4f_1](ex10_files/sim_fit_4f_1.png)  
 
 ``` r
 
@@ -1697,7 +1260,7 @@ plot(stock_om$years, res[,1], type = 'l', ylab = "SSB/SSB(F40)", xlab = "Year", 
 lines(stock_om$years, res[,2], lty = 2, col = 'red')
 ```
 
-![sim_fit_4f\_](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/sim_fit_4f_2.png)  
+![sim_fit_4f\_](ex10_files/sim_fit_4f_2.png)  
 
 Both SSB and stock status are biased high when M is specified too large.
 
@@ -1785,6 +1348,33 @@ update_om_F <- function(om, year, catch){
 We need a function for both creating a simulated population and updating
 the simulations during the operating model during the feedback period.
 
+``` r
+
+update_om_fn = function(om, seed = 123, interval.info = NULL, random = "log_NAA"){
+  obs_names = c("agg_indices","agg_catch","catch_paa","index_paa", "Ecov_obs", "obsvec")
+
+  if(!is.null(interval.info)){ #iteratively update F over assessment interval for the given catch advice
+    for(y in interval.info$years){
+      om = update_om_F(om, year = y, catch = interval.info$catch) #put in the right F values
+      set.seed(seed)
+      om_sim = om$simulate(complete=TRUE) #resimulate the population and observations
+      om$input$data[obs_names] = om_sim[obs_names] #update any simulated data
+      om$input$par[om$input$random] = om_sim[om$input$random] #update any simulated random effects
+      # reset the om
+      om <- fit_wham(om$input, do.fit = FALSE, MakeADFun.silent = TRUE)
+    }
+  } else { #otherwise just (re)generate the population
+    set.seed(seed)
+    om_sim = om$simulate(complete=TRUE) #resimulate the population and observations
+    om$input$data[obs_names] = om_sim[obs_names] #update any simulated data
+    om$input$par[random] = om_sim[random] #update any simulated random effects
+    # reset the om
+    om <- fit_wham(om$input, do.fit = FALSE, MakeADFun.silent = TRUE)
+  }
+  return(om)
+}
+```
+
 We now turn to defining the estimation model in a way such that the
 terminal year can be updated appropriately through the feedback period.
 Note that we will be using all of the same assumptions as the operating
@@ -1861,6 +1451,27 @@ Create the stock operating model. We will specify a feedback period of
 inner optimization of random effects is not performed when calling
 `fit_wham` so that any random effects are kept at simulated values.
 
+``` r
+
+stock_om_info <- make_info(base_years = 1982:2021, n_feedback_years = 40)
+basic_info <- stock_om_info$basic_info
+catch_info <- stock_om_info$catch_info
+index_info <- stock_om_info$index_info
+F_info <- stock_om_info$F
+
+stock_om_input = prepare_wham_input(
+    basic_info = basic_info, 
+    selectivity = selectivity_om, 
+    NAA_re = NAA_re_om, 
+    M = M_om, 
+  catch_info = catch_info,
+  index_info = index_info,
+    F = F_info
+)
+stock_om_input$random <- NULL #so inner optimization won't change simulated RE
+stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
+```
+
 Now we define how often to perform an assessment (`assess.interval`) and
 the years they occur (`assess.years`). We also do a first call to
 `update_om_fn` to create a simulated population for the operating model
@@ -1894,7 +1505,7 @@ plot(stock_om$years, res[,1], type = "l", ylim = c(0,max(res)), ylab = "SSB", xl
 lines(stock_om$years, res[,2], col = "red")
 ```
 
-![looped_rep_5_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/looped_rep_5_1.png)  
+![looped_rep_5_1](ex10_files/looped_rep_5_1.png)  
 
 And let’s see what the perception of the population size is relative to
 the true reference point (SSB($`F_{40}`$)) compared to the true status.
@@ -1906,4 +1517,4 @@ plot(stock_om$years[1:76], res[,1], type = "l", ylim = c(0,max(res)), ylab = "SS
 lines(stock_om$years[1:76], res[,2], col = "red")
 ```
 
-![looped_rep_5_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex10_plots/looped_rep_5_2.png)  
+![looped_rep_5_2](ex10_files/looped_rep_5_2.png)  

@@ -173,7 +173,7 @@ check_convergence(m1)
 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
     #> 
-    #> Maximum gradient component:4.28e-13
+    #> Maximum gradient component:1.07e-12
     #> 
     #> Max gradient parameter:F_pars
     #> 
@@ -213,9 +213,9 @@ check_convergence(m2)
 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
     #> 
-    #> Maximum gradient component:5.52e-12
+    #> Maximum gradient component:3.79e-12
     #> 
-    #> Max gradient parameter:index_paa_pars
+    #> Max gradient parameter:F_pars
     #> 
     #> TMB:sdreport() was performed successfully for this model
 
@@ -249,9 +249,9 @@ check_convergence(m3)
 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
     #> 
-    #> Maximum gradient component:5.80e-12
+    #> Maximum gradient component:2.09e-12
     #> 
-    #> Max gradient parameter:logit_selpars
+    #> Max gradient parameter:logit_q
     #> 
     #> TMB:sdreport() was performed successfully for this model
 
@@ -286,9 +286,9 @@ check_convergence(m4)
 
     #> stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0
     #> 
-    #> Maximum gradient component:1.28e+09
+    #> Maximum gradient component:8.32e+08
     #> 
-    #> Max gradient parameter:index_paa_pars
+    #> Max gradient parameter:logit_q
     #> 
     #> TMB:sdreport() was performed for this model, but it appears hessian was not invertible
 
@@ -310,7 +310,7 @@ check_convergence(m4_fixed)
 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
     #> 
-    #> Maximum gradient component:6.34e-10
+    #> Maximum gradient component:6.54e-10
     #> 
     #> Max gradient parameter:F_pars
     #> 
@@ -338,7 +338,7 @@ check_convergence(m4_good)
 
     #> stats:nlminb thinks the model has converged: mod$opt$convergence == 0
     #> 
-    #> Maximum gradient component:6.34e-11
+    #> Maximum gradient component:3.74e-10
     #> 
     #> Max gradient parameter:F_pars
     #> 
@@ -432,9 +432,9 @@ plot_wham_output(mod=m4_proj, out.type='html') #default
 ```
 
 ![Example plots in HTML file created by plot_wham_output(mod=m4,
-out.type='html').](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_diagnostics.png)![Example
-tables HTML file created by plot_wham_output(mod=m4,
-out.type='html').](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/wham_html_tables.png)
+out.type='html').](ex01_files/wham_html_diagnostics.png)![Example tables
+HTML file created by plot_wham_output(mod=m4,
+out.type='html').](ex01_files/wham_html_tables.png)
 
 Setting `out.type='pdf'` saves the plots organized into 6 `.pdf` files
 corresponding to the tabs in the `.html` file (Diagnostics, Input Data,
@@ -446,68 +446,58 @@ Many plots are generated—here we display some examples:
 ### Diagnostics
 
 ![Index 2
-4-panel](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Index_4panel_index_2_region_1.png)![Likelihood
-components](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/likelihood.png)
+4-panel](ex01_files/Index_4panel_index_2_region_1.png)![Likelihood
+components](ex01_files/likelihood.png)
 
 ![Conditional expected and posterior estimates of age-1 abundance
-(recruitment).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_1.png)![Conditional
+(recruitment).](ex01_files/NAA_4panel_stock_1_region_1_age_1.png)![Conditional
 expected and posterior estimates of age-5
-abundance.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/NAA_4panel_stock_1_region_1_age_5.png)
+abundance.](ex01_files/NAA_4panel_stock_1_region_1_age_5.png)
 
 ![Fit to Index 1 age composition
-data.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_index_1_region_1.png)![Residuals
-for Index 1 age
-composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Catch_age_comp_resids_index_1.png)
+data.](ex01_files/Catch_age_comp_index_1_region_1_a.png)![Residuals for
+Index 1 age composition.](ex01_files/Catch_age_comp_resids_index_1.png)
 
 ![One-step-ahead residuals Fleet 1
-catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_fleet_1.png)![One-step-ahead
+catch.](ex01_files/OSA_resid_catch_4panel_fleet_1.png)![One-step-ahead
 residuals Index 1
-catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_1.png)![One-step-ahead
-residuals Index 2
-catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_catch_4panel_index_2.png)
+catch.](ex01_files/OSA_resid_catch_4panel_index_1.png)![One-step-ahead
+residuals Index 2 catch.](ex01_files/OSA_resid_catch_4panel_index_2.png)
 
 ![One-step-ahead residuals Fleet 1 age
-composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_fleet_1.png)![One-step-ahead
+composition.](ex01_files/OSA_resid_paa_6panel_fleet_1.png)![One-step-ahead
 residuals Index 1 age
-composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_1.png)![One-step-ahead
+composition.](ex01_files/OSA_resid_paa_6panel_index_1.png)![One-step-ahead
 residuals Index 2 age
-composition.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/OSA_resid_paa_6panel_index_2.png)
+composition.](ex01_files/OSA_resid_paa_6panel_index_2.png)
 
 ### Input Data
 
-![Catch](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_by_fleet.png)![Indices
-of
-abundance](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/index.png)
+![Catch](ex01_files/weight_at_age_fleet_1_fleet.png)![Indices of
+abundance](ex01_files/scaled_indices.png)
 
 ### Results
 
-![SSB and
-F](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_F_trend.png)![Proportion
-of SSB at
-age](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_at_age_proportion_stock_1.png)
+![SSB and F](ex01_files/SSB_F_trend.png)![Proportion of SSB at
+age](ex01_files/SSB_at_age_proportion_stock_1.png)
 
 ![SSB-Rec on
-log-scale](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/SSB_Rec_loglog_stock_1.png)![Selectivity
-Fleet
-1](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Selectivity_fleet_1_region_1.png)
+log-scale](ex01_files/SSB_Rec_loglog_stock_1.png)![Selectivity Fleet
+1](ex01_files/Selectivity_fleet_1_region_1.png)
 
 ### Reference Points
 
-![Stock status (Kobe
-plot)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/Kobe_status.png)![Status
-relative to
-SPR](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/FSPR_relative.png)
+![Stock status (Kobe plot)](ex01_files/Kobe_status.png)![Status relative
+to SPR](ex01_files/FSPR_relative.png)
 
 ### Retrospective
 
-![SSB with 7
-peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro.png)![Mohn’s
-rho (SSB) with 7
-peels](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/stock_1_SSB_retro_relative.png)
+![SSB with 7 peels](ex01_files/stock_1_SSB_retro.png)![Mohn’s rho (SSB)
+with 7 peels](ex01_files/stock_1_SSB_retro_relative.png)
 
 ### Misc
 
 ![Catch curves (Fleet 1
-observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_curves_fleet_1_region_1_obs.png)![Catch
-at age consistency (Fleet 1
-observed)](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex1_plots/catch_at_age_consistency_obs_fleet_1_region_1.png)
+observed)](ex01_files/catch_curves_fleet_1_region_1_obs.png)![Catch at
+age consistency (Fleet 1
+observed)](ex01_files/catch_at_age_consistency_obs_fleet_1_region_1.png)

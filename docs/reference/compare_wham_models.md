@@ -14,12 +14,7 @@ compare_wham_models(
   fdir = getwd(),
   compare.opts = NULL,
   table.opts = NULL,
-  plot.opts = NULL,
-  fname = NULL,
-  sort = NULL,
-  calc.rho = NULL,
-  calc.aic = NULL,
-  do.print = NULL
+  plot.opts = NULL
 )
 ```
 
@@ -34,7 +29,7 @@ compare_wham_models(
 
 - do.table:
 
-  T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.
+  T/F, produce table of AIC and/or Mohns rho? Default = TRUE.
 
 - do.plot:
 
@@ -47,111 +42,17 @@ compare_wham_models(
 
 - compare.opts:
 
-  list of options to generate comparison results:
-
-  `$stock`
-
-  :   integer, which stock to include in results. Default = 1.
-
-  `$region`
-
-  :   integer, which region to include in results. Default = 1.
+  list of options to generate comparison results. See details for the
+  various options.
 
 - table.opts:
 
-  list of options for AIC/rho table:
-
-  `$fname`
-
-  :   character, filename to save CSV results table (.csv will be
-      appended). Default = `'model_comparison'`.
-
-  `$sort`
-
-  :   T/F, sort by AIC? Default = TRUE.
-
-  `$calc.rho`
-
-  :   T/F, calculate Mohn's rho? Retrospective analysis must have been
-      run for all modes. Default = TRUE.
-
-  `$calc.aic`
-
-  :   T/F, calculate AIC? Default = TRUE.
-
-  `$print`
-
-  :   T/F, print table to console? Default = TRUE.
-
-  `$save.csv`
-
-  :   T/F, save table as a CSV file? Default = FALSE.
+  list of options for AIC/rho table. See details for the various
+  options.
 
 - plot.opts:
 
-  list of options for plots:
-
-  `$out.type`
-
-  :   character, either `'pdf'` or `'png'` (default = `'png'` because I
-      am not sure `system('pdftk')` will work across platforms.)
-
-  `$ci`
-
-  :   vector of T/F, length = 1 (applied to all models) or number of
-      models
-
-  `$years`
-
-  :   vector, which years to plot? Default = all (model and projection
-      years).
-
-  `$which`
-
-  :   vector, which plots to make? Default = all. See details.
-
-  `$relative.to`
-
-  :   character, name of "base" model to plot differences relative to.
-
-  `$alpha`
-
-  :   scalar, (1-alpha)% confidence intervals will be plotted. Default =
-      0.05 for 95% CI.
-
-  `$ages.lab`
-
-  :   vector, overwrite model age labels.
-
-  `$kobe.yr`
-
-  :   integer vector (length = 1 (applied to all models or number of
-      models, which year to use in Kobe plot (relative status). Default
-      = terminal model year(s).
-
-  `$M.age`
-
-  :   integer, which age to use in M time-series plot. Default =
-      `max(data$which_F_age)` (max age of F to use for full total F).
-
-  `$return.ggplot`
-
-  :   T/F, return a list of ggplot2 objects for later modification?
-      Default = TRUE.
-
-  `$kobe.prob`
-
-  :   T/F, print probabilities for each model in each quadrant of Kobe
-      plot? Default = TRUE.
-
-  `$refpt`
-
-  :   "XSPR" or "MSY", which reference point to use. Default = "XSPR".
-
-  `$browse`
-
-  :   Open html document in web browser (if \$out.type = `'png'`)
-      (default = TRUE).
+  list of options for plots. See details for the various options.
 
 ## Value
 
@@ -168,7 +69,7 @@ a list with the following components:
 
 - `rho`:
 
-  Matrix of Mohn's rho by model (if `do.table=T` and
+  Matrix of Mohns rho by model (if `do.table=T` and
   `table.opts$calc.rho=T`)
 
 - `best`:
@@ -178,7 +79,7 @@ a list with the following components:
 
 - `tab`:
 
-  Results table of AIC and Mohn's rho (if `do.table=T`)
+  Results table of AIC and Mohns rho (if `do.table=T`)
 
 - `g`:
 
@@ -186,6 +87,107 @@ a list with the following components:
   `plot.opts$return.ggplot=T`)
 
 ## Details
+
+The optional elements of the `compare.opts` list are:
+
+- `$stock`:
+
+  integer, which stock to include in results. Default = 1.
+
+- `$region`:
+
+  integer, which region to include in results. Default = 1.
+
+The optional elements of the `table.opts` list are:
+
+- `$fname`:
+
+  character, filename to save CSV results table (.csv will be appended).
+  Default = `'model_comparison'`.
+
+- `$sort`:
+
+  T/F, sort by AIC? Default = TRUE.
+
+- `$calc.rho`:
+
+  T/F, calculate Mohns rho? Retrospective analysis must have been run
+  for all modes. Default = TRUE.
+
+- `$calc.aic`:
+
+  T/F, calculate AIC? Default = TRUE.
+
+- `$print`:
+
+  T/F, print table to console? Default = TRUE.
+
+- `$save.csv`:
+
+  T/F, save table as a CSV file? Default = FALSE.
+
+The optional elements of the `plot.opts` list are:
+
+- `$out.type`:
+
+  character, either `'pdf'` or `'png'` (default = `'png'` because I am
+  not sure `system('pdftk')` will work across platforms.)
+
+- `$ci`:
+
+  vector of T/F, length = 1 (applied to all models) or number of models
+
+- `$years`:
+
+  vector, which years to plot? Default = all (model and projection
+  years).
+
+- `$which`:
+
+  vector, which plots to make? Default = all. See below for details.
+
+- `$relative.to`:
+
+  character, name of "base" model to plot differences relative to.
+
+- `$alpha`:
+
+  scalar, (1-alpha)% confidence intervals will be plotted. Default =
+  0.05 for 95% CI.
+
+- `$ages.lab`:
+
+  vector, overwrite model age labels.
+
+- `$kobe.yr`:
+
+  integer vector applied to all models or number of models, which year
+  to use in Kobe plot (relative status). Default = terminal model
+  year(s).
+
+- `$M.age`:
+
+  integer, which age to use in M time-series plot. Default =
+  `max(data$which_F_age)` (max age of F to use for full total F).
+
+- `$return.ggplot`:
+
+  T/F, return a list of ggplot2 objects for later modification? Default
+  = TRUE.
+
+- `$kobe.prob`:
+
+  T/F, print probabilities for each model in each quadrant of Kobe plot?
+  Default = TRUE.
+
+- `$refpt`:
+
+  "XSPR" or "MSY", which reference point to use. Default = "XSPR".
+
+- `$browse`:
+
+  Open html document in web browser (if \$out.type = `'png'`) (default =
+  TRUE).
 
 `plot.opts$which` specifies which plots to make:
 
@@ -239,7 +241,8 @@ corresponding to `i` above, e.g. `g[[2]]` is the CV plot.
 ## See also
 
 [`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md),
-[`read_asap3_fit`](https://timjmiller.github.io/wham/reference/read_asap3_fit.md)`, `[`read_wham_fit`](https://timjmiller.github.io/wham/reference/read_wham_fit.md)
+[`read_asap3_fit`](https://timjmiller.github.io/wham/reference/read_asap3_fit.md),
+[`read_wham_fit`](https://timjmiller.github.io/wham/reference/read_wham_fit.md)
 
 ## Examples
 

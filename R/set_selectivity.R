@@ -78,16 +78,11 @@
 #' @seealso \code{\link{prepare_wham_input}} 
 #'
 #' @examples
-#' \dontrun{
-#' wham.dir <- find.package("wham")
-#' path_to_examples <- system.file("extdata", package="wham")
-#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-#' input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 #' sel <- list(model=rep("logistic",input$data$n_selblocks),
 #'    initial_pars=rep(list(c(3,3)),input$data$n_selblocks),
 #'    fix_pars=rep(list(NULL),input$data$n_selblocks))
 #' input <- set_selectivity(input, selectivity = sel) #logistic selectivity for all selectivity blocks
-#' }
 #'
 #' @export
 set_selectivity <- function(input, selectivity){
@@ -344,7 +339,7 @@ set_selectivity <- function(input, selectivity){
   par$selpars_re <- array(0, c(data$n_selblocks, data$n_years_model, max(data$n_ages,4)))
   map$selpars_re <- array(NA, c(data$n_selblocks, data$n_years_model, max(data$n_ages,4)))
   data$selpars_re_index <- matrix(0, data$n_selblocks, max(data$n_ages,4)) #configured like M_re_index
-  data$n_selpars_re <- rep(1,data[["n_selblocks"]]) #configured like n_M_re
+  data[["n_selpars_re"]] <- rep(1,data[["n_selblocks"]]) #configured like n_M_re
   ct <- 0
   for(b in 1:data$n_selblocks){
     #if map_re not provided, just make RE for any parameter not fixed at bounds
@@ -355,24 +350,24 @@ set_selectivity <- function(input, selectivity){
     }
     ind_y <- which(data[["selblock_years"]][,b]==1)
     if(data$selblock_models_re[b] == 3) { #ar1(year)
-      data$n_selpars_re[b] <- 1
+      data[["n_selpars_re"]][b] <- 1
       data$selpars_re_index[b,which(is_re)] <- 1 #default is 1 common RE for all selpars
       map$selpars_re[b,ind_y,1] <- ct + 1:data[["n_years_selblocks"]][b]
       ct <- ct + data[["n_years_selblocks"]][b]
     }
     if(data$selblock_models_re[b] == 2) { #ar1(age)
-      data$n_selpars_re[b] <- sum(is_re)
-      data$selpars_re_index[b,which(is_re)] <- 1:data$n_selpars_re[b]
+      data[["n_selpars_re"]][b] <- sum(is_re)
+      data$selpars_re_index[b,which(is_re)] <- 1:data[["n_selpars_re"]][b]
       # for(s in which(is_re)) {
-      for(s in 1:data$n_selpars_re[b]) {
+      for(s in 1:data[["n_selpars_re"]][b]) {
         # map$selpars_re[b,ind_y,par_index_b[s]] <- ct + 1
         map$selpars_re[b,ind_y,s] <- ct + 1
         ct <- ct + 1
       }
     }
     if(data$selblock_models_re[b] %in% c(1,4)) { #2d iid or 2d ar1
-      data$n_selpars_re[b] <- sum(is_re)
-      data$selpars_re_index[b,which(is_re)] <- 1:data$n_selpars_re[b]
+      data[["n_selpars_re"]][b] <- sum(is_re)
+      data$selpars_re_index[b,which(is_re)] <- 1:data[["n_selpars_re"]][b]
       # map$selpars_re[b,ind_y,par_index_b[which(is_re)]] <- ct + 1:(data[["n_years_selblocks"]][b]*sum(is_re))
       map$selpars_re[b,ind_y,1:data[["n_selpars_re"]][b]] <- ct + 1:(data[["n_years_selblocks"]][b]*data[["n_selpars_re"]][b])
       ct <- ct + (data[["n_years_selblocks"]][b]*data[["n_selpars_re"]][b])
@@ -398,10 +393,10 @@ set_selectivity <- function(input, selectivity){
       
       unique_ind_re <- unique(ind_re[which(!is.na(ind_re))])
       data$selpars_re_index[b,1:length(ind_re)] <- ind_re
-      data$n_selpars_re[b] <- length(unique_ind_re)
+      data[["n_selpars_re"]][b] <- length(unique_ind_re)
       ind_y <- which(data[["selblock_years"]][,b]==1)
       if(data$selblock_models_re[b] == 2){ #ar1(age): constant across years
-        for(s in 1:n_selpars_re[b]) {
+        for(s in 1:data[["n_selpars_re"]][b]) {
           # map$selpars_re[b,ind_y,par_index_b[s]] <- ct + 1
           map$selpars_re[b,ind_y,s] <- ct + 1
           ct <- ct + 1
@@ -409,8 +404,8 @@ set_selectivity <- function(input, selectivity){
         ct <- ct + data[["n_selpars_re"]][b]
       }
       if(data$selblock_models_re[b] %in% c(1,3,4)){ #ar1(year): constant across age, 2d(iid), 2d(ar1). Note ar1(year) and 2d(iid) with $map_re can configure equivalent models
-        if((data$n_selpars_re[b] == 1) & (data$selblock_models_re[b]==4)) stop(paste0("selectivity$map_re[[", b, "]] specifies just 1 selectivity random effect each year for a 2d(ar1) model. The between parameter correlation will not be estimable."))
-        map$selpars_re[b,ind_y,1:data$n_selpars_re[b]] <- 1:(data[["n_selpars_re"]][b]*data[["n_years_selblocks"]][b]) + ct
+        if((data[["n_selpars_re"]][b] == 1) & (data$selblock_models_re[b]==4)) stop(paste0("selectivity$map_re[[", b, "]] specifies just 1 selectivity random effect each year for a 2d(ar1) model. The between parameter correlation will not be estimable."))
+        map$selpars_re[b,ind_y,1:data[["n_selpars_re"]][b]] <- 1:(data[["n_selpars_re"]][b]*data[["n_years_selblocks"]][b]) + ct
         ct <- ct + data[["n_selpars_re"]][b]*data[["n_years_selblocks"]][b]
       }
     }

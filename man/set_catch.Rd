@@ -38,13 +38,9 @@ a named list with same elements as the input provided with catch observations an
 Specify catch selectivity blocks and aggregate and age composition observations for catch
 }
 \examples{
-\dontrun{
-wham.dir <- find.package("wham")
-path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-input <- prepare_wham_input(asap3)
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+newcatch <- matrix(500, input$data$n_years_model, input$data$n_fleets)
 input <- set_catch(input, catch_info = list(agg_catch = newcatch)) #constant catch of 500 mt
-}
 
 }
 \seealso{

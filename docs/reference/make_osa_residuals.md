@@ -36,6 +36,19 @@ make_osa_residuals(
   A fit WHAM model, output from
   [`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md).
 
+- osa.opts:
+
+  a list of options: `method` = ("oneStepGaussianOffMode" (default),
+  "oneStepGaussian", or "oneStepGeneric") and `parallel` (T (default)/F)
+  to pass to
+  [`TMB::oneStepPredict`](https://rdrr.io/pkg/TMB/man/oneStepPredict.html).
+
+- sdrep_required:
+
+  (T/F) whether the osa residuals should be calculated without the
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) being
+  performed on the model.
+
 ## Value
 
 the same fit TMB model with additional elements for osa residuals:

@@ -89,9 +89,9 @@ do_retro_peels(
 
   T/F, save the full
   [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) object?
-  If `FALSE`, only save
-  [`summary.sdreport`](https://rdrr.io/pkg/TMB/man/summary.sdreport.html)
-  to reduce model object file size. Default = `FALSE`.
+  If `FALSE`, only save results from
+  [`TMB::summary.sdreport`](https://rdrr.io/pkg/TMB/man/summary.sdreport.html)
+  to reduce model object file size. Default = `TRUE`.
 
 ## Value
 

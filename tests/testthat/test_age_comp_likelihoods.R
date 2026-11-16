@@ -16,7 +16,7 @@ test_that("Age comp likelihoods evaluate correctly",{
 suppressWarnings(suppressMessages({
 
   path_to_examples <- system.file("extdata", package="wham")
-  acomp_tests <- readRDS(file.path(path_to_examples,"age_comp_likelihood_test_values.rds"))
+  acomp_tests <- readRDS(testthat::test_path("fixtures","age_comp_likelihood_test_values.rds"))
   tmp.dir <- tempdir(check=TRUE)
 
   asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))

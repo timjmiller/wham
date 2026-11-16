@@ -349,7 +349,7 @@ selectivity_om <- list(
 
 M_om <- list(initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))))
 
-NAA_re <- list(
+NAA_re_om <- list(
   N1_pars = array(exp(10)*exp(-(0:(length(stock_basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec", #random about mean
   cor="iid", #random effects are independent
@@ -368,10 +368,14 @@ stock_om_input <- prepare_wham_input(
   F = F_info
 )
 
+vign_10_4_om_input <- stock_om_input #for vignette
 # stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
 # stock_om_4 <- stock_om
 # save(stock_om_4, file = "stock_om_4.RData")
+
+#n_stock x n_regions x n_ages array
+exp(stock_om_input$par$log_NAA_sigma[1,1,1]) #Rsigma = 0.5
 
 
 #4a. Setting NAA random effects variance parameters.
@@ -398,13 +402,14 @@ stock_om_input <- prepare_wham_input(
 )
 
 stock_om_input$par$trans_NAA_rho[1:2]
-wham:::gen.logit(c(0.7,0.4), -1, 1,s=2) #age first, year second
+wham:::gen.logit(c(0.7,0.4), -1, 1,s=1) #age first, year second
 
+vign_10_4a_om_input <- stock_om_input #for vignette
 
 # 4b. Setting M random effects variance parameters
 
 M_om <- list(
-  #mean_model = "estimate-M", fixed, not estimated by default
+  mean_model = "estimate-M", #fixed, not estimated by default
   re_model = matrix("ar1_ay", 1,1),
   initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))),
   sigma_vals = matrix(0.2, 1,1),
@@ -414,7 +419,7 @@ NAA_re_om <- list(
   N1_pars = array(exp(10)*exp(-(0:(length(stock_basic_info$ages)-1))*M_om$initial_means[1]), dim = c(1,1,length(stock_basic_info$ages))),
   sigma = "rec", #random about mean
   recruit_model = 2, #random effects with a constant mean
-  sigma_vals = array(0.6, c(1,1,length(stock_basic_info$ages))), #sigma_R
+  sigma_vals = array(0.6, c(1,1,length(stock_basic_info$ages))),
   recruit_pars = list(exp(10))
 )
 
@@ -430,33 +435,17 @@ stock_om_input <- prepare_wham_input(
 
 #stock_om <- fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
+vign_10_4b_om_input <- stock_om_input
 #all NA
 stock_om_input$map$Mpars
 
-exp(stock_om_input$par$log_NAA_sigma[1,1,1]) #Rsigma
+exp(stock_om_input$par$log_NAA_sigma[1,1,1]) #sigma_R = 0.6
 
 exp(stock_om_input$par$M_repars[1,1,1]) #
 
 stock_om_input$par$M_repars[1,1,2:3]
 wham:::gen.logit(c(0.7,0.4), -1, 1) #age first, year second
 
-
-M_om <- list(
-  #mean_model = "estimate-M", fixed, not estimated by default
-  re_model = matrix("ar1_ay", 1,1),
-  initial_means = array(0.2, dim = c(1,1, length(stock_basic_info$ages))),
-  sigma_vals = matrix(0.2, 1,1),
-  cor_vals = array(c(0.7,0.4),dim = c(1,1,2)))
-
-stock_om_input <- prepare_wham_input(
-  basic_info = stock_basic_info, 
-  selectivity = selectivity_om, 
-  NAA_re = NAA_re_om, 
-  catch_info = catch_info,
-  index_info = index_info,
-  M = M_om,
-  F = F_info
-)
 
 #all 1: one parameter estimated
 stock_om_input$map$Mpars
@@ -490,6 +479,7 @@ stock_om_input$par$sel_repars
 c(log(0.4), wham:::gen.logit(c(0.7,0.4),-1,1))
 c(log(0.1), wham:::gen.logit(c(0.7,0.4),-1,1))
 
+vign_10_4c_om_sel_repars <- stock_om_input$par$sel_repars #for vignette
 
 # 4d. Setting catchability random effects variance parameters.
 
@@ -516,6 +506,8 @@ stock_om_input <- prepare_wham_input(
 
 stock_om_input$par$q_repars
 c(log(0.1), wham:::gen.logit(0.5,-1,1))
+
+vign_10_4d_om_q_repars <- stock_om_input$par$q_repars #for vignette
 
 stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 
@@ -561,6 +553,9 @@ c(stock_om_input$par$Ecov_process_pars)
 c(0, log(0.3), wham:::gen.logit(0.5,-1,1)) #mean, log(sd), logit(0.5)
 #size of Ecov_beta
 stock_om_input$par$Ecov_beta_R[1,1,1] #=0.3
+
+vign_10_4e_om_Ecov_process_pars <- stock_om_input$par$Ecov_process_pars #for vignette
+vign_10_4e_om_Ecov_beta_R <- stock_om_input$par$Ecov_beta_R #for vignette
 
 stock_om = fit_wham(stock_om_input, do.fit = FALSE, MakeADFun.silent = TRUE)
 

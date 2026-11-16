@@ -65,12 +65,7 @@ and a table of AIC and Mohn's rho to aid model comparison.</p>
 <span>  fdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  compare.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  table.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  plot.opts <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  fname <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  calc.rho <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  calc.aic <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  do.print <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  plot.opts <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,7 +79,7 @@ will be used.</p></dd>
 
 
 <dt id="arg-do-table">do.table<a class="anchor" aria-label="anchor" href="#arg-do-table"></a></dt>
-<dd><p>T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.</p></dd>
+<dd><p>T/F, produce table of AIC and/or Mohns rho? Default = TRUE.</p></dd>
 
 
 <dt id="arg-do-plot">do.plot<a class="anchor" aria-label="anchor" href="#arg-do-plot"></a></dt>
@@ -96,81 +91,15 @@ will be used.</p></dd>
 
 
 <dt id="arg-compare-opts">compare.opts<a class="anchor" aria-label="anchor" href="#arg-compare-opts"></a></dt>
-<dd><p>list of options to generate comparison results:</p><dl><dt><code>$stock</code></dt>
-<dd><p>integer, which stock to include in results. Default = 1.</p></dd>
-
-  <dt><code>$region</code></dt>
-<dd><p>integer, which region to include in results. Default = 1.</p></dd>
-
-
-</dl></dd>
+<dd><p>list of options to generate comparison results.  See details for the various options.</p></dd>
 
 
 <dt id="arg-table-opts">table.opts<a class="anchor" aria-label="anchor" href="#arg-table-opts"></a></dt>
-<dd><p>list of options for AIC/rho table:</p><dl><dt><code>$fname</code></dt>
-<dd><p>character, filename to save CSV results table (.csv will be appended). Default = <code>'model_comparison'</code>.</p></dd>
-
-  <dt><code>$sort</code></dt>
-<dd><p>T/F, sort by AIC? Default = TRUE.</p></dd>
-
-  <dt><code>$calc.rho</code></dt>
-<dd><p>T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.</p></dd>
-
-  <dt><code>$calc.aic</code></dt>
-<dd><p>T/F, calculate AIC? Default = TRUE.</p></dd>
-
-  <dt><code>$print</code></dt>
-<dd><p>T/F, print table to console? Default = TRUE.</p></dd>
-
-  <dt><code>$save.csv</code></dt>
-<dd><p>T/F, save table as a CSV file? Default = FALSE.</p></dd>
-
-
-</dl></dd>
+<dd><p>list of options for AIC/rho table.  See details for the various options.</p></dd>
 
 
 <dt id="arg-plot-opts">plot.opts<a class="anchor" aria-label="anchor" href="#arg-plot-opts"></a></dt>
-<dd><p>list of options for plots:</p><dl><dt><code>$out.type</code></dt>
-<dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code>system('pdftk')</code> will work across platforms.)</p></dd>
-
-  <dt><code>$ci</code></dt>
-<dd><p>vector of T/F, length = 1 (applied to all models) or number of models</p></dd>
-
-  <dt><code>$years</code></dt>
-<dd><p>vector, which years to plot? Default = all (model and projection years).</p></dd>
-
-  <dt><code>$which</code></dt>
-<dd><p>vector, which plots to make? Default = all. See details.</p></dd>
-
-  <dt><code>$relative.to</code></dt>
-<dd><p>character, name of "base" model to plot differences relative to.</p></dd>
-
-  <dt><code>$alpha</code></dt>
-<dd><p>scalar, (1-alpha)% confidence intervals will be plotted. Default = 0.05 for 95% CI.</p></dd>
-
-  <dt><code>$ages.lab</code></dt>
-<dd><p>vector, overwrite model age labels.</p></dd>
-
-  <dt><code>$kobe.yr</code></dt>
-<dd><p>integer vector (length = 1 (applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).</p></dd>
-
-  <dt><code>$M.age</code></dt>
-<dd><p>integer, which age to use in M time-series plot. Default = <code>max(data$which_F_age)</code> (max age of F to use for full total F).</p></dd>
-
-  <dt><code>$return.ggplot</code></dt>
-<dd><p>T/F, return a list of ggplot2 objects for later modification? Default = TRUE.</p></dd>
-
-  <dt><code>$kobe.prob</code></dt>
-<dd><p>T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.</p></dd>
-
-  <dt><code>$refpt</code></dt>
-<dd><p>"XSPR" or "MSY", which reference point to use. Default = "XSPR".</p></dd>
-
-  <dt><code>$browse</code></dt>
-<dd><p>Open html document in web browser (if $out.type = <code>'png'</code>) (default = TRUE).</p></dd>
-
-
-</dl></dd>
+<dd><p>list of options for plots. See details for the various options.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -182,13 +111,13 @@ will be used.</p></dd>
 <dd><p>Vector of AIC by model (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
 
     <dt><code>rho</code></dt>
-<dd><p>Matrix of Mohn's rho by model (if <code>do.table=T</code> and <code>table.opts$calc.rho=T</code>)</p></dd>
+<dd><p>Matrix of Mohns rho by model (if <code>do.table=T</code> and <code>table.opts$calc.rho=T</code>)</p></dd>
 
     <dt><code>best</code></dt>
 <dd><p>Name of best model (lowest AIC) (if <code>do.table=T</code> and <code>table.opts$calc.aic=T</code>)</p></dd>
 
     <dt><code>tab</code></dt>
-<dd><p>Results table of AIC and Mohn's rho (if <code>do.table=T</code>)</p></dd>
+<dd><p>Results table of AIC and Mohns rho (if <code>do.table=T</code>)</p></dd>
 
     <dt><code>g</code></dt>
 <dd><p>List of ggplot2 objects for later modification (if <code>do.plot=T</code> and <code>plot.opts$return.ggplot=T</code>)</p></dd>
@@ -197,7 +126,73 @@ will be used.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>plot.opts$which</code> specifies which plots to make:</p><dl><dt>1</dt>
+    <p>The optional elements of the <code>compare.opts</code> list are:</p><dl><dt><code>$stock</code></dt>
+<dd><p>integer, which stock to include in results. Default = 1.</p></dd>
+
+    <dt><code>$region</code></dt>
+<dd><p>integer, which region to include in results. Default = 1.</p></dd>
+
+
+</dl><p>The optional elements of the <code>table.opts</code> list are:</p><dl><dt><code>$fname</code></dt>
+<dd><p>character, filename to save CSV results table (.csv will be appended). Default = <code>'model_comparison'</code>.</p></dd>
+
+    <dt><code>$sort</code></dt>
+<dd><p>T/F, sort by AIC? Default = TRUE.</p></dd>
+
+    <dt><code>$calc.rho</code></dt>
+<dd><p>T/F, calculate Mohns rho? Retrospective analysis must have been run for all modes. Default = TRUE.</p></dd>
+
+    <dt><code>$calc.aic</code></dt>
+<dd><p>T/F, calculate AIC? Default = TRUE.</p></dd>
+
+    <dt><code>$print</code></dt>
+<dd><p>T/F, print table to console? Default = TRUE.</p></dd>
+
+    <dt><code>$save.csv</code></dt>
+<dd><p>T/F, save table as a CSV file? Default = FALSE.</p></dd>
+
+
+</dl><p>The optional elements of the <code>plot.opts</code> list are:</p><dl><dt><code>$out.type</code></dt>
+<dd><p>character, either <code>'pdf'</code> or <code>'png'</code> (default = <code>'png'</code> because I am not sure <code>system('pdftk')</code> will work across platforms.)</p></dd>
+
+    <dt><code>$ci</code></dt>
+<dd><p>vector of T/F, length = 1 (applied to all models) or number of models</p></dd>
+
+    <dt><code>$years</code></dt>
+<dd><p>vector, which years to plot? Default = all (model and projection years).</p></dd>
+
+    <dt><code>$which</code></dt>
+<dd><p>vector, which plots to make? Default = all. See below for details.</p></dd>
+
+    <dt><code>$relative.to</code></dt>
+<dd><p>character, name of "base" model to plot differences relative to.</p></dd>
+
+    <dt><code>$alpha</code></dt>
+<dd><p>scalar, (1-alpha)% confidence intervals will be plotted. Default = 0.05 for 95% CI.</p></dd>
+
+    <dt><code>$ages.lab</code></dt>
+<dd><p>vector, overwrite model age labels.</p></dd>
+
+    <dt><code>$kobe.yr</code></dt>
+<dd><p>integer vector applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).</p></dd>
+
+    <dt><code>$M.age</code></dt>
+<dd><p>integer, which age to use in M time-series plot. Default = <code>max(data$which_F_age)</code> (max age of F to use for full total F).</p></dd>
+
+    <dt><code>$return.ggplot</code></dt>
+<dd><p>T/F, return a list of ggplot2 objects for later modification? Default = TRUE.</p></dd>
+
+    <dt><code>$kobe.prob</code></dt>
+<dd><p>T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.</p></dd>
+
+    <dt><code>$refpt</code></dt>
+<dd><p>"XSPR" or "MSY", which reference point to use. Default = "XSPR".</p></dd>
+
+    <dt><code>$browse</code></dt>
+<dd><p>Open html document in web browser (if $out.type = <code>'png'</code>) (default = TRUE).</p></dd>
+
+
+</dl><p><code>plot.opts$which</code> specifies which plots to make:</p><dl><dt>1</dt>
 <dd><p>3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment</p></dd>
 
     <dt>2</dt>
@@ -233,7 +228,7 @@ will be used.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="read_asap3_fit.html">read_asap3_fit</a>, <code><a href="read_wham_fit.html">read_wham_fit</a></code></code></p></div>
+    <div class="dont-index"><p><code><a href="fit_wham.html">fit_wham</a></code>, <code><a href="read_asap3_fit.html">read_asap3_fit</a></code>, <code><a href="read_wham_fit.html">read_wham_fit</a></code></p></div>
     </div>
 
     <div class="section level2">

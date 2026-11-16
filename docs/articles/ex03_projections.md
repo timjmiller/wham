@@ -374,9 +374,7 @@ nll_proj <-  sapply(mod_proj, function(x) x$fn()) # projected models marginal NL
 nll_proj - mod$opt$obj # difference between original and projected models' NLL
 ```
 
-    #>  [1] 4.228420e-06 4.228374e-06 4.228372e-06 4.228374e-06 4.228374e-06
-    #>  [6] 4.228787e-06 4.228424e-06 4.228425e-06 4.228421e-06 4.229045e-06
-    #> [11] 4.228427e-06
+    #>  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 Now let’s plot results from each of the projected models.
 
@@ -392,28 +390,21 @@ for(m in 1:length(mod_proj)){
 ### Projected CPI
 
 ![Projected CPI, 3 years, continue AR1
-process.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Ecov_1_CPI.png)![Projected
-CPI, 5 years, use average Ecov from
-1992-1996.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Ecov_1_CPI.png)![Projected
-CPI, 5 years, use Ecov from last year
-(2011).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Ecov_1_CPI.png)![Projected
-CPI, 5 years, specify high CPI ~
-0.5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Ecov_1_CPI.png)![5
-years, specify low CPI ~
--1.5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Ecov_1_CPI.png)
+process.](ex03_files/proj_1_Ecov_1_CPI.png)![Projected CPI, 5 years, use
+average Ecov from
+1992-1996.](ex03_files/proj_2_Ecov_1_CPI.png)![Projected CPI, 5 years,
+use Ecov from last year
+(2011).](ex03_files/proj_3_Ecov_1_CPI.png)![Projected CPI, 5 years,
+specify high CPI ~ 0.5.](ex03_files/proj_4_Ecov_1_CPI.png)![5 years,
+specify low CPI ~ -1.5.](ex03_files/proj_5_Ecov_1_CPI.png)
 
 ### Projected F / catch
 
-![5 years, specify
-catch.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_SSB_F_trend.png)![5
-years, specify
-F.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_SSB_F_trend.png)![5
-years, use
-FXSPR.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_SSB_F_trend.png)![3
-years, use avg F over last 5 years
-(2007-2011).](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_SSB_F_trend.png)![10
-years, use avg F
-1992-1996.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_SSB_F_trend.png)
+![5 years, specify catch.](ex03_files/proj_6_SSB_F_trend.png)![5 years,
+specify F.](ex03_files/proj_7_SSB_F_trend.png)![5 years, use
+FXSPR.](ex03_files/proj_8_SSB_F_trend.png)![3 years, use avg F over last
+5 years (2007-2011).](ex03_files/proj_9_SSB_F_trend.png)![10 years, use
+avg F 1992-1996.](ex03_files/proj_10_SSB_F_trend.png)
 
 ### Stock status
 
@@ -421,54 +412,39 @@ In the stock status (Kobe) plots of the projected models using 40%
 spawning potential ratio for reference points, the final model year is
 in bold and the final projected year is not bold.
 
-![Stock status, projection
-1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_status.png)![Stock
-status, projection
-2.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_status.png)
+![Stock status, projection 1.](ex03_files/proj_1_Kobe_status.png)![Stock
+status, projection 2.](ex03_files/proj_2_Kobe_status.png)
 
-![Stock status, projection
-3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_status.png)![Stock
-status, projection
-4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_status.png)
+![Stock status, projection 3.](ex03_files/proj_3_Kobe_status.png)![Stock
+status, projection 4.](ex03_files/proj_4_Kobe_status.png)
 
-![Stock status, projection
-5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_status.png)![Stock
-status, projection
-6.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_status.png)
+![Stock status, projection 5.](ex03_files/proj_5_Kobe_status.png)![Stock
+status, projection 6.](ex03_files/proj_6_Kobe_status.png)
 
-![Stock status, projection
-7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_status.png)![Stock
-status, projection
-8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_status.png)
+![Stock status, projection 7.](ex03_files/proj_7_Kobe_status.png)![Stock
+status, projection 8.](ex03_files/proj_8_Kobe_status.png)
 
-![Stock status, projection
-9.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_status.png)![Stock
-status, projection
-10.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_status.png)
+![Stock status, projection 9.](ex03_files/proj_9_Kobe_status.png)![Stock
+status, projection 10.](ex03_files/proj_10_Kobe_status.png)
 
 We can compare with the same plots that use MSY-based reference points.
 
 ![MSY Stock status, projection
-1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_msy_status.png)![MSY
-Stock status, projection
-2.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_msy_status.png)
+1.](ex03_files/proj_1_Kobe_msy_status.png)![MSY Stock status, projection
+2.](ex03_files/proj_2_Kobe_msy_status.png)
 
 ![MSY Stock status, projection
-3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_msy_status.png)![MSY
-Stock status, projection
-4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_msy_status.png)
+3.](ex03_files/proj_3_Kobe_msy_status.png)![MSY Stock status, projection
+4.](ex03_files/proj_4_Kobe_msy_status.png)
 
 ![MSY Stock status, projection
-5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_msy_status.png)![MSY
-Stock status, projection
-6.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_msy_status.png)
+5.](ex03_files/proj_5_Kobe_msy_status.png)![MSY Stock status, projection
+6.](ex03_files/proj_6_Kobe_msy_status.png)
 
 ![MSY Stock status, projection
-7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_msy_status.png)![MSY
-Stock status, projection
-8.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_msy_status.png)
+7.](ex03_files/proj_7_Kobe_msy_status.png)![MSY Stock status, projection
+8.](ex03_files/proj_8_Kobe_msy_status.png)
 
 ![MSY Stock status, projection
-9.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_msy_status.png)![MSY
-Stock status, projection
-10.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_msy_status.png)
+9.](ex03_files/proj_9_Kobe_msy_status.png)![MSY Stock status, projection
+10.](ex03_files/proj_10_Kobe_msy_status.png)

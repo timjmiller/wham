@@ -22,8 +22,9 @@ Calculates AIC from a fitted WHAM model's negative log-likelihood
 and number of estimated parameters.
 }
 \examples{
-\dontrun{
-mod <- fit_wham(input)
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 aic(mod)
 aic(mod, conditional = TRUE)
 }

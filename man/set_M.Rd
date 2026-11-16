@@ -7,7 +7,7 @@
 set_M(input, M)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{M}{(optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
 
@@ -94,14 +94,9 @@ a named list with same elements as the input provided with natural mortality opt
 Specify model and parameter configuration for natural mortality
 }
 \examples{
-\dontrun{
-wham.dir <- find.package("wham")
-path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-input <- prepare_wham_input(asap3)
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 M = list(mean_model = "estimate-M")
 input <- set_M(input, M = M) #estimate a constant M parameters
-}
 
 }
 \seealso{

@@ -18,15 +18,15 @@ do_reference_points(model, do.sdrep = FALSE, save.sdrep = TRUE)
 - do.sdrep:
 
   T/F, calculate standard deviations of model parameters? See
-  [`sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default =
-  `FALSE`.
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `FALSE`.
 
 - save.sdrep:
 
   T/F, save the full
   [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) object?
-  If `FALSE`, only save
-  [`summary.sdreport`](https://rdrr.io/pkg/TMB/man/summary.sdreport.html)
+  If `FALSE`, only save results from
+  [`TMB::summary.sdreport`](https://rdrr.io/pkg/TMB/man/summary.sdreport.html)
   to reduce model object file size. Default = `TRUE`.
 
 ## See also

@@ -14,7 +14,7 @@ set_age_comp(input, age_comp)
 
   list containing data, parameters, map, and random elements (output
   from
-  [`wham::prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md))
+  [`prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md))
 
 - age_comp:
 
@@ -47,7 +47,7 @@ set_age_comp(input, age_comp)
 
   `"dirichlet-miss0"`
 
-  :   
+  :   Dirichlet, treating zero observations as missing. 1 parameter.
 
   `"logistic-normal-miss0"`
 

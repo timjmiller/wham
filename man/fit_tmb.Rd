@@ -19,13 +19,13 @@ fit_tmb(
 
 \item{n.newton}{Integer, number of additional Newton steps after optimization. Default = \code{3}.}
 
-\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{TMB::sdreport}}. Default = \code{TRUE}.}
+\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{TRUE}.}
 
 \item{do.check}{T/F, check if model parameters are identifiable? Runs internal \code{\link{check_estimability}}, originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package. Default = \code{TRUE}.}
 
-\item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
+\item{save.sdrep}{T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport)}} to reduce model object file size. Default = \code{FALSE}.}
 
-\item{use.optim}{T/F, use \code{\link[stats]{stats::optim}} instead of \code{\link[stats]{stats::nlminb}}? Default = \code{FALSE}.}
+\item{use.optim}{T/F, use \code{\link[stats:optim]{stats::optim}} instead of \code{\link[stats:nlminb]{stats::nlminb}}? Default = \code{FALSE}.}
 
 \item{opt.control}{list of control parameters to pass to optimizer. For nlminb default = list(iter.max = 1000, eval.max = 1000). For optim default = list(maxit=1000).}
 }

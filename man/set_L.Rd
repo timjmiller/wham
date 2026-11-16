@@ -7,7 +7,7 @@
 set_L(input, L)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{L}{(optional) list specifying "extra" mortality options: model, random effects, initial values, and parameters to fix (see details)
 

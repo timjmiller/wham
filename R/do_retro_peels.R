@@ -15,7 +15,7 @@
 #' @param save.input T/F, should modified input list be saved for every peel? Necessary to project from a peel but increases model object size. Default = \code{FALSE}.
 #' @param do.brps T/F, calculate and report biological reference points
 #' @param check.version T/F, whether to verify the wham package commit and version for the fitted model are the same as the currently used package.
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{FALSE}.
+#' @param save.sdrep  T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save results from \code{\link[TMB:summary.sdreport]{TMB::summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' 
 #' @return \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model
 #' fit by peeling off \emph{i} years of data.

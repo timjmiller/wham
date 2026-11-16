@@ -30,8 +30,8 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
   }
   #if(is.null(wham_location)) wham_location <- system.file(package="wham")
   if(is.null(which_seeds)) which_seeds <- 1:n
-  is_snowfall <- require("snowfall")
-  is_parallel <- require("parallel")
+  is_snowfall <- requireNamespace("snowfall")
+  is_parallel <- requireNamespace("parallel")
   
   mod <- readRDS(fit_RDS)
   sim_type <- "sim"
@@ -49,7 +49,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
       if(!is.null(res_dir)) snowfall::sfInit(parallel=TRUE, cpus=n_cores, slaveOutfile=file.path(res_dir,"self_test_log.txt"))
       snowfall::sfExportAll()
       sim_res <- snowfall::sfLapply(which_seeds, function(i){
-        if(is.null(test_dir)) library(wham, lib.loc = wham_location)
+        if(is.null(test_dir)) requireNamespace("wham", lib.loc = wham_location)
         else pkgload::load_all(test_dir)
         fit <- readRDS(fit_RDS)
         sim_input <- fit$input
@@ -57,7 +57,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
         sim_input$data$do_SPR_BRPs[] <- 0
         sim_input$random <- NULL # so fit_wham doesn't try to do inner optimization
         if(conditional){
-          temp <- grep(glob2rx("do_simulate_*_re"), names(sim_input$data), value = TRUE)
+          temp <- grep(utils::glob2rx("do_simulate_*_re"), names(sim_input$data), value = TRUE)
           # temp <- c("do_simulate_Ecov_re", "do_simulate_L_re", "do_simulate_M_re", "do_simulate_mu_prior_re", "do_simulate_mu_re", "do_simulate_N_re",
           #           "do_simulate_q_prior_re", "do_simulate_q_re", "do_simulate_sel_re")
           sim_input$data[temp] <- rep(list(0), length(temp))
@@ -102,7 +102,7 @@ self_test <- function(fit_RDS = NULL, n = 10, seeds = NULL, which_seeds = NULL, 
       sim_input$data$do_SPR_BRPs[] <- 0
       sim_input$random <- NULL # so fit_wham doesn't try to do inner optimization
       if(conditional){
-          temp <- grep(glob2rx("do_simulate_*_re"), names(sim_input$data), value = TRUE)
+          temp <- grep(utils::glob2rx("do_simulate_*_re"), names(sim_input$data), value = TRUE)
         # temp <- c("do_simulate_Ecov_re", "do_simulate_L_re", "do_simulate_M_re", "do_simulate_mu_prior_re", "do_simulate_mu_re", "do_simulate_N_re",
         #           "do_simulate_q_prior_re", "do_simulate_q_re", "do_simulate_sel_re")
         sim_input$data[temp] <- rep(list(0), length(temp))

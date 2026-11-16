@@ -238,13 +238,16 @@ project_wham(
 
 - TMB.bias.correct:
 
-  T/F whether to use the bias.correct feature of TMB::sdreport. Default
+  T/F whether to use the bias.correct feature of
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
   = `FALSE`.
 
 - TMB.jointPrecision:
 
   T/F whether to return the joint precision matrix for the fixed and
-  random effects from TMB::sdreport. Default = `FALSE`.
+  random effects from
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `FALSE`.
 
 ## Value
 
@@ -344,23 +347,3 @@ population model, then none of the above need be specified.
 [`fit_tmb`](https://timjmiller.github.io/wham/reference/fit_tmb.md)
 
 ## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder input data and model settings
-mod <- fit_wham(input4_SNEMAYT) # using default values (do.proj=T)
-
-mod2 <- fit_wham(input4_SNEMAYT, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
-mod_proj <- project_wham(mod2) # add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
-
-names(mod_proj$rep) # list of derived quantities
-tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
-
-x <- summary(mod_proj$sdrep)
-unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
-ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
-colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
-tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
-} # }
-```

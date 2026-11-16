@@ -42,7 +42,7 @@ retro(
 
 \item{check.version}{T/F, whether to verify the wham package commit and version for the fitted model are the same as the currently used package.}
 
-\item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{FALSE}.}
+\item{save.sdrep}{T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save results from \code{\link[TMB:summary.sdreport]{TMB::summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
 }
 \value{
 \code{peels}, a list of length \code{n.peels}, where entry \emph{i} is a model

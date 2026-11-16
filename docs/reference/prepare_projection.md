@@ -47,7 +47,7 @@ prepare_projection(model, proj.opts, check.version = FALSE)
   - `$avg.yrs` (vector), specify which years to use to average
     population attributes (MAA,FAA,WAA,maturity,movement) in projection
     years. Any BRPs calculated in projection years will also use these.
-    Default = last 5 years, `tail(model$years, 5)`.
+    Default = last 5 years, `utils::tail(model$years, 5)`.
 
   - `$cont.ecov` (T/F), continue ecov process (e.g. random walk or AR1)
     for projections. Default = `TRUE`.
@@ -150,51 +150,53 @@ prepare_projection(model, proj.opts, check.version = FALSE)
   - `$avg.yrs.sel` list (length = n_fleets), years to average
     selectivity or FAA for each fleet for projection years. Any BRPs
     calculated in projection years will also use this. Default = last 5
-    years, `tail(model$years, 5)`.
+    years, `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.waacatch` list (length = n_fleets), years to average
     weight at age for each fleet for projection years (if \$proj_waa is
     NULL). Any BRPs calculated in projection years will also use this.
-    Default = last 5 years, `tail(model$years, 5)`.
+    Default = last 5 years, `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.waassb` list (length = n_stocks), years to average weight
     at age for each stock SSB for projection years (if \$proj_waa is
     NULL). Any BRPs calculated in projection years will also use this.
-    Default = last 5 years, `tail(model$years, 5)`.
+    Default = last 5 years, `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.mature` list (length = n_stocks), years to average
     maturity at age for each stock for projection years (if
     \$proj_mature is NULL). Any BRPs calculated in projection years will
-    also use this. Default = last 5 years, `tail(model$years, 5)`.
+    also use this. Default = last 5 years,
+    `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.L` list (length = n_regions), years to average extra
     mortality at age for each region for projection years (if
     \$cond.L.re = FALSE). Any BRPs calculated in projection years will
-    also use this. Default = last 5 years, `tail(model$years, 5)`.
+    also use this. Default = last 5 years,
+    `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.M` list (length = n_stocks, each is a list with length =
     n_regions), years to average natural mortality at age for each stock
     and region for projection years (if \$cont.M.re = FALSE). Any BRPs
     calculated in projection years will also use this. Default = last 5
-    years, `tail(model$years, 5)`.
+    years, `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.move` list (length = n_stocks, each is a list with length
     = n_regions), years to average movement rates at age and season for
     each stock and region (at beginning of interval) for projection
     years (if \$cont.move.re = FALSE). Any BRPs calculated in projection
     years will also use this. Default = last 5 years,
-    `tail(model$years, 5)`.
+    `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.R` list (length = n_stocks), years to average recruitment
     deviations for each stock and region for projection years (if
     \$proj_R_opt = 3). Any BRPs calculated in projection years will also
-    use this. Default = last 5 years, `tail(model$years, 5)`.
+    use this. Default = last 5 years, `utils::tail(model$years, 5)`.
 
   - `$avg.yrs.NAA` list (length = n_stocks, each is a list with length =
     n_regions), years to average NAA deviations for each stock and
     region for projection years (if \$proj_NAA_opt = 2). Any BRPs
     calculated in projection years will also use this. Default = last 5
-    years, `tail(model$years, 5)`.
+    years, `utils::tail(model$years, 5)`.
 
 - check.version:
 

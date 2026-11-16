@@ -1,6 +1,6 @@
 #'  Specify the age composition models for fleet(s) and indices.
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param age_comp specifies the age composition models for fleet(s) and indices. If \code{NULL}, the multinomial is used because this was the only option in ASAP. 
 #'
 #' The age composition models available are:
@@ -8,7 +8,7 @@
 #'     \item{\code{"multinomial"}}{Multinomial. This is the default because it was the only option in ASAP. 0 parameters.}
 #'     \item{\code{"dir-mult"}}{Saturating Dirichlet-multinomial, parameterized such that effective-sample-size is a nonlinear and saturating function with respect to input-sample-size. 1 parameter. Effective sample size is estimated by the model (\href{https://www.ccamlr.org/es/system/files/science_journal_papers/07candy.pdf}{Candy 2008})}
 #'     \item{\code{"dirichlet-pool0"}}{Dirichlet, pooling zero observations with adjacent age classes. 1. parameter. See \href{https://www.sciencedirect.com/science/article/abs/pii/S0165783613003093}{Francis 2014} and \href{https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2015-0532}{Albertsen et al. 2016}}
-#'     \item{\code{"dirichlet-miss0"}}{}{Dirichlet, treating zero observations as missing. 1 parameter.}
+#'     \item{\code{"dirichlet-miss0"}}{Dirichlet, treating zero observations as missing. 1 parameter.}
 #'     \item{\code{"logistic-normal-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
 #'     \item{\code{"logistic-normal-ar1-miss0"}}{Logistic normal, treating zero observations as missing. 1 parameter.}
 #'     \item{\code{"logistic-normal-pool0"}}{Logistic normal, pooling zero observations with adjacent age classes. 1 parameter. See \href{https://doi.org/10.1093/icesjms/fsl024}{Schnute and Haigh (2007)} and \href{https://doi.org/10.1016/j.fishres.2013.12.015}{Francis (2014)}}.
@@ -32,13 +32,8 @@
 #' @seealso \code{\link{prepare_wham_input}} 
 #'
 #' @examples
-#' \dontrun{
-#' wham.dir <- find.package("wham")
-#' path_to_examples <- system.file("extdata", package="wham")
-#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-#' input <- prepare_wham_input(asap3)
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 #' input <- set_age_comp(input, age_comp = "logistic-normal-miss0") #no longer multinomial
-#' }
 #'
 #' @export
 #'

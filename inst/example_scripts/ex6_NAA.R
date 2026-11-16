@@ -65,8 +65,8 @@ df.mods
 mods <- vector("list",n.mods)
 #mods_proj <- vector("list",n.mods)
 for(m in 1:n.mods){
-  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], decouple_recruitment = FALSE)
-  if(NAA_list$sigma == '---') NAA_list = NULL
+  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], recruit_model = 3, decouple_recruitment = FALSE) # Bev Holt recruitment
+  if(NAA_list$sigma == '---') NAA_list = list(recruit_model = 1) # No Bev Holt recruitment
 
   ecov <- list(
     label = "GSI",
@@ -77,7 +77,7 @@ for(m in 1:n.mods){
     process_model = 'ar1', # "rw" or "ar1"
     recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
-  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- suppressWarnings(prepare_wham_input(asap3, 
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
@@ -87,12 +87,6 @@ for(m in 1:n.mods){
                               basic_info = basic_info,
                               age_comp = "logistic-normal-miss0")) # logistic normal, treat 0 obs as missing
 
-  # Fit model
-  # mods[[m]] <- fit_wham(input, do.fit=F)
-  # input_t <- mods[[m]]$input
-  # unique(grep("sig|cor|rho", names(mods[[m]]$par), value = TRUE, invert = TRUE))
-  # input_t$random = c(input_t$random, unique(names(mods[[m]]$par)))
-  # fit_t <- fit_wham(input_t, do.fit=F)
   mods[[m]] <- fit_wham(input, do.retro=T, do.osa=F)
 
   # Save model
@@ -139,7 +133,6 @@ rownames(df.mods) <- NULL
 df.mods
 
 # plot output for all models that converged
-mods[[1]]$env$data$recruit_model = 2 # m1 didn't actually fit a Bev-Holt
 for(m in which(!not_conv)){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)), plot.opts = list(browse = FALSE))
 }
@@ -156,7 +149,7 @@ ages <- 1:n_ages
 
 plot.mods <- which(!not_conv)[-1] # m1 doesn't have NAA devs bc no stock-recruit function to predict rec
 NAA_mod <- c("FE","RE: Recruit","RE: all NAA")[match(df.mods$NAA_sigma[plot.mods], c("---", "rec", "rec+1"))] #[sapply(mods[plot.mods], function(x) x$env$data$n_NAA_sigma+1)]
-NAA_cor <- c("IID","AR1_a","AR1_y","2D AR1")[match(df.mods$NAA_cor[plot.mods], c("iid", "ar1_a", "ar1_y", "2dar1"))] #sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
+NAA_cor <- c("IID","AR1(age)","AR1(year)","2D AR1")[match(df.mods$NAA_cor[plot.mods], c("iid", "ar1_a", "ar1_y", "2dar1"))] #sapply(mods[plot.mods], function(x) 4-sum(which(x$parList$trans_NAA_rho == 0)))]
 GSI_how <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")[match(df.mods$R_how[plot.mods], c("none", "limiting-lag-1-linear"))]#as.numeric(factor(df.mods$GSI_how[plot.mods]))]
 NAA_lab <- paste(NAA_mod,NAA_cor,sep=" + ") # duplicate by GSI, for facet_grid
 df.NAA <- data.frame(matrix(NA, nrow=0, ncol=n_ages+3))
@@ -174,13 +167,13 @@ df.plot <- df.NAA |> tidyr::pivot_longer(-c(Year,GSI_how,NAA_lab),
           names_prefix = "Age_",
           names_transform = list(Age = as.integer),
           values_to = "NAA_re")
-NAA_lab_levels <- c("RE: Recruit + IID","RE: Recruit + AR1_y","RE: all NAA + IID","RE: all NAA + AR1_a","RE: all NAA + AR1_y","RE: all NAA + 2D AR1")
+NAA_lab_levels <- c("RE: Recruit + IID","RE: Recruit + AR1(year)","RE: all NAA + IID","RE: all NAA + AR1(age)","RE: all NAA + AR1(year)","RE: all NAA + 2D AR1")
 GSI_lab_levels <- c("no GSI-Recruitment link","GSI-Recruitment link (limiting)")
 df.plot$GSI_how <- factor(as.character(df.plot$GSI_how), levels=GSI_lab_levels)
 df.plot$NAA_lab <- factor(as.character(df.plot$NAA_lab), levels=NAA_lab_levels)
 df.plot$NAA_re[df.plot$NAA_lab %in% c("RE: Recruit + IID","RE: Recruit + AR1_y") & df.plot$Age > 1] = 0
 
-png(filename = file.path(getwd(), paste0("NAA_devs.png")), width = 8, height = 8.5, res = 200, units='in')
+png(filename = "NAA_devs.png", width = 8, height = 8.5, res = 200, units='in')
     print(
       ggplot(df.plot, ggplot2::aes(x=Year, y=Age)) +
       geom_tile(aes(fill=NAA_re)) +

@@ -3,8 +3,8 @@
 #' Changes internal flags to do the extra calculations and reporting for reference points.
 #'
 #' @param model a fitted WHAM model object returned by fit_wham or project_wham.
-#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{FALSE}.
-#' @param save.sdrep  T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
+#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.
+#' @param save.sdrep  T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save results from \code{\link[TMB:summary.sdreport]{TMB::summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #'
 #' @export
 #'

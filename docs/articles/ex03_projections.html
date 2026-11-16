@@ -71,7 +71,7 @@
       <h1>Ex 3: Projecting / forecasting random effects</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex03_projections.Rmd" class="external-link"><code>vignettes/ex03_projections.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/articles/ex03_projections.Rmd" class="external-link"><code>vignettes/articles/ex03_projections.Rmd</code></a></small>
       <div class="d-none name"><code>ex03_projections.Rmd</code></div>
     </div>
 
@@ -398,9 +398,7 @@ some tolerance).</p>
 <code class="sourceCode R"><span><span class="va">nll_proj</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">mod_proj</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="fu">fn</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># projected models marginal NLL</span></span>
 <span><span class="co">#round(nll_proj - mod$opt$obj, 6) # difference between original and projected models' NLL</span></span>
 <span><span class="va">nll_proj</span> <span class="op">-</span> <span class="va">mod</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span> <span class="co"># difference between original and projected models' NLL</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;  [1] 4.228420e-06 4.228374e-06 4.228372e-06 4.228374e-06 4.228374e-06</span></span>
-<span><span class="co">#&gt;  [6] 4.228787e-06 4.228424e-06 4.228425e-06 4.228421e-06 4.229045e-06</span></span>
-<span><span class="co">#&gt; [11] 4.228427e-06</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0</span></span></code></pre>
 <p>Now let’s plot results from each of the projected models.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">mod_proj</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
@@ -413,12 +411,12 @@ some tolerance).</p>
 <div class="section level3">
 <h3 id="projected-cpi">Projected CPI<a class="anchor" aria-label="anchor" href="#projected-cpi"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Ecov_1_CPI.png" style="width:33.0%" alt="5 years, specify low CPI ~ -1.5."></p>
+<p><img src="ex03_files/proj_1_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 3 years, continue AR1 process."><img src="ex03_files/proj_2_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use average Ecov from 1992-1996."><img src="ex03_files/proj_3_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, use Ecov from last year (2011)."><img src="ex03_files/proj_4_Ecov_1_CPI.png" style="width:33.0%" alt="Projected CPI, 5 years, specify high CPI ~ 0.5."><img src="ex03_files/proj_5_Ecov_1_CPI.png" style="width:33.0%" alt="5 years, specify low CPI ~ -1.5."></p>
 </div>
 <div class="section level3">
 <h3 id="projected-f-catch">Projected F / catch<a class="anchor" aria-label="anchor" href="#projected-f-catch"></a>
 </h3>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify catch."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify F."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_SSB_F_trend.png" style="width:33.0%" alt="5 years, use FXSPR."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_SSB_F_trend.png" style="width:33.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_SSB_F_trend.png" style="width:33.0%" alt="10 years, use avg F 1992-1996."></p>
+<p><img src="ex03_files/proj_6_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify catch."><img src="ex03_files/proj_7_SSB_F_trend.png" style="width:33.0%" alt="5 years, specify F."><img src="ex03_files/proj_8_SSB_F_trend.png" style="width:33.0%" alt="5 years, use FXSPR."><img src="ex03_files/proj_9_SSB_F_trend.png" style="width:33.0%" alt="3 years, use avg F over last 5 years (2007-2011)."><img src="ex03_files/proj_10_SSB_F_trend.png" style="width:33.0%" alt="10 years, use avg F 1992-1996."></p>
 </div>
 <div class="section level3">
 <h3 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -426,18 +424,18 @@ some tolerance).</p>
 <p>In the stock status (Kobe) plots of the projected models using 40%
 spawning potential ratio for reference points, the final model year is
 in bold and the final projected year is not bold.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 2."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 4."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 6."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 8."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 10."></p>
+<p><img src="ex03_files/proj_1_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 1."><img src="ex03_files/proj_2_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 2."></p>
+<p><img src="ex03_files/proj_3_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 3."><img src="ex03_files/proj_4_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 4."></p>
+<p><img src="ex03_files/proj_5_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 5."><img src="ex03_files/proj_6_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 6."></p>
+<p><img src="ex03_files/proj_7_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 7."><img src="ex03_files/proj_8_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 8."></p>
+<p><img src="ex03_files/proj_9_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 9."><img src="ex03_files/proj_10_Kobe_status.png" style="width:50.0%" alt="Stock status, projection 10."></p>
 <p>We can compare with the same plots that use MSY-based reference
 points.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_1_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_2_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 2."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_3_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 3."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_4_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 4."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_5_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 5."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_6_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 6."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_7_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_8_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 8."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_9_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 9."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex3_plots/proj_10_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 10."></p>
+<p><img src="ex03_files/proj_1_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 1."><img src="ex03_files/proj_2_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 2."></p>
+<p><img src="ex03_files/proj_3_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 3."><img src="ex03_files/proj_4_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 4."></p>
+<p><img src="ex03_files/proj_5_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 5."><img src="ex03_files/proj_6_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 6."></p>
+<p><img src="ex03_files/proj_7_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 7."><img src="ex03_files/proj_8_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 8."></p>
+<p><img src="ex03_files/proj_9_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 9."><img src="ex03_files/proj_10_Kobe_msy_status.png" style="width:50.0%" alt="MSY Stock status, projection 10."></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
