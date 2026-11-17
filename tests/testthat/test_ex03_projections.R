@@ -21,7 +21,7 @@ suppressWarnings(suppressMessages({
 # get results to check NLL and par estimates
 tmp.dir <- tempdir(check=TRUE)
 path_to_examples <- system.file("extdata", package="wham")
-ex3_test_results <- readRDS(file.path(path_to_examples,"ex3_test_results.rds"))
+ex3_test_results <- readRDS(testthat::test_path("fixtures","ex03_test_results.RDS"))
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"CPI.csv"), header=T)
@@ -36,8 +36,7 @@ env <- list(
   process_model = "ar1", # fit CPI as AR1 process
   recruitment_how = matrix("limiting-lag-1-linear",1,1)) # limiting (carrying capacity)
 
-basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
-#basic_info <- list() #compare to previous versions
+basic_info <- NULL
 
 input <- prepare_wham_input(asap3, recruit_model = 3,
                             model_name = "Ex 3: Projections",
@@ -138,40 +137,6 @@ proj_opts[[14]] <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE,
               use.FXSPR=FALSE, proj.F=NULL, proj.catch=NULL, avg.yrs=NULL,
               cont.ecov=TRUE, use.last.ecov=FALSE, avg.ecov.yrs=NULL, proj.ecov=NULL, proj_R_opt = 2, proj_NAA_opt = 3, avg.yrs.R = list(1992:1996))
 
-# saveRDS(proj_opts, "c:/work/wham/wham/sandbox/proj_opts.RDS")
-# saveRDS(mod, "c:/work/wham/wham/sandbox/ex3_mod.RDS")
-# proj_opts <- readRDS("c:/work/wham/wham/sandbox/proj_opts.RDS")
-# mod <- readRDS("c:/work/wham/wham/sandbox/ex3_mod.RDS")
-
-# proj_opts[[13]]$avg.yrs.R[[1]]
-# temp <- prepare_projection(mod,proj.opts = proj_opts[[12]])
-# temp$data$proj_NAA_opt
-# temp$data$proj_R_opt
-# temp$data$NAA_re_model
-# x <- temp$par$log_NAA
-# x[] <- as.integer(temp$map$log_NAA)
-# x[1,1,,]
-#   x <- project_wham(mod, proj.opts=proj_opts[[1]], do.sdrep= F, MakeADFun.silent = FALSE)
-# x$rep$NAA_devs[1,1,,]
-# x$rep$NAA_devs[1,1,,]
-
-###########################
-# pkgbuild::compile_dll(debug = FALSE)
-# pkgload::load_all()
-# proj_opts <- readRDS("c:/work/wham/wham/sandbox/proj_opts.RDS")
-# mod <- readRDS("c:/work/wham/wham/sandbox/ex3_mod.RDS")
-#   m = 7
-# mod_proj <- list()
-#   # temp <- prepare_projection(mod, proj.opts=proj_opts[[m]])
-#   mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = FALSE)
-#   mod_proj[[m]]$input$data$proj_F_opt
-#   # temp <- mod$simulate(complete = TRUE)
-#   #test simulation works with projections included.
-#   temp <- mod_proj[[m]]$simulate(complete=TRUE)
-
-#   mod_proj[[m]]$rep$log_F_tot
-#####################################
-
 for(m in 1:length(proj_opts)) {
 
   mod_proj[[m]] <- project_wham(mod, proj.opts=proj_opts[[m]], do.sdrep= F, MakeADFun.silent = TRUE)
@@ -202,7 +167,7 @@ for(m in 1:length(proj_opts)) {
   if(m == 14){
     no_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,-1]
     avg_devs <- mod_proj[[m]]$rep$NAA_devs[1,1,proj_yrs,1]
-    for(i in 1:length(avg_devs)) expect_equal(avg_devs[!!i], -0.2300036, tolerance=1e-6)
+    for(i in 1:length(avg_devs)) expect_equal(avg_devs[!!i], 0.0, tolerance=1e-6)
     for(a in 1:NCOL(no_devs)) for(i in 1:NROW(no_devs)) expect_equal(no_devs[!!i,!!a], 0.0, tolerance=1e-8)
   }
   

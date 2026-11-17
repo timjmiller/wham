@@ -57,9 +57,13 @@ a list with at least the first three of these components:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod <- fit_wham(input4_SNEMAYT) # using default values
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
 check_convergence(mod)
-} # }
+#> Error: object 'mod' not found
+# }
 ```

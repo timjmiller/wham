@@ -7,7 +7,7 @@
 set_osa_obs(input)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 }
 \value{
 the same input list as provided, but with $obs and $obsvec configured.

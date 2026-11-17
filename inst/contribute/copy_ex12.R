@@ -10,7 +10,7 @@
 library(here)
 pkg.dir <- here()
 pkgbuild::compile_dll(debug = FALSE); 
-pkgload::load_all(compile=FALSE)
+#pkgload::load_all(compile=FALSE)
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran the ex today. if not, need to change
@@ -50,4 +50,7 @@ vign_12_info$move_prior <- list(
 	n_mu_prior_re = length(unique(input_move_prior$map$mu_prior_re)), #+1 for NAs
 	mu = fit_move_prior$rep$mu
 )
-save(vign_12_info, file=file.path(pkg.dir, "data","vign_12_info.RData"))
+to.dir <- here("vignettes", "ex12_files")
+dir.create(to.dir)
+
+save(vign_12_info, file=file.path(to.dir, "vign_12_info.RData"))

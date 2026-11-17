@@ -2,9 +2,7 @@
 % Please edit documentation in R/fit_tmb.R
 \name{extract_fixed}
 \alias{extract_fixed}
-\title{Extract fixed effects
-Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
-Internal function called by \code{\link{check_estimability}}.}
+\title{Extract fixed effects}
 \usage{
 extract_fixed(obj)
 }
@@ -15,5 +13,9 @@ extract_fixed(obj)
 A vector of fixed-effect estimates
 }
 \description{
+Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
+Internal function called by \code{\link{check_estimability}}.
+}
+\details{
 \code{extract_fixed} extracts the best previous value of fixed effects, in a way that works for both mixed and fixed effect models
 }

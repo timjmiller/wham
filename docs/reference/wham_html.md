@@ -5,7 +5,7 @@ by
 [`plot_wham_output`](https://timjmiller.github.io/wham/reference/plot_wham_output.md)
 if \`out.type = 'html'\` (default). Opens main file in default browser.
 Modified from
-\[\`r4ss::SS_html\`\](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R).
+[[`r4ss::SS_html`](https://r4ss.github.io/r4ss/reference/SS_html.html)](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R).
 
 ## Usage
 
@@ -36,5 +36,4 @@ wham_html(dir.main = NULL, title = "WHAM Output", width = 500, openfile = TRUE)
 
 ## See also
 
-[`plot_wham_output`](https://timjmiller.github.io/wham/reference/plot_wham_output.md),
-\`r4ss::SS_html()\`
+[`plot_wham_output`](https://timjmiller.github.io/wham/reference/plot_wham_output.md)

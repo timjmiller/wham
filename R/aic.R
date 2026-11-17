@@ -13,8 +13,9 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' mod <- fit_wham(input)
+#' \donttest{
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 #' aic(mod)
 #' aic(mod, conditional = TRUE)
 #' }
@@ -29,7 +30,7 @@ aic <- function(mod, conditional = FALSE) {
       if(conditional) return(cAIC(mod))
       else{
         fe <- mod[["env"]][["last.par.best"]][mod[["env"]][["lfixed"]]()]
-        AIC <- 2 * (mod[["fn"]](fe) + n.parm)
+        AIC <- 2 * (mod[["fn"]](fe) + n.fe)
       }
     } else AIC <- 2 * (mod[["opt"]][["objective"]] + n.fe)
     AIC <- structure(AIC, df = n.fe, n = n.obs, type = "marginal")
@@ -43,6 +44,8 @@ cAIC <- function(mod){
   # From Noel Cadigan using results from
   # Zhang, N., Cadigan, N. G., Thorson, J. T. 2024. A note on numerical evaluation of conditional Akaike information for nonlinear mixed-effects models.  
   #   arXiv:2411.14185 [stat.ME]. doi: 10.48550/arXiv.2411.14185
+  # Zhang, N., Cadigan, N. G., Thorson, J. T. 2026. A unifying theory for the evaluation of conditional Akaike information for mixed-effects models.
+  # doi: 10.1080/00949655.2026.2736799
   
   if(is.null(mod[["opt"]][["objective"]])) {
     warning("The model appears to be unoptimized. The calculated AIC uses the likelihood at the current parameter values.")

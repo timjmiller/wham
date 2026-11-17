@@ -1,5 +1,5 @@
 plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam="", res=72, od){
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
   ecov.pred <- mod$rep$Ecov_x
   ecov.pred.low <- ecov.pred.high <- ecov.pred.se <- matrix(NA, NROW(ecov.pred), NCOL(ecov.pred))
@@ -14,9 +14,9 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   #   sdrep <- mod$sdrep
   # }
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
-      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
-    ecov.pred.se[] <- temp[[2]]$Ecov_x #TMB:::as.list.sdreport(mod$sdrep, what = "Std.", report=TRUE)$Ecov_x
+    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
+      as.list(mod$sdrep, what = "Std", report = T))
+    ecov.pred.se[] <- temp[[2]]$Ecov_x #as.list(mod$sdrep, what = "Std.", report=TRUE)$Ecov_x
     ecov.pred.low[] <- ecov.pred - 1.96 * ecov.pred.se
     ecov.pred.high[] <- ecov.pred + 1.96 * ecov.pred.se
   }
@@ -42,8 +42,8 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
   plot.colors <- wham_palette(dat$n_Ecov)
   for (i in ecovs)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i,"_",mod$input$Ecov_names[i],".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Ecov_",i,"_",mod$input$Ecov_names[i],".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 
     # ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
     # ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
@@ -55,21 +55,21 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
     plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
-    polygon(c(years_full,rev(years_full)), c(ecov.pred.low[,i], rev(ecov.pred.high[,i])), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
-    arrows(years, ecov.low, years, ecov.high, length=0)
-    points(years, ecov.obs[,i], pch=19)
-    lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
+    graphics::polygon(c(years_full,rev(years_full)), c(ecov.pred.low[,i], rev(ecov.pred.high[,i])), col=grDevices::adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    graphics::arrows(years, ecov.low, years, ecov.high, length=0)
+    graphics::points(years, ecov.obs[,i], pch=19)
+    graphics::lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    graphics::title(paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
+    if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2)
 
-    if(do.tex | do.png) dev.off() else par(origpar)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }
   #plot standard deviations if estimated as random effects
   ecov.obs.sigma.cv <- as.list(mod$sdrep, "Std")$Ecov_obs_logsigma_re
   for (i in ecovs) if(dat$Ecov_obs_sigma_opt[i]==4)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],"_sig_re.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i], '_sig_re.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i],"_sig_re.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("Ecov_",i, "_", mod$input$Ecov_names[i], '_sig_re.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     sigmas <- ecov.obs.sig[,i]
     sigmas.cv <- ecov.obs.sigma.cv[,i]
     sigmas.low <- exp(log(sigmas) - 1.96 * sigmas.cv)
@@ -78,23 +78,23 @@ plot.ecov <- function(mod, plot.pad = FALSE, do.tex=FALSE, do.png=FALSE, fontfam
     y.max <- max(sigmas.high, na.rm =T)
     plot(years, sigmas, type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
-    polygon(c(years,rev(years)), c(sigmas.low, rev(sigmas.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
-    points(years, sigmas, pch=19)
-    lines(years, sigmas, col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i], " SD"), outer=T, line=-1)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
+    graphics::polygon(c(years,rev(years)), c(sigmas.low, rev(sigmas.high)), col=grDevices::adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    graphics::points(years, sigmas, pch=19)
+    graphics::lines(years, sigmas, col=plot.colors[i], lwd=3)
+    graphics::title(paste0("Ecov ",i, ": ",mod$input$Ecov_names[i], " SD"), outer=T, line=-1)
+    if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2)
 
-    if(do.tex | do.png) dev.off() else par(origpar)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }
 }
 
 #revised
 
 plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=72, od){
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   years <- mod$years
   if("agg_catch" %in% mod$osa$type){
-    dat <- subset(mod$osa, type == "agg_catch")
+    dat <- subset(mod$osa, mod$osatype == "agg_catch")
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
@@ -103,10 +103,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     ffns <- gsub(pattern, "_", mod$input$fleet_names)
     # ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets){
-      tmp <- subset(dat, fleet==as.character(f))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
-      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+      tmp <- subset(dat, dat$fleet==as.character(f))
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
@@ -119,44 +119,44 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(years, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
       plot(mod$rep$pred_log_catch[1:length(mod$years),f], tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Catch)", ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 3. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
-      yfit<-dnorm(xfit)
-      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
-      lines(xfit, yfit)
+      yfit<-stats::dnorm(xfit)
+      graphics::hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      graphics::lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
       notNA <- tmp$residual[!is.na(tmp$residual)]
       ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
-      P <- ppoints(n)
-      z <- qnorm(P, mean=0, sd=1)
+      P <- stats::ppoints(n)
+      z <- stats::qnorm(P, mean=0, sd=1)
       plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
-      grid(lty = 1, equilogs = FALSE)
-      box()
-      points(z, ord.x, col=plot.colors[f], pch=19)
-      abline(0,1, col=plot.colors[f])
+      graphics::grid(lty = 1, equilogs = FALSE)
+      graphics::box()
+      graphics::points(z, ord.x, col=plot.colors[f], pch=19)
+      graphics::abline(0,1, col=plot.colors[f])
       conf <- 0.95
-      zz <- qnorm(1 - (1 - conf)/2)
-      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      zz <- stats::qnorm(1 - (1 - conf)/2)
+      SE <- (1/stats::dnorm(z)) * sqrt(P * (1 - P)/n)
       upper <- z + zz * SE
       lower <- z - zz * SE
-      lines(z, upper, lty=2, col=plot.colors[f])
-      lines(z, lower, lty=2, col=plot.colors[f])
+      graphics::lines(z, upper, lty=2, col=plot.colors[f])
+      graphics::lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("OSA residual diagnostics: ", mod$input$fleet_names[f]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::title(paste0("OSA residual diagnostics: ", mod$input$fleet_names[f]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     }
   }
   if("catchpaa" %in% mod$osa$type) {
-    dat <- subset(mod$osa, type == "catchpaa")
+    dat <- subset(mod$osa, mod$osa$type == "catchpaa")
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
@@ -165,15 +165,15 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     ffns <- gsub(pattern, "_", mod$input$fleet_names)
     # ffns <- chartr(" ", "_", mod$input$fleet_names)
     for(f in 1:n.fleets) if(any(mod$input$data$use_catch_paa[,f]==1)){
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ffns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
       
-      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
       yind <- which(mod$input$data$use_catch_paa[,f] ==1)
       resids <- vals <- ages <- pyears <- cohorts <- matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
       for(j in yind){
-        tmp <- subset(dat, year == j & fleet == as.character(f))
+        tmp <- subset(dat, dat$year == j & dat$fleet == as.character(f))
         resids[j,tmp$age] <- tmp$residual
         vals[j,tmp$age] <- tmp$val
         ages[j,tmp$age] <- tmp$age
@@ -193,63 +193,63 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(as.integer(pyears), resids, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[f], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 2. trend vs. age
       plot(as.integer(ages), resids, type='p', col=plot.colors[f], pch=19, xlab="Age", ylab="OSA Residuals",
            ylim=ylims, xaxt ="n")
-      axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[f], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 3. trend vs. cohort
       plot(min(years) + as.integer(cohorts), resids, type='p', col=plot.colors[f], pch=19, xlab="Cohort", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[f], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 4. trend vs. observed val
       plot(vals, resids, type='p', col=plot.colors[f], pch=19, xlab="Observed", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[f], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[f], lwd=2, lty = 2)
       # 5. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
-      yfit<-dnorm(xfit)
-      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
-      lines(xfit, yfit)
+      yfit<-stats::dnorm(xfit)
+      graphics::hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      graphics::lines(xfit, yfit)
       # 6. QQ plot modified from car:::qqPlot.default
       notNA <- resids[!is.na(resids)]
       ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
-      P <- ppoints(n)
-      z <- qnorm(P, mean=0, sd=1)
+      P <- stats::ppoints(n)
+      z <- stats::qnorm(P, mean=0, sd=1)
       plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
-      grid(lty = 1, equilogs = FALSE)
-      box()
-      points(z, ord.x, col=plot.colors[f], pch=19)
-      abline(0,1, col=plot.colors[f])
+      graphics::grid(lty = 1, equilogs = FALSE)
+      graphics::box()
+      graphics::points(z, ord.x, col=plot.colors[f], pch=19)
+      graphics::abline(0,1, col=plot.colors[f])
       conf <- 0.95
-      zz <- qnorm(1 - (1 - conf)/2)
-      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      zz <- stats::qnorm(1 - (1 - conf)/2)
+      SE <- (1/stats::dnorm(z)) * sqrt(P * (1 - P)/n)
       upper <- z + zz * SE
       lower <- z - zz * SE
-      lines(z, upper, lty=2, col=plot.colors[f])
-      lines(z, lower, lty=2, col=plot.colors[f])
+      graphics::lines(z, upper, lty=2, col=plot.colors[f])
+      graphics::lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("age composition OSA residual diagnostics: ", mod$input$fleet_names[f]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::title(paste0("age composition OSA residual diagnostics: ", mod$input$fleet_names[f]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     }
   }
 
   if("agg_index" %in% mod$osa$type){
-    dat <- subset(mod$osa, type == "agg_index")
+    dat <- subset(mod$osa, mod$osa$type == "agg_index")
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
@@ -258,10 +258,10 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     ifns <- gsub(pattern, "_", mod$input$index_names)
     # ifns <- chartr(" ", "_", mod$input$index_names)
     for(f in 1:n.fleets){
-      tmp <- subset(dat, fleet==as.character(f))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
-      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+      tmp <- subset(dat, dat$fleet==as.character(f))
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0("OSA_resid_catch_4panel_", ifns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
@@ -278,44 +278,44 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(tmp$year, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. fitted val
       plot(mod$rep$pred_log_indices[1:length(mod$years),f], tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Log(Predicted Index)", ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 3. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
-      yfit<-dnorm(xfit)
-      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
-      lines(xfit, yfit)
+      yfit<-stats::dnorm(xfit)
+      graphics::hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      graphics::lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
       notNA <- tmp$residual[!is.na(tmp$residual)]
       ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
-      P <- ppoints(n)
-      z <- qnorm(P, mean=0, sd=1)
+      P <- stats::ppoints(n)
+      z <- stats::qnorm(P, mean=0, sd=1)
       plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
-      grid(lty = 1, equilogs = FALSE)
-      box()
-      points(z, ord.x, col=plot.colors[f], pch=19)
-      abline(0,1, col=plot.colors[f])
+      graphics::grid(lty = 1, equilogs = FALSE)
+      graphics::box()
+      graphics::points(z, ord.x, col=plot.colors[f], pch=19)
+      graphics::abline(0,1, col=plot.colors[f])
       conf <- 0.95
-      zz <- qnorm(1 - (1 - conf)/2)
-      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      zz <- stats::qnorm(1 - (1 - conf)/2)
+      SE <- (1/stats::dnorm(z)) * sqrt(P * (1 - P)/n)
       upper <- z + zz * SE
       lower <- z - zz * SE
-      lines(z, upper, lty=2, col=plot.colors[f])
-      lines(z, lower, lty=2, col=plot.colors[f])
+      graphics::lines(z, upper, lty=2, col=plot.colors[f])
+      graphics::lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("OSA residual diagnostics: ", mod$input$index_names[f]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::title(paste0("OSA residual diagnostics: ", mod$input$index_names[f]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     }
   }
   if("indexpaa" %in% mod$osa$type) {
-    dat <- subset(mod$osa, type == "indexpaa")
+    dat <- subset(mod$osa, mod$osa$type == "indexpaa")
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
@@ -328,15 +328,15 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     ifns <- gsub(pattern, "_", mod$input$index_names)
     # ifns <- chartr(" ", "_", mod$input$index_names)
     for(i in 1:n.indices) if(any(mod$input$data$use_index_paa[,i]==1)){
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0("OSA_resid_paa_6panel_", ifns[i],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
 
-      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
+      graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(3,2))
       yind <- which(mod$input$data$use_index_paa[,i] ==1)
       resids <- vals <- ages <- pyears <- cohorts <- matrix(NA, nrow = mod$input$data$n_years_model, 
         ncol = mod$input$data$n_ages)
       for(j in yind){
-        tmp <- subset(dat, year == j & fleet == as.character(i))
+        tmp <- subset(dat, dat$year == j & dat$fleet == as.character(i))
         resids[j,tmp$age] <- tmp$residual
         vals[j,tmp$age] <- tmp$val
         ages[j,tmp$age] <- tmp$age
@@ -356,63 +356,63 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(as.integer(pyears), resids, type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[i], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[i], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 2. trend vs. age
       plot(as.integer(ages), resids, type='p', col=plot.colors[i], pch=19, xlab="Age", ylab="OSA Residuals",
            ylim=ylims, xaxt ="n")
-      axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[i], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::axis(1, at = 1:mod$input$data$n_ages, labels = mod$ages.lab)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[i], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 3. trend vs. cohort
       plot(min(years) + as.integer(cohorts), resids, type='p', col=plot.colors[i], pch=19, xlab="Cohort", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[i], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[i], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 4. trend vs. observed val
       plot(vals, resids, type='p', col=plot.colors[i], pch=19, xlab="Observed", ylab="OSA Residuals",
            ylim=ylims)
-      grid(lty = 2, col = "grey")
-      abline(h=0, col=plot.colors[i], lwd=2)
-      abline(h=-qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
-      abline(h=qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::grid(lty = 2, col = "grey")
+      graphics::abline(h=0, col=plot.colors[i], lwd=2)
+      graphics::abline(h=-stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
+      graphics::abline(h=stats::qnorm(0.975), col=plot.colors[i], lwd=2, lty = 2)
       # 5. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
-      yfit<-dnorm(xfit)
-      hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[i], freq=F, main=NULL, breaks="scott")
-      lines(xfit, yfit)
+      yfit<-stats::dnorm(xfit)
+      graphics::hist(resids, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[i], freq=F, main=NULL, breaks="scott")
+      graphics::lines(xfit, yfit)
       # 6. QQ plot modified from car:::qqPlot.default
       notNA <- resids[!is.na(resids)]
       ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
-      P <- ppoints(n)
-      z <- qnorm(P, mean=0, sd=1)
+      P <- stats::ppoints(n)
+      z <- stats::qnorm(P, mean=0, sd=1)
       plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
-      grid(lty = 1, equilogs = FALSE)
-      box()
-      points(z, ord.x, col=plot.colors[i], pch=19)
-      abline(0,1, col=plot.colors[i])
+      graphics::grid(lty = 1, equilogs = FALSE)
+      graphics::box()
+      graphics::points(z, ord.x, col=plot.colors[i], pch=19)
+      graphics::abline(0,1, col=plot.colors[i])
       conf <- 0.95
-      zz <- qnorm(1 - (1 - conf)/2)
-      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      zz <- stats::qnorm(1 - (1 - conf)/2)
+      SE <- (1/stats::dnorm(z)) * sqrt(P * (1 - P)/n)
       upper <- z + zz * SE
       lower <- z - zz * SE
-      lines(z, upper, lty=2, col=plot.colors[i])
-      lines(z, lower, lty=2, col=plot.colors[i])
+      graphics::lines(z, upper, lty=2, col=plot.colors[i])
+      graphics::lines(z, lower, lty=2, col=plot.colors[i])
 
-      title (paste0("age composition OSA residual diagnostics: ", mod$input$index_names[i]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::title(paste0("age composition OSA residual diagnostics: ", mod$input$index_names[i]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     }
   }
 
   if(!all(mod$env$data$Ecov_model == 0)){
-    dat <- subset(mod$osa, type == "Ecov")
+    dat <- subset(mod$osa, mod$osa$type == "Ecov")
     dat$fleet <- sapply(dat$fleet, function(x) as.integer(strsplit(x, "_")[[1]][2]))
     dat$fleet <- factor(dat$fleet) #have to make sure integers are in order
     n.fleets <- length(levels(dat$fleet))
@@ -420,16 +420,16 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
     pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
     efns <- gsub(pattern, "_", mod$input$Ecov_names)
     for(f in 1:n.fleets){
-      tmp <- subset(dat, fleet==names(table(dat$fleet))[f])
+      tmp <- subset(dat, dat$fleet==names(table(dat$fleet))[f])
       obs_ind <- which(mod$input$data$Ecov_use_obs[,f]==1)
       ecov_years <- mod$input$years_Ecov[obs_ind] 
       #ecov_years <- mod$input$years_Ecov[1] + 0:(mod$env$data$n_years_Ecov-1)
       tmp$year <- ecov_years#[tmp$year+1] # year in osa is MODEL year, not Ecov year
       tmp$pred <- mod$rep$Ecov_x[obs_ind,f]
       tmp <- subset(tmp, !is.nan(tmp$residual))
-      if(do.tex) cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
-      par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0("OSA_resid_ecov_4panel_", efns[f],'.png')), width = 10*res, height = 10*res, res = res, pointsize = 12, family = fontfam)
+      graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 
       # set plot lims using max residual for any component (easier to compare if all the same)
       ylim.max <- max(abs(range(dat$residual, na.rm=TRUE)))
@@ -442,40 +442,40 @@ plot.osa.residuals <- function(mod, do.tex=FALSE, do.png=FALSE, fontfam="", res=
       # 1. trend vs. year
       plot(tmp$year, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab="Year", ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 2. trend vs. observed
       plot(tmp$val, tmp$residual, type='p', col=plot.colors[f], pch=19, xlab=paste0("Observed ", mod$input$Ecov_names[f]), ylab="OSA Residuals",
            ylim=ylims)
-      abline(h=0, col=plot.colors[f], lwd=2)
+      graphics::abline(h=0, col=plot.colors[f], lwd=2)
 
       # 3. histogram
       xfit<-seq(-ylim.max, ylim.max, length=100)
-      yfit<-dnorm(xfit)
-      hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
-      lines(xfit, yfit)
+      yfit<-stats::dnorm(xfit)
+      graphics::hist(tmp$residual, ylim=c(0,1.05*max(yfit)), xlim=ylims, plot=T, xlab="OSA Residuals", ylab="Probability Density", col=plot.colors[f], freq=F, main=NULL, breaks="scott")
+      graphics::lines(xfit, yfit)
 
       # 4. QQ plot modified from car:::qqPlot.default
       notNA <- tmp$residual[!is.na(tmp$residual)]
       ord.x <- notNA[order(notNA)]
       n <- length(ord.x)
-      P <- ppoints(n)
-      z <- qnorm(P, mean=0, sd=1)
+      P <- stats::ppoints(n)
+      z <- stats::qnorm(P, mean=0, sd=1)
       plot(z, ord.x, xlab="Std Normal Quantiles", ylab="OSA Residual Quantiles", main="", type = "n")
-      grid(lty = 1, equilogs = FALSE)
-      box()
-      points(z, ord.x, col=plot.colors[f], pch=19)
-      abline(0,1, col=plot.colors[f])
+      graphics::grid(lty = 1, equilogs = FALSE)
+      graphics::box()
+      graphics::points(z, ord.x, col=plot.colors[f], pch=19)
+      graphics::abline(0,1, col=plot.colors[f])
       conf <- 0.95
-      zz <- qnorm(1 - (1 - conf)/2)
-      SE <- (1/dnorm(z)) * sqrt(P * (1 - P)/n)
+      zz <- stats::qnorm(1 - (1 - conf)/2)
+      SE <- (1/stats::dnorm(z)) * sqrt(P * (1 - P)/n)
       upper <- z + zz * SE
       lower <- z - zz * SE
-      lines(z, upper, lty=2, col=plot.colors[f])
-      lines(z, lower, lty=2, col=plot.colors[f])
+      graphics::lines(z, upper, lty=2, col=plot.colors[f])
+      graphics::lines(z, lower, lty=2, col=plot.colors[f])
 
-      title (paste0("OSA residual diagnostics: ", mod$input$Ecov_names[f]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::title(paste0("OSA residual diagnostics: ", mod$input$Ecov_names[f]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     }
   }
 }
@@ -545,20 +545,20 @@ fit.summary.text.plot.fn <- function(mod){
   index_selblocks <- lapply(1:mod$env$data$n_indices, function(x) unique(mod$env$data$selblock_pointer_indices[,x]))
   plot(1:10,1:10,type='n',axes=F,xlab="",ylab="")
   nl <- 10
-  text(5,nl <- nl-0.5,mod$model_name)
-  text(5,nl <- nl-0.5,paste0("Model years: ", min(mod$years), "-", max(mod$years)))
+  graphics::text(5,nl <- nl-0.5,mod$model_name)
+  graphics::text(5,nl <- nl-0.5,paste0("Model years: ", min(mod$years), "-", max(mod$years)))
   if(mod$env$data$n_years_proj>0){
-    proj.yrs <- tail(mod$years_full, mod$env$data$n_years_proj)
+    proj.yrs <- utils::tail(mod$years_full, mod$env$data$n_years_proj)
     proj.txt <- ifelse(mod$env$data$n_years_proj>0, paste0(min(proj.yrs), "-", max(proj.yrs)),"none")
-    text(5,nl <- nl-0.5,paste0("Projection years: ", proj.txt))
+    graphics::text(5,nl <- nl-0.5,paste0("Projection years: ", proj.txt))
   }
-  text(5,nl <- nl-0.5,paste0("Number of stocks: ", mod$env$data$n_stocks))
-  text(5,nl <- nl-0.5,paste0("Number of regions: ", mod$env$data$n_regions))
-  text(5,nl <- nl-0.5,paste0("Number of fleets: ", mod$env$data$n_fleets))
-  text(5,nl <- nl-0.5, paste0("Fleet Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_fleets], collapse = ", ")))
-  text(5,nl <- nl-0.5,paste0("Number of indices: ", mod$env$data$n_indices))
-  text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
-  text(5,nl <- nl-0.5,paste0("Recruitment model for each stock: ", recs[mod$env$data$recruit_model]))
+  graphics::text(5,nl <- nl-0.5,paste0("Number of stocks: ", mod$env$data$n_stocks))
+  graphics::text(5,nl <- nl-0.5,paste0("Number of regions: ", mod$env$data$n_regions))
+  graphics::text(5,nl <- nl-0.5,paste0("Number of fleets: ", mod$env$data$n_fleets))
+  graphics::text(5,nl <- nl-0.5, paste0("Fleet Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_fleets], collapse = ", ")))
+  graphics::text(5,nl <- nl-0.5,paste0("Number of indices: ", mod$env$data$n_indices))
+  graphics::text(5,nl <- nl-0.5, paste0("Index Age Comp Models: ", paste(acm[mod$env$data$age_comp_model_indices], collapse = ", ")))
+  graphics::text(5,nl <- nl-0.5,paste0("Recruitment model for each stock: ", recs[mod$env$data$recruit_model]))
   dat <- mod$env$data
   if(!all(mod$env$data$Ecov_model == 0)){
     for(ec in 1:mod$env$data$n_Ecov) {
@@ -576,7 +576,7 @@ fit.summary.text.plot.fn <- function(mod){
           if(dat$n_regions>1) for(a in 1:dat$n_ages) for(s in 1:dat$n_seasons) for(r in 1:dat$n_regions) for(rr in 1:(dat$n_regions-1)){
             if(dat$Ecov_how_mu[ec,i,a,s,r,rr]>0) {
               out <- paste0(out, paste0(" Effects on movement for stock ", i, "at age ", a, "in season ", s, " from ", mod$input$region_names[r], "to ",
-              ifelse(rr>=r, mod$input$region_names[rrr+1], mod$input$region_names[rr]), "  assumed. \n"))
+              ifelse(rr>=r, mod$input$region_names[rr+1], mod$input$region_names[rr]), "  assumed. \n"))
             }
           }
         }
@@ -584,33 +584,33 @@ fit.summary.text.plot.fn <- function(mod){
           if(dat$Ecov_how_q[ec,i]>0) out <- paste0(out, paste0(" Effects on catchability for index ", i, " assumed. \n"))
         }
         if(sum(dat$Ecov_how_R,dat$Ecov_how_M, dat$Ecov_how_mu,dat$Ecov_how_q)==0) out <- paste(out, " No effects estimated.")
-        text(5,nl <- nl-0.5, out)
+        graphics::text(5,nl <- nl-0.5, out)
       }
     }
   } else {
-    text(5,nl <- nl-0.5, "No Environmental covariates.")
+    graphics::text(5,nl <- nl-0.5, "No Environmental covariates.")
   }
-  text(5,nl <- nl-0.5,paste0("Number of Selectivity blocks: ", mod$env$data$n_selblocks))
-  text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
-  for(i in 1:length(fleet_selblocks)) text(5,nl <- nl-0.5, paste0("Fleet ", i, " Selectivity Blocks: ", paste(fleet_selblocks[i], collapse = ", ")))
-  for(i in 1:length(index_selblocks)) text(5,nl <- nl-0.5, paste0("Index ", i, " Selectivity Blocks: ", paste(index_selblocks[i], collapse = ", ")))
-  text(5,nl <- nl-0.5,paste0("Run date: ",format(mod$date, usetz = TRUE)))
-  text(5,nl <- nl-0.5,paste0("Run directory: ",mod$dir))
-  text(5,nl <- nl-0.5,paste0("WHAM version: ",mod$wham_version)) 
-  text(5,nl <- nl-0.5,paste0("TMB version: ",mod$TMB_version)) 
+  graphics::text(5,nl <- nl-0.5,paste0("Number of Selectivity blocks: ", mod$env$data$n_selblocks))
+  graphics::text(5,nl <- nl-0.5, paste0("Selectivity Block Types: ", paste(selmods[mod$env$data$selblock_models], collapse = ", ")))
+  for(i in 1:length(fleet_selblocks)) graphics::text(5,nl <- nl-0.5, paste0("Fleet ", i, " Selectivity Blocks: ", paste(fleet_selblocks[i], collapse = ", ")))
+  for(i in 1:length(index_selblocks)) graphics::text(5,nl <- nl-0.5, paste0("Index ", i, " Selectivity Blocks: ", paste(index_selblocks[i], collapse = ", ")))
+  graphics::text(5,nl <- nl-0.5,paste0("Run date: ",format(mod$date, usetz = TRUE)))
+  graphics::text(5,nl <- nl-0.5,paste0("Run directory: ",mod$dir))
+  graphics::text(5,nl <- nl-0.5,paste0("WHAM version: ",mod$wham_version)) 
+  graphics::text(5,nl <- nl-0.5,paste0("TMB version: ",mod$TMB_version)) 
   if(is.null(mod$opt)){
-      text(5,nl <- nl-0.5,paste0("Model has NOT been fit."))
+      graphics::text(5,nl <- nl-0.5,paste0("Model has NOT been fit."))
   } else {
     if(mod$is_sdrep){
-      text(5,nl <- nl-0.5,paste0("sdreport() performed",
+      graphics::text(5,nl <- nl-0.5,paste0("sdreport() performed",
         ifelse(mod$na_sdrep, ", but with NAs for some variance estimates.", " with all variance estimates provided.")))
     }
     else {
-      text(5,nl <- nl-0.5,"Warning: run did not provide pos-def Hessian or sdreport() not performed", col="red")
+      graphics::text(5,nl <- nl-0.5,"Warning: run did not provide pos-def Hessian or sdreport() not performed", col="red")
     }
     mgind <- which(abs(mod$final_gradient) == max(abs(mod$final_gradient)))
-    text(5,nl <- nl-0.5,paste0("Maximum absolute gradient: ", names(mod$opt$par)[mgind]," ", format(mod$final_gradient[mgind],digits =4)))
-    text(5,nl <- nl-0.5,paste0("Number of fixed effects = ",length(mod$opt$par),", Number of random effects = ", length(mod$env$random)))
+    graphics::text(5,nl <- nl-0.5,paste0("Maximum absolute gradient: ", names(mod$opt$par)[mgind]," ", format(mod$final_gradient[mgind],digits =4)))
+    graphics::text(5,nl <- nl-0.5,paste0("Number of fixed effects = ",length(mod$opt$par),", Number of random effects = ", length(mod$env$random)))
   }
 
   return()
@@ -619,7 +619,7 @@ fit.summary.text.plot.fn <- function(mod){
 #revised
 
 plot.ll.table.fn <- function(mod,plot.colors){
-  par(mfrow=c(1,1))
+  graphics::par(mfrow=c(1,1))
 
   npar <- length(mod$opt$par)
   lls <- mod$rep[grep("nll",names(mod$rep))]
@@ -688,17 +688,17 @@ plot.ll.table.fn <- function(mod,plot.colors){
   dists <- c(obs.dists[[1]],obs.dists[[2]],obs.dists[[3]],obs.dists[[4]],obs.dists[[5]], proc.dists)
   n.likes <- length(likes)
   my.range <- c(min(likes)-50,max(likes)+50)#1.2*range(likes)#c(min(likes), 1.2*max(likes))
-  par(mar=c(5,20,1,1), oma=c(1,0,0,0))
+  graphics::par(mar=c(5,20,1,1), oma=c(1,0,0,0))
   if(missing(plot.colors)) plot.colors <- wham_palette(n.likes)
-  barplot(horiz=TRUE, likes, beside=FALSE, col=plot.colors, xlab="Joint log-likelihood components",  axisnames=FALSE,  axes=FALSE,  space=0,
+  graphics::barplot(horiz=TRUE, likes, beside=FALSE, col=plot.colors, xlab="Joint log-likelihood components",  axisnames=FALSE,  axes=FALSE,  space=0,
     xlim=my.range)
-  axis(side=1, at=pretty(seq(my.range[1],my.range[2]), n=10), labels=pretty(seq(my.range[1],my.range[2]), n=10), cex=.75 )
-  axis(side=2, at=seq(0.5,(n.likes-0.5)), labels= paste0(names(likes), "\n", dists), las=2)
-  #axis(side=2, at=seq(0.5,(n.likes-0.5))-0.2, labels = dists, las = 2, tick = FALSE)
-  text(x= likes, y=seq(0.5,(n.likes-0.5)), labels=round(likes,0), cex=0.8, pos=ifelse(likes>0, 4, 2))
-  box()
-  #title(paste0("Components of Obj. Function (", round(as.numeric(asap$like[1]),0), "), npar=", npar), cex=0.9 )
-  title(sub=paste0("Model: ", mod$model_name, "     ", mod$date))
+  graphics::axis(side=1, at=pretty(seq(my.range[1],my.range[2]), n=10), labels=pretty(seq(my.range[1],my.range[2]), n=10), cex=.75 )
+  graphics::axis(side=2, at=seq(0.5,(n.likes-0.5)), labels= paste0(names(likes), "\n", dists), las=2)
+  #graphics::axis(side=2, at=seq(0.5,(n.likes-0.5))-0.2, labels = dists, las = 2, tick = FALSE)
+  graphics::text(x= likes, y=seq(0.5,(n.likes-0.5)), labels=round(likes,0), cex=0.8, pos=ifelse(likes>0, 4, 2))
+  graphics::box()
+  #graphics::title(paste0("Components of Obj. Function (", round(as.numeric(asap$like[1]),0), "), npar=", npar), cex=0.9 )
+  graphics::title(sub=paste0("Model: ", mod$model_name, "     ", mod$date))
 }
 
 #revised
@@ -715,53 +715,53 @@ residual.bubbleplot.fn <- function(x, x.cats, y.cats, scale.bubble = 0.25*25, yl
   z <- x * scale.bubble #* scale.resid.bubble
   resid.col <- ifelse(z > 0.0, pos.col, neg.col)
 
-  plot(1:n_x, 1:n_y,  xlim = c(1,n_x), ylim = c(1,n_y), xlab = x_lab, ylab = ylab, type = "n", axes=F)
-  axis(1, lab = x.cats, lwd = 2)
-  axis(2, lab = y.cats, cex.axis=0.75, las=1, lwd = 2)
-  box(lwd = 2)
-  abline(h = 1:n_y, col="lightgray")
-  segments(x0 = 1:n_x, y0 = rep(1,n_x), x1= 1:n_x, y1 = rep(n_y,n_x), col = "lightgray", lty = 1)
+  plot(1:n_x, 1:n_y,  xlim = c(1,n_x), ylim = c(1,n_y), xlab = xlab, ylab = ylab, type = "n", axes=F)
+  graphics::axis(1, lab = x.cats, lwd = 2)
+  graphics::axis(2, lab = y.cats, cex.axis=0.75, las=1, lwd = 2)
+  graphics::box(lwd = 2)
+  graphics::abline(h = 1:n_y, col="lightgray")
+  graphics::segments(x0 = 1:n_x, y0 = rep(1,n_x), x1= 1:n_x, y1 = rep(n_y,n_x), col = "lightgray", lty = 1)
   for (j in 1:n_y)
   {
-    points(1:n_x, rep(j, n_x), cex = abs(z[j,]), col="black", bg = resid.col[j,],  pch = 21)
+    graphics::points(1:n_x, rep(j, n_x), cex = abs(z[j,]), col="black", bg = resid.col[j,],  pch = 21)
   }
 
   bubble.legend1 <- c(0.1, 1, 2)
   #bubble.legend1 <- c(0.01,0.05,0.1)
   bubble.legend2 <- bubble.legend1 * scale.bubble#scale.resid.bubble*scale.bubble
-  legend("topright", xpd = TRUE, legend = bubble.legend1, pch = rep(1, 3), pt.cex = bubble.legend2, horiz = TRUE, col = 'black')
-  legend("topleft", xpd = TRUE, legend = c("Neg.", "Pos."), pch = rep(21, 2), pt.cex = 3, horiz = TRUE,
-    pt.bg = c(neg.resid.col, pos.resid.col), col = "black")
-  text(x = trunc(n_x/2), y = 0, cex = 0.8, label=paste0("Max(abs(resid)) = ",round(range.resids[2],2)))
+  graphics::legend("topright", xpd = TRUE, legend = bubble.legend1, pch = rep(1, 3), pt.cex = bubble.legend2, horiz = TRUE, col = 'black')
+  graphics::legend("topleft", xpd = TRUE, legend = c("Neg.", "Pos."), pch = rep(21, 2), pt.cex = 3, horiz = TRUE,
+    pt.bg = resid.col, col = "black")
+  graphics::text(x = trunc(n_x/2), y = 0, cex = 0.8, label=paste0("Max(abs(resid)) = ",round(range.resids[2],2)))
 }
 
-hi.cor.fn <- function(mod, out.dir = "", do.tex = FALSE, do.csv = FALSE, cor.limit = 0.99)
-{
-  cor <- mod$sdrep$cov.fixed
-  cor <- cor/sqrt(diag(cor) %*% t(diag(cor)))
-  npar <- NROW(cor)
-	which.hi <- matrix(nrow = 0, ncol = 2)
-	for(i in 2:npar) for(j in 1:(i-1))  if(cor[i,j]>cor.limit) which.hi <- rbind(which.hi, c(i, j))
+# hi.cor.fn <- function(mod, out.dir = "", do.tex = FALSE, do.csv = FALSE, cor.limit = 0.99)
+# {
+#   cor <- mod$sdrep$cov.fixed
+#   cor <- cor/sqrt(diag(cor) %*% t(diag(cor)))
+#   npar <- NROW(cor)
+# 	which.hi <- matrix(nrow = 0, ncol = 2)
+# 	for(i in 2:npar) for(j in 1:(i-1))  if(cor[i,j]>cor.limit) which.hi <- rbind(which.hi, c(i, j))
 
-  hi.cor <- cor[which.hi[,1],which.hi[,2]]
-  if(length(which.hi))
-  {
-    out <- cbind.data.frame(
-      "Parameter 1" = rownames(cor)[which.hi[,1]], "Parameter 1 value" = round(mod$opt$par[which.hi[,1]],3),
-      "Parameter 2" = colnames(cor)[which.hi[,2]], "Parameter 2 value" = round(mod$opt$par[which.hi[,2]],3),
-      "Correlation" = round(cor[which.hi],3))
+#   hi.cor <- cor[which.hi[,1],which.hi[,2]]
+#   if(length(which.hi))
+#   {
+#     out <- cbind.data.frame(
+#       "Parameter 1" = rownames(cor)[which.hi[,1]], "Parameter 1 value" = round(mod$opt$par[which.hi[,1]],3),
+#       "Parameter 2" = colnames(cor)[which.hi[,2]], "Parameter 2 value" = round(mod$opt$par[which.hi[,2]],3),
+#       "Correlation" = round(cor[which.hi],3))
 
-    if(do.tex) x <- latex(out, file = paste0(out.dir,"hi_cor.tex"), rowlabel = '', table.env = FALSE)
-    if(do.csv) write.csv(out, file = paste0(out.dir,"hi_cor.csv"))
-    return(out)
-  }
-  else message(paste0("No fixed effects had correlations estimated greater than ", cor.limit, " \n"))
-}
+#     if(do.tex) x <- Hmisc::latex(out, file = paste0(out.dir,"hi_cor.tex"), rowlabel = '', table.env = FALSE)
+#     if(do.csv) utils::write.csv(out, file = paste0(out.dir,"hi_cor.csv"))
+#     return(out)
+#   }
+#   else message(paste0("No fixed effects had correlations estimated greater than ", cor.limit, " \n"))
+# }
 
 get.RMSEs.fn <- function(model)
 {
   out <- list(RMSE=list(), RMSE_n = list())
-  if(class(mod$sdrep)[1] == "sdreport"){
+  if(class(model$sdrep)[1] == "sdreport"){
     #sdrep <- summary(model$sdrep)
     # catch_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_catch_resid/as.list(model$sdrep, "Std", report=TRUE)$log_catch_resid
     # index_stdresid <- as.list(model$sdrep, "Est", report=TRUE)$log_index_resid/as.list(model$sdrep, "Std", report=TRUE)$log_index_resid
@@ -793,27 +793,27 @@ get.RMSEs.fn <- function(model)
 }
 RMSE.table.fn <- function(model)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   RMSEs <- get.RMSEs.fn(model)
   if(length(RMSEs)){
-    par(mfrow=c(1,1), oma=rep(2,4), mar=c(0,0,1,0))
+    graphics::par(mfrow=c(1,1), oma=rep(2,4), mar=c(0,0,1,0))
     max.txt <- 16
     rmses <- which(unlist(RMSEs$RMSE)>0)
     n.rmses <- length(rmses)
     plot(seq(1,15), seq(1,15), type='n', axes=F, xlab="", ylab="", xlim=c(1,max.txt+2+ 6+2+ 8+2), ylim=c(n.rmses+4, 1))
-    text(rep(1, n.rmses), seq(3,n.rmses+2), labels=names(unlist(RMSEs$RMSE)[rmses]), pos=4)
-    text(rep(max.txt+2, n.rmses), seq(3,n.rmses+2), labels=unlist(RMSEs$RMSE_n)[rmses], pos=4)
-    text(rep(max.txt+2+ 6+2, n.rmses), seq(3,n.rmses+2), labels=signif(as.numeric(unlist(RMSEs$RMSE)[rmses]),3), pos=4)
-    text(c(1, max.txt+2, max.txt+2+ 6+2), rep( 2, 3), labels=c("Component","# resids","RMSE"), font=2, pos=4)
-    title(main="Root Mean Square Error computed from Standardized Residuals", outer=T, cex=0.85)
-    par(origpar)
+    graphics::text(rep(1, n.rmses), seq(3,n.rmses+2), labels=names(unlist(RMSEs$RMSE)[rmses]), pos=4)
+    graphics::text(rep(max.txt+2, n.rmses), seq(3,n.rmses+2), labels=unlist(RMSEs$RMSE_n)[rmses], pos=4)
+    graphics::text(rep(max.txt+2+ 6+2, n.rmses), seq(3,n.rmses+2), labels=signif(as.numeric(unlist(RMSEs$RMSE)[rmses]),3), pos=4)
+    graphics::text(c(1, max.txt+2, max.txt+2+ 6+2), rep( 2, 3), labels=c("Component","# resids","RMSE"), font=2, pos=4)
+    graphics::title(main="Root Mean Square Error computed from Standardized Residuals", outer=T, cex=0.85)
+    graphics::par(origpar)
   }
 	#if (save.plots) savePlot(paste(od, "RMSE_Comp_Table.",plotf, sep=""), type=plotf)
 }
 
 #revised
 
-get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
+get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE, fontfam="")
 {
   years <- mod$years_full #not used in cpp
   ages <- mod$ages.lab #not used in cpp, assumes last age is a plus group
@@ -828,43 +828,36 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   res$ll <- -mod$opt$obj
   res$np <- length(mod$opt$par)
   res$aic <- aic(mod)
-  #rho <- mohns_rho(mod) #if no peels, then this will be NULL
-  # tcol <- col2rgb('black')
-  # black.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  # tcol <- col2rgb('red')
-  # red.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-  # tcol <- col2rgb('blue')
-  # blue.poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
 
-  origpar <- par(no.readonly = TRUE)
-  par(mar = c(5,5,1,1), oma = c(1,1,1,1), mfrow = c(3,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mar = c(5,5,1,1), oma = c(1,1,1,1), mfrow = c(3,1))
   use_outer <- FALSE
   x_line <- -1
   y_line <- 3
   fn <- paste0(out.dir, '/SSB')
   if(do.tex | do.png) {
-    if(do.tex) cairo_pdf(file.path(out.dir,'SSB.pdf'), family = fontfam, height = 10, width = 10)
-    else png(filename = file.path(out.dir,, 'SSB.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(out.dir,'SSB.pdf'), family = fontfam, height = 10, width = 10)
+    else grDevices::png(filename = file.path(out.dir,, 'SSB.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
     use_outer <- TRUE
     x_line <- y_line <- 2.5
   }
   SSB <- SSB.lo <- SSB.hi <- R <- R.lo <- R.hi <- matrix(NA, nrow = ny, ncol = ns)
   Fbar <- Fbar.lo <- Fbar.hi <- matrix(NA, nrow = ny, ncol = nr+nf+1)
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
-      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
+      as.list(mod$sdrep, what = "Std", report = T))
     SSB <- exp(temp[[1]]$log_SSB)
-    SSB.lo <- SSB * exp( - qnorm(0.975)*temp[[2]]$log_SSB)
-    SSB.hi <- SSB * exp( qnorm(0.975)*temp[[2]]$log_SSB)
+    SSB.lo <- SSB * exp( - stats::qnorm(0.975)*temp[[2]]$log_SSB)
+    SSB.hi <- SSB * exp( stats::qnorm(0.975)*temp[[2]]$log_SSB)
     for(i in 1:ns) {
       R[,i] <- exp(temp[[1]]$log_NAA_rep[i,mod$env$data$spawn_regions[i],,1])
-      R.lo[,i] <- R[,i] * exp(- qnorm(0.975)*temp[[2]]$log_NAA_rep[i,mod$env$data$spawn_regions[i],,1])
-      R.hi[,i] <- R[,i] * exp( qnorm(0.975)*temp[[2]]$log_NAA_rep[i,mod$env$data$spawn_regions[i],,1])
+      R.lo[,i] <- R[,i] * exp(- stats::qnorm(0.975)*temp[[2]]$log_NAA_rep[i,mod$env$data$spawn_regions[i],,1])
+      R.hi[,i] <- R[,i] * exp( stats::qnorm(0.975)*temp[[2]]$log_NAA_rep[i,mod$env$data$spawn_regions[i],,1])
     }
     Fbar <- exp(temp[[1]]$log_Fbar)
-    Fbar.lo <- Fbar * exp(- qnorm(0.975)*temp[[2]]$log_Fbar)
-    Fbar.hi <- Fbar * exp( qnorm(0.975)*temp[[2]]$log_Fbar)
+    Fbar.lo <- Fbar * exp(- stats::qnorm(0.975)*temp[[2]]$log_Fbar)
+    Fbar.hi <- Fbar * exp( stats::qnorm(0.975)*temp[[2]]$log_Fbar)
   } else {
     SSB[] <- mod$rep$SSB
     for(i in 1:ns) R[,i] <- mod$rep$NAA[i,mod$env$data$spawn_regions[i],,1]
@@ -876,68 +869,68 @@ get.wham.results.fn <- function(mod, out.dir, do.tex = FALSE, do.png = FALSE)
   if(na.se) max.y <- max(SSB)
   pal = wham_palette(ns)
   plot(years,SSB[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
+  graphics::axis(1, lwd = 2, cex.axis = 1.5)
+  graphics::axis(2, lwd = 2, cex.axis = 1.5)
+  graphics::grid(col = grDevices::gray(0.7))
   for(i in 1:ns) {
-    lines(years,SSB[,i], lwd = 2, col = pal[i])
-    if(!na.se) polygon(c(years,rev(years)), c(SSB.lo[,3],rev(SSB.hi[,4])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    graphics::lines(years,SSB[,i], lwd = 2, col = pal[i])
+    if(!na.se) graphics::polygon(c(years,rev(years)), c(SSB.lo[,3],rev(SSB.hi[,4])), col = grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
   }
-  if(ns>1) legend("topright", col = pal, lty = 1, lwd = 2, legend = mod$stock.names)
-  box(lwd = 2)
-  mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-  mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(ns>1) graphics::legend("topright", col = pal, lty = 1, lwd = 2, legend = mod$stock.names)
+  graphics::box(lwd = 2)
+  graphics::mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+  graphics::mtext(side = 2, "SSB (kmt)", cex = 2, outer = use_outer, line = y_line)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
   if(do.tex | do.png) {
-    if(do.tex) cairo_pdf(file.path(out.dir,'recruits.pdf'), family = fontfam, height = 10, width = 10)
-    else png(filename = file.path(out.dir, 'recruits.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(out.dir,'recruits.pdf'), family = fontfam, height = 10, width = 10)
+    else grDevices::png(filename = file.path(out.dir, 'recruits.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
   max.y <- max(R.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(R)
   plot(years,R[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
+  graphics::axis(1, lwd = 2, cex.axis = 1.5)
+  graphics::axis(2, lwd = 2, cex.axis = 1.5)
+  graphics::grid(col = grDevices::gray(0.7))
   for(i in 1:ns){
-    lines(years,R[,i], lwd = 2, col = pal[i])
-    if(!na.se) polygon(c(years,rev(years)), c(R.lo[,i],rev(R.hi[,i])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    graphics::lines(years,R[,i], lwd = 2, col = pal[i])
+    if(!na.se) graphics::polygon(c(years,rev(years)), c(R.lo[,i],rev(R.hi[,i])), col = grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
   }
-  if(ns>1) legend("topright", col = pal, lty = 1, lwd = 2, legend = mod$stock.names)
-  box(lwd = 2)
-  if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
-  mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(ns>1) graphics::legend("topright", col = pal, lty = 1, lwd = 2, legend = mod$stock.names)
+  graphics::box(lwd = 2)
+  if(use_outer) graphics::mtext(side = 1, "Year", cex = 2, outer = TRUE, line = x_line)
+  graphics::mtext(side = 2, "Recruits (1000s)", cex = 2, outer = use_outer, line = y_line)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
   if(do.tex | do.png) {
-    if(do.tex) cairo_pdf(file.path(out.dir,'Fbar.pdf'), family = fontfam, height = 10, width = 10)
-    else png(filename = file.path(out.dir, 'Fbar.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(out.dir,'Fbar.pdf'), family = fontfam, height = 10, width = 10)
+    else grDevices::png(filename = file.path(out.dir, 'Fbar.png'), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mar = c(0,0,0,0), oma = c(4,4,1,1), mfrow = c(1,1))
   }
   max.y <- max(Fbar.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(Fbar)
   plot(years,Fbar[,1], type = 'n', ylim = c(0,max.y), xlab = "", ylab = '', axes = FALSE)
-  axis(1, lwd = 2, cex.axis = 1.5)
-  axis(2, lwd = 2, cex.axis = 1.5)
-  grid(col = gray(0.7))
+  graphics::axis(1, lwd = 2, cex.axis = 1.5)
+  graphics::axis(2, lwd = 2, cex.axis = 1.5)
+  graphics::grid(col = grDevices::gray(0.7))
   for(i in 1:nr){
-    lines(years,Fbar[,nf+i], lwd = 2, col = pal[i])
-    if(!na.se) polygon(c(years,rev(years)), c(Fbar.lo[,nf+i],rev(Fbar.hi[,nf+i])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    graphics::lines(years,Fbar[,nf+i], lwd = 2, col = pal[i])
+    if(!na.se) graphics::polygon(c(years,rev(years)), c(Fbar.lo[,nf+i],rev(Fbar.hi[,nf+i])), col = grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
   }
-  box(lwd = 2)
-  if(use_outer) mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
+  graphics::box(lwd = 2)
+  if(use_outer) graphics::mtext(side = 1, "Year", cex = 2, outer = TRUE,line = x_line)
   ar <- c(min(mod$env$data$Fbar_ages), max(mod$env$data$Fbar_ages))
-  mtext(side = 2, paste0("Average F (",ages[ar[1]],"-",ages[ar[2]],")"), cex = 2, outer = use_outer, line = y_line)
-  if(do.tex | do.png) dev.off() else par(origpar)
-  # par(origpar)
+  graphics::mtext(side = 2, paste0("Average F (",ages[ar[1]],"-",ages[ar[2]],")"), cex = 2, outer = use_outer, line = y_line)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
+  # graphics::par(origpar)
 }
 
 #revised
 
-plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
+plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam = "", res = 72, od)
 {
   years <- mod$years
   # load Ecov residuals
@@ -947,17 +940,17 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
     ni <- mod$env$data$n_Ecov
     Ecov_resid <- Ecov_resid.lo <- Ecov_resid.hi <- matrix(NA, nrow = ny, ncol = ni)
     if(class(mod$sdrep)[1] == "sdreport"){
-      temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
-        TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+      temp <- list(as.list(mod$sdrep, what = "Est", report = T),
+        as.list(mod$sdrep, what = "Std", report = T))
       Ecov_resid[] <- temp[[1]]$Ecov_resid
-      Ecov_resid.lo[] <- Ecov_resid - qnorm(0.975)*temp[[2]]$Ecov_resid
-      Ecov_resid.hi[] <- Ecov_resid + qnorm(0.975)*temp[[2]]$Ecov_resid
+      Ecov_resid.lo[] <- Ecov_resid - stats::qnorm(0.975)*temp[[2]]$Ecov_resid
+      Ecov_resid.hi[] <- Ecov_resid + stats::qnorm(0.975)*temp[[2]]$Ecov_resid
     } else {
       Ecov_resid <- mod$rep$Ecov_resid
     }
     # ind <- rownames(temp) == "Ecov_resid"
-    # templo <- matrix(temp[ind,1] - qnorm(0.975)*temp[ind,2], ny, ni)
-    # temphi <- matrix(temp[ind,1] + qnorm(0.975)*temp[ind,2], ny, ni)
+    # templo <- matrix(temp[ind,1] - stats::qnorm(0.975)*temp[ind,2], ny, ni)
+    # temphi <- matrix(temp[ind,1] + stats::qnorm(0.975)*temp[ind,2], ny, ni)
     # temp <- matrix(temp[ind,1], ny, ni)
     xe <- data.frame(Label = integer(),
       Year = numeric(),
@@ -988,21 +981,21 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
   log_catch_resid <- log_catch_resid.lo <- log_catch_resid.hi <- matrix(NA, ny, nf)
   log_catch_resid[] <- mod$rep$log_catch_resid
   log_index_resid[] <- mod$rep$log_index_resid
-  log_catch_resid.lo[] <- log_catch_resid - qnorm(0.975)*mod$input$data$agg_catch_cv
-  log_catch_resid.hi[] <- log_catch_resid + qnorm(0.975)*mod$input$data$agg_catch_cv
-  log_index_resid.lo[] <- log_index_resid - qnorm(0.975)*mod$input$data$agg_index_cv
-  log_index_resid.hi[] <- log_index_resid + qnorm(0.975)*mod$input$data$agg_index_cv
+  log_catch_resid.lo[] <- log_catch_resid - stats::qnorm(0.975)*mod$input$data$agg_catch_cv
+  log_catch_resid.hi[] <- log_catch_resid + stats::qnorm(0.975)*mod$input$data$agg_catch_cv
+  log_index_resid.lo[] <- log_index_resid - stats::qnorm(0.975)*mod$input$data$agg_index_cv
+  log_index_resid.hi[] <- log_index_resid + stats::qnorm(0.975)*mod$input$data$agg_index_cv
 
   if(class(mod$sdrep)[1] == "sdreport"){
-    temp <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
-      TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+    temp <- list(as.list(mod$sdrep, what = "Est", report = T),
+      as.list(mod$sdrep, what = "Std", report = T))
       if(!is.null(temp[[1]]$log_index_resid)){
         log_index_resid[] <- temp[[1]]$log_index_resid
-        log_index_resid.lo[] <- log_index_resid - qnorm(0.975)*temp[[2]]$log_index_resid
-        log_index_resid.hi[] <- log_index_resid + qnorm(0.975)*temp[[2]]$log_index_resid
+        log_index_resid.lo[] <- log_index_resid - stats::qnorm(0.975)*temp[[2]]$log_index_resid
+        log_index_resid.hi[] <- log_index_resid + stats::qnorm(0.975)*temp[[2]]$log_index_resid
         log_catch_resid[] <- temp[[1]]$log_catch_resid
-        log_catch_resid.lo[] <- log_catch_resid - qnorm(0.975)*temp[[2]]$log_catch_resid
-        log_catch_resid.hi[] <- log_catch_resid + qnorm(0.975)*temp[[2]]$log_catch_resid
+        log_catch_resid.lo[] <- log_catch_resid - stats::qnorm(0.975)*temp[[2]]$log_catch_resid
+        log_catch_resid.hi[] <- log_catch_resid + stats::qnorm(0.975)*temp[[2]]$log_catch_resid
       }
     } else {
   }
@@ -1054,7 +1047,7 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
   x$row <- factor(x$row)
   x$type <- factor(x$type)
 
-  ggp <- ggplot2::ggplot(x, ggplot2::aes(x=Year, y = Stdres, color=type, fill=type)) +
+  ggp <- ggplot2::ggplot(x, ggplot2::aes(x=.data$Year, y = .data$Stdres, color=.data$type, fill=.data$type)) +
     # ggplot2::geom_ribbon(ggplot2::aes(ymin=lo, ymax=hi, fill=type), alpha=0.3, linetype = 0) +
     # ggplot2::geom_line(size=1.1) +
     #ggplot2::geom_smooth(method = "lm", alpha=0.2) +
@@ -1075,10 +1068,10 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
       ggplot2::scale_color_manual(values = plot.colors) +
       ggplot2::scale_fill_manual(values = plot.colors)
   }
-  if(do.tex) cairo_pdf(file.path(od, paste0("Residuals_time.pdf")), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("Residuals_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Residuals_time.pdf")), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, paste0("Residuals_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   print(ggp)
-  if(do.tex | do.png) dev.off()
+  if(do.tex | do.png) grDevices::dev.off()
   # return(ggp)
 }
 
@@ -1086,7 +1079,7 @@ plot.all.stdresids.fn <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="
 #for both catch and indices
 plot.agg.obs.4.panel <- function(mod, type = "catch", do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   years <- mod$years
   dat <- mod$env$data
   rep <- mod$rep
@@ -1116,8 +1109,6 @@ plot.agg.obs.4.panel <- function(mod, type = "catch", do.tex = FALSE, do.png = F
     file_name_type_text <- "Index_4panel_"
   }
 
-  # pred_log_catch <- mod$rep$pred_log_catch
-  # pred_catch <- mod$rep$pred_catch
   std_logres <- sd <- matrix(NA, years, n_series)
   
   indy <- which(model %in% c(1:2,9:10))
@@ -1157,29 +1148,29 @@ plot.agg.obs.4.panel <- function(mod, type = "catch", do.tex = FALSE, do.png = F
 	for (i in series) {
     series.name.fn <- paste0(ffns[i], "_", rfns[series_regions[i]])
     series.name.plt <- paste0(series_names[i], " in ", mod$input$region_names[series_regions[i]])
-		if(do.tex) cairo_pdf(file.path(od, paste0(file_name_type_text, series.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(file_name_type_text,series.name.fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(file_name_type_text, series.name.fn,".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0(file_name_type_text,series.name.fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
 		plot(years_full, pred[,i], col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab=ifelse(type == "catch", "Total Catch", "Index"),
 			ylim=c(0, 1.1*max(c(obs[,i],pred[,i]))))
-    points(years, obs[,i], col=plot.colors[i], pch=1)
+    graphics::points(years, obs[,i], col=plot.colors[i], pch=1)
     if(n_series == 1){
       if(length(years_full) > length(years)){
-        abline(v=tail(years,1), lty=2, lwd=1)
+        graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
       }
     }
 		log.ob.min <- log(obs[,i])-1.96*sd[,i]
 		log.ob.max <- log(obs[,i])+1.96*sd[,i]
 		plot(years_full, log(pred[,i]), col=plot.colors[i], lwd=2, type='l', xlab="Year", ylab=ifelse(type == "catch", "Log(Total Catch)", "Log(Index)"),
 			ylim=c(min(log.ob.min,log(pred[,i]), na.rm=T), 1.1*max(log.ob.max,log(pred[,i]), na.rm=T)))
-		points(years, log(obs[,i]), pch=1, col=plot.colors[i])
-    if(n_series == 1) abline(v=tail(years,1), lty=2, lwd=1)
-		arrows(years, log.ob.min, years, log.ob.max, length=0)
-		title(series.name.plt, outer=T, line=-1)
+		graphics::points(years, log(obs[,i]), pch=1, col=plot.colors[i])
+    if(n_series == 1) graphics::abline(v=tail(years,1), lty=2, lwd=1)
+		graphics::arrows(years, log.ob.min, years, log.ob.max, length=0)
+		graphics::title(series.name.plt, outer=T, line=-1)
 		plot(years, std_logres[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Log-scale Std. Residual")
-		abline(h=0)
-		hist(log_stdres[,i], plot=T, xlab="Std. Residual", ylab="Proportion", freq=F, main=NULL)
-		if(do.tex | do.png) dev.off() else par(origpar)
+		graphics::abline(h=0)
+		graphics::hist(log_stdres[,i], plot=T, xlab="Std. Residual", ylab="Proportion", freq=F, main=NULL)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
 }
 
@@ -1187,8 +1178,8 @@ plot.agg.obs.4.panel <- function(mod, type = "catch", do.tex = FALSE, do.png = F
 
 plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, use.s, use.r, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
   years <- mod$years
   years_full <- mod$years_full
   dat <- mod$env$data
@@ -1205,23 +1196,21 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
   sfns <- gsub(pattern, "_", mod$input$stock_names)
   rfns <- gsub(pattern, "_", mod$input$region_names)
-  # sfns <- chartr(" ", "_", mod$input$stock_names)
-  # rfns <- chartr(" ", "_", mod$input$region_names)
 	for(s in stocks) for(r in regions) for (i in ages) if(dat$NAA_where[s,r,i])
 	{
     sigma <- matrix(sigma_all[s,r,], length(years_full), dat$n_ages, byrow = TRUE)
     log_stdres <- (log(NAA[s,r,,])-log(pred_NAA[s,r,,]))/sigma
-		if(do.tex) cairo_pdf(file.path(od, paste0("NAA_4panel_", sfns[s], "_", rfns[r], "_age_",i,".pdf")), 
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("NAA_4panel_", sfns[s], "_", rfns[r], "_age_",i,".pdf")), 
       family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("NAA_4panel_", sfns[s], "_", rfns[r], "_age_",i,'.png')), 
+    if(do.png) grDevices::png(filename = file.path(od, paste0("NAA_4panel_", sfns[s], "_", rfns[r], "_age_",i,'.png')), 
       width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
+    graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(2,2))
     y.max <- max(NAA[s,r,,i], na.rm = TRUE)
     if(!is.na(y.max)) {
       plot(years_full, NAA[s,r,,i], type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Abundance (1000s)",
         ylim=c(0, 1.1*y.max))
-      lines(years_full, pred_NAA[s,r,,i], col=plot.colors[i], lwd=2)
-      if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+      graphics::lines(years_full, pred_NAA[s,r,,i], col=plot.colors[i], lwd=2)
+      if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
     } else plot(years_full, NAA[s,r,,i], type='n', col=plot.colors[i], pch=1, xlab="Year", ylab="Abundance (1000s)")
     log.ob.min <- log(NAA[s,r,,i])-1.96*sigma[,i]
 		log.ob.max <- log(NAA[s,r,,i])+1.96*sigma[,i]
@@ -1230,26 +1219,26 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
     if(!is.na(y.max) & !is.na(y.min)) {
       plot(years_full, log(NAA[s,r,,i]), type='p', col=plot.colors[i], pch=19, xlab="Year", ylab="Ln(Abundance)",
         ylim=c(y.min,y.max))
-      lines(years_full, log(pred_NAA[s,r,,i]), col=plot.colors[i], lwd=2)
-      arrows(years_full, log.ob.min, years_full, log.ob.max, length=0)
-      if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+      graphics::lines(years_full, log(pred_NAA[s,r,,i]), col=plot.colors[i], lwd=2)
+      graphics::arrows(years_full, log.ob.min, years_full, log.ob.max, length=0)
+      if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
       plot(years_full, log_stdres[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Log-scale (Conditional) Std. Residual")
-      abline(h=0)
-      hist(log_stdres[,i], plot=T, xlab="(Conditional) Std. Residual", ylab="Probability Density", freq=F, main=NULL)
+      graphics::abline(h=0)
+      graphics::hist(log_stdres[,i], plot=T, xlab="(Conditional) Std. Residual", ylab="Probability Density", freq=F, main=NULL)
     } else {
       plot(years_full, log(NAA[s,r,,i]), type='n', col=plot.colors[i], pch=1, xlab="Year", ylab="Ln(Abundance)")
     }
-  	title (paste0("Conditional Expected and Posterior Estimates of Age ",i, " Abundance "), outer=T, line=-1)
-		if(do.tex | do.png) dev.off() else par(origpar)
+  	graphics::title(paste0("Conditional Expected and Posterior Estimates of Age ",i, " Abundance "), outer=T, line=-1)
+		if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
-  # par(origpar)
+  # graphics::par(origpar)
 }
 
 #revised
 
 # plot.NAA.res <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, plot.colors, od)
 # {
-#   origpar <- par(no.readonly = TRUE)
+#   origpar <- graphics::par(no.readonly = TRUE)
 #   #ages <- mod$ages.lab
 #   dat <- mod$env$data
 #   ages <- 1:dat$n_ages
@@ -1273,25 +1262,25 @@ plot.NAA.4.panel <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", re
 #     ymin <- min(apply(log_stdres,1, function(x) sum(x[which(x<0)])))
 #     ymax <- max(apply(log_stdres,1, function(x) sum(x[which(x>0)])))
 #     dat <- as.data.frame.table(log_stdres)
-#     if(do.tex) cairo_pdf(file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".pdf")), 
+#     if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".pdf")), 
 #       family = fontfam, height = 10, width = 10)
-#     if(do.png) png(filename = file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".png")), 
+#     if(do.png) grDevices::png(filename = file.path(od, paste0("NAA_res_barplot_stacked_", sfns[s], "_", rfns[r],".png")), 
 #       width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-#     par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
+#     graphics::par(mfrow=c(1,1), mar=c(5,5,1,1), oma = c(0,0,0,0))
 #     naa_res_plot <- lattice::barchart(Freq ~ Var1, data = dat, groups = Var2, stack = TRUE, col = plot.colors, xlab = "Year", ylab = "Std. Abundance Residuals", box.ratio = 10, reference = TRUE,
 #       scales = list(x=list(at = x.at, labels = x.lab), alternating = FALSE),
 #       key = list(text = list(lab = mod$ages.lab), rectangles = list(col = plot.colors), columns = n.ages, title = "Age"))
 #     print(naa_res_plot)
-#     if(do.tex | do.png) dev.off() else par(origpar)
+#     if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 #   }
-#   # par(origpar)
+#   # graphics::par(origpar)
 # }
 
 #revised
 #use for both catch and indices
 plot.age.comp <- function(mod, type = "catch", do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   years <- mod$years
   dat <- mod$env$data
   rep <- mod$rep
@@ -1330,10 +1319,10 @@ plot.age.comp <- function(mod, type = "catch", do.tex = FALSE, do.png = FALSE, f
     acomp.pred <- pred[i,1:mod$env$data$n_years_model,]
     series.name.fn <- paste0(ffns[i], "_", rfns[series_regions[i]])
     series.name.plt <- paste0(series_names[i], ifelse(n_regions>1, paste0(" in ", mod$input$region_names[series_regions[i]]), ""))
-    if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", series.name.fn, "_a.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", series.name.fn, "_a.png")), width = 10*144, height = 10*144, 
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Catch_age_comp_", series.name.fn, "_a.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("Catch_age_comp_", series.name.fn, "_a.png")), width = 10*144, height = 10*144, 
       res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+    graphics::par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
     my.title <- series.name.plt #paste0("Fleet ", i)
     for (j in 1:length(years))
     {
@@ -1341,34 +1330,34 @@ plot.age.comp <- function(mod, type = "catch", do.tex = FALSE, do.png = FALSE, f
         ylim=c(0, 1), axes = FALSE)
       if(j %% 15 == 1)
       {
-        title(my.title, outer=TRUE, line=0)
-        mtext(side = 2, "Proportion", line = 2, outer = TRUE)
-        mtext(side = 1, "Age", line = 2, outer = TRUE)
+        graphics::title(my.title, outer=TRUE, line=0)
+        graphics::mtext(side = 2, "Proportion", line = 2, outer = TRUE)
+        graphics::mtext(side = 1, "Age", line = 2, outer = TRUE)
       }
-      if(j %% 15 %in% 1:5) axis(2)
-      else axis(2, labels = FALSE)
-      if(j %in% seq(5,length(years)+1,5)) axis(1, at = ages, labels = ages.lab)
-      else axis(1, labels = FALSE)
-      grid()
-      box()
-      lines(1:length(ages), acomp.pred[j,], col=plot.colors[which(series == i)],  lwd=2)
-      title(paste("Year = ", years[j], sep=""), outer = FALSE, line = 1)
+      if(j %% 15 %in% 1:5) graphics::axis(2)
+      else graphics::axis(2, labels = FALSE)
+      if(j %in% seq(5,length(years)+1,5)) graphics::axis(1, at = ages, labels = ages.lab)
+      else graphics::axis(1, labels = FALSE)
+      graphics::grid()
+      graphics::box()
+      graphics::lines(1:length(ages), acomp.pred[j,], col=plot.colors[which(series == i)],  lwd=2)
+      graphics::title(paste("Year = ", years[j], sep=""), outer = FALSE, line = 1)
 
       # if 5x3 multipanel is full, save png and open new one
       if((j %% 15 == 0) & (do.tex | do.png) & (j < length(years))){
-        dev.off()
-        if(do.tex) cairo_pdf(file.path(od, paste0("Catch_age_comp_", series.name.fn,"_",letters[j/15 + 1],".pdf")), family = fontfam, 
+        grDevices::dev.off()
+        if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Catch_age_comp_", series.name.fn,"_",letters[j/15 + 1],".pdf")), family = fontfam, 
           height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0("Catch_age_comp_", series.name.fn,"_",letters[j/15 + 1],".png")), width = 10*144, 
+        if(do.png) grDevices::png(filename = file.path(od, paste0("Catch_age_comp_", series.name.fn,"_",letters[j/15 + 1],".png")), width = 10*144, 
           height = 10*144, res = 144, pointsize = 12, family = fontfam)
-        par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
+        graphics::par(mar=c(1,1,2,1), oma=c(4,4,2,1), mfcol=c(5,3))
       }
     }  #end loop on n_years
-    if(length(years) %% 15 != 0) frame()
-    if(do.tex | do.png) dev.off() else par(origpar)
+    if(length(years) %% 15 != 0) graphics::frame()
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}  #end loop on n_fleets
 
-  # par(origpar)
+  # graphics::par(origpar)
 }
 
 #revised
@@ -1399,8 +1388,8 @@ pearson.fn <- function(mod, index = NULL, fleet = NULL, age_comp_mod= 1, sims = 
   if(age_comp_mod == 11) var <- paahat*(1-paahat) * (1 + exp(paa_pars[1]))/(1 + N * exp(paa_pars[1])) #D-M linear
   #for age_comp_mod 5:7 (Logistic normal) do simulations to determine variance (and mean?)
   if(age_comp_mod %in% 5:7) if(!is.null(sims)){
-    if(!is.null(index)) var <- t(sapply(1:length(input$years), \(z) apply(sapply(sims, \(x) x$indx_paa[index,z,]),1,var)))
-    else if(!is.null(fleet)) var <- t(sapply(1:length(input$years), \(z) apply(sapply(sims, \(x) x$catch_paa[fleet,z,]),1,var)))
+    if(!is.null(index)) var <- t(sapply(1:length(mod$input$years), \(z) apply(sapply(sims, \(x) x$indx_paa[index,z,]),1,var)))
+    else if(!is.null(fleet)) var <- t(sapply(1:length(mod$input$years), \(z) apply(sapply(sims, \(x) x$catch_paa[fleet,z,]),1,var)))
   }
   pearson <- r/sqrt(var)
   return(pearson)
@@ -1411,7 +1400,7 @@ pearson.fn <- function(mod, index = NULL, fleet = NULL, age_comp_mod= 1, sims = 
 plot.age.comp.resids <- function(mod, type = "catch", ages, ages.lab, scale.catch.bubble2 = 2, pos.resid.col = "#ffffffaa", neg.resid.col = "#8c8c8caa",
   do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, osa = FALSE, use.i, od) {
 
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- mod$ages.lab
@@ -1450,13 +1439,13 @@ plot.age.comp.resids <- function(mod, type = "catch", ages, ages.lab, scale.catc
     yind <- which(use_obs[,i] ==1)
     if(length(yind)){
       if(osa & obs_type %in% mod$osa$type){
-        df <- subset(mod$osa, type == obs_type)
+        df <- subset(mod$osa, mod$osa$type == obs_type)
         my.title <- "Age Comp OSA Quantile Residuals for "
         fname <- paste0("Catch_age_comp_osa_resids_", ffns[i])
         resids <- matrix(NA, nrow = nyrs, ncol = n_ages)
         vals <- resids
         for(j in yind){
-          tmp <- subset(df, year == j & fleet == paste0(ifelse(type == "catch", "fleet_", "index_"),i))
+          tmp <- subset(df, df$year == j & df$fleet == paste0(ifelse(df$type == "catch", "fleet_", "index_"),i))
           resids[j,tmp$age] <- tmp$residual
           vals[j,tmp$age] <- tmp$val
           if(dat$age_comp_model_fleets[i] %in% c(1:2,10,11)) vals[j,tmp$age]/sum(vals[j,tmp$age]) #obs are numbers not proportions
@@ -1472,9 +1461,9 @@ plot.age.comp.resids <- function(mod, type = "catch", ages, ages.lab, scale.catc
         fname <- paste0("Catch_age_comp_resids_", ffns[i])
         scale.resid.bubble.catch <- 25
       }
-      if(do.tex) cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-      par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+      if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fname,".pdf")), family = fontfam, height = 10, width = 10)
+      if(do.png) grDevices::png(filename = file.path(od, paste0(fname,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      graphics::par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
       z1 <- resids
       if(any(!is.na(resids))) range.resids <- range(abs((as.vector(z1))), na.rm=T)
       else range.resids <- c(0,0)
@@ -1484,21 +1473,21 @@ plot.age.comp.resids <- function(mod, type = "catch", ages, ages.lab, scale.catc
       resid.col <- ifelse(z3 > 0.0, pos.resid.col, neg.resid.col)
       plot(ages, rev(ages),  xlim = c(1, n_ages+1), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = tylab,
         type = "n", axes=F)
-      axis(1, at= ages, lab=ages.lab)
-      axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
-      box()
-      abline(h=years, col="lightgray")
-      segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+      graphics::axis(1, at= ages, lab=ages.lab)
+      graphics::axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+      graphics::box()
+      graphics::abline(h=years, col="lightgray")
+      graphics::segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
 
-      for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
+      for (j in 1:nyrs) graphics::points(ages, rep(years[j], n_ages), cex=abs(z3[j,]), col="black", bg = resid.col[j,],  pch = 21)
 
-      bubble.legend1 <- round(quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
+      bubble.legend1 <- round(stats::quantile(abs(resids), probs = c(0.05,0.5,0.95), na.rm = TRUE),3)
       bubble.legend2 <- bubble.legend1 * scale.resid.bubble.catch*scale.catch.bubble2
-      legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
-      legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
-      legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
-      title (paste0(series_names[i]), outer=T, line=-1)
-      if(do.tex | do.png) dev.off() else par(origpar)
+      graphics::legend("topright", xpd=T, legend=bubble.legend1, pch=rep(1, 3), pt.cex=bubble.legend2, horiz=T , col='black')
+      graphics::legend("topleft", xpd=T, legend=c("Neg.", "Pos."), pch=rep(21, 2), pt.cex=3, horiz=T, pt.bg=c(neg.resid.col, pos.resid.col), col="black")
+      graphics::legend("top", xpd = TRUE, legend = paste("Max(resid)=",round(range.resids[2],2), sep=""), horiz = TRUE)
+      graphics::title (paste0(series_names[i]), outer=T, line=-1)
+      if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     } #end if any age comp for fleet
   }   #end loop n_fleets
   # par(origpar)
@@ -1506,8 +1495,8 @@ plot.age.comp.resids <- function(mod, type = "catch", ages, ages.lab, scale.catc
 
 plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1))
 	cc<-0
   dat <- mod$env$data
   n_regions <- dat$n_regions
@@ -1537,8 +1526,8 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
 	for (i in fleets) {
     fn <- paste0("Selectivity_", ffns[i], "_", rfns[i])
     pn <- paste0(fleet_names[i], ifelse(n_regions>1, paste0(" in ", mod$input$region_names[fleet_regions[i]]), ""))
-	  if(do.tex) cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
-	  if(do.png) png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
+	  if(do.png) grDevices::png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	  blocks <- unique(sb_p[,i])
 		n.blocks <- length(blocks)
     # sel <- rbind(mod$rep$selblocks[blocks,])
@@ -1555,18 +1544,18 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
 			{
 				plot(ages, sel[j,], type='l', col=my.col[j], xlim=c(min(ages),max(ages)), ylim=c(0,1.1), xlab="Age", ylab="Selectivity",
 					lwd=2, axes = FALSE)
-				grid(col = gray(0.7), lwd = 2)
-				axis(1, at = ages, labels = ages.lab, lwd = 2)
-				axis(2, lwd = 2)
-				box(lwd=2)
+				graphics::grid(col = grDevices::gray(0.7), lwd = 2)
+				graphics::axis(1, at = ages, labels = ages.lab, lwd = 2)
+				graphics::axis(2, lwd = 2)
+				graphics::box(lwd=2)
 			}
-			if (j>1) lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
+			if (j>1) graphics::lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
 		}
-		title(pn, line = 1)
-		legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
-		if(do.tex | do.png) dev.off() else par(origpar)
+		graphics::title(pn, line = 1)
+		graphics::legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
+		if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
-  # par(origpar)
+  # graphics::par(origpar)
 }
 
 #revised
@@ -1574,8 +1563,8 @@ plot.sel.blocks <- function(mod, ages, ages.lab, plot.colors, indices = FALSE, d
 #not used
 plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1))
 	cc<-0
   dat <- mod$env$data
   if(missing(ages)) ages <- 1:dat$n_ages
@@ -1592,8 +1581,8 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 	for (i in fleets)
 	{
     fn <- paste0("Selectivity_",ffns[i])
-	  if(do.tex) cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
-	  if(do.png) png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fn,".pdf")), family = fontfam, height = 10, width = 10)
+	  if(do.png) grDevices::png(filename = file.path(od, paste0(fn,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	  blocks <- unique(sb_p[,i])
 		n.blocks <- length(blocks)
     # sel <- rbind(mod$rep$selblocks[blocks,])
@@ -1611,25 +1600,25 @@ plot.fleet.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 			{
 				plot(ages, sel[j,], type='l', col=my.col[j], xlim=c(min(ages),max(ages)), ylim=c(0,1.1), xlab="Age", ylab="Selectivity",
 					lwd=2, axes = FALSE)
-				grid(col = gray(0.7), lwd = 2)
-				axis(1, at = ages, labels = ages.lab, lwd = 2)
-				axis(2, lwd = 2)
-				box(lwd=2)
+				graphics::grid(col = grDevices::gray(0.7), lwd = 2)
+				graphics::axis(1, at = ages, labels = ages.lab, lwd = 2)
+				graphics::axis(2, lwd = 2)
+				graphics::box(lwd=2)
 			}
-			if (j>1) lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
+			if (j>1) graphics::lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
 		}
-		title(paste0(mod$input$fleet_names[i]), line = 1)
-		legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
-		if(do.tex | do.png) dev.off() else par(origpar)
+		graphics::title(paste0(mod$input$fleet_names[i]), line = 1)
+		graphics::legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
+		if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
-  # par(origpar)
+  # graphics::par(origpar)
 }
 
 #not used
 plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, use.i, od)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1))
 	cc<-0
   dat <- mod$env$data
   if(missing(ages)) ages <- 1:dat$n_ages
@@ -1642,8 +1631,8 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 
 	for (i in indices)
 	{
-	  if(do.tex) cairo_pdf(file.path(od, paste0("Selectivity_index",i,".pdf")), family = fontfam, height = 10, width = 10)
-	  if(do.png) png(filename = file.path(od, paste0("Selectivity_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Selectivity_index",i,".pdf")), family = fontfam, height = 10, width = 10)
+	  if(do.png) grDevices::png(filename = file.path(od, paste0("Selectivity_index",i,'.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 	  blocks <- unique(sb_p[,i])
 		n.blocks <- length(blocks)
     # sel <- rbind(mod$rep$selblocks[blocks,])
@@ -1661,43 +1650,43 @@ plot.index.sel.blocks <- function(mod, ages, ages.lab, plot.colors, do.tex = FAL
 			{
 				plot(ages, sel[j,], type='l', col=my.col[j], xlim=c(min(ages),max(ages)), ylim=c(0,1.1), xlab="Age", ylab="Selectivity",
 					lwd=2, axes = FALSE)
-				grid(col = gray(0.7), lwd = 2)
-				axis(1, at = ages, labels = ages.lab, lwd = 2)
-				axis(2, lwd = 2)
-				box(lwd=2)
+				graphics::grid(col = grDevices::gray(0.7), lwd = 2)
+				graphics::axis(1, at = ages, labels = ages.lab, lwd = 2)
+				graphics::axis(2, lwd = 2)
+				graphics::box(lwd=2)
 			}
-			if (j>1) lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
+			if (j>1) graphics::lines(ages, sel[j,], type='l', col=my.col[j], lwd=2)
 		}
-		title(paste0("Index ",i), line = 1)
-		legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
-		if(do.tex | do.png) dev.off() else par(origpar)
+		graphics::title(paste0("Index ",i), line = 1)
+		graphics::legend("topright", col=my.col, legend=paste0(minyr, " - ", maxyr), lwd=2, bg = "white")
+		if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
-  # par(origpar)
+  # graphics::par(origpar)
 }
 
 #revised
 
 plot.SSB.F.trend<-function(mod, alpha = 0.05)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   years_full <- mod$years_full
   years <- mod$years
   n_ages <- mod$env$data$n_ages
   n_regions <- mod$env$data$n_regions
 
-  tcol <- col2rgb('black')
-  tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+  tcol <- grDevices::col2rgb('black')
+  tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
   ssb <- ssb.lo <- ssb.hi <- matrix(NA, nrow = length(years_full), ncol = mod$env$data$n_stocks)
   faa <- faa.lo <- faa.hi <- array(NA, dim = dim(mod$rep$log_FAA_by_region))
   full.f <- full.f.lo <- full.f.hi <- matrix(NA, length(years_full), n_regions)
   if(class(mod$sdrep)[1] == "sdreport"){
-    std <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = TRUE), TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = TRUE))
+    std <- list(as.list(mod$sdrep, what = "Est", report = TRUE), as.list(mod$sdrep, what = "Std", report = TRUE))
     ssb[] <- exp(std[[1]]$log_SSB)
-    ssb.lo[] <- ssb*exp(qnorm(alpha/2)*std[[2]]$log_SSB)
-    ssb.hi[] <- ssb*exp( -qnorm(alpha/2)*std[[2]]$log_SSB)
+    ssb.lo[] <- ssb*exp(stats::qnorm(alpha/2)*std[[2]]$log_SSB)
+    ssb.hi[] <- ssb*exp( -stats::qnorm(alpha/2)*std[[2]]$log_SSB)
     faa[] <- exp(std[[1]]$log_FAA_by_region)
-    faa.lo[] <- faa*exp(qnorm(alpha/2)*std[[2]]$log_FAA_by_region)
-    faa.hi[] <- faa*exp(-qnorm(alpha/2)*std[[2]]$log_FAA_by_region)
+    faa.lo[] <- faa*exp(stats::qnorm(alpha/2)*std[[2]]$log_FAA_by_region)
+    faa.hi[] <- faa*exp(-stats::qnorm(alpha/2)*std[[2]]$log_FAA_by_region)
     for(r in 1:n_regions) {
       full.f.lo[,r] <- apply(faa.lo[r,,],1, function(x) x[max(which(x == max(x)))])
       full.f.hi[,r] <- apply(faa.hi[r,,],1, function(x) x[max(which(x == max(x)))])
@@ -1709,23 +1698,23 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   }
 	for(r in 1:n_regions) full.f[,r] <- apply(faa[r,,],1, function(x) x[max(which(x == max(x)))])
 	
-  par(mfrow=c(2,1), mar=c(1,1,1,1), oma = c(4,4,0,0))
+  graphics::par(mfrow=c(2,1), mar=c(1,1,1,1), oma = c(4,4,0,0))
   max.y <- max(ssb.hi)
   na.se <- is.na(max.y)
   if(na.se) max.y <- max(ssb)
   pal <- wham_palette(mod$env$data$n_stocks)
   plot(years_full, ssb[,1], type='n', lwd=2, xlab="", ylab="", ylim=c(0,max.y), axes = FALSE)
-  axis(1, labels = FALSE)
-  axis(2)
-  box()
-  mtext(side = 2, "SSB (mt)", outer = FALSE, line = 3)
-  grid(col = gray(0.7))
+  graphics::axis(1, labels = FALSE)
+  graphics::axis(2)
+  graphics::box()
+  graphics::mtext(side = 2, "SSB (mt)", outer = FALSE, line = 3)
+  graphics::grid(col = grDevices::gray(0.7))
   for(s in 1:mod$env$data$n_stocks){
-    lines(years_full, ssb[,s], col = pal[s], lwd = 2)
-    if(!na.se) polygon(c(years_full,rev(years_full)), c(ssb.lo[,s],rev(ssb.hi[,s])), col = adjustcolor(pal[s], alpha.f=0.4), border = "transparent")
+    graphics::lines(years_full, ssb[,s], col = pal[s], lwd = 2)
+    if(!na.se) graphics::polygon(c(years_full,rev(years_full)), c(ssb.lo[,s],rev(ssb.hi[,s])), col = grDevices::adjustcolor(pal[s], alpha.f=0.4), border = "transparent")
   }
-  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
-  if(mod$env$data$n_stocks>1) legend("topright", lty = 1, col = pal, lwd = 2, legend = mod$input$stock_names)
+  if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
+  if(mod$env$data$n_stocks>1) graphics::legend("topright", lty = 1, col = pal, lwd = 2, legend = mod$input$stock_names)
   
   # F trend
   max.y <- max(full.f.hi)
@@ -1734,26 +1723,26 @@ plot.SSB.F.trend<-function(mod, alpha = 0.05)
   pal <- wham_palette(n_regions)
   #if(!no.f.ci){ # have CI
   plot(years_full, full.f[,1], type='n', lwd=2, xlab="", ylab="", ylim=c(0,max.y), axes = FALSE)
-  axis(1)
-  axis(2)
-  box()
-  mtext(side = 1, "Year", outer = FALSE, line = 3)
-  mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
-  grid(col = gray(0.7))
+  graphics::axis(1)
+  graphics::axis(2)
+  graphics::box()
+  graphics::mtext(side = 1, "Year", outer = FALSE, line = 3)
+  graphics::mtext(side = 2, "Fully-selected F", outer = FALSE, line = 3)
+  graphics::grid(col = grDevices::gray(0.7))
   for(i in 1:n_regions){
-    lines(years_full, full.f[,i], col = pal[i], lwd = 2)
-  	polygon(c(years_full,rev(years_full)), c(full.f.lo[,i],rev(full.f.hi[,i])), col = adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+    graphics::lines(years_full, full.f[,i], col = pal[i], lwd = 2)
+  	graphics::polygon(c(years_full,rev(years_full)), c(full.f.lo[,i],rev(full.f.hi[,i])), col = grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
   }
-  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
-  if(mod$env$data$n_regions>1) legend("topright", lty = 1, col = pal, lwd = 2, legend = mod$input$region_names)
-  par(origpar)
+  if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
+  if(mod$env$data$n_regions>1) graphics::legend("topright", lty = 1, col = pal, lwd = 2, legend = mod$input$region_names)
+  graphics::par(origpar)
 }  #end function
 
 #revised
 
 plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE, stock = 1)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat = mod$env$data
   if(missing(ages)) ages <- 1:dat$n_ages
   if(missing(ages.lab)) ages.lab <- mod$ages.lab
@@ -1767,34 +1756,34 @@ plot.SSB.AA <- function(mod, ages, ages.lab, plot.colors, prop=FALSE, stock = 1)
 	#ssb.aa <- (mod$rep$NAA * exp(-ssbfrac * (mod$rep$FAA_tot + mod$rep$MAA)) * dat$waa[dat$waa_pointer_ssb,,] * dat$mature)/1000
 	ssb.max <- max(apply(ssb.aa,1,sum))
 
-	par(mfrow=c(1,1), mar=c(5,5,3,1), oma = c(0,0,1,0))
+	graphics::par(mfrow=c(1,1), mar=c(5,5,3,1), oma = c(0,0,1,0))
 	if(!prop){ # plot SSB at age
-  	res <- barplot(t(ssb.aa), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab =paste('SSB at age (', "kmt", ')', sep = ''),
+  	res <- graphics::barplot(t(ssb.aa), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab =paste('SSB at age (', "kmt", ')', sep = ''),
   		ylim = c(0,1.15*ssb.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
-  	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
-    box()
+    if(length(years_full) > length(years)) graphics::abline(v=length(years), lty=2, lwd=2)
+  	graphics::legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
+    graphics::axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
+    graphics::box()
 	}
 	if(prop){ # plot *proportion* SSB at age
-  	barplot(t(ssb.aa/apply(ssb.aa,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab ='Proportion SSB at age',
+  	graphics::barplot(t(ssb.aa/apply(ssb.aa,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year', ylab ='Proportion SSB at age',
   		ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
-  	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
-    box()
+    if(length(years_full) > length(years)) graphics::abline(v=length(years), lty=2, lwd=2)
+  	graphics::legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
+    graphics::axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
+    graphics::box()
 	}
-  title(mod$input$stock_names[stock], line = 1)
+  graphics::title(mod$input$stock_names[stock], line = 1)
 
-  par(origpar)
+  graphics::par(origpar)
 }  #end funciton
 #plot.SSB.AA(ssm)
 
 #------------------------------------
 plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = expression(10^6), prop=FALSE, stock = 1, region = 1)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1))
   dat <- mod$env$data
 	## stacked barplot of NAA
   if(missing(ages)) ages <- 1:dat$n_ages
@@ -1806,28 +1795,28 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
   n.yrs <- length(years_full)
 	NAA <- mod$rep$NAA[stock,region,,]
 	N.max=max(apply(NAA,1,sum))/scale
-	par(mfrow=c(1,1), mar=c(5,5,3,1), oma = c(0,0,1,0))
+	graphics::par(mfrow=c(1,1), mar=c(5,5,3,1), oma = c(0,0,1,0))
 	if(!prop){ # plot numbers at age
-  	barplot(t(NAA)/scale, beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
+  	graphics::barplot(t(NAA)/scale, beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab =as.expression(substitute(paste("January 1 numbers at age (", units, ")", sep = ''), list(units = units[[1]]))),
   		ylim = c(0,1.15*N.max), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
-  	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
-    box()
+    if(length(years_full) > length(years)) graphics::abline(v=length(years), lty=2, lwd=2)
+  	graphics::legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8)
+    graphics::axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
+    graphics::box()
 	}
 	if(prop){ # plot *proportion* of numbers at age
-  	barplot(t(NAA/apply(NAA,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
+  	graphics::barplot(t(NAA/apply(NAA,1,sum)), beside=F, cex.names=0.75, width=1, space=rep(0,n.yrs), xlab = 'Year',
   		ylab ='January 1 proportions at age', ylim = c(0,1.1), xlim=c(0.5,n.yrs+1-0.5), col=plot.colors)
-    if(length(years_full) > length(years)) abline(v=length(years), lty=2, lwd=2)
-  	legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8 )
-    axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
-    box()
+    if(length(years_full) > length(years)) graphics::abline(v=length(years), lty=2, lwd=2)
+  	graphics::legend('top', horiz=TRUE, legend=ages.lab, pch=15, col=plot.colors, cex=0.8 )
+    graphics::axis(1, at = seq(5,n.yrs,5)-0.5, labels = years_full[seq(5,n.yrs,5)])
+    graphics::box()
 	}
   use.reg <-""
   if(mod$input$data$n_regions>1) use.reg <- paste0(" in ", mod$input$region_names[region])
-  title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
-  par(origpar)
+  graphics::title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
+  graphics::par(origpar)
 } # end function
 #plot.NAA(ssm)
 #------------------------------------
@@ -1837,11 +1826,11 @@ plot.NAA <- function(mod, ages, ages.lab, plot.colors, scale = 1000, units = exp
 plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression(10^6), alpha = 0.05,
   scale.ssb = 1000, scale.recruits = 1000, age.recruit = 1, plot.colors, loglog=FALSE, stock = 1)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1), mar = c(4,5,3,1), oma = c(1,1,1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1), mar = c(4,5,3,1), oma = c(1,1,1,1))
 
-  # std <- list(TMB:::as.list.sdreport(mod$sdrep, what = "Est", report = T),
-  #     TMB:::as.list.sdreport(mod$sdrep, what = "Std", report = T))
+  # std <- list(as.list(mod$sdrep, what = "Est", report = T),
+  #     as.list(mod$sdrep, what = "Std", report = T))
 
   std <- summary(mod$sdrep, "report")
   cov <- mod$sdrep$cov
@@ -1855,8 +1844,8 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
 	ssb.ind <- matrix(which(rownames(std) == "log_SSB"), length(mod$years_full), dat$n_stocks)[,stock]
 	log.ssb <- std[ssb.ind,1]
 	ssb.cv <- std[ssb.ind,2]
-  log.ssb.lo <- log.ssb + qnorm(alpha/2)*ssb.cv
-  log.ssb.hi <- log.ssb + qnorm(1-alpha/2)*ssb.cv
+  log.ssb.lo <- log.ssb + stats::qnorm(alpha/2)*ssb.cv
+  log.ssb.hi <- log.ssb + stats::qnorm(1-alpha/2)*ssb.cv
   R.ind <- array(which(rownames(std) == "log_NAA_rep"),dim = dim(mod$rep$NAA))[stock, dat$spawn_regions[stock],,1]
   #NAA.ind <- which(rownames(std) == "log_NAA_rep")
   log.R <- std[R.ind,1]
@@ -1890,19 +1879,19 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
     		xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
     		ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
     			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max.y), xlim=c(0,max.x), axes = FALSE)
-    	grid(col = gray(0.7), lty = 2)
-    	axis(1)
-    	axis(2)
-    	box()
-    	lines(SR[,2], SR[,3], col = gray(0.7), lwd =2)
+    	graphics::grid(col = grDevices::gray(0.7), lty = 2)
+    	graphics::axis(1)
+    	graphics::axis(2)
+    	graphics::box()
+    	graphics::lines(SR[,2], SR[,3], col = grDevices::gray(0.7), lwd =2)
     	for(i in 1:length(ci.regs))
       {
-        tcol <- col2rgb(plot.colors[i])
-        poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-        polygon(ci.regs[[i]][,1],ci.regs[[i]][,2], border = poly)
+        tcol <- grDevices::col2rgb(plot.colors[i])
+        poly <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+        graphics::polygon(ci.regs[[i]][,1],ci.regs[[i]][,2], border = poly)
       }
-      points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
-      text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
+      graphics::points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
+      graphics::text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
     } else { # NA lims
       max.y <- max(SR[,3])
       max.x <- max(SR[,2])
@@ -1910,13 +1899,13 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
         xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
         ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
           list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max.y), xlim=c(0,max.x), axes = FALSE)
-      grid(col = gray(0.7), lty = 2)
-      axis(1)
-      axis(2)
-      box()
-      lines(SR[,2], SR[,3], col = gray(0.7), lwd =2)
-      points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
-      text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
+      graphics::grid(col = grDevices::gray(0.7), lty = 2)
+      graphics::axis(1)
+      graphics::axis(2)
+      graphics::box()
+      graphics::lines(SR[,2], SR[,3], col = grDevices::gray(0.7), lwd =2)
+      graphics::points(SR[npts,2], SR[npts,3], pch=19, col="#ffaa22", cex=2.5)
+      graphics::text(SR[,2], SR[,3], yr.text, cex=0.9, col=plot.colors)
     }
 	}
 
@@ -1926,19 +1915,19 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
     		xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
     		ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
     			list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(log(min(SR[,3])), log(max.y)), xlim=c(log(min(SR[,2])),log(max.x)), axes = FALSE)
-    	grid(col = gray(0.7), lty = 2)
-    	axis(1)
-    	axis(2)
-    	box()
-    	lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
+    	graphics::grid(col = grDevices::gray(0.7), lty = 2)
+    	graphics::axis(1)
+    	graphics::axis(2)
+    	graphics::box()
+    	graphics::lines(log(SR[,2]), log(SR[,3]), col = grDevices::gray(0.7), lwd =2)
     	for(i in 1:length(ci.regs))
       {
-        tcol <- col2rgb(plot.colors[i])
-        poly <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-        polygon(log(ci.regs[[i]][,1]),log(ci.regs[[i]][,2]), border = poly)
+        tcol <- grDevices::col2rgb(plot.colors[i])
+        poly <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+        graphics::polygon(log(ci.regs[[i]][,1]),log(ci.regs[[i]][,2]), border = poly)
       }
-      points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
-      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
+      graphics::points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
+      graphics::text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
     } else { # na lims but correct max.x and max.y already calculated for untransformed plot SSB-Rec
       max.y <- max(SR[,3])
       max.x <- max(SR[,2])
@@ -1946,17 +1935,17 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
         xlab=as.expression(substitute(paste("Log-SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
         ylab= as.expression(substitute(paste("Age-", age.recruit, " Log-Recruits (", units, ")", sep = ''),
           list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(log(min(SR[,3])), log(max.y)), xlim=c(log(min(SR[,2])),log(max.x)), axes = FALSE)
-      grid(col = gray(0.7), lty = 2)
-      axis(1)
-      axis(2)
-      box()
-      lines(log(SR[,2]), log(SR[,3]), col = gray(0.7), lwd =2)
-      points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
-      text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
+      graphics::grid(col = grDevices::gray(0.7), lty = 2)
+      graphics::axis(1)
+      graphics::axis(2)
+      graphics::box()
+      graphics::lines(log(SR[,2]), log(SR[,3]), col = grDevices::gray(0.7), lwd =2)
+      graphics::points(log(SR[npts,2]), log(SR[npts,3]), pch=19, col="#ffaa22", cex=2.5)
+      graphics::text(log(SR[,2]), log(SR[,3]), yr.text, cex=0.9, col=plot.colors)
     }
 	}
-  title(paste0(mod$input$stock_names[stock], " recruitment", ifelse(n_regions>1, paste0(" in ", mod$input$region_names[dat$spawn_regions[stock]]), "")), line = 1)
-  par(origpar)
+  graphics::title(paste0(mod$input$stock_names[stock], " recruitment", ifelse(n_regions>1, paste0(" in ", mod$input$region_names[dat$spawn_regions[stock]]), "")), line = 1)
+  graphics::par(origpar)
 }  #end function
 
 # revised
@@ -1964,8 +1953,8 @@ plot.recr.ssb.yr <- function(mod, ssb.units = "kmt", recruits.units = expression
 #------------------------------------
 plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1, ssb.units = 'mt', recruits.units = expression(10^3), stock = NULL)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mar = c(5,5,3,5), oma = c(0,0,0,1), family='serif')
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mar = c(5,5,3,5), oma = c(0,0,0,1), family='serif')
   years <- mod$years
   years_full <- mod$years_full
   nyrs <- length(years_full)
@@ -1987,35 +1976,35 @@ plot.SARC.R.SSB <- function(mod, scale.ssb=1, scale.recruits=1, age.recruit = 1,
   max.ssb <- max(ssb.plot)
   scale.r <- max(ssb.plot)/max(recr.plot)
   ylimr <- c(0,1.1*max(recr.plot))
-  barplot(recr.plot/scale.recruits, axisnames=FALSE, width=1, space=rep(0,nyrs-age.recruit), offset=rep(-0.5,nyrs-age.recruit), axes=FALSE, xpd=FALSE,
+  graphics::barplot(recr.plot/scale.recruits, axisnames=FALSE, width=1, space=rep(0,nyrs-age.recruit), offset=rep(-0.5,nyrs-age.recruit), axes=FALSE, xpd=FALSE,
     xlab = '', ylab ='', ylim = ylimr, xlim=c(0.5,nyrs-age.recruit - 0.5), col=plot.colors[1])
   xr <-pretty(c(0,recr.plot/scale.recruits))
-  axis(2, at = xr, lab = xr )
-  axis(side=1, las=2, at=seq(0.5,nyrs-age.recruit-0.5, by=2),
+  graphics::axis(2, at = xr, lab = xr )
+  graphics::axis(side=1, las=2, at=seq(0.5,nyrs-age.recruit-0.5, by=2),
   labels=as.character(seq(years_full[1],years_full[nyrs-age.recruit], by=2)), cex=0.75, las=2)
 
   y.ssb <- (ssb.plot)*max.r/max.ssb
-  lines(seq(0.5,nyrs-age.recruit-0.5, by=1), y.ssb, lwd=2, col = plot.colors[2])
+  graphics::lines(seq(0.5,nyrs-age.recruit-0.5, by=1), y.ssb, lwd=2, col = plot.colors[2])
   x <- pretty(c(0,ssb.plot))
-  axis(4, at = c(0,x*max.r/max.ssb), lab = c(0,x))#, col=plot.colors[2], col.axis=plot.colors[2])
-  box()
-  mtext(side = 1, 'Year', line = 3)
-  mtext(side = 4, as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))), line = 3)#, col=plot.colors[2])
-  mtext(side = 2, as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
+  graphics::axis(4, at = c(0,x*max.r/max.ssb), lab = c(0,x))#, col=plot.colors[2], col.axis=plot.colors[2])
+  graphics::box()
+  graphics::mtext(side = 1, 'Year', line = 3)
+  graphics::mtext(side = 4, as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))), line = 3)#, col=plot.colors[2])
+  graphics::mtext(side = 2, as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
     list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), line = 3)
-  if(length(years_full) > length(years)) abline(v=length(years)-age.recruit, lty=2, lwd=2)
-  legend("topleft", fill = plot.colors, border = plot.colors, legend = c("Recruits", "SSB"))
-  if(is.null(stock) & dat$n_stocks>1) title("Total SSB and Recruitment", line = 1)
-  else title(paste0(mod$input$stock_names[stock], ifelse(n_regions>1, paste0(" in ", mod$input$region_names[dat$spawn_regions[stock]]), "")), line = 1)
-  par(origpar)
+  if(length(years_full) > length(years)) graphics::abline(v=length(years)-age.recruit, lty=2, lwd=2)
+  graphics::legend("topleft", fill = plot.colors, border = plot.colors, legend = c("Recruits", "SSB"))
+  if(is.null(stock) & dat$n_stocks>1) graphics::title("Total SSB and Recruitment", line = 1)
+  else graphics::title(paste0(mod$input$stock_names[stock], ifelse(n_regions>1, paste0(" in ", mod$input$region_names[dat$spawn_regions[stock]]), "")), line = 1)
+  graphics::par(origpar)
 }  # end function
 #plot.SARC.R.SSB(ssm, ssm.aux)
 #revised
 
 plot.fleet.F <- function(mod, plot.colors)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(1,1))
   years <- mod$years
   years_full <- mod$years_full
   nyrs <- length(years_full)
@@ -2036,19 +2025,19 @@ plot.fleet.F <- function(mod, plot.colors)
   if(missing(plot.colors)) plot.colors <- wham_palette(n_fleets)
   plot(years_full, F[,1], xlab="Year", ylab="Full F", ylim=c(0,max(F)),	type='n', lty=1, lwd=2)
 	if(n_fleets == 1){ 
-    lines(years_full, F, lty=1, lwd=2, col = "black")
+    graphics::lines(years_full, F, lty=1, lwd=2, col = "black")
   } else { 
     for(i in 1:n_fleets){
   		if(i==1){
-        if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
+        if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
       }
-      lines(years_full, F[,i],lty=1, lwd=2, col=plot.colors[i])
+      graphics::lines(years_full, F[,i],lty=1, lwd=2, col=plot.colors[i])
     }
   }
-  grid(col = gray(0.7))
+  graphics::grid(col = gray(0.7))
 	leg.names <- paste0(mod$input$fleet_names, ifelse(n_regions>1, paste0(" in ", mod$input$region_names[mod$input$data$fleet_regions]),""))
-	legend('topright', legend= leg.names, col=plot.colors,lwd=2, lty=1, bty='n')
-	par(origpar)
+	graphics::legend('topright', legend= leg.names, col=plot.colors,lwd=2, lty=1, bty='n')
+	graphics::par(origpar)
 }   # end function
 #plot.fleet.F(ssm,ssm.aux)
 
@@ -2056,8 +2045,8 @@ plot.fleet.F <- function(mod, plot.colors)
 #------------------------------------
 plot.cv <- function(mod)
 {
-  origpar <- par(no.readonly = TRUE)
-	par(mfrow=c(1,1), mar=c(4,4,2,2))
+  origpar <- graphics::par(no.readonly = TRUE)
+	graphics::par(mfrow=c(1,1), mar=c(4,4,2,2))
   years <- mod$years
   years_full <- mod$years_full
   nyrs <- length(years_full)
@@ -2093,19 +2082,19 @@ plot.cv <- function(mod)
     plot.colors <- wham_palette(dat$n_stocks + dat$n_fleets)
   	plot(years_full, R.cv[,1], type='n', xlab="Year", ylab="CV", ylim=c(0, 1.1*max(R.cv, ssb.cv, F.cv)))
     for(s in 1:dat$n_stocks) {
-      lines(years_full, R.cv[,s], lty = 1, lwd=2, col=plot.colors[s])
-  	  lines(years_full, ssb.cv[,s], , lty = 2, lwd=2, col=plot.colors[s])
+      graphics::lines(years_full, R.cv[,s], lty = 1, lwd=2, col=plot.colors[s])
+  	  graphics::lines(years_full, ssb.cv[,s], , lty = 2, lwd=2, col=plot.colors[s])
     }
     for(f in 1:dat$n_fleets){
-  	  lines(years_full, F.cv[,f], lty = 3, lwd=2, col=plot.colors[dat$n_stocks + f])
-      if(length(years_full) > length(years)) abline(v=tail(years,1), lwd=1)
+  	  graphics::lines(years_full, F.cv[,f], lty = 3, lwd=2, col=plot.colors[dat$n_stocks + f])
+      if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lwd=1)
     }
   	labs <- paste0(rep(mod$input$stock_names, each = dat$n_stocks), " ", rep(c("Recruits", "SSB"),dat$n_stocks))
     labs <- c(labs, paste0(mod$input$fleet_names, " F"))
     cols <- c(rep(1:dat$n_stocks, each = 2), dat$n_stocks + 1:dat$n_fleets)
-    legend('topleft', legend=labs, col=plot.colors[cols], lty=c(rep(1:2, dat$n_stocks), rep(3,dat$n_fleets)), lwd=2, border = "transparent")
+    graphics::legend('topleft', legend=labs, col=plot.colors[cols], lty=c(rep(1:2, dat$n_stocks), rep(3,dat$n_fleets)), lwd=2, border = "transparent")
   }
-  par(origpar)
+  graphics::par(origpar)
 }  # end function
 #------------------------------------
 #revised
@@ -2125,20 +2114,20 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors, stock = 1, re
 	n.M.by.age <- lapply(1:n_ages, function(x) table(mod$rep$MAA[stock,region,,x]))
 	plot(ages,meanMAA,lwd=2,xlab="Age",ylab="Natural Mortality Rate", ylim=c(0,1.1*(max(mod$rep$MAA[stock,region,,]))), type= 'n', xlim = c(min(ages)-0.5,max(ages)+1),
 		axes=FALSE)
-	grid(col = gray(0.7), lwd = 2)
-	axis(1, at = ages, labels = ages.lab, lwd = 2)
-	axis(2, lwd = 2)
-	box(lwd = 2)
+	graphics::grid(col = grDevices::gray(0.7), lwd = 2)
+	graphics::axis(1, at = ages, labels = ages.lab, lwd = 2)
+	graphics::axis(2, lwd = 2)
+	graphics::box(lwd = 2)
 	sapply(1:n_ages, function(x)
 	{
 		y <- sort(unique(mod$rep$MAA[stock,region,,x]))
 		# ind1 <- sapply(y, function(z) which(mod$rep$MAA[,x] == y)[1])
-		segments(x-0.2, y, x+0.2, y, lwd = 2,col = plot.colors[1:length(y)])
-		text(x+0.2, y, paste('n =', table(mod$rep$MAA[stock,region,,x])), pos = 4)
+		graphics::segments(x-0.2, y, x+0.2, y, lwd = 2,col = plot.colors[1:length(y)])
+		graphics::text(x+0.2, y, paste('n =', table(mod$rep$MAA[stock,region,,x])), pos = 4)
 	})
   use.reg <-""
   if(mod$input$data$n_regions>1) use.reg <- paste0(" in ", mod$input$region_names[region])
-  title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
+  graphics::title(paste0(mod$input$stock_names[stock], use.reg), line = 1)
 }
 
 # revised
@@ -2146,8 +2135,8 @@ plot.M <- function(mod, ages, ages.lab, alpha = 0.05, plot.colors, stock = 1, re
 #--------Data Plots------------------
 plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow = c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow = c(1,1))
   dat <- mod$env$data
   n_regions <- dat$n_regions
   years <- mod$years
@@ -2155,30 +2144,30 @@ plot.catch.by.fleet <- function(mod, units = "mt", plot.colors)
 	catch.obs <- dat$agg_catch
 	n_fleets <- dat$n_fleets
   if(missing(plot.colors)) plot.colors <- wham_palette(n_fleets)
-	# barplot(t(catch.obs), xlab="Year", ylab= paste0("Catch (", units, ")"), ylim=c(0,1.1*max(apply(catch.obs,1,sum))), col=plot.colors,space=0)
-	# axis(side=1, at = seq(2,nyrs,2)-0.5, labels = years[seq(2,nyrs,2)], cex=0.75)
-	# box(lwd = 2)
+	# graphics::barplot(t(catch.obs), xlab="Year", ylab= paste0("Catch (", units, ")"), ylim=c(0,1.1*max(apply(catch.obs,1,sum))), col=plot.colors,space=0)
+	# graphics::axis(side=1, at = seq(2,nyrs,2)-0.5, labels = years[seq(2,nyrs,2)], cex=0.75)
+	# graphics::box(lwd = 2)
 	# if (n_fleets > 1)
   # {
-    #legend('top', legend=paste0("Fleet ",1:n_fleets), horiz=TRUE, pch=15, col=plot.colors)
+    #graphics::legend('top', legend=paste0("Fleet ",1:n_fleets), horiz=TRUE, pch=15, col=plot.colors)
 
     # do proportions only if n_fleets > 1
 		catch.prop <- catch.obs/apply(catch.obs,1,sum)
-		barplot(t(catch.prop), xlab="Year", ylab="Proportion of Catch", ylim=c(0,1.1), col=plot.colors, space=0)
-    axis(side=1, las=2, at = seq(2,nyrs,2)-0.5, labels = years[seq(2,nyrs,2)], cex=0.75, las=2)
-    box(lwd = 2)
-		legend('top', legend= paste0(mod$input$fleet_names, ifelse(n_regions>1, paste0(" in ", mod$input$region_names[mod$input$data$fleet_regions]), "")), 
+		graphics::barplot(t(catch.prop), xlab="Year", ylab="Proportion of Catch", ylim=c(0,1.1), col=plot.colors, space=0)
+    graphics::axis(side=1, las=2, at = seq(2,nyrs,2)-0.5, labels = years[seq(2,nyrs,2)], cex=0.75, las=2)
+    graphics::box(lwd = 2)
+		graphics::legend('top', legend= paste0(mod$input$fleet_names, ifelse(n_regions>1, paste0(" in ", mod$input$region_names[mod$input$data$fleet_regions]), "")), 
       horiz=TRUE, pch=15, col=plot.colors)
 	# }
-	par(origpar)
+	graphics::par(origpar)
 }
 #revised
 
 #------------------------------------
 plot.scaled.index.input <- function(mod, plot.colors)
 {
-  origpar <- par(no.readonly = TRUE)
-  par(mfrow=c(2,1), mar = c(1,1,1,1), oma = c(4,4,0,15))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mfrow=c(2,1), mar = c(1,1,1,1), oma = c(4,4,0,15))
   years <- mod$years
   nyrs <- length(years)
   dat <- mod$env$data
@@ -2188,42 +2177,42 @@ plot.scaled.index.input <- function(mod, plot.colors)
 	# rescale to mean 1 and stdev 1
 	rescaled <- indvals
 	my.mean <- apply(indvals,2,mean, na.rm=TRUE)
-	my.std <- apply(indvals,2,sd, na.rm=TRUE)
+	my.std <- apply(indvals,2,stats::sd, na.rm=TRUE)
 	for (i in 1:n_indices) rescaled[,i] <- (indvals[,i] - my.mean[i]) / my.std[i]
 
 	my.range <- range(rescaled, na.rm=TRUE)
   if(missing(plot.colors)) plot.colors <- wham_palette(n_indices)
 	plot(years,rescaled[,1],xlab="",ylab="", axes = FALSE, xlim = range(years), ylim=my.range,col=plot.colors[1],type='n')
-	grid(col = gray(0.7))
-	axis(1, labels = FALSE)
-	axis(2)
-	box()
-	mtext(side = 2, "Rescaled Indices", outer = FALSE, line = 3)
+	graphics::grid(col = grDevices::gray(0.7))
+	graphics::axis(1, labels = FALSE)
+	graphics::axis(2)
+	graphics::box()
+	graphics::mtext(side = 2, "Rescaled Indices", outer = FALSE, line = 3)
   for (i in 1:n_indices) {
-    lines(years,rescaled[,i],col=plot.colors[i])
-    points(years, rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+    graphics::lines(years,rescaled[,i],col=plot.colors[i])
+    graphics::points(years, rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
   }
   leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
-  legend("right", legend = leg, col = plot.colors, lty = 1, horiz = FALSE, xpd = NA, inset = c(-0.5,0), bty = "n")
-  #legend("top", legend = mod$input$index_names, col = plot.colors, lty = 1, horiz = TRUE, xpd = NA, inset = c(0,-0.1), bty = "n")
+  graphics::legend("right", legend = leg, col = plot.colors, lty = 1, horiz = FALSE, xpd = NA, inset = c(-0.5,0), bty = "n")
+  #graphics::legend("top", legend = mod$input$index_names, col = plot.colors, lty = 1, horiz = TRUE, xpd = NA, inset = c(0,-0.1), bty = "n")
 
 	# now repeat on log scale
 	log.indvals <- log(indvals)
 	log.rescaled <- log.indvals
 	my.log.mean <- apply(log.indvals,2,mean, na.rm=T)
-	my.log.std <- apply(log.indvals,2,sd, na.rm=T)
+	my.log.std <- apply(log.indvals,2,stats::sd, na.rm=T)
 	for (i in 1:n_indices) log.rescaled[,i] <- (log.indvals[,i] - my.log.mean[i]) / my.log.std[i]
 
 	my.log.range <- range(log.rescaled, na.rm=T)
 	plot(years,log.rescaled[,1], xlab="",ylab="",ylim=my.log.range,col=plot.colors[1],type='n')
-	grid(col = gray(0.7))
+	graphics::grid(col = grDevices::gray(0.7))
   for (i in 1:n_indices) {
-    lines(years,log.rescaled[,i],col=plot.colors[i])
-    points(years, log.rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
+    graphics::lines(years,log.rescaled[,i],col=plot.colors[i])
+    graphics::points(years, log.rescaled[,i], col=plot.colors[i], pch=19, cex=0.6)
   }
-	mtext(side = 2, "Rescaled Log Indices", outer = FALSE, line = 3)
-	mtext(side = 1, "Year", outer = FALSE, line = 3)
-	par(origpar)
+	graphics::mtext(side = 2, "Rescaled Log Indices", outer = FALSE, line = 3)
+	graphics::mtext(side = 1, "Year", outer = FALSE, line = 3)
+	graphics::par(origpar)
 }
 #plot.index.input(ssm)
 #revised
@@ -2264,31 +2253,31 @@ plot.age.comp.bubbles <- function(mod, type = "catch", ages, ages.lab, bubble.co
   obs.yrs <- which(use_obs[,i] == 1)
   
   my.title <- paste0("Age Comps for ", series_names[i], ifelse(n_regions>1, paste0(" in ", mod$input$region_names[series_regions[i]]), ""))
-  origpar <- par(no.readonly = TRUE)
-  par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
+  origpar <- graphics::par(no.readonly = TRUE)
+  graphics::par(mar=c(4,4,2,2), oma=c(1,1,1,1), mfrow=c(1,1))
   scale.catch.obs <- 5
   z3 <- as.matrix(acomp.obs) * scale.catch.obs
 
   plot(ages, rev(ages),  xlim = range(ages), ylim = c(years[nyrs],(years[1]-2)), xlab = "Age", ylab = "", type = "n", axes=FALSE)
-  axis(1, at= ages, lab = ages.lab)
-  axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
-  box()
-  abline(h=years, col="lightgray")
-  segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
-  if (length(obs.yrs)>0) for (j in 1:nyrs) points(ages, rep(years[j], n_ages), cex=z3[j,], col="black", bg = bubble.col, pch = 21)
+  graphics::axis(1, at= ages, lab = ages.lab)
+  graphics::axis(2, at = rev(years), lab = rev(years), cex.axis=0.75, las=1)
+  graphics::box()
+  graphics::abline(h=years, col="lightgray")
+  graphics::segments(x0=ages, y0=rep(years[1],n_ages), x1=ages, y1=rep(years[nyrs],n_ages), col = "lightgray", lty = 1)
+  if (length(obs.yrs)>0) for (j in 1:nyrs) graphics::points(ages, rep(years[j], n_ages), cex=z3[j,], col="black", bg = bubble.col, pch = 21)
 
   bubble.legend1 <- c(0.05,0.2,0.4)
   bubble.legend2 <- bubble.legend1 * scale.catch.obs
-  legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=T , col='black', pt.bg = bubble.col)
-  title (my.title, outer=TRUE, line=-1)
-  par(origpar)
+  graphics::legend("topright", xpd=TRUE, legend=bubble.legend1, pch=rep(21, 3), pt.cex=bubble.legend2, horiz=TRUE , col='black', pt.bg = bubble.col)
+  graphics::title (my.title, outer=TRUE, line=-1)
+  graphics::par(origpar)
 }
 
 #revised
 #------------------------------------
 plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   if(type %in% c("ssb", "fleets")) years <- mod$years_full
   else years <- mod$years
   nyrs <- length(years)
@@ -2326,12 +2315,12 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 		plot(years,years,xlab="Year",ylab="Weight",ylim=c(0,max(WAA.plot)),type='n')
 		for (a in 1:dat$n_ages)
 		{
-			lines(years,WAA.plot[,a],col=plot.colors[a],lwd=2)
-			lines(years,rep(mean(WAA.plot[,a]),length(years)),lty=2,col=plot.colors[a])
+			graphics::lines(years,WAA.plot[,a],col=plot.colors[a],lwd=2)
+			graphics::lines(years,rep(mean(WAA.plot[,a]),length(years)),lty=2,col=plot.colors[a])
 		}
-		title(main = paste0("Annual Weight-at-Age for ", labs[i]), line = 1)
+		graphics::title(main = paste0("Annual Weight-at-Age for ", labs[i]), line = 1)
 	}  # end k-loop
-	par(origpar)
+	graphics::par(origpar)
 }  # end function
 
 #revised
@@ -2339,7 +2328,7 @@ plot.waa <- function(mod,type="ssb",plot.colors,ind=1)
 #------------------------------------
 plot.maturity <- function(mod, ages.lab, plot.colors, stock = 1)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
   years <- mod$years
   n_years <- length(years)
@@ -2350,17 +2339,17 @@ plot.maturity <- function(mod, ages.lab, plot.colors, stock = 1)
   if(missing(plot.colors)) plot.colors <- wham_palette(n_years)
 
 	plot(ages,meanmaturity,type='l',lwd=2,xlab="Age",ylab="Maturity",ylim=c(0,max(mature)), axes = FALSE)
-  axis(1, at = ages, labels = ages.lab, lwd = 2)
-  axis(2, lwd = 2)
-  box(lwd = 2)
+  graphics::axis(1, at = ages, labels = ages.lab, lwd = 2)
+  graphics::axis(2, lwd = 2)
+  graphics::box(lwd = 2)
 	if (length(unique(mature)) > length(ages))
 	{
-		for (i in 1:n_years) points(jitter(ages, factor=0.4), mature[i,],col=plot.colors[i])
+		for (i in 1:n_years) graphics::points(jitter(ages, factor=0.4), mature[i,],col=plot.colors[i])
     midi <- floor(n_years/2)
-		legend('topleft', horiz=FALSE, legend=c(years[1],years[midi],years[n_years]), pch=c(1,1,1), col=c(plot.colors[1], plot.colors[midi], plot.colors[n_years]))
+		graphics::legend('topleft', horiz=FALSE, legend=c(years[1],years[midi],years[n_years]), pch=c(1,1,1), col=c(plot.colors[1], plot.colors[midi], plot.colors[n_years]))
 	}
-	title(main=paste0("Maturity for ", mod$input$stock_names[stock]), outer=FALSE, line = 1)
-	par(origpar)
+	graphics::title(main=paste0("Maturity for ", mod$input$stock_names[stock]), outer=FALSE, line = 1)
+	graphics::par(origpar)
 }
 #revised
 
@@ -2423,7 +2412,7 @@ get_P.fn <- function(time, age, year, stock, season, fleet_seasons, fleet_region
           A <- matrix(0,dim,dim)
           A[,dim] <- M + L
           #for(i in 1:n_mu[stock,year,season,age]) A[mu_row[cum_n_mu + i],mu_col[cum_n_mu + i]] <- exp(mu[mu_pointer[cum_n_mu + i]]); #log of transition intensities
-          for(i in 1:n_regions) for(j in 1:n_regions) if(i!=J) A[i,j] <- mu[i,j]
+          for(i in 1:n_regions) for(j in 1:n_regions) if(i!=j) A[i,j] <- mu[i,j]
           for(f in 1:n_fleets) A[fleet_regions[f],n_regions + f] <- F[f]
           A[cbind(fleet_regions, n_regions + 1:n_fleets)] <- F #caught
           diag(A) <- -apply(A,1,sum) #hazard
@@ -2527,29 +2516,29 @@ get_SPR_BRPS_fn <- function(mod, spr_yrs_waassb,spr_yrs_mat,spr_yrs_M, spr_yrs_L
   if(missing(spr_yrs_mat)) spr_yrs_mat <- dat$avg_years_ind_static_mat[1,1,2:(dat$avg_years_ind_static_mat[1,1]+1)]+1 #c++
   R_yrs <- dat$XSPR_R_avg_yrs+1
   R_type <- dat$XSPR_R_opt
-  if(R_type %in% c(1,3)) Rxspr <- mean(mod$rep$NAA[Ryrs,1])
+  if(R_type %in% c(1,3)) Rxspr <- mean(mod$rep$NAA[R_yrs,1])
   else Rxspr <- mean(mod$rep$pred_NAA[R_yrs,1])
   n_ages<- dat$n_ages
   years <- mod$years
   n_years <- length(years)
   n_fleets <- dat$n_fleets
 
-  mat.age <- apply(dat$mature[1,,][spr_yrs,,drop = FALSE],2,mean)
-  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][spr_yrs,,drop = FALSE],2,mean)
-  catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,spr_yrs,,drop = FALSE],c(1,3),mean)
-  M.age <- apply(mod$rep$MAA[1,1,,][spr_yrs,,drop = FALSE],2,mean)
-  FAA <- apply(mod$rep$FAA[,spr_yrs,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
+  mat.age <- apply(dat$mature[1,,][spr_yrs_mat,,drop = FALSE],2,mean)
+  ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][spr_yrs_waassb,,drop = FALSE],2,mean)
+  catch.waa <- apply(dat$waa[dat$waa_pointer_fleets,spr_yrs_waacatch,,drop = FALSE],c(1,3),mean)
+  M.age <- apply(mod$rep$MAA[1,1,,][spr_yrs_M,,drop = FALSE],2,mean)
+  FAA <- apply(mod$rep$FAA[,spr_yrs_sel,,drop=FALSE], c(1,3), mean) #mean FAA by fleet
   FAAtot <- apply(FAA,2,sum) #sum across fleet averages 
   seltot <- FAAtot/max(FAAtot)
   selAA <- FAA/max(FAAtot) 
-  spawn.time <- mean(dat$fracyr_SSB[spr_yrs])
+  spawn.time <- mean(dat$fracyr_SSB[spr_yrs_waassb])
   spr0 <- get_SPR(F=0, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
   F.start <- 0.11  # starting guess for optimization routine to find F_SPR%
   spr.f <- function(F.start) {
     spr <- get_SPR(F=F.start, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
     abs(100*spr/spr0 - percent)
   }
-  opt <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=10))
+  opt <- suppressWarnings(stats::nlminb(start=F.start, objective=spr.f, lower=0, upper=10))
   Fxspr <- opt$par
   spr_Fxspr <- get_SPR(Fxspr, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
   FAA_xspr <- Fxspr * selAA
@@ -2564,7 +2553,7 @@ get_SPR_BRPS_fn <- function(mod, spr_yrs_waassb,spr_yrs_mat,spr_yrs_M, spr_yrs_L
 
 plot.SPR.table <- function(mod, plot=TRUE)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   spr.targ.values <- seq(0.2, 0.8, 0.05)
 	n.spr <- length(spr.targ.values)
   dat <- mod$env$data
@@ -2610,61 +2599,61 @@ plot.SPR.table <- function(mod, plot=TRUE)
       spr <- get_SPR(F=F.start, M=M.age, sel=seltot, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)
 			abs(spr/spr0 - t.spr)
 		}
-		yyy <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
+		yyy <- suppressWarnings(stats::nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
 		f.spr.vals[i] <- yyy$par
     ypr.spr.vals[i] <- sum(get_YPR_fleets(FAA = f.spr.vals[i]*selAA, M=M.age, waacatch= catch.waa))
 	}  #end i-loop over SPR values
 
 	spr.target.table<- as.data.frame(cbind(spr.targ.values, f.spr.vals, ypr.spr.vals))
 	colnames(spr.target.table) <- c("%SPR", "F(%SPR)", "YPR")
-	par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
+	graphics::par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
 
 	if(plot){ # plot, not table
   	plot(spr.targ.values, ypr.spr.vals, type='n', xlab="% SPR Target", ylab="", lwd=2, col="blue3",
       ylim=c(0,max(ypr.spr.vals)), axes = FALSE)
-    box(lwd = 2)
-    axis(1, lwd = 2)
-  	abline(v=seq(0.2,0.8, by=0.05), col="grey85")
-  	lines(spr.targ.values, ypr.spr.vals, lwd=2, col="blue3" )
-  	points(spr.targ.values, ypr.spr.vals, pch=19, col="blue3" )
+    graphics::box(lwd = 2)
+    graphics::axis(1, lwd = 2)
+  	graphics::abline(v=seq(0.2,0.8, by=0.05), col="grey85")
+  	graphics::lines(spr.targ.values, ypr.spr.vals, lwd=2, col="blue3" )
+  	graphics::points(spr.targ.values, ypr.spr.vals, pch=19, col="blue3" )
 
-  	axis(side=2, #at=seq(0,1,by=0.1)/scale.f.spr, lab=seq(0,1,by=0.1),
+  	graphics::axis(side=2, #at=seq(0,1,by=0.1)/scale.f.spr, lab=seq(0,1,by=0.1),
       las=2, col='blue3', col.axis="blue3", lwd = 2)
-    mtext(side = 2, "Yield per Recruit", line = 3, col = "blue3")
+    graphics::mtext(side = 2, "Yield per Recruit", line = 3, col = "blue3")
 
     scale.f.spr <- max(f.spr.vals)/max(ypr.spr.vals)
-  	lines(spr.targ.values, f.spr.vals/scale.f.spr, lwd = 2, col="red")
-  	points(spr.targ.values, f.spr.vals/scale.f.spr, pch = 19, col="red")
+  	graphics::lines(spr.targ.values, f.spr.vals/scale.f.spr, lwd = 2, col="red")
+  	graphics::points(spr.targ.values, f.spr.vals/scale.f.spr, pch = 19, col="red")
     pretty.labs <- pretty(seq(0,round(max(f.spr.vals),1),by=0.1))
-  	axis(side=4, at=pretty.labs/scale.f.spr, lab=pretty.labs, las=2, col='red', col.axis="red", lwd = 2)
-  	mtext(side=4, "Fully-selected F", line=3, col="red")
+  	graphics::axis(side=4, at=pretty.labs/scale.f.spr, lab=pretty.labs, las=2, col='red', col.axis="red", lwd = 2)
+  	graphics::mtext(side=4, "Fully-selected F", line=3, col="red")
 
-  	title (paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
+  	graphics::title(paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
 	}
 
 	if(!plot){ # table, not plot
-  	par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
+  	graphics::par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
   	plot(seq(1,15), seq(1,15), type='n', axes=F, bty='n',xlab="",ylab="")
 
-  	text(x=2,y=14, labels="% SPR", font=2, pos=4)
-  	text(x=5, y=14, labels="F(%SPR)" , font=2, pos=4)
-  	text(x=9, y=14, labels="YPR", font=2, pos=4 )
+  	graphics::text(x=2,y=14, labels="% SPR", font=2, pos=4)
+  	graphics::text(x=5, y=14, labels="F(%SPR)" , font=2, pos=4)
+  	graphics::text(x=9, y=14, labels="YPR", font=2, pos=4 )
   	for (i in 1:n.spr)
   	{
-  		text(x=2, y=seq(n.spr,1, by=-1), labels=round(spr.targ.values,2), cex=1.0, pos=4, font=1)
-  		text(x=5, y=seq(n.spr,1, by=-1), labels=round(f.spr.vals,4), cex=1.0, pos=4, font=1)
-  		text(x=9, y=seq(n.spr,1, by=-1), labels=round(ypr.spr.vals,4), cex=1.0, pos=4, font=1)
+  		graphics::text(x=2, y=seq(n.spr,1, by=-1), labels=round(spr.targ.values,2), cex=1.0, pos=4, font=1)
+  		graphics::text(x=5, y=seq(n.spr,1, by=-1), labels=round(f.spr.vals,4), cex=1.0, pos=4, font=1)
+  		graphics::text(x=9, y=seq(n.spr,1, by=-1), labels=round(ypr.spr.vals,4), cex=1.0, pos=4, font=1)
   	}
-    title (paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
+    graphics::title(paste0("YPR and Fully-selected F at Percentage of unfished SSB/R\n(Avg. years taken from model input and externally calculated)"), outer=FALSE, line=1)
 	}
-  par(origpar)
-	#write.csv( spr.target.table, file=paste(od,"SPR_Target_Table.csv", sep=""),  row.names=F)
+  graphics::par(origpar)
+	#utils::write.csv( spr.target.table, file=paste(od,"SPR_Target_Table.csv", sep=""),  row.names=F)
 } # end function
 
 #------------------------------------
 plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, plot.colors, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   spr.targ.values <- seq(0.2, 0.5, by=0.1)
 	n.spr <- length(spr.targ.values)
   dat <- mod$env$data
@@ -2711,7 +2700,7 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 				#abs(s.per.recr(n_ages=n_ages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=F.start, sel.age=sel.age[j,],
 				#	spawn.time=spawn.time)/spr0.vals[j] - t.spr)
 			}
-			yyy <- suppressWarnings(nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
+			yyy <- suppressWarnings(stats::nlminb(start=F.start, objective=spr.f, lower=0, upper=3))
 			f.spr[j,i] <- yyy$par
 			ypr.spr[j,i] <- sum(get_YPR_fleets(FAA = f.spr[j,i]*rbind(selAA[,j,]), M=M.age[j,], waacatch= rbind(wgt.age[,j,])))
       #ypr(n_ages, wgt.age=wgt.age[j,], M.age=M.age[j,],  F.mult=f.spr.vals[j,i], sel.age=sel.age[j,])
@@ -2719,50 +2708,50 @@ plot.annual.SPR.targets <- function(mod, do.tex = FALSE, do.png = FALSE, fontfam
 	}  #end i-loop over SPR values
 
   plot.colors <- wham_palette(n.spr)
-  if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_annual_time.pdf")), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("FSPR_annual_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-	par(mfrow=c(2,1), mar=c(4,5,2,1))
+  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("FSPR_annual_time.pdf")), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, paste0("FSPR_annual_time.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	graphics::par(mfrow=c(2,1), mar=c(4,5,2,1))
 	plot(years_full, f.spr[,1], type='n', xlab="Years", ylab=expression(paste("Full ",italic(F)["%SPR"])), lwd=2, ylim=c(0,1.2*max(f.spr)))
-	for (i in 1:n.spr) lines(years_full, f.spr[,i], lwd=2, col=plot.colors[i])
-  if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
-	legend('top', legend= sapply(spr.targ.values, function(x) as.expression(bquote(italic(F)[paste(.(x*100),"%")]))), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
-	title (main=expression(paste("Annual ", italic(F)["%SPR"], " Reference Points")), line=1)
+	for (i in 1:n.spr) graphics::lines(years_full, f.spr[,i], lwd=2, col=plot.colors[i])
+  if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
+	graphics::legend('top', legend= sapply(spr.targ.values, function(x) as.expression(bquote(italic(F)[paste(.(x*100),"%")]))), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
+	graphics::title(main=expression(paste("Annual ", italic(F)["%SPR"], " Reference Points")), line=1)
 	#if (save.plots) savePlot(paste(od, "Annual_FSPR.", plotf, sep=''), type=plotf)
 	plot(years_full, ypr.spr[,1], type='n', xlab="Years", ylab=expression(paste("YPR(",italic(F)["%SPR"],")")), lwd=2, ylim=c(0,1.2*max(ypr.spr)))
-	for (i in 1:n.spr) lines(years_full, ypr.spr[,i], lwd=2, col=plot.colors[i])
-	if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2, lwd=1)
-  #legend('top', legend=c("YPR20%", "YPR30%", "YPR40%", "YPR50%"), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
-	title (main=expression(paste("Annual YPR(",italic(F)["%SPR"], ") Reference Points")), line=1)
-	if(do.tex | do.png) dev.off() else par(origpar)
+	for (i in 1:n.spr) graphics::lines(years_full, ypr.spr[,i], lwd=2, col=plot.colors[i])
+	if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
+  #graphics::legend('top', legend=c("YPR20%", "YPR30%", "YPR40%", "YPR50%"), col=plot.colors, horiz=TRUE, lwd=2, cex=0.9)
+	graphics::title(main=expression(paste("Annual YPR(",italic(F)["%SPR"], ") Reference Points")), line=1)
+	if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
-	if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_freq_annual_F.pdf")), family = fontfam, height = 10, width = 10)
-	if(do.png) png(filename = file.path(od, paste0("FSPR_freq_annual_F.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-	par(mfrow=c(2,2))
-  f.hist <- lapply(1:length(spr.targ.values), function(x) hist(f.spr[1:n_years,x], plot = FALSE))
-  par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
+	if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("FSPR_freq_annual_F.pdf")), family = fontfam, height = 10, width = 10)
+	if(do.png) grDevices::png(filename = file.path(od, paste0("FSPR_freq_annual_F.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	graphics::par(mfrow=c(2,2))
+  f.hist <- lapply(1:length(spr.targ.values), function(x) graphics::hist(f.spr[1:n_years,x], plot = FALSE))
+  graphics::par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
   for(i in 1:length(spr.targ.values))
   {
     plot(f.hist[[i]]$mids, f.hist[[i]]$counts, xlab=bquote("Full " ~ italic(F)[paste(.(spr.targ.values[i]*100),"%")]), ylab="", type='h', lwd=2, ylim=c(0, max(f.hist[[i]]$counts)), col=plot.colors[i])
-    lines(f.hist[[i]]$mids, f.hist[[i]]$counts, lwd=2, col=plot.colors[i])
+    graphics::lines(f.hist[[i]]$mids, f.hist[[i]]$counts, lwd=2, col=plot.colors[i])
   }
-  mtext(side=2, outer = TRUE, "Frequency", line = 1)
-	title (main=expression(paste("Frequencies of Annual ", italic(F)["%SPR"], " Reference Points")), outer=TRUE, line=0, cex.main = 2)
-	if(do.tex | do.png) dev.off() else par(origpar)
+  graphics::mtext(side=2, outer = TRUE, "Frequency", line = 1)
+	graphics::title(main=expression(paste("Frequencies of Annual ", italic(F)["%SPR"], " Reference Points")), outer=TRUE, line=0, cex.main = 2)
+	if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
-	if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_freq_annual_YPR.pdf")), family = fontfam, height = 10, width = 10)
-	if(do.png) png(filename = file.path(od, paste0("FSPR_freq_annual_YPR.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-	ypr.hist <- lapply(1:length(spr.targ.values), function(x) hist(ypr.spr[1:n_years,x], plot = FALSE))
-  par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
+	if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("FSPR_freq_annual_YPR.pdf")), family = fontfam, height = 10, width = 10)
+	if(do.png) grDevices::png(filename = file.path(od, paste0("FSPR_freq_annual_YPR.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+	ypr.hist <- lapply(1:length(spr.targ.values), function(x) graphics::hist(ypr.spr[1:n_years,x], plot = FALSE))
+  graphics::par(mfrow=c(2,2), mar=c(4,1,2,2), oma=c(2,3,2,0))
   for(i in 1:length(spr.targ.values))
   {
     plot(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, xlab=bquote(paste("YPR(", italic(F)[paste(.(spr.targ.values[i]*100),"%")],")")), ylab="", type='h', lwd=2, ylim=c(0, max(ypr.hist[[i]]$counts)), col=plot.colors[i])
-    lines(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, lwd=2, col=plot.colors[i])
+    graphics::lines(ypr.hist[[i]]$mids, ypr.hist[[i]]$counts, lwd=2, col=plot.colors[i])
   }
-  mtext(side=2, outer = TRUE, "Frequency", line = 1)
-	title (main=expression(paste("Frequencies of Annual YPR(",italic(F)["%SPR"], ") Reference Points")), outer = TRUE, line=0, cex.main = 2)
-	if(do.tex | do.png) dev.off() else par(origpar)
+  graphics::mtext(side=2, outer = TRUE, "Frequency", line = 1)
+	graphics::title(main=expression(paste("Frequencies of Annual YPR(",italic(F)["%SPR"], ") Reference Points")), outer = TRUE, line=0, cex.main = 2)
+	if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
-	# par(origpar)
+	# graphics::par(origpar)
 } # end function
 
 plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units = "thousands", scale.ssb = 1,
@@ -2808,20 +2797,20 @@ plot.SR.pred.line <- function(mod, ssb.units = "mt", SR.par.year, recruits.units
     })
     pred.lR <- lR.fn(l.ab[1], l.ab[2], seq.ssb)
     #exp(log_a) *seq.ssb/(1 + exp(log_b)*seq.ssb)
-    ci.pred.lR <- pred.lR + qnorm(0.975)*cbind(-sd.pred.lR, sd.pred.lR) - log(scale.recruits)
+    ci.pred.lR <- pred.lR + stats::qnorm(0.975)*cbind(-sd.pred.lR, sd.pred.lR) - log(scale.recruits)
 
     if(missing(plot.colors)) plot.colors <- wham_palette(1)
-    tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
-    # tcol <- col2rgb(plot.colors[1])
-    # tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    tcol <- grDevices::adjustcolor(plot.colors, alpha.f = 0.4)
+    # tcol <- grDevices::col2rgb(plot.colors[1])
+    # tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
 
     plot(SR[,2], SR[,3], type='p', col='black', pch=19,
       xlab=as.expression(substitute(paste("SSB (", ssb.units, ")", sep = ""), list(ssb.units = ssb.units[[1]]))),
       ylab= as.expression(substitute(paste("Age-", age.recruit, " Recruits (", units, ")", sep = ''),
         list(age.recruit = age.recruit[[1]], units = recruits.units[[1]]))), ylim=c(0, max(SR[,3])), xlim=c(0,1.1*max(SR[,2])))
-    lines(seq.ssb, exp(pred.lR), col=plot.colors[1], lwd=2)
-    polygon(c(seq.ssb,rev(seq.ssb)), exp(c(ci.pred.lR[,1],rev(ci.pred.lR[,2]))), col = tcol, border = "transparent")
-    mtext(paste0("Stock-recruit parameters, per-recruit inputs, and any environmental effects from year: ", mod$years[SR.par.year]), side = 3, outer = F)
+    graphics::lines(seq.ssb, exp(pred.lR), col=plot.colors[1], lwd=2)
+    graphics::polygon(c(seq.ssb,rev(seq.ssb)), exp(c(ci.pred.lR[,1],rev(ci.pred.lR[,2]))), col = tcol, border = "transparent")
+    graphics::mtext(paste0("Stock-recruit parameters, per-recruit inputs, and any environmental effects from year: ", mod$years[SR.par.year]), side = 3, outer = F)
   }
 }
 #revised 
@@ -2912,7 +2901,7 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, msy = FALSE, singl
       pcols <- floor(sqrt(length(do.kobe)))
       prows <- ceiling(length(do.kobe)/pcols)
     }
-    par(mfrow = c(prows,pcols), mar = c(1,1,0,0), oma = c(5,5,3,1))
+    graphics::par(mfrow = c(prows,pcols), mar = c(1,1,0,0), oma = c(5,5,3,1))
     n.plots <- 1
     if(!single.plot) n.plots <- length(do.kobe)
     for(k in 1:n.plots){
@@ -2922,49 +2911,49 @@ kobe.plot <- function(mod, status.years=NULL, static = FALSE, msy = FALSE, singl
       st.yrs.plt <- status.years[plt.which]
 
       plot(vals[plt.which,1],vals[plt.which,2], ylim = c(0,max.y), xlim = c(0,max.x), xlab = "", ylab = "", type = 'n', axes = F)
-      box(lwd = 2)
-      if(k > (prows-1)*pcols) axis(1, lwd = 2)
-      else axis(1, lwd = 2, labels = FALSE)
-      if(k %in% seq(1,n.plots,pcols)) axis(2,lwd = 2)
-      else axis(2, lwd = 2, labels = FALSE)
-      lims <- par("usr")
-      tcol <- col2rgb('red')
-      tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-      polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-      tcol <- col2rgb('green')
-      tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-      polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-      tcol <- col2rgb('yellow')
-      tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-      polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-      polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-      legend("topleft", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.lo.f.hi[plt.which],2)), bty = "n", text.font=1)
-      legend("topright", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.hi.f.hi[plt.which],2)), bty = "n", text.font=1)
-      legend("bottomleft", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.lo.f.lo[plt.which],2)), bty = "n", text.font=1)
-      legend("bottomright", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.hi.f.lo[plt.which],2)), bty = "n", text.font=1)
-      text(vals[plt.which,1],vals[plt.which,2], substr(mod$years_full[st.yrs.plt],3,4), font=1)
+      graphics::box(lwd = 2)
+      if(k > (prows-1)*pcols) graphics::axis(1, lwd = 2)
+      else graphics::axis(1, lwd = 2, labels = FALSE)
+      if(k %in% seq(1,n.plots,pcols)) graphics::axis(2,lwd = 2)
+      else graphics::axis(2, lwd = 2, labels = FALSE)
+      lims <- graphics::par("usr")
+      tcol <- grDevices::col2rgb('red')
+      tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+      graphics::polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+      tcol <- grDevices::col2rgb('green')
+      tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+      graphics::polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+      tcol <- grDevices::col2rgb('yellow')
+      tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+      graphics::polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+      graphics::polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+      graphics::legend("topleft", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.lo.f.hi[plt.which],2)), bty = "n", text.font=1)
+      graphics::legend("topright", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.hi.f.hi[plt.which],2)), bty = "n", text.font=1)
+      graphics::legend("bottomleft", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.lo.f.lo[plt.which],2)), bty = "n", text.font=1)
+      graphics::legend("bottomright", legend = paste0("Year: ", mod$years_full[st.yrs.plt], ", Prob = ", round(p.status$p.ssb.hi.f.lo[plt.which],2)), bty = "n", text.font=1)
+      graphics::text(vals[plt.which,1],vals[plt.which,2], substr(mod$years_full[st.yrs.plt],3,4), font=1)
       for(k in plt.which) {
-        polygon(log.rel.ssb.rel.F.cr[[k]][,1], log.rel.ssb.rel.F.cr[[k]][,2], lwd=1)#, border = gray(0.7))
+        graphics::polygon(log.rel.ssb.rel.F.cr[[k]][,1], log.rel.ssb.rel.F.cr[[k]][,2], lwd=1)#, border = grDevices::gray(0.7))
       }
     }
     if(msy & any(rownames(std) == "log_FMSY")){
-      mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB["MSY"]), line = 2)
-      mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)["MSY"])), line = 2)
+      graphics::mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB["MSY"]), line = 2)
+      graphics::mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)["MSY"])), line = 2)
     }
     else {
-      mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB[.(percentSPR)*"%"]), line = 2)
-      mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])), line = 2)
+      graphics::mtext(side = 1, outer = TRUE, bquote(SSB*"/"*SSB[.(percentSPR)*"%"]), line = 2)
+      graphics::mtext(side = 2, outer = TRUE, bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])), line = 2)
     }
     title.text <- paste0("Averaged inputs for per recruit calculations")
     if(!static) title.text <- paste0("Annual inputs for per recruit calculations")
-    mtext(side = 3, outer = TRUE, title.text, line = 1)
+    graphics::mtext(side = 3, outer = TRUE, title.text, line = 1)
   }
   return(p.status)
 }
 
 plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   percentSPR <- mod$env$data$percentSPR
 	n_ages <- mod$env$data$n_ages
   years_full <- mod$years_full
@@ -3023,62 +3012,62 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y
     bquote(paste('SSB(', italic(F)[paste(.(percentSPR), "%")],')')))
   np <- c(all_catch,1,all_stocks)
   # FSPR absolute --------------------------------------------------
-  if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_absolute.pdf")), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("FSPR_absolute.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-  par(mfrow = c(3,1), mar = c(1,5,1,1), oma = c(4,1,3,1))
+  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("FSPR_absolute.pdf")), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, paste0("FSPR_absolute.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  graphics::par(mfrow = c(3,1), mar = c(1,5,1,1), oma = c(4,1,3,1))
   for(i in 1:3)
   {
     t.ylab <- ylabs[i]
     vals <- matrix(std[inds[[i]],1], ncol = np[i])#[1:n_years_full,,drop = F]
     cv <- matrix(std[inds[[i]],2], ncol = np[i])#[1:n_years_full,,drop = F]
-    ci <-  lapply(1:np[i], function(x) vals[,x] + cbind(qnorm(1-alpha/2)*cv[,x], -qnorm(1-alpha/2)*cv[,x]))
+    ci <-  lapply(1:np[i], function(x) vals[,x] + cbind(stats::qnorm(1-alpha/2)*cv[,x], -stats::qnorm(1-alpha/2)*cv[,x]))
     max_y1 <- exp(max(sapply(ci, max, na.rm = T), na.rm = T))
     plot.colors <- "black"
     if(np[i]>1) plot.colors <- wham_palette(np[i])
-    tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
+    tcol <- grDevices::adjustcolor(plot.colors, alpha.f = 0.4)
     if(all(!is.nan(unique(vals)))){
   	  if(!na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max_y1), type = 'n', xaxt = 'n', cex.lab = 2)
       if(na.sd[i]) plot(years_full, exp(vals[,1]), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm= TRUE)), type = 'n', cex.lab = 2)
-  	  grid(col = gray(0.7))
+  	  graphics::grid(col = grDevices::gray(0.7))
       for(p in 1:np[i]){
-        lines(years_full, exp(vals[,p]), col = plot.colors[p], lwd = 2)  
+        graphics::lines(years_full, exp(vals[,p]), col = plot.colors[p], lwd = 2)  
         polyy <- exp(c(ci[[p]][,1],rev(ci[[p]][,2])))
         polyx <- c(years_full,rev(years_full))
         polyx <- polyx[!is.na(polyy)]
         polyy <- polyy[!is.na(polyy)]
-        polygon(polyx, polyy, col = tcol[p], border = tcol[p], lwd = 1)
+        graphics::polygon(polyx, polyy, col = tcol[p], border = tcol[p], lwd = 1)
       }
-      if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
-      if(i == 1) legend("topright", legend = c(mod$input$fleet_names, mod$input$region_names, "Total"), lty = 1, col = plot.colors, bty = "n")
+      if(mod$env$data$n_years_proj>0) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
+      if(i == 1) graphics::legend("topright", legend = c(mod$input$fleet_names, mod$input$region_names, "Total"), lty = 1, col = plot.colors, bty = "n")
       if(i == 3) {
-        if(np[i] > 1) legend("topright", legend = c(mod$input$stock_names, "Total"), lty = 1, col = plot.colors, bty = "n")
-        axis(1, cex.lab= 2)
-        mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
+        if(np[i] > 1) graphics::legend("topright", legend = c(mod$input$stock_names, "Total"), lty = 1, col = plot.colors, bty = "n")
+        graphics::axis(1, cex.lab= 2)
+        graphics::mtext(side = 1, outer = TRUE, "Year", cex = 2, line = 2)
       } else{
-        axis(1, labels = FALSE)
+        graphics::axis(1, labels = FALSE)
       }
     } else { # all nan, print error message
       plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
-      text(x = 0.5, y = 0.55, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
-      text(x = 0.5, y = 0.45, ylabs[[i]], cex = 1.6, col = "black")
+      graphics::text(x = 0.5, y = 0.55, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
+      graphics::text(x = 0.5, y = 0.45, ylabs[[i]], cex = 1.6, col = "black")
     }
 	}
   title.text <- paste0("Annual inputs used in per recruit calculations")
-  mtext(side = 3, outer = TRUE, title.text, line = 1)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  graphics::mtext(side = 3, outer = TRUE, title.text, line = 1)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   plot.colors <- "black"
-  tcol <- adjustcolor(plot.colors, alpha.f = 0.4)
+  tcol <- grDevices::adjustcolor(plot.colors, alpha.f = 0.4)
   # FSPR relative --------------------------------------------------
-  if(do.tex) cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-  par(mfrow=c(2,1), oma = c(4,1,3,0), mar = c(1,5,1,1))
+  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("FSPR_relative.pdf")), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, paste0("FSPR_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  graphics::par(mfrow=c(2,1), oma = c(4,1,3,0), mar = c(1,5,1,1))
   rel.vals <- list(ssb = std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t[,all_stocks],1][1:n_years_full])
   rel.vals$f <- std[inds$full.f,1][1:n_years_full] - std[inds$F.t,1][1:n_years_full]
   #rel.ssb.vals <- std[inds$ssb,1][1:n_years_full] - std[inds$SSB.t[,all_stocks],1][1:n_years_full]
   cv <- list(ssb = sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1]))))
   cv$f <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
-  ci <-  list(ssb = rel.vals$ssb + cbind(-qnorm(1-alpha/2)*cv$ssb, qnorm(1-alpha/2)*cv$ssb))
-  ci$f <- rel.vals$f + cbind(-qnorm(1-alpha/2)*cv$f, qnorm(1-alpha/2)*cv$f)
+  ci <-  list(ssb = rel.vals$ssb + cbind(-stats::qnorm(1-alpha/2)*cv$ssb, stats::qnorm(1-alpha/2)*cv$ssb))
+  ci$f <- rel.vals$f + cbind(-stats::qnorm(1-alpha/2)*cv$f, stats::qnorm(1-alpha/2)*cv$f)
   ylabs <- c(bquote(paste("SSB/", SSB[paste(.(percentSPR),"%")])), bquote(paste(italic(F),"/", italic(F)[paste(.(percentSPR),"%")])))
   any_na_sd <- c(ssb = na.sd["ssb"], f = na.sd["full.f"])
   for(i in 1:2){
@@ -3087,44 +3076,44 @@ plot.FXSPR.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y
       if(na.sd[i]) ymax <- max(exp(rel.vals[[i]]),1, na.rm = TRUE)
       plot(years_full, exp(rel.vals[[i]]), xlab = '', ylab = ylabs[i],
         ylim = c(0,ymax), xaxt = 'n', type = 'l', cex.lab = 2)
-      if(i==1) axis(1, labels = FALSE)
+      if(i==1) graphics::axis(1, labels = FALSE)
       else {
-        axis(1)
-        mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
+        graphics::axis(1)
+        graphics::mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
       }
-      grid(col = gray(0.7))
+      graphics::grid(col = grDevices::gray(0.7))
       polyy <- exp(c(ci[[i]][,1],rev(ci[[i]][,2])))
       polyx <- c(years_full,rev(years_full))
       polyx <- polyx[!is.na(polyy)]
       polyy <- polyy[!is.na(polyy)]
-      polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
-      abline(h=1, lty = 2)
-      abline(h=0.5, lty = 2, col = 'red')
-      if(mod$env$data$n_years_proj>0) abline(v=tail(mod$years,1), lty=2, lwd=1)
+      graphics::polygon(polyx, polyy, col = tcol, border = tcol, lwd = 1)
+      graphics::abline(h=1, lty = 2)
+      graphics::abline(h=0.5, lty = 2, col = 'red')
+      if(mod$env$data$n_years_proj>0) graphics::abline(v=utils::tail(mod$years,1), lty=2, lwd=1)
     } else {
       plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
-      text(x = 0.5, y = 0.58, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
-      text(x = 0.5, y = 0.42, ylabs[i], cex = 1.6, col = "black")    
+      graphics::text(x = 0.5, y = 0.58, paste("Error in plot, all values are NaN"), cex = 1.6, col = "black")
+      graphics::text(x = 0.5, y = 0.42, ylabs[i], cex = 1.6, col = "black")    
     }
   }
 
   #title.text <- paste0("Averaged inputs for per recruit calculations")
   #if(!static) 
   title.text <- paste0("Annual inputs used in per recruit calculations")
-  mtext(side = 3, outer = TRUE, title.text, line = 1)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  graphics::mtext(side = 3, outer = TRUE, title.text, line = 1)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 
-  if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Kobe_status.pdf")), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, paste0("Kobe_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
   x <- kobe.plot(mod, status.years=status.years, static = TRUE, single.plot = TRUE, alpha = 0.05, max.x=max.x, max.y= max.y)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   return(x)
 }  # end function
 #revised
 
 plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
   n_ages <- dat$n_ages
   years <- mod$years
@@ -3145,8 +3134,8 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
   cov <- mod$sdrep$cov
 	if(dat$recruit_model %in% (3:4)) #Beverton-Holt assumed in model fit
 	{ # test to make sure steepness was estimated
-    tcol <- col2rgb('black')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    tcol <- grDevices::col2rgb('black')
+    tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
 		inds <- list(MSY = array(which(rownames(std) == "log_MSY"), dim = dim(mod$rep$log_MSY))[dat$n_fleets+1,dat$n_stocks+1,1:n_years_full])
 		inds$FMSY <- which(rownames(std) == "log_FMSY")
 		inds$SSBMSY <- matrix(which(rownames(std) == "log_SSB_MSY"),nrow = n_years_full, ncol = dat$n_stocks+1)[1:n_years_full,dat$n_stocks+1] #total SSBMSY
@@ -3177,16 +3166,16 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
     }
 
     # 4-panel MSY plot
-    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_4panel_F_SSB_R.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("MSY_4panel_F_SSB_R.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mfrow=c(2,2), oma = c(4,1,3,0), mar = c(1,5,1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("MSY_4panel_F_SSB_R.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("MSY_4panel_F_SSB_R.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mfrow=c(2,2), oma = c(4,1,3,0), mar = c(1,5,1,1))
     for(i in 1:4)
     {
       t.ind <- inds[[i]]
       t.ylab <- ylabs[i]
       vals <- std[t.ind,1]
       cv <- std[t.ind,2]
-      ci <-  vals + cbind(qnorm(1-alpha/2)*cv, -qnorm(1-alpha/2)*cv)
+      ci <-  vals + cbind(stats::qnorm(1-alpha/2)*cv, -stats::qnorm(1-alpha/2)*cv)
       na.ci <- all(is.na(ci))
       # remove NaN and Inf
       # rm.rows <- which(vals < 0)
@@ -3199,27 +3188,27 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
       if(na.ci) ylim <- c(0,max(exp(vals),na.rm=TRUE))
       else ylim <- c(0,max(exp(ci),na.rm=TRUE))
       plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = ylim, xaxt = "n", type = 'l')
-      axis(1, labels = labels)
+      graphics::axis(1, labels = labels)
 
 		  # if(!na.ci) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
       # if(na.ci) plot(years_full, exp(vals), xlab = '', ylab = t.ylab, ylim = c(0,max(exp(vals),na.rm=TRUE)), type = 'l')
-		  grid(col = gray(0.7))
+		  graphics::grid(col = grDevices::gray(0.7))
       not.na.ci <- !is.na(ci[,1])
-		  polygon(c(years_full[not.na.ci],rev(years_full[not.na.ci])), exp(c(ci[,1][not.na.ci],rev(ci[,2][not.na.ci]))), col = tcol, border = tcol, lwd = 1)
-      # polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
-      if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
+		  graphics::polygon(c(years_full[not.na.ci],rev(years_full[not.na.ci])), exp(c(ci[,1][not.na.ci],rev(ci[,2][not.na.ci]))), col = tcol, border = tcol, lwd = 1)
+      # graphics::polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+      if(mod$env$data$n_years_proj>0) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
 		}
     title.text <- paste0("Annual inputs used in per recruit calculations")
-    mtext(side = 3, outer = TRUE, title.text, line = 1)
-    mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
-    if(do.tex | do.png) dev.off() else par(origpar)
+    graphics::mtext(side = 3, outer = TRUE, title.text, line = 1)
+    graphics::mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
     # 2-panel SSB_MSY and F_MSY
-    if(do.tex) cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-    par(mfrow=c(2,1), oma = c(4,1,3,0), mar = c(1,5,1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("MSY_relative_status.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("MSY_relative_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mfrow=c(2,1), oma = c(4,1,3,0), mar = c(1,5,1,1))
     rel.ssb.vals <- std[inds$ssb,1] - std[inds$SSBMSY,1]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[1,1])))
-    ci <-  rel.ssb.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+    ci <-  rel.ssb.vals + cbind(-stats::qnorm(1-alpha/2)*cv, stats::qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
     # remove NaN and Inf
     # rm.rows <- which(rel.ssb.vals < 0)
@@ -3233,16 +3222,16 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
     plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = ylim, type = 'l')
 		# if(!na.ci) plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(ci),na.rm=TRUE)), type = 'l')
     # if(na.ci) plot(years_full, exp(rel.ssb.vals), xlab = '', xaxt = "n", ylab = expression(paste("SSB/", SSB[MSY])), ylim = c(0,max(exp(rel.ssb.vals),na.rm=TRUE)), type = 'l')
-    axis(1, labels = FALSE)
-	  grid(col = gray(0.7))
-	  polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
-	  abline(h=1, lty = 2)
-	  abline(h=0.5, lty = 2, col = 'red')
-    if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
+    graphics::axis(1, labels = FALSE)
+	  graphics::grid(col = grDevices::gray(0.7))
+	  graphics::polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = "transparent", lwd = 1)
+	  graphics::abline(h=1, lty = 2)
+	  graphics::abline(h=0.5, lty = 2, col = 'red')
+    if(mod$env$data$n_years_proj>0) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
 
     rel.f.vals <- std[inds$full.f,1][1:n_years_full] - std[inds$FMSY,1][1:n_years_full]
     cv <- sapply(log.rel.ssb.rel.F.cov, function(x) return(sqrt(x[2,2])))
-    ci <-  rel.f.vals + cbind(-qnorm(1-alpha/2)*cv, qnorm(1-alpha/2)*cv)
+    ci <-  rel.f.vals + cbind(-stats::qnorm(1-alpha/2)*cv, stats::qnorm(1-alpha/2)*cv)
     na.ci <- all(is.na(ci))
       # remove NaN and Inf
       # rm.rows <- which(rel.f.vals < 0)
@@ -3254,19 +3243,19 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
     if(na.ci) ylim <- c(0,max(exp(rel.f.vals),na.rm=TRUE))
     else ylim <- c(0,max(exp(ci),na.rm=TRUE))
     plot(years_full, exp(rel.f.vals), xlab = '', xaxt = "n",ylab = expression(paste(italic(F),"/", italic(F)[MSY])), ylim = ylim, type = 'l')
-    axis(1, labels = TRUE)
-    grid(col = gray(0.7))
-    polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
-	  abline(h=1, lty = 2, col = 'red')
-    if(mod$env$data$n_years_proj>0) abline(v=tail(years,1), lty=2, lwd=1)
+    graphics::axis(1, labels = TRUE)
+    graphics::grid(col = grDevices::gray(0.7))
+    graphics::polygon(c(years_full,rev(years_full)), exp(c(ci[,1],rev(ci[,2]))), col = tcol, border = tcol, lwd = 1)
+	  graphics::abline(h=1, lty = 2, col = 'red')
+    if(mod$env$data$n_years_proj>0) graphics::abline(v=utils::tail(years,1), lty=2, lwd=1)
     title.text <- paste0("Annual inputs used in per recruit calculations")
-    mtext(side = 3, outer = TRUE, title.text, line = 1)
-    mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
-    if(do.tex | do.png) dev.off() else par(origpar)
-    if(do.tex) cairo_pdf(file.path(od, paste0("Kobe_msy_status.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("Kobe_msy_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::mtext(side = 3, outer = TRUE, title.text, line = 1)
+    graphics::mtext(side = 1, outer = TRUE, "Year", line = 2, cex = 2)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("Kobe_msy_status.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("Kobe_msy_status.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
     x <- kobe.plot(mod, status.years=status.years, static = TRUE, msy = TRUE, single.plot = TRUE, alpha = 0.05, max.x=max.x, max.y= max.y)
-    if(do.tex | do.png) dev.off() else par(origpar)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 	}
 }  # end function
 #revised
@@ -3274,12 +3263,12 @@ plot.MSY.annual <- function(mod, alpha = 0.05, status.years, max.x=NULL, max.y=N
 #------------------------------------
 plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
 	n_ages <- dat$n_ages
   years <- mod$years
   n_years <- length(years)
-  # avg.ind <- tail(1:n_years, nyrs.ave)
+  # avg.ind <- utils::tail(1:n_years, nyrs.ave)
   # # avg.ind <- (n_years-nyrs.ave+1):n_years
   # mat.age <- apply(dat$mature[1,,][avg.ind,,drop = FALSE],2,mean)
   # ssb.waa <- apply(dat$waa[dat$waa_pointer_ssb[1],,][avg.ind,,drop = FALSE],2,mean)
@@ -3316,65 +3305,65 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 	nF <- length(F.range)
 
   spr <- suppressWarnings(sapply(F.range, function(x) get_SPR(F=x, M=M.age, sel=selAA, mat=mat.age, waassb=ssb.waa, fracyrssb = spawn.time)))
-  ypr <- suppressWarnings(sapply(F.range, function(x) sum(get_YPR_fleets(F=x*selAA, M=M.age, waacatch=catch.waa))))
+  ypr <- suppressWarnings(sapply(F.range, function(x) sum(get_YPR_fleets(FAA=x*selAA, M=M.age, waacatch=catch.waa))))
   pr <- spr/spr0
   if(plot & all(!is.na(pr))){
-    if(do.tex) cairo_pdf(file.path(od, paste0("YPR_F_curve_plot.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("YPR_F_curve_plot.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-  	par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("YPR_F_curve_plot.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("YPR_F_curve_plot.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  	graphics::par(mfrow=c(1,1), mar=c(4,4,4,4), oma = c(1,1,1,1))
   	plot(F.range, ypr, type='n', xlab="Fully-selected F", ylab="", lwd=2, col="blue3", ylim=c(0,max(ypr)), axes = FALSE)
-    box()
-    axis(1)
-    axis(2, col='blue3', col.axis="blue3")
-  	abline(v=seq(0.1,2.0, by=0.1), col="grey85")
-  	lines(F.range, ypr, lwd=2, col="blue3" )
-  	#points(F.range, ypr, pch=19, col="blue3")
-    mtext(side =2, "Yield per Recruit", col = "blue3", line = 2)
+    graphics::box()
+    graphics::axis(1)
+    graphics::axis(2, col='blue3', col.axis="blue3")
+  	graphics::abline(v=seq(0.1,2.0, by=0.1), col="grey85")
+  	graphics::lines(F.range, ypr, lwd=2, col="blue3" )
+  	#graphics::points(F.range, ypr, pch=19, col="blue3")
+    graphics::mtext(side =2, "Yield per Recruit", col = "blue3", line = 2)
   	scale.pr <- max(pr)/max(ypr)
 
-  	lines(F.range, pr/scale.pr, col="red", lwd=2)
-  	#points(F.range, pr/scale.pr, pch=19, col="red")
-  	axis(side=4, at=seq(0,1,by=0.1)/scale.pr, lab=seq(0,1,by=0.1), las=2, col='red', col.axis="red")
-  	mtext(side=4, "% SPR", line=3, col="red")
-    title ("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
-  	if(do.tex | do.png) dev.off() else par(origpar)
+  	graphics::lines(F.range, pr/scale.pr, col="red", lwd=2)
+  	#graphics::points(F.range, pr/scale.pr, pch=19, col="red")
+  	graphics::axis(side=4, at=seq(0,1,by=0.1)/scale.pr, lab=seq(0,1,by=0.1), las=2, col='red', col.axis="red")
+  	graphics::mtext(side=4, "% SPR", line=3, col="red")
+    graphics::title("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
+  	if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }
 
   if(!plot){
-    if(do.tex) cairo_pdf(file.path(od, paste0("YPR_F_curve_table.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0("YPR_F_curve_table.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("YPR_F_curve_table.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0("YPR_F_curve_table.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 
-  	par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
+  	graphics::par(mfrow=c(1,1), mar=c(2,2,4,2), oma = c(1,1,1,1))
   	plot(seq(1,42), seq(-3,38), type='n', axes=F, bty='n',xlab="",ylab="")
-  	text(x=0,y=36, labels="F", font=2, pos=4)
-  	text(x=4, y=36, labels="YPR" , font=2, pos=4)
-  	text(x=9, y=36, labels="SPR", font=2, pos=4)
-  	text(x=15,y=36, labels="F", font=2, pos=4)
-  	text(x=19, y=36, labels="YPR" , font=2, pos=4)
-  	text(x=24, y=36, labels="SPR", font=2, pos=4)
-  	text(x=30,y=36, labels="F", font=2, pos=4)
-  	text(x=34, y=36, labels="YPR" , font=2, pos=4)
-  	text(x=39, y=36, labels="SPR", font=2, pos=4)
+  	graphics::text(x=0,y=36, labels="F", font=2, pos=4)
+  	graphics::text(x=4, y=36, labels="YPR" , font=2, pos=4)
+  	graphics::text(x=9, y=36, labels="SPR", font=2, pos=4)
+  	graphics::text(x=15,y=36, labels="F", font=2, pos=4)
+  	graphics::text(x=19, y=36, labels="YPR" , font=2, pos=4)
+  	graphics::text(x=24, y=36, labels="SPR", font=2, pos=4)
+  	graphics::text(x=30,y=36, labels="F", font=2, pos=4)
+  	graphics::text(x=34, y=36, labels="YPR" , font=2, pos=4)
+  	graphics::text(x=39, y=36, labels="SPR", font=2, pos=4)
 
-    text(x=0, y=35:1, labels=F.range[1:35], cex=0.82, pos=4, font=1)
-    text(x=4, y=35:1, labels=round(ypr[1:35],4), cex=0.82, pos=4, font=1)
-    text(x=9, y=35:1, labels=round(pr[1:35],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=0, y=35:1, labels=F.range[1:35], cex=0.82, pos=4, font=1)
+    graphics::text(x=4, y=35:1, labels=round(ypr[1:35],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=9, y=35:1, labels=round(pr[1:35],4), cex=0.82, pos=4, font=1)
 
-    text(x=15, y=35:1, labels=F.range[36:70], cex=0.82, pos=4, font=1)
-    text(x=19, y=35:1, labels=round(ypr[36:70],4), cex=0.82, pos=4, font=1)
-    text(x=24, y=35:1, labels=round(pr[36:70],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=15, y=35:1, labels=F.range[36:70], cex=0.82, pos=4, font=1)
+    graphics::text(x=19, y=35:1, labels=round(ypr[36:70],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=24, y=35:1, labels=round(pr[36:70],4), cex=0.82, pos=4, font=1)
 
-    text(x=30, y=35:1, labels=F.range[71:105], cex=0.82, pos=4, font=1)
-    text(x=34, y=35:1, labels=round(ypr[71:105],4), cex=0.82, pos=4, font=1)
-    text(x=39, y=35:1, labels=round(pr[71:105],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=30, y=35:1, labels=F.range[71:105], cex=0.82, pos=4, font=1)
+    graphics::text(x=34, y=35:1, labels=round(ypr[71:105],4), cex=0.82, pos=4, font=1)
+    graphics::text(x=39, y=35:1, labels=round(pr[71:105],4), cex=0.82, pos=4, font=1)
 
-  	title ("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
-  	if(do.tex | do.png) dev.off() else par(origpar)
+  	graphics::title("YPR and percentage of unfished SSB/R at Fully-selected F\n(Avg. years taken from model input and externally calculated)", outer=FALSE, line=1)
+  	if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }
   ypr.table <- cbind.data.frame(F.range, ypr, pr)
   colnames(ypr.table) <- c("Full.F", "YPR", "SPR")
-	#write.csv(ypr.table, file=paste(od,"YPR_Table.csv", sep=""), row.names=F)
-  # par(origpar)
+	#utils::write.csv(ypr.table, file=paste(od,"YPR_Table.csv", sep=""), row.names=F)
+  # graphics::par(origpar)
 } # end function
 
 #------------------------------------
@@ -3382,7 +3371,7 @@ plot.yield.curves <- function(mod, nyrs.ave = 5, plot=TRUE, do.tex = FALSE, do.p
 
 plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, what = "SSB", age=NULL, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od) {
   
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   years <- mod$years
 	n_years <- length(years) # don't use projections
   pattern <- "-| |\\#|/|:|\\?|<|>|\\|\\\\|\\*" #find -, or space, or #, or /, or :, or ?, or < or > or | or \\ or *
@@ -3406,15 +3395,15 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
 
     # standard retro plot
     plot.colors <- wham_palette(npeels+1)
-    tcol <- adjustcolor(plot.colors, alpha.f=0.4)
+    tcol <- grDevices::adjustcolor(plot.colors, alpha.f=0.4)
     rho.vals <- mohns_rho(mod)
-    # tcol <- col2rgb(plot.colors)
-    # tcol <- rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
+    # tcol <- grDevices::col2rgb(plot.colors)
+    # tcol <- grDevices::rgb(tcol[1,],tcol[2,],tcol[3,], maxColorValue = 255, alpha = 200)
     # if(what %in% c("NAA","NAA_age")){
     #   res <- list(mod$rep$NAA[,,1:n_years,, drop = FALSE])
     #   res[2:(npeels+1)] = lapply(mod$peels, function(x) x$rep$NAA[,,1:n_years,, drop = FALSE])
     # } else {
-      # res <- list(head(mod$rep[[what]],n_years))
+      # res <- list(utils::head(mod$rep[[what]],n_years))
       res <- list(mod$rep[[repwhat]])
       res[2:(npeels+1)] <- lapply(mod$peels, function(x) x$rep[[repwhat]])
     # }
@@ -3426,10 +3415,10 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
       for(r in regions) {
         if(what == "NAA") if(sum(mod$input$data$NAA_where[s,r,]) > 0){
           what.print.s <- paste0(sfns[s], "_", rfns[r], "_", what.print)
-          if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
-          if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
           #n_ages <- dim(res[[1]])[4]
-          par(mfcol = c(ceiling(n_ages/2),2), mar = c(4,4,1,1), oma = c(0,0,4,0))
+          graphics::par(mfcol = c(ceiling(n_ages/2),2), mar = c(4,4,1,1), oma = c(0,0,4,0))
           for(i in 1:n_ages) if(mod$input$data$NAA_where[s,r,i]>0) {
             y.range1 <- range(sapply(res, function(x) range(x[s,r,,i])))
             plt.type <- 'l'
@@ -3438,34 +3427,33 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
               #y.range1 <- c(-1,1)
             }
             plot(years,res[[1]][s,r,1:n_years,i],lwd=1,col=plot.colors[1],type=plt.type,xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[i]),ylim=y.range1)
-            grid(col = gray(0.7), lty = 2)
+            graphics::grid(col = grDevices::gray(0.7), lty = 2)
             for (j in 1:npeels) {
-              lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
-              points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
+              graphics::lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),i], col = tcol[j+1])
+              graphics::points(years[n_years-j],res[[j+1]][s,r,n_years-j,i],pch=16,col=plot.colors[j+1])
             }
             rho.plot <- round(rho.vals$naa[s,r,i],3)
-            legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+            graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           }
-          title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
-          if(do.tex | do.png) dev.off() else par(origpar)
+          graphics::title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
+          if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
         }
         if(what == "NAA_age") if(mod$input$data$NAA_where[s,r,age.ind] > 0){# only specified age
           what.print.s <- paste0(sfns[s], "_", rfns[r], "_", what.print)
-          if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
-          if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-          par(mfrow = c(1,1))
-          par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
+          if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.s,"_retro.pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.s,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          graphics::par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
           y.range1 <- range(sapply(res, function(x) range(x[s,r,,age.ind])))
           plot(years,res[[1]][s,r,1:n_years,age.ind],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=paste0("Numbers at age ", mod$ages.lab[age.ind]),ylim=y.range1)
-          grid(col = gray(0.7), lty = 2)
+          graphics::grid(col = grDevices::gray(0.7), lty = 2)
           for (j in 1:npeels) {
-            lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),age.ind], col = tcol[j+1])
-            points(years[n_years-j],res[[j+1]][s,r,n_years-j,age.ind],pch=16,col=plot.colors[j+1])
+            graphics::lines(years[1:(n_years-j)],res[[j+1]][s,r,1:(n_years-j),age.ind], col = tcol[j+1])
+            graphics::points(years[n_years-j],res[[j+1]][s,r,n_years-j,age.ind],pch=16,col=plot.colors[j+1])
           }
           rho.plot <- round(rho.vals$naa[s,r,age.ind],3)
-          legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-          title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
-          if(do.tex | do.png) dev.off() else par(origpar)
+          graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+          graphics::title(paste0(mod$input$stock_names[s], " in ", mod$input$region_names[r]), line = 1, outer = TRUE)
+          if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
         }
       }
     }
@@ -3479,22 +3467,22 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
       n <- length(names.plot)
       for(p in 1:n){
         what.print.p <- paste0(names.plot[p], "_", what.print)
-        if(do.tex) cairo_pdf(file.path(od, paste0(what.print.p,"_retro.pdf")), family = fontfam, height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+        if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.p,"_retro.pdf")), family = fontfam, height = 10, width = 10)
+        if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.p,"_retro.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
         range.y <- y.range1
         if(is.null(y.range1)) range.y <- range(sapply(res, function(x) range(x[,ns + p])))
-        par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
+        graphics::par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
         plot(years,res[[1]][1:n_years,ns + p],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=what,ylim=range.y)
-        grid(col = gray(0.7), lty = 2)
+        graphics::grid(col = grDevices::gray(0.7), lty = 2)
         for (i in 1:npeels)
         {
-          lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
-          points(years[n_years-i],res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
+          graphics::lines(years[1:(n_years-i)],res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
+          graphics::points(years[n_years-i],res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
         rho.plot <- round(rho.vals[[what]][p],3)
-        legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-        title(names.plot[p], line = 1, outer = TRUE)
-        if(do.tex | do.png) dev.off() else par(origpar)
+        graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+        graphics::title(names.plot[p], line = 1, outer = TRUE)
+        if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
       }
     }
 
@@ -3507,9 +3495,9 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
         rel.res <- lapply(1:length(res), function(x) res[[x]][s,r,1:(n_years - x + 1),]/res[[1]][s,r,1:(n_years - x + 1),] - 1)
         if(what == "NAA") if(sum(mod$input$data$NAA_where[s,r,]) > 0) {
           what.print.s <- paste0(sfns[s], "_", rfns[r], "_", what.print)
-          if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
-          if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-          par(mfcol = c(ceiling(n_ages/2),2), mar = c(4,4,1,1), oma = c(0,0,4,0))
+          if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.s,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.s,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          graphics::par(mfcol = c(ceiling(n_ages/2),2), mar = c(4,4,1,1), oma = c(0,0,4,0))
           for(i in 1:n_ages) {
             y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,i]))))
             plt.type <- 'l'
@@ -3518,33 +3506,33 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
               y.range2 <- c(-1,1)
             }
             plot(years,rel.res[[1]][,i],lwd=1,col=plot.colors[1],type=plt.type,xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[i]), ")")),ylim = y.range2)
-            grid(col = gray(0.7), lty = 2)
+            graphics::grid(col = grDevices::gray(0.7), lty = 2)
             for (j in 1:npeels) {
-              lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),i], col = tcol[j+1])
-              points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
+              graphics::lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),i], col = tcol[j+1])
+              graphics::points(years[n_years-j],rel.res[[j+1]][n_years-j,i],pch=16,col=plot.colors[j+1])
             }
             rho.plot <- round(rho.vals$naa[s,r,i],3)
-            legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+            graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
           }
-          title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
-          if(do.tex | do.png) dev.off() else par(origpar)
+          graphics::title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
+          if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
         }
         if(what == "NAA_age") if(mod$input$data$NAA_where[s,r,age.ind] > 0) {
           what.print.s <- paste0(sfns[s], "_", rfns[r], "_", what.print)
-          if(do.tex) cairo_pdf(file.path(od, paste0(what.print.s,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
-          if(do.png) png(filename = file.path(od, paste0(what.print.s,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-          par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
+          if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.s,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
+          if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.s,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+          graphics::par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
           y.range2 <- c(-1,max(sapply(rel.res, function(x) range(x[,age.ind]))))
           plot(years,rel.res[[1]][,age.ind],lwd=1,col=plot.colors[1],type='l',xlab="Year",ylab=bquote(paste("Mohn's ", rho, "(Numbers at age ", .(mod$ages.lab[age.ind]), ")")),ylim = y.range2)
-          grid(col = gray(0.7), lty = 2)
+          graphics::grid(col = grDevices::gray(0.7), lty = 2)
           for (j in 1:npeels) {
-            lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),age.ind], col = tcol[j+1])
-            points(years[n_years-j],rel.res[[j+1]][n_years-j,age.ind],pch=16,col=plot.colors[j+1])
+            graphics::lines(years[1:(n_years-j)],rel.res[[j+1]][1:(n_years-j),age.ind], col = tcol[j+1])
+            graphics::points(years[n_years-j],rel.res[[j+1]][n_years-j,age.ind],pch=16,col=plot.colors[j+1])
           }
           rho.plot <- round(rho.vals$naa[s,r,age.ind],3)
-          legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-          title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
-          if(do.tex | do.png) dev.off() else par(origpar)
+          graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+          graphics::title(paste0(mod$input$stock_names[s], ifelse(length(regions)>1, paste0(" in ", mod$input$region_names[r]), "")), line = 1, outer = TRUE)
+          if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
         }
       }
     }
@@ -3561,24 +3549,24 @@ plot.retro <- function(mod,y.lab,y.range1 = NULL,y.range2 = NULL, alpha = 0.05, 
 
       for(p in 1:n) {
         what.print.p <- paste0(names.plot[p], "_", what.print)
-        if(do.tex) cairo_pdf(file.path(od, paste0(what.print.p,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
-        if(do.png) png(filename = file.path(od, paste0(what.print.p,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+        if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(what.print.p,"_retro_relative.pdf")), family = fontfam, height = 10, width = 10)
+        if(do.png) grDevices::png(filename = file.path(od, paste0(what.print.p,"_retro_relative.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
         range.y <- y.range2
         if(is.null(y.range2)) range.y <- c(-1,max(sapply(rel.res, function(x) range(x[,ns + p]))))
-        par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
+        graphics::par(mfrow = c(1,1), mar = c(4,4,1,1), oma = c(0,0,4,0))
         plot(years,rel.res[[1]][1:n_years,ns + p],lwd=1,col="black",type='l',xlab="Year",ylab=y.lab,ylim=range.y)
-        grid(col = gray(0.7), lty = 2)
+        graphics::grid(col = grDevices::gray(0.7), lty = 2)
         for (i in 1:npeels) {
-          lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
-          points(years[n_years-i],rel.res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
+          graphics::lines(years[1:(n_years-i)],rel.res[[i+1]][1:(n_years-i),ns + p], col = tcol[i+1])
+          graphics::points(years[n_years-i],rel.res[[i+1]][n_years-i,ns + p],pch=16,col=plot.colors[i+1])
         }
         rho.plot <- round(rho.vals[[what]][p],3)
-        legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
-        title(names.plot[p], line = 1, outer = TRUE)
-        if(do.tex | do.png) dev.off() else par(origpar)
+        graphics::legend("bottomleft", legend = bquote(rho == .(rho.plot)), bty = "n")
+        graphics::title(names.plot[p], line = 1, outer = TRUE)
+        if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
       }
     }
-    # par(origpar)
+    # graphics::par(origpar)
     return(rho.vals)
   }
 }
@@ -3616,12 +3604,12 @@ makecohorts <- function(mat)
 # assumes matrix has ages as columns and that cohorts are in rows
 plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE, mod)
 {
-	origpar <- par(no.readonly = TRUE)
+	origpar <- graphics::par(no.readonly = TRUE)
   nc <- NCOL(matcoh)
-	my.cor <- cor(matcoh,use="pairwise.complete.obs")
+	my.cor <- stats::cor(matcoh,use="pairwise.complete.obs")
 	my.cor.round <- round(my.cor,2)
-	par(mfcol=c(nc,nc))
-	par(oma=c(0,0,3,1),mar=c(1,1,0,0))
+	graphics::par(mfcol=c(nc,nc))
+	graphics::par(oma=c(0,0,3,1),mar=c(1,1,0,0))
 	for (i in 1:nc)
 	{
 		for (j in nc:1)
@@ -3629,7 +3617,7 @@ plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE, mod)
 			if (i == j)
 			{
 				plot(1:10,1:10,type='n',axes=FALSE)
-				text(5,5,paste0("age-",mod$ages.lab[i]),cex=1.4)
+				graphics::text(5,5,paste0("age-",mod$ages.lab[i]),cex=1.4)
 			}
 			if (i < j)
 			{
@@ -3638,30 +3626,30 @@ plotcoh <- function(matcoh,mytitle="",mylabels=NA, save.plots = FALSE, mod)
 					plot(matcoh[,i],matcoh[,j],axes=FALSE) # make sure have some data to plot
 					xx <- matcoh[,i]
 					yy <- matcoh[,j]
-					my.fit <- lm(yy~xx)
-					if (!is.na(my.fit$coefficients[2])) abline(my.fit,col="red")
+					my.fit <- stats::lm(yy~xx)
+					if (!is.na(my.fit$coefficients[2])) graphics::abline(my.fit,col="red")
 					xrng <- data.frame(xx = seq(min(xx,na.rm=T),max(xx,na.rm=T),length.out=100))
-					zz <- suppressWarnings(predict(my.fit,xrng,interval="confidence"))
-					lines(xrng[,1],zz[,2],col="blue")
-					lines(xrng[,1],zz[,3],col="blue")
+					zz <- suppressWarnings(stats::predict(my.fit,xrng,interval="confidence"))
+					graphics::lines(xrng[,1],zz[,2],col="blue")
+					graphics::lines(xrng[,1],zz[,3],col="blue")
 				}
 				if (is.na(my.cor[i,j]))
 				{  # if not data, just make empty box
 					plot(1:10,1:10,type='n',axes=FALSE)
 				}
-        box()
+        graphics::box()
 			}
 			if (i > j)
 			{
 				plot(1:10,1:10,type='n',axes=FALSE)
 				txt <- format(my.cor.round[i,j], nsmall=2)
-				text(5,5,txt)
-				box()
+				graphics::text(5,5,txt)
+				graphics::box()
 			}
 		}
 	}
-	title(mytitle, outer=TRUE)
-	# par(origpar)
+	graphics::title(mytitle, outer=TRUE)
+	# graphics::par(origpar)
 	return(my.cor)
 }
 #-------------------------------------------------------------------------------
@@ -3695,15 +3683,15 @@ plot_catch_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 
 		# make the plots
     fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
+		if(do.png) grDevices::png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 		cob.cor <- plotcoh(cob.coh,mytitle=paste0(title2,title1),mod=mod)
-		if(do.tex | do.png) dev.off()
+		if(do.tex | do.png) grDevices::dev.off()
 
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
+		if(do.png) grDevices::png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 		cpr.cor <- plotcoh(cpr.coh,mytitle=paste0(title3,title1),mod=mod)
-		if(do.tex | do.png) dev.off()
+		if(do.tex | do.png) grDevices::dev.off()
 
 		cat.corr[[i]] <- list(cob.cor,cpr.cor)
 	}
@@ -3827,15 +3815,15 @@ plot_index_at_age_consistency <- function(mod, do.tex = FALSE, do.png = FALSE, f
 			# make the plots
       fn <- paste0(ifns[ind], "_", rfns[mod$input$data$index_regions[ind]])
 
-			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
-			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+			if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
+			if(do.png) grDevices::png(filename = file.path(od, paste0("catch_at_age_consistency_obs_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 			iob.cor <- plotcoh(iob.coh,mytitle=paste0(title2,title1),mylabels,mod=mod)
-			if(do.tex | do.png) dev.off()
+			if(do.tex | do.png) grDevices::dev.off()
 
-			if(do.tex) cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
-			if(do.png) png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+			if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".pdf")), family = fontfam, height = 10, width = 10)
+			if(do.png) grDevices::png(filename = file.path(od, paste0("catch_at_age_consistency_pred_",fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 			ipr.cor <- plotcoh(ipr.coh,mytitle=paste0(title3,title1),mylabels,mod=mod)
-			if(do.tex | do.png) dev.off()
+			if(do.tex | do.png) grDevices::dev.off()
 
 			index.corr[[ind]] <- list(iob.cor,ipr.cor)
 		}
@@ -3873,11 +3861,11 @@ calc_Z_cohort <- function(cohmat)
 	{
 		if (length(cohmat[i,which(!is.na(cohmat[i,]))]) >= 2)
 		{  # make sure there are at least 2 data points for point estimate
-			z.fit <- lm(cohmat[i,]~ages)  # linear regression of cohort abundance vs age
+			z.fit <- stats::lm(cohmat[i,]~ages)  # linear regression of cohort abundance vs age
 			z[i,1] <- -1 * z.fit$coefficients[2]  # note change in sign for Z
 			if (length(cohmat[i,!is.na(cohmat[i,])]) >= 3)
 			{  # need at least 3 data points for CI
-				z[i,2:3] <- -1 * rev(confint(z.fit, "ages", level=0.80))  # note change in sign and order for Z CI
+				z[i,2:3] <- -1 * rev(stats::confint(z.fit, "ages", level=0.80))  # note change in sign and order for Z CI
 			}
 		}
 	}
@@ -3888,7 +3876,7 @@ calc_Z_cohort <- function(cohmat)
 plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
 	# create catch curve plots for catch by fleet
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
 	lastyr <- max(mod$years)
   dat <- mod$env$data
   rep <- mod$rep
@@ -3952,46 +3940,46 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 		# make the plots
     fn <- paste0(ffns[i], "_", rfns[mod$input$data$fleet_regions[i]])
 
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_obs.pdf")), family = fontfam, height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_obs.pdf")), family = fontfam, height = 10, width = 10)
+		if(do.png) grDevices::png(filename = file.path(od, paste0("catch_curves_", fn,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+		graphics::par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
 		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1,"\n",title2a_obs))
-		grid(col = gray(0.7))
+		graphics::grid(col = grDevices::gray(0.7))
 		for (j in 1:NROW(cob.coh))
 		{
-			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
-			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
+			graphics::lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
+			graphics::lines(cohort[j]:(cohort[j]+dat$n_ages-1),cob.coh[j,],type='l',lty=1,col=my.col[j])
 		}
     plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_obs))
-    suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
+    suppressWarnings(graphics::arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
-		grid(col = gray(0.7))
-		if(do.tex | do.png) dev.off()
+		graphics::grid(col = grDevices::gray(0.7))
+		if(do.tex | do.png) grDevices::dev.off()
 
-		if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_pred.pdf")), family = fontfam, height = 10, width = 10)
-		if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-		par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+		if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_curves_", fn,"_pred.pdf")), family = fontfam, height = 10, width = 10)
+		if(do.png) grDevices::png(filename = file.path(od, paste0("catch_curves_", fn,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+		graphics::par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
 		plot(cohort,cohort,type='n',ylim=range(c(cob.coh,cpr.coh),na.rm=TRUE),xlab="",ylab="Log(Catch)", main=paste0(title1,"\n",title2a_pred))
-		grid(col = gray(0.7))
+		graphics::grid(col = grDevices::gray(0.7))
 		for (j in 1:length(cob.coh[,1]))
 		{
-			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
-			lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
+			graphics::lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='p',lty=1,pch=1:dat$n_ages,col="gray50")
+			graphics::lines(cohort[j]:(cohort[j]+dat$n_ages-1),cpr.coh[j,],type='l',lty=1,col=my.col[j])
 		}
     plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_pred))
-    suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
+    suppressWarnings(graphics::arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 		# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=T))
-		grid(col = gray(0.7))
-		if(do.tex | do.png) dev.off()
+		graphics::grid(col = grDevices::gray(0.7))
+		if(do.tex | do.png) grDevices::dev.off()
 
     # write out .csv files for Z, one file for each fleet
 		colnames(z.ob) <-c("Z.obs","low.80%", "high.80%")
-		#write.csv(z.ob, file=paste(od,"Z.Ob.Fleet.",i,".csv", sep=""), row.names=cohort)
+		#utils::write.csv(z.ob, file=paste(od,"Z.Ob.Fleet.",i,".csv", sep=""), row.names=cohort)
 
 		colnames(z.pr) <-c("Z.pred","low.80%", "high.80%")
-		#write.csv(z.pr, file=paste(od,"Z.Pr.Fleet.",i,".csv", sep=""), row.names=cohort)
+		#utils::write.csv(z.pr, file=paste(od,"Z.Pr.Fleet.",i,".csv", sep=""), row.names=cohort)
 	}
-  if(!(do.tex | do.png)) par(origpar)
+  if(!(do.tex | do.png)) graphics::par(origpar)
 }
 #plot_catch_curves_for_catch(ssm)
 
@@ -4000,7 +3988,7 @@ plot_catch_curves_for_catch <- function(mod, first.age=-999, do.tex = FALSE, do.
 plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.png = FALSE, fontfam="", res = 72, od)
 {
 	# create catch curve plots for each west coast style index
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   lastyr <- max(mod$years)
   dat <- mod$env$data
   rep <- mod$rep
@@ -4066,55 +4054,55 @@ plot_catch_curves_for_index <- function(mod, first.age=-999, do.tex = FALSE, do.
 		  fn <- paste0(ifns[ind], "_", rfns[mod$input$data$index_regions[ind]])
 			if(!(all(is.na(iob.coh)) & all(is.na(ipr.coh))))
 			{
-			  if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_obs.pdf")), family = fontfam, height = 10, width = 10)
-			  if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn ,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-			  par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+			  if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_obs.pdf")), family = fontfam, height = 10, width = 10)
+			  if(do.png) grDevices::png(filename = file.path(od, paste0("catch_curves_", fn ,"_obs.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+			  graphics::par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
 			  plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1,"\n",title2a_obs))
-				grid(col = gray(0.7))
+				graphics::grid(col = grDevices::gray(0.7))
 				for (i in 1:length(iob.coh[,1]))
 				{
-					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
-					lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
+					graphics::lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
+					graphics::lines(cohort[i]:(cohort[i]+n_ages-1),iob.coh[i,],type='l',lty=1,col=my.col[i])
 				}
         plot(cohort,z.ob[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_obs))
-        suppressWarnings(arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
+        suppressWarnings(graphics::arrows(cohort, z.ob[,2], cohort, z.ob[,3], length=0.05, angle=90, code=3))
 
 				# Hmisc::errbar(cohort,z.ob[,1],z.ob[,3],z.ob[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
-				grid(col = gray(0.7))
-				if(do.tex | do.png) dev.off()
+				graphics::grid(col = grDevices::gray(0.7))
+				if(do.tex | do.png) grDevices::dev.off()
 
-				if(do.tex) cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_pred.pdf")), family = fontfam, height = 10, width = 10)
-				if(do.png) png(filename = file.path(od, paste0("catch_curves_", fn ,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-				par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
+				if(do.tex) grDevices::cairo_pdf(file.path(od, paste0("catch_curves_", fn ,"_pred.pdf")), family = fontfam, height = 10, width = 10)
+				if(do.png) grDevices::png(filename = file.path(od, paste0("catch_curves_", fn ,"_pred.png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+				graphics::par(oma=c(1,1,1,1),mar=c(4,4,4,0.5),mfrow=c(2,1))
 				plot(cohort,cohort,type='n',ylim=range(c(iob.coh,ipr.coh),na.rm=T),xlab="",ylab="Log(Index)", main=paste0(title1,"\n",title2a_pred))
-				grid(col = gray(0.7))
+				graphics::grid(col = grDevices::gray(0.7))
 				for (i in 1:NROW(iob.coh))
 				{
-					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
-					lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
+					graphics::lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='p',lty=1,pch=1:n_ages,col="gray50")
+					graphics::lines(cohort[i]:(cohort[i]+n_ages-1),ipr.coh[i,],type='l',lty=1,col=my.col[i])
 				}
         plot(cohort,z.pr[,1],ylim=range(c(z.ob,z.pr),na.rm=TRUE),xlab="Year Class",ylab="Z", main=paste0(title1,"\n",title2b_pred))
-        suppressWarnings(arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
+        suppressWarnings(graphics::arrows(cohort, z.pr[,2], cohort, z.pr[,3], length=0.05, angle=90, code=3))
 				# Hmisc::errbar(cohort,z.pr[,1],z.pr[,3],z.pr[,2],xlab="Year Class",ylab="Z",ylim=range(c(z.ob,z.pr),na.rm=TRUE))
-				grid(col = gray(0.7))
-				if(do.tex | do.png) dev.off()
+				graphics::grid(col = grDevices::gray(0.7))
+				if(do.tex | do.png) grDevices::dev.off()
 			}
 
 			# write out .csv files for Z, one file for each fleet
 			colnames(z.ob) <-c("Z.obs","low.80%", "high.80%")
-			#write.csv(z.ob, file=paste(od,"Z.Ob.Index.",ind,".csv", sep=""), row.names=cohort)
+			#utils::write.csv(z.ob, file=paste(od,"Z.Ob.Index.",ind,".csv", sep=""), row.names=cohort)
 
 			colnames(z.pr) <-c("Z.pred","low.80%", "high.80%")
-			#write.csv(z.pr, file=paste(od,"Z.Pr.Index.",ind,".csv", sep=""), row.names=cohort)
+			#utils::write.csv(z.pr, file=paste(od,"Z.Pr.Index.",ind,".csv", sep=""), row.names=cohort)
 		}
 	}   # end loop over n_indices
-	if(!(do.tex | do.png)) par(origpar)
+	if(!(do.tex | do.png)) graphics::par(origpar)
 }
 #revised
 #plot_catch_curves_for_index(ssm)
 #-------------------------------------------------------------------------------
 plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, do.png = FALSE, fontfam="", od){
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   dat <- mod$env$data
   ecov.pred <- mod$rep$Ecov_x
   ecov.obs <- dat$Ecov_obs[1:dat$n_years_Ecov,,drop=F]
@@ -4153,12 +4141,12 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
   # efns <- chartr(" ", "_", mod$input$Ecov_names)
   for (i in ecovs)
   {
-    if(do.tex) cairo_pdf(file.path(od, paste0(efns[i],"_diagnostic.pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(efns[i],'_diagnostic.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(efns[i],"_diagnostic.pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0(efns[i],'_diagnostic.png')), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
 
     m <- rbind(c(1,1), c(2,3))
-    layout(m)
-    par(mar=c(4,4,2,0), oma=c(0,0,0.5,0.5))
+    graphics::layout(m)
+    graphics::par(mar=c(4,4,2,0), oma=c(0,0,0.5,0.5))
 
     ecov.pred.low <- ecov.pred[,i] - 1.96 * ecov.pred.se[,i]
     ecov.pred.high <- ecov.pred[,i] + 1.96 * ecov.pred.se[,i]
@@ -4170,18 +4158,18 @@ plot.ecov.diagnostic <- function(mod, use.i, plot.pad = FALSE, do.tex = FALSE, d
     if(min(ecov.pred[,i],na.rm=T) < y.min) y.min <- min(ecov.pred[,i],na.rm=T)
     plot(years_full, ecov.pred[,i], type='n', xlab="Year", ylab=mod$input$Ecov_names[i],
          ylim=c(y.min, y.max))
-    polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
-    arrows(years, ecov.low, years, ecov.high, length=0)
-    points(years, ecov.obs[,i], pch=19)
-    lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
-    title (paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
-    if(length(years_full) > length(years)) abline(v=tail(years,1), lty=2)
+    graphics::polygon(c(years_full,rev(years_full)), c(ecov.pred.low, rev(ecov.pred.high)), col=grDevices::adjustcolor(plot.colors[i], alpha.f=0.4), border = "transparent")
+    graphics::arrows(years, ecov.low, years, ecov.high, length=0)
+    graphics::points(years, ecov.obs[,i], pch=19)
+    graphics::lines(years_full, ecov.pred[,i], col=plot.colors[i], lwd=3)
+    graphics::title(paste0("Ecov ",i, ": ",mod$input$Ecov_names[i]), outer=T, line=-1)
+    if(length(years_full) > length(years)) graphics::abline(v=utils::tail(years,1), lty=2)
 
     plot(years, ecov.res[,i], type='h', lwd=2, col=plot.colors[i], xlab="Year", ylab="Std. Residual")
-    abline(h=0)
+    graphics::abline(h=0)
 
-    hist(ecov.res[,i], breaks=10, plot=T, xlab="Std. Residual", ylab="Probability Density", freq=F, main=NULL)
-    if(do.tex | do.png) dev.off() else par(origpar)
+    graphics::hist(ecov.res[,i], breaks=10, plot=T, xlab="Std. Residual", ylab="Probability Density", freq=F, main=NULL)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }
 }
 #revised
@@ -4231,26 +4219,42 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       tmp$Block <- block.names[i]
       df.selAA <- rbind(df.selAA, tmp)
     }
-    df.plot <- df.selAA |> tidyr::pivot_longer(-c(Year,Block),
-              names_to = "Age", 
-              names_prefix = "Age_",
-              names_ptypes = list(Age = character()),
-              values_to = "Selectivity")
+
+    age_cols <- setdiff(names(df.selAA), c("Year", "Block"))
+    df.selAA_long <- stats::reshape(
+      data = df.selAA,
+      direction = "long",
+      varying = age_cols,
+      v.names = "Selectivity",
+      timevar = "Age",
+      times = sub("^Age_", "", age_cols),
+      idvar = c("Year", "Block")
+    )
+    rownames(df.selAA_long) <- NULL
+    df.selAA_long <- df.selAA_long[order(df.selAA_long$Year, df.selAA_long$Block), ]
+
+    # df.plot <- df.selAA |> tidyr::pivot_longer(-c(Year,Block),
+    #           names_to = "Age", 
+    #           names_prefix = "Age_",
+    #           names_ptypes = list(Age = character()),
+    #           values_to = "Selectivity")
+    df.plot <- df.selAA_long
+
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
     df.plot$Block <- factor(as.character(df.plot$Block), levels=block.names[include.selblock])
     fn <- "SelAA_tile"
-    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 10, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-      print(ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) + 
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 10, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+      print(ggplot2::ggplot(df.plot, ggplot2::aes(x=.data$Year, y=.data$Age, fill=.data$Selectivity)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
         ggplot2::scale_y_discrete(expand=c(0,0)) + #, breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
 #        ggplot2::scale_y_continuous(expand=c(0,0), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +        
         ggplot2::theme_bw() + 
-        ggplot2::facet_wrap(~Block, dir="v") +
+        ggplot2::facet_wrap(~.data$Block, dir="v") +
         wham_fill_scale())
-    if(do.tex | do.png) dev.off()
+    if(do.tex | do.png) grDevices::dev.off()
   }
 
   # MAA
@@ -4270,20 +4274,36 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       df.MAA <- as.data.frame(rep$MAA[s,r,,])
       colnames(df.MAA) <- paste0("Age_",1:n_ages)
       df.MAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.MAA)
-      temp <- df.MAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
-                names_to = "Age", 
-                names_prefix = "Age_",
-                names_ptypes = list(Age = character()),
-                values_to = "M") |> as.data.frame()
-      df.plot <- rbind(df.plot, temp)
+
+      age_cols <- grep("^Age", names(df.MAA), value = TRUE)
+      id_cols  <- setdiff(names(df.MAA), age_cols)
+      df.MAA_long <- stats::reshape(
+        data = df.MAA,
+        direction = "long",
+        varying = age_cols,
+        v.names = "M",
+        timevar = "Age",
+        times = sub("^Age_", "", age_cols),
+        idvar = id_cols
+      )
+      rownames(df.MAA_long) <- NULL
+      df.MAA_long <- df.MAA_long[do.call(order, df.MAA_long[id_cols]), ]
+      df.plot <- rbind(df.plot, df.MAA_long)
+      
+      # temp <- df.MAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
+      #           names_to = "Age", 
+      #           names_prefix = "Age_",
+      #           names_ptypes = list(Age = character()),
+      #           values_to = "M") |> as.data.frame()
+      # df.plot <- rbind(df.plot, temp)
     }
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
     fn <- paste0("MAA_tile")
 
-    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
-      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=M)) + 
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=.data$Year, y=.data$Age, fill=.data$M)) + 
       ggplot2::geom_tile() +
       ggplot2::scale_x_continuous(expand=c(0,0)) +
       ggplot2::scale_y_discrete(expand=c(0,0)) + 
@@ -4291,9 +4311,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
       ggplot2::ggtitle("MAA") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
       wham_fill_scale()
-      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
+      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = utils::tail(years,1), linetype = 2)
       print(plt)
-    if(do.tex | do.png) dev.off()
+    if(do.tex | do.png) grDevices::dev.off()
   }
 
   # NAA_devs
@@ -4308,12 +4328,28 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
       df.NAA <- as.data.frame(rep$NAA_devs[s,r,,])
       colnames(df.NAA) <- paste0("Age_",1:n_ages)
       df.NAA <- cbind.data.frame(Stock = mod$input$stock_names[s], Region = mod$input$region_names[r], Year = years_full, df.NAA)
-      temp <- df.NAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
-                names_to = "Age", 
-                names_prefix = "Age_",
-                names_ptypes = list(Age = character()),
-                values_to = "Deviation") |> as.data.frame()
-      df.plot <- rbind(df.plot, temp)
+
+      age_cols <- grep("^Age", names(df.NAA), value = TRUE)
+      id_cols  <- setdiff(names(df.NAA), age_cols)
+      df.NAA_long <- stats::reshape(
+        data = as.data.frame(df.NAA),
+        direction = "long",
+        varying = age_cols,
+        v.names = "Deviation",
+        timevar = "Age",
+        times = sub("^Age_", "", age_cols),
+        idvar = id_cols
+      )
+      rownames(df.NAA_long) <- NULL
+      df.NAA_long <- df.NAA_long[do.call(order, df.NAA_long[id_cols]), ]
+      df.plot <- rbind(df.plot, df.NAA_long)
+
+      # temp <- df.NAA |> tidyr::pivot_longer(tidyr::starts_with("Age"),
+      #           names_to = "Age", 
+      #           names_prefix = "Age_",
+      #           names_ptypes = list(Age = character()),
+      #           values_to = "Deviation") |> as.data.frame()
+      # df.plot <- rbind(df.plot, temp)
     }
     df.plot$Age <- as.factor(as.integer(df.plot$Age))
     levels(df.plot$Age) <- ages.lab
@@ -4321,9 +4357,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
     dev.limit <- max(abs(df.plot$Deviation), na.rm = TRUE)
     if(!is.finite(dev.limit) || dev.limit == 0) dev.limit <- 1
 
-    if(do.tex) cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
-    if(do.png) png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
-      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=Year, y=Age, fill=Deviation)) + 
+    if(do.tex) grDevices::cairo_pdf(file.path(od, paste0(fn, ".pdf")), family = fontfam, height = 5, width = 10)
+    if(do.png) grDevices::png(filename = file.path(od, paste0(fn, ".png")), width = 10*144, height = 5*144, res = 144, pointsize = 12, family = fontfam)
+      plt <- ggplot2::ggplot(df.plot, ggplot2::aes(x=.data$Year, y=.data$Age, fill=.data$Deviation)) + 
         ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
         ggplot2::scale_y_discrete(expand=c(0,0)) + 
@@ -4331,9 +4367,9 @@ plot.tile.age.year <- function(mod, type="selAA", do.tex = FALSE, do.png = FALSE
         ggplot2::facet_grid(Stock~Region, labeller = ggplot2::label_both) +
         ggplot2::ggtitle("NAA deviations") + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
         wham_fill_scale(midpoint = 0, limits = c(-dev.limit, dev.limit))
-      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = tail(years,1), linetype = 2)
+      if(mod$env$data$n_years_proj>0) plt  <- plt + ggplot2::geom_vline(xintercept = utils::tail(years,1), linetype = 2)
       print(plt)
-    if(do.tex | do.png) dev.off()
+    if(do.tex | do.png) grDevices::dev.off()
   }
 }  
 
@@ -4346,129 +4382,129 @@ dlogitnorm <- function(p,mu,sd,min,max) {
 }
 
 plot_q_prior_post <- function(mod, do.tex = F, do.png = F, fontfam="", od){
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   ind <- which(mod$input$data$use_q_prior == 1)
   if(length(ind) & "sdrep" %in% names(mod)){
     logit_q <- cbind(as.list(mod$sdrep, "Est")$q_prior_re, as.list(mod$sdrep, "Std")$q_prior_re)
     ht <- 10
     wd <- 10*length(ind)
     priorq <- approx_postq <- list()
-    if(do.tex) cairo_pdf(file.path(od, "q_prior_post.pdf"), family = fontfam, height = ht, width = wd)
-    if(do.png) png(filename = file.path(od, "q_prior_post.png"), width = wd*144, height = ht*144, res = 144, pointsize = 12, family = fontfam)
-    par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(1,length(ind)))
+    if(do.tex) grDevices::cairo_pdf(file.path(od, "q_prior_post.pdf"), family = fontfam, height = ht, width = wd)
+    if(do.png) grDevices::png(filename = file.path(od, "q_prior_post.png"), width = wd*144, height = ht*144, res = 144, pointsize = 12, family = fontfam)
+    graphics::par(mar=c(4,4,3,2), oma=c(1,1,1,1), mfrow=c(1,length(ind)))
     pal <- wham_palette(2)
     for(i in ind) {
       qmax <- mod$input$data$q_upper[i]
       x <- seq(0.001,qmax,0.001)
       y <- log(x-0) - log((qmax-x))
-      approx_postq[[i]] <- dnorm(y, logit_q[i,1], logit_q[i,2])
+      approx_postq[[i]] <- stats::dnorm(y, logit_q[i,1], logit_q[i,2])
       priorq[[i]] <- dlogitnorm(x, mod$parList$logit_q[i], 0.3, 0, 1000) 
       maxx <- max(x[which(approx_postq[[i]] > 1e-5)], x[which(priorq[[i]] > 1e-5)], na.rm = T)
       plot(x,priorq[[i]], type = 'l', xlab = "q", ylab = "pdf", col = pal[1], lwd = 2, ylim = c(0,max(approx_postq[[i]],priorq[[i]], na.rm =T)), xlim = c(0,maxx))
-      lines(x,approx_postq[[i]], col = pal[2], lwd = 2)
-      ci <- qmax/(1+ exp(-(logit_q[i,1] + c(-1,1)*qnorm(0.975) * logit_q[i,2])))
-      abline(v= ci, lty = 2)
-      legend("topright", legend = c("prior", "approx. posterior", "95% CI"), col = c(pal, "black"), lty = c(1,1,2), lwd = 2)
-      mtext(paste0("Index ", ind), side = 3, line = 1, outer = F, cex = 1.5)
+      graphics::lines(x,approx_postq[[i]], col = pal[2], lwd = 2)
+      ci <- qmax/(1+ exp(-(logit_q[i,1] + c(-1,1)*stats::qnorm(0.975) * logit_q[i,2])))
+      graphics::abline(v= ci, lty = 2)
+      graphics::legend("topright", legend = c("prior", "approx. posterior", "95% CI"), col = c(pal, "black"), lty = c(1,1,2), lwd = 2)
+      graphics::mtext(paste0("Index ", ind), side = 3, line = 1, outer = F, cex = 1.5)
     }
-    if(do.tex | do.png) dev.off() else par(origpar)
+    if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
   }  
 }
 
 plot_q <- function(mod, do.tex = F, do.png = F, fontfam = '', od){
-  origpar <- par(no.readonly = TRUE)
+  origpar <- graphics::par(no.readonly = TRUE)
   yrs <- 1:length(mod$years)
   q <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat[yrs,,drop = FALSE]))))
-  if(do.tex) cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
-  if(do.png) png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-  par(mar=c(4,4,3,1), oma=c(1,1,1,15))
+  if(do.tex) grDevices::cairo_pdf(file.path(od, "q_time_series.pdf"), family = fontfam, height = 10, width = 10)
+  if(do.png) grDevices::png(filename = file.path(od, "q_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+  graphics::par(mar=c(4,4,3,1), oma=c(1,1,1,15))
   pal <- wham_palette(mod$input$data$n_indices)
   ymax <- max(q, na.rm = TRUE)
   if("sdrep" %in% names(mod)){
     if("q_re" %in% mod$input$random) se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat[yrs,,drop = FALSE]
     else se <- t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
       ncol = NROW(mod$rep$logit_q_mat[yrs,,drop = FALSE])))
-    logit_q_lo <- mod$rep$logit_q_mat[yrs,,drop = FALSE] - qnorm(0.975)*se
-    logit_q_hi <- mod$rep$logit_q_mat[yrs,,drop = FALSE] + qnorm(0.975)*se
+    logit_q_lo <- mod$rep$logit_q_mat[yrs,,drop = FALSE] - stats::qnorm(0.975)*se
+    logit_q_hi <- mod$rep$logit_q_mat[yrs,,drop = FALSE] + stats::qnorm(0.975)*se
     q_lo <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
     q_hi <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
     ymax <- max(c(q,q_hi), na.rm = TRUE)
   }
   plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
   for( i in 1:mod$input$data$n_indices){
-    lines(mod$years, q[,i], lwd = 2, col = pal[i])
+    graphics::lines(mod$years, q[,i], lwd = 2, col = pal[i])
     if("sdrep" %in% names(mod)){
-      polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+      graphics::polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
     }
   }
   leg <- paste0(mod$input$index_names, ifelse(model$input$data$n_regions>1, paste0(" ", mod$input$region_names[mod$input$data$index_regions]), ""))
-  legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
-  if(do.tex | do.png) dev.off() else par(origpar)
+  graphics::legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
+  if(do.tex | do.png) grDevices::dev.off() else graphics::par(origpar)
 }
 
 #NOT DONE YET
-plot_mu <- function(mod, do.tex = F, do.png = F, fontfam = '', od){
-  #only call if n_regions=2
-  origpar <- par(no.readonly = TRUE)
-  dat <- mod$input$data
-  ymax <- max(mod$rep$mu, na.rm = TRUE)
-  if(data$n_regions == 2) if(sum(dat$can_move)>0){
-    if("sdrep" %in% names(mod)){
-      se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$trans_mu_sdrep
-    } else se <- NULL
+# plot_mu <- function(mod, do.tex = F, do.png = F, fontfam = '', od){
+#   #only call if n_regions=2
+#   origpar <- graphics::par(no.readonly = TRUE)
+#   dat <- mod$input$data
+#   ymax <- max(mod$rep$mu, na.rm = TRUE)
+#   if(data$n_regions == 2) if(sum(dat$can_move)>0){
+#     if("sdrep" %in% names(mod)){
+#       se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$trans_mu_sdrep
+#     } else se <- NULL
 
-    for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
-      k <- rr
-      if(rr>=r) k <- k + 1
-      if(data$mu_model[r,rr] %in% 1:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 5:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 9:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% 13:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
-        "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
-      if(data$mu_model[r,rr] %in% c(1:4,9:12)) ns <- 1
-      else ns <- data$n_stocks
-      if(data$mu_model[r,rr] %in% c(1:4,5:8)) nt <- 1
-      else nt <- data$n_seasons
-      if(data$mu_model[r,rr] %in% c(2,4,6,8,10,12,14,16)) na <- data$n_ages
-      else na <- 1
-      modify <- matrix(modify, nt, ns)
-      if(do.tex) cairo_pdf(file.path(od, "mu_", r,"_", k, "_time_series.pdf"), family = fontfam, height = 10, width = 10)
-      if(do.png) png(filename = file.path(od, "mu_", r,"_", k, "_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
-      par(mar=c(4,4,3,1), oma=c(1,1,1,15))
-      pal <- wham_palette(nt+ns)
-      plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
-      for(s in 1:ns) for(a in 1:na) for(t in 1:nt) if(dat$can_move[s,t,r,rr]) {
-        lines(mod$years, mod$rep$mu[s,a,t,r,rr], lwd = 2, col = pal[t + (s-1)*nt])
-        if(!is.null(se)) {
-          mu_lo <- mu_hi <- NULL #NEED TO SEE IF YOU CAN transform logit CIs for n_regions>2
-          polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-        }
-      }
-      if(do.tex | do.png) dev.off() else par(origpar)
-    }
-  }
-  # q <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
-  # ymax <- max(q, na.rm = TRUE)
-  # if("sdrep" %in% names(mod)){
-  #   if("q_re" %in% mod$input$random) se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
-  #   else se <- t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
-  #     ncol = NROW(mod$rep$logit_q_mat)))
-  #   logit_q_lo <- mod$rep$logit_q_mat - qnorm(0.975)*se
-  #   logit_q_hi <- mod$rep$logit_q_mat + qnorm(0.975)*se
-  #   q_lo <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
-  #   q_hi <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
-  #   ymax <- max(q_hi, na.rm = TRUE)
-  # }
-  # plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
-  # for( i in 1:mod$input$data$n_indices){
-  #   lines(mod$years, q[,i], lwd = 2, col = pal[i])
-  #   if("sdrep" %in% names(mod)){
-  #     polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
-  #   }
-  # }
-  # leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
-  # legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
-}
+#     for(r in 1:data$n_regions) for(rr in 1:(data$n_regions-1)) {
+#       k <- rr
+#       if(rr>=r) k <- k + 1
+#       if(data$mu_model[r,rr] %in% 1:4) modify <- paste("$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+#       if(data$mu_model[r,rr] %in% 5:8) modify <- paste("stock", stock.names.tab, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+#       if(data$mu_model[r,rr] %in% 9:12) modify <- paste("season", 1:data$n_seasons, "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+#       if(data$mu_model[r,rr] %in% 13:16) modify <- paste(rep(stock.names.tab, each = data$n_seasons), "season", 1:data$n_seasons, 
+#         "$\\mu$ from",  region.names.tab[r], "to", region.names.tab[k])
+#       if(data$mu_model[r,rr] %in% c(1:4,9:12)) ns <- 1
+#       else ns <- data$n_stocks
+#       if(data$mu_model[r,rr] %in% c(1:4,5:8)) nt <- 1
+#       else nt <- data$n_seasons
+#       if(data$mu_model[r,rr] %in% c(2,4,6,8,10,12,14,16)) na <- data$n_ages
+#       else na <- 1
+#       modify <- matrix(modify, nt, ns)
+#       if(do.tex) grDevices::cairo_pdf(file.path(od, "mu_", r,"_", k, "_time_series.pdf"), family = fontfam, height = 10, width = 10)
+#       if(do.png) grDevices::png(filename = file.path(od, "mu_", r,"_", k, "_time_series.png"), width = 10*144, height = 10*144, res = 144, pointsize = 12, family = fontfam)
+#       graphics::par(mar=c(4,4,3,1), oma=c(1,1,1,15))
+#       pal <- wham_palette(nt+ns)
+#       plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+#       for(s in 1:ns) for(a in 1:na) for(t in 1:nt) if(dat$can_move[s,t,r,rr]) {
+#         graphics::lines(mod$years, mod$rep$mu[s,a,t,r,rr], lwd = 2, col = pal[t + (s-1)*nt])
+#         if(!is.null(se)) {
+#           mu_lo <- mu_hi <- NULL #NEED TO SEE IF YOU CAN transform logit CIs for n_regions>2
+#           graphics::polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+#         }
+#       }
+#       if(do.tex | do.png) grDevices() else graphics::par(origpar)
+#     }
+#   }
+#   # q <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(mod$rep$logit_q_mat))))
+#   # ymax <- max(q, na.rm = TRUE)
+#   # if("sdrep" %in% names(mod)){
+#   #   if("q_re" %in% mod$input$random) se <- as.list(mod$sdrep, "Std. Error", report=TRUE)$logit_q_mat
+#   #   else se <- t(matrix(as.list(mod$sdrep, "Std. Error")$logit_q, nrow = NCOL(mod$rep$logit_q_mat), 
+#   #     ncol = NROW(mod$rep$logit_q_mat)))
+#   #   logit_q_lo <- mod$rep$logit_q_mat - stats::qnorm(0.975)*se
+#   #   logit_q_hi <- mod$rep$logit_q_mat + stats::qnorm(0.975)*se
+#   #   q_lo <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_lo))))
+#   #   q_hi <- t(mod$input$data$q_lower + (mod$input$data$q_upper - mod$input$data$q_lower)/(1+exp(-t(logit_q_hi))))
+#   #   ymax <- max(q_hi, na.rm = TRUE)
+#   # }
+#   # plot(mod$years, q[,1], type = 'n', lwd = 2, col = pal[1], ylim = c(0,ymax), ylab = "q", xlab = "Year")
+#   # for( i in 1:mod$input$data$n_indices){
+#   #   graphics::lines(mod$years, q[,i], lwd = 2, col = pal[i])
+#   #   if("sdrep" %in% names(mod)){
+#   #     graphics::polygon(c(mod$years,rev(mod$years)), c(q_lo[,i],rev(q_hi[,i])), col=grDevices::adjustcolor(pal[i], alpha.f=0.4), border = "transparent")
+#   #   }
+#   # }
+#   # leg <- paste0(mod$input$index_names, " ", mod$input$region_names[mod$input$data$index_regions])
+#   # graphics::legend("right", legend = leg, col = pal, lty = 1, xpd = NA, inset = c(-0.5,0), bty = "n", lwd = 2)
+# }
 
 
 sci_note <- function(x, cols=1:4){

@@ -108,11 +108,35 @@ a named list with the following elements:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-base <- read_asap3_fit(wd=file.path(getwd(),'asap_results'), asap.name='BASE_5C.DAT', pSPR=40)
-m1 <- fit_wham(input1)
-m2 <- fit_wham(input2)
-mods <- list(base=base, m1=m1, m2=m2)
-res <- compare_wham_models(mods)
-} # }
+# \donttest{
+path_to_extdata <- system.file("extdata", package="wham")
+rds_files <- paste0(c("RDAT", "DAT", "STD", "COR", "PAR"),".RDS")
+asap_files_rds <- lapply(file.path(path_to_extdata, "BASE_3", rds_files), readRDS)
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/BASE_3/RDAT.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+write.dir <- file.path(tempdir(check=TRUE))
+dir.create(write.dir)
+#> Warning: 'C:\Users\TIMOTH~1.MIL\AppData\Local\Temp\Rtmp23j3i6' already exists
+dput(asap_files_rds[[1]], file.path(write.dir, "BASE_3.RDAT"))
+#> Error: object 'asap_files_rds' not found
+writeLines(asap_files_rds[[2]], file.path(write.dir, "BASE_3.DAT"))
+#> Error: object 'asap_files_rds' not found
+writeLines(asap_files_rds[[3]], file.path(write.dir, "BASE_3.STD"))
+#> Error: object 'asap_files_rds' not found
+writeLines(asap_files_rds[[4]], file.path(write.dir, "BASE_3.COR"))
+#> Error: object 'asap_files_rds' not found
+writeLines(asap_files_rds[[5]], file.path(write.dir, "BASE_3.PAR"))
+#> Error: object 'asap_files_rds' not found
+base <- read_asap3_fit(wd=write.dir, asap.name='BASE_3', pSPR=40)
+#> Error in 1:asap$parms$nfleets: argument of length 0
+asap3 <- read_asap3_dat(file.path(write.dir, "BASE_3.DAT"))
+#> Warning: cannot open file 'C:\Users\TIMOTH~1.MIL\AppData\Local\Temp\Rtmp23j3i6/BASE_3.DAT': No such file or directory
+#> Error in file(con, "r"): cannot open the connection
+input <- prepare_wham_input(asap3)
+#> Error: object 'asap3' not found
+m1 <- fit_wham(input, do.osa=FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
+res <- compare_wham_models(list(base=base, m1=m1), fdir = tempdir(check=TRUE))
+#> Error: object 'base' not found
+# }
 ```

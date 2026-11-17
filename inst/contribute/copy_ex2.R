@@ -23,13 +23,15 @@ path_to_scripts <- here("inst","example_scripts")
 
 #should write everything to write.dir and create any R objects in the session
 source(file.path(path_to_scripts, "ex2_CPI_recruitment.R"))
+setwd(pkg.dir)
 
 vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x), type = "message"))
 
+to.dir <-here("vignettes", "ex02_files")
+dir.create(to.dir)
+
 # save results table
-save(vign2_conv, file=here("data", "vign2_conv.RData"))
-save(df.mods, file=here("data","vign2_res.RData"))
-save(df.mods, file=file.path(main.dir, "vign2_res.RData"))
+save(vign2_conv, df.mods, file=file.path(to.dir,"ex02_res.RData"))
 save(mods, file = file.path(main.dir, "ex2_models.RData"))
 # write.csv(df.mods, file="vign2_res.csv",row.names=F,quote=F)
 for(m in 1:length(mods)){
@@ -40,22 +42,24 @@ for(m in 1:length(mods)){
 
 # copy plots from sandbox to ex2_plots for vignette
 from.files <- file.path(main.dir, paste0("m",1:7), "plots_png", "ref_points", "Kobe_status.png")
-to.files <- here("vignettes", "ex2_plots", paste0("Kobe_status_m", 1:7, ".png"))
+to.files <- file.path(to.dir, paste0("Kobe_status_m", 1:7, ".png"))
 file.copy(from=from.files, to=to.files, overwrite = T)
 
 from.files <- file.path(main.dir, paste0("m",3:7), "plots_png", "ref_points", "Kobe_msy_status.png")
-to.files <- here("vignettes", "ex2_plots", paste0("Kobe_msy_status_m", 3:7, ".png"))
+to.files <- file.path(to.dir, paste0("Kobe_msy_status_m", 3:7, ".png"))
 file.copy(from=from.files, to=to.files, overwrite = T)
 
 from.files <- file.path(main.dir, paste0("m",c(1,6)), "plots_png", "retro", "stock_1_region_1_NAA_age_1_retro_relative.png")
-to.files <- here("vignettes", "ex2_plots", paste0("NAA_age1_retro_relative_m", c(1,6), ".png"))
+to.files <- file.path(to.dir, paste0("NAA_age1_retro_relative_m", c(1,6), ".png"))
 file.copy(from=from.files, to=to.files, overwrite = T)
 
 from.files <- file.path(main.dir, paste0("m",3:7), "plots_png", "results", "SSB_Rec_stock_1_fit.png")
-to.files <- here("vignettes", "ex2_plots", paste0("SSB_Rec_fit_m", 3:7, ".png"))
+to.files <- file.path(to.dir, paste0("SSB_Rec_fit_m", 3:7, ".png"))
 file.copy(from=from.files, to=to.files, overwrite = T)
 
 from.files <- file.path(main.dir, paste0("m",4:5), "plots_png", "diagnostics", "OSA_resid_ecov_4panel_CPI.png")
-to.files <- here("vignettes", "ex2_plots", paste0("OSA_resid_ecov_4panel_CPI_m", 4:5, ".png"))
+to.files <- file.path(to.dir, paste0("OSA_resid_ecov_4panel_CPI_m", 4:5, ".png"))
 file.copy(from=from.files, to=to.files, overwrite = T)
+
+# test results are made in test_ex02_CPI_recruitment.R. 
 

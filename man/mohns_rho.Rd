@@ -16,9 +16,9 @@ mohns_rho(model)
 Calculate Mohn's rho for a WHAM model with peels
 }
 \examples{
-\dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod <- fit_wham(input4_SNEMAYT) # using default values: do.retro = T, n.peels = 7
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = TRUE)
 mohns_rho(mod) # calculate Mohn's rho
 }
 }

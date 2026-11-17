@@ -1,15 +1,5 @@
 CXX_STD = CXX17
-PKG_CXXFLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -DTMBAD_FRAMEWORK
 CXX17STD = -std=c++17
 use_CXX17 = "yes"
-## PKG_CXXFLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -DTMBAD_FRAMEWORK -O3
-## CXX14FLAGS = Wa, -mbig-obj -O3
-## CXX17FLAGS = Wa, -mbig-obj -O3
-## Strip debug symbols from build object; reduces shared library size by an
-## order of magnitude or more. Taken from Dirk Eddelbuettel:
-## http://dirk.eddelbuettel.com/blog/2017/08/14/#009_compact_shared_libraries
-
-## strippedLib: $(SHLIB)
-## 	if test -e "/usr/bin/strip"; then /usr/bin/strip --strip-debug $(SHLIB); fi
-## 
-## .phony: strippedLib
+## PKG_CXXFLAGS = -UNDEBUG -DTMB_MODEL  -DTMB_EIGEN_DISABLE_WARNINGS -DTMBAD_FRAMEWORK
+PKG_CXXFLAGS = -DTMB_MODEL -DTMB_EIGEN_DISABLE_WARNINGS -DTMBAD_FRAMEWORK

@@ -19,7 +19,6 @@ results are very preliminary.
 ``` r
 
 # devtools::install_github("timjmiller/wham", dependencies=TRUE)
-library(tidyverse)
 library(wham)
 ```
 
@@ -33,14 +32,24 @@ dir.create(write.dir)
 setwd(write.dir)
 ```
 
-The Georges Bank haddock ASAP data file is distributed in `wham`. Read
-in the ASAP file, `BASE_3.DAT`.
+The Georges Bank haddock ASAP data and results files are saved as
+objects made from readLines calls in RDS files distributed with `wham`.
+Read in RDS files and write the ASAP files to the temporary directory.
 
 ``` r
 
-wham.dir <- find.package("wham")
-asap.dir <- file.path(wham.dir,"extdata","BASE_3")
-asap3 <- read_asap3_dat(file.path(asap.dir,"BASE_3.DAT"))
+path_to_extdata <- system.file("extdata", package="wham")
+rds_files <- paste0(c("RDAT", "DAT", "STD", "COR", "PAR"),".RDS")
+asap_files_rds <- lapply(file.path(path_to_extdata, "BASE_3", rds_files), readRDS)
+names(asap_files_rds) <- rds_files
+dir.create("BASE_3")
+dput(asap_files_rds[[1]], file.path("BASE_3", "BASE_3.RDAT"))
+writeLines(asap_files_rds[[2]], file.path("BASE_3", "BASE_3.DAT"))
+writeLines(asap_files_rds[[3]], file.path("BASE_3", "BASE_3.STD"))
+writeLines(asap_files_rds[[4]], file.path("BASE_3", "BASE_3.COR"))
+writeLines(asap_files_rds[[5]], file.path("BASE_3", "BASE_3.PAR"))
+
+asap3 <- read_asap3_dat(file.path("BASE_3", "BASE_3.DAT"))
 ```
 
 Define three basic WHAM models with different numbers-at-age random
@@ -57,7 +66,7 @@ effects:
 df.mods <- data.frame(naa_sig=c('none','rec','rec+1'), naa_cor=c('none','iid','iid'))
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> dplyr::relocate(Model) # moves Model to first col
 
 # look at model table
 df.mods
@@ -109,9 +118,9 @@ Then combine the ASAP model and 3 WHAM models into a named list, `mods`.
 
 ``` r
 
-base <- read_asap3_fit(wd=asap.dir, asap.name="BASE_3")
-mods <- c(list(base),mods)
-names(mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
+base <- read_asap3_fit(wd="BASE_3", asap.name="BASE_3")
+all.mods <- c(list(base),mods)
+names(all.mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
 ```
 
 ## Comparison plots
@@ -120,12 +129,6 @@ Now we can use
 [`compare_wham_models()`](https://timjmiller.github.io/wham/reference/compare_wham_models.md)
 to plot key output from all 4 models together for comparison.
 
-``` r
-
-res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE))
-saveRDS(res, file=file.path(write.dir,"res.rds"))
-```
-
 There are many options, see
 [`?compare_wham_models`](https://timjmiller.github.io/wham/reference/compare_wham_models.md).
 To only get the AIC and retro table, not plots (note that ASAP models
@@ -133,7 +136,7 @@ cannot be included here).
 
 ``` r
 
-res <- compare_wham_models(mods, fdir=write.dir, do.plot=F)
+res <- compare_wham_models(all.mods, fdir=write.dir, do.plot=F)
 round(res$tab,2)
 ```
 
@@ -146,43 +149,43 @@ Only get the plots, not the table
 
 ``` r
 
-res <- compare_wham_models(mods, fdir=write.dir, do.table=F)
+res <- compare_wham_models(all.mods, fdir=write.dir, do.table=F)
 ```
 
 ###### Plot 1: 3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment
 
-![compare_SSB_F_R](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_SSB_F_R.png)  
+![compare_SSB_F_R](ex08_files/compare_SSB_F_R.png)  
 
 ###### Plot 2: CV (coefficient of variation) for SSB, F, and Recruitment
 
-![compare_CV](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_CV.png)  
+![compare_CV](ex08_files/compare_CV.png)  
 
 ###### Plot 3: Fleet selectivity (by block, averaged across years)
 
-![compare_sel_fleets](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_fleets.png)  
+![compare_sel_fleets](ex08_files/compare_sel_fleets.png)  
 
 ###### Plot 4: Index selectivity (by block, averaged across years)
 
-![compare_sel_indices](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_indices.png)  
+![compare_sel_indices](ex08_files/compare_sel_indices.png)  
 
 ###### Plot 5: Selectivity tile (fleets + indices, more useful for time-varying random effects)
 
-![compare_sel_tile](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_sel_tile.png)  
+![compare_sel_tile](ex08_files/compare_sel_tile.png)  
 
 Plots 6 and 7 are only interesting when M is time-varying, so we omit
 them there.
 
 ###### Plot 8: 3-panel of F X% SPR, SSB at F_X%SPR, and yield at F_X%SPR
 
-![compare_ref_pts](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_ref_pts.png)  
+![compare_ref_pts](ex08_files/compare_ref_pts.png)  
 
 ###### Plot 9: 2-panel of relative status (SSB / SSB at F_X%SPR and F / F_X%SPR)
 
-![compare_rel_status_timeseries](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_timeseries.png)  
+![compare_rel_status_timeseries](ex08_files/compare_rel_status_timeseries.png)  
 
 ###### Plot 10: Kobe status (relative SSB vs. relative F)
 
-![compare_rel_status_kobe](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/compare_rel_status_kobe.png)  
+![compare_rel_status_kobe](ex08_files/compare_rel_status_kobe.png)  
 
 ## Modifying comparison plots
 
@@ -194,7 +197,7 @@ Plots are saved as png by default, can be pdf
 
 ``` r
 
-res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(out.type='pdf'))
+res <- compare_wham_models(all.mods, fdir=write.dir, plot.opts=list(out.type='pdf'))
 ```
 
 `$which` lets you choose which of the plots to make `$years` lets you
@@ -204,11 +207,11 @@ only plot a subset of model years
 
 # which = 9 (only plot relative status)
 # years = 1980-2018
-compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, which=9))
+compare_wham_models(all.mods, do.table=F, plot.opts=list(years=1980:2018, which=9))
 ggsave(file.path(write.dir,"which9_zoom.png"), device='png', width=6.5, height=5.5, units='in')
 ```
 
-![which9_zoom](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_zoom.png)  
+![which9_zoom](ex08_files/which9_zoom.png)  
 
 `$ci` can turn off the confidence interval shading for all or some
 models
@@ -217,11 +220,11 @@ models
 
 # which = 1 (SSB, F, recruitment)
 # ci = FALSE (remove confidence intervals for all models, can also choose a subset)
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, which=1))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, which=1))
 ggsave(file.path(write.dir,"which1_noCI.png"), device='png', width=6.5, height=5.5, units='in')
 ```
 
-![which1_noCI](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_noCI.png)  
+![which1_noCI](ex08_files/which1_noCI.png)  
 
 `$relative.to` lets you plot differences between the models relative to
 a base model (here, ASAP)
@@ -230,11 +233,11 @@ a base model (here, ASAP)
 
 # which = 2 (CV of SSB, F, recruitment)
 # relative to ASAP
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, relative.to="ASAP", which=2))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, relative.to="ASAP", which=2))
 ggsave(file.path(write.dir,"which2_relative.png"), device='png', width=6.5, height=5.5, units='in')
 ```
 
-![which2_relative](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which2_relative.png)  
+![which2_relative](ex08_files/which2_relative.png)  
 
 `$kobe.yr` is used to specify the year in the Kobe relative status plot
 `$kobe.prob = F` will turn off the probabilities printed in each
@@ -245,10 +248,10 @@ quadrant for each model (can be crowded with many models)
 # which = 10 (kobe plot)
 # kobe.yr = 2010 (instead of terminal year, 2018)
 # kobe.prob = F (don't print probabilities)
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
 ```
 
-![which10_2010](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which10_2010.png)  
+![which10_2010](ex08_files/which10_2010.png)  
 
 The plots made with `ggplot2` (all except Kobe) are returned in a list,
 `$g`, so you can modify them later. For example, to re-make the relative
@@ -260,7 +263,7 @@ res$g[[9]] + scale_colour_brewer(palette="Set1") + scale_fill_brewer(palette="Se
 ggsave(file.path(write.dir,"which9_colorchange.png"), device='png', width=6.5, height=5.5, units='in')
 ```
 
-![which9_colorchange](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which9_colorchange.png)  
+![which9_colorchange](ex08_files/which9_colorchange.png)  
 
 Note that even if you’re only making one plot using `$which`, `res$g` is
 still a list of length 10. For example, to plot SSB, F, and recruitment
@@ -268,13 +271,13 @@ from 1980-2018 relative to ASAP without confidence intervals:
 
 ``` r
 
-res <- compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, ci=FALSE, relative.to="ASAP", which=1))
+res <- compare_wham_models(all.mods, do.table=F, plot.opts=list(years=1980:2018, ci=FALSE, relative.to="ASAP", which=1))
 cols <- c("black", RColorBrewer::brewer.pal(n = 3, name = "Set1"))
 res$g[[1]] + scale_colour_manual(values=cols)
 ggsave(file.path(write.dir,"which1_relative_colorchange.png"), device='png', width=5, height=5.5, units='in')
 ```
 
-![which1_relative_colorchange](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange.png)  
+![which1_relative_colorchange](ex08_files/which1_relative_colorchange.png)  
 
 Any aesthetics that weren’t in the original plot are more complicated.
 For example, if we want to make the base model line dashed, linetype was
@@ -289,18 +292,18 @@ res$g[[1]] + scale_colour_manual(values=cols) + scale_linetype_manual(values=lty
 ggsave(file.path(write.dir,"which1_relative_colorchange_linetype.png"), device='png', width=5, height=5.5, units='in')
 ```
 
-![which1_relative_colorchange_linetype](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which1_relative_colorchange_linetype.png)  
+![which1_relative_colorchange_linetype](ex08_files/which1_relative_colorchange_linetype.png)  
 
 Our final example, changing the labels on the selectivity plot facets
 
 ``` r
 
-res <- compare_wham_models(mods, do.table=F, plot.opts=list(which=4))
+res <- compare_wham_models(all.mods, do.table=F, plot.opts=list(which=4))
 index_names <- as_labeller(c(`Block 4` = "NEFSC - Spring", `Block 5` = "NEFSC - Fall",`Block 6` = "DFO", `Block 7` = "NEFSC - Spring41"))
 res$g[[4]] + facet_wrap(vars(Block), ncol=1, strip.position = 'right', labeller = index_names)
 ggsave(file.path(write.dir,"which4_labels.png"), device='png', width=4.5, height=5.5, units='in')
 ```
 
-![which4_labels](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex8_plots/which4_labels.png)  
+![which4_labels](ex08_files/which4_labels.png)  
 
 Hopefully that is enough to get you started!

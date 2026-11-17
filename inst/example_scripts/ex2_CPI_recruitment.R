@@ -71,7 +71,9 @@ for(m in 1:n.mods){
   # Fit model
   # collect fit models into a list
   mods[[m]] <- fit_wham(input, do.retro=TRUE, do.osa=TRUE)
+}
 
+for(m in 1:n.mods){
   # Save model
   saveRDS(mods[[m]], file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
 
@@ -81,7 +83,7 @@ for(m in 1:n.mods){
 
 
 # check convergence of all models
-vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
+vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x), type = "message"))
 for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 
 # make results table prettier

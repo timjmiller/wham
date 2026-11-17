@@ -6,18 +6,25 @@ if(is.character(is.repo)) library(wham) #not using repo
 #by default do not perform bias-correction
 if(!exists("basic_info")) basic_info <- NULL
 
-library(tidyverse)
-
 # create directory for analysis, e.g.
 if(!exists("write.dir")) write.dir <- tempdir(check=TRUE)
 if(!dir.exists(write.dir)) dir.create(write.dir)
 setwd(write.dir)
 
-# Georges Bank haddock BASE_5C.DAT
-path_to_examples <- system.file("extdata", package="wham")
+# Georges Bank haddock BASE_3
+#Re-create ASAP3 fit files
+path_to_extdata <- system.file("extdata", package="wham")
+rds_files <- paste0(c("RDAT", "DAT", "STD", "COR", "PAR"),".RDS")
+asap_files_rds <- lapply(file.path(path_to_extdata, "BASE_3", rds_files), readRDS)
+names(asap_files_rds) <- rds_files
+dir.create("BASE_3")
+dput(asap_files_rds[[1]], file.path("BASE_3", "BASE_3.RDAT"))
+writeLines(asap_files_rds[[2]], file.path("BASE_3", "BASE_3.DAT"))
+writeLines(asap_files_rds[[3]], file.path("BASE_3", "BASE_3.STD"))
+writeLines(asap_files_rds[[4]], file.path("BASE_3", "BASE_3.COR"))
+writeLines(asap_files_rds[[5]], file.path("BASE_3", "BASE_3.PAR"))
 
-# Georges Bank haddock BASE_5C.DAT
-asap3 <- read_asap3_dat(file.path(path_to_examples,"BASE_3", "BASE_3.DAT"))
+asap3 <- read_asap3_dat(file.path("BASE_3", "BASE_3.DAT"))
 
 # Define WHAM models
 #   Model naa_sig naa_cor
@@ -41,7 +48,7 @@ for(m in 1:n.mods){
                               model_name = df.mods$Model[m],                         
                               NAA_re = NAA_list, basic_info = basic_info)   
 
-  mods[[m]] <- fit_wham(input, do.osa=F)
+  mods[[m]] <- fit_wham(input, do.osa=FALSE)
   saveRDS(mods[[m]], file=file.path(write.dir, paste0(df.mods$Model[m],".rds")))
 }
 
@@ -54,12 +61,12 @@ for(m in conv_mods){
 }
 
 # get output from ASAP model run
-base <- read_asap3_fit(wd=file.path(path_to_examples,"BASE_3"), asap.name="BASE_3")
-mods <- c(list(base),mods)
-names(mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
+base <- read_asap3_fit(wd="BASE_3", asap.name="BASE_3")
+all.mods <- c(list(base),mods)
+names(all.mods) <- c("ASAP",paste0("WHAM-",df.mods$Model))
 
 # compare models
-res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE))
+res <- compare_wham_models(all.mods, fdir=write.dir, plot.opts=list(kobe.prob=FALSE))
 saveRDS(res, file=file.path(write.dir,"res.rds"))
 
 # aic table
@@ -68,10 +75,10 @@ round(res$tab,2)
 # --------------------------------------------------------------------------
 # lots of options, see ?compare_wham_models
 # only get table, not plots
-res <- compare_wham_models(mods, fdir=write.dir, do.plot=F)
+res <- compare_wham_models(all.mods, fdir=write.dir, do.plot=F)
 
 # only get plots, not table
-res <- compare_wham_models(mods, fdir=write.dir, do.table=F)
+res <- compare_wham_models(all.mods, fdir=write.dir, do.table=F)
 
 # plot.opts list of options for plots:
 #   $out.type - character, either \code{'pdf'} or \code{'png'} (default = \code{'png'} because I am not sure \code{system('pdftk')} will work across platforms.)}
@@ -99,27 +106,27 @@ res <- compare_wham_models(mods, fdir=write.dir, do.table=F)
 #   10) Kobe status (relative SSB vs. relative F)
 
 # plots are saved as png by default, can be pdf
-res <- compare_wham_models(mods, fdir=write.dir, plot.opts=list(out.type='pdf'))
+res <- compare_wham_models(all.mods, fdir=write.dir, plot.opts=list(out.type='pdf'))
 
 # which = 9 (only plot relative status)
 # years = 1980-2018
-compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, which=9))
+compare_wham_models(all.mods, do.table=F, plot.opts=list(years=1980:2018, which=9))
 ggsave(file.path(write.dir,"which9_zoom.png"), device='png', width=6.5, height=5.5, units='in')
 
 # which = 1 (SSB, F, recruitment)
 # ci = FALSE (remove confidence intervals for all models, can also choose a subset)
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, which=1))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, which=1))
 ggsave(file.path(write.dir,"which1_noCI.png"), device='png', width=6.5, height=5.5, units='in')
 
 # which = 2 (CV of SSB, F, recruitment)
 # relative to ASAP
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, relative.to="ASAP", which=2))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(ci=FALSE, relative.to="ASAP", which=2))
 ggsave(file.path(write.dir,"which2_relative.png"), device='png', width=6.5, height=5.5, units='in')
 
 # which = 10 (kobe plot)
 # kobe.yr = 2010 (instead of terminal year, 2018)
 # kobe.prob = F (don't print probabilities)
-compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
+compare_wham_models(all.mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
 
 # res$g holds the ggplot objects so you can modify later
 # relative status plot with different fill and color scales
@@ -129,7 +136,7 @@ ggsave(file.path(write.dir,"which9_colorchange.png"), device='png', width=6.5, h
 # F, SSB, Recruitment of WHAM models relative to ASAP
 # note: even if only making one plot, res$g is still length(10) and we want res$g[[1]]
 # zoom in on 1980-2018, remove CI
-res <- compare_wham_models(mods, do.table=F, plot.opts=list(years=1980:2018, ci=FALSE, relative.to="ASAP", which=1))
+res <- compare_wham_models(all.mods, do.table=F, plot.opts=list(years=1980:2018, ci=FALSE, relative.to="ASAP", which=1))
 cols <- c("black", RColorBrewer::brewer.pal(n = 3, name = "Set1"))
 res$g[[1]] + scale_colour_manual(values=cols)
 ggsave(file.path(write.dir,"which1_relative_colorchange.png"), device='png', width=5, height=5.5, units='in')
@@ -143,7 +150,7 @@ res$g[[1]] + scale_colour_manual(values=cols) + scale_linetype_manual(values=lty
 ggsave(file.path(write.dir,"which1_relative_colorchange_linetype.png"), device='png', width=5, height=5.5, units='in')
 
 # change labels on index selectivity plot facets
-res <- compare_wham_models(mods, do.table=F, plot.opts=list(which=4))
+res <- compare_wham_models(all.mods, do.table=F, plot.opts=list(which=4))
 index_names <- as_labeller(c(`Block 4` = "NEFSC - Spring", `Block 5` = "NEFSC - Fall",`Block 6` = "DFO", `Block 7` = "NEFSC - Spring41"))
 res$g[[4]] + facet_wrap(vars(Block), ncol=1, strip.position = 'right', labeller = index_names)
 ggsave(file.path(write.dir,"which4_labels.png"), device='png', width=4.5, height=5.5, units='in')

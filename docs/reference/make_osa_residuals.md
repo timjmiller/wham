@@ -36,6 +36,19 @@ make_osa_residuals(
   A fit WHAM model, output from
   [`fit_wham`](https://timjmiller.github.io/wham/reference/fit_wham.md).
 
+- osa.opts:
+
+  a list of options: `method` = ("oneStepGaussianOffMode" (default),
+  "oneStepGaussian", or "oneStepGeneric") and `parallel` (T (default)/F)
+  to pass to
+  [`TMB::oneStepPredict`](https://rdrr.io/pkg/TMB/man/oneStepPredict.html).
+
+- sdrep_required:
+
+  (T/F) whether the osa residuals should be calculated without the
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) being
+  performed on the model.
+
 ## Value
 
 the same fit TMB model with additional elements for osa residuals:
@@ -71,10 +84,15 @@ the same fit TMB model with additional elements for osa residuals:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod <- fit_wham(input4_SNEMAYT, do.osa =FALSE, do.retro =FALSE)
-mod <- make_osa_residuals(mod) # calculate Mohn's rho
-plot_wham_output(mod)
-} # }
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
+mod <- make_osa_residuals(mod)
+#> Error: object 'mod' not found
+plot_wham_output(mod, dir.main = tempdir(check = TRUE))
+#> Error: object 'mod' not found
+# }
 ```

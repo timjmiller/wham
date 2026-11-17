@@ -23,7 +23,7 @@ See Trijoulet et al. (2023) for OSA methods for age composition OSA residuals.">
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,6 +93,14 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
 <dl><dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>A fit WHAM model, output from <code><a href="fit_wham.html">fit_wham</a></code>.</p></dd>
 
+
+<dt id="arg-osa-opts">osa.opts<a class="anchor" aria-label="anchor" href="#arg-osa-opts"></a></dt>
+<dd><p>a list of options: <code>method</code> = ("oneStepGaussianOffMode" (default), "oneStepGaussian", or "oneStepGeneric") and <code>parallel</code> (T (default)/F) to pass to <code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict</a></code>.</p></dd>
+
+
+<dt id="arg-sdrep-required">sdrep_required<a class="anchor" aria-label="anchor" href="#arg-sdrep-required"></a></dt>
+<dd><p>(T/F) whether the osa residuals should be calculated without the <code><a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">TMB::sdreport</a></code> being performed on the model.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -119,12 +127,17 @@ See <a href="https://doi.org/10.1016/j.fishres.2022.106487" class="external-link
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"input4_SNEMAYT"</span><span class="op">)</span> <span class="co"># load SNEMA yellowtail flounder data and parameter settings</span></span></span>
-<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input4_SNEMAYT</span>, do.osa <span class="op">=</span><span class="cn">FALSE</span>, do.retro <span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu">make_osa_residuals</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span> <span class="co"># calculate Mohn's rho</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span>, <span class="st">"ytf_rec1.RDS"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in gzfile(file, "rb"):</span> cannot open the connection</span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, do.retro <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'input' not found</span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu">make_osa_residuals</span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'mod' not found</span>
+<span class="r-in"><span><span class="fu"><a href="plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span><span class="va">mod</span>, dir.main <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'mod' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

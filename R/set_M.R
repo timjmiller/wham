@@ -1,6 +1,6 @@
 #' Specify model and parameter configuration for natural mortality
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param M (optional) list specifying natural mortality options: model, random effects, initial values, and parameters to fix (see details)
 #' 
 #' \code{M} specifies estimation options for natural mortality and can overwrite M-at-age values specified in the ASAP data file.
@@ -84,14 +84,9 @@
 #' @seealso \code{\link{prepare_wham_input}} 
 #'
 #' @examples
-#' \dontrun{
-#' wham.dir <- find.package("wham")
-#' path_to_examples <- system.file("extdata", package="wham")
-#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-#' input <- prepare_wham_input(asap3)
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 #' M = list(mean_model = "estimate-M")
 #' input <- set_M(input, M = M) #estimate a constant M parameters
-#' }
 #'
 #' @export
 set_M <- function(input, M)

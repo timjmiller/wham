@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
       <h1>Ex 12: Multiple stocks and region and movement</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex12_multistock.Rmd" class="external-link"><code>vignettes/ex12_multistock.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/articles/ex12_multistock.Rmd" class="external-link"><code>vignettes/articles/ex12_multistock.Rmd</code></a></small>
       <div class="d-none name"><code>ex12_multistock.Rmd</code></div>
     </div>
 
@@ -154,14 +154,20 @@ script with:</p>
 <div class="section level2">
 <h2 id="creating-inputs-to-fit-a-two-stock-model-without-movement">2. Creating inputs to fit a two stock model without movement<a class="anchor" aria-label="anchor" href="#creating-inputs-to-fit-a-two-stock-model-without-movement"></a>
 </h2>
-<p>Read the ASAP3 .dat files into R and create an input. Note any number
-of asap dat files can be read in and by default a model will be created
-with a stock and its own region for each .dat file and no connectivity.
-So, one could fit the same single stock model a number times
-simultaneously by reading in the same dat file multiple times.</p>
+<p>Read the text for ASAP3.dat files, create the dat files, then read
+the dat files in as asap3 dat objects using <code>read_asap3_dat</code>.
+Note any number of asap dat files can be read in and by default a model
+will be created with a stock and its own region for each .dat file and
+no connectivity. So, one could fit the same single stock model a number
+times simultaneously by reading in the same dat file multiple times.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path_to_examples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span></span>
-<span><span class="va">diff_stocks_asap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path_to_examples</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"north.dat"</span>,<span class="st">"south.dat"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">n_txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path_to_examples</span>,<span class="st">"bsb_north_dat_text.RDS"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">s_txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path_to_examples</span>,<span class="st">"bsb_south_dat_text.RDS"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="va">n_txt</span>, <span class="st">"north.dat"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="va">s_txt</span>, <span class="st">"south.dat"</span><span class="op">)</span></span>
+<span><span class="va">diff_stocks_asap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"north.dat"</span>,<span class="st">"south.dat"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">selectivity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="st">"age-specific"</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>, n_selblocks <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>    fix_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span>,<span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">8</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">8</span>,<span class="fl">3</span><span class="op">:</span><span class="fl">8</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    initial_pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">0.2</span><span class="op">)</span><span class="op">)</span>,<span class="fl">8</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">7</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">7</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -499,15 +505,15 @@ log-likelihood is lower allowing the age-varying random effects:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit_move</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span>,<span class="va">fit_move_age</span><span class="op">$</span><span class="va">opt</span><span class="op">$</span><span class="va">obj</span><span class="op">)</span></span>
 <span><span class="co">#different</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; [1] 3000.896 2998.567</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] 3000.896 2999.078</span></span></code></pre>
 <p>And the estimated movement rates for each age are all very small like
 the mean in the constant model except that age 8+ jumps up to almost
 0.02:</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#age-specific movement rates</span></span>
 <span><span class="va">fit_move_age</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">mu</span><span class="op">[</span><span class="fl">1</span>,,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; [1] 0.001615753 0.002705349 0.004283258 0.004370262 0.004373432 0.003817055</span></span>
-<span><span class="co">#&gt; [7] 0.003568121 0.019743605</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] 0.001388067 0.002234940 0.003338750 0.003460903 0.003573654 0.003252959</span></span>
+<span><span class="co">#&gt; [7] 0.003089016 0.016008716</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="fitting-a-model-with-time-varying-movement">5. Fitting a model with time-varying movement<a class="anchor" aria-label="anchor" href="#fitting-a-model-with-time-varying-movement"></a>
@@ -576,16 +582,16 @@ is an array holding variance and correlation parameters for movement
 random effects):</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_move_year</span><span class="op">$</span><span class="va">rep</span><span class="op">$</span><span class="va">mu</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">8</span>,<span class="fl">1</span>,,<span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;  [1] 0.009262631 0.009262632 0.009262632 0.009262632 0.009262632 0.009262631</span></span>
-<span><span class="co">#&gt;  [7] 0.009262632 0.009262632 0.009262631 0.009262632 0.009262631 0.009262631</span></span>
-<span><span class="co">#&gt; [13] 0.009262632 0.009262631 0.009262632 0.009262632 0.009262631 0.009262632</span></span>
-<span><span class="co">#&gt; [19] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262631 0.009262631</span></span>
-<span><span class="co">#&gt; [25] 0.009262631 0.009262631 0.009262631 0.009262632 0.009262632 0.009262631</span></span>
+<pre><code><span><span class="co">#&gt;  [1] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632</span></span>
+<span><span class="co">#&gt;  [7] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632</span></span>
+<span><span class="co">#&gt; [13] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632</span></span>
+<span><span class="co">#&gt; [19] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632</span></span>
+<span><span class="co">#&gt; [25] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632</span></span>
 <span><span class="co">#&gt; [31] 0.009262632 0.009262632 0.009262632</span></span></code></pre>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#the log(sd) of the RE</span></span>
 <span><span class="va">fit_move_year</span><span class="op">$</span><span class="va">parList</span><span class="op">$</span><span class="va">mu_repars</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; [1] -7.520988</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; [1] -8.386308</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="fitting-a-model-with-prior-distribution-for-movement">6. Fitting a model with prior distribution for movement<a class="anchor" aria-label="anchor" href="#fitting-a-model-with-prior-distribution-for-movement"></a>

@@ -7,7 +7,7 @@
 set_move(input, move)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{move}{(optional) list specifying movement options: model, random effects, initial values, and parameters to fix (see details)
 

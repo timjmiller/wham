@@ -15,7 +15,7 @@ set_osa_obs(input)
 
   list containing data, parameters, map, and random elements (output
   from
-  [`wham::prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md))
+  [`prepare_wham_input`](https://timjmiller.github.io/wham/reference/prepare_wham_input.md))
 
 ## Value
 

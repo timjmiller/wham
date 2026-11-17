@@ -2,7 +2,7 @@
 #'
 #' Writes a set of HTML files with tabbed navigation between them. Called by
 #' \code{\link{plot_wham_output}} if `out.type = 'html'` (default). Opens main file in
-#' default browser. Modified from [`r4ss::SS_html`](https://github.com/r4ss/r4ss/blob/master/R/SS_html.R).
+#' default browser. Modified from \href{https://github.com/r4ss/r4ss/blob/master/R/SS_html.R}{\code{r4ss::SS_html}}.
 #'
 #' @param dir.main directory to save html file (\code{\link{plot_wham_output}}
 #' makes `.png` plot files in a `plots_png` subdirectory of `dir.main`).
@@ -10,7 +10,7 @@
 #' @param width Width of plots (in pixels).
 #' @param openfile Automatically open index.html in default browser?
 #'
-#' @seealso \code{\link{plot_wham_output}}, `r4ss::SS_html()`
+#' @seealso \code{\link{plot_wham_output}}
 #'
 wham_html <- function(dir.main=NULL,
                     title="WHAM Output",
@@ -172,6 +172,6 @@ wham_html <- function(dir.main=NULL,
   # open HTML file automatically
   if(openfile){
     message("Opening HTML file in your default web-browser.\n")
-    browseURL(htmlhome)
+    utils::browseURL(htmlhome)
   }
 }

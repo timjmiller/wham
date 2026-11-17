@@ -1,6 +1,7 @@
 #' Read an ASAP3 .dat file into R
 #'
-#' WHAM is built on ASAP ([Legault and Restrepo (1999)](http://sedarweb.org/docs/wsupp/S12RD06\%20ASAPdoc.pdf)) and this
+#' WHAM was originally built to fit models very much like \href{https://nmfs-ost.github.io/noaa-fit/ASAP}{ASAP} 
+#' (\href{https://www.iccat.int/Documents/CVSP/CV049_1999/n_2/CV049020246.pdf}{Legault and Restrepo (1999)}) and extend from there to include other features. This
 #' function provides functionality to use a preexisting ASAP3 input data file. The
 #' output of \code{read_asap3_dat} should then be passed to \code{\link{prepare_wham_input}}.
 #' If you are not familiar with ASAP3 input files, see the ASAP \href{https://github.com/cmlegault/ASAPplots/tree/master/pdf}{documentation}
@@ -19,10 +20,10 @@
 #' @seealso \code{\link{prepare_wham_input}}, \code{\link{fit_wham}}, \href{https://github.com/cmlegault/ASAPplots/tree/master/pdf}{ASAP documentation}
 #'
 #' @examples
-#' \dontrun{
-#' asap3 = read_asap3_dat("ASAP_SNEMAYT.dat")
-#' input = prepare_wham_input(asap3)
-#' mod = fit_wham(input)
+#' \donttest{
+#' asap3 = read_asap3_dat(file.path(system.file("extdata", package="wham"), "ex1_SNEMAYT.dat"))
+#' sinput = prepare_wham_input(asap3)
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 #' }
 #'
 #' @export

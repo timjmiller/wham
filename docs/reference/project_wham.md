@@ -238,13 +238,16 @@ project_wham(
 
 - TMB.bias.correct:
 
-  T/F whether to use the bias.correct feature of TMB::sdreport. Default
+  T/F whether to use the bias.correct feature of
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
   = `FALSE`.
 
 - TMB.jointPrecision:
 
   T/F whether to return the joint precision matrix for the fixed and
-  random effects from TMB::sdreport. Default = `FALSE`.
+  random effects from
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `FALSE`.
 
 ## Value
 
@@ -346,21 +349,30 @@ population model, then none of the above need be specified.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder input data and model settings
-mod <- fit_wham(input4_SNEMAYT) # using default values (do.proj=T)
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
 
-mod2 <- fit_wham(input4_SNEMAYT, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
-mod_proj <- project_wham(mod2) # add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+# add projections 
+# using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+mod_proj <- project_wham(mod) 
+#> Error: object 'mod' not found
 
 names(mod_proj$rep) # list of derived quantities
+#> Error: object 'mod_proj' not found
 tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
+#> Error: object 'mod_proj' not found
 
-x <- summary(mod_proj$sdrep)
-unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
-ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
-colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
+x <- list(est = as.list(mod_proj$sdrep, "Est", report =TRUE), sd = as.list(mod_proj$sdrep, "Std", report =TRUE))
+#> Error: object 'mod_proj' not found
+ssb.mat <- exp(cbind(x$est$log_SSB[,1], x$est$log_SSB[,1] + qnorm(0.975)*cbind(-x$sd$log_SSB[,1],x$sd$log_SSB[,1]))) # calculate 95% CI
+#> Error: object 'x' not found
+colnames(ssb.mat) <- c("SSB","SSB_lower","SSB_upper")
+#> Error: object 'ssb.mat' not found
 tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
-} # }
+#> Error: object 'ssb.mat' not found
+# }
 ```

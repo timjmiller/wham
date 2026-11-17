@@ -83,14 +83,9 @@
 #' @seealso \code{\link{prepare_wham_input}} 
 #'
 #' @examples
-#' \dontrun{
-#' wham.dir <- find.package("wham")
-#' path_to_examples <- system.file("extdata", package="wham")
-#' asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-#' input <- prepare_wham_input(asap3)
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 #' NAA <- list(sigma = "rec")
-#' input <- set_q(input, NAA_re = NAA) #estimate recruitment as random effects
-#' }
+#' input <- set_NAA(input, NAA_re = NAA) #estimate recruitment as random effects
 #'
 #' @export
 set_NAA <- function(input, NAA_re=NULL)
@@ -248,9 +243,9 @@ set_NAA <- function(input, NAA_re=NULL)
                 #data$n_NAA_sigma <- 0
                 #data$NAA_sigma_pointers <- rep(1,data$n_ages)            
               } else {
-                tmp <- unique(NAA_re_sigma[[s]])
+                tmp <- unique(NAA_re$sigma[[s]])
                 ind <- 1:length(tmp)
-                ind <- ind[match(NAA_re_sigma[[s]],tmp)] - 1
+                ind <- ind[match(NAA_re$sigma[[s]],tmp)] - 1
                 for(r in 1:data$n_regions) map$log_NAA_sigma[s,r,] <- k + ind
                 for(r in 1:data$n_regions) for(a in 1:data$n_ages) if(data$NAA_where[s,r,a]==1) map$log_NAA[s,r,,a] <- 1 #change to unique values later
                 k <- max(k + ind, na.rm=T)

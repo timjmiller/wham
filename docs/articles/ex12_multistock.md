@@ -76,16 +76,22 @@ source(file.path(wham.dir, "example_scripts", "ex12_multistock.R"))
 
 ## 2. Creating inputs to fit a two stock model without movement
 
-Read the ASAP3 .dat files into R and create an input. Note any number of
-asap dat files can be read in and by default a model will be created
-with a stock and its own region for each .dat file and no connectivity.
-So, one could fit the same single stock model a number times
-simultaneously by reading in the same dat file multiple times.
+Read the text for ASAP3.dat files, create the dat files, then read the
+dat files in as asap3 dat objects using `read_asap3_dat`. Note any
+number of asap dat files can be read in and by default a model will be
+created with a stock and its own region for each .dat file and no
+connectivity. So, one could fit the same single stock model a number
+times simultaneously by reading in the same dat file multiple times.
 
 ``` r
 
 path_to_examples <- system.file("extdata", package="wham")
-diff_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("north.dat","south.dat")))
+n_txt <- readRDS(file.path(path_to_examples,"bsb_north_dat_text.RDS"))
+s_txt <- readRDS(file.path(path_to_examples,"bsb_south_dat_text.RDS"))
+writeLines(n_txt, "north.dat")
+writeLines(s_txt, "south.dat")
+diff_stocks_asap <- read_asap3_dat(c("north.dat","south.dat"))
+
 selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selblocks = 12,
     fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
     initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))
@@ -500,7 +506,7 @@ c(fit_move$opt$obj,fit_move_age$opt$obj)
 #different
 ```
 
-    #> [1] 3000.896 2998.567
+    #> [1] 3000.896 2999.078
 
 And the estimated movement rates for each age are all very small like
 the mean in the constant model except that age 8+ jumps up to almost
@@ -512,8 +518,8 @@ the mean in the constant model except that age 8+ jumps up to almost
 fit_move_age$rep$mu[1,,1,1,1,2]
 ```
 
-    #> [1] 0.001615753 0.002705349 0.004283258 0.004370262 0.004373432 0.003817055
-    #> [7] 0.003568121 0.019743605
+    #> [1] 0.001388067 0.002234940 0.003338750 0.003460903 0.003573654 0.003252959
+    #> [7] 0.003089016 0.016008716
 
 ## 5. Fitting a model with time-varying movement
 
@@ -600,11 +606,11 @@ effects):
 fit_move_year$rep$mu[1,8,1,,1,2]
 ```
 
-    #>  [1] 0.009262631 0.009262632 0.009262632 0.009262632 0.009262632 0.009262631
-    #>  [7] 0.009262632 0.009262632 0.009262631 0.009262632 0.009262631 0.009262631
-    #> [13] 0.009262632 0.009262631 0.009262632 0.009262632 0.009262631 0.009262632
-    #> [19] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262631 0.009262631
-    #> [25] 0.009262631 0.009262631 0.009262631 0.009262632 0.009262632 0.009262631
+    #>  [1] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632
+    #>  [7] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632
+    #> [13] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632
+    #> [19] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632
+    #> [25] 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632 0.009262632
     #> [31] 0.009262632 0.009262632 0.009262632
 
 ``` r
@@ -613,7 +619,7 @@ fit_move_year$rep$mu[1,8,1,,1,2]
 fit_move_year$parList$mu_repars[1,1,1,1,1]
 ```
 
-    #> [1] -7.520988
+    #> [1] -8.386308
 
 ## 6. Fitting a model with prior distribution for movement
 

@@ -49,18 +49,18 @@ fit_wham(
 
   :   Parameters, a list of all parameter objects required by the user
       template (both random and fixed effects). See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$map`
 
   :   Map, a mechanism for collecting and fixing parameters. See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$random`
 
   :   Character vector defining the parameters to treat as random
       effect. See
-      [`MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
+      [`TMB::MakeADFun`](https://rdrr.io/pkg/TMB/man/MakeADFun.html).
 
   `$years`
 
@@ -85,8 +85,8 @@ fit_wham(
 - do.sdrep:
 
   T/F, calculate standard deviations of model parameters? See
-  [`sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default =
-  `TRUE`.
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
+  = `TRUE`.
 
 - do.retro:
 
@@ -219,13 +219,16 @@ fit_wham(
 
 - TMB.bias.correct:
 
-  T/F whether to use the bias.correct feature of TMB::sdreport. Default
+  T/F whether to use the bias.correct feature of
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html). Default
   = `FALSE`.
 
 - TMB.jointPrecision:
 
-  T/F whether TMB::sdreport should return the joint precision matrix for
-  the fixed and random effects. Default = `FALSE`.
+  T/F whether
+  [`TMB::sdreport`](https://rdrr.io/pkg/TMB/man/sdreport.html) should
+  return the joint precision matrix for the fixed and random effects.
+  Default = `FALSE`.
 
 ## Value
 
@@ -271,14 +274,20 @@ generic method, you can use `osa.opts=list(method="fullGaussian")`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod = fit_wham(input4_SNEMAYT) # using default values
-mod = fit_wham(input4_SNEMAYT, do.retro=FALSE, osa.opts=list(method="oneStepGeneric")) # slower OSA method. 
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
 
 names(mod$rep) # list of derived quantities
+#> Error: object 'mod' not found
 mod$rep$SSB # get SSB estimates (weight, not numbers)
-m1$rep$NAA[,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
-m1$rep$F[,1] # get F estimates for fleet 1
-} # }
+#> Error: object 'mod' not found
+mod$rep$NAA[1,1,,1] # get recruitment estimates (numbers, first column of numbers-at-age matrix)
+#> Error: object 'mod' not found
+exp(mod$rep$log_F_tot[,1]) # total fully-selected F estimates
+#> Error: object 'mod' not found
+# }
 ```

@@ -2,8 +2,14 @@
 ^\.Rproj\.user$
 ^cran-comments\.md$
 ^NEWS\.md$
-^doc$
+^docs$
+^noaa_docs$
+^pkgdown$
 ^Meta$
 ^sandbox$
 ^check_wham$
-^.github$
+^\.github$
+^\.vscode$
+^LICENSE$
+^R/check_dims\.R$
+^vignettes/articles$

@@ -81,17 +81,17 @@ project_wham(
 
 \item{n.newton}{integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.}
 
-\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
+\item{do.sdrep}{T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{sdreport}}. Default = \code{TRUE}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
 
-\item{save.sdrep}{T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
+\item{save.sdrep}{T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.}
 
 \item{check.version}{T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.}
 
-\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.}
+\item{TMB.bias.correct}{T/F whether to use the bias.correct feature of \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.}
 
-\item{TMB.jointPrecision}{T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = \code{FALSE}.}
+\item{TMB.jointPrecision}{T/F whether to return the joint precision matrix for the fixed and random effects from \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.}
 }
 \value{
 a projected WHAM model with additional output if specified:
@@ -142,21 +142,20 @@ ecov values for the projections. If the ecov model extended at least \code{proj.
 beyond the population model, then none of the above need be specified.
 }
 \examples{
-\dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder input data and model settings
-mod <- fit_wham(input4_SNEMAYT) # using default values (do.proj=T)
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 
-mod2 <- fit_wham(input4_SNEMAYT, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
-mod_proj <- project_wham(mod2) # add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+# add projections 
+# using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+mod_proj <- project_wham(mod) 
 
 names(mod_proj$rep) # list of derived quantities
 tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
 
-x <- summary(mod_proj$sdrep)
-unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
-ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95\% CI
-colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
+x <- list(est = as.list(mod_proj$sdrep, "Est", report =TRUE), sd = as.list(mod_proj$sdrep, "Std", report =TRUE))
+ssb.mat <- exp(cbind(x$est$log_SSB[,1], x$est$log_SSB[,1] + qnorm(0.975)*cbind(-x$sd$log_SSB[,1],x$sd$log_SSB[,1]))) # calculate 95\% CI
+colnames(ssb.mat) <- c("SSB","SSB_lower","SSB_upper")
 tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95\% CI
 }
 }

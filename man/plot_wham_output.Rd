@@ -46,10 +46,10 @@ Plot functions are located in \code{wham_plots_tables.R}
 Table function is located in \code{par_tables_fn.R}
 }
 \examples{
-\dontrun{
-data("input4_SNEMAYT") # load fit wham model
-mod <- fit_wham(input4_SNEMAYT)
-plot_wham_output(mod)
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+plot_wham_output(mod, dir.main = tempdir(check = TRUE))
 }
 }
 \seealso{

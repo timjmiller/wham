@@ -46,14 +46,10 @@ a named list with same elements as the input provided with catchability options 
 Specify model and parameter configuration for catchability
 }
 \examples{
-\dontrun{
-wham.dir <- find.package("wham")
-path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-input <- prepare_wham_input(asap3)
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
 catchability <- list(re = c("iid", "none"))
-input <- set_q(input, catchability = catchability) #independent time-varying random effects on q for first survey.
-}
+#independent time-varying random effects on q for first survey.
+input <- set_q(input, catchability = catchability) 
 
 }
 \seealso{

@@ -35,9 +35,15 @@ number of observations, and the type (marginal or conditional).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-mod <- fit_wham(input)
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
 aic(mod)
+#> Error: object 'mod' not found
 aic(mod, conditional = TRUE)
-} # }
+#> Error: object 'mod' not found
+# }
 ```

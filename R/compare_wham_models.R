@@ -3,6 +3,61 @@
 #' After fitting multiple WHAM (or ASAP) models, \code{compare_wham_models} produces plots
 #' and a table of AIC and Mohn's rho to aid model comparison.
 #'
+#'
+#' @param mods (named) list of fit WHAM/ASAP models. To read in ASAP model output, use \code{\link{read_asap3_fit}}. If no names are given, 'm1', 'm2', ...
+#' will be used.
+#' @param do.table T/F, produce table of AIC and/or Mohns rho? Default = TRUE.
+#' @param do.plot T/F, produce plots? Default = TRUE.
+#' @param fdir character, path to directory to save table and/or plots. Default = \code{getwd()}.
+#' @param compare.opts list of options to generate comparison results.  See details for the various options.
+#' @param table.opts list of options for AIC/rho table.  See details for the various options.
+#' @param plot.opts list of options for plots. See details for the various options.
+#'
+#' @return a list with the following components:
+#'   \describe{
+#'     \item{\code{daic}}{Vector of delta-AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+#'     \item{\code{aic}}{Vector of AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+#'     \item{\code{rho}}{Matrix of Mohns rho by model (if \code{do.table=T} and \code{table.opts$calc.rho=T})}
+#'     \item{\code{best}}{Name of best model (lowest AIC) (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
+#'     \item{\code{tab}}{Results table of AIC and Mohns rho (if \code{do.table=T})}
+#'     \item{\code{g}}{List of ggplot2 objects for later modification (if \code{do.plot=T} and \code{plot.opts$return.ggplot=T})}
+#'   }
+#'
+#' @details
+#'
+#' The optional elements of the \code{compare.opts} list are:
+#'   \describe{
+#'     \item{\code{$stock}}{integer, which stock to include in results. Default = 1.}
+#'     \item{\code{$region}}{integer, which region to include in results. Default = 1.}
+#'   }
+#'
+#' The optional elements of the \code{table.opts} list are:
+#'   \describe{
+#'     \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = \code{'model_comparison'}.}
+#'     \item{\code{$sort}}{T/F, sort by AIC? Default = TRUE.}
+#'     \item{\code{$calc.rho}}{T/F, calculate Mohns rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
+#'     \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
+#'     \item{\code{$print}}{T/F, print table to console? Default = TRUE.}
+#'     \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = FALSE.}
+#'   }
+#'
+#' The optional elements of the \code{plot.opts} list are:
+#'   \describe{
+#'     \item{\code{$out.type}}{character, either \code{'pdf'} or \code{'png'} (default = \code{'png'} because I am not sure \code{system('pdftk')} will work across platforms.)}
+#'     \item{\code{$ci}}{vector of T/F, length = 1 (applied to all models) or number of models}
+#'     \item{\code{$years}}{vector, which years to plot? Default = all (model and projection years).}
+#'     \item{\code{$which}}{vector, which plots to make? Default = all. See below for details.}
+#'     \item{\code{$relative.to}}{character, name of "base" model to plot differences relative to.}
+#'     \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
+#'     \item{\code{$ages.lab}}{vector, overwrite model age labels.}
+#'     \item{\code{$kobe.yr}}{integer vector applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).}
+#'     \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
+#'     \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
+#'     \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
+#'     \item{\code{$refpt}}{"XSPR" or "MSY", which reference point to use. Default = "XSPR".}
+#'     \item{\code{$browse}}{Open html document in web browser (if $out.type = \code{'png'}) (default = TRUE).}
+#'   }
+#'
 #' \code{plot.opts$which} specifies which plots to make:
 #'   \describe{
 #'     \item{1}{3-panel of SSB (spawning stock biomass), F (fully-selected fishing mortality), and Recruitment}
@@ -19,70 +74,21 @@
 #' If \code{plot.opts$return.ggplot = TRUE}, a list \code{g} is returned holding the above ggplot2 objects for later modification.
 #' \code{g[[i]]} holds the plot corresponding to \code{i} above, e.g. \code{g[[2]]} is the CV plot.
 #'
-#' @param mods (named) list of fit WHAM/ASAP models. To read in ASAP model output, use \code{\link{read_asap3_fit}}. If no names are given, 'm1', 'm2', ...
-#' will be used.
-#' @param do.table T/F, produce table of AIC and/or Mohn's rho? Default = TRUE.
-#' @param do.plot T/F, produce plots? Default = TRUE.
-#' @param fdir character, path to directory to save table and/or plots. Default = \code{getwd()}.
-#' @param compare.opts list of options to generate comparison results:
-#'   \describe{
-#'     \item{\code{$stock}}{integer, which stock to include in results. Default = 1.}
-#'     \item{\code{$region}}{integer, which region to include in results. Default = 1.}
-#'   }
-#' @param table.opts list of options for AIC/rho table:
-#'   \describe{
-#'     \item{\code{$fname}}{character, filename to save CSV results table (.csv will be appended). Default = \code{'model_comparison'}.}
-#'     \item{\code{$sort}}{T/F, sort by AIC? Default = TRUE.}
-#'     \item{\code{$calc.rho}}{T/F, calculate Mohn's rho? Retrospective analysis must have been run for all modes. Default = TRUE.}
-#'     \item{\code{$calc.aic}}{T/F, calculate AIC? Default = TRUE.}
-#'     \item{\code{$print}}{T/F, print table to console? Default = TRUE.}
-#'     \item{\code{$save.csv}}{T/F, save table as a CSV file? Default = FALSE.}
-#'   }
-#' @param plot.opts list of options for plots:
-#'   \describe{
-#'     \item{\code{$out.type}}{character, either \code{'pdf'} or \code{'png'} (default = \code{'png'} because I am not sure \code{system('pdftk')} will work across platforms.)}
-#'     \item{\code{$ci}}{vector of T/F, length = 1 (applied to all models) or number of models}
-#'     \item{\code{$years}}{vector, which years to plot? Default = all (model and projection years).}
-#'     \item{\code{$which}}{vector, which plots to make? Default = all. See details.}
-#'     \item{\code{$relative.to}}{character, name of "base" model to plot differences relative to.}
-#'     \item{\code{$alpha}}{scalar, (1-alpha)\% confidence intervals will be plotted. Default = 0.05 for 95\% CI.}
-#'     \item{\code{$ages.lab}}{vector, overwrite model age labels.}
-#'     \item{\code{$kobe.yr}}{integer vector (length = 1 (applied to all models or number of models, which year to use in Kobe plot (relative status). Default = terminal model year(s).}
-#'     \item{\code{$M.age}}{integer, which age to use in M time-series plot. Default = \code{max(data$which_F_age)} (max age of F to use for full total F).}
-#'     \item{\code{$return.ggplot}}{T/F, return a list of ggplot2 objects for later modification? Default = TRUE.}
-#'     \item{\code{$kobe.prob}}{T/F, print probabilities for each model in each quadrant of Kobe plot? Default = TRUE.}
-#'     \item{\code{$refpt}}{"XSPR" or "MSY", which reference point to use. Default = "XSPR".}
-#'     \item{\code{$browse}}{Open html document in web browser (if $out.type = \code{'png'}) (default = TRUE).}
-#'   }
 #'
-#' @return a list with the following components:
-#'   \describe{
-#'     \item{\code{daic}}{Vector of delta-AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
-#'     \item{\code{aic}}{Vector of AIC by model (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
-#'     \item{\code{rho}}{Matrix of Mohn's rho by model (if \code{do.table=T} and \code{table.opts$calc.rho=T})}
-#'     \item{\code{best}}{Name of best model (lowest AIC) (if \code{do.table=T} and \code{table.opts$calc.aic=T})}
-#'     \item{\code{tab}}{Results table of AIC and Mohn's rho (if \code{do.table=T})}
-#'     \item{\code{g}}{List of ggplot2 objects for later modification (if \code{do.plot=T} and \code{plot.opts$return.ggplot=T})}
-#'   }
-#'
-#' @seealso \code{\link{fit_wham}}, \code{\link{read_asap3_fit}, \code{\link{read_wham_fit}}}
+#' @seealso \code{\link{fit_wham}}, \code{\link{read_asap3_fit}}, \code{\link{read_wham_fit}}
 #'
 #' @examples
-#' \dontrun{
-#' base <- read_asap3_fit()
-#' m1 <- fit_wham(input1)
-#' m2 <- fit_wham(input2)
-#' mods <- list(base=base, m1=m1, m2=m2)
-#' res <- compare_wham_models(mods)
+#' \donttest{
+#' input1 <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' input2 <- set_NAA(input1, list(sigma="rec", cor="iid"))
+#' m1 <- fit_wham(input1, do.osa = FALSE, do.retro = FALSE)
+#' m2 <- fit_wham(input2, do.osa = FALSE, do.retro = FALSE)
+#' res <- compare_wham_models(list(m1=m1, m2=m2), fdir = tempdir(check=TRUE))
 #' }
 #'
 #' @export
-compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(), compare.opts=NULL, table.opts=NULL, plot.opts=NULL, fname=NULL, sort=NULL, calc.rho=NULL, calc.aic=NULL, do.print=NULL){
+compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(), compare.opts=NULL, table.opts=NULL, plot.opts=NULL){
   if(is.null(names(mods))) names(mods) <- paste0("m",1:length(mods))
-  if(!any(c(missing("fname"),missing("sort"),missing("calc.rho"),missing("calc.aic"),missing("do.print")))){
-    warning("Argument deprecated, use table.opts=list(fname, sort, calc.rho, calc.aic, print, save.csv) instead.
-      Using default: table.opts=list(fname='model_comparison', sort=TRUE, calc.rho=TRUE, calc.aic=TRUE, print=TRUE, save.csv=TRUE)")
-  }
   out <- list() # to return
   wham.mods.ind <- which(sapply(mods, function(x) "wham_version" %in% names(x))) # otherwise asap model output read in from read_asap3_fit
   asap.mods.ind <- c(1:length(mods))[-wham.mods.ind] # otherwise asap model output read in from read_asap3_fit
@@ -113,7 +119,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(table.opts$calc.aic & !no.wham) if(length(wham.mods)>1) {
       if(sum(mapply(function(x) x$env$data$Ecov_model==0, wham.mods)) %in% c(0,length(wham.mods))){
         ecov.obs <- lapply(wham.mods, function(x) x$env$data$Ecov_use_obs)
-        all.identical <- function(l) all(mapply(identical, head(l, 1), tail(l, -1)))
+        all.identical <- function(l) all(mapply(identical, utils::head(l, 1), utils::tail(l, -1)))
         if(!all.identical(ecov.obs)){ #covariate obs in each model, but not the same covariates.
           warning("Inclusion of environmental covariate observations differs among models, cannot compare models' AIC. \n
             Setting 'calc.aic = FALSE' to make other comparisons. \n\n")
@@ -166,8 +172,8 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
       if(!is.null(tab)) tab <- tab[ord,]
     }
     if(!is.null(tab)){ 
-      if(table.opts$save.csv) write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
-      if(table.opts$print) message(paste(capture.output(print(as.data.frame(tab))), collapse = "\n")) # print to console
+      if(table.opts$save.csv) utils::write.csv(tab, file = paste0(file.path(fdir, table.opts$fname),".csv"))
+      if(table.opts$print) message(paste(utils::capture.output(print(as.data.frame(tab))), collapse = "\n")) # print to console
     }
     out[c("daic","aic","rho","best","tab")] <- list(daic,aic.values,rho,best,tab)
   }
@@ -185,7 +191,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     if(is.null(plot.opts$which)) plot.opts$which <- 1:10
     if(!all(plot.opts$which %in% 1:10)) stop("All elements of plot.opts$which must be in 1:10. See ?compare_wham_models for available plots.")
     if(is.null(plot.opts$alpha)) plot.opts$alpha <- 0.05
-    if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- sapply(mods, \(x) tail(x$years_full, 1))
+    if(is.null(plot.opts[["kobe.yr"]])) plot.opts$kobe.yr <- sapply(mods, \(x) utils::tail(x$years_full, 1))
     if(length(plot.opts$kobe.yr)==1) plot.opts$kobe.yr <- rep(plot.opts$kobe.yr,length(mods))
     if(!all(sapply(1:length(mods), \(x) plot.opts$kobe.yr[x] %in% mods[[x]]$years))) stop("plot.opts$kobe.yr must be a year from the corresponding model fit.")
     if(is.null(plot.opts[["return.ggplot"]])) plot.opts$return.ggplot <- TRUE
@@ -196,26 +202,26 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     #if(any(sapply(mods, function(x) is.null(x$sdrep)))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% c(2,9,10))]
     if(any(sapply(mods[wham.mods.ind], function(x) x$env$data$do_SPR_BRPs == 0))) plot.opts$which <- plot.opts$which[which(!plot.opts$which %in% 8:10)]
 
-    x <- list()
+    mods_compare <- list()
     for(i in 1:length(mods)){
       if(i %in% wham.mods.ind){
-        x[[i]] <- read_wham_fit(mods[[i]])
-        x[[i]]$is.wham <- TRUE
+        mods_compare[[i]] <- read_wham_fit(mods[[i]])
+        mods_compare[[i]]$is.wham <- TRUE
       } else {
-        x[[i]] <- mods[[i]] # already processed by read_asap3_fit
-        x[[i]]$is.wham <- FALSE
+        mods_compare[[i]] <- mods[[i]] # already processed by read_asap3_fit
+        mods_compare[[i]]$is.wham <- FALSE
       }
     }
     #if(any(sapply(mods, function(y) is.null(y$sdrep)))) plot.opts$which <- plot.opts$which[which(plot.opts$which!=2)]
 
-    names(x) <- names(mods)
+    names(mods_compare) <- names(mods)
     if(is.null(plot.opts$ages.lab)){
       if(!no.wham) plot.opts$ages.lab <- wham.mods[[1]]$ages.lab
-      if(is.null(plot.opts$ages.lab)) plot.opts$ages.lab <- paste0(1:dim(x[[1]]$MAA)[2], c(rep("",dim(x[[1]]$MAA)[2]-1),"+"))
+      if(is.null(plot.opts$ages.lab)) plot.opts$ages.lab <- paste0(1:dim(mods_compare[[1]]$MAA)[2], c(rep("",dim(mods_compare[[1]]$MAA)[2]-1),"+"))
     }
     if(is.null(plot.opts$M.age)){
       if(!no.wham) plot.opts$M.age <- max(wham.mods[[1]]$env$data$which_F_age)
-      if(is.null(plot.opts$M.age)) plot.opts$M.age <- dim(x[[1]]$MAA)[2]
+      if(is.null(plot.opts$M.age)) plot.opts$M.age <- dim(mods_compare[[1]]$MAA)[2]
     }
 
     gg_facet_dims <- function(p){
@@ -225,28 +231,9 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         return(c(2*nrows+2, 3*ncols+2))
       } else return(NULL)
     }
-    # gg_facet_dims <- function(p){
-    #   if(!is.null(p)){
-    #     nrows <- p %>%
-    #      ggplot2::ggplot_build() %>%
-    #      magrittr::extract2('layout') %>%
-    #      magrittr::extract2('layout') %>%
-    #      magrittr::extract2('ROW') %>%
-    #      unique() %>%
-    #      length()
-    #     ncols <- p %>%
-    #      ggplot2::ggplot_build() %>%
-    #      magrittr::extract2('layout') %>%
-    #      magrittr::extract2('layout') %>%
-    #      magrittr::extract2('COL') %>%
-    #      unique() %>%
-    #      length()
-    #     return(c(2*nrows+2, 3*ncols+2))
-    #   } else return(NULL)
-    # }
     g <-  vector("list", 10)
-    no.SPR <- sapply(x, function(x) !("log_FXSPR" %in% names(x)))
-    no.MSY <- sapply(x, function(x) !("log_FMSY" %in% names(x)))
+    no.SPR <- sapply(mods_compare, function(x) !("log_FXSPR" %in% names(x)))
+    no.MSY <- sapply(mods_compare, function(x) !("log_FMSY" %in% names(x)))
     if((any(no.SPR) & plot.opts$refpt == "XSPR") | (any(no.MSY) & plot.opts$refpt == "MSY")){
       if(plot.opts$refpt == "XSPR"){
         warning("Not plotting SPR-based reference points and status because at least one model does not have them reported.")
@@ -258,15 +245,15 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     }
     for(i in plot.opts$which){
 
-      if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(x, compare.opts, plot.opts))
-      if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(x, compare.opts, plot.opts))
-      if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="fleets"))
-      if(i==4) g[[i]] <- suppressWarnings(plot.selectivity.compare(x, plot.opts, type="indices"))
-      if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(x, compare.opts, plot.opts, type="selAA"))
-      if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(x, compare.opts, plot.opts))
-      if(i==7) g[[i]] <- suppressWarnings(plot.tile.compare(x, compare.opts, plot.opts, type="MAA"))
-      if(i==8) g[[i]] <- suppressWarnings(plot.refpt.compare(x, plot.opts))
-      if(i==9) g[[i]] <- suppressWarnings(plot.rel.compare(x, plot.opts))
+      if(i==1) g[[i]] <- suppressWarnings(plot.SSB.F.R.compare(mods_compare, compare.opts, plot.opts))
+      if(i==2) g[[i]] <- suppressWarnings(plot.cv.compare(mods_compare, compare.opts, plot.opts))
+      if(i==3) g[[i]] <- suppressWarnings(plot.selectivity.compare(mods_compare, plot.opts, type="fleets"))
+      if(i==4) g[[i]] <- suppressWarnings(plot.selectivity.compare(mods_compare, plot.opts, type="indices"))
+      if(i==5) g[[i]] <- suppressWarnings(plot.tile.compare(mods_compare, compare.opts, plot.opts, type="selAA"))
+      if(i==6) g[[i]] <- suppressWarnings(plot.M.compare(mods_compare, compare.opts, plot.opts))
+      if(i==7) g[[i]] <- suppressWarnings(plot.tile.compare(mods_compare, compare.opts, plot.opts, type="MAA"))
+      if(i==8) g[[i]] <- suppressWarnings(plot.refpt.compare(mods_compare, plot.opts))
+      if(i==9) g[[i]] <- suppressWarnings(plot.rel.compare(mods_compare, plot.opts))
     }
     pdims <- lapply(1:length(g), \(x) {
       gg_facet_dims(g[[x]])
@@ -281,17 +268,17 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
     for(i in plot.opts$which){
       if(plot.opts$out.type == 'pdf') grDevices::cairo_pdf(filename=pnames[i], height = pdims[[i]][1], width = pdims[[i]][2])
       if(plot.opts$out.type == 'png') {
-        if(require(ragg)) {
+        if(requireNamespace("ragg")) {
           ragg::agg_png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
         } else {
           message('Installing "ragg" package will provide nicer png files.')
-          png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
+          grDevices::png(pnames[i], width=pdims[[i]][2], height=pdims[[i]][1], units="in", res=300)
         }
 
       }
       if(i < 10) suppressWarnings(print(g[[i]]))
-      if(i == 10) g[[i]] <- suppressWarnings(plot.kobe.compare(x, plot.opts))
-      dev.off()
+      if(i == 10) g[[i]] <- suppressWarnings(plot.kobe.compare(mods_compare, plot.opts))
+      grDevices::dev.off()
     }
     if(plot.opts$return.ggplot) out$g <- g
 
@@ -301,7 +288,7 @@ compare_wham_models <- function(mods, do.table=TRUE, do.plot=TRUE, fdir=getwd(),
         make_html_compare_model_figs_fn(od = pdir, do.html = TRUE)
         html_file <- file.path(pdir, "compare_model_figs.html")
         message("Opening HTML document in your default web-browser.\n")
-        if(plot.opts$browse) browseURL(html_file)
+        if(plot.opts$browse) utils::browseURL(html_file)
         message(paste0("HTML document is \n", html_file, "\n"))
       }
     } else {
@@ -324,21 +311,15 @@ fancy_scientific <- function(l) {
   }
   parse(text=l, keep.source = FALSE)
 }
-# get.ci <- function(x, alpha=0.05, getci=TRUE){
-#   if(!getci) x[,2] <- 0
-#   ci <- exp(x[,1] + cbind(0, -qnorm(1-alpha/2)*x[,2], qnorm(1-alpha/2)*x[,2]))
-#   ci[is.nan(ci[,2]),2] <- ci[is.nan(ci[,2]),1]
-#   ci[is.nan(ci[,3]),3] <- ci[is.nan(ci[,3]),1]
-#   return(ci)
-# }
+
 get.ci <- function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1, alpha.ci=0.05, getci=TRUE, asap = FALSE){
   if(!getci) {
     ci <- list(lo = par, hi = par)
     ci$lo[] <- 0
     ci$hi[] <- 0
   } else {
-    if(!asap) ci <- list(lo = par - qnorm(1-alpha.ci/2) * se, hi = par + qnorm(1-alpha.ci/2) * se)
-    else ci <- list(lo = cbind(par[,1] - qnorm(1-alpha.ci/2)* par[,2]), hi = cbind(par[,1] + qnorm(1-alpha.ci/2)* par[,2]))
+    if(!asap) ci <- list(lo = par - stats::qnorm(1-alpha.ci/2) * se, hi = par + stats::qnorm(1-alpha.ci/2) * se)
+    else ci <- list(lo = cbind(par[,1] - stats::qnorm(1-alpha.ci/2)* par[,2]), hi = cbind(par[,1] + stats::qnorm(1-alpha.ci/2)* par[,2]))
   }
   if(type == "I") {
   }
@@ -355,17 +336,17 @@ plot.timeseries.compare <- function(df, x, plot.opts){
   df$Model <- factor(df$Model, levels=names(x), labels=names(x))
   df$Year <- as.integer(df$Year)
   if(any(plot.opts$ci)){
-    df <- df |> dplyr::group_by(var) |> dplyr::mutate(y_max = 1.2*max(val)) |> as.data.frame()   # trim large CIs to zoom to 120% of max MLE
+    df <- df |> dplyr::group_by(.data$var) |> dplyr::mutate(y_max = 1.2*max(.data$val)) |> as.data.frame()   # trim large CIs to zoom to 120% of max MLE
     ind <- which(df$hi > df$y_max)
     df$hi[ind] = df$y_max[ind]
   }
-  g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=val, color=Model, group=Model))
+  g <- ggplot2::ggplot(df, ggplot2::aes(x=.data$Year, y=.data$val, color=.data$Model, group=.data$Model))
   if(any(plot.opts$ci)){
-    g <- g + ggplot2::geom_ribbon(ggplot2::aes(x=Year, ymin=lo, ymax=hi, fill=Model), color=NA, alpha=.15) +
+    g <- g + ggplot2::geom_ribbon(ggplot2::aes(x=.data$Year, ymin=.data$lo, ymax=.data$hi, fill=.data$Model), color=NA, alpha=.15) +
           ggplot2::scale_fill_viridis_d()
   }
   g <- g + ggplot2::geom_line(size=.8) +
-          ggplot2::facet_wrap(ggplot2::vars(var), scales="free_y", ncol=1, strip.position = "left") +
+          ggplot2::facet_wrap(ggplot2::vars(.data$var), scales="free_y", ncol=1, strip.position = "left") +
           ggplot2::ylab(NULL) +
           ggplot2::scale_x_continuous(expand=c(0.01,0.01)) + # breaks=scales::breaks_extended(5)
           ggplot2::scale_colour_viridis_d() +
@@ -379,8 +360,8 @@ plot.timeseries.compare <- function(df, x, plot.opts){
     g <- g + ggplot2::scale_y_continuous(expand=c(0.01,0.01), labels=fancy_scientific)
   }
   # if projections, add vline at terminal year
-  last_proj <- sapply(x, function(x) tail(x$years_full,1))
-  last_mod <- sapply(x, function(x) tail(x$years,1))
+  last_proj <- sapply(x, function(x) utils::tail(x$years_full,1))
+  last_mod <- sapply(x, function(x) utils::tail(x$years,1))
   v.yr <- unique(last_mod[last_proj > last_mod])
   g <- g + ggplot2::geom_vline(xintercept = v.yr, linetype=2, size=.4)
   return(g)
@@ -597,7 +578,7 @@ plot.refpt.compare <- function(x, plot.opts){
     }
   }
   g <- plot.timeseries.compare(df, x, plot.opts)
-  g <- g + ggplot2::facet_wrap(ggplot2::vars(var), scales="free_y", ncol=1, strip.position = "left", labeller = ggplot2::label_parsed)
+  g <- g + ggplot2::facet_wrap(ggplot2::vars(.data$var), scales="free_y", ncol=1, strip.position = "left", labeller = ggplot2::label_parsed)
   return(g)
 }
 plot.rel.compare <- function(x, plot.opts){
@@ -634,7 +615,7 @@ plot.rel.compare <- function(x, plot.opts){
       for(i in 1:length(x)){
         for(j in 1:length(vars)){
           vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
-          ci <- exp(vals[,1] +qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
+          ci <- exp(vals[,1] +stats::qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
           df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
             val=exp(vals[,1]), lo=ci[,1], hi=ci[,2], Model=names(x)[i]))
         }
@@ -643,7 +624,7 @@ plot.rel.compare <- function(x, plot.opts){
       for(i in 1:length(x)){
         for(j in 1:length(vars)){
           vals <- t(sapply(x[[i]][["log_rel_ssb_F_cov_msy"]], function(x) c(x[[1]][j], sqrt(x[[2]][j,j]))))
-          ci <- exp(vals[,1] +qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
+          ci <- exp(vals[,1] +stats::qnorm(1-plot.opts$alpha/2) * cbind(-vals[,2],vals[,2]))
           df <- rbind(df, data.frame(Year=x[[i]]$years_full, var=vars[j],
             val=exp(vals[,1]), lo=ci[,1], hi=ci[,2], Model=names(x)[i]))
         }
@@ -677,10 +658,10 @@ plot.rel.compare <- function(x, plot.opts){
     }
   }
   g <- plot.timeseries.compare(df, x, plot.opts)
-  g <- g + ggplot2::facet_wrap(ggplot2::vars(var), scales="free_y", ncol=1, strip.position = "left", labeller = ggplot2::label_parsed)
+  g <- g + ggplot2::facet_wrap(ggplot2::vars(.data$var), scales="free_y", ncol=1, strip.position = "left", labeller = ggplot2::label_parsed)
   if(is.null(plot.opts$relative.to)){
     g <- g + ggplot2::geom_hline(yintercept = 1, linetype=2, size=.4) +
-           ggplot2::geom_hline(data = df |> dplyr::filter(var == levels(df$var)[2]) |> dplyr::mutate(half=0.5), mapping=ggplot2::aes(yintercept = half), color="red", linetype=2, size=.4)
+           ggplot2::geom_hline(data = df |> dplyr::filter(.data$var == levels(df$var)[2]) |> dplyr::mutate(half=0.5), mapping=ggplot2::aes(yintercept = .data$half), color="red", linetype=2, size=.4)
   }
   return(g)
 }
@@ -719,17 +700,37 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA", all.year
         tmp$Fleet = names(selAA.byfleet)[i]
         df.selAA <- rbind(df.selAA, tmp)
       }
-      df <- rbind(df, df.selAA |> tidyr::pivot_longer(-c(Year,Fleet),
-                                    names_to = "Age",
-                                    names_prefix = "Age_",
-                                    names_ptypes = list(Age = character()),
-                                    values_to = "Selectivity") |>
-                                  dplyr::mutate(Model = names(x)[j]))
+      age_cols <- setdiff(names(df.selAA), c("Year", "Fleet"))
+      # print(age_cols)
+      df.selAA_alt <- stats::reshape(
+        data = df.selAA, 
+        varying = age_cols,
+        v.names = "Selectivity",
+        timevar = "Age",
+        idvar = c("Year", "Fleet"),
+        times = sub("^Age_", "", age_cols), # Strips "Age_" prefix and returns a character vector
+        direction = "long"
+      )
+      rownames(df.selAA_alt) <- NULL
+      df.selAA_alt <- df.selAA_alt[order(df.selAA_alt$Year, df.selAA_alt$Fleet), ] |>
+        dplyr::mutate(Model = names(x)[j])
+      # print(dim(df.selAA_alt))
+      # print(head(df.selAA_alt))
+      
+      # df.selAA <- df.selAA |> tidyr::pivot_longer(-c(Year,Fleet),
+      #   names_to = "Age",
+      #   names_prefix = "Age_",
+      #   names_ptypes = list(Age = character()),
+      #   values_to = "Selectivity") |>
+      #   dplyr::mutate(Model = names(x)[j])
+      # print(dim(df.selAA))
+      # print(head(df.selAA))
+      df <- rbind(df, df.selAA_alt)
     }
     df$Age <- as.integer(df$Age)
     df$Fleet <- factor(as.character(df$Fleet), levels=names(table(df$Fleet)))
-    g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=Age, fill=Selectivity)) +
-        ggplot2::facet_grid(cols=ggplot2::vars(Fleet), rows=ggplot2::vars(Model))
+    g <- ggplot2::ggplot(df, ggplot2::aes(x=.data$Year, y=.data$Age, fill=.data$Selectivity)) +
+        ggplot2::facet_grid(cols=ggplot2::vars(.data$Fleet), rows=ggplot2::vars(.data$Model))
   }
 
   if(type=="MAA"){
@@ -744,16 +745,33 @@ plot.tile.compare <- function(x, compare.opts, plot.opts, type="selAA", all.year
       }
       MAA$Year <- x[[j]]$years_full
       colnames(MAA) <- c(paste0("Age_",1:n_ages),"Year")
-      df <- rbind(df, MAA |> tidyr::pivot_longer(-Year,
-                names_to = "Age",
-                names_prefix = "Age_",
-                names_ptypes = list(Age = character()),
-                values_to = "M") |>
-            dplyr::mutate(Model = names(x)[j]))
+      age_cols <- setdiff(names(MAA), "Year")
+      MAA_long <- stats::reshape(
+        data = as.data.frame(MAA),
+        direction = "long",
+        varying = age_cols,
+        v.names = "M",
+        timevar = "Age",
+        times = sub("^Age_", "", age_cols),
+        idvar = "Year"
+      )
+
+      # 3. Optional: Clean up row names and sort by Year to match pivot_longer() output
+      rownames(MAA_long) <- NULL
+      MAA_long <- MAA_long[order(MAA_long$Year), ] |>
+        dplyr::mutate(Model = names(x)[j])
+
+      # df <- rbind(df, MAA |> tidyr::pivot_longer(-Year,
+      #           names_to = "Age",
+      #           names_prefix = "Age_",
+      #           names_ptypes = list(Age = character()),
+      #           values_to = "M") |>
+      #       dplyr::mutate(Model = names(x)[j]))
+      df <- rbind(df, MAA_long)
     }
     df$Age <- as.integer(df$Age)
-    g <- ggplot2::ggplot(df, ggplot2::aes(x=Year, y=Age, fill=M)) +
-         ggplot2::facet_wrap(ggplot2::vars(Model), dir="v")
+    g <- ggplot2::ggplot(df, ggplot2::aes(x=.data$Year, y=.data$Age, fill=.data$M)) +
+         ggplot2::facet_wrap(ggplot2::vars(.data$Model), dir="v")
   }
   g <- g + ggplot2::geom_tile() +
         ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -798,25 +816,25 @@ plot.kobe.compare <- function(x, plot.opts){
     max.y <- max(sapply(log.rel.ssb.rel.F.ci.regs, function(x) max(x[,2],na.rm = TRUE)),1.25, vals[,2])
     plot(vals[,1],vals[,2], ylim = c(0,1.05*max.y), xlim = c(0,1.05*max.x), xlab = bquote(paste("SSB / ", SSB[paste(.(x[[1]]$percentSPR),"%")])),
       ylab = bquote(paste(italic(F)," / ", italic(F)[paste(.(x[[1]]$percentSPR),"%")])),type = 'n')
-    lims = par("usr")
-    tcol <- col2rgb('red')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
-    tcol <- col2rgb('green')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-    tcol <- col2rgb('yellow')
-    tcol <- paste(rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
-    polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
-    polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+    lims = graphics::par("usr")
+    tcol <- grDevices::col2rgb('red')
+    tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    graphics::polygon(c(lims[1],0.5,0.5,lims[1]),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
+    tcol <- grDevices::col2rgb('green')
+    tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    graphics::polygon(c(0.5,lims[2],lims[2],0.5),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+    tcol <- grDevices::col2rgb('yellow')
+    tcol <- paste(grDevices::rgb(tcol[1,],tcol[2,], tcol[3,], maxColorValue = 255), "55", sep = '')
+    graphics::polygon(c(lims[1],0.5,0.5,lims[1]),c(lims[3],lims[3],1,1), border = tcol, col = tcol)
+    graphics::polygon(c(0.5,lims[2],lims[2],0.5),c(1,1,lims[4],lims[4]), border = tcol, col = tcol)
     if(plot.opts$kobe.prob){
-      legend("topleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", cex=0.7)
-      legend("topright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", cex=0.7)
-      legend("bottomleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", cex=0.7)
-      legend("bottomright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
+      graphics::legend("topleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.hi,2)), bty = "n", cex=0.7)
+      graphics::legend("topright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.hi,2)), bty = "n", cex=0.7)
+      graphics::legend("bottomleft", legend = paste0(names(x), ": Prob = ", round(p.ssb.lo.f.lo,2)), bty = "n", cex=0.7)
+      graphics::legend("bottomright", legend = paste0(names(x), ": Prob = ", round(p.ssb.hi.f.lo,2)), bty = "n", cex=0.7)
     }
-    text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"), cex=0.7)
-    for(i in 1:length(x)) polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
+    graphics::text(vals[,1],vals[,2], paste0(rownames(vals)," (",plot.opts$kobe.yr,")"), cex=0.7)
+    for(i in 1:length(x)) graphics::polygon(log.rel.ssb.rel.F.ci.regs[[i]][,1], log.rel.ssb.rel.F.ci.regs[[i]][,2], lty=i)#, border = gray(0.7))
     #return(list(rel.status = vals, p.ssb.lo.f.lo = p.ssb.lo.f.lo, p.ssb.hi.f.lo = p.ssb.hi.f.lo, p.ssb.hi.f.hi = p.ssb.hi.f.hi, p.ssb.lo.f.hi = p.ssb.lo.f.hi))
   } else {
     return(NULL)
@@ -887,32 +905,6 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleets"){
                   lapply(these_selblocks, \(s) which(y[[ptr_name]][,f] == s))
                 })
   }
-    # stop()
-    # if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_fleets)))) {
-    #   message("Fleet selectivity blocks not identical, cannot produce comparison plot.")
-    #   return(NULL)
-    # } else {
-  #     selblocks <- unique(as.integer(x[[1]]$selblock_pointer_fleets))
-  #     yrs <- lapply(selblocks, function(y){
-  #                                 tmp <- which(x[[1]]$selblock_pointer_fleets == y);
-  #                                 tmp <- tmp %% length(x[[1]]$years);
-  #                                 tmp[tmp == 0] = length(x[[1]]$years);
-  #                                 return(tmp)})
-  #   }
-  # }
-  # if(type == 'indices'){
-  #   if(!allSame(lapply(x, function(y) unname(y$selblock_pointer_indices)))) {
-  #     message("Index selectivity blocks not identical, cannot produce comparison plot.")
-  #     return(NULL)
-  #   } else {
-  #     selblocks <- unique(as.integer(x[[1]]$selblock_pointer_indices))
-  #     yrs <- lapply(selblocks, function(y){
-  #                                 tmp <- which(x[[1]]$selblock_pointer_indices == y);
-  #                                 tmp <- tmp %% length(x[[1]]$years);
-  #                                 tmp[tmp == 0] = length(x[[1]]$years);
-  #                                 return(tmp)})
-  #   }
-  # }
   df <- data.frame(matrix(NA, nrow=0, ncol=5))
   colnames(df) <- c("Age","Selectivity","Block","Fleet","Model")
   for(f in 1:nfleets[1]){
@@ -927,9 +919,9 @@ plot.selectivity.compare <- function(x, plot.opts, type="fleets"){
   df$Model <- factor(df$Model, levels=names(x), labels=names(x))
   df$Block <- as.factor(df$Block)
   df$Fleet <- as.factor(df$Fleet)
-  g <- ggplot2::ggplot(df, ggplot2::aes(x=Age, y=Selectivity, color=Model, group=Model)) +
+  g <- ggplot2::ggplot(df, ggplot2::aes(x=.data$Age, y=.data$Selectivity, color=.data$Model, group=.data$Model)) +
           ggplot2::geom_line(size=.8) +
-          ggplot2::facet_wrap(ggplot2::vars(Fleet,Block), ncol=1, strip.position = 'right') +
+          ggplot2::facet_wrap(ggplot2::vars(.data$Fleet,.data$Block), ncol=1, strip.position = 'right') +
           ggplot2::ylab("Selectivity") +
           ggplot2::scale_y_continuous(limits=c(0,1),expand=c(0.01,0.01), labels=scales::number_format(accuracy=0.1)) +
           ggplot2::scale_x_continuous(expand=c(0.01,0.01), breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))) +

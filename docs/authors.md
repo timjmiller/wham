@@ -11,6 +11,8 @@
 
 - **Chris Legault**. Contributor.
 
+- **Emily Liljestrand**. Contributor.
+
 - **Jim Thorson**. Contributor.
 
 ## Citation

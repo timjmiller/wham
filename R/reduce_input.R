@@ -214,9 +214,9 @@ reduce_input <- function(input,years_peeled, retro = TRUE){
 	if(!is.null(map$log_NAA)) {
 		tmp <- par$log_NAA
 		tmp[] <- as.integer(map$log_NAA)
-		map$log_NAA <- factor(tmp[,,head(ind,n_years-1),])	
+		map$log_NAA <- factor(tmp[,,utils::head(ind,n_years-1),])	
 	}
-	par$log_NAA<- par$log_NAA[,,head(ind,n_years-1),,drop = F] 
+	par$log_NAA<- par$log_NAA[,,utils::head(ind,n_years-1),,drop = F] 
 	
 	if(!is.null(map$L_re)) {
 		tmp <- par$L_re

@@ -2,9 +2,7 @@
 % Please edit documentation in R/fit_tmb.R
 \name{check_estimability}
 \alias{check_estimability}
-\title{Check for identifiability of fixed effects
-Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
-Internal function called by \code{\link{fit_tmb}}.}
+\title{Check for identifiability of fixed effects}
 \usage{
 check_estimability(obj, h)
 }
@@ -17,6 +15,10 @@ check_estimability(obj, h)
 A tagged list of the hessian and the message
 }
 \description{
+Originally provided by the \href{https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper}{TMBhelper} package.
+Internal function called by \code{\link{fit_tmb}}.
+}
+\details{
 \code{check_estimability} calculates the matrix of second-derivatives of the marginal likelihood
 w.r.t. fixed effects, to see if any linear combinations are not estimable (i.e. cannot be
 uniquely estimated conditional upon model structure and available data, e.g., resulting

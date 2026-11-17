@@ -10,7 +10,7 @@
 library(here)
 pkg.dir <- here()
 pkgbuild::compile_dll(debug = FALSE); 
-pkgload::load_all(compile=FALSE)
+#pkgload::load_all(compile=FALSE)
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran the ex today. if not, need to change
@@ -27,22 +27,22 @@ setwd(pkg.dir)
 
 saveRDS(mods, file = file.path(main.dir, "mods.rds"))
 
+res <- compare_wham_models(mods, fdir=main.dir, plot.opts = list(browse = FALSE))
+compare.png.files <- grep(list.files(file.path(main.dir, "compare_png")), pattern = ".png", fixed = T, value = T)
+
 # copy to vignette plots folder
-to.dir <- file.path(pkg.dir, "vignettes", "ex8_plots")
-from.dir <- file.path(write.dir,"compare_png")
-from.list <- list.files(from.dir,full.names=T)
-to.list <- file.path(to.dir, list.files(from.dir))
-file.copy(from=from.list, to=to.dir, overwrite = TRUE)
-file.copy(from=file.path(write.dir,"model_comparison.csv"), to=to.dir, overwrite = TRUE)
-file.copy(from=file.path(write.dir,"res.rds"), to=to.dir, overwrite = TRUE)
+to.dir <- file.path(pkg.dir, "vignettes", "ex08_files")
+dir.create(to.dir)
+file.copy(from=file.path(main.dir,"compare_png",compare.png.files), to=to.dir, overwrite = TRUE)
 
 x <- list.files(write.dir)
 special.plots <- grep(x, pattern = ".png", fixed = T, value = T)
 file.copy(from=file.path(write.dir,special.plots), to=to.dir, overwrite = TRUE)
 
-compare_wham_models(mods, fdir=main.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F))
+res <- readRDS(file.path(write.dir,"res.rds"))
+res_table <- round(res$tab,2)
+saveRDS(res_table, file=file.path(to.dir, "res_table.RDS"))
+
+compare_wham_models(mods, fdir=write.dir, do.table=F, plot.opts=list(which=10, kobe.yr=2010, kobe.prob=F, browse = FALSE))
 file.copy(from=file.path(main.dir,"compare_png","compare_rel_status_kobe.png"), to = file.path(to.dir, "which10_2010.png"), overwrite = TRUE)
 
-res <- readRDS(file.path(write.dir,"res.rds"))
-vign8_res <- round(res$tab,2)
-save(vign8_res, file=file.path(pkg.dir, "data","vign8_res.RData"))

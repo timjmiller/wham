@@ -1,7 +1,9 @@
-# Extract fixed effects Originally provided by the [TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper) package. Internal function called by [`check_estimability`](https://timjmiller.github.io/wham/reference/check_estimability.md).
+# Extract fixed effects
 
-`extract_fixed` extracts the best previous value of fixed effects, in a
-way that works for both mixed and fixed effect models
+Originally provided by the
+[TMBhelper](https://github.com/kaskr/TMB_contrib_R/tree/master/TMBhelper)
+package. Internal function called by
+[`check_estimability`](https://timjmiller.github.io/wham/reference/check_estimability.md).
 
 ## Usage
 
@@ -18,3 +20,8 @@ extract_fixed(obj)
 ## Value
 
 A vector of fixed-effect estimates
+
+## Details
+
+`extract_fixed` extracts the best previous value of fixed effects, in a
+way that works for both mixed and fixed effect models

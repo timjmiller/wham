@@ -91,19 +91,19 @@ articles:
       `wham.dir <- find.package("wham")`<br/>
       `source(file.path(wham.dir, "example_scripts", "run_all_examples.R"))`<br/>
     contents:
-      - ex01_basics
-      - ex02_CPI_recruitment
-      - ex03_projections
-      - ex04_selectivity
-      - ex05_GSI_M
-      - ex06_NAA
-      - ex07_debug
-      - ex08_compare
-      - ex09_retro_pred
-      - ex10_simulation
-      - ex11_catchability
-      - ex12_multistock
-      - ex13_no_ASAP
+      - articles/ex01_basics
+      - articles/ex02_CPI_recruitment
+      - articles/ex03_projections
+      - articles/ex04_selectivity
+      - articles/ex05_GSI_M
+      - articles/ex06_NAA
+      - articles/ex07_debug
+      - articles/ex08_compare
+      - articles/ex09_retro_pred
+      - articles/ex10_simulation
+      - articles/ex11_catchability
+      - articles/ex12_multistock
+      - articles/ex13_no_ASAP
 
 reference:
   - title: Exported functions that user can call directly

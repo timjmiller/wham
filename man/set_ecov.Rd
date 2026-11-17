@@ -7,7 +7,7 @@
 set_ecov(input, ecov)
 }
 \arguments{
-\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})}
+\item{input}{list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})}
 
 \item{ecov}{(optional) named list of environmental covariate data and parameters (see details)
 
@@ -115,12 +115,9 @@ a named list with same elements as the input provided with environmental covaria
 Specify configuration for environmental covariates, effects on the population, and parameter values
 }
 \examples{
-\dontrun{
-wham.dir <- find.package("wham")
 path_to_examples <- system.file("extdata", package="wham")
-asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
-env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
-input <- prepare_wham_input(asap3, NAA_re = list(sigma = "rec"))
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=TRUE)
 ecov <- list(
  label = "GSI",
  mean = as.matrix(env.dat$GSI),
@@ -129,7 +126,6 @@ ecov <- list(
  use_obs = matrix(1, ncol=1, nrow=dim(env.dat)[1]), # use all obs (=1)
  process_model = 'ar1') # "rw" or "ar1"
 input <- set_ecov(input, ecov = ecov) #GSI in the model without any effects
-}
 
 }
 \seealso{

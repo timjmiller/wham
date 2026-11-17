@@ -10,7 +10,7 @@
 library(here)
 pkg.dir <- here()
 pkgbuild::compile_dll(debug = FALSE); 
-pkgload::load_all(compile=FALSE)
+#pkgload::load_all(compile=FALSE)
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran the ex today. if not, need to change
@@ -19,6 +19,7 @@ write.dir <- tempdir(check=TRUE) #will be passed to the ex9_retro_pred.R script 
 path_to_scripts <- system.file("example_scripts", package="wham")
 
 # copy to vignette plots folder
-to.dir <- file.path(pkg.dir, "vignettes", "ex9_plots")
+to.dir <- file.path(pkg.dir, "vignettes", "ex09_files")
+dir.create(to.dir)
 file.copy(from=file.path(write.dir,"retro_pred_R.png"), to=file.path(to.dir,"retro_pred_R.png"), overwrite = TRUE)
 

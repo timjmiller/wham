@@ -96,12 +96,12 @@
 #'     \item \code{$avg.yrs.NAA} list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
 #'   }
 #' @param n.newton integer, number of additional Newton steps after optimization. Passed to \code{\link{fit_tmb}}. Default = \code{0} for projections.
-#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
+#' @param do.sdrep T/F, calculate standard deviations of model parameters? See \code{\link[TMB:sdreport]{sdreport}}. Default = \code{TRUE}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
-#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB:sdreport]{TMB::sdreport}} object? If \code{FALSE}, only save \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object file size. Default = \code{TRUE}.
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
-#' @param TMB.bias.correct T/F whether to use the bias.correct feature of TMB::sdreport. Default = \code{FALSE}.
-#' @param TMB.jointPrecision T/F whether to return the joint precision matrix for the fixed and random effects from TMB::sdreport. Default = \code{FALSE}.
+#' @param TMB.bias.correct T/F whether to use the bias.correct feature of \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.
+#' @param TMB.jointPrecision T/F whether to return the joint precision matrix for the fixed and random effects from \code{\link[TMB:sdreport]{TMB::sdreport}}. Default = \code{FALSE}.
 #'
 #' @return a projected WHAM model with additional output if specified:
 #'   \describe{
@@ -117,21 +117,20 @@
 #' @seealso \code{\link{fit_wham}}, \code{\link{fit_tmb}}
 #'
 #' @examples
-#' \dontrun{
-#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder input data and model settings
-#' mod <- fit_wham(input4_SNEMAYT) # using default values (do.proj=T)
+#' \donttest{
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 #'
-#' mod2 <- fit_wham(input4_SNEMAYT, do.retro=F, do.osa=F, do.proj=F) # fit model without projections, retro analysis, or OSA residuals
-#' mod_proj <- project_wham(mod2) # add projections to previously fit model, using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+#' # add projections 
+#' # using default values: use.lastF = TRUE, n.yrs = 3, avg.yrs = last 5 years
+#' mod_proj <- project_wham(mod) 
 #'
 #' names(mod_proj$rep) # list of derived quantities
 #' tail(mod_proj$rep$SSB, 3) # get 3-year projected SSB estimates (weight, not numbers)
 #'
-#' x <- summary(mod_proj$sdrep)
-#' unique(rownames(x)) # list of estimated parameters and derived quanitites with SE
-#' x <- x[rownames(x) == "log_SSB",] # SSB estimates with SE
-#' ssb.mat <- exp(cbind(x, x[,1] + qnorm(0.975)*cbind(-x[,2],x[,2])))/1000 # calculate 95% CI
-#' colnames(ssb.mat) <- c("SSB","SSB_se","SSB_lower","SSB_upper")
+#' x <- list(est = as.list(mod_proj$sdrep, "Est", report =TRUE), sd = as.list(mod_proj$sdrep, "Std", report =TRUE))
+#' ssb.mat <- exp(cbind(x$est$log_SSB[,1], x$est$log_SSB[,1] + qnorm(0.975)*cbind(-x$sd$log_SSB[,1],x$sd$log_SSB[,1]))) # calculate 95% CI
+#' colnames(ssb.mat) <- c("SSB","SSB_lower","SSB_upper")
 #' tail(ssb.mat, 3) # 3-year projected SSB estimates with SE and 95% CI
 #' }
 project_wham <- function(model, 
@@ -156,13 +155,13 @@ project_wham <- function(model,
     proj_mod$model_name <- input2$model_name
     proj_mod$call <- match.call()
     proj_mod$input <- input2
-    wham_commit <- packageDescription("wham")$GithubSHA1
+    wham_commit <- utils::packageDescription("wham")$GithubSHA1
     proj_mod$wham_commit <- ifelse(is.null(wham_commit), "local install", paste0("Github (timjmiller/wham@", wham_commit, ")")) 
-    wham_version <- packageDescription("wham")$Version
+    wham_version <- utils::packageDescription("wham")$Version
     proj_mod$wham_version <- paste0(wham_version, " / ", proj_mod$wham_commit)
-    TMB_commit <- packageDescription("TMB")$GithubSHA1
+    TMB_commit <- utils::packageDescription("TMB")$GithubSHA1
     proj_mod$TMB_commit <- ifelse(is.null(TMB_commit), "local install", paste0("Github (kaskr/adcomp@", TMB_commit, ")")) 
-    TMB_version <- packageDescription("TMB")$Version
+    TMB_version <- utils::packageDescription("TMB")$Version
     proj_mod$TMB_version <- paste0(TMB_version, " / ", proj_mod$TMB_commit, ")")
     
     #If model has not been fitted (i.e., for setting up an operating model/mse), then we do not want to find the Emp. Bayes Posteriors for the random effects.
@@ -207,7 +206,7 @@ project_wham <- function(model,
   {
     proj_mod$err_proj <- model$err_proj
     warning(paste("","** Error during projections. **",
-      paste0("Check for issues with proj.opts, see ?project_wham."),"",mod$err_proj,"",sep='\n'))
+      paste0("Check for issues with proj.opts, see ?project_wham."),"",proj_mod$err_proj,"",sep='\n'))
   }
   return(proj_mod)
 }

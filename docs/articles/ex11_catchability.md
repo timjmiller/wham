@@ -19,7 +19,6 @@ In this vignette we show how to both simulate and estimate:
 
 ``` r
 
-# devtools::install_github("timjmiller/wham", dependencies=TRUE)
 library(wham)
 ```
 
@@ -181,7 +180,7 @@ wham:::plot_q_prior_post(fit)
 abline(v = newdata$q[1,2], lwd = 2)
 ```
 
-![prior_posterior_q](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/prior_posterior_q.png)  
+![prior_posterior_q](ex11_files/prior_posterior_q.png)  
 
 ## 5. Add random effects on q for first index
 
@@ -243,7 +242,7 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![q_time_series_1](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_1.png)  
+![q_time_series_1](ex11_files/q_time_series_1.png)  
 
 ## 6. Add Environmental covariates to the model
 
@@ -327,7 +326,7 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![q_time_series_2](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_2.png)  
+![q_time_series_2](ex11_files/q_time_series_2.png)  
 
 Let’s take a look at the true and estimated environmental covariate
 process pararameters. Columns are the different covariates. Rows are the
@@ -429,7 +428,7 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![q_time_series_3](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_3.png)  
+![q_time_series_3](ex11_files/q_time_series_3.png)  
 
 ## 8. Different effects on q and recruitment of the same environmental covariate.
 
@@ -505,4 +504,4 @@ for( i in 1:input$data$n_indices){
 legend("topright", legend = paste0("Index ", rep(1:input$data$n_indices, each = 2), c(" Est.", " True")), lwd = 2, col = rep(pal, each = 2), lty = c(1,2))
 ```
 
-![q_time_series_4](https://raw.githubusercontent.com/timjmiller/wham/devel/vignettes/ex11_plots/q_time_series_4.png)  
+![q_time_series_4](ex11_files/q_time_series_4.png)  

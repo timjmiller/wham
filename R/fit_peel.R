@@ -21,7 +21,7 @@ fit_peel <- function(peel, input, do.sdrep = FALSE, n.newton = 3, MakeADFun.sile
 {
   out <- list()
   if(!retro.silent) message(paste0("Retro Peel: ", peel))
-  temp <- reduce_input(input, tail(input$years,peel))
+  temp <- reduce_input(input, utils::tail(input$years,peel))
   temp.mod <- TMB::MakeADFun(temp$data, temp$par, DLL="wham", random = temp$random, map = temp$map, silent = MakeADFun.silent)
 
   out <- fit_tmb(temp.mod, do.sdrep = do.sdrep, n.newton = n.newton, do.check=FALSE)

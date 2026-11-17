@@ -14,11 +14,11 @@ get_post_samp <- function(fit){
       # sdrep <- TMB::sdreport(tfit)
       for(i in re_names[ind]){
         if(i %in% input$random) {
-          idx <- which(names(sdrep$value)==i)
-          Sig <- sdrep$cov[idx,idx]
+          idx <- which(names(fit$sdrep$value)==i)
+          Sig <- fit$sdrep$cov[idx,idx]
           L <- t(chol(Sig))
-          Z <- rnorm(length(idx))
-          res[i] <- L * Z + sdrep$value[idx]
+          Z <- stats::rnorm(length(idx))
+          res[i] <- L * Z + fit$sdrep$value[idx]
           #res[i] <- rmvnorm(1,mu=sdrep$value[idx], Sigma=)
           # if(res_names[i] %in% c("log_NAA", "M_re", "q_re")) {
           #   res[[re_names[i]]] <- matrix(res[[re_names[i]]], nrow=length(fit$years_full))

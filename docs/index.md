@@ -100,76 +100,30 @@ see:
 
 ## Installation
 
+Installation of WHAM from github can be done via the “pak” package
+(devtools::install_github has been depricated).
+
 For the latest stable, tested release, with any bug fixes:
 
 ``` r
 
-devtools::install_github("timjmiller/wham", dependencies=TRUE)
+pak::pak("timjmiller/wham")
 ```
 
-For the development version with recent extensions that passes all
-existing tests, but with potentially untested new features:
+For the single stock version that is no longer being developed:
 
 ``` r
 
-devtools::install_github("timjmiller/wham@devel", dependencies=TRUE)
-```
-
-For the single stock version:
-
-``` r
-
-devtools::install_github("timjmiller/wham@single_wham")
+pak::pak("timjmiller/wham@single_wham")
 ```
 
 You can even install a specific release or commit. E.g.,
 
 ``` r
 
-devtools::install_github("timjmiller/wham@v1.0.9")
+pak::pak("timjmiller/wham@v1.0.9")
 #or equivalently the associated commit
-devtools::install_github("timjmiller/wham@40cc14b")
-```
-
-### ON WINDOWS
-
-The least frustrating installation of WHAM is via the “pak” package:
-
-``` r
-
-pak::pkg_install("timjmiller/wham")
-```
-
-or for the devel branch:
-
-``` r
-
-pak::pkg_install("timjmiller/wham@devel")
-```
-
-or for single stock wham:
-
-``` r
-
-pak::pkg_install("timjmiller/wham@single_wham")
-```
-
-Using “pak” seems to avoid many installation hurdles.
-
-You may still try to install with devtools, but if you get an error
-about cc1plus.exe running out of memory during installation, try
-installing only 64bit:
-
-``` r
-
-devtools::install_github("timjmiller/wham", dependencies=TRUE, INSTALL_opts=c("--no-multiarch"))
-```
-
-or for the devel branch:
-
-``` r
-
-devtools::install_github("timjmiller/wham", dependencies=TRUE, ref = "devel", INSTALL_opts=c("--no-multiarch"))
+pak::pak("timjmiller//wham@40cc14b")
 ```
 
 If you’re having problems with dependencies not installing. It is
@@ -213,8 +167,8 @@ Sys.setenv(RSTUDIO_PANDOC = "path/to/your/pandoc")
 ```
 
 NOTE: If you specify
-[`pak::pkg_install`](https://pak.r-lib.org/reference/pkg_install.html)
-to install wham to library directory that is not in your
+[`pak::pak`](https://pak.r-lib.org/reference/pak.html) to install wham
+to library directory that is not in your
 [`.libPaths()`](https://rdrr.io/r/base/libPaths.html). It is best to add
 the directory because `pak` installs all dependencies to the same
 directory and may not be found for example when creating model output
@@ -222,9 +176,9 @@ with `prepare_wham_input`. E.g.,
 
 ``` r
 
-pak::pkg_install("timjmiller/wham@single_wham", lib = "single_wham")
-library(wham, lib.loc = "single_wham")
 .libPaths("single_wham")
+pak::pak("timjmiller/wham@single_wham", lib = "single_wham")
+library(wham, lib.loc = "single_wham")
 ```
 
 ## Releases and Versions
@@ -298,24 +252,13 @@ Hole](https://github.com/timjmiller/wham_workshop_ASMFC).
 
 [March 2026 (virtual)](https://github.com/timjmiller/wham_workshop_DFO).
 
-## Installing vignettes
+## Vignettes
 
-Installation from GitHub does not include the vignettes by default
-because they can be accessed online anytime at
-<https://timjmiller.github.io/wham/articles>. If you want to build the
-vignettes locally, they look best if you *build using R Studio*:
-
-``` r
-
-devtools::install_github("timjmiller/wham", dependencies=TRUE, build_vignettes = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
-```
-
-View installed vignettes:
-
-``` r
-
-browseVignettes("wham")
-```
+Installation from GitHub does not include the vignettes because of the
+storage required for the many files used to create them. They can be
+accessed online anytime at <https://timjmiller.github.io/wham/articles>.
+If the repository is cloned, they can be found in the
+`vignettes/articles` directory.
 
 ## References
 

@@ -11,7 +11,8 @@ test_that("Ex 6 works",{
 suppressWarnings(suppressMessages({
 
 path_to_examples <- system.file("extdata", package="wham")
-ex6_test_results <- readRDS(file.path(path_to_examples,"ex6_test_results.rds"))
+#ex6_test_results <- readRDS(file.path(path_to_examples,"ex6_test_results.rds"))
+ex6_test_results <- readRDS(testthat::test_path("fixtures","ex06_test_results.RDS"))
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
@@ -22,8 +23,6 @@ df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2da
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
 
-#no more bias correction
-# basic_info <- list(bias_correct_process=TRUE, bias_correct_observation=TRUE) #compare to previous versions
 basic_info <- NULL
 
 mods <- vector("list",n.mods)
@@ -31,8 +30,8 @@ mods_proj <- vector("list",n.mods)
 #fit.mods <- c(1:2,4:8,10:13) # m3 and m9 don't converge
 fit.mods <- which(ex6_test_results$is_conv)
 for(m in fit.mods){
-  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], decouple_recruitment = FALSE)
-  if(NAA_list$sigma == '---') NAA_list = NULL
+  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], recruit_model = 3, decouple_recruitment = FALSE) # Bev Holt recruitment
+  if(NAA_list$sigma == '---') NAA_list = list(recruit_model = 1) # No Bev Holt recruitment
 
   ecov <- list(
     label = "GSI",
@@ -43,7 +42,7 @@ for(m in fit.mods){
     process_model = 'ar1', # "rw" or "ar1"
     recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
-  input <- prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- prepare_wham_input(asap3,
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
@@ -54,19 +53,11 @@ for(m in fit.mods){
                               age_comp = "logistic-normal-miss0") # logistic normal, treat 0 obs as missing
 
   # Fit model
-  #print(m)
-  # temp <- fit_wham(input, do.fit=F)
-  # mods[[m]] <- fit_wham(input, do.retro=F, do.osa=F, MakeADFun.silent = TRUE)
   mods[[m]] <- fit_wham(input, do.fit=FALSE, do.brps = FALSE, MakeADFun.silent = TRUE)
 
   expect_equal(length(mods[[!!m]]$par), length(ex6_test_results$par[[!!m]]), tolerance=1e-3)
   expect_equal(as.numeric(mods[[!!m]]$fn(ex6_test_results$par[[!!m]])), as.numeric(ex6_test_results$nll[!!m]), tolerance=1e-3)
 
-  # if fitting the models...
-  # expect_equal(as.numeric(mods[[!!m]]$opt$obj), ex6_test_results$nll[!!m], tolerance=1e-3)
-  # expect_equal(as.numeric(mod$opt$par), ex6_test_results$pars[[m]], tolerance=1e-3) # parameter values
-  # print(c(mods[[m]]$opt$obj, ex6_test_results$nll[m]))
-  # mods_proj[[m]] <- suppressMessages(project_wham(mods[[m]], MakeADFun.silent = TRUE))
 }
 
 }))

@@ -131,7 +131,7 @@ df.mods <- data.frame(NAA_cor = c('---','iid','ar1_y','iid','ar1_a','ar1_y','2da
                       R_how = paste0(c(rep("none",7),rep("limiting-lag-1-linear",6))), stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- df.mods |> select(Model, everything()) # moves Model to first col
+df.mods <- df.mods |> dplyr::relocate(Model)
 ```
 
 Look at the model table:
@@ -267,8 +267,8 @@ with the original implicit assumption in WHAM.
 
 mods <- vector("list",n.mods)
 for(m in 1:n.mods){
-  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], decouple_recruitment = FALSE)
-  if(NAA_list$sigma == '---') NAA_list = NULL
+  NAA_list <- list(cor=df.mods[m,"NAA_cor"], sigma=df.mods[m,"NAA_sigma"], recruit_model = 3, decouple_recruitment = FALSE) # Bev Holt recruitment
+  if(NAA_list$sigma == '---') NAA_list = list(recruit_model = 1) # No Bev Holt recruitment
 
   ecov <- list(
     label = "GSI",
@@ -279,7 +279,7 @@ for(m in 1:n.mods){
     process_model = 'ar1', # "rw" or "ar1"
     recruitment_how = matrix(df.mods$R_how[m])) # n_Ecov x n_stocks
 
-  input <- suppressWarnings(prepare_wham_input(asap3, recruit_model = 3, # Bev Holt recruitment
+  input <- suppressWarnings(prepare_wham_input(asap3,
                               model_name = "Ex 6: Numbers-at-age",
                               selectivity=list(model=rep("age-specific",3), re=c("none","none","none"), 
                                 initial_pars=list(c(0.1,0.5,0.5,1,1,1),c(0.5,0.5,0.5,1,0.5,0.5),c(0.5,0.5,1,1,1,1)), 
@@ -357,7 +357,6 @@ Plot output for models that converged.
 
 ``` r
 
-mods[[1]]$env$data$recruit_model = 2 # m1 (SCAA) didn't actually fit a Bev-Holt
 for(m in which(!not_conv)){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(getwd(),paste0("m",m))) #html by default
 }
@@ -400,21 +399,18 @@ deviations are random effects instead of fixed effects. The
 retrospective patterns are very similar, but `m2` takes about 3x longer
 to run.
 
-| Model | NAA_cor | NAA_sigma | R_how | Converged | PD Hessian | Runtime (min) | NLL | $`\Delta AIC`$ | AIC | $`\rho_{R}`$ | $`\rho_{SSB}`$ | $`\rho_{\overline{F}}`$ |
-|:---|:---|:---|:---|:---|:---|---:|---:|:---|:---|:---|:---|:---|
-| m1 | — | — | none | TRUE | TRUE | 0.32 | -623.530 | — | — | 8.818 | 0.951 | -0.433 |
-| m2 | iid | rec | none | TRUE | TRUE | 0.92 | -509.511 | 512.2 | -875.0 | 5.054 | 1.023 | -0.437 |
-| m3 | ar1_y | rec | none | TRUE | FALSE | 0.96 | -527.116 | — | — | — | — | — |
-| m4 | iid | rec+1 | none | TRUE | TRUE | 0.59 | -745.447 | 42.3 | -1344.9 | 0.423 | 0.068 | -0.058 |
-| m5 | ar1_a | rec+1 | none | TRUE | TRUE | 0.61 | -759.028 | 17.1 | -1370.1 | 0.240 | 0.030 | -0.039 |
-| m6 | ar1_y | rec+1 | none | TRUE | TRUE | 0.73 | -753.699 | 27.8 | -1359.4 | 0.437 | 0.036 | -0.017 |
-| m7 | 2dar1 | rec+1 | none | TRUE | TRUE | 0.73 | -763.264 | 10.7 | -1376.5 | 0.249 | 0.015 | -0.020 |
-| m8 | iid | rec | limiting-lag-1-linear | TRUE | TRUE | 1.02 | -520.571 | 492.1 | -895.1 | 1.867 | 1.026 | -0.426 |
-| m9 | ar1_y | rec | limiting-lag-1-linear | TRUE | TRUE | 1.01 | -531.190 | 472.8 | -914.4 | 2.293 | 1.008 | -0.439 |
-| m10 | iid | rec+1 | limiting-lag-1-linear | TRUE | TRUE | 0.59 | -754.897 | 25.4 | -1361.8 | 0.299 | 0.052 | -0.042 |
-| m11 | ar1_a | rec+1 | limiting-lag-1-linear | TRUE | TRUE | 0.80 | -767.876 | 1.4 | -1385.8 | 0.166 | 0.021 | -0.027 |
-| m12 | ar1_y | rec+1 | limiting-lag-1-linear | TRUE | TRUE | 0.67 | -759.243 | 18.7 | -1368.5 | 0.277 | 0.031 | -0.014 |
-| m13 | 2dar1 | rec+1 | limiting-lag-1-linear | TRUE | TRUE | 0.86 | -769.605 | 0.0 | -1387.2 | 0.142 | 0.011 | -0.016 |
+``` r
+
+thebest = c(11,13)
+vign6_res[1,"dAIC"] = '---'
+vign6_res[1,"AIC"] = '---'
+vign6_res |>
+  dplyr::rename("Converged"="conv", "PD Hessian"="pdHess", "Runtime (min)"="runtime", "$\\Delta AIC$"="dAIC",
+         "$\\rho_{R}$"="rho_R", "$\\rho_{SSB}$"="rho_SSB", "$\\rho_{\\overline{F}}$"="rho_Fbar") |>
+  knitr::kable(escape = F) |>
+  kableExtra::kable_styling(bootstrap_options = c("condensed","responsive")) |>
+  kableExtra::row_spec(thebest, bold=TRUE)
+```
 
 #### Estimated NAA deviations
 
@@ -427,8 +423,7 @@ to run.
   for some of this variability.
 
 Estimated survival deviations by age (y-axis) and year (x-axis) for all
-converged models:
-![NAA_devs.png](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png)
+converged models: ![NAA_devs.png](ex06_files/NAA_devs.png)
 
 #### Retrospective patterns
 
@@ -447,21 +442,18 @@ The plots below compare retrospective patterns from the base model
 
 ###### Numbers-at-age, NAA
 
-![m1
-NAA_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png)![m13
-NAA_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png)
+![m1 NAA_retro_relative](ex06_files/m1_NAA_retro_relative.png)![m13
+NAA_retro_relative](ex06_files/m13_NAA_retro_relative.png)
 
 ###### Spawning stock biomass, SSB
 
-![m1
-SSB_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png)![m13
-SSB_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png)
+![m1 SSB_retro_relative](ex06_files/m1_SSB_retro_relative.png)![m13
+SSB_retro_relative](ex06_files/m13_SSB_retro_relative.png)
 
 ###### Fishing mortality, F
 
-![m1
-Fbar_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png)![m13
-Fbar_retro_relative](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png)
+![m1 Fbar_retro_relative](ex06_files/m1_Fbar_retro_relative.png)![m13
+Fbar_retro_relative](ex06_files/m13_Fbar_retro_relative.png)
 
 #### Estimated GSI
 
@@ -471,9 +463,8 @@ intervals for `m7` (left, no GSI-Recruitment link), to those for `m13`
 (right, with GSI-Recruitment link).
 
 ![Gulf Stream Index (GSI) time-series model,
-m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png)![Gulf
-Stream Index (GSI) time-series model,
-m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png)
+m7.](ex06_files/m7_Ecov_1.png)![Gulf Stream Index (GSI) time-series
+model, m13.](ex06_files/m13_Ecov_1.png)
 
 #### Stock status
 
@@ -483,14 +474,12 @@ compared to the base model. Left: $`SSB`$ and $`F`$ trends from the base
 model, `m1`. Right: $`SSB`$ and $`F`$ trends from the state-space model
 without GSI effect, `m7`.
 
-![m1_SSB_F_trend](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png)![m7_SSB_F_trend](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png)
+![m1_SSB_F_trend](ex06_files/m1_SSB_F_trend.png)![m7_SSB_F_trend](ex06_files/m7_SSB_F_trend.png)
 
 Adding the GSI-Recruitment link to the state-space model did not impact
 the probability that the stock was overfished or experiencing
 overfishing in the final year, 2016 (`m7` w/o GSI, left; `m13` w/ GSI,
 right).
 
-![Kobe status plot,
-m7.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png)![Kobe
-status plot,
-m13.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png)
+![Kobe status plot, m7.](ex06_files/m7_Kobe_status.png)![Kobe status
+plot, m13.](ex06_files/m13_Kobe_status.png)

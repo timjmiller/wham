@@ -37,12 +37,22 @@ a named list with the following elements:
 Gets output from a fit ASAP3 model for plotting with WHAM models.
 }
 \examples{
-\dontrun{
-base <- read_asap3_fit(wd=file.path(getwd(),'asap_results'), asap.name='BASE_5C.DAT', pSPR=40)
-m1 <- fit_wham(input1)
-m2 <- fit_wham(input2)
-mods <- list(base=base, m1=m1, m2=m2)
-res <- compare_wham_models(mods)
+\donttest{
+path_to_extdata <- system.file("extdata", package="wham")
+rds_files <- paste0(c("RDAT", "DAT", "STD", "COR", "PAR"),".RDS")
+asap_files_rds <- lapply(file.path(path_to_extdata, "BASE_3", rds_files), readRDS)
+write.dir <- file.path(tempdir(check=TRUE))
+dir.create(write.dir)
+dput(asap_files_rds[[1]], file.path(write.dir, "BASE_3.RDAT"))
+writeLines(asap_files_rds[[2]], file.path(write.dir, "BASE_3.DAT"))
+writeLines(asap_files_rds[[3]], file.path(write.dir, "BASE_3.STD"))
+writeLines(asap_files_rds[[4]], file.path(write.dir, "BASE_3.COR"))
+writeLines(asap_files_rds[[5]], file.path(write.dir, "BASE_3.PAR"))
+base <- read_asap3_fit(wd=write.dir, asap.name='BASE_3', pSPR=40)
+asap3 <- read_asap3_dat(file.path(write.dir, "BASE_3.DAT"))
+input <- prepare_wham_input(asap3)
+m1 <- fit_wham(input, do.osa=FALSE, do.retro = FALSE)
+res <- compare_wham_models(list(base=base, m1=m1), fdir = tempdir(check=TRUE))
 }
 
 }

@@ -82,9 +82,13 @@ located in `par_tables_fn.R`
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data("input4_SNEMAYT") # load fit wham model
-mod <- fit_wham(input4_SNEMAYT)
-plot_wham_output(mod)
-} # }
+# \donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
+#> Error in gzfile(file, "rb"): cannot open the connection
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#> Error: object 'input' not found
+plot_wham_output(mod, dir.main = tempdir(check = TRUE))
+#> Error: object 'mod' not found
+# }
 ```

@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,14 +64,14 @@
 
 
 
-<script src="ex05_GSI_M_files/kePrint-0.0.1/kePrint.js"></script><link href="ex05_GSI_M_files/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Ex 5: Time-varying natural mortality linked to the Gulf Stream Index</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex05_GSI_M.Rmd" class="external-link"><code>vignettes/ex05_GSI_M.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/articles/ex05_GSI_M.Rmd" class="external-link"><code>vignettes/articles/ex05_GSI_M.Rmd</code></a></small>
       <div class="d-none name"><code>ex05_GSI_M.Rmd</code></div>
     </div>
 
@@ -206,7 +206,7 @@ mortality:</p>
 <span>                      Ecov_how <span class="op">=</span> <span class="va">Ecov_how</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span></span>
-<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Model</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span></span></code></pre></div>
+<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">Model</span><span class="op">)</span></span></code></pre></div>
 <p>Look at the model table:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df.mods</span></span>
@@ -520,670 +520,22 @@ patterns in SSB and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
 were also negligble compared to other models as measured by Mohn’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>.</p>
-<table class="table table table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;">
-Model
-</th>
-<th style="text-align:left;">
-Mean model
-</th>
-<th style="text-align:left;">
-RE model
-</th>
-<th style="text-align:left;">
-GSI model
-</th>
-<th style="text-align:left;">
-GSI link
-</th>
-<th style="text-align:left;">
-Converged
-</th>
-<th style="text-align:left;">
-PD Hessian
-</th>
-<th style="text-align:right;">
-Runtime (min)
-</th>
-<th style="text-align:right;">
-NLL
-</th>
-<th style="text-align:left;">
-dAIC
-</th>
-<th style="text-align:left;">
-AIC
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_{R}</annotation></semantics></math>
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{SSB}</annotation></semantics></math>
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mover><mi>F</mi><mo accent="true">¯</mo></mover></msub><annotation encoding="application/x-tex">\rho_{\overline{F}}</annotation></semantics></math>
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-—
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.82
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--813.858
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-37.1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1489.7
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.259
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.117
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.145
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m2
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-—
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-linear
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.70
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--819.584
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-27.6
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1499.2
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.400
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.150
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.164
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m3
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-poly-2
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-2.68
-</td>
-<td style="text-align:right;">
--820.307
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m4
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.84
-</td>
-<td style="text-align:right;">
--828.322
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m5
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-—
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1_y
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.75
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--821.393
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-26.0
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1500.8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.704
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.128
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.133
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m6
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-ar1_ay
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.39
-</td>
-<td style="text-align:right;">
--813.968
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m7
-</td>
-<td style="text-align:left;">
-age-specific
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.78
-</td>
-<td style="text-align:right;">
--837.559
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-weight-at-age
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.57
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--825.020
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-18.8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1508.0
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.725
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.140
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.144
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m9
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-constant
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.58
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--825.015
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-16.8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1510.0
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.544
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.129
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.141
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m10
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-1.02
-</td>
-<td style="text-align:right;">
--829.109
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-m11
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-constant
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1_y
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
-0.74
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;">
--825.399
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-20.0
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--1506.8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-1.186
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
-0.414
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;">
--0.298
-</td>
-</tr>
-<tr>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-m12
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-constant
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-ar1_ay
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-ar1
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-none
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-0.85
-</td>
-<td style="text-align:right;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
--836.408
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-0.0
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
--1526.8
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-0.312
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
-0.006
-</td>
-<td style="text-align:left;background-color: rgba(242, 242, 242, 255) !important;font-weight: bold;">
--0.044
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m13
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_ay
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-linear
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.54
-</td>
-<td style="text-align:right;">
--845.739
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m14
-</td>
-<td style="text-align:left;">
-constant
-</td>
-<td style="text-align:left;">
-ar1_ay
-</td>
-<td style="text-align:left;">
-ar1
-</td>
-<td style="text-align:left;">
-poly-2
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-2.06
-</td>
-<td style="text-align:right;">
--845.339
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-</tbody>
-</table>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/" class="external-link">knitr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span>
+<span><span class="va">posdef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">pdHess</span> <span class="op">==</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">thebest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
+<span><span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_how</span> <span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="va">vign5_res</span><span class="op">$</span><span class="va">Ecov_how</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"linear"</span></span>
+<span><span class="va">df.mods</span><span class="op">$</span><span class="va">Ecov_how</span> <span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"poly-2"</span>, <span class="va">vign5_res</span><span class="op">$</span><span class="va">Ecov_how</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"poly-2"</span></span>
+<span><span class="va">df.mods</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age_specific</span>,<span class="va">mean_model</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Mean model"</span><span class="op">=</span><span class="st">"M_model"</span>, <span class="st">"RE model"</span> <span class="op">=</span> <span class="st">"M_re"</span>, <span class="st">"GSI model"</span><span class="op">=</span><span class="st">"Ecov_process"</span>, <span class="st">"GSI link"</span><span class="op">=</span><span class="st">"Ecov_how"</span>,</span>
+<span>         <span class="st">"Converged"</span><span class="op">=</span><span class="st">"conv"</span>, <span class="st">"PD Hessian"</span><span class="op">=</span><span class="st">"pdHess"</span>, <span class="st">"Runtime (min)"</span><span class="op">=</span><span class="st">"runtime"</span>,</span>
+<span>         <span class="st">"$\\rho_{R}$"</span><span class="op">=</span><span class="st">"rho_R"</span>, <span class="st">"$\\rho_{SSB}$"</span><span class="op">=</span><span class="st">"rho_SSB"</span>, <span class="st">"$\\rho_{\\overline{F}}$"</span><span class="op">=</span><span class="st">"rho_Fbar"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_styling.html" class="external-link">kable_styling</a></span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condensed"</span>,<span class="st">"responsive"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/row_spec.html" class="external-link">row_spec</a></span><span class="op">(</span><span class="va">posdef</span>, background <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/gray.colors.html" class="external-link">gray.colors</a></span><span class="op">(</span><span class="fl">10</span>,end<span class="op">=</span><span class="fl">0.95</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/row_spec.html" class="external-link">row_spec</a></span><span class="op">(</span><span class="va">thebest</span>, bold<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="estimated-m">Estimated <em>M</em><a class="anchor" aria-label="anchor" href="#estimated-m"></a>
 </h4>
@@ -1224,10 +576,8 @@ plot of
 by age (y-axis) and year (x-axis) for all models. Models with a positive
 definite Hessian are solid, and models with non-positive definite
 Hessian are pale.</p>
-<div class="float">
-<img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/MAA.png" style="width:100.0%" alt="Natural mortality by age (y-axis) and year (x-axis) for all models."><div class="figcaption">Natural mortality by age (y-axis) and year
-(x-axis) for all models.</div>
-</div>
+<p><img src="ex05_files/MAA.png" alt="Natural mortality by age (y-axis) and year (x-axis) for all models.">){
+width=50% }</p>
 </div>
 <div class="section level4">
 <h4 id="retrospective-patterns">Retrospective patterns<a class="anchor" aria-label="anchor" href="#retrospective-patterns"></a>
@@ -1242,9 +592,9 @@ for models <code>m1</code> (left, fixed
 and <code>m12</code> (right, estimated
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 + 2D AR1 deviations).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m12."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m12."></p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m12."></p>
+<p><img src="ex05_files/m1_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m1."><img src="ex05_files/m12_NAA_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for numbers-at-age, m12."></p>
+<p><img src="ex05_files/m1_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m1."><img src="ex05_files/m12_SSB_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for SSB, m12."></p>
+<p><img src="ex05_files/m1_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m1."><img src="ex05_files/m12_Fbar_retro_relative.png" style="width:50.0%" alt="Mohn’s rho for F, m12."></p>
 </div>
 <div class="section level4">
 <h4 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -1259,15 +609,15 @@ estimates of
 (top) were higher, whereas estimates of SSB at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mrow><mn>40</mn><mi>%</mi><mi>S</mi><mi>P</mi><mi>R</mi></mrow></msub><annotation encoding="application/x-tex">F_{40\%SPR}</annotation></semantics></math>
 were generally lower.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m12."></p>
+<p><img src="ex05_files/m1_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m1."><img src="ex05_files/m12_FSPR_absolute.png" style="width:50.0%" alt="Reference point variability, m12."></p>
 <p>Compared to <code>m1</code> (left), <code>m12</code> (right)
 estimated higher <em>M</em> and higher SSB – a much rosier picture of
 the stock status through time.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m12."></p>
+<p><img src="ex05_files/m1_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m1."><img src="ex05_files/m12_FSPR_relative.png" style="width:50.0%" alt="Relative stock status, m12."></p>
 <p>In the final year (2011), <code>m12</code> estimated much lower
 probabilities of the stock being overfished than <code>m1</code> (1%
 vs. 93%).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m1_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m1."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex5_plots/m12_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m12."></p>
+<p><img src="ex05_files/m1_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m1."><img src="ex05_files/m12_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m12."></p>
 </div>
 <div class="section level3">
 <h3 id="yet-more-m-options">Yet more <em>M</em> options<a class="anchor" aria-label="anchor" href="#yet-more-m-options"></a>

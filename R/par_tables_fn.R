@@ -1,27 +1,29 @@
+ci.fn <- function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1){
+  
+  ci <- par + c(-1,1) * stats::qnorm(0.975) * se
+
+  if(type == "I") {
+    return(c(se,ci))
+  }
+  if(type == "exp") {
+    return(c(exp(par)*se, exp(ci)))
+  }
+  if(type == "expit") { #Delta-method: V(lo + (hi-lo)/(1 + exp(-x))) ~ ((hi-lo) * p * (1-p))^2 * V(x)
+    p <- 1/(1 + exp(- k * par))
+    dm.se <- abs(k) * abs(hi-lo)*p*(1-p)*se
+    return(c(dm.se, lo + (hi-lo)/(1+ exp(-k * ci))))
+  }
+}
+
 par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 {
   #require(rmarkdown)
 
-  ci <- function(par,se, p=0.975, lo = 0, hi = 1, type = "I", k = 1){
-    ci <- par + c(-1,1) * qnorm(0.975) * se
-
-    if(type == "I") {
-      return(c(se,ci))
-    }
-    if(type == "exp") {
-      return(c(exp(par)*se, exp(ci)))
-    }
-    if(type == "expit") { #Delta-method: V(lo + (hi-lo)/(1 + exp(-x))) ~ ((hi-lo) * p * (1-p))^2 * V(x)
-      p <- 1/(1 + exp(- k * par))
-      dm.se <- abs(k) * abs(hi-lo)*p*(1-p)*se
-      return(c(dm.se, lo + (hi-lo)/(1+ exp(-k * ci))))
-    }
-  }
   data <- mod$env$data
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est")
-    sd <- TMB:::as.list.sdreport(sdrep, "Std")
+    pars <- as.list(sdrep, "Est")
+    sd <- as.list(sdrep, "Std")
   } else {
     pars <- mod$parList
     sd <- lapply(pars, function(x) {
@@ -53,11 +55,11 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(!tvar) {
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," Mean Recruitment"))
         fe.vals <- c(fe.vals, exp(pars$mean_rec_pars[s,1]))
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
       } else{
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," mean log(R) intercept"))
         fe.vals <- c(fe.vals, pars$mean_rec_pars[s,1])
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))
       }
     }
     if(data$recruit_model[s] == 3){
@@ -66,20 +68,20 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(!tvar_a){
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," B-H a"))
         fe.vals <- c(fe.vals, exp(pars$mean_rec_pars[s,1]))
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
       } else{
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," mean log(B-H a) intercept"))
         fe.vals <- c(fe.vals, pars$mean_rec_pars[s,1])
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))          
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))          
       }
       if(!tvar_b){
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," B-H b"))
         fe.vals <- c(fe.vals, exp(pars$mean_rec_pars[s,2]))
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2], type = "exp"))
       } else{
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," mean log(B-H b) intercept"))
         fe.vals <- c(fe.vals, pars$mean_rec_pars[s,2])
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2]))          
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2]))          
       }
     }
     if(data$recruit_model[s] == 4) { #Ricker
@@ -88,20 +90,20 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(!tvar_a){
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," Ricker a"))
         fe.vals <- c(fe.vals, exp(pars$mean_rec_pars[s,1]))
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1], type = "exp"))
       } else{
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," mean log(Ricker a) intercept"))
         fe.vals <- c(fe.vals, pars$mean_rec_pars[s,1])
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))          
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,1],sd$mean_rec_pars[s,1]))          
       }
       if(!tvar_b){
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," Ricker b"))
         fe.vals <- c(fe.vals, exp(pars$mean_rec_pars[s,2]))
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2], type = "exp"))
       } else{
         fe.names <- c(fe.names, paste0(stock.names.tab[s]," mean log(Ricker b) intercept"))
         fe.vals <- c(fe.vals, pars$mean_rec_pars[2])
-        fe.cis <- rbind(fe.cis, ci(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2]))          
+        fe.cis <- rbind(fe.cis, ci.fn(pars$mean_rec_pars[s,2],sd$mean_rec_pars[s,2]))          
       }
     }
 
@@ -125,7 +127,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
           #more <- ah[i] != al[i]
           #fe.names <- c(fe.names, paste0("NAA $\\sigma$ (age ", al[i], ifelse(more, paste0("-", ah[i], ")"), ")")))
           fe.vals <- c(fe.vals, exp(pars$log_NAA_sigma[s,r,which(ind==i)[1]]))
-          fe.cis <- rbind(fe.cis, ci(pars$log_NAA_sigma[s,r,which(ind==i)[1]], sd$log_NAA_sigma[s,r,which(ind==i)[1]], type = "exp"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars$log_NAA_sigma[s,r,which(ind==i)[1]], sd$log_NAA_sigma[s,r,which(ind==i)[1]], type = "exp"))
         }
       }
     }
@@ -139,7 +141,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         fe.names <- c(fe.names, paste(stock.names.tab[s], use.reg.name, rho.names[i]))
         fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$trans_NAA_rho[s,r,i])))
         fe.cis <- rbind(fe.cis, 
-          ci(pars$trans_NAA_rho[s,r,i], sd$trans_NAA_rho[s,r,i], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
+          ci.fn(pars$trans_NAA_rho[s,r,i], sd$trans_NAA_rho[s,r,i], lo = -1, hi = 1, type = "expit") #see trans_rho in helper.cpp
         )
       }
     }
@@ -153,19 +155,19 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!tvar_q){      
       fe.names <- c(fe.names, paste0(index.names.tab[i], " fully selected q", use.reg.name))
       fe.vals <- c(fe.vals, data$q_lower[i] + (data$q_upper[i]-data$q_lower[i])/(1 + exp( - pars[[parname]][i])))
-      fe.cis <- rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i], lo = data$q_lower[i],hi = data$q_upper[i], type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars[[parname]][i],sd[[parname]][i], lo = data$q_lower[i],hi = data$q_upper[i], type = "expit"))
     } else {
       fe.names <- c(fe.names, paste0(index.names.tab[i], " logit(q) intercept", use.reg.name))
       fe.vals <- c(fe.vals, pars[[parname]][i])
-      fe.cis <- rbind(fe.cis, ci(pars[[parname]][i],sd[[parname]][i]))
+      fe.cis <- rbind(fe.cis, ci.fn(pars[[parname]][i],sd[[parname]][i]))
       if(mod$input$data$use_q_re[i]){
         fe.names <- c(fe.names, paste0(index.names.tab[i], " q RE $\\sigma$", use.reg.name))
         fe.vals <- c(fe.vals, exp(pars$q_repars[i,1]))
-        fe.cis <- rbind(fe.cis, ci(pars$q_repars[i,1], sd$q_repars[i,1], type = "exp"))
+        fe.cis <- rbind(fe.cis, ci.fn(pars$q_repars[i,1], sd$q_repars[i,1], type = "exp"))
         if(mod$input$options$q$re[i] == "ar1"){
           fe.names <- c(fe.names, paste0(index.names.tab[i], " q RE AR1 $\\rho$ (year)", use.reg.name))
           fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$q_repars[i,2])))
-          fe.cis <- rbind(fe.cis, ci(pars$q_repars[i,2], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars$q_repars[i,2], sd$q_repars[i,2], lo = -1, hi = 1, type = "expit"))
         }
       }
     }
@@ -209,13 +211,13 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     }
     fe.vals <- c(fe.vals, ((data$selpars_lower + data$selpars_upper-data$selpars_lower)/(1 + exp(-pars$logit_selpars)))[i,ind])
     for(a in ind) {
-      fe.cis <- rbind(fe.cis, ci(pars$logit_selpars[i,a], sd$logit_selpars[i,a], lo = data$selpars_lower[i,a], hi = data$selpars_upper[i,a], type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$logit_selpars[i,a], sd$logit_selpars[i,a], lo = data$selpars_lower[i,a], hi = data$selpars_upper[i,a], type = "expit"))
     }
   }
   for(i in 1:data$n_selblocks) if(data$selblock_models_re[i]>0){
     fe.names <- c(fe.names, paste0(extra.names[i], "Selectivity RE $\\sigma$", " (Block ", i, ")"))
     fe.vals <- c(fe.vals, exp(pars$sel_repars[i,1]))
-    fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,1], sd$sel_repars[i,1], type = "exp"))
+    fe.cis <- rbind(fe.cis, ci.fn(pars$sel_repars[i,1], sd$sel_repars[i,1], type = "exp"))
     if(data$selblock_models_re[i] %in% c(2,4)) {
       modify <- ""
       if(data$selblock_models[i] == 1) modify <- " AR1 $\\rho$ (age)"
@@ -223,12 +225,12 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       if(data$selblock_models[i] == 3) modify <- " AR1 $\\rho$ for double-logistic pars"
       fe.names <- c(fe.names, paste0(extra.names[i], "Selectivity RE", modify, " (Block ", i, ")"))
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,2])))
-      fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$sel_repars[i,2], sd$sel_repars[i,2], lo = -1, hi = 1, type = "expit"))
     }
     if(data$selblock_models_re[i] %in% c(3,4)) {
       fe.names <- c(fe.names, paste0(extra.names[i], "Selectivity RE AR1 $\\rho$ (year)", " (Block ", i, ")"))
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$sel_repars[i,3])))
-      fe.cis <- rbind(fe.cis, ci(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$sel_repars[i,3], sd$sel_repars[i,3], lo = -1, hi = 1, type = "expit"))
     }
   }
   #acomp_par_count <- 0
@@ -262,14 +264,14 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             #ind <- acomp_par_count+1
           }
           fe.vals <- c(fe.vals, exp(pars[i,1]))
-          fe.cis <- rbind(fe.cis, ci(pars[i,1], pars_sd[i,1], type = "exp"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars[i,1], pars_sd[i,1], type = "exp"))
         }
         if(age_comp_models[i] == 6){
           fe.names <- c(fe.names, paste0(startnames[i] , " age comp, logistic-normal: $", c("\\sigma", "\\rho"), "$"))
           fe.vals <- c(fe.vals, exp(pars[i,1]), 1/(1+exp(-pars[i,2])))
           fe.cis <- rbind(fe.cis, 
-            ci(pars[i,1], pars_sd[i,1], type = "exp"),
-            ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit"))
+            ci.fn(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci.fn(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit"))
           #ind <- acomp_par_count+1
         }
         if(age_comp_models[i] == 8){
@@ -279,9 +281,9 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
               "logistic-normal $\\sigma$")))
           fe.vals <- c(fe.vals, pars[i,1:2], exp(pars[i,3]))
           fe.cis <- rbind(fe.cis, 
-            ci(pars[i,1], pars_sd[i,1]),
-            ci(pars[i,2], pars_sd[i,2]),
-            ci(pars[i,3], pars_sd[i,3], type = "exp"))
+            ci.fn(pars[i,1], pars_sd[i,1]),
+            ci.fn(pars[i,2], pars_sd[i,2]),
+            ci.fn(pars[i,3], pars_sd[i,3], type = "exp"))
         }
         if(age_comp_models[i] == 9){
           fe.names <- c(fe.names, paste0(startnames[i], " age comp, 0/1-inflated logistic-normal: ",
@@ -289,16 +291,16 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
               "logistic-normal $\\sigma$")))
           fe.vals <- c(fe.vals, exp(pars[i,1:2]))
           fe.cis <- rbind(fe.cis, 
-            ci(pars[i,1], pars_sd[i,1], type = "exp"),
-            ci(pars[i,2], pars_sd[i,2], type = "exp"))
+            ci.fn(pars[i,1], pars_sd[i,1], type = "exp"),
+            ci.fn(pars[i,2], pars_sd[i,2], type = "exp"))
         }
         if(age_comp_models[i] == 10){
           fe.names <- c(fe.names, paste0(startnames[i], " age comp, MV Tweedie: ",
             c("$\\phi$", "p")))
           fe.vals <- c(fe.vals, exp(pars[i,1]), 1+(1/(1+exp(-pars[i,2]))))
           fe.cis <- rbind(fe.cis, 
-            ci(pars[i,1], pars_sd[i,1], type = "exp"),
-            1 + ci(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
+            ci.fn(pars[i,1], pars_sd[i,1], type = "exp"),
+            1 + ci.fn(pars[i,2], pars_sd[i,2], lo = 0, hi = 1, type = "expit")) # 1 < x < 2
         }
       }
     }
@@ -343,17 +345,17 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
           }
           if(type == "M") {
             vals <- c(vals, exp(pars$Mpars[s,r,ind[1]]))
-            cis <- rbind(cis, ci(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]], type = "exp"))
+            cis <- rbind(cis, ci.fn(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]], type = "exp"))
           } else{
             vals <- c(vals, pars$Mpars[s,r,ind[1]])
-            cis <- rbind(cis, ci(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]]))
+            cis <- rbind(cis, ci.fn(pars$Mpars[s,r,ind[1]], sd$Mpars[s,r,ind[1]]))
           }
         }
       }
       if(data$M_model == 2) if(!is.na(map_arr[s,r,1])){
         modify  <- c(modify, "log(M) intercept for WAA effects" )
         vals <- c(vals, pars$Mpars[s,r,1])
-        cis <- rbind(cis, ci(pars$Mpars[s,r,1], sd$Mpars[s,r,1]))
+        cis <- rbind(cis, ci.fn(pars$Mpars[s,r,1], sd$Mpars[s,r,1]))
       }
       if(data$n_regions>1) modify <- paste0(stock.names.tab[s], " (", region.names.tab[r], ") ", modify)
       else modify <- paste0(stock.names.tab[s], " ", modify)
@@ -370,7 +372,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!is.na(sd$log_b[s,r])){
       fe.names <- c(fe.names, paste0(modify, "log(M) slope for WAA effect"))
       fe.vals <- c(fe.vals, exp(pars$log_b[s,r]))
-      fe.cis <- rbind(fe.cis, ci(pars$log_b[s,r], sd$log_b[s,r], type = "exp"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$log_b[s,r], sd$log_b[s,r], type = "exp"))
     }
   }
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions) {
@@ -380,19 +382,19 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!is.na(sd$M_repars[s,r,1])) {
       fe.names <- c(fe.names, paste0(modify, "M RE $\\sigma$"))
       fe.vals <- c(fe.vals, exp(pars$M_repars[s,r,1]))
-      fe.cis <- rbind(fe.cis, ci(pars$M_repars[s,r,1], sd$M_repars[s,r,1], type = "exp"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$M_repars[s,r,1], sd$M_repars[s,r,1], type = "exp"))
     }
     if(!is.na(sd$M_repars[s,r,2])) {
     #if(data$M_re_model %in% c(3,5)){
       fe.names <- c(fe.names, paste0(modify, "M RE AR1 $\\rho$ (age)"))
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$M_repars[s,r,2])))
-      fe.cis <- rbind(fe.cis, ci(pars$M_repars[s,r,2], sd$M_repars[s,r,2], lo = -1, hi = 1, type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$M_repars[s,r,2], sd$M_repars[s,r,2], lo = -1, hi = 1, type = "expit"))
     }
     if(!is.na(sd$M_repars[s,r,3])) {
     #if(data$M_re_model %in% c(4,5)) {
       fe.names <- c(fe.names, paste0(modify, "M RE AR1 $\\rho$ (year)"))
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$M_repars[s,r,3])))
-      fe.cis <- rbind(fe.cis, ci(pars$M_repars[s,r,3], sd$M_repars[s,r,3], lo = -1, hi = 1, type = "expit"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$M_repars[s,r,3], sd$M_repars[s,r,3], lo = -1, hi = 1, type = "expit"))
     }
   }
 
@@ -419,10 +421,10 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         fe.names <- c(fe.names, paste0(modify[t,s], " (intercept)"))
         if(data$mig_type[s] == 1){ #instantaneous: log transform
           fe.vals <- c(fe.vals, exp(pars[[parname]][s,t,r,rr]))
-          fe.cis <- rbind(fe.cis, ci(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], type = "exp"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], type = "exp"))
         } else { #sequential: logit transform
           fe.vals <- c(fe.vals, 1/(1 + exp(- pars[[parname]][s,t,r,rr])))
-          fe.cis <- rbind(fe.cis, ci(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], lo = 0, hi = 1, type = "expit"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars[[parname]][s,t,r,rr], sd[[parname]][s,t,r,rr], lo = 0, hi = 1, type = "expit"))
         }
       }
     }
@@ -447,17 +449,17 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
         if(!is.na(sd$mu_repars[s,t,r,rr,1])) {
           fe.names <- c(fe.names, paste0(modify[t,s], " RE $\\sigma$"))
           fe.vals <- c(fe.vals, exp(pars$mu_repars[s,t,r,rr,1]))
-          fe.cis <- rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,1], sd$mu_repars[s,t,r,rr,1], type = "exp"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars$mu_repars[s,t,r,rr,1], sd$mu_repars[s,t,r,rr,1], type = "exp"))
         }
         if(!is.na(sd$mu_repars[s,t,r,rr,2])) {
           fe.names <- c(fe.names, paste0(modify[t,s], " RE AR1 $\\rho$ (age)"))
           fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$mu_repars[s,t,r,rr,2])))
-          fe.cis <- rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,2], sd$mu_repars[s,t,r,rr,2], lo = -1, hi = 1, type = "expit"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars$mu_repars[s,t,r,rr,2], sd$mu_repars[s,t,r,rr,2], lo = -1, hi = 1, type = "expit"))
         }
         if(!is.na(sd$mu_repars[s,t,r,rr,3])) {
           fe.names <- c(fe.names, paste0(modify[t,s], " RE AR1 $\\rho$ (year)"))
           fe.vals <- c(fe.vals, -1 + 2/(1 + exp(- pars$mu_repars[s,t,r,rr,3])))
-          fe.cis <- rbind(fe.cis, ci(pars$mu_repars[s,t,r,rr,3], sd$mu_repars[s,t,r,rr,3], lo = -1, hi = 1, type = "expit"))
+          fe.cis <- rbind(fe.cis, ci.fn(pars$mu_repars[s,t,r,rr,3], sd$mu_repars[s,t,r,rr,3], lo = -1, hi = 1, type = "expit"))
         }
       }
     }
@@ -549,19 +551,19 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     #if any parameters sds are not NA, then Ecov_model != 0
     if(!is.na(sd$Ecov_process_pars[1,i])){
       fe.vals <- c(fe.vals, pars$Ecov_process_pars[1,i])
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_process_pars[1,i], sd$Ecov_process_pars[1,i]))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_process_pars[1,i], sd$Ecov_process_pars[1,i]))
       if(data$Ecov_model[i] == 1) fe.names <- c(fe.names, paste0(ecov.labels[i], "RW Ecov$_1$"))
       if(data$Ecov_model[i] == 2) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\mu$"))
     }
     if(!is.na(sd$Ecov_process_pars[2,i])){
       fe.vals <- c(fe.vals, exp(pars$Ecov_process_pars[2,i]))
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_process_pars[2,i], sd$Ecov_process_pars[2,i], type = "exp"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_process_pars[2,i], sd$Ecov_process_pars[2,i], type = "exp"))
       if(data$Ecov_model[i] == 1) fe.names <- c(fe.names, paste0(ecov.labels[i], "RW $\\sigma$"))
       if(data$Ecov_model[i] == 2) fe.names <- c(fe.names, paste0(ecov.labels[i], "$\\sigma$"))
     }
     if(!is.na(sd$Ecov_process_pars[3,i])){
       fe.vals <- c(fe.vals, -1 + 2/(1 + exp(-pars$Ecov_process_pars[3,i])))
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit")) #doesn't use rho_trans
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_process_pars[3,i], sd$Ecov_process_pars[3,i], lo = -1, hi = 1, type = "expit")) #doesn't use rho_trans
       fe.names <- c(fe.names, paste0(ecov.labels[i], "AR1 $\\rho$"))
     }
   }
@@ -580,7 +582,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             ind <- which(!is.na(sd[[ecov_beta_names[et]]][s,i,]))
             for(k in ind) {
               fe.vals <- c(fe.vals, pars[[ecov_beta_names[et]]][s,i,k])
-              fe.cis <- rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,i,k], sd[[ecov_beta_names[et]]][s,i,k]))
+              fe.cis <- rbind(fe.cis, ci.fn(pars[[ecov_beta_names[et]]][s,i,k], sd[[ecov_beta_names[et]]][s,i,k]))
               fe.names <- c(fe.names, paste0(stock.names.tab[s], " Recruitment Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
@@ -591,7 +593,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
 
             for(k in ind) {
               fe.vals <- c(fe.vals, pars[[ecov_beta_names[et]]][s,a,r,i,k])
-              fe.cis <- rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd[[ecov_beta_names[et]]][s,a,r,i,k]))
+              fe.cis <- rbind(fe.cis, ci.fn(pars[[ecov_beta_names[et]]][s,a,r,i,k], sd[[ecov_beta_names[et]]][s,a,r,i,k]))
               fe.names <- c(fe.names, paste0(modify, " Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
@@ -605,7 +607,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
               modify <- paste(stock.names.tab[s], " age ", mod$ages.lab[a], "season", t, "move from", from, "to", to)
               for(k in ind) {
                 fe.vals <- c(fe.vals, pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k])
-                fe.cis <- rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k], sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k]))
+                fe.cis <- rbind(fe.cis, ci.fn(pars[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k], sd[[ecov_beta_names[et]]][s,a,t,r,,rr,i,k]))
                 fe.names <- c(fe.names, paste0(modify, " Ecov: ", ecov.names.tab[i], " $\\beta_",k, "$"))
               }
             }
@@ -616,7 +618,7 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
             ind <- which(!is.na(sd[[ecov_beta_names[et]]][j,i,]))
             for(k in ind) {
               fe.vals <- c(fe.vals, pars[[ecov_beta_names[et]]][j,i,k])
-              fe.cis <- rbind(fe.cis, ci(pars[[ecov_beta_names[et]]][j,i,k], sd[[ecov_beta_names[et]]][j,i,k]))
+              fe.cis <- rbind(fe.cis, ci.fn(pars[[ecov_beta_names[et]]][j,i,k], sd[[ecov_beta_names[et]]][j,i,k]))
               fe.names <- c(fe.names, paste0(index.names.tab[j], " Catchability Ecov: ", ecov.names.tab[i], " $\\beta_", k, "$"))
             }
           }
@@ -630,14 +632,14 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
       fe.names <- c(fe.names, paste0("Ecov: ", ecov.names.tab[i], " obs. sd."))
       ind <- which(!is.na(matrix(mod$input$map$Ecov_obs_logsigma, NROW(mod$input$par$Ecov_obs_logsigma))[,i]))[1]
       fe.vals <- c(fe.vals, exp(pars$Ecov_obs_logsigma[ind,i]))
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_obs_logsigma[ind,i], sd$Ecov_obs_logsigma[ind,i], type = "exp"))
     }
     if(data$Ecov_obs_sigma_opt[i] == 4){
       fe.names <- c(fe.names, paste0("Ecov: ", ecov.names.tab[i], " obs. log(sd.) RE ", c("$\\mu$", "$\\sigma$")))
       fe.vals <- c(fe.vals, pars$Ecov_obs_sigma_pars[1,i])
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_obs_sigma_pars[1,i], sd$Ecov_obs_sigma_pars[1,i]))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_obs_sigma_pars[1,i], sd$Ecov_obs_sigma_pars[1,i]))
       fe.vals <- c(fe.vals, exp(pars$Ecov_obs_sigma_par[2,i]))
-      fe.cis <- rbind(fe.cis, ci(pars$Ecov_obs_sigma_par[2,i], sd$Ecov_obs_sigma_par[2,i], type = "exp"))
+      fe.cis <- rbind(fe.cis, ci.fn(pars$Ecov_obs_sigma_par[2,i], sd$Ecov_obs_sigma_par[2,i], type = "exp"))
     }
   }
 
@@ -651,8 +653,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   
   if(mod$is_sdrep) {
     sdrep <- mod$sdrep
-    pars <- TMB:::as.list.sdreport(sdrep, "Est", report = TRUE)
-    sd <- TMB:::as.list.sdreport(sdrep, "Std", report = TRUE)
+    pars <- as.list(sdrep, "Est", report = TRUE)
+    sd <- as.list(sdrep, "Std", report = TRUE)
   }
   #Jan 1 numbers at age, by stock and region
   for(s in 1:data$n_stocks) for(r in 1:data$n_regions){
@@ -664,8 +666,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       NAA.cv[] <- sd[["log_NAA_rep"]][s,r,,]
       NAA.sd <- NAA * NAA.cv
-      NAA.lo <- exp(log(NAA) - qnorm(0.975) * NAA.cv)
-      NAA.hi <- exp(log(NAA) + qnorm(0.975) * NAA.cv)
+      NAA.lo <- exp(log(NAA) - stats::qnorm(0.975) * NAA.cv)
+      NAA.hi <- exp(log(NAA) + stats::qnorm(0.975) * NAA.cv)
       rownames(NAA.sd) <- rownames(NAA.cv) <- rownames(NAA.lo) <- rownames(NAA.hi) <- mod$years_full
       colnames(NAA.sd) <- colnames(NAA.cv) <- colnames(NAA.lo) <- colnames(NAA.hi) <- mod$ages.lab
       if(!is.null(od)){
@@ -686,8 +688,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA_r.cv <- sd[["log_FAA_by_region"]][r,,]
       FAA_r.sd <- FAA_r * FAA_r.cv
-      FAA_r.lo <- FAA_r * exp(- qnorm(0.975) * FAA_r.cv)
-      FAA_r.hi <- FAA_r * exp( qnorm(0.975) * FAA_r.cv)
+      FAA_r.lo <- FAA_r * exp(- stats::qnorm(0.975) * FAA_r.cv)
+      FAA_r.hi <- FAA_r * exp( stats::qnorm(0.975) * FAA_r.cv)
       rownames(FAA_r.sd) <- rownames(FAA_r.cv) <- rownames(FAA_r.lo) <- rownames(FAA_r.hi) <- mod$years_full
       colnames(FAA_r.sd) <- colnames(FAA_r.cv) <- colnames(FAA_r.lo) <- colnames(FAA_r.hi) <- mod$ages.lab
       if(!is.null(od)){ 
@@ -707,8 +709,8 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
     if(!is.null(mod$opt)) if(!is.na(mod$na_sdrep)) if(mod$is_sdrep) {
       FAA.cv[] <- sd[["log_FAA"]][f,,]
       FAA.sd <- FAA * FAA.cv
-      FAA.lo <- exp(mod$rep$FAA[f,,] - qnorm(0.975) * FAA.cv)
-      FAA.hi <- exp(mod$rep$FAA[f,,] + qnorm(0.975) * FAA.cv)
+      FAA.lo <- exp(mod$rep$FAA[f,,] - stats::qnorm(0.975) * FAA.cv)
+      FAA.hi <- exp(mod$rep$FAA[f,,] + stats::qnorm(0.975) * FAA.cv)
       dimnames(FAA.sd) <- dimnames(FAA.cv) <- dimnames(FAA.lo) <- dimnames(FAA.hi) <- list(mod$years_full, mod$ages.lab)
       if(!is.null(od)){ 
         saveRDS(FAA.sd, file = file.path(od,paste0(fleet.names.f[f], "_FAA_sd_table.RDS")))
@@ -721,16 +723,20 @@ par_tables_fn <- function(mod, do.tex=FALSE, do.html=FALSE, od = NULL)
   #Spawning stock biomass by year and spawn region
   SSB <- mod[["rep"]][["SSB"]]
   rownames(SSB) <- mod[["years_full"]]
-  colnames(SSB) <- ifelse(data[["n_stocks"]]>1, stock.names.tab, "Total")
-  if(data[["n_stocks"]]>1) SSB <- cbind(SSB, Total = rowSums(SSB))
+  if(data[["n_stocks"]]>1){
+    colnames(SSB) <- stock.names.tab
+    SSB <- cbind(SSB, Total = rowSums(SSB))
+  } else {
+    colnames(SSB) <- "Total"
+  }
   if(!is.null(od)) saveRDS(SSB, file = file.path(od, "SSB_table.RDS"))
   
   if(!is.null(mod[["opt"]])) if(!is.na(mod[["na_sdrep"]])) if(mod[["is_sdrep"]]) {
     SSB.cv <- sd[["log_SSB"]]
     if(data[["n_stocks"]]>1) SSB.cv <- cbind(SSB.cv, sd[["log_SSB_all"]])
     SSB.sd <- SSB * SSB.cv
-    SSB.lo <- exp(log(SSB) - qnorm(0.975) * SSB.cv)
-    SSB.hi <- exp(log(SSB) + qnorm(0.975) * SSB.cv)
+    SSB.lo <- exp(log(SSB) - stats::qnorm(0.975) * SSB.cv)
+    SSB.hi <- exp(log(SSB) + stats::qnorm(0.975) * SSB.cv)
     dimnames(SSB.sd) <- dimnames(SSB.cv) <- dimnames(SSB.lo) <- dimnames(SSB.hi) <- dimnames(SSB)
     if(!is.null(od)){
       saveRDS(SSB.sd, file = file.path(od, "SSB_sd_table.RDS"))

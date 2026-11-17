@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
       <h1>Ex 6: Numbers-at-age / survival deviations as random effects</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/ex06_NAA.Rmd" class="external-link"><code>vignettes/ex06_NAA.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/timjmiller/wham/blob/HEAD/vignettes/articles/ex06_NAA.Rmd" class="external-link"><code>vignettes/articles/ex06_NAA.Rmd</code></a></small>
       <div class="d-none name"><code>ex06_NAA.Rmd</code></div>
     </div>
 
@@ -193,7 +193,7 @@ numbers-at-age (NAA) transitions, i.e. survival:</p>
 <span>                      R_how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="fl">7</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"limiting-lag-1-linear"</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">n.mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="va">df.mods</span><span class="op">$</span><span class="va">Model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span></span>
-<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Model</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># moves Model to first col</span></span></code></pre></div>
+<span><span class="va">df.mods</span> <span class="op">&lt;-</span> <span class="va">df.mods</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">Model</span><span class="op">)</span></span></code></pre></div>
 <p>Look at the model table:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df.mods</span></span>
@@ -346,8 +346,8 @@ for consistency with the original implicit assumption in WHAM.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>,<span class="va">n.mods</span><span class="op">)</span></span>
 <span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n.mods</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">NAA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cor<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_cor"</span><span class="op">]</span>, sigma<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_sigma"</span><span class="op">]</span>, decouple_recruitment <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span><span class="op">(</span><span class="va">NAA_list</span><span class="op">$</span><span class="va">sigma</span> <span class="op">==</span> <span class="st">'---'</span><span class="op">)</span> <span class="va">NAA_list</span> <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="va">NAA_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cor<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_cor"</span><span class="op">]</span>, sigma<span class="op">=</span><span class="va">df.mods</span><span class="op">[</span><span class="va">m</span>,<span class="st">"NAA_sigma"</span><span class="op">]</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>, decouple_recruitment <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="co"># Bev Holt recruitment</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="va">NAA_list</span><span class="op">$</span><span class="va">sigma</span> <span class="op">==</span> <span class="st">'---'</span><span class="op">)</span> <span class="va">NAA_list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>recruit_model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># No Bev Holt recruitment</span></span>
 <span></span>
 <span>  <span class="va">ecov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    label <span class="op">=</span> <span class="st">"GSI"</span>,</span>
@@ -358,7 +358,7 @@ for consistency with the original implicit assumption in WHAM.</p>
 <span>    process_model <span class="op">=</span> <span class="st">'ar1'</span>, <span class="co"># "rw" or "ar1"</span></span>
 <span>    recruitment_how <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">df.mods</span><span class="op">$</span><span class="va">R_how</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="co"># n_Ecov x n_stocks</span></span>
 <span></span>
-<span>  <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>, recruit_model <span class="op">=</span> <span class="fl">3</span>, <span class="co"># Bev Holt recruitment</span></span>
+<span>  <span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/prepare_wham_input.html">prepare_wham_input</a></span><span class="op">(</span><span class="va">asap3</span>,</span>
 <span>                              model_name <span class="op">=</span> <span class="st">"Ex 6: Numbers-at-age"</span>,</span>
 <span>                              selectivity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age-specific"</span>,<span class="fl">3</span><span class="op">)</span>, re<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>,<span class="st">"none"</span>,<span class="st">"none"</span><span class="op">)</span>, </span>
 <span>                                initial_pars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, </span>
@@ -418,8 +418,7 @@ for consistency with the original implicit assumption in WHAM.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">df.mods</span>, file<span class="op">=</span><span class="st">"ex6_table.csv"</span>,quote<span class="op">=</span><span class="cn">F</span>, row.names<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span></code></pre></div>
 <p>Plot output for models that converged.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mods</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">env</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">recruit_model</span> <span class="op">=</span> <span class="fl">2</span> <span class="co"># m1 (SCAA) didn't actually fit a Bev-Holt</span></span>
-<span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">not_conv</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="kw">for</span><span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="va">not_conv</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_wham_output.html">plot_wham_output</a></span><span class="op">(</span>mod<span class="op">=</span><span class="va">mods</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span>, dir.main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"m"</span>,<span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co">#html by default</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
@@ -460,584 +459,16 @@ poor retrospective pattern in the status quo assessment. Note that
 deviations are random effects instead of fixed effects. The
 retrospective patterns are very similar, but <code>m2</code> takes about
 3x longer to run.</p>
-<table class="table table table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;">
-Model
-</th>
-<th style="text-align:left;">
-NAA_cor
-</th>
-<th style="text-align:left;">
-NAA_sigma
-</th>
-<th style="text-align:left;">
-R_how
-</th>
-<th style="text-align:left;">
-Converged
-</th>
-<th style="text-align:left;">
-PD Hessian
-</th>
-<th style="text-align:right;">
-Runtime (min)
-</th>
-<th style="text-align:right;">
-NLL
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>A</mi><mi>I</mi><mi>C</mi></mrow><annotation encoding="application/x-tex">\Delta AIC</annotation></semantics></math>
-</th>
-<th style="text-align:left;">
-AIC
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mi>R</mi></msub><annotation encoding="application/x-tex">\rho_{R}</annotation></semantics></math>
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mrow><mi>S</mi><mi>S</mi><mi>B</mi></mrow></msub><annotation encoding="application/x-tex">\rho_{SSB}</annotation></semantics></math>
-</th>
-<th style="text-align:left;">
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ρ</mi><mover><mi>F</mi><mo accent="true">¯</mo></mover></msub><annotation encoding="application/x-tex">\rho_{\overline{F}}</annotation></semantics></math>
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-m1
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.32
-</td>
-<td style="text-align:right;">
--623.530
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-8.818
-</td>
-<td style="text-align:left;">
-0.951
-</td>
-<td style="text-align:left;">
--0.433
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m2
-</td>
-<td style="text-align:left;">
-iid
-</td>
-<td style="text-align:left;">
-rec
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.92
-</td>
-<td style="text-align:right;">
--509.511
-</td>
-<td style="text-align:left;">
-512.2
-</td>
-<td style="text-align:left;">
--875.0
-</td>
-<td style="text-align:left;">
-5.054
-</td>
-<td style="text-align:left;">
-1.023
-</td>
-<td style="text-align:left;">
--0.437
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m3
-</td>
-<td style="text-align:left;">
-ar1_y
-</td>
-<td style="text-align:left;">
-rec
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-FALSE
-</td>
-<td style="text-align:right;">
-0.96
-</td>
-<td style="text-align:right;">
--527.116
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-<td style="text-align:left;">
-—
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m4
-</td>
-<td style="text-align:left;">
-iid
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.59
-</td>
-<td style="text-align:right;">
--745.447
-</td>
-<td style="text-align:left;">
-42.3
-</td>
-<td style="text-align:left;">
--1344.9
-</td>
-<td style="text-align:left;">
-0.423
-</td>
-<td style="text-align:left;">
-0.068
-</td>
-<td style="text-align:left;">
--0.058
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m5
-</td>
-<td style="text-align:left;">
-ar1_a
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.61
-</td>
-<td style="text-align:right;">
--759.028
-</td>
-<td style="text-align:left;">
-17.1
-</td>
-<td style="text-align:left;">
--1370.1
-</td>
-<td style="text-align:left;">
-0.240
-</td>
-<td style="text-align:left;">
-0.030
-</td>
-<td style="text-align:left;">
--0.039
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m6
-</td>
-<td style="text-align:left;">
-ar1_y
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.73
-</td>
-<td style="text-align:right;">
--753.699
-</td>
-<td style="text-align:left;">
-27.8
-</td>
-<td style="text-align:left;">
--1359.4
-</td>
-<td style="text-align:left;">
-0.437
-</td>
-<td style="text-align:left;">
-0.036
-</td>
-<td style="text-align:left;">
--0.017
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m7
-</td>
-<td style="text-align:left;">
-2dar1
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.73
-</td>
-<td style="text-align:right;">
--763.264
-</td>
-<td style="text-align:left;">
-10.7
-</td>
-<td style="text-align:left;">
--1376.5
-</td>
-<td style="text-align:left;">
-0.249
-</td>
-<td style="text-align:left;">
-0.015
-</td>
-<td style="text-align:left;">
--0.020
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m8
-</td>
-<td style="text-align:left;">
-iid
-</td>
-<td style="text-align:left;">
-rec
-</td>
-<td style="text-align:left;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1.02
-</td>
-<td style="text-align:right;">
--520.571
-</td>
-<td style="text-align:left;">
-492.1
-</td>
-<td style="text-align:left;">
--895.1
-</td>
-<td style="text-align:left;">
-1.867
-</td>
-<td style="text-align:left;">
-1.026
-</td>
-<td style="text-align:left;">
--0.426
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m9
-</td>
-<td style="text-align:left;">
-ar1_y
-</td>
-<td style="text-align:left;">
-rec
-</td>
-<td style="text-align:left;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-1.01
-</td>
-<td style="text-align:right;">
--531.190
-</td>
-<td style="text-align:left;">
-472.8
-</td>
-<td style="text-align:left;">
--914.4
-</td>
-<td style="text-align:left;">
-2.293
-</td>
-<td style="text-align:left;">
-1.008
-</td>
-<td style="text-align:left;">
--0.439
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m10
-</td>
-<td style="text-align:left;">
-iid
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.59
-</td>
-<td style="text-align:right;">
--754.897
-</td>
-<td style="text-align:left;">
-25.4
-</td>
-<td style="text-align:left;">
--1361.8
-</td>
-<td style="text-align:left;">
-0.299
-</td>
-<td style="text-align:left;">
-0.052
-</td>
-<td style="text-align:left;">
--0.042
-</td>
-</tr>
-<tr>
-<td style="text-align:left;font-weight: bold;">
-m11
-</td>
-<td style="text-align:left;font-weight: bold;">
-ar1_a
-</td>
-<td style="text-align:left;font-weight: bold;">
-rec+1
-</td>
-<td style="text-align:left;font-weight: bold;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:left;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:right;font-weight: bold;">
-0.80
-</td>
-<td style="text-align:right;font-weight: bold;">
--767.876
-</td>
-<td style="text-align:left;font-weight: bold;">
-1.4
-</td>
-<td style="text-align:left;font-weight: bold;">
--1385.8
-</td>
-<td style="text-align:left;font-weight: bold;">
-0.166
-</td>
-<td style="text-align:left;font-weight: bold;">
-0.021
-</td>
-<td style="text-align:left;font-weight: bold;">
--0.027
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-m12
-</td>
-<td style="text-align:left;">
-ar1_y
-</td>
-<td style="text-align:left;">
-rec+1
-</td>
-<td style="text-align:left;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:left;">
-TRUE
-</td>
-<td style="text-align:right;">
-0.67
-</td>
-<td style="text-align:right;">
--759.243
-</td>
-<td style="text-align:left;">
-18.7
-</td>
-<td style="text-align:left;">
--1368.5
-</td>
-<td style="text-align:left;">
-0.277
-</td>
-<td style="text-align:left;">
-0.031
-</td>
-<td style="text-align:left;">
--0.014
-</td>
-</tr>
-<tr>
-<td style="text-align:left;font-weight: bold;">
-m13
-</td>
-<td style="text-align:left;font-weight: bold;">
-2dar1
-</td>
-<td style="text-align:left;font-weight: bold;">
-rec+1
-</td>
-<td style="text-align:left;font-weight: bold;">
-limiting-lag-1-linear
-</td>
-<td style="text-align:left;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:left;font-weight: bold;">
-TRUE
-</td>
-<td style="text-align:right;font-weight: bold;">
-0.86
-</td>
-<td style="text-align:right;font-weight: bold;">
--769.605
-</td>
-<td style="text-align:left;font-weight: bold;">
-0.0
-</td>
-<td style="text-align:left;font-weight: bold;">
--1387.2
-</td>
-<td style="text-align:left;font-weight: bold;">
-0.142
-</td>
-<td style="text-align:left;font-weight: bold;">
-0.011
-</td>
-<td style="text-align:left;font-weight: bold;">
--0.016
-</td>
-</tr>
-</tbody>
-</table>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">thebest</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">11</span>,<span class="fl">13</span><span class="op">)</span></span>
+<span><span class="va">vign6_res</span><span class="op">[</span><span class="fl">1</span>,<span class="st">"dAIC"</span><span class="op">]</span> <span class="op">=</span> <span class="st">'---'</span></span>
+<span><span class="va">vign6_res</span><span class="op">[</span><span class="fl">1</span>,<span class="st">"AIC"</span><span class="op">]</span> <span class="op">=</span> <span class="st">'---'</span></span>
+<span><span class="va">vign6_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span><span class="st">"Converged"</span><span class="op">=</span><span class="st">"conv"</span>, <span class="st">"PD Hessian"</span><span class="op">=</span><span class="st">"pdHess"</span>, <span class="st">"Runtime (min)"</span><span class="op">=</span><span class="st">"runtime"</span>, <span class="st">"$\\Delta AIC$"</span><span class="op">=</span><span class="st">"dAIC"</span>,</span>
+<span>         <span class="st">"$\\rho_{R}$"</span><span class="op">=</span><span class="st">"rho_R"</span>, <span class="st">"$\\rho_{SSB}$"</span><span class="op">=</span><span class="st">"rho_SSB"</span>, <span class="st">"$\\rho_{\\overline{F}}$"</span><span class="op">=</span><span class="st">"rho_Fbar"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_styling.html" class="external-link">kable_styling</a></span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condensed"</span>,<span class="st">"responsive"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/row_spec.html" class="external-link">row_spec</a></span><span class="op">(</span><span class="va">thebest</span>, bold<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="estimated-naa-deviations">Estimated NAA deviations<a class="anchor" aria-label="anchor" href="#estimated-naa-deviations"></a>
 </h4>
@@ -1052,7 +483,7 @@ deviations, because the GSI effect on expected recruitment accounted for
 some of this variability.</li>
 </ul>
 <p>Estimated survival deviations by age (y-axis) and year (x-axis) for
-all converged models: <img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/NAA_devs.png" style="width:100.0%" alt="NAA_devs.png"></p>
+all converged models: <img src="ex06_files/NAA_devs.png" style="width:100.0%" alt="NAA_devs.png"></p>
 </div>
 <div class="section level4">
 <h4 id="retrospective-patterns">Retrospective patterns<a class="anchor" aria-label="anchor" href="#retrospective-patterns"></a>
@@ -1081,17 +512,17 @@ right).</p>
 <div class="section level6">
 <h6 id="numbers-at-age-naa">Numbers-at-age, NAA<a class="anchor" aria-label="anchor" href="#numbers-at-age-naa"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_NAA_retro_relative.png" style="width:50.0%" alt="m1 NAA_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_NAA_retro_relative.png" style="width:50.0%" alt="m13 NAA_retro_relative"></p>
+<p><img src="ex06_files/m1_NAA_retro_relative.png" style="width:50.0%" alt="m1 NAA_retro_relative"><img src="ex06_files/m13_NAA_retro_relative.png" style="width:50.0%" alt="m13 NAA_retro_relative"></p>
 </div>
 <div class="section level6">
 <h6 id="spawning-stock-biomass-ssb">Spawning stock biomass, SSB<a class="anchor" aria-label="anchor" href="#spawning-stock-biomass-ssb"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_retro_relative.png" style="width:50.0%" alt="m1 SSB_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_SSB_retro_relative.png" style="width:50.0%" alt="m13 SSB_retro_relative"></p>
+<p><img src="ex06_files/m1_SSB_retro_relative.png" style="width:50.0%" alt="m1 SSB_retro_relative"><img src="ex06_files/m13_SSB_retro_relative.png" style="width:50.0%" alt="m13 SSB_retro_relative"></p>
 </div>
 <div class="section level6">
 <h6 id="fishing-mortality-f">Fishing mortality, F<a class="anchor" aria-label="anchor" href="#fishing-mortality-f"></a>
 </h6>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_Fbar_retro_relative.png" style="width:50.0%" alt="m1 Fbar_retro_relative"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Fbar_retro_relative.png" style="width:50.0%" alt="m13 Fbar_retro_relative"></p>
+<p><img src="ex06_files/m1_Fbar_retro_relative.png" style="width:50.0%" alt="m1 Fbar_retro_relative"><img src="ex06_files/m13_Fbar_retro_relative.png" style="width:50.0%" alt="m13 Fbar_retro_relative"></p>
 </div>
 </div>
 <div class="section level4">
@@ -1101,7 +532,7 @@ right).</p>
 and more smoothing of the GSI than those without. Compare the confidence
 intervals for <code>m7</code> (left, no GSI-Recruitment link), to those
 for <code>m13</code> (right, with GSI-Recruitment link).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m13."></p>
+<p><img src="ex06_files/m7_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m7."><img src="ex06_files/m13_Ecov_1.png" style="width:50.0%" alt="Gulf Stream Index (GSI) time-series model, m13."></p>
 </div>
 <div class="section level4">
 <h4 id="stock-status">Stock status<a class="anchor" aria-label="anchor" href="#stock-status"></a>
@@ -1121,12 +552,12 @@ and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math>
 trends from the state-space model without GSI effect,
 <code>m7</code>.</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m1_SSB_F_trend.png" style="width:50.0%" alt="m1_SSB_F_trend"><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_SSB_F_trend.png" style="width:50.0%" alt="m7_SSB_F_trend"></p>
+<p><img src="ex06_files/m1_SSB_F_trend.png" style="width:50.0%" alt="m1_SSB_F_trend"><img src="ex06_files/m7_SSB_F_trend.png" style="width:50.0%" alt="m7_SSB_F_trend"></p>
 <p>Adding the GSI-Recruitment link to the state-space model did not
 impact the probability that the stock was overfished or experiencing
 overfishing in the final year, 2016 (<code>m7</code> w/o GSI, left;
 <code>m13</code> w/ GSI, right).</p>
-<p><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m7_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m7."><img src="https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex6_plots/m13_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m13."></p>
+<p><img src="ex06_files/m7_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m7."><img src="ex06_files/m13_Kobe_status.png" style="width:50.0%" alt="Kobe status plot, m13."></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

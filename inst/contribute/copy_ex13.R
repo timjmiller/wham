@@ -10,17 +10,18 @@
 library(here)
 pkg.dir <- here()
 pkgbuild::compile_dll(debug = FALSE); 
-pkgload::load_all(compile=FALSE)
+#pkgload::load_all(compile=FALSE)
 
 # assumes you have a .gitignore'd folder 'sandbox' in the wham folder
 # assumes you ran the ex today. if not, need to change
 main.dir <- here("sandbox", "pkg_example_results", "ex13")
 write.dir <- tempdir(check=TRUE) #will be passed to the ex*.R script to set working directory and for writing all results
 path_to_scripts <- system.file("example_scripts", package="wham")
-to.dir <- here("vignettes", "ex13_plots")
+to.dir <- here("vignettes", "ex13_files")
+dir.create(to.dir)
 
 #should write everything to write.dir and create any R objects in the session
 source(file.path(path_to_scripts, "ex13_no_ASAP.R"))
 setwd(pkg.dir)
 
-save(vign13_res, file=file.path(pkg.dir, "data","vign13_res.RData"))
+save(vign13_res, file=file.path(to.dir,"vign13_res.RData"))

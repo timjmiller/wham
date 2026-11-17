@@ -13,7 +13,7 @@
 #'     \item \code{$use.FMSY} (T/F), calculate and use FMSY for projections. Default = \code{FALSE}.
 #'     \item \code{$proj.F} (vector), user-specified fishing mortality for projections. Length must equal \code{n.yrs}.
 #'     \item \code{$proj.catch} (vector), user-specified aggregate catch for projections. Length must equal \code{n.yrs}.
-#'     \item \code{$avg.yrs} (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs} (vector), specify which years to use to average population attributes (MAA,FAA,WAA,maturity,movement) in projection years. Any BRPs calculated in projection years will also use these. Default = last 5 years, \code{utils::tail(model$years, 5)}.
 #'     \item \code{$cont.ecov} (T/F), continue ecov process (e.g. random walk or AR1) for projections. Default = \code{TRUE}.
 #'     \item \code{$use.last.ecov} (T/F), use terminal year ecov for projections.
 #'     \item \code{$avg.ecov.yrs} (vector), specify which years to average the environmental covariate(s) over for projections.
@@ -51,15 +51,15 @@
 #'       }
 #'     \item \code{$proj_NAA_init} (scalar), the default starting value for all NAA random effects in projection years is exp(10), which may not be large enough for some catch specification. Use this to change the default if a call to project_wham suggests it.
 #'     \item \code{$proj_F_init} which F to initialize internal newton search for annual projected F for a given user-specifed catch. Default is 0.1
-#'     \item \code{$avg.yrs.sel} list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.waacatch} list (length = n_fleets), years to average weight at age for each fleet for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.waassb} list (length = n_stocks), years to average weight at age for each stock SSB for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.mature} list (length = n_stocks), years to average maturity at age for each stock for projection years (if $proj_mature is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.L} list (length = n_regions), years to average extra mortality at age for each region for projection years (if $cond.L.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.M} list (length = n_stocks, each is a list with length = n_regions), years to average natural mortality at age for each stock and region for projection years (if $cont.M.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.move} list (length = n_stocks, each is a list with length = n_regions), years to average movement rates at age and season for each stock and region (at beginning of interval) for projection years (if $cont.move.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.R} list (length = n_stocks), years to average recruitment deviations for each stock and region for projection years (if $proj_R_opt = 3). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
-#'     \item \code{$avg.yrs.NAA} list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.sel} list (length = n_fleets), years to average selectivity or FAA for each fleet for projection years. Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waacatch} list (length = n_fleets), years to average weight at age for each fleet for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.waassb} list (length = n_stocks), years to average weight at age for each stock SSB for projection years (if $proj_waa is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.mature} list (length = n_stocks), years to average maturity at age for each stock for projection years (if $proj_mature is NULL). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.L} list (length = n_regions), years to average extra mortality at age for each region for projection years (if $cond.L.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.M} list (length = n_stocks, each is a list with length = n_regions), years to average natural mortality at age for each stock and region for projection years (if $cont.M.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.move} list (length = n_stocks, each is a list with length = n_regions), years to average movement rates at age and season for each stock and region (at beginning of interval) for projection years (if $cont.move.re = FALSE). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.R} list (length = n_stocks), years to average recruitment deviations for each stock and region for projection years (if $proj_R_opt = 3). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
+#'     \item \code{$avg.yrs.NAA} list (length = n_stocks, each is a list with length = n_regions), years to average NAA deviations for each stock and region for projection years (if $proj_NAA_opt = 2). Any BRPs calculated in projection years will also use this. Default = last 5 years, \code{utils::tail(model$years, 5)}.
 #'   }
 #' @param check.version T/F check whether version WHAM and TMB for fitted model match that of the version of WHAM using for projections. Default = \code{TRUE}.
 #'
@@ -86,9 +86,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   if(is.null(proj.opts)) proj.opts <- list(n.yrs=3, use.last.F=TRUE, use.avg.F=FALSE, use.FXSPR=FALSE, use.FMSY=FALSE,
     cont.ecov=TRUE, use.last.ecov=FALSE, percentFXSPR=100, percentFMSY=100)
   if(check.version) verify_version(model)
-  # default: 3 projection years
-  # peel <- 0
-  # if(!is.null(model[["peel"]])) peel <- model[["peel"]] # projecting off of a peel
+  
   input <- model[["input"]]
   input[["by_pwi"]] <- TRUE
   if(is.null(proj.opts[["n.yrs"]])) proj.opts[["n.yrs"]] <- 3
@@ -108,19 +106,19 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   if(F.opt.ct != 1) stop(paste("","** Error setting up projections: **",
     "Exactly one method of specifying F must be used (see ?project_wham).",
     "You have specified these in 'proj.opts':",
-    capture.output(cat("  $use.last.F = ",proj.opts[["use.last.F"]])),
-    capture.output(cat("  $use.avg.F = ",proj.opts[["use.avg.F"]])),
-    capture.output(cat("  $use.FXSPR = ",proj.opts[["use.FXSPR"]])),
-    capture.output(cat("  $use.FMSY = ",proj.opts[["use.FMSY"]])),
-    capture.output(cat("  $proj.F = ",proj.opts[["proj.F"]])),
-    capture.output(cat("  $proj.catch = ",proj.opts[["proj.catch"]])),"",sep='\n'))
+    utils::capture.output(cat("  $use.last.F = ",proj.opts[["use.last.F"]])),
+    utils::capture.output(cat("  $use.avg.F = ",proj.opts[["use.avg.F"]])),
+    utils::capture.output(cat("  $use.FXSPR = ",proj.opts[["use.FXSPR"]])),
+    utils::capture.output(cat("  $use.FMSY = ",proj.opts[["use.FMSY"]])),
+    utils::capture.output(cat("  $proj.F = ",proj.opts[["proj.F"]])),
+    utils::capture.output(cat("  $proj.catch = ",proj.opts[["proj.catch"]])),"",sep='\n'))
 
   # add new data objects for projections
   data[["do_proj"]] <- 1
   data[["n_years_model"]] <- data[["n_years_model"]]
   data[["n_years_proj"]] <- proj.opts[["n.yrs"]]
-  years_full <- head(input[["years"]], length(input[["years"]]))
-  years_full <- c(years_full, tail(years_full,1) + 1:proj.opts[["n.yrs"]])
+  years_full <- utils::head(input[["years"]], length(input[["years"]]))
+  years_full <- c(years_full, utils::tail(years_full,1) + 1:proj.opts[["n.yrs"]])
   input[["years_full"]] <- years_full
   #input[["years_full"]] <- c(input[["years"]], tail(input[["years"]],1) +1:proj.opts[["n.yrs"]])
   proj_yrs_ind <- data[["n_years_model"]] + 1:data[["n_years_proj"]]
@@ -315,7 +313,7 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
     if(is.null(proj.opts[["avg.rec.yrs"]])) proj.opts[["avg.rec.yrs"]] <- model[["years"]]#[-1] # option for which model years to use for mean and SD calc
     avg.rec.yrs <- match(proj.opts[["avg.rec.yrs"]], model[["years"]])#[-1])
     data[["logR_mean"]] <- sapply(1:data[["n_stocks"]], function(x) mean(log(model[["rep"]][["NAA"]][x,data[["spawn_regions"]][x],avg.rec.yrs,1])))
-    data[["logR_sd"]] <- sapply(1:data[["n_stocks"]], function(x) sd(log(model[["rep"]][["NAA"]][x,data[["spawn_regions"]][x],avg.rec.yrs,1])))
+    data[["logR_sd"]] <- sapply(1:data[["n_stocks"]], function(x) stats::sd(log(model[["rep"]][["NAA"]][x,data[["spawn_regions"]][x],avg.rec.yrs,1])))
     par[["logR_proj"]] <- matrix(rep(data[["logR_mean"]], each = data[["n_years_proj"]]), data[["n_years_proj"]], data[["n_stocks"]])
     map[["logR_proj"]] <- factor(1:length(par[["logR_proj"]])) # turn on estimation of logR_proj
     random <- c(random, "logR_proj")
@@ -411,8 +409,8 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
   if(is.null(proj.opts[["cont.ecov"]])) proj.opts[["cont.ecov"]]=FALSE #one of the other ecov options is not null
 
   if(any(input[["data"]][["Ecov_model"]] > 0)){
-    end_model <- tail(input[["years_full"]],1) #now need to go to the end of projection years
-    end_Ecov <- tail(input[["years_Ecov"]], 1)
+    end_model <- utils::tail(input[["years_full"]],1) #now need to go to the end of projection years
+    end_Ecov <- utils::tail(input[["years_Ecov"]], 1)
     if(end_Ecov < end_model){
       message("prepare_projection: Ecov last year is before model last projection year. Padding Ecov...")
       map[["Ecov_obs_logsigma"]] <- matrix(as.integer(map[["Ecov_obs_logsigma"]]), ncol = data[["n_Ecov"]])
@@ -458,10 +456,10 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
       if(Ecov.opt.ct != 1) stop(paste("","** Error setting up projections: **",
         "Exactly one method of specifying ecov must be used (see ?project_wham).",
         "You have specified these in 'proj.opts':",
-        capture.output(cat("  $cont.ecov = ",proj.opts[["cont.ecov"]])),
-        capture.output(cat("  $use.last.ecov = ",proj.opts[["use.last.ecov"]])),
-        capture.output(cat("  $avg.ecov.yrs = ",proj.opts[["avg.ecov.yrs"]])),
-        capture.output(cat("  $proj.ecov = ",proj.opts[["proj.ecov"]])),"",sep='\n'))
+        utils::capture.output(cat("  $cont.ecov = ",proj.opts[["cont.ecov"]])),
+        utils::capture.output(cat("  $use.last.ecov = ",proj.opts[["use.last.ecov"]])),
+        utils::capture.output(cat("  $avg.ecov.yrs = ",proj.opts[["avg.ecov.yrs"]])),
+        utils::capture.output(cat("  $proj.ecov = ",proj.opts[["proj.ecov"]])),"",sep='\n'))
       if(!is.null(proj.opts[["avg.ecov.yrs"]]) & any(proj.opts[["avg.ecov.yrs"]] %in% model[["years"]] == FALSE)) stop(paste("","** Error setting up projections: **",
         "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
 
@@ -477,49 +475,6 @@ prepare_projection <- function(model, proj.opts, check.version=FALSE) {
       message(paste0("Ecovs are already fit through projection years."))
     }
   }
-    # n.beyond <- end.beyond <- integer()
-    # for(i in 1:data$n_Ecov) {
-    #   n.beyond[i] <- data$n_years_Ecov-1-max(data$ind_Ecov_out_end_R[i,],data$ind_Ecov_out_end_mu[i,,,,,],
-    #     data$ind_Ecov_out_end_M[i,,,],data$ind_Ecov_out_end_q[i,])
-    #   end.beyond[i] <- min(n.beyond[i], data$n_years_proj)
-    #   stop()
-    #   if(end.beyond[i] == data$n_years_proj) message(paste0("ecov ",i," already fit through projection years. Using fit ecov ",i," for projections..."))
-    # }
-
-  #   if(all(end.beyond < data$n_years_proj)){ # if Ecov proj options ARE necessary, check they are valid
-  #     Ecov.opt.ct <- sum(proj.opts$cont.ecov, proj.opts$use.last.ecov, !is.null(proj.opts$avg.ecov.yrs), !is.null(proj.opts$proj.ecov))
-  #     if(Ecov.opt.ct == 0) proj.opts$cont.ecov <- TRUE; Ecov.opt.ct <- 1;
-  #     if(Ecov.opt.ct != 1) stop(paste("","** Error setting up projections: **",
-  #       "Exactly one method of specifying ecov must be used (see ?project_wham).",
-  #       "You have specified these in 'proj.opts':",
-  #       capture.output(cat("  $cont.ecov = ",proj.opts$cont.ecov)),
-  #       capture.output(cat("  $use.last.ecov = ",proj.opts$use.last.ecov)),
-  #       capture.output(cat("  $avg.ecov.yrs = ",proj.opts$avg.ecov.yrs)),
-  #       capture.output(cat("  $proj.ecov = ",proj.opts$proj.ecov)),"",sep='\n'))
-  #     if(!is.null(proj.opts$avg.ecov.yrs) & any(proj.opts$avg.ecov.yrs %in% model$years == FALSE)) stop(paste("","** Error setting up projections: **",
-  #       "proj.opts$avg.ecov.yrs is not a subset of model years.","",sep='\n'))
-  #   }
-  # } else { # need to create objects if no Ecov
-  #   end.beyond <- rep(data$n_years_proj, data$n_Ecov) # effectively say that Ecov already extends # of proj years
-  # }
-  #data$n_years_proj_Ecov <- max(data$n_years_proj-end.beyond)
-
-  # pad Ecov_re for projections
-  # Ecov.proj <- matrix(0, nrow = data$n_years_proj_Ecov, ncol=data$n_Ecov)
-  # if(any(data$Ecov_model > 0)){
-  #   if(data$n_years_proj_Ecov>0){ # need to pad Ecov_re
-  #     par$Ecov_re <- rbind(par$Ecov_re[1:data$n_years_Ecov,,drop=F], Ecov.proj) # pad Ecov_re if necessary
-  #     data$Ecov_use_re <- rbind(data$Ecov_use_re, matrix(0, nrow=data$n_years_proj_Ecov, ncol=data$n_Ecov))
-  #     map$Ecov_re <- matrix(as.integer(map$Ecov_re), data$n_years_Ecov, data$n_Ecov)
-  #     tmp.re <- matrix(NA, data$n_years_proj_Ecov, data$n_Ecov)
-  #     for(i in 1:data$n_Ecov) if(data$Ecov_model[i]>0) {
-  #       tmp.re[,i] <- 1
-  #       data$Ecov_use_re[,i] <- c(data$Ecov_use_re[1:data$n_years_Ecov,i], tmp.re[,i])
-  #     }
-  #     if(sum(!is.na(tmp.re))) tmp.re[which(!is.na(tmp.re))] <- max(map$Ecov_re, na.rm = TRUE) + 1:sum(!is.na(tmp.re)) 
-  #     map$Ecov_re <- factor(rbind(map$Ecov_re, tmp.re))
-  #   }
-  # }
   
   #M
   # options for M in projections, data[["proj_M_opt"]]:

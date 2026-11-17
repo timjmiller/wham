@@ -15,7 +15,7 @@ can still be used without the asap3 object."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -258,31 +258,31 @@ The current options are:</p><dl><dt>$ages</dt>
 <dd><p>(0-100) percentage of unfished spawning biomass per recruit for determining equilibrium fishing mortality reference point</p></dd>
 
     <dt>$XSPR_input_average_years</dt>
-<dd><p>which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (tail(1:length(years),5)). Below specific values will override this option.</p></dd>
+<dd><p>which years to average inputs to per recruit calculation (selectivity, M, WAA, maturity) for static (or prevailing) SPR-based reference points. Default is last 5 years (utils::tail(1:length(years),5)). Below specific values will override this option.</p></dd>
 
 	 <dt>$average_years_L</dt>
-<dd><p>list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_regions), which years to average L (extra mortality) for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_M</dt>
-<dd><p>list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_stocks, each is a list with length = n_regions), which years to average M for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_move</dt>
-<dd><p>list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_stocks, each is a list with length = n_regions), which years to average movement parameters for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_mat</dt>
-<dd><p>list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_stocks), which years to average maturity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_waassb</dt>
-<dd><p>list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_stocks), which years to average ssb waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_sel</dt>
-<dd><p>list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_fleets), which years to average selectivity for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_waacatch</dt>
-<dd><p>list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_fleets), which years to average catch waa for per recruit calculation for static (or prevailing) reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
 	 <dt>$average_years_SRR</dt>
-<dd><p>list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (tail(1:length(years),5))</p></dd>
+<dd><p>list (length = n_stocks), which years to average SRR parameters for static (or prevailing) MSY-based reference points. Default is last 5 years (utils::tail(1:length(years),5))</p></dd>
 
     <dt>$XSPR_R_avg_yrs</dt>
 <dd><p>which years to average recruitments for calculating SPR-based SSB reference points. Default is 1:length(years)</p></dd>
@@ -323,19 +323,1177 @@ must be consistent with <code>basic_info</code>. For example the dimensions for 
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">asap3</span> <span class="op">=</span> <span class="fu"><a href="read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">asap3</span> <span class="op">=</span> <span class="fu"><a href="read_asap3_dat.html">read_asap3_dat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span>, <span class="st">"ex1_SNEMAYT.dat"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">input</span> <span class="op">=</span> <span class="fu">prepare_wham_input</span><span class="op">(</span><span class="va">asap3</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">mod</span> <span class="op">=</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># no ASAP3 file, default parameter values and configuration</span></span></span>
-<span class="r-in"><span><span class="va">input</span> <span class="op">=</span> <span class="fu">prepare_wham_input</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">mod</span> <span class="op">=</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">simdata</span> <span class="op">=</span> <span class="va">mod</span><span class="op">$</span><span class="fu">simulate</span><span class="op">(</span>complete<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">input</span><span class="op">$</span><span class="va">data</span> <span class="op">=</span> <span class="va">simdata</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Creating input---------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> basic_info done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> catch done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> indices done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> WAA done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> NAA done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> q done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> selectivity done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> age_comp done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> F done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> M done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> move done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> osa_obs done</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Input Complete--------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> WHAM version 2.0.0 and forward: </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1) makes major changes to the structure of some data, parameters, and reported objects.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2) decouples random effects for recruitment and random effects for older ages by default. To obtain results from previous versions set NAA_re$decouple_recruitment = FALSE.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 3) does not bias correct any log-normal process or observation errors. To configure these, set basic_info$bias_correct_process = TRUE and/or basic_info$bias_correct_observation = TRUE.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --USING ASAP3 Inputs-----------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1 asap3 dat file was processed. A single stock and region will be assumed. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Catch------------------------------------------------------------------------------------------------------------------------------ </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> waa_pointer_fleets determined from ASAP file(s). </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selectivity blocks for each fleet:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fleet_1: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Indices----------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> waa_pointer_indices determined from ASAP file(s). </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selectivity blocks for each index:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> index_1: 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> index_2: 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --WAA--------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> basic_info$waa_pointer_M was not provided, so waa_pointer_ssb will be used. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Selectivity------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> (Mean) selectivity block models are:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 1: logistic</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 2: logistic</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 3: logistic</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Random effects options for each selectivity block are:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 1: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 2: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 3: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Reference points-------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For annual SPR-based reference points, corresponding annual conditionally expected recruitments are used. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_wham.html">fit_wham</a></span><span class="op">(</span><span class="va">input</span>, do.osa <span class="op">=</span> <span class="cn">FALSE</span>, do.retro <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Order of parameters:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "log_catch_sig_scale"  "log_index_sig_scale"  "log_N1"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "N1_repars"            "log_NAA_sigma"        "trans_NAA_rho"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "log_NAA"              "mean_rec_pars"        "logit_q"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "q_re"                 "q_repars"             "q_prior_re"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "logit_selpars"        "selpars_re"           "sel_repars"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "catch_paa_pars"       "index_paa_pars"       "F_pars"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "Mpars"                "M_re"                 "M_repars"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [22] "log_b"                "logR_proj"            "mu_prior_re"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "trans_mu"             "mu_re"                "mu_repars"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [28] "L_re"                 "L_repars"             "Ecov_obs_logsigma"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "Ecov_obs_logsigma_re" "Ecov_obs_sigma_par"   "Ecov_process_pars"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [34] "Ecov_re"              "Ecov_beta_R"          "Ecov_beta_q"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [37] "Ecov_beta_M"          "Ecov_beta_mu"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Not matching template order:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "mean_rec_pars"        "logit_q"              "q_prior_re"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "q_re"                 "q_repars"             "F_pars"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "mu_prior_re"          "trans_mu"             "mu_re"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "mu_repars"            "N1_repars"            "log_N1"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "log_NAA_sigma"        "trans_NAA_rho"        "log_NAA"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "logR_proj"            "logit_selpars"        "selpars_re"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "sel_repars"           "catch_paa_pars"       "index_paa_pars"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [22] "log_catch_sig_scale"  "log_index_sig_scale"  "Mpars"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "M_re"                 "M_repars"             "log_b"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [28] "L_re"                 "L_repars"             "Ecov_re"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "Ecov_beta_R"          "Ecov_beta_M"          "Ecov_beta_mu"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [34] "Ecov_beta_q"          "Ecov_process_pars"    "Ecov_obs_logsigma"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [37] "Ecov_obs_logsigma_re" "Ecov_obs_sigma_par"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Your parameter list has been re-ordered.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Disable this warning with checkParameterOrder=FALSE)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using stats::nlminb for optimization with these control parameters:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iter.max: 1000</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> eval.max: 1000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1471.042 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1385.041 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1051.061 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1924.258 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  863.8018 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  750.4628 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  604.2889 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  829.776 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  939.6738 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1460.33 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2076.431 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  767.5407 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  758.4262 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  540.7402 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  468.1114 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  637.78 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  402.3814 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  355.8152 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  642.6439 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  279.326 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  308.7317 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  346.621 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  390.9605 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  529.728 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  196.518 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  322.462 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  295.1015 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  243.8621 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  198.209 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  673.7442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  661.9501 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  128.5663 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  331.3173 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  206.7063 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  247.115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  221.07 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  197.5152 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  312.1423 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  589.655 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  594.1248 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  411.8637 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  165.7469 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  438.8875 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  181.2036 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  105.4714 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  170.7329 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  140.4304 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  95.78204 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  144.2011 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  146.4235 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  78.11377 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  155.4508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  69.23239 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  238.2647 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  204.1208 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  416.8242 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  233.6249 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  170.9533 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  195.3753 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  64.74556 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  45.96703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  63.55537 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  59.57929 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  76.98854 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  42.94833 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  80.84296 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  30.07479 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  35.75543 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  45.79472 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  27.00725 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  63.60967 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  80.48628 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  87.66053 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  89.87816 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  109.8868 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  135.1671 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  67.46743 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  58.35881 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  26.45785 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  114.2341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  53.61375 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  32.38649 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  36.94307 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  22.49244 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  31.94953 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  20.70378 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.66949 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  20.27573 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  49.65985 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  41.68128 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  36.22574 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  50.33551 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.55701 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.54934 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.00862 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.1817 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  18.31261 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  19.07406 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  49.35664 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  20.18388 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  28.72863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  13.61682 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  27.1636 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  25.1287 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  33.52772 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  23.47264 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  11.39304 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  24.67729 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  32.74759 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  10.18052 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  11.68369 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  11.24285 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  9.944645 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  10.35671 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  8.116827 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  9.595103 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.186934 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.04335 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.589237 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  11.20889 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.340422 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.953319 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  8.25513 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.994672 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.037356 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  9.712536 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  15.88604 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.33504 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.695554 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.56381 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.06773 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  9.213528 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.201596 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  10.37895 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  17.19026 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  8.346575 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.865654 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.126388 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  8.160044 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  14.81724 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.78784 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.317833 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.373007 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.114099 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.147958 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.909466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.07079 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.402695 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.027797 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.162727 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  8.711973 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.64145 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  10.04501 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.225802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.571785 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.656341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.71837 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.98229 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.443449 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.89838 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.894677 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.917418 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.287873 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.681034 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.900503 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.075215 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.414769 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.875776 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.980331 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.728553 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5477011 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.600941 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5939936 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8511864 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4902308 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9273049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.771194 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.318009 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5481822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.613916 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.577432 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.33428 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6577855 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.577304 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.279212 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.314878 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4671219 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2004487 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7427812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.812929 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2301668 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5115683 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5412341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3167261 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.264794 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2659858 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2253876 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3522257 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1350663 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6270517 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5535786 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1350758 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4422347 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1316514 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4088483 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1142766 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2550084 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09382741 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1426867 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1411335 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1100854 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1661936 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06371693 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2694342 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07112256 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07067425 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07000295 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09297061 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.11482 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0882267 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1185607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1799139 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1360937 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.05101703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08865691 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1463756 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09396539 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03961496 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07369442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02277367 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.05871531 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02204421 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.05910879 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.05779574 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.05959536 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1038497 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06119139 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02899737 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02179275 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03434646 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.006702836 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02355213 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.007522799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.01888813 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.006849522 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03485359 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.01254535 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.01063946 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.003240917 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.008887901 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.003054112 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.007051713 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.002210686 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.01120369 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.001781682 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.001781682 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.001781682 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197527 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197523 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.119649 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.122586 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.410608 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.401089 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.211279 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.20193 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.843592 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.834585 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.690354 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.683041 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.599985 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.59297 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.514313 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.50752 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.399902 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.392474 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.279856 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.273186 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.204693 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.198558 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.114578 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.108244 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.96009 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.952826 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.648514 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.641436 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.295934 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.289254 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.120881 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.114493 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.943325 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.937952 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.869697 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.863477 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.769168 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.762919 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.537699 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.53153 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.809091 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.802717 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.017181 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.010983 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.521934 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.518352 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.425796 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.422768 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.350047 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.347102 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.268373 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.264794 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.176436 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.172897 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.069524 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.066605 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.96522 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.96186 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.843508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.839035 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.687804 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.683443 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.445602 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.441502 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.27097 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.268244 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.146029 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.1444 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.075999 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.074276 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.011703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.01092 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9416134 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9403846 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.868526 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8674787 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8049732 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8045814 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7387655 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7376168 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.651532 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6503983 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5801737 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5771658 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4625025 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4597228 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2702918 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2681184 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09519635 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09534295 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07127049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07111639 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1042693 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1035835 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07449826 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07367042 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1334469 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1331797 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06756141 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06919739 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03405096 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0342973 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03935506 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03919657 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08030692 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08036545 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2373811 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2382832 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09577961 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0949735 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2416543 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.241139 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2150332 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2155873 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.16172 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1614195 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1598343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1610084 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2946625 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2951873 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.169666 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.170069 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07787973 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07966162 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1617097 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1621756 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2327487 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2317454 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07811188 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07821535 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1081498 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1092107 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4658821 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4659442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2498095 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2529273 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1808717 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1840382 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1037288 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.103585 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1240407 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1246314 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1654354 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1670617 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2529841 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2504515 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1635201 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1609387 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1224878 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1198909 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2352855 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.235608 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1509494 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1510012 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.247227 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2465334 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1897589 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1894565 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.222673 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2230381 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1104867 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1086092 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1301088 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1303686 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1381907 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1387184 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3427163 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3423138 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2628599 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2641642 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1197283 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.119822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1955166 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1945391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1717368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1730437 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1305349 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1314873 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3040046 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3045023 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1332542 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.132391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1445515 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1448826 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04225243 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04237443 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02390502 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02338735 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02708104 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02375456 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.07012 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.06639 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.760808 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.743826 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.164905 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.160987 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.328867 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.332539 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.34368 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.344355 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3112966 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3126904 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.45783e-08 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197524 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121117 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121118 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.408827 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.402871 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.209499 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.203713 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.841811 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.836367 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.689297 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.684099 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.599046 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.593913 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.51344 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.508396 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.398347 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.393416 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.278886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.274158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.203962 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.199291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.11365 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.108977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.95831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.953703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.646733 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.642266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.294153 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.289815 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.119571 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.115395 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.942569 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.938708 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.868461 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.864712 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.767933 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.764154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.535917 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.532054 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.807311 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.803243 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.0154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.011508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.521802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.518485 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.425874 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.422691 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.350108 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.347042 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.268106 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.265062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.176169 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.173165 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.06952 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.066609 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.964956 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.962124 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.841726 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.83897 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.686023 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.683379 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.443821 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.441427 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.270621 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.268466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.146145 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.144285 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.075986 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.074291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.012134 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.01049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9417863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.940213 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8687442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8672618 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8054812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8040746 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7388802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7375033 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6516466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6502848 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5783927 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5770684 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4607211 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4596283 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2685103 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2678799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09526644 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09527266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07117687 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07120998 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1039717 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1038806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0741186 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07404936 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1333716 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1332548 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0684155 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06834509 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03419476 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03415384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03929953 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03925182 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08037272 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08029977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237906 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237759 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09541799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09533448 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2414781 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2413149 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2153896 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2152315 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1616341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1615052 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1604875 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1603562 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2950222 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2948274 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1699339 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1698014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0788078 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07873531 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1620047 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1618812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2323192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2321741 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07819723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07813013 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.108723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1086384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4660404 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4657863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2514608 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2512743 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1825242 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1823864 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1037028 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.103611 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.124389 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1242837 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1663181 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1661806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2518084 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2516256 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1622967 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.16216 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1212414 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1211351 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2355342 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2353601 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1510407 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1509102 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2469748 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2467853 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1896901 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1895251 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.222946 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2227656 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1095966 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1094977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1302944 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1301833 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1385157 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.138394 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3426467 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3423831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2636258 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2633995 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1198319 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1197185 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1951158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1949391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1724703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1723115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1310729 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1309502 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3043745 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3041331 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1328805 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1327641 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1447738 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1446607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04233245 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04229455 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02365667 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02363525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02542887 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02540673 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.07176 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.06473 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.760808 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.743822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.16482 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.161071 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.327215 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.334191 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.343677 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.344357 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3113822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.312607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.371151e-12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197524 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121117 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121118 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.408827 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.402871 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.209499 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.203713 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.841811 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.836367 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.689297 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.684099 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.599045 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.593913 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.51344 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.508396 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.398347 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.393416 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.278886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.274158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.203962 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.199291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.11365 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.108977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.95831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.953703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.646733 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.642266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.294153 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.289815 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.119571 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.115395 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.942569 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.938708 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.868461 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.864712 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.767932 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.764154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.535917 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.532054 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.807311 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.803243 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.0154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.011508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.521802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.518485 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.425874 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.422691 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.350108 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.347042 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.268106 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.265062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.176169 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.173165 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.06952 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.066609 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.964956 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.962124 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.841726 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.83897 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.686023 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.683379 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.443821 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.441427 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.270621 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.268466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.146145 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.144285 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.075986 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.074291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.012134 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.01049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9417863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.940213 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8687442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8672618 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8054812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8040746 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7388802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7375033 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6516466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6502849 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5783927 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5770684 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4607211 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4596283 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2685103 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2678799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09526644 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09527266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07117687 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07120998 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1039717 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1038806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0741186 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07404936 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1333716 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1332548 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06841549 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0683451 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03419476 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03415384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03929953 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03925182 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08037272 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08029977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237906 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237759 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09541799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09533448 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2414781 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2413149 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2153896 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2152315 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1616341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1615052 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1604875 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1603562 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2950222 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2948274 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1699339 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1698014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07880779 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07873531 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1620047 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1618812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2323192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2321741 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07819723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07813013 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.108723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1086384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4660404 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4657863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2514608 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2512743 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1825242 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1823864 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1037028 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.103611 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.124389 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1242837 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1663181 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1661806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2518084 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2516256 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1622967 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.16216 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1212414 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1211351 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2355342 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2353601 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1510407 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1509102 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2469748 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2467853 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1896901 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1895251 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.222946 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2227656 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1095966 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1094977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1302944 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1301833 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1385157 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.138394 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3426467 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3423831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2636258 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2633995 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1198319 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1197185 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1951158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1949391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1724703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1723115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1310729 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1309502 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3043745 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3041331 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1328805 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1327641 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1447738 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1446607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04233245 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04229455 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02365667 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02363525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02542886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02540674 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.07176 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.06473 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.760808 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.743822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.16482 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.161071 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.327215 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.334191 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.343677 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.344357 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3113822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.312607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.40215e-12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.40215e-12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.40215e-12 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197524 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.197525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121117 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.121118 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.408827 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.402871 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.209499 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  7.203713 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.841811 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.836367 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.689297 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.684099 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.599045 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.593913 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.51344 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.508396 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.398347 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.393416 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.278886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.274158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.203962 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.199291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.11365 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.108977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.95831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.953703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.646733 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.642266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.294153 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.289815 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.119571 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  5.115395 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.942569 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.938708 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.868461 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.864712 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.767932 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.764154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.535917 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.532054 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.807311 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.803243 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.0154 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  3.011508 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.521802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.518485 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.425874 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.422691 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.350108 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.347042 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.268106 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.265062 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.176169 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.173165 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.06952 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  2.066609 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.964956 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.962124 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.841726 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.83897 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.686023 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.683379 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.443821 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.441427 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.270621 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.268466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.146145 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.144285 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.075986 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.074291 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.012134 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.01049 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.9417863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.940213 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8687442 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8672618 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8054812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.8040746 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7388802 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.7375033 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6516466 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.6502849 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5783927 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.5770684 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4607211 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4596283 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2685103 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2678799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09526644 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09527266 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07117687 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07120998 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1039717 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1038806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0741186 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07404936 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1333716 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1332548 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.06841549 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.0683451 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03419476 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03415384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03929953 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.03925182 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08037272 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.08029977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237906 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.237759 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09541799 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.09533448 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2414781 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2413149 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2153896 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2152315 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1616341 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1615052 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1604875 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1603562 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2950222 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2948274 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1699339 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1698014 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07880779 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07873531 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1620047 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1618812 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2323192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2321741 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07819723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.07813013 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.108723 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1086384 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4660404 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.4657863 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2514608 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2512743 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1825242 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1823864 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1037028 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.103611 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.124389 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1242837 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1663181 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1661806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2518084 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2516256 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1622967 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.16216 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1212414 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1211351 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2355342 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2353601 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1510407 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1509102 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2469748 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2467853 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1896901 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1895251 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.222946 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2227656 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1095966 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1094977 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1302944 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1301833 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1385157 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.138394 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3426467 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3423831 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2636258 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.2633995 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1198319 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1197185 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1951158 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1949391 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1724703 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1723115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1310729 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1309502 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3043745 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3041331 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1328805 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1327641 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1447738 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.1446607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04233245 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.04229455 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02365667 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02363525 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02542886 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.02540674 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.07176 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  12.06473 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.760808 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.743822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.16482 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.161071 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.327215 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  4.334191 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.343677 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  1.344357 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.3113822 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  0.312607 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> outer mgc:  6.886272 </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

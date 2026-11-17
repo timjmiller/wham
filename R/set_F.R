@@ -1,6 +1,6 @@
 #' Specify configuration for fully-selected fishing mortality
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param F_opts (optional) named list of initial values for annual fully-selected fishing mortality and configuration method for estimation.
 #' 
 #' \code{F_opts} specifies a few as well as the effect on the population. Environmental covariate data need not span

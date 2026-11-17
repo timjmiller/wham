@@ -15,7 +15,6 @@
 is.repo <- try(pkgload::load_all(compile=FALSE)) #this is needed to run from repo without using installed version of wham
 if(is.character(is.repo)) library(wham) #not using repo
 library(ggplot2)
-library(tidyr)
 library(viridis)
 #by default do not perform bias-correction
 if(!exists("basic_info")) basic_info <- NULL
@@ -86,7 +85,6 @@ for(m in 1:n.mods){
 		selectivity=list(model=rep(sel_model[m],3), re=sel_re[[m]], initial_pars=initial_pars[[m]], fix_pars = fix_pars[[m]]),
 		NAA_re = list(sigma='rec+1',cor='iid'),
 		age_comp = "logistic-normal-miss0", basic_info = basic_info) # logistic normal, treat 0 obs as missing
-
 	# fit model
 	mods[[m]] <- fit_wham(input, do.check=T, do.osa=F, do.retro=F) 
 }
@@ -98,8 +96,8 @@ for(m in 1:length(mods)) saveRDS(mods[[m]], file=paste0("m",m,".rds"))
 # -----------------------------------------------------------------------
 
 # check which models converged
-vign4_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
-for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign4_conv[[m]], "", sep='\n')
+conv_check <- lapply(mods, function(x) capture.output(check_convergence(x), type = "message"))
+for(m in 1:n.mods) cat(paste0("Model ",m,":"), conv_check[[m]], "", sep='\n')
 
 # plot output for converged models
 ok_sdrep = sapply(mods, function(x) if(x$na_sdrep==FALSE & !is.na(x$na_sdrep)) 1 else 0)
@@ -131,7 +129,7 @@ write.csv(df.mods, file="ex4_table.csv",quote=F, row.names=F)
 # selAA block 1 plots
 selAA <- lapply(mods, function(x) x$report()$selAA[[1]])
 sel_mod <- factor(c("Age-specific","Logistic")[sapply(mods, function(x) x$env$data$selblock_models[1])], levels=c("Logistic","Age-specific"))
-sel_cor <- factor(c("None","IID","AR1","AR1_y","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])], levels=c("None","IID","AR1","AR1_y","2D AR1"))
+sel_cor <- factor(c("None","IID","AR1(age)","AR1(year)","2D AR1")[sapply(mods, function(x) x$env$data$selblock_models_re[1])+1], levels=c("None","IID","AR1(age)","AR1(year)","2D AR1"))
 df.selAA <- data.frame(matrix(NA, nrow=0, ncol=11))
 colnames(df.selAA) <- c(paste0("Age_",1:6),"Year","Model","conv","sel_mod","sel_cor")
 for(m in 1:n.mods){
@@ -144,14 +142,28 @@ for(m in 1:n.mods){
 	df$sel_cor = sel_cor[m]
 	df.selAA <- rbind(df.selAA, df)
 }
-df <- df.selAA |> pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
-	names_to = "Age",
-	names_prefix = "Age_",
-	names_transform = list(Age = as.integer),
-	values_to = "Selectivity")
+id_cols <- c("Year", "Model", "conv", "sel_mod", "sel_cor")
+age_cols <- setdiff(names(df.selAA), id_cols)
+age_vals <- as.integer(sub("^Age_", "", age_cols))
+df <- reshape(
+  data = df.selAA, 
+  varying = age_cols,
+  v.names = "Selectivity",
+  timevar = "Age",
+  times = age_vals,
+  idvar = id_cols,
+  direction = "long"
+)
+rownames(df) <- NULL
+
+# df <- df.selAA |> pivot_longer(-c(Year,Model,conv,sel_mod,sel_cor),
+# 	names_to = "Age",
+# 	names_prefix = "Age_",
+# 	names_transform = list(Age = as.integer),
+# 	values_to = "Selectivity")
 df$Age <- as.integer(df$Age)
 df$sel_mod <- factor(df$sel_mod, levels=c("Logistic","Age-specific"))
-df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1","AR1_y","2D AR1"))
+df$sel_cor <- factor(df$sel_cor, levels=c("None","IID","AR1(age)","AR1(year)","2D AR1"))
 df$conv = factor(df$conv)
 
 png(file = "selAA.png", width = 8, height = 7.5, res = 200, units='in')

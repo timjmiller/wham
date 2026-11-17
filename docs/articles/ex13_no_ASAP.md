@@ -271,18 +271,24 @@ c(fit_seq$opt$obj, fit_all$opt$obj, fit_asap$opt$obj)
 c(sum(fit_asap$opt$par-fit_all$opt$par), sum(fit_asap$opt$par-fit_seq$opt$par)) #all equal
 ```
 
-    #> [1] 1059.663 1059.663 1059.663
+    #> [1] 1081.812 1081.812 1081.812
     #> [1] 0 0
 
 ## 3. 2 stocks and 2 regions, no movement
 
-Read in the ASAP3 .dat files into R and create an input from it. WHAM
-will by default specify each ASAP dat file to represent a different
-stock in a separate region without movement:
+Read the text for ASAP3.dat files, create the dat files, then read the
+dat files in as asap3 dat objects using `read_asap3_dat`. WHAM will by
+default specify each ASAP dat file to represent a different stock in a
+separate region without movement:
 
 ``` r
 
-diff_stocks_asap <- read_asap3_dat(file.path(path_to_examples,c("north.dat","south.dat")))
+n_txt <- readRDS(file.path(path_to_examples,"bsb_north_dat_text.RDS"))
+s_txt <- readRDS(file.path(path_to_examples,"bsb_south_dat_text.RDS"))
+writeLines(n_txt, "north.dat")
+writeLines(s_txt, "south.dat")
+diff_stocks_asap <- read_asap3_dat(c("north.dat","south.dat"))
+
 selectivity <- list(model = rep(c("logistic", "age-specific"),c(8,4)), n_selblocks = 12,
     fix_pars = c(rep(list(NULL),8), list(2:8,3:8,3:8,2:8)),
     initial_pars = c(rep(list(c(2,0.2)),8),list(rep(c(0.5,1),c(1,7)), rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(2,6)),rep(c(0.5,1),c(1,7)))))

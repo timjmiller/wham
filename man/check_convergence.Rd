@@ -28,9 +28,9 @@ a list with at least the first three of these components:
 Access quick convergence checks from `TMB` and `nlminb`.
 }
 \examples{
-\dontrun{
-data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-mod <- fit_wham(input4_SNEMAYT) # using default values
+\donttest{
+input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
 check_convergence(mod)
 }
 }

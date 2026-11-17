@@ -124,7 +124,7 @@ df.mods <- data.frame(Recruitment = c(2,2,3,3,3,3,4),
                       Ecov_how = Ecov_how, stringsAsFactors=FALSE)
 n.mods <- dim(df.mods)[1]
 df.mods$Model <- paste0("m",1:n.mods)
-df.mods <- dplyr::select(df.mods, Model, tidyselect::everything()) # moves Model to first col
+df.mods <- df.mods |> dplyr::relocate(Model)
 ```
 
 Look at the model table. The `Ecov_how` is a a more recent character
@@ -269,7 +269,7 @@ definite Hessian.
 
 ``` r
 
-vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x)))
+vign2_conv <- lapply(mods, function(x) capture.output(check_convergence(x), type = "message"))
 for(m in 1:n.mods) cat(paste0("Model ",m,":"), vign2_conv[[m]], "", sep='\n')
 ```
 
@@ -370,22 +370,14 @@ df.mods
 save(df.mods, file="vign2_res.RData")
 ```
 
-    #>   Recruitment Ecov_process    Ecov_how Model conv pdHess      NLL  Rsig dAIC
-    #> 1    Bev-Holt          ar1 Controlling    m6 TRUE   TRUE -824.765 0.688  0.0
-    #> 2    Bev-Holt          ar1    Limiting    m5 TRUE   TRUE -824.272 0.694  1.0
-    #> 3      Ricker          ar1 Controlling    m7 TRUE   TRUE -824.250 0.699  1.0
-    #> 4    Bev-Holt           rw    Limiting    m4 TRUE   TRUE -813.544 0.693 20.4
-    #> 5      Random           rw Controlling    m2 TRUE   TRUE -810.097 0.780 25.3
-    #> 6    Bev-Holt           rw         ---    m3 TRUE   TRUE -808.177 0.859 29.1
-    #> 7      Random           rw         ---    m1 TRUE   TRUE -803.139 0.997 37.2
-    #>       AIC  rho_R rho_SSB rho_Fbar
-    #> 1 -1509.5 0.2072  0.1070  -0.1334
-    #> 2 -1508.5 0.2152  0.1126  -0.1382
-    #> 3 -1508.5 0.2044  0.1030  -0.1302
-    #> 4 -1489.1 0.2149  0.1129  -0.1384
-    #> 5 -1484.2 0.2312  0.1196  -0.1459
-    #> 6 -1480.4 0.2319  0.1094  -0.1351
-    #> 7 -1472.3 0.2592  0.1169  -0.1452
+    #>   Model Recruitment Ecov_process                 Ecov_how
+    #> 1    m1           2           rw                     none
+    #> 2    m2           2           rw controlling-lag-1-linear
+    #> 3    m3           3           rw                     none
+    #> 4    m4           3           rw    limiting-lag-1-linear
+    #> 5    m5           3          ar1    limiting-lag-1-linear
+    #> 6    m6           3          ar1 controlling-lag-1-linear
+    #> 7    m7           4          ar1 controlling-lag-1-linear
 
 ## 6. Results
 
@@ -421,9 +413,9 @@ near the mean of the process in this case because the estimated
 autocorrelation parameter is near 0:
 
 ![OSA residuals for the CPI, model
-4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_CPI_m4.png)![OSA
+4.](ex02_files/OSA_resid_ecov_4panel_CPI_m4.png)){ width=45% }![OSA
 residuals for the CPI, model
-5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/OSA_resid_ecov_4panel_CPI_m5.png)
+5.](ex02_files/OSA_resid_ecov_4panel_CPI_m5.png)){ width=45% }
 
 As we saw from the table of results, all the models produced similar
 Mohn’s $`\rho`$ values for SSB, F, and recruitment. Below are the
@@ -432,9 +424,8 @@ effects on recruitment (`m1`, left) and the best model that included CPI
 and SSB effects on recruitment, (`m6`, right).
 
 ![Retrospective pattern in recruitment,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m1.png)![Retrospective
-pattern in recruitment,
-m5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/NAA_age1_retro_relative_m6.png)
+m1.](ex02_files/NAA_age1_retro_relative_m1.png)![Retrospective pattern
+in recruitment, m5.](ex02_files/NAA_age1_retro_relative_m6.png)
 
 ### Recruitment
 
@@ -447,9 +438,8 @@ stock-recruit curve, which resulted in `m4` (right) estimating lower
 $`\sigma_R`$ than `m3` (left).
 
 ![Bev-Holt fit from m3, without a CPI
-effect.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_fit_m3.png)![Bev-Holt
-fit from m4, WITH a CPI
-effect.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/SSB_Rec_fit_m4.png)
+effect.](ex02_files/SSB_Rec_fit_m3.png)![Bev-Holt fit from m4, WITH a
+CPI effect.](ex02_files/SSB_Rec_fit_m4.png)
 
 ### Stock status
 
@@ -461,23 +451,15 @@ $`Pr[SSB < 0.5 \: SSB_{40\%}]`$. All models estimated with 100%
 probability that the stock was not experiencing overfishing in 2011,
 $`F < F_{40\%}`$.
 
-![Stock status,
-m1.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m1.png)![Stock
-status,
-m2.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m2.png)![Stock
-status,
-m3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m3.png)![Stock
-status,
-m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m4.png)![Stock
-status,
-m5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_status_m5.png)
+![Stock status, m1.](ex02_files/Kobe_status_m1.png)![Stock status,
+m2.](ex02_files/Kobe_status_m2.png)![Stock status,
+m3.](ex02_files/Kobe_status_m3.png)![Stock status,
+m4.](ex02_files/Kobe_status_m4.png)![Stock status,
+m5.](ex02_files/Kobe_status_m5.png)
 
 For models with stock recruit functions, status based on MSY-based
 reference points is more optimistic: ![MSY stock status,
-m3.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m3.png)![MSY
-stock status,
-m4.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m4.png)![MSY
-stock status,
-m5.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m5.png)![MSY
-stock status,
-m6.](https://raw.githubusercontent.com/timjmiller/wham/master/vignettes/ex2_plots/Kobe_msy_status_m6.png)
+m3.](ex02_files/Kobe_msy_status_m3.png)![MSY stock status,
+m4.](ex02_files/Kobe_msy_status_m4.png)![MSY stock status,
+m5.](ex02_files/Kobe_msy_status_m5.png)![MSY stock status,
+m6.](ex02_files/Kobe_msy_status_m6.png)

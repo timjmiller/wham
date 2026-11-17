@@ -153,8 +153,6 @@ for(m in which(is_conv)){
   plot_wham_output(mod=mods[[m]], dir.main=file.path(write.dir,paste0("m",m)))
 }
 
-# save results table
-write.csv(df.mods, file="ex5_table.csv",quote=F, row.names=F)
 
 # compare models which(is_conv) 1, 2, 3, 5, 8, 9, 11, 12
 compare_wham_models(mods[which(is_conv)], do.table=FALSE, plot.opts=list(return.ggplot=F))

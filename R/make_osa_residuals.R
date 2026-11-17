@@ -11,13 +11,15 @@
 #' See \href{https://doi.org/10.1016/j.fishres.2022.106487}{Trijoulet et al. (2023)} for OSA methods for age composition OSA residuals.
 #'
 #' @param model A fit WHAM model, output from \code{\link{fit_wham}}.
+#' @param osa.opts a list of options: \code{method} = ("oneStepGaussianOffMode" (default), "oneStepGaussian", or "oneStepGeneric") and \code{parallel} (T (default)/F) to pass to \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}.
+#' @param sdrep_required (T/F) whether the osa residuals should be calculated without the \code{\link[TMB:sdreport]{TMB::sdreport}} being performed on the model.
 #'
 #' @return the same fit TMB model with additional elements for osa residuals:
 #'   \describe{
-#'     \item{\code{$OSA.Ecov}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for environmental observations, if applicable.}
-#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for aggregate catch and index 
+#'     \item{\code{$OSA.Ecov}}{data.frame returned by \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for environmental observations, if applicable.}
+#'     \item{\code{$OSA.agregate}}{data.frame returned by \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for aggregate catch and index 
 #'        observations conditional on any environmental observations, if applicable.}
-#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB]{TMB::oneStepPredict}} for age composition observations 
+#'     \item{\code{$OSA.agecomp}}{data.frame returned by \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} for age composition observations 
 #'        conditional on any aggregate catch or index, or environmental observations, if applicable.}
 #'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa=TRUE})}
 #'   }
@@ -27,11 +29,11 @@
 #' @seealso \code{\link{fit_wham}}
 #'
 #' @examples
-#' \dontrun{
-#' data("input4_SNEMAYT") # load SNEMA yellowtail flounder data and parameter settings
-#' mod <- fit_wham(input4_SNEMAYT, do.osa =FALSE, do.retro =FALSE)
-#' mod <- make_osa_residuals(mod) # calculate Mohn's rho
-#' plot_wham_output(mod)
+#' \donttest{
+#' input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
+#' mod <- fit_wham(input, do.osa = FALSE, do.retro = FALSE)
+#' mod <- make_osa_residuals(mod)
+#' plot_wham_output(mod, dir.main = tempdir(check = TRUE))
 #' }
 #' 
 make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffMode", parallel=TRUE), sdrep_required = TRUE){
@@ -45,7 +47,7 @@ make_osa_residuals <- function(model,osa.opts = list(method="oneStepGaussianOffM
     stop(paste0("Only osa methods allowed for TMB::oneStepPredict currently in WHAM are oneStepGaussianoffMode (default), oneStepGaussian, or oneStepGeneric"))
   }
   if(is.null(osa.opts$parallel)) osa.opts$parallel <- TRUE
-  if(sdrep_required & !model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
+  if(sdrep_required && !model$is_sdrep) stop(paste0("Only allowing OSA residuals for models with TMB::sdreport completed"))
   if(any(model$input$data$age_comp_model_fleets == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   if(any(model$input$data$age_comp_model_indices == 10)) stop("OSA residuals do not seem possible with mvtweedie age composition likelihoods.")
   

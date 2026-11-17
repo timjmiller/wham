@@ -1,6 +1,6 @@
 #' Specify model and parameter configuration for "extra" mortality not directly attributed to natural mortality
 #'
-#' @param input list containing data, parameters, map, and random elements (output from \code{\link{wham::prepare_wham_input}})
+#' @param input list containing data, parameters, map, and random elements (output from \code{\link{prepare_wham_input}})
 #' @param L (optional) list specifying "extra" mortality options: model, random effects, initial values, and parameters to fix (see details)
 #' 
 #' \code{L} specifies estimation options for "extra" mortality.

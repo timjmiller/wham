@@ -30,12 +30,22 @@
 #' @seealso \code{\link{compare_wham_models}}, \code{\link{read_wham_fit}}
 #'
 #' @examples
-#' \dontrun{
-#' base <- read_asap3_fit(wd=file.path(getwd(),'asap_results'), asap.name='BASE_5C.DAT', pSPR=40)
-#' m1 <- fit_wham(input1)
-#' m2 <- fit_wham(input2)
-#' mods <- list(base=base, m1=m1, m2=m2)
-#' res <- compare_wham_models(mods)
+#' \donttest{
+#' path_to_extdata <- system.file("extdata", package="wham")
+#' rds_files <- paste0(c("RDAT", "DAT", "STD", "COR", "PAR"),".RDS")
+#' asap_files_rds <- lapply(file.path(path_to_extdata, "BASE_3", rds_files), readRDS)
+#' write.dir <- file.path(tempdir(check=TRUE))
+#' dir.create(write.dir)
+#' dput(asap_files_rds[[1]], file.path(write.dir, "BASE_3.RDAT"))
+#' writeLines(asap_files_rds[[2]], file.path(write.dir, "BASE_3.DAT"))
+#' writeLines(asap_files_rds[[3]], file.path(write.dir, "BASE_3.STD"))
+#' writeLines(asap_files_rds[[4]], file.path(write.dir, "BASE_3.COR"))
+#' writeLines(asap_files_rds[[5]], file.path(write.dir, "BASE_3.PAR"))
+#' base <- read_asap3_fit(wd=write.dir, asap.name='BASE_3', pSPR=40)
+#' asap3 <- read_asap3_dat(file.path(write.dir, "BASE_3.DAT"))
+#' input <- prepare_wham_input(asap3)
+#' m1 <- fit_wham(input, do.osa=FALSE, do.retro = FALSE)
+#' res <- compare_wham_models(list(base=base, m1=m1), fdir = tempdir(check=TRUE))
 #' }
 #'
 read_asap3_fit <- function(wd, asap.name, pSPR=40)  {
@@ -209,7 +219,7 @@ asap_get_SPR <- function(asap, pspr){
       spr.f <- function(F.start) {
         abs(s.per.recr(nages=nages, fec.age=fec.age[j,], mat.age=mat.age[j,], M.age= M.age[j,], F.mult=F.start, sel.age=sel.age[j,], spawn.time=spawn.time)/spr0.vals[j] - t.spr )
       }
-      yyy <- nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
+      yyy <- stats::nlminb(start=F.start, objective=spr.f, lower=0, upper=3)
       f.spr.vals[j,i] <- yyy$par
       ypr.spr.vals[j,i] <- ypr(nages, wgt.age=wgt.age[j,], M.age=M.age[j,],  F.mult=f.spr.vals[j,i], sel.age=sel.age[j,] )
       conv.vals[j,i] <- ifelse(yyy$convergence==0, TRUE, FALSE)
@@ -248,13 +258,13 @@ asap_grab_aux <- function(wd, asap.name, asap, fleet.names, index.names) {
   par.fname <- list.files(wd, pattern=paste0(asap.name,".par"), ignore.case=TRUE, full.names=TRUE)
   if(all(file.exists(std.fname), file.exists(cor.fname), file.exists(par.fname))){
     # Read in std file from admb
-    asap.std <- read.table(std.fname, header = F, skip=1, stringsAsFactors = FALSE)
+    asap.std <- utils::read.table(std.fname, header = F, skip=1, stringsAsFactors = FALSE)
     names(asap.std) <- c("index", "name", "value", "stdev" )
     years <- seq(asap$parms$styr, asap$parms$endyr)
 
     # Read in cor file from admb
     ncol.cor <- dim(asap.std) [1]
-    asap.cor <- read.table(cor.fname, header = F, skip=2, col.names=c("index", "name", "value", "stdev", seq(1,ncol.cor)), fill=T)
+    asap.cor <- utils::read.table(cor.fname, header = F, skip=2, col.names=c("index", "name", "value", "stdev", seq(1,ncol.cor)), fill=T)
     asap.cor.mat <- as.matrix(asap.cor[,5:length(asap.cor[1,])])
     asap.cor.names <- as.character(as.vector(asap.cor[,2]) )
     levels.cor.names <- unique(asap.cor.names)
