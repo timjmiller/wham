@@ -82,5 +82,5 @@ if(make_test_res){
   ex6_test_results$pars <- lapply(mods, function(x) as.numeric(x$opt$par))
   ex6_test_results$nll <- sapply(mods, function(x) x$opt$objective)
   ex6_test_results$is_conv <- vign6_res$pdHess
-  saveRDS(ex6_test_results, file=file.path(pkg.dir, "tests","testthat","fixtures","ex06_test_results.rds"))
+  saveRDS(ex6_test_results, file=file.path(pkg.dir, "tests","testthat","fixtures","ex06_test_results.RDS"))
 }

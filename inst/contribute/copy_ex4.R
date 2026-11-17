@@ -52,5 +52,5 @@ if(make_test_res){
 	ex4_test_results <- list(pars=NULL, nll=NULL)
 	ex4_test_results$pars <- lapply(mods, function(x) as.numeric(x$opt$par))
 	ex4_test_results$nll <- sapply(mods, function(x) x$opt$objective)
-	saveRDS(ex4_test_results, file=file.path(pkg.dir, "tests","testthat","fixtures", "ex04_test_results.rds"))
+	saveRDS(ex4_test_results, file=file.path(pkg.dir, "tests","testthat","fixtures", "ex04_test_results.RDS"))
 }
