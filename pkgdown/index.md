@@ -1,5 +1,6 @@
 # WHAM: a state-space age-structured assessment model
 
+
 The Woods Hole Assessment Model (WHAM) is a general age-structured stock assessment framework that can be configured to estimate assessment models that range in complexity from statistical catch-at-age (SCAA) model with annual recruitments as fixed effects, to state-space, multi-stock, multi-region, age-structured models where many parameters can be treated as time- and age-varying process errors and/or allowing effects of environmental covariates. 
 
 The default configuration of WHAM will estimate a traditional SCAA model with no random effects (see [Example 6](https://timjmiller.github.io/wham/articles/ex06_NAA.html), [Example 8](https://timjmiller.github.io/wham/articles/ex08_compare.html), and [Example 13](https://timjmiller.github.io/wham/articles/ex13_no_ASAP.html))
@@ -185,6 +186,7 @@ DOC or the United States Government.
 <!-- badges: start -->
 
 [![active badge svg](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org)
+[![Codecov test coverage](https://codecov.io/gh/timjmiller/wham/branch/lab/graph/badge.svg)](https://app.codecov.io/gh/timjmiller/wham?branch=lab)
 
 <!-- badges: end -->
 

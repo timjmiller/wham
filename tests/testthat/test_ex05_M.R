@@ -11,7 +11,7 @@ test_that("Ex 5 works",{
 suppressWarnings(suppressMessages({
 
 path_to_examples <- system.file("extdata", package="wham")
-ex5_test_results <- readRDS(testthat::test_path("fixtures","ex05_test_results.rds"))
+ex5_test_results <- readRDS(testthat::test_path("fixtures","ex05_test_results.RDS"))
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex2_SNEMAYT.dat"))
 env.dat <- read.csv(file.path(path_to_examples,"GSI.csv"), header=T)
