@@ -26,7 +26,6 @@ suppressWarnings(suppressMessages({
 
 path_to_examples <- system.file("extdata", package="wham")
 ex4_test_results <- readRDS(testthat::test_path("fixtures","ex04_test_results.RDS"))
-#ex4_test_results <- readRDS(file.path(path_to_examples,"ex4_test_results.rds"))
 
 asap3 <- read_asap3_dat(file.path(path_to_examples,"ex1_SNEMAYT.dat"))
 inv.logit <- function(x) exp(x)/(1+exp(x))
