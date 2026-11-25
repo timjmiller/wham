@@ -24,29 +24,6 @@ template <class Type>
 Type rho_trans(Type x){return Type(2)/(Type(1) + exp(-Type(2) * x)) - Type(1);}
 VECTORIZE1_t(rho_trans)
 
-template<class Type>
-matrix<Type> extract_matrix_array3(array<Type> a, int index){ //matrix has to be the last two dims of the 3d array
-  int nr = a.dim(1);
-  int nc = a.dim(2);
-  matrix<Type> mat(nr, nc);
-  for(int i = 0; i < nr; i++) for(int j = 0; j < nc; j++) mat(i,j) = a(index,i,j);
-  return mat;
-}
-
-template <class Type>
-matrix<Type> get_avg_waa(array<Type> waa, vector<int> years, vector<int> pointers){
-  
-  int n_ages = waa.dim(2);
-  int n_waa = pointers.size();
-  int n_y = years.size();
-  matrix<Type> avg_waa(n_waa,n_ages);
-  avg_waa.setZero();
-  for(int i = 0; i < n_waa; i++) for(int y = 0; y < n_y; y++) for(int a = 0; a < n_ages; a++){
-    avg_waa(i,a) += waa(pointers(i)-1, years(y), a)/Type(n_y);
-  } 
-  return avg_waa;
-}
-
 template <class Type>
 array<Type> get_avg_waacatch_as_array(array<Type> waa, matrix<int> years, vector<int> pointers){
   
@@ -133,20 +110,6 @@ array<Type> get_waassb_y(array<Type> waassb, int y){
   waassb_y.setZero();
   for(int s = 0; s < n_stocks; s++) for(int a = 0; a < n_ages; a++) waassb_y(s,a) = waassb(s, y, a);
   return waassb_y;
-}
-
-template <class Type>
-matrix<Type> get_avg_mat(array<Type> mat, vector<int> years){
-  
-  int n_ages = mat.dim(2);
-  int n_stocks = mat.dim(0);
-  int n_y = years.size();
-  matrix<Type> avg_mat(n_stocks,n_ages);
-  avg_mat.setZero();
-  for(int i = 0; i < n_stocks; i++) for(int y = 0; y < n_y; y++) for(int a = 0; a < n_ages; a++){
-    avg_mat(i,a) += mat(i, years(y), a)/Type(n_y);
-  } 
-  return avg_mat;
 }
 
 template <class Type>
@@ -242,21 +205,6 @@ matrix<Type> get_avg_SR_ab(matrix<Type> log_a, matrix<Type> log_b, vector<int> s
 }
 
 template <class Type>
-matrix<Type> get_avg_FAA(array<Type> FAA, vector<int> years, int do_log){
-  
-  int n_fleets = FAA.dim(0);
-  int n_ages = FAA.dim(2);
-  matrix<Type> FAA_avg(n_fleets, n_ages);
-
-  FAA_avg.setZero();
-  for(int f = 0; f < n_fleets; f++) for(int a = 0; a < n_ages; a++){
-    for(int y = 0; y < years.size(); y++) FAA_avg(f,a) += FAA(f,years(y),a)/Type(years.size()); //average F at fleet,season,age over years
-    if(do_log) FAA_avg(f,a) = log(FAA_avg(f,a));
-  }
-  return FAA_avg;
-}
-
-template <class Type>
 array<Type> get_avg_FAA_as_array(array<Type> FAA, matrix<int> years, int do_log){
   
   int n_fleets = FAA.dim(0);
@@ -272,42 +220,6 @@ array<Type> get_avg_FAA_as_array(array<Type> FAA, matrix<int> years, int do_log)
     }
   }
   return FAA_avg;
-}
-
-
-template <class Type>
-matrix<Type> get_avg_fleet_sel(array<Type> FAA, vector<int> avg_years_ind,
-  int which_F_age){
-    /* 
-     get average selectivity. Typically to define referene points or for projections
-                 FAA:  FAA (n_fleets x n_years x n_ages) array from main code.
-       avg_years_ind:  integer vector of years to average FAA
-         which_F_age:  define which age has max F
-    */
-  //average F by fleet, and age is used to find selectivity (fleet,season,age) to project 
-  //full F is the FAA for fleet, season and age defined by which_F_age
-  int n_toavg = avg_years_ind.size();
-  int n_fleets = FAA.dim(0);
-  int n_ages = FAA.dim(2);
-  matrix<Type> FAA_avg(n_fleets, n_ages);
-  FAA_avg.setZero();
-  for(int f = 0; f < n_fleets; f++) {
-    for(int a = 0; a < n_ages; a++) for(int i = 0; i < n_toavg; i++){
-      FAA_avg(f,a) += FAA(f,avg_years_ind(i),a)/Type(n_toavg);
-    }
-  }
-  vector<Type> FAA_avg_tot = FAA_avg.colwise().sum();
-  Type F_full = FAA_avg_tot(which_F_age-1);
-
-  //get selectivity using average over avg.yrs
-  matrix<Type> sel(n_fleets,n_ages);
-  //fully selected F across regions, seasons, and ages
-  for(int f = 0; f < n_fleets; f++){
-    for(int a = 0; a < n_ages; a++) {
-      sel(f,a) = FAA_avg(f,a)/F_full;
-    }
-  }
-  return sel;
 }
 
 template <class Type>
@@ -347,18 +259,38 @@ array<Type> get_avg_fleet_sel_as_array(array<Type> FAA, matrix<int> avg_years_in
   return sel;
 }
 
+// template <class Type>
+// array<Type> get_avg_M(array<Type> log_M, vector<int> years, int do_log){
+  
+//   int n_ages = log_M.dim(3);
+//   int n_regions = log_M.dim(1);
+//   int n_stocks = log_M.dim(0);
+//   int n_y = years.size();
+//   array<Type> avg_M(n_stocks,n_regions, n_ages);
+//   avg_M.setZero();
+//   for(int i = 0; i < n_stocks; i++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
+//     for(int y = 0; y < n_y; y++) avg_M(i, r, a) += exp(log_M(i, r, years(y), a))/Type(n_y);
+//     if(do_log) avg_M(i, r, a) = log(avg_M(i, r, a));
+//   }
+//   return avg_M;
+// }
+
 template <class Type>
-array<Type> get_avg_M(array<Type> log_M, vector<int> years, int do_log){
+array<Type> get_avg_M(array<Type> log_M, array<int> years_ind, int do_log, int trace = 0){
   
   int n_ages = log_M.dim(3);
   int n_regions = log_M.dim(1);
   int n_stocks = log_M.dim(0);
-  int n_y = years.size();
   array<Type> avg_M(n_stocks,n_regions, n_ages);
   avg_M.setZero();
-  for(int i = 0; i < n_stocks; i++) for(int r = 0; r < n_regions; r++) for(int a = 0; a < n_ages; a++){
-    for(int y = 0; y < n_y; y++) avg_M(i, r, a) += exp(log_M(i, r, years(y), a))/Type(n_y);
-    if(do_log) avg_M(i, r, a) = log(avg_M(i, r, a));
+  for(int s = 0; s < n_stocks; s++) for(int r = 0; r < n_regions; r++) {
+    int n_y = years_ind(s,r,0);
+    for(int a = 0; a < n_ages; a++) {
+      for(int y = 0; y < n_y; y++) {
+        avg_M(s, r, a) += exp(log_M(s, r, years_ind(s,r,y+1), a))/Type(n_y);
+      }
+      if(do_log) avg_M(s, r, a) = log(avg_M(s, r, a));
+    }
   }
   return avg_M;
 }

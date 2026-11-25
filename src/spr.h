@@ -818,7 +818,7 @@ vector< array <Type> > get_SPR_res(vector<Type> SPR_weights, array<Type> log_M, 
   if(trace) see(L_avg);
   array<Type> mat = get_avg_mat_as_array(mature, spawn_regions, years_mat);
   if(trace) see(mat);
-  array<Type> log_M_avg = get_avg_M(log_M, years_M, 1);
+  array<Type> log_M_avg = get_avg_M(log_M, years_M, 1, trace);
   if(trace) see(log_M_avg);
   array<Type> mu_avg(n_stocks, n_ages, n_seasons, n_regions, n_regions);
   mu_avg.setZero(); 

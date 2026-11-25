@@ -62,13 +62,13 @@ If \code{NAA_re = NULL}, a traditional statistical catch-at-age model is fit (NA
       \describe{
          \item{"age-specific-fe"}{(default) age- and region-specific fixed effects parameters}
          \item{"equilibrium"}{2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.}
-         \item{"iid-re"}{(default) age- and region-specific iid random effects parameters. 2 parameters: mean and sd for log NAA}
-         \item{"ar1-re"}{(default) age- and region-specific random effects parameters. 3 parameters: mean and sd, and cor for log NAA}
+         \item{"iid-re"}{age- and region-specific iid random effects parameters. 2 parameters: mean and sd for log NAA}
+         \item{"ar1-re"}{age- and region-specific random effects parameters. 3 parameters: mean and sd, and cor for log NAA}
       }
     }
-    \item{$N1_pars}{An (n_stocks x n_regions x n_ages) array. If N1_model = 0, then this should be filled with the initial values to use for abundance at age by stock and region in the first year. 
-       If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected 
-       equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.
+    \item{$N1_pars}{An (n_stocks x n_regions x n_ages) array. If \code{$N1_model = "age-specific-fe"}, then this should be filled with the initial values to use for abundance at age by stock and region in the first year. 
+       If \code{$N1_model = "equilibrium"}, only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected 
+       equilibrium fishing mortality rate generating the rest of the numbers at age in the first year. If \code{$N1_model = "iid-re"} or \code{$N1_model = "ar1-re"}, the supplied values will be the intial values for the initial abundance parameters as random effects. 
     }
     \item{$recruit_model}{Integer vector (n_stocks) determining how to model recruitment. Overrides \code{recruit_model} argument to \code{prepare_wham_input}. Must make sure \code{NAA_re$sigma}, \code{NAA_re$cor}
        and \code{ecov} are properly specified.
