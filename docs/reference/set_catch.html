@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,12 +126,34 @@ If <code>NULL</code>, all settings from the ASAP data file or basic_info are use
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span>, <span class="st">"ytf_rec1.RDS"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in gzfile(file, "rb"):</span> cannot open the connection</span>
 <span class="r-in"><span><span class="va">newcatch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">500</span>, <span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_years_model</span>, <span class="va">input</span><span class="op">$</span><span class="va">data</span><span class="op">$</span><span class="va">n_fleets</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'input' not found</span>
 <span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu">set_catch</span><span class="op">(</span><span class="va">input</span>, catch_info <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>agg_catch <span class="op">=</span> <span class="va">newcatch</span><span class="op">)</span><span class="op">)</span> <span class="co">#constant catch of 500 mt</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'input' not found</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Selectivity------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> (Mean) selectivity block models are:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 1: age-specific</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 2: age-specific</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 3: age-specific</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Random effects options for each selectivity block are:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 1: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 2: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Block 3: none</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --Catch------------------------------------------------------------------------------------------------------------------------------ </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selectivity blocks for each fleet:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Fleet 1: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

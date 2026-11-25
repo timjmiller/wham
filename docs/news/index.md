@@ -1,6 +1,6 @@
 # Changelog
 
-## wham 2.1.0.9013 (2026-11-16)
+## wham 2.1.0.9014 (2026-11-25)
 
 #### Minor improvements
 
@@ -25,6 +25,10 @@
 
 #### Bug fixes
 
+- (2.1.0.9014) fix bug in years to use in averaging M for static BRPs,
+  bug in allometric M parameter b random effects configuration and
+  documentation of intial NAA modeling options.
+  [75b1fdd](https://github.com/timjmiller/wham/commit/75b1fdda54c24d9a776b506b23c99ebe2401e2e7)
 - (2.1.0.9012) fix some bugs in vignettes. [PR
   101](https://github.com/timjmiller/wham/pull/101)
 - (2.1.0.9012) Change to minimize Eigen namespace usage per TMB

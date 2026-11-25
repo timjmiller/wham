@@ -115,10 +115,8 @@ options modified.
 
 ``` r
 input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
-#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
-#> Error in gzfile(file, "rb"): cannot open the connection
 catchability <- list(re = c("iid", "none"))
 #independent time-varying random effects on q for first survey.
 input <- set_q(input, catchability = catchability) 
-#> Error: object 'input' not found
+#> 
 ```

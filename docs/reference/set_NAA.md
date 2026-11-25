@@ -148,24 +148,27 @@ set_NAA(input, NAA_re = NULL)
 
       "iid-re"
 
-      :   (default) age- and region-specific iid random effects
-          parameters. 2 parameters: mean and sd for log NAA
+      :   age- and region-specific iid random effects parameters. 2
+          parameters: mean and sd for log NAA
 
       "ar1-re"
 
-      :   (default) age- and region-specific random effects parameters.
-          3 parameters: mean and sd, and cor for log NAA
+      :   age- and region-specific random effects parameters. 3
+          parameters: mean and sd, and cor for log NAA
 
   \$N1_pars
 
-  :   An (n_stocks x n_regions x n_ages) array. If N1_model = 0, then
-      this should be filled with the initial values to use for abundance
-      at age by stock and region in the first year. If N1_model = 1
-      (equilibrium assumption), only the first two values in the ages
-      dimension are used: the (s,r,1) value is recruitment for stock
-      (and region) and (s,r,2) is the fully-selected equilibrium fishing
-      mortality rate generating the rest of the numbers at age in the
-      first year.
+  :   An (n_stocks x n_regions x n_ages) array. If
+      `$N1_model = "age-specific-fe"`, then this should be filled with
+      the initial values to use for abundance at age by stock and region
+      in the first year. If `$N1_model = "equilibrium"`, only the first
+      two values in the ages dimension are used: the (s,r,1) value is
+      recruitment for stock (and region) and (s,r,2) is the
+      fully-selected equilibrium fishing mortality rate generating the
+      rest of the numbers at age in the first year. If
+      `$N1_model = "iid-re"` or `$N1_model = "ar1-re"`, the supplied
+      values will be the intial values for the initial abundance
+      parameters as random effects.
 
   \$recruit_model
 
@@ -212,9 +215,11 @@ modeling options modified.
 
 ``` r
 input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
-#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
-#> Error in gzfile(file, "rb"): cannot open the connection
 NAA <- list(sigma = "rec")
 input <- set_NAA(input, NAA_re = NAA) #estimate recruitment as random effects
-#> Error: object 'input' not found
+#> --NAA--------------------------------------------------------------------------------------------------------------------------------
+#> 
+#>  Same NAA_re$sigma being used for all stocks (rec).
+#> -------------------------------------------------------------------------------------------------------------------------------------
+#> 
 ```

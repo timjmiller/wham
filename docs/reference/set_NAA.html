@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">wham</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9013</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,18 +138,18 @@
 <dd><p>2 fixed effects parameters: an initial recruitment and an instantaneous fishing mortality rate to generate an equilibruim abundance at age.</p></dd>
 
          <dt>"iid-re"</dt>
-<dd><p>(default) age- and region-specific iid random effects parameters. 2 parameters: mean and sd for log NAA</p></dd>
+<dd><p>age- and region-specific iid random effects parameters. 2 parameters: mean and sd for log NAA</p></dd>
 
          <dt>"ar1-re"</dt>
-<dd><p>(default) age- and region-specific random effects parameters. 3 parameters: mean and sd, and cor for log NAA</p></dd>
+<dd><p>age- and region-specific random effects parameters. 3 parameters: mean and sd, and cor for log NAA</p></dd>
 
 
 </dl><p></p></dd>
 
     <dt>$N1_pars</dt>
-<dd><p>An (n_stocks x n_regions x n_ages) array. If N1_model = 0, then this should be filled with the initial values to use for abundance at age by stock and region in the first year.
-       If N1_model = 1 (equilibrium assumption), only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected
-       equilibrium fishing mortality rate generating the rest of the numbers at age in the first year.</p></dd>
+<dd><p>An (n_stocks x n_regions x n_ages) array. If <code>$N1_model = "age-specific-fe"</code>, then this should be filled with the initial values to use for abundance at age by stock and region in the first year.
+       If <code>$N1_model = "equilibrium"</code>, only the first two values in the ages dimension are used: the (s,r,1) value is recruitment for stock (and region) and (s,r,2) is the fully-selected
+       equilibrium fishing mortality rate generating the rest of the numbers at age in the first year. If <code>$N1_model = "iid-re"</code> or <code>$N1_model = "ar1-re"</code>, the supplied values will be the intial values for the initial abundance parameters as random effects.</p></dd>
 
     <dt>$recruit_model</dt>
 <dd><p>Integer vector (n_stocks) determining how to model recruitment. Overrides <code>recruit_model</code> argument to <code>prepare_wham_input</code>. Must make sure <code>NAA_re$sigma</code>, <code>NAA_re$cor</code>
@@ -187,11 +187,13 @@
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package<span class="op">=</span><span class="st">"wham"</span><span class="op">)</span>, <span class="st">"ytf_rec1.RDS"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in gzfile(file, "rb"):</span> cannot open the connection</span>
 <span class="r-in"><span><span class="va">NAA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma <span class="op">=</span> <span class="st">"rec"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu">set_NAA</span><span class="op">(</span><span class="va">input</span>, NAA_re <span class="op">=</span> <span class="va">NAA</span><span class="op">)</span> <span class="co">#estimate recruitment as random effects</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'input' not found</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --NAA--------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  Same NAA_re$sigma being used for all stocks (rec).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> -------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

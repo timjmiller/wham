@@ -105,10 +105,32 @@ observations and fleet options modified.
 
 ``` r
 input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
-#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
-#> Error in gzfile(file, "rb"): cannot open the connection
 newcatch <- matrix(500, input$data$n_years_model, input$data$n_fleets)
-#> Error: object 'input' not found
 input <- set_catch(input, catch_info = list(agg_catch = newcatch)) #constant catch of 500 mt
-#> Error: object 'input' not found
+#> 
+#> 
+#> 
+#> --Selectivity------------------------------------------------------------------------------------------------------------------------
+#> (Mean) selectivity block models are:
+#> Block 1: age-specific
+#> Block 2: age-specific
+#> Block 3: age-specific
+#> 
+#> Random effects options for each selectivity block are:
+#> Block 1: none
+#> Block 2: none
+#> Block 3: none
+#> 
+#> -------------------------------------------------------------------------------------------------------------------------------------
+#> 
+#> 
+#> 
+#> 
+#> --Catch------------------------------------------------------------------------------------------------------------------------------ 
+#> catch_info$waa_pointer_fleets was not provided, so the first waa matrix will be used for all fleets. 
+#> Selectivity blocks for each fleet:
+#> Fleet 1: 1
+#> 
+#> -------------------------------------------------------------------------------------------------------------------------------------
+#> 
 ```

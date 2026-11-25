@@ -219,9 +219,9 @@ mortality options modified.
 
 ``` r
 input <- readRDS(file.path(system.file("extdata", package="wham"), "ytf_rec1.RDS"))
-#> Warning: cannot open compressed file 'C:/Users/timothy.j.miller/AppData/Local/Programs/R/R-4.4.3/library/wham/extdata/ytf_rec1.RDS', probable reason 'No such file or directory'
-#> Error in gzfile(file, "rb"): cannot open the connection
 M = list(mean_model = "estimate-M")
 input <- set_M(input, M = M) #estimate a constant M parameters
-#> Error: object 'input' not found
+#> 
+#> 
+#> 
 ```
